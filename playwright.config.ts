@@ -22,7 +22,7 @@ export default defineConfig({
   timeout: 120 * 1000,
   expect: { timeout: 10 * 1000 }, // an ASSERTION still has to settle quickly; only navigation gets the long budget
   use: {
-    baseURL: "http://localhost:3000",
+    baseURL: process.env.BASE_URL ?? "http://localhost:3000",
     navigationTimeout: 90 * 1000,
     // SLOW_MO=400 npm run test:watch:ui — paces a headed run so a person can follow what it is doing.
     // Zero by default, so a normal run is not slowed at all.
@@ -62,10 +62,21 @@ export default defineConfig({
       use: { ...devices["Pixel 5"] },
     },
   ],
-  webServer: {
-    command: "npm run dev",
-    url: "http://localhost:3000",
-    reuseExistingServer: !process.env.CI,
-    timeout: 120 * 1000,
-  },
+  /**
+   * `BASE_URL` set means a server is ALREADY up — normally a production build (`npm run test:fast`), and
+   * Playwright must not start a dev one beside it on the same port.
+   *
+   * Which server this runs against is the single biggest thing about how long these suites take. `next dev`
+   * compiles a route the first time it is asked for, so the builder page costs ~35s cold and ~5s warm, and
+   * it cannot serve many reloads at once — which is why the layout invariants had to be forced SERIAL.
+   * Against `next start` the routes are already built, so both costs disappear together.
+   */
+  webServer: process.env.BASE_URL
+    ? undefined
+    : {
+        command: "npm run dev",
+        url: "http://localhost:3000",
+        reuseExistingServer: !process.env.CI,
+        timeout: 120 * 1000,
+      },
 });

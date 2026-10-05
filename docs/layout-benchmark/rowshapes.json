@@ -1,0 +1,2942 @@
+[
+ {
+  "shape": "row of 2 (equal)",
+  "count": 3383
+ },
+ {
+  "shape": "row of 2 (40/60)",
+  "count": 1280
+ },
+ {
+  "shape": "grid of 2 (equal)",
+  "count": 1279
+ },
+ {
+  "shape": "grid of 3 (equal)",
+  "count": 1051
+ },
+ {
+  "shape": "row of 2 (60/40)",
+  "count": 1050
+ },
+ {
+  "shape": "row of 2 (30/70)",
+  "count": 1010
+ },
+ {
+  "shape": "row of 2 (70/30)",
+  "count": 981
+ },
+ {
+  "shape": "row of 3 (equal)",
+  "count": 860
+ },
+ {
+  "shape": "row of 6+ (many)",
+  "count": 750
+ },
+ {
+  "shape": "row of 2 (80/20)",
+  "count": 715
+ },
+ {
+  "shape": "row of 2 (90/10)",
+  "count": 605
+ },
+ {
+  "shape": "row of 2 (20/80)",
+  "count": 566
+ },
+ {
+  "shape": "row of 2 (10/90)",
+  "count": 514
+ },
+ {
+  "shape": "row of 4 (equal)",
+  "count": 512
+ },
+ {
+  "shape": "grid of 3 (equal) repeated",
+  "count": 501
+ },
+ {
+  "shape": "row of 2 (equal) +nested columns",
+  "count": 499
+ },
+ {
+  "shape": "grid of 4 (equal)",
+  "count": 472
+ },
+ {
+  "shape": "grid of 2 (40/60)",
+  "count": 383
+ },
+ {
+  "shape": "grid of 2 (equal) repeated",
+  "count": 380
+ },
+ {
+  "shape": "row of 6+ (many) repeated",
+  "count": 344
+ },
+ {
+  "shape": "grid of 2 (30/70)",
+  "count": 327
+ },
+ {
+  "shape": "grid of 2 (60/40)",
+  "count": 297
+ },
+ {
+  "shape": "row of 2 (50/50)",
+  "count": 221
+ },
+ {
+  "shape": "grid of 2 (70/30)",
+  "count": 177
+ },
+ {
+  "shape": "row of 5 (equal)",
+  "count": 161
+ },
+ {
+  "shape": "row of 2 (100/0)",
+  "count": 138
+ },
+ {
+  "shape": "grid of 2 (10/90)",
+  "count": 122
+ },
+ {
+  "shape": "row of 2 (equal) repeated",
+  "count": 110
+ },
+ {
+  "shape": "grid of 2 (90/10)",
+  "count": 105
+ },
+ {
+  "shape": "grid of 2 (20/80)",
+  "count": 104
+ },
+ {
+  "shape": "grid of 4 (equal) repeated",
+  "count": 103
+ },
+ {
+  "shape": "row of 2 (40/60) +nested columns",
+  "count": 94
+ },
+ {
+  "shape": "row of 2 (30/70) +nested columns",
+  "count": 80
+ },
+ {
+  "shape": "row of 2 (20/80) +nested columns",
+  "count": 76
+ },
+ {
+  "shape": "row of 3 (30/40/30)",
+  "count": 74
+ },
+ {
+  "shape": "grid of 2 (equal) +nested columns",
+  "count": 74
+ },
+ {
+  "shape": "grid of 2 (80/20)",
+  "count": 70
+ },
+ {
+  "shape": "grid of 6+ (many)",
+  "count": 68
+ },
+ {
+  "shape": "row of 3 (30/50/30)",
+  "count": 64
+ },
+ {
+  "shape": "row of 3 (30/30/40)",
+  "count": 64
+ },
+ {
+  "shape": "row of 2 (60/40) +nested columns",
+  "count": 58
+ },
+ {
+  "shape": "row of 3 (equal) repeated",
+  "count": 55
+ },
+ {
+  "shape": "grid of 5 (equal)",
+  "count": 54
+ },
+ {
+  "shape": "grid of 3 (30/50/30)",
+  "count": 52
+ },
+ {
+  "shape": "row of 3 (40/30/30)",
+  "count": 50
+ },
+ {
+  "shape": "row of 3 (10/80/10)",
+  "count": 49
+ },
+ {
+  "shape": "row of 3 (equal) +nested columns",
+  "count": 49
+ },
+ {
+  "shape": "row of 3 (40/20/40)",
+  "count": 44
+ },
+ {
+  "shape": "row of 3 (20/40/40)",
+  "count": 42
+ },
+ {
+  "shape": "grid of 2 (40/60) +nested columns",
+  "count": 41
+ },
+ {
+  "shape": "row of 3 (30/30/50)",
+  "count": 40
+ },
+ {
+  "shape": "row of 2 (10/90) +nested columns",
+  "count": 40
+ },
+ {
+  "shape": "row of 2 (80/20) +nested columns",
+  "count": 39
+ },
+ {
+  "shape": "grid of 4 (40/20/20/20)",
+  "count": 37
+ },
+ {
+  "shape": "row of 3 (20/60/20) +nested columns",
+  "count": 37
+ },
+ {
+  "shape": "row of 2 (40/60) repeated",
+  "count": 35
+ },
+ {
+  "shape": "row of 3 (30/20/50)",
+  "count": 35
+ },
+ {
+  "shape": "row of 3 (50/30/30)",
+  "count": 34
+ },
+ {
+  "shape": "row of 3 (20/70/20)",
+  "count": 31
+ },
+ {
+  "shape": "row of 3 (40/10/40)",
+  "count": 31
+ },
+ {
+  "shape": "row of 2 (60/40) repeated",
+  "count": 31
+ },
+ {
+  "shape": "row of 2 (90/10) +nested columns",
+  "count": 30
+ },
+ {
+  "shape": "row of 3 (20/30/60)",
+  "count": 29
+ },
+ {
+  "shape": "grid of 3 (50/30/30)",
+  "count": 28
+ },
+ {
+  "shape": "row of 3 (10/50/50)",
+  "count": 27
+ },
+ {
+  "shape": "row of 6+ (many) +nested columns",
+  "count": 26
+ },
+ {
+  "shape": "row of 3 (20/30/50)",
+  "count": 26
+ },
+ {
+  "shape": "row of 4 (20/30/20/30)",
+  "count": 24
+ },
+ {
+  "shape": "row of 3 (60/10/30)",
+  "count": 24
+ },
+ {
+  "shape": "grid of 3 (20/50/40)",
+  "count": 24
+ },
+ {
+  "shape": "grid of 2 (50/50)",
+  "count": 23
+ },
+ {
+  "shape": "row of 2 (70/30) +nested columns",
+  "count": 23
+ },
+ {
+  "shape": "row of 3 (20/50/30)",
+  "count": 23
+ },
+ {
+  "shape": "row of 2 (0/100)",
+  "count": 23
+ },
+ {
+  "shape": "row of 4 (40/20/20/20)",
+  "count": 23
+ },
+ {
+  "shape": "row of 3 (20/60/30) +nested columns",
+  "count": 23
+ },
+ {
+  "shape": "grid of 2 (20/80) +nested columns",
+  "count": 22
+ },
+ {
+  "shape": "row of 3 (80/10/10)",
+  "count": 22
+ },
+ {
+  "shape": "grid of 3 (30/40/30)",
+  "count": 22
+ },
+ {
+  "shape": "row of 3 (50/30/20)",
+  "count": 22
+ },
+ {
+  "shape": "row of 4 (equal) repeated",
+  "count": 21
+ },
+ {
+  "shape": "row of 3 (40/40/20)",
+  "count": 21
+ },
+ {
+  "shape": "row of 3 (10/70/20)",
+  "count": 21
+ },
+ {
+  "shape": "row of 3 (60/20/20)",
+  "count": 21
+ },
+ {
+  "shape": "grid of 2 (30/70) +nested columns",
+  "count": 20
+ },
+ {
+  "shape": "row of 4 (50/20/20/20)",
+  "count": 20
+ },
+ {
+  "shape": "row of 4 (20/20/20/40)",
+  "count": 20
+ },
+ {
+  "shape": "grid of 2 (equal) +nested columns repeated",
+  "count": 19
+ },
+ {
+  "shape": "grid of 3 (40/20/40) +nested columns",
+  "count": 19
+ },
+ {
+  "shape": "row of 3 (50/30/20) repeated",
+  "count": 19
+ },
+ {
+  "shape": "row of 4 (30/20/20/20)",
+  "count": 19
+ },
+ {
+  "shape": "row of 3 (10/10/80)",
+  "count": 19
+ },
+ {
+  "shape": "row of 3 (10/90/10)",
+  "count": 18
+ },
+ {
+  "shape": "grid of 3 (10/40/40)",
+  "count": 18
+ },
+ {
+  "shape": "grid of 6+ (many) repeated",
+  "count": 18
+ },
+ {
+  "shape": "row of 3 (40/40/30)",
+  "count": 18
+ },
+ {
+  "shape": "row of 3 (30/10/60)",
+  "count": 18
+ },
+ {
+  "shape": "grid of 2 (70/30) repeated",
+  "count": 17
+ },
+ {
+  "shape": "row of 2 (70/30) repeated",
+  "count": 17
+ },
+ {
+  "shape": "row of 4 (30/20/30/30)",
+  "count": 17
+ },
+ {
+  "shape": "row of 2 (30/70) repeated",
+  "count": 17
+ },
+ {
+  "shape": "row of 3 (30/60/20)",
+  "count": 17
+ },
+ {
+  "shape": "grid of 3 (10/40/50)",
+  "count": 17
+ },
+ {
+  "shape": "row of 3 (40/30/40)",
+  "count": 17
+ },
+ {
+  "shape": "grid of 5 (equal) repeated",
+  "count": 16
+ },
+ {
+  "shape": "row of 3 (20/60/20)",
+  "count": 16
+ },
+ {
+  "shape": "row of 3 (20/20/70)",
+  "count": 16
+ },
+ {
+  "shape": "row of 3 (40/10/50)",
+  "count": 16
+ },
+ {
+  "shape": "row of 4 (30/30/30/20)",
+  "count": 16
+ },
+ {
+  "shape": "row of 4 (20/20/40/30)",
+  "count": 16
+ },
+ {
+  "shape": "row of 4 (30/20/20/40)",
+  "count": 16
+ },
+ {
+  "shape": "grid of 3 (equal) +nested columns",
+  "count": 16
+ },
+ {
+  "shape": "row of 3 (40/50/20)",
+  "count": 16
+ },
+ {
+  "shape": "row of 4 (40/20/10/30)",
+  "count": 16
+ },
+ {
+  "shape": "row of 5 (10/30/30/20/10)",
+  "count": 16
+ },
+ {
+  "shape": "row of 3 (20/80/10)",
+  "count": 15
+ },
+ {
+  "shape": "row of 3 (50/20/30)",
+  "count": 15
+ },
+ {
+  "shape": "row of 5 (20/20/30/20/20)",
+  "count": 15
+ },
+ {
+  "shape": "row of 5 (30/20/20/20/20)",
+  "count": 15
+ },
+ {
+  "shape": "grid of 4 (20/20/30/40)",
+  "count": 15
+ },
+ {
+  "shape": "grid of 3 (30/60/20)",
+  "count": 15
+ },
+ {
+  "shape": "row of 3 (10/60/30)",
+  "count": 14
+ },
+ {
+  "shape": "row of 4 (20/30/30/30)",
+  "count": 14
+ },
+ {
+  "shape": "row of 3 (30/40/40)",
+  "count": 14
+ },
+ {
+  "shape": "row of 5 (40/20/20/20/20)",
+  "count": 14
+ },
+ {
+  "shape": "row of 3 (20/70/10)",
+  "count": 14
+ },
+ {
+  "shape": "row of 3 (10/30/70)",
+  "count": 14
+ },
+ {
+  "shape": "row of 3 (10/70/30) +nested columns",
+  "count": 14
+ },
+ {
+  "shape": "row of 4 (10/20/20/50)",
+  "count": 14
+ },
+ {
+  "shape": "row of 3 (20/70/20) +nested columns",
+  "count": 13
+ },
+ {
+  "shape": "row of 2 (0/100) +nested columns",
+  "count": 13
+ },
+ {
+  "shape": "row of 3 (20/40/50)",
+  "count": 13
+ },
+ {
+  "shape": "row of 4 (30/10/30/30)",
+  "count": 13
+ },
+ {
+  "shape": "row of 5 (20/20/30/20/30)",
+  "count": 13
+ },
+ {
+  "shape": "row of 3 (30/50/20)",
+  "count": 13
+ },
+ {
+  "shape": "row of 3 (90/0/0) +nested columns",
+  "count": 13
+ },
+ {
+  "shape": "grid of 3 (10/90/10)",
+  "count": 13
+ },
+ {
+  "shape": "row of 3 (10/70/20) +nested columns",
+  "count": 13
+ },
+ {
+  "shape": "grid of 3 (10/80/10)",
+  "count": 13
+ },
+ {
+  "shape": "grid of 4 (30/40/30/10)",
+  "count": 13
+ },
+ {
+  "shape": "grid of 4 (20/20/20/50)",
+  "count": 13
+ },
+ {
+  "shape": "grid of 4 (30/20/20/20)",
+  "count": 12
+ },
+ {
+  "shape": "grid of 3 (10/40/60)",
+  "count": 12
+ },
+ {
+  "shape": "grid of 3 (50/40/10)",
+  "count": 12
+ },
+ {
+  "shape": "grid of 2 (60/40) repeated",
+  "count": 12
+ },
+ {
+  "shape": "row of 4 (30/20/10/50) repeated",
+  "count": 12
+ },
+ {
+  "shape": "grid of 3 (40/10/50)",
+  "count": 12
+ },
+ {
+  "shape": "row of 5 (30/10/20/10/20)",
+  "count": 12
+ },
+ {
+  "shape": "row of 5 (20/10/30/20/30) repeated",
+  "count": 12
+ },
+ {
+  "shape": "grid of 3 (30/40/40)",
+  "count": 12
+ },
+ {
+  "shape": "row of 5 (equal) repeated",
+  "count": 11
+ },
+ {
+  "shape": "row of 3 (30/50/20) repeated",
+  "count": 11
+ },
+ {
+  "shape": "row of 3 (50/20/30) repeated",
+  "count": 11
+ },
+ {
+  "shape": "row of 4 (20/30/30/20)",
+  "count": 11
+ },
+ {
+  "shape": "grid of 4 (50/20/20/20)",
+  "count": 11
+ },
+ {
+  "shape": "row of 3 (40/30/30) repeated",
+  "count": 11
+ },
+ {
+  "shape": "grid of 3 (60/20/20)",
+  "count": 11
+ },
+ {
+  "shape": "row of 3 (60/30/10)",
+  "count": 11
+ },
+ {
+  "shape": "row of 3 (20/20/60) repeated",
+  "count": 11
+ },
+ {
+  "shape": "grid of 3 (60/30/20)",
+  "count": 11
+ },
+ {
+  "shape": "row of 4 (30/40/10/30)",
+  "count": 11
+ },
+ {
+  "shape": "grid of 3 (equal) +nested columns repeated",
+  "count": 10
+ },
+ {
+  "shape": "row of 4 (40/30/10/30)",
+  "count": 10
+ },
+ {
+  "shape": "row of 3 (60/20/30)",
+  "count": 10
+ },
+ {
+  "shape": "row of 3 (10/30/70) +nested columns",
+  "count": 10
+ },
+ {
+  "shape": "row of 3 (30/40/20)",
+  "count": 10
+ },
+ {
+  "shape": "row of 2 (50/50) +nested columns",
+  "count": 10
+ },
+ {
+  "shape": "row of 5 (30/30/30/0/0)",
+  "count": 10
+ },
+ {
+  "shape": "row of 3 (20/30/40)",
+  "count": 10
+ },
+ {
+  "shape": "grid of 4 (80/10/10/10)",
+  "count": 10
+ },
+ {
+  "shape": "row of 3 (70/0/20)",
+  "count": 10
+ },
+ {
+  "shape": "row of 3 (30/50/30) +nested columns",
+  "count": 10
+ },
+ {
+  "shape": "row of 5 (20/10/20/20/30)",
+  "count": 10
+ },
+ {
+  "shape": "row of 4 (30/10/20/30)",
+  "count": 10
+ },
+ {
+  "shape": "row of 4 (20/20/30/30)",
+  "count": 9
+ },
+ {
+  "shape": "row of 3 (0/0/90)",
+  "count": 9
+ },
+ {
+  "shape": "row of 4 (30/30/10/30)",
+  "count": 9
+ },
+ {
+  "shape": "row of 3 (60/30/10) repeated",
+  "count": 9
+ },
+ {
+  "shape": "row of 4 (30/30/20/30)",
+  "count": 9
+ },
+ {
+  "shape": "row of 3 (20/60/30)",
+  "count": 9
+ },
+ {
+  "shape": "grid of 3 (10/90/10) +nested columns",
+  "count": 9
+ },
+ {
+  "shape": "row of 4 (50/10/10/40)",
+  "count": 9
+ },
+ {
+  "shape": "row of 3 (20/50/30) +nested columns",
+  "count": 9
+ },
+ {
+  "shape": "row of 3 (20/40/30) +nested columns",
+  "count": 9
+ },
+ {
+  "shape": "grid of 3 (70/20/20)",
+  "count": 9
+ },
+ {
+  "shape": "row of 4 (30/20/20/30)",
+  "count": 8
+ },
+ {
+  "shape": "grid of 3 (60/10/40)",
+  "count": 8
+ },
+ {
+  "shape": "row of 4 (40/20/30/10) repeated",
+  "count": 8
+ },
+ {
+  "shape": "row of 4 (30/30/20/20)",
+  "count": 8
+ },
+ {
+  "shape": "grid of 5 (50/20/20/20/10)",
+  "count": 8
+ },
+ {
+  "shape": "row of 4 (30/30/30/10)",
+  "count": 8
+ },
+ {
+  "shape": "grid of 3 (30/30/50) repeated",
+  "count": 8
+ },
+ {
+  "shape": "row of 3 (50/10/50)",
+  "count": 8
+ },
+ {
+  "shape": "row of 3 (50/30/30) repeated",
+  "count": 8
+ },
+ {
+  "shape": "row of 5 (10/30/20/20/20)",
+  "count": 8
+ },
+ {
+  "shape": "grid of 3 (30/30/40)",
+  "count": 8
+ },
+ {
+  "shape": "row of 3 (20/40/30)",
+  "count": 8
+ },
+ {
+  "shape": "grid of 3 (20/30/40)",
+  "count": 8
+ },
+ {
+  "shape": "row of 3 (20/50/20) +nested columns",
+  "count": 8
+ },
+ {
+  "shape": "grid of 2 (70/30) +nested columns",
+  "count": 7
+ },
+ {
+  "shape": "row of 3 (50/10/40)",
+  "count": 7
+ },
+ {
+  "shape": "row of 3 (40/20/50)",
+  "count": 7
+ },
+ {
+  "shape": "row of 4 (equal) +nested columns",
+  "count": 7
+ },
+ {
+  "shape": "row of 3 (30/30/40) repeated",
+  "count": 7
+ },
+ {
+  "shape": "row of 5 (20/20/20/20/30)",
+  "count": 7
+ },
+ {
+  "shape": "row of 3 (30/40/40) repeated",
+  "count": 7
+ },
+ {
+  "shape": "row of 3 (30/20/50) repeated",
+  "count": 7
+ },
+ {
+  "shape": "row of 6+ (many) +nested columns repeated",
+  "count": 7
+ },
+ {
+  "shape": "row of 3 (40/20/40) repeated",
+  "count": 7
+ },
+ {
+  "shape": "row of 3 (90/0/0)",
+  "count": 7
+ },
+ {
+  "shape": "row of 4 (30/30/30/10) repeated",
+  "count": 7
+ },
+ {
+  "shape": "grid of 3 (10/70/20)",
+  "count": 7
+ },
+ {
+  "shape": "row of 5 (30/10/30/20/20) repeated",
+  "count": 7
+ },
+ {
+  "shape": "grid of 2 (90/10) +nested columns",
+  "count": 7
+ },
+ {
+  "shape": "grid of 3 (20/40/50)",
+  "count": 7
+ },
+ {
+  "shape": "row of 5 (30/30/10/10/20)",
+  "count": 7
+ },
+ {
+  "shape": "grid of 3 (10/50/50)",
+  "count": 6
+ },
+ {
+  "shape": "grid of 2 (80/20) +nested columns",
+  "count": 6
+ },
+ {
+  "shape": "grid of 2 (60/40) +nested columns",
+  "count": 6
+ },
+ {
+  "shape": "row of 3 (0/90/0)",
+  "count": 6
+ },
+ {
+  "shape": "row of 4 (40/10/20/30)",
+  "count": 6
+ },
+ {
+  "shape": "row of 3 (20/20/60)",
+  "count": 6
+ },
+ {
+  "shape": "row of 3 (30/60/10)",
+  "count": 6
+ },
+ {
+  "shape": "row of 3 (20/50/20)",
+  "count": 6
+ },
+ {
+  "shape": "grid of 3 (60/30/10) +nested columns",
+  "count": 6
+ },
+ {
+  "shape": "row of 3 (30/50/30) repeated",
+  "count": 6
+ },
+ {
+  "shape": "row of 4 (40/10/30/30)",
+  "count": 6
+ },
+ {
+  "shape": "row of 3 (50/20/40)",
+  "count": 6
+ },
+ {
+  "shape": "row of 4 (10/40/20/20)",
+  "count": 6
+ },
+ {
+  "shape": "grid of 5 (30/30/10/10/20)",
+  "count": 6
+ },
+ {
+  "shape": "row of 5 (20/20/10/20/40)",
+  "count": 6
+ },
+ {
+  "shape": "row of 4 (70/10/10/10)",
+  "count": 6
+ },
+ {
+  "shape": "row of 4 (40/40/10/10) +nested columns",
+  "count": 6
+ },
+ {
+  "shape": "grid of 3 (30/70/10)",
+  "count": 5
+ },
+ {
+  "shape": "grid of 3 (70/20/10)",
+  "count": 5
+ },
+ {
+  "shape": "grid of 2 (50/50) +nested columns",
+  "count": 5
+ },
+ {
+  "shape": "row of 4 (0/0/50/50) +nested columns",
+  "count": 5
+ },
+ {
+  "shape": "grid of 4 (10/40/40/10)",
+  "count": 5
+ },
+ {
+  "shape": "row of 3 (20/30/50) repeated",
+  "count": 5
+ },
+ {
+  "shape": "row of 3 (40/20/30)",
+  "count": 5
+ },
+ {
+  "shape": "row of 2 (80/20) repeated",
+  "count": 5
+ },
+ {
+  "shape": "row of 4 (10/30/30/30)",
+  "count": 5
+ },
+ {
+  "shape": "grid of 3 (40/30/30)",
+  "count": 5
+ },
+ {
+  "shape": "grid of 4 (50/30/20/10)",
+  "count": 5
+ },
+ {
+  "shape": "grid of 3 (40/20/40)",
+  "count": 5
+ },
+ {
+  "shape": "grid of 5 (20/30/30/10/20) repeated",
+  "count": 5
+ },
+ {
+  "shape": "row of 3 (70/20/10)",
+  "count": 5
+ },
+ {
+  "shape": "row of 4 (10/30/50/10)",
+  "count": 5
+ },
+ {
+  "shape": "row of 4 (30/10/20/40)",
+  "count": 5
+ },
+ {
+  "shape": "row of 3 (10/20/70) +nested columns",
+  "count": 5
+ },
+ {
+  "shape": "row of 3 (10/30/60)",
+  "count": 5
+ },
+ {
+  "shape": "row of 3 (10/80/10) +nested columns",
+  "count": 5
+ },
+ {
+  "shape": "row of 5 (70/10/10/10/10)",
+  "count": 5
+ },
+ {
+  "shape": "row of 4 (40/40/10/10)",
+  "count": 5
+ },
+ {
+  "shape": "row of 4 (50/30/20/10)",
+  "count": 5
+ },
+ {
+  "shape": "grid of 4 (10/70/20/10)",
+  "count": 5
+ },
+ {
+  "shape": "grid of 3 (20/70/10)",
+  "count": 5
+ },
+ {
+  "shape": "row of 5 (10/40/20/20/10)",
+  "count": 5
+ },
+ {
+  "shape": "grid of 5 (20/30/30/20/10)",
+  "count": 5
+ },
+ {
+  "shape": "row of 3 (10/40/50)",
+  "count": 5
+ },
+ {
+  "shape": "grid of 3 (50/20/30)",
+  "count": 5
+ },
+ {
+  "shape": "row of 2 (20/80) repeated",
+  "count": 5
+ },
+ {
+  "shape": "row of 3 (10/70/30)",
+  "count": 5
+ },
+ {
+  "shape": "row of 4 (30/30/10/30) repeated",
+  "count": 5
+ },
+ {
+  "shape": "row of 5 (30/10/30/10/20)",
+  "count": 5
+ },
+ {
+  "shape": "grid of 5 (40/10/10/10/10)",
+  "count": 5
+ },
+ {
+  "shape": "grid of 5 (40/20/20/10/20)",
+  "count": 5
+ },
+ {
+  "shape": "row of 3 (0/90/10) +nested columns",
+  "count": 5
+ },
+ {
+  "shape": "row of 4 (20/30/10/40)",
+  "count": 4
+ },
+ {
+  "shape": "row of 4 (30/20/10/40)",
+  "count": 4
+ },
+ {
+  "shape": "row of 4 (30/30/30/20) repeated",
+  "count": 4
+ },
+ {
+  "shape": "row of 4 (30/20/30/20) repeated",
+  "count": 4
+ },
+ {
+  "shape": "grid of 3 (50/30/30) repeated",
+  "count": 4
+ },
+ {
+  "shape": "row of 4 (40/30/20/20)",
+  "count": 4
+ },
+ {
+  "shape": "row of 3 (10/50/40) repeated",
+  "count": 4
+ },
+ {
+  "shape": "row of 4 (40/20/20/20) repeated",
+  "count": 4
+ },
+ {
+  "shape": "row of 3 (10/60/30) +nested columns",
+  "count": 4
+ },
+ {
+  "shape": "grid of 2 (30/70) repeated",
+  "count": 4
+ },
+ {
+  "shape": "row of 4 (20/20/30/30) repeated",
+  "count": 4
+ },
+ {
+  "shape": "row of 4 (40/30/20/10) repeated",
+  "count": 4
+ },
+ {
+  "shape": "row of 3 (20/40/40) repeated",
+  "count": 4
+ },
+ {
+  "shape": "row of 2 (10/90) repeated",
+  "count": 4
+ },
+ {
+  "shape": "row of 3 (30/40/30) repeated",
+  "count": 4
+ },
+ {
+  "shape": "row of 3 (50/40/10)",
+  "count": 4
+ },
+ {
+  "shape": "row of 5 (10/20/20/20/20)",
+  "count": 4
+ },
+ {
+  "shape": "grid of 4 (10/30/30/30)",
+  "count": 4
+ },
+ {
+  "shape": "row of 4 (50/20/10/20) repeated",
+  "count": 4
+ },
+ {
+  "shape": "grid of 3 (10/80/10) +nested columns",
+  "count": 4
+ },
+ {
+  "shape": "grid of 3 (40/60/10)",
+  "count": 4
+ },
+ {
+  "shape": "row of 3 (50/40/20)",
+  "count": 4
+ },
+ {
+  "shape": "row of 5 (20/20/20/20/30) repeated",
+  "count": 4
+ },
+ {
+  "shape": "row of 3 (40/10/50) repeated",
+  "count": 4
+ },
+ {
+  "shape": "row of 4 (40/10/10/30)",
+  "count": 4
+ },
+ {
+  "shape": "grid of 4 (equal) +nested columns",
+  "count": 4
+ },
+ {
+  "shape": "row of 4 (20/40/30/10) repeated",
+  "count": 4
+ },
+ {
+  "shape": "row of 4 (50/20/20/10) repeated",
+  "count": 4
+ },
+ {
+  "shape": "row of 3 (50/20/20)",
+  "count": 4
+ },
+ {
+  "shape": "grid of 5 (20/40/20/10/10)",
+  "count": 4
+ },
+ {
+  "shape": "row of 3 (10/20/70)",
+  "count": 4
+ },
+ {
+  "shape": "row of 3 (50/10/50) +nested columns",
+  "count": 4
+ },
+ {
+  "shape": "row of 5 (10/20/20/30/20)",
+  "count": 4
+ },
+ {
+  "shape": "grid of 3 (30/30/50)",
+  "count": 3
+ },
+ {
+  "shape": "row of 5 (20/20/20/30/20)",
+  "count": 3
+ },
+ {
+  "shape": "row of 3 (40/40/20) +nested columns",
+  "count": 3
+ },
+ {
+  "shape": "grid of 3 (40/30/30) repeated",
+  "count": 3
+ },
+ {
+  "shape": "row of 5 (30/20/20/20/10)",
+  "count": 3
+ },
+ {
+  "shape": "row of 5 (20/20/20/30/10) repeated",
+  "count": 3
+ },
+ {
+  "shape": "row of 4 (20/10/40/30)",
+  "count": 3
+ },
+ {
+  "shape": "row of 5 (20/30/10/10/20)",
+  "count": 3
+ },
+ {
+  "shape": "grid of 3 (20/40/40)",
+  "count": 3
+ },
+ {
+  "shape": "grid of 2 (0/100)",
+  "count": 3
+ },
+ {
+  "shape": "row of 4 (40/20/10/40) repeated",
+  "count": 3
+ },
+ {
+  "shape": "grid of 5 (30/10/30/10/10)",
+  "count": 3
+ },
+ {
+  "shape": "row of 3 (40/20/50) +nested columns",
+  "count": 3
+ },
+ {
+  "shape": "row of 5 (20/30/20/10/20) repeated",
+  "count": 3
+ },
+ {
+  "shape": "grid of 2 (20/80) repeated",
+  "count": 3
+ },
+ {
+  "shape": "row of 3 (30/30/50) repeated",
+  "count": 3
+ },
+ {
+  "shape": "row of 4 (20/20/20/30)",
+  "count": 3
+ },
+ {
+  "shape": "grid of 3 (10/20/70)",
+  "count": 3
+ },
+ {
+  "shape": "row of 4 (20/20/40/20)",
+  "count": 3
+ },
+ {
+  "shape": "grid of 4 (40/10/30/30)",
+  "count": 3
+ },
+ {
+  "shape": "row of 5 (20/30/10/30/20)",
+  "count": 3
+ },
+ {
+  "shape": "grid of 3 (20/60/20)",
+  "count": 3
+ },
+ {
+  "shape": "row of 4 (20/40/30/20) repeated",
+  "count": 3
+ },
+ {
+  "shape": "row of 3 (30/60/10) repeated",
+  "count": 3
+ },
+ {
+  "shape": "row of 3 (20/50/30) repeated",
+  "count": 3
+ },
+ {
+  "shape": "row of 4 (30/30/20/30) repeated",
+  "count": 3
+ },
+ {
+  "shape": "row of 4 (10/50/20/20) +nested columns",
+  "count": 3
+ },
+ {
+  "shape": "row of 5 (30/10/20/10/30)",
+  "count": 3
+ },
+ {
+  "shape": "row of 4 (30/20/30/20)",
+  "count": 3
+ },
+ {
+  "shape": "row of 3 (30/20/50) +nested columns",
+  "count": 3
+ },
+ {
+  "shape": "grid of 3 (50/50/10)",
+  "count": 3
+ },
+ {
+  "shape": "row of 3 (60/20/20) +nested columns",
+  "count": 3
+ },
+ {
+  "shape": "row of 5 (30/10/30/10/30)",
+  "count": 3
+ },
+ {
+  "shape": "row of 3 (20/10/70)",
+  "count": 3
+ },
+ {
+  "shape": "grid of 3 (50/30/20)",
+  "count": 3
+ },
+ {
+  "shape": "row of 3 (10/50/40)",
+  "count": 3
+ },
+ {
+  "shape": "row of 4 (20/30/20/20)",
+  "count": 3
+ },
+ {
+  "shape": "row of 3 (30/10/50)",
+  "count": 3
+ },
+ {
+  "shape": "row of 5 (20/20/20/10/30) repeated",
+  "count": 3
+ },
+ {
+  "shape": "row of 4 (20/20/10/50)",
+  "count": 3
+ },
+ {
+  "shape": "row of 3 (90/10/10)",
+  "count": 3
+ },
+ {
+  "shape": "row of 4 (10/30/40/20)",
+  "count": 3
+ },
+ {
+  "shape": "grid of 4 (10/60/10/10)",
+  "count": 3
+ },
+ {
+  "shape": "row of 5 (20/20/30/20/20) repeated",
+  "count": 3
+ },
+ {
+  "shape": "row of 4 (30/20/30/30) repeated",
+  "count": 3
+ },
+ {
+  "shape": "grid of 4 (20/30/20/30)",
+  "count": 3
+ },
+ {
+  "shape": "row of 4 (30/20/10/40) repeated",
+  "count": 3
+ },
+ {
+  "shape": "grid of 3 (30/60/10) +nested columns",
+  "count": 3
+ },
+ {
+  "shape": "grid of 3 (30/50/30) +nested columns",
+  "count": 3
+ },
+ {
+  "shape": "row of 3 (40/40/10)",
+  "count": 3
+ },
+ {
+  "shape": "row of 4 (10/70/10/10)",
+  "count": 3
+ },
+ {
+  "shape": "row of 5 (20/30/30/10/10) repeated",
+  "count": 3
+ },
+ {
+  "shape": "grid of 4 (10/40/20/40)",
+  "count": 3
+ },
+ {
+  "shape": "grid of 2 (40/60) repeated",
+  "count": 3
+ },
+ {
+  "shape": "row of 4 (10/40/30/30)",
+  "count": 3
+ },
+ {
+  "shape": "row of 2 (100/0) +nested columns",
+  "count": 3
+ },
+ {
+  "shape": "grid of 2 (70/30) +nested columns repeated",
+  "count": 3
+ },
+ {
+  "shape": "row of 4 (40/20/20/30)",
+  "count": 3
+ },
+ {
+  "shape": "row of 5 (30/10/10/30/20)",
+  "count": 3
+ },
+ {
+  "shape": "grid of 4 (50/10/10/40)",
+  "count": 3
+ },
+ {
+  "shape": "grid of 3 (80/10/10)",
+  "count": 2
+ },
+ {
+  "shape": "row of 4 (30/20/40/20)",
+  "count": 2
+ },
+ {
+  "shape": "row of 5 (20/30/20/10/30) repeated",
+  "count": 2
+ },
+ {
+  "shape": "grid of 3 (50/10/40)",
+  "count": 2
+ },
+ {
+  "shape": "row of 4 (20/40/30/20)",
+  "count": 2
+ },
+ {
+  "shape": "row of 3 (20/10/80)",
+  "count": 2
+ },
+ {
+  "shape": "row of 3 (40/40/10) repeated",
+  "count": 2
+ },
+ {
+  "shape": "row of 5 (10/20/30/20/20)",
+  "count": 2
+ },
+ {
+  "shape": "row of 3 (60/20/20) repeated",
+  "count": 2
+ },
+ {
+  "shape": "row of 4 (20/40/20/20) repeated",
+  "count": 2
+ },
+ {
+  "shape": "row of 3 (10/10/90)",
+  "count": 2
+ },
+ {
+  "shape": "row of 4 (30/10/30/20) repeated",
+  "count": 2
+ },
+ {
+  "shape": "grid of 3 (40/30/40) +nested columns",
+  "count": 2
+ },
+ {
+  "shape": "row of 4 (10/30/30/30) repeated",
+  "count": 2
+ },
+ {
+  "shape": "row of 4 (80/10/10/10) repeated",
+  "count": 2
+ },
+ {
+  "shape": "row of 4 (20/40/20/10)",
+  "count": 2
+ },
+ {
+  "shape": "row of 4 (20/30/30/30) repeated",
+  "count": 2
+ },
+ {
+  "shape": "row of 4 (20/50/20/20) repeated",
+  "count": 2
+ },
+ {
+  "shape": "row of 3 (50/40/20) repeated",
+  "count": 2
+ },
+ {
+  "shape": "row of 4 (10/20/40/30)",
+  "count": 2
+ },
+ {
+  "shape": "row of 5 (10/30/10/30/10)",
+  "count": 2
+ },
+ {
+  "shape": "row of 2 (40/60) +nested columns repeated",
+  "count": 2
+ },
+ {
+  "shape": "row of 5 (30/10/10/30/30)",
+  "count": 2
+ },
+ {
+  "shape": "row of 4 (20/40/20/30)",
+  "count": 2
+ },
+ {
+  "shape": "row of 5 (30/30/20/10/20) repeated",
+  "count": 2
+ },
+ {
+  "shape": "row of 3 (70/20/20)",
+  "count": 2
+ },
+ {
+  "shape": "row of 4 (40/20/40/10)",
+  "count": 2
+ },
+ {
+  "shape": "row of 2 (90/10) repeated",
+  "count": 2
+ },
+ {
+  "shape": "row of 3 (10/60/30) repeated",
+  "count": 2
+ },
+ {
+  "shape": "row of 4 (20/10/30/40) repeated",
+  "count": 2
+ },
+ {
+  "shape": "row of 4 (30/10/30/40) repeated",
+  "count": 2
+ },
+ {
+  "shape": "row of 5 (10/20/30/10/40) repeated",
+  "count": 2
+ },
+ {
+  "shape": "row of 5 (equal) +nested columns",
+  "count": 2
+ },
+ {
+  "shape": "row of 3 (60/20/30) repeated",
+  "count": 2
+ },
+ {
+  "shape": "grid of 3 (30/20/50)",
+  "count": 2
+ },
+ {
+  "shape": "grid of 4 (30/30/30/10)",
+  "count": 2
+ },
+ {
+  "shape": "row of 4 (40/20/30/20)",
+  "count": 2
+ },
+ {
+  "shape": "row of 4 (20/30/30/20) repeated",
+  "count": 2
+ },
+ {
+  "shape": "row of 4 (40/10/20/30) repeated",
+  "count": 2
+ },
+ {
+  "shape": "row of 4 (40/20/20/30) repeated",
+  "count": 2
+ },
+ {
+  "shape": "row of 3 (20/50/40)",
+  "count": 2
+ },
+ {
+  "shape": "row of 5 (20/20/10/20/30)",
+  "count": 2
+ },
+ {
+  "shape": "row of 5 (20/10/30/30/10)",
+  "count": 2
+ },
+ {
+  "shape": "row of 5 (30/10/20/20/20)",
+  "count": 2
+ },
+ {
+  "shape": "grid of 4 (30/20/20/30)",
+  "count": 2
+ },
+ {
+  "shape": "row of 4 (20/20/40/20) repeated",
+  "count": 2
+ },
+ {
+  "shape": "row of 3 (10/40/40) repeated",
+  "count": 2
+ },
+ {
+  "shape": "row of 4 (20/30/20/40) repeated",
+  "count": 2
+ },
+ {
+  "shape": "row of 5 (10/30/10/30/30)",
+  "count": 2
+ },
+ {
+  "shape": "row of 5 (20/10/20/20/40) repeated",
+  "count": 2
+ },
+ {
+  "shape": "row of 3 (30/10/70)",
+  "count": 2
+ },
+ {
+  "shape": "grid of 3 (40/50/10)",
+  "count": 2
+ },
+ {
+  "shape": "grid of 4 (30/20/30/30)",
+  "count": 2
+ },
+ {
+  "shape": "row of 2 (50/50) repeated",
+  "count": 2
+ },
+ {
+  "shape": "row of 5 (20/30/20/20/10) repeated",
+  "count": 2
+ },
+ {
+  "shape": "grid of 3 (20/20/70)",
+  "count": 2
+ },
+ {
+  "shape": "row of 3 (50/20/40) repeated",
+  "count": 2
+ },
+ {
+  "shape": "row of 5 (10/30/30/20/10) repeated",
+  "count": 2
+ },
+ {
+  "shape": "grid of 3 (40/30/30) +nested columns",
+  "count": 2
+ },
+ {
+  "shape": "row of 3 (60/10/30) repeated",
+  "count": 2
+ },
+ {
+  "shape": "row of 5 (10/20/20/30/30) repeated",
+  "count": 2
+ },
+ {
+  "shape": "row of 5 (20/30/10/10/30) repeated",
+  "count": 2
+ },
+ {
+  "shape": "row of 5 (30/10/30/30/10)",
+  "count": 2
+ },
+ {
+  "shape": "row of 5 (20/20/10/30/20) repeated",
+  "count": 2
+ },
+ {
+  "shape": "row of 4 (20/10/30/30)",
+  "count": 2
+ },
+ {
+  "shape": "row of 4 (30/10/40/10)",
+  "count": 2
+ },
+ {
+  "shape": "row of 5 (20/20/20/10/20)",
+  "count": 2
+ },
+ {
+  "shape": "row of 4 (30/10/30/30) repeated",
+  "count": 2
+ },
+ {
+  "shape": "row of 4 (40/10/40/20) repeated",
+  "count": 2
+ },
+ {
+  "shape": "row of 5 (20/20/10/20/20)",
+  "count": 2
+ },
+ {
+  "shape": "row of 5 (10/10/10/30/30)",
+  "count": 2
+ },
+ {
+  "shape": "row of 5 (20/10/20/20/30) repeated",
+  "count": 2
+ },
+ {
+  "shape": "row of 3 (70/0/30)",
+  "count": 2
+ },
+ {
+  "shape": "row of 4 (40/10/20/40)",
+  "count": 2
+ },
+ {
+  "shape": "row of 5 (40/10/30/10/10)",
+  "count": 2
+ },
+ {
+  "shape": "row of 5 (10/30/20/10/30)",
+  "count": 2
+ },
+ {
+  "shape": "row of 3 (10/90/10) +nested columns",
+  "count": 2
+ },
+ {
+  "shape": "grid of 2 (10/90) +nested columns",
+  "count": 2
+ },
+ {
+  "shape": "row of 4 (30/10/30/40)",
+  "count": 2
+ },
+ {
+  "shape": "grid of 3 (0/90/10)",
+  "count": 2
+ },
+ {
+  "shape": "grid of 3 (30/50/20) +nested columns",
+  "count": 2
+ },
+ {
+  "shape": "row of 5 (50/10/10/10/10)",
+  "count": 2
+ },
+ {
+  "shape": "grid of 3 (60/10/30)",
+  "count": 1
+ },
+ {
+  "shape": "row of 4 (60/10/10/10)",
+  "count": 1
+ },
+ {
+  "shape": "grid of 3 (40/40/30) +nested columns",
+  "count": 1
+ },
+ {
+  "shape": "row of 4 (10/20/10/60)",
+  "count": 1
+ },
+ {
+  "shape": "row of 4 (10/20/20/40)",
+  "count": 1
+ },
+ {
+  "shape": "row of 5 (30/10/20/40/10) repeated",
+  "count": 1
+ },
+ {
+  "shape": "row of 4 (50/10/10/50)",
+  "count": 1
+ },
+ {
+  "shape": "row of 4 (10/30/10/50)",
+  "count": 1
+ },
+ {
+  "shape": "grid of 3 (10/10/80)",
+  "count": 1
+ },
+ {
+  "shape": "grid of 2 (10/90) repeated",
+  "count": 1
+ },
+ {
+  "shape": "row of 4 (10/80/10/10)",
+  "count": 1
+ },
+ {
+  "shape": "row of 4 (10/20/20/40) repeated",
+  "count": 1
+ },
+ {
+  "shape": "grid of 4 (10/40/40/10) repeated",
+  "count": 1
+ },
+ {
+  "shape": "row of 5 (30/20/10/10/20) repeated",
+  "count": 1
+ },
+ {
+  "shape": "row of 3 (100/0/0)",
+  "count": 1
+ },
+ {
+  "shape": "grid of 5 (30/20/20/20/20)",
+  "count": 1
+ },
+ {
+  "shape": "grid of 3 (10/60/20)",
+  "count": 1
+ },
+ {
+  "shape": "row of 4 (20/10/30/40)",
+  "count": 1
+ },
+ {
+  "shape": "row of 4 (30/30/10/40) repeated",
+  "count": 1
+ },
+ {
+  "shape": "grid of 3 (30/50/20)",
+  "count": 1
+ },
+ {
+  "shape": "row of 5 (20/30/30/10/20) repeated",
+  "count": 1
+ },
+ {
+  "shape": "row of 5 (40/10/20/10/30) repeated",
+  "count": 1
+ },
+ {
+  "shape": "row of 3 (80/10/10) +nested columns",
+  "count": 1
+ },
+ {
+  "shape": "row of 4 (10/20/30/40)",
+  "count": 1
+ },
+ {
+  "shape": "row of 3 (20/70/10) repeated",
+  "count": 1
+ },
+ {
+  "shape": "row of 5 (10/10/30/10/30)",
+  "count": 1
+ },
+ {
+  "shape": "row of 5 (20/10/20/20/20)",
+  "count": 1
+ },
+ {
+  "shape": "row of 3 (40/10/40) repeated",
+  "count": 1
+ },
+ {
+  "shape": "grid of 4 (40/10/30/30) +nested columns",
+  "count": 1
+ },
+ {
+  "shape": "grid of 3 (10/80/20)",
+  "count": 1
+ },
+ {
+  "shape": "grid of 3 (50/30/30) +nested columns",
+  "count": 1
+ },
+ {
+  "shape": "row of 5 (10/10/40/10/10) repeated",
+  "count": 1
+ },
+ {
+  "shape": "grid of 3 (60/30/10)",
+  "count": 1
+ },
+ {
+  "shape": "grid of 4 (10/30/30/40)",
+  "count": 1
+ },
+ {
+  "shape": "row of 3 (80/20/10) repeated",
+  "count": 1
+ },
+ {
+  "shape": "row of 4 (10/50/20/30) repeated",
+  "count": 1
+ },
+ {
+  "shape": "row of 5 (20/10/20/10/50) repeated",
+  "count": 1
+ },
+ {
+  "shape": "row of 4 (10/30/30/40)",
+  "count": 1
+ },
+ {
+  "shape": "row of 2 (70/30) +nested columns repeated",
+  "count": 1
+ },
+ {
+  "shape": "row of 4 (10/30/10/50) +nested columns",
+  "count": 1
+ },
+ {
+  "shape": "row of 4 (30/40/10/20) +nested columns repeated",
+  "count": 1
+ },
+ {
+  "shape": "row of 4 (20/30/20/30) +nested columns",
+  "count": 1
+ },
+ {
+  "shape": "row of 4 (30/50/10/10) +nested columns repeated",
+  "count": 1
+ },
+ {
+  "shape": "row of 4 (30/20/20/30) +nested columns",
+  "count": 1
+ },
+ {
+  "shape": "row of 3 (20/60/10) repeated",
+  "count": 1
+ },
+ {
+  "shape": "row of 5 (20/20/10/30/30) repeated",
+  "count": 1
+ },
+ {
+  "shape": "row of 4 (20/20/10/60) repeated",
+  "count": 1
+ },
+ {
+  "shape": "row of 4 (30/40/20/20)",
+  "count": 1
+ },
+ {
+  "shape": "row of 5 (10/30/10/20/20) repeated",
+  "count": 1
+ },
+ {
+  "shape": "row of 5 (30/20/20/10/30)",
+  "count": 1
+ },
+ {
+  "shape": "row of 5 (30/10/30/20/10)",
+  "count": 1
+ },
+ {
+  "shape": "row of 2 (equal) +nested columns repeated",
+  "count": 1
+ },
+ {
+  "shape": "row of 4 (20/30/40/10)",
+  "count": 1
+ },
+ {
+  "shape": "row of 4 (30/30/10/40) +nested columns repeated",
+  "count": 1
+ },
+ {
+  "shape": "row of 5 (10/20/20/30/30)",
+  "count": 1
+ },
+ {
+  "shape": "row of 4 (10/50/20/20)",
+  "count": 1
+ },
+ {
+  "shape": "row of 4 (10/10/40/40)",
+  "count": 1
+ },
+ {
+  "shape": "row of 5 (20/30/30/10/20)",
+  "count": 1
+ },
+ {
+  "shape": "row of 3 (10/20/60)",
+  "count": 1
+ },
+ {
+  "shape": "grid of 4 (40/30/30/10)",
+  "count": 1
+ },
+ {
+  "shape": "row of 4 (10/30/40/30)",
+  "count": 1
+ },
+ {
+  "shape": "row of 4 (10/50/30/30) +nested columns",
+  "count": 1
+ },
+ {
+  "shape": "row of 5 (20/20/30/30/20)",
+  "count": 1
+ },
+ {
+  "shape": "row of 5 (30/10/10/30/10) repeated",
+  "count": 1
+ },
+ {
+  "shape": "row of 5 (30/20/20/10/10)",
+  "count": 1
+ },
+ {
+  "shape": "row of 4 (40/10/40/10) repeated",
+  "count": 1
+ },
+ {
+  "shape": "row of 4 (50/10/10/40) repeated",
+  "count": 1
+ },
+ {
+  "shape": "row of 5 (30/30/10/20/20) repeated",
+  "count": 1
+ },
+ {
+  "shape": "row of 4 (20/10/50/20) repeated",
+  "count": 1
+ },
+ {
+  "shape": "row of 4 (40/40/10/10) repeated",
+  "count": 1
+ },
+ {
+  "shape": "row of 4 (20/40/20/10) repeated",
+  "count": 1
+ },
+ {
+  "shape": "row of 5 (20/30/30/20/20) repeated",
+  "count": 1
+ },
+ {
+  "shape": "row of 4 (20/40/10/20) repeated",
+  "count": 1
+ },
+ {
+  "shape": "row of 4 (30/40/10/20) repeated",
+  "count": 1
+ },
+ {
+  "shape": "grid of 3 (20/30/50) +nested columns",
+  "count": 1
+ },
+ {
+  "shape": "row of 4 (10/20/40/40)",
+  "count": 1
+ },
+ {
+  "shape": "row of 5 (20/20/20/30/20) repeated",
+  "count": 1
+ },
+ {
+  "shape": "row of 5 (20/20/10/20/30) +nested columns repeated",
+  "count": 1
+ },
+ {
+  "shape": "row of 4 (30/30/20/30) +nested columns repeated",
+  "count": 1
+ },
+ {
+  "shape": "row of 5 (10/30/30/20/10) +nested columns",
+  "count": 1
+ },
+ {
+  "shape": "row of 4 (40/30/20/10) +nested columns",
+  "count": 1
+ },
+ {
+  "shape": "row of 3 (40/10/40) +nested columns",
+  "count": 1
+ },
+ {
+  "shape": "row of 3 (40/10/50) +nested columns",
+  "count": 1
+ },
+ {
+  "shape": "grid of 3 (10/60/30) +nested columns",
+  "count": 1
+ },
+ {
+  "shape": "row of 4 (40/20/10/20)",
+  "count": 1
+ },
+ {
+  "shape": "row of 3 (10/80/20)",
+  "count": 1
+ },
+ {
+  "shape": "row of 4 (10/40/10/30)",
+  "count": 1
+ },
+ {
+  "shape": "row of 5 (20/10/30/10/20)",
+  "count": 1
+ },
+ {
+  "shape": "row of 3 (30/10/60) repeated",
+  "count": 1
+ },
+ {
+  "shape": "row of 3 (30/20/60)",
+  "count": 1
+ },
+ {
+  "shape": "row of 5 (30/10/20/20/10) repeated",
+  "count": 1
+ },
+ {
+  "shape": "row of 3 (50/40/10) repeated",
+  "count": 1
+ },
+ {
+  "shape": "grid of 4 (10/40/50/10) +nested columns",
+  "count": 1
+ },
+ {
+  "shape": "grid of 3 (90/10/10)",
+  "count": 1
+ },
+ {
+  "shape": "row of 3 (50/50/10)",
+  "count": 1
+ },
+ {
+  "shape": "row of 4 (30/10/20/50)",
+  "count": 1
+ },
+ {
+  "shape": "row of 4 (30/20/40/10)",
+  "count": 1
+ },
+ {
+  "shape": "row of 3 (60/30/20)",
+  "count": 1
+ },
+ {
+  "shape": "row of 3 (30/50/20) +nested columns repeated",
+  "count": 1
+ },
+ {
+  "shape": "row of 4 (20/30/10/40) repeated",
+  "count": 1
+ },
+ {
+  "shape": "row of 4 (20/20/30/30) +nested columns repeated",
+  "count": 1
+ },
+ {
+  "shape": "row of 4 (20/30/30/40)",
+  "count": 1
+ },
+ {
+  "shape": "row of 4 (40/20/30/20) repeated",
+  "count": 1
+ },
+ {
+  "shape": "row of 3 (20/20/50)",
+  "count": 1
+ },
+ {
+  "shape": "row of 5 (10/30/30/20/20) repeated",
+  "count": 1
+ },
+ {
+  "shape": "row of 4 (30/20/20/30) repeated",
+  "count": 1
+ },
+ {
+  "shape": "row of 4 (40/10/30/10) repeated",
+  "count": 1
+ },
+ {
+  "shape": "row of 5 (30/20/10/30/30)",
+  "count": 1
+ },
+ {
+  "shape": "row of 4 (40/30/10/10)",
+  "count": 1
+ },
+ {
+  "shape": "row of 4 (40/10/30/20) repeated",
+  "count": 1
+ },
+ {
+  "shape": "row of 5 (10/10/40/20/20) +nested columns repeated",
+  "count": 1
+ },
+ {
+  "shape": "row of 4 (40/20/20/10) +nested columns repeated",
+  "count": 1
+ },
+ {
+  "shape": "row of 3 (30/30/50) +nested columns",
+  "count": 1
+ },
+ {
+  "shape": "row of 3 (30/10/50) +nested columns",
+  "count": 1
+ },
+ {
+  "shape": "row of 4 (10/60/10/20) repeated",
+  "count": 1
+ },
+ {
+  "shape": "row of 3 (40/50/20) +nested columns repeated",
+  "count": 1
+ },
+ {
+  "shape": "row of 5 (30/10/30/20/10) repeated",
+  "count": 1
+ },
+ {
+  "shape": "row of 4 (40/20/30/10) +nested columns repeated",
+  "count": 1
+ },
+ {
+  "shape": "row of 5 (30/10/30/30/10) repeated",
+  "count": 1
+ },
+ {
+  "shape": "row of 3 (50/30/30) +nested columns",
+  "count": 1
+ },
+ {
+  "shape": "grid of 2 (100/0)",
+  "count": 1
+ },
+ {
+  "shape": "row of 5 (30/20/10/20/20)",
+  "count": 1
+ },
+ {
+  "shape": "row of 4 (10/30/10/40)",
+  "count": 1
+ },
+ {
+  "shape": "row of 5 (10/20/30/10/20)",
+  "count": 1
+ },
+ {
+  "shape": "row of 5 (10/10/30/10/50) repeated",
+  "count": 1
+ },
+ {
+  "shape": "row of 3 (40/30/20) repeated",
+  "count": 1
+ },
+ {
+  "shape": "row of 4 (20/20/20/50)",
+  "count": 1
+ },
+ {
+  "shape": "row of 5 (40/10/20/10/30)",
+  "count": 1
+ },
+ {
+  "shape": "row of 5 (30/20/10/20/20) repeated",
+  "count": 1
+ },
+ {
+  "shape": "row of 5 (20/20/10/40/10) repeated",
+  "count": 1
+ },
+ {
+  "shape": "row of 4 (40/20/10/20) repeated",
+  "count": 1
+ },
+ {
+  "shape": "row of 4 (20/10/20/50)",
+  "count": 1
+ },
+ {
+  "shape": "row of 5 (20/10/30/10/30) repeated",
+  "count": 1
+ },
+ {
+  "shape": "row of 4 (20/50/20/10)",
+  "count": 1
+ },
+ {
+  "shape": "row of 4 (50/10/20/20)",
+  "count": 1
+ },
+ {
+  "shape": "grid of 3 (30/40/30) repeated",
+  "count": 1
+ },
+ {
+  "shape": "row of 4 (20/10/10/60)",
+  "count": 1
+ },
+ {
+  "shape": "row of 5 (30/10/10/20/20) repeated",
+  "count": 1
+ },
+ {
+  "shape": "row of 4 (10/20/50/20)",
+  "count": 1
+ },
+ {
+  "shape": "row of 5 (10/30/30/10/10)",
+  "count": 1
+ },
+ {
+  "shape": "grid of 3 (100/0/0)",
+  "count": 1
+ },
+ {
+  "shape": "row of 3 (30/20/60) repeated",
+  "count": 1
+ },
+ {
+  "shape": "row of 5 (20/10/20/30/20) repeated",
+  "count": 1
+ },
+ {
+  "shape": "row of 5 (20/30/20/20/20)",
+  "count": 1
+ },
+ {
+  "shape": "grid of 5 (10/40/30/10/20)",
+  "count": 1
+ },
+ {
+  "shape": "grid of 3 (70/10/30)",
+  "count": 1
+ },
+ {
+  "shape": "row of 5 (10/20/20/20/40) repeated",
+  "count": 1
+ },
+ {
+  "shape": "grid of 3 (10/30/60) +nested columns",
+  "count": 1
+ },
+ {
+  "shape": "grid of 5 (10/30/10/60/10)",
+  "count": 1
+ },
+ {
+  "shape": "grid of 4 (30/10/20/40)",
+  "count": 1
+ },
+ {
+  "shape": "grid of 4 (60/10/30/10)",
+  "count": 1
+ },
+ {
+  "shape": "row of 4 (20/10/40/20)",
+  "count": 1
+ },
+ {
+  "shape": "row of 5 (20/20/30/30/10)",
+  "count": 1
+ },
+ {
+  "shape": "row of 4 (20/30/20/30) repeated",
+  "count": 1
+ },
+ {
+  "shape": "row of 4 (50/10/20/20) repeated",
+  "count": 1
+ },
+ {
+  "shape": "row of 4 (10/20/30/30)",
+  "count": 1
+ },
+ {
+  "shape": "row of 5 (10/20/30/20/20) repeated",
+  "count": 1
+ },
+ {
+  "shape": "row of 5 (10/20/20/20/30) repeated",
+  "count": 1
+ },
+ {
+  "shape": "row of 3 (60/10/40)",
+  "count": 1
+ },
+ {
+  "shape": "row of 5 (10/20/10/30/30) repeated",
+  "count": 1
+ },
+ {
+  "shape": "grid of 3 (20/20/60)",
+  "count": 1
+ },
+ {
+  "shape": "row of 4 (40/30/20/10) +nested columns repeated",
+  "count": 1
+ },
+ {
+  "shape": "row of 3 (50/0/40)",
+  "count": 1
+ },
+ {
+  "shape": "row of 5 (50/10/20/10/20)",
+  "count": 1
+ },
+ {
+  "shape": "row of 5 (30/20/20/10/20) repeated",
+  "count": 1
+ },
+ {
+  "shape": "row of 5 (20/30/10/20/30)",
+  "count": 1
+ },
+ {
+  "shape": "row of 2 (0/100) repeated",
+  "count": 1
+ },
+ {
+  "shape": "row of 3 (30/0/60) repeated",
+  "count": 1
+ },
+ {
+  "shape": "row of 3 (60/10/20)",
+  "count": 1
+ },
+ {
+  "shape": "row of 5 (20/10/30/10/30)",
+  "count": 1
+ },
+ {
+  "shape": "row of 3 (40/30/20)",
+  "count": 1
+ },
+ {
+  "shape": "row of 5 (20/30/10/20/10)",
+  "count": 1
+ },
+ {
+  "shape": "row of 4 (30/10/30/20)",
+  "count": 1
+ },
+ {
+  "shape": "grid of 3 (30/60/10)",
+  "count": 1
+ },
+ {
+  "shape": "row of 5 (10/40/30/20/10) repeated",
+  "count": 1
+ },
+ {
+  "shape": "row of 5 (10/30/20/30/10) repeated",
+  "count": 1
+ },
+ {
+  "shape": "row of 5 (30/20/20/10/20)",
+  "count": 1
+ },
+ {
+  "shape": "row of 4 (10/40/20/40) repeated",
+  "count": 1
+ },
+ {
+  "shape": "row of 4 (40/30/10/20) repeated",
+  "count": 1
+ },
+ {
+  "shape": "row of 5 (20/20/10/20/30) repeated",
+  "count": 1
+ },
+ {
+  "shape": "row of 5 (10/30/20/20/20) repeated",
+  "count": 1
+ },
+ {
+  "shape": "row of 3 (equal) +nested columns repeated",
+  "count": 1
+ },
+ {
+  "shape": "row of 4 (20/30/10/30)",
+  "count": 1
+ },
+ {
+  "shape": "row of 4 (10/30/40/30) repeated",
+  "count": 1
+ },
+ {
+  "shape": "row of 5 (10/30/30/10/20) repeated",
+  "count": 1
+ },
+ {
+  "shape": "row of 3 (30/10/50) repeated",
+  "count": 1
+ },
+ {
+  "shape": "grid of 3 (40/10/40)",
+  "count": 1
+ },
+ {
+  "shape": "row of 4 (10/30/10/40) repeated",
+  "count": 1
+ },
+ {
+  "shape": "row of 4 (10/40/40/20)",
+  "count": 1
+ },
+ {
+  "shape": "row of 4 (40/10/30/10)",
+  "count": 1
+ },
+ {
+  "shape": "row of 5 (10/20/10/20/40) repeated",
+  "count": 1
+ },
+ {
+  "shape": "row of 4 (40/10/20/20) repeated",
+  "count": 1
+ },
+ {
+  "shape": "row of 5 (30/20/30/20/20) repeated",
+  "count": 1
+ },
+ {
+  "shape": "row of 3 (20/40/50) repeated",
+  "count": 1
+ },
+ {
+  "shape": "row of 5 (10/30/40/10/20) repeated",
+  "count": 1
+ },
+ {
+  "shape": "row of 4 (20/50/10/20) repeated",
+  "count": 1
+ },
+ {
+  "shape": "row of 4 (50/10/10/20)",
+  "count": 1
+ },
+ {
+  "shape": "row of 4 (50/20/10/20)",
+  "count": 1
+ },
+ {
+  "shape": "row of 4 (40/40/20/10) repeated",
+  "count": 1
+ },
+ {
+  "shape": "row of 5 (30/10/30/10/10)",
+  "count": 1
+ },
+ {
+  "shape": "row of 5 (10/30/30/20/30)",
+  "count": 1
+ },
+ {
+  "shape": "row of 4 (10/20/30/40) repeated",
+  "count": 1
+ },
+ {
+  "shape": "row of 4 (20/10/40/30) repeated",
+  "count": 1
+ },
+ {
+  "shape": "row of 5 (10/10/30/30/30)",
+  "count": 1
+ },
+ {
+  "shape": "row of 4 (20/30/40/20)",
+  "count": 1
+ },
+ {
+  "shape": "row of 5 (20/30/20/20/30)",
+  "count": 1
+ },
+ {
+  "shape": "grid of 3 (20/50/20)",
+  "count": 1
+ },
+ {
+  "shape": "row of 4 (20/30/20/40)",
+  "count": 1
+ },
+ {
+  "shape": "row of 3 (10/60/40)",
+  "count": 1
+ },
+ {
+  "shape": "row of 3 (0/50/50)",
+  "count": 1
+ },
+ {
+  "shape": "row of 5 (10/20/30/30/20)",
+  "count": 1
+ },
+ {
+  "shape": "row of 5 (10/10/40/10/30) repeated",
+  "count": 1
+ },
+ {
+  "shape": "row of 3 (70/20/10) repeated",
+  "count": 1
+ },
+ {
+  "shape": "row of 5 (10/30/20/20/10)",
+  "count": 1
+ },
+ {
+  "shape": "row of 3 (20/60/20) repeated",
+  "count": 1
+ },
+ {
+  "shape": "row of 4 (20/30/10/50)",
+  "count": 1
+ },
+ {
+  "shape": "row of 5 (20/30/10/20/10) repeated",
+  "count": 1
+ },
+ {
+  "shape": "row of 5 (20/10/20/40/10)",
+  "count": 1
+ },
+ {
+  "shape": "row of 4 (10/40/30/10)",
+  "count": 1
+ },
+ {
+  "shape": "row of 4 (40/10/30/30) repeated",
+  "count": 1
+ },
+ {
+  "shape": "row of 5 (20/40/20/10/10) repeated",
+  "count": 1
+ },
+ {
+  "shape": "row of 3 (40/20/50) repeated",
+  "count": 1
+ },
+ {
+  "shape": "row of 3 (30/20/40) repeated",
+  "count": 1
+ },
+ {
+  "shape": "row of 5 (20/20/40/10/20) repeated",
+  "count": 1
+ },
+ {
+  "shape": "row of 3 (30/20/40)",
+  "count": 1
+ },
+ {
+  "shape": "row of 3 (10/70/10) +nested columns",
+  "count": 1
+ },
+ {
+  "shape": "grid of 3 (50/10/50)",
+  "count": 1
+ },
+ {
+  "shape": "grid of 4 (10/40/10/50)",
+  "count": 1
+ },
+ {
+  "shape": "grid of 3 (40/10/60)",
+  "count": 1
+ },
+ {
+  "shape": "row of 4 (50/50/0/0)",
+  "count": 1
+ },
+ {
+  "shape": "row of 4 (20/40/10/30) repeated",
+  "count": 1
+ },
+ {
+  "shape": "row of 5 (20/20/10/10/30)",
+  "count": 1
+ },
+ {
+  "shape": "row of 4 (40/20/10/40)",
+  "count": 1
+ },
+ {
+  "shape": "row of 4 (20/20/30/40)",
+  "count": 1
+ },
+ {
+  "shape": "row of 4 (20/10/30/30) repeated",
+  "count": 1
+ },
+ {
+  "shape": "row of 4 (20/10/20/60) repeated",
+  "count": 1
+ },
+ {
+  "shape": "row of 3 (70/10/20)",
+  "count": 1
+ },
+ {
+  "shape": "grid of 3 (30/50/30) repeated",
+  "count": 1
+ },
+ {
+  "shape": "row of 5 (30/10/20/30/20)",
+  "count": 1
+ },
+ {
+  "shape": "row of 3 (10/70/20) repeated",
+  "count": 1
+ },
+ {
+  "shape": "row of 3 (20/30/40) repeated",
+  "count": 1
+ },
+ {
+  "shape": "row of 4 (40/10/0/50) repeated",
+  "count": 1
+ },
+ {
+  "shape": "row of 4 (30/20/40/20) repeated",
+  "count": 1
+ },
+ {
+  "shape": "row of 5 (20/10/30/30/10) repeated",
+  "count": 1
+ },
+ {
+  "shape": "row of 3 (10/40/40)",
+  "count": 1
+ },
+ {
+  "shape": "row of 5 (30/30/10/10/30)",
+  "count": 1
+ },
+ {
+  "shape": "row of 5 (10/30/20/10/30) +nested columns",
+  "count": 1
+ },
+ {
+  "shape": "row of 3 (20/50/40) +nested columns",
+  "count": 1
+ },
+ {
+  "shape": "row of 5 (10/30/10/20/30)",
+  "count": 1
+ },
+ {
+  "shape": "row of 4 (30/40/10/10)",
+  "count": 1
+ },
+ {
+  "shape": "row of 4 (20/20/30/20)",
+  "count": 1
+ },
+ {
+  "shape": "row of 5 (20/30/10/20/20)",
+  "count": 1
+ },
+ {
+  "shape": "row of 4 (40/30/30/10)",
+  "count": 1
+ },
+ {
+  "shape": "row of 5 (20/40/10/20/20) repeated",
+  "count": 1
+ },
+ {
+  "shape": "row of 4 (40/10/10/40) repeated",
+  "count": 1
+ },
+ {
+  "shape": "grid of 4 (60/10/10/10)",
+  "count": 1
+ },
+ {
+  "shape": "grid of 3 (70/10/10)",
+  "count": 1
+ },
+ {
+  "shape": "row of 4 (40/40/10/20) repeated",
+  "count": 1
+ },
+ {
+  "shape": "row of 3 (0/10/80)",
+  "count": 1
+ },
+ {
+  "shape": "grid of 4 (50/20/20/20) repeated",
+  "count": 1
+ },
+ {
+  "shape": "row of 3 (30/10/70) repeated",
+  "count": 1
+ },
+ {
+  "shape": "row of 5 (20/30/10/40/10) repeated",
+  "count": 1
+ },
+ {
+  "shape": "row of 4 (10/40/30/20)",
+  "count": 1
+ },
+ {
+  "shape": "row of 4 (20/20/20/50) repeated",
+  "count": 1
+ },
+ {
+  "shape": "row of 5 (20/20/40/10/10) repeated",
+  "count": 1
+ },
+ {
+  "shape": "row of 5 (20/10/20/40/20)",
+  "count": 1
+ },
+ {
+  "shape": "row of 5 (40/10/10/30/20)",
+  "count": 1
+ },
+ {
+  "shape": "row of 4 (20/20/10/40) repeated",
+  "count": 1
+ },
+ {
+  "shape": "row of 4 (50/10/20/30) repeated",
+  "count": 1
+ },
+ {
+  "shape": "row of 4 (40/10/30/20)",
+  "count": 1
+ },
+ {
+  "shape": "row of 4 (20/10/30/30) +nested columns repeated",
+  "count": 1
+ },
+ {
+  "shape": "row of 5 (20/20/50/10/10)",
+  "count": 1
+ },
+ {
+  "shape": "grid of 4 (equal) +nested columns repeated",
+  "count": 1
+ },
+ {
+  "shape": "row of 5 (10/30/30/20/20)",
+  "count": 1
+ },
+ {
+  "shape": "row of 5 (30/10/20/10/20) repeated",
+  "count": 1
+ },
+ {
+  "shape": "row of 4 (30/20/40/10) repeated",
+  "count": 1
+ },
+ {
+  "shape": "row of 5 (30/20/30/10/20) repeated",
+  "count": 1
+ },
+ {
+  "shape": "grid of 4 (40/20/20/20) repeated",
+  "count": 1
+ },
+ {
+  "shape": "grid of 3 (20/50/30)",
+  "count": 1
+ },
+ {
+  "shape": "row of 4 (20/10/50/30) repeated",
+  "count": 1
+ },
+ {
+  "shape": "row of 3 (40/10/60)",
+  "count": 1
+ },
+ {
+  "shape": "grid of 3 (40/40/20)",
+  "count": 1
+ },
+ {
+  "shape": "row of 3 (30/40/30) +nested columns",
+  "count": 1
+ },
+ {
+  "shape": "row of 3 (30/30/40) +nested columns",
+  "count": 1
+ },
+ {
+  "shape": "row of 4 (20/20/30/30) +nested columns",
+  "count": 1
+ },
+ {
+  "shape": "row of 3 (20/40/40) +nested columns",
+  "count": 1
+ },
+ {
+  "shape": "row of 4 (20/40/20/20)",
+  "count": 1
+ },
+ {
+  "shape": "row of 3 (10/20/60) repeated",
+  "count": 1
+ },
+ {
+  "shape": "row of 3 (20/30/60) repeated",
+  "count": 1
+ },
+ {
+  "shape": "row of 3 (30/60/20) repeated",
+  "count": 1
+ },
+ {
+  "shape": "row of 3 (50/10/40) repeated",
+  "count": 1
+ },
+ {
+  "shape": "row of 3 (50/20/20) +nested columns",
+  "count": 1
+ }
+]

@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import { createContainer, type BoxNode } from "@/lib/box-model";
 import {
   slugify, uniquePath, siteFromRoot, findPage, setPageRoot, addPage, duplicatePage, renamePage,
-  deletePage, setHomePage, coerceSite, pageIdFromHref, emptyPageRoot, setSiteTheme,
+  deletePage, setHomePage, coerceSite, pageIdFromHref, emptyPageRoot, setSiteTheme, type BoxSite,
 } from "@/lib/box-site";
 
 const root = () => createContainer("column", { id: "r", children: [] } as Partial<BoxNode>);
@@ -61,6 +61,14 @@ describe("box-site — multi-page model", () => {
     expect(s.pages[1].id).toBe(d.id);
     expect(s.pages[1].id).not.toBe(s.pages[0].id);
     expect(s.pages[1].name).toMatch(/copy/);
+  });
+
+  it("G2-1 · deleting a page keeps the site's own settings (its theme and page grid)", () => {
+    let s: BoxSite = { ...siteFromRoot(root(), "Home"), themeId: "dark", pageGrid: { columns: 10 } };
+    s = addPage(s, "About", root()).site;
+    const after = deletePage(s, s.pages[1].id);
+    expect(after.themeId).toBe("dark");
+    expect(after.pageGrid).toEqual({ columns: 10 });
   });
 
   it("deletePage never removes the last page, and reassigns home if needed", () => {

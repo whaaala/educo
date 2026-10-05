@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef, memo } from "react";
+import { useState, useEffect, useRef, useCallback, memo, Suspense } from "react";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import {
@@ -52,7 +52,23 @@ interface MenuItem {
   children?: MenuItem[];
 }
 
-const menuItems: MenuItem[] = [
+/**
+ * Links whose pages are not built yet — hidden until they are (S2-i, the user 2026-09-30): each was a 404, and the
+ * page prefetched it. Listed in docs/MVP_AUDIT.md; building one means deleting its line here. Guarded by
+ * tests/unit/sidebar-links.test.ts, which fails on any link in the menu with no page.
+ */
+export const UNBUILT = new Set([
+  "/school/info", "/school/branches", "/school/academic-years", "/school/sections", "/school/departments",
+  "/subjects", "/exams", "/syllabus", "/assignments", "/dormitory", "/transport", "/settings/schools", "/settings/users",
+]);
+const built = (items: MenuItem[]): MenuItem[] => items.flatMap((m) => {
+  if (m.href && UNBUILT.has(m.href)) return [];
+  if (!m.children) return [m];
+  const kids = built(m.children);
+  return kids.length ? [{ ...m, children: kids }] : [];
+});
+
+export const menuItems: MenuItem[] = built([
   {
     id: "dashboard",
     label: "Dashboard",
@@ -187,7 +203,7 @@ const menuItems: MenuItem[] = [
     id: "attendance",
     label: "Attendance",
     icon: <Calendar className="w-5 h-5" />,
-    href: "/attendance",
+    href: "/students/attendance", // there is no /attendance page (S2-i)
   },
   {
     id: "settings",
@@ -202,7 +218,7 @@ const menuItems: MenuItem[] = [
       { id: "admin-console", label: "Admin Console", icon: <ExternalLink className="w-4 h-4" />, href: "http://localhost:3001" },
     ],
   },
-];
+]);
 
 // Parent-specific navigation (used when a Parent user is logged in)
 const parentMenuItems: MenuItem[] = [
@@ -264,6 +280,29 @@ const parentMenuItems: MenuItem[] = [
 
 export { type MenuItem };
 
+/**
+ * Reports the current query string upward, and does nothing else.
+ *
+ * `useSearchParams()` opts whatever component calls it out of static prerendering, and Sidebar sits in
+ * every layout — so calling it up in Sidebar itself made `next build` fail on every route that still
+ * prerenders ("useSearchParams() should be wrapped in a suspense boundary"). Marking each page
+ * `force-dynamic` only hid it: those routes stopped prerendering, so the ones that remained were the only
+ * ones left to report the fault.
+ *
+ * The query string is read for exactly one thing — highlighting a nav link whose `href` carries one —
+ * which is a client-only fact the server could not resolve anyway. So the bailout is confined to this
+ * leaf: Suspense bounds it to a component that renders `null`, the sidebar around it prerenders as it
+ * always did, and the real value arrives on hydration.
+ */
+function SearchParamsReporter({ onChange }: { onChange: (search: string) => void }) {
+  const searchParams = useSearchParams();
+  const search = searchParams.toString();
+  useEffect(() => {
+    onChange(search);
+  }, [onChange, search]);
+  return null;
+}
+
 interface SidebarProps {
   isCollapsed: boolean;
   setIsCollapsed: (value: boolean) => void;
@@ -275,7 +314,9 @@ interface SidebarProps {
 
 function Sidebar({ isCollapsed, setIsCollapsed, isMobileSidebarOpen, setIsMobileSidebarOpen, customMenuItems, showTenantSwitcher = true }: SidebarProps) {
   const pathname = usePathname();
-  const searchParams = useSearchParams();
+  // Empty until hydration — see SearchParamsReporter above for why it is not read directly here.
+  const [search, setSearch] = useState("");
+  const onSearchChange = useCallback((next: string) => setSearch(next), []);
   const { isParent } = useUser();
   const [expandedItems, setExpandedItems] = useState<string[]>([]);
   const [isMobile, setIsMobile] = useState<boolean | null>(null); // null on server, boolean on client
@@ -302,8 +343,7 @@ function Sidebar({ isCollapsed, setIsCollapsed, isMobileSidebarOpen, setIsMobile
 
     // If there are search params in the link, check them too
     if (linkSearch) {
-      const currentSearch = searchParams.toString();
-      return linkSearch === `?${currentSearch}`;
+      return linkSearch === `?${search}`;
     }
 
     // If no search params in link, it's active if pathname matches
@@ -730,6 +770,10 @@ function Sidebar({ isCollapsed, setIsCollapsed, isMobileSidebarOpen, setIsMobile
 
   return (
     <>
+      <Suspense fallback={null}>
+        <SearchParamsReporter onChange={onSearchChange} />
+      </Suspense>
+
       {/* Mobile Overlay - Only shows on mobile when menu is open */}
       {isMobile && isMobileSidebarOpen && (
         <div

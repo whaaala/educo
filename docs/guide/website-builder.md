@@ -1,3 +1,9 @@
+---
+title: Website Builder — reference guide
+sidebar_position: 2
+description: Every control of the website builder, by section — read the layout story first.
+---
+
 # Website Builder Guide
 
 Build and maintain your school's public website by dragging blocks onto a page — no code. This is the same idea as Wix, Canva or WordPress's block editor, but tuned for a school and wired into Educo's themes and design system.
@@ -27,7 +33,7 @@ Build and maintain your school's public website by dragging blocks onto a page �
 | **Blocks panel** (floating) | Everything you can add: Layout, Text, Media, and Components. Open it from the **Blocks** launcher at the canvas's top-left (or press **B**); it floats over the canvas so your page keeps its full width. **Search** to filter, use the **category tabs** to jump, then click a block to add it (or drag it onto the page). Close it with the ✕, Esc, or by clicking the launcher again. |
 | **Canvas** (middle) | Your page. Click a block to select it; its controls appear on the right. |
 | **Inspector** (right) | Every setting for the selected block, in three tabs: **Design**, **Content**, **Per‑device**. Collapse it (the ⟩ button in its header) to give the canvas more room, and reopen it from the slim rail on the right. |
-| **Top bar** | Pages, **Add section**, Undo/Redo, **Preview**, **Export**, **Reset**, the device switcher, and **Base size**. |
+| **Top bar** | Pages, **Add a band**, Undo/Redo, **Preview**, **Export**, **Reset**, the device switcher, and **Base size**. |
 
 **Flow by default, float for free.** New blocks join the normal page flow (they stack and reflow responsively). When you want to place something freely on top, you switch a block to **Floating** — see §7.
 
@@ -36,11 +42,22 @@ Build and maintain your school's public website by dragging blocks onto a page �
 ## 3. The building blocks
 
 ### Layout
+
+**Stack, Side by side and Grid are the same block in three arrangements.** You don't have to choose
+correctly up front: select any of them, open **Arrange as**, and switch. A stack becomes a row becomes a
+grid with one click, and whatever is inside comes with it. They're named for what they do to the blocks you
+put in them — down the page, across the page, or both at once.
+
+Separately, the **+ Add a band** button at the top of the screen adds a *tinted, full-width, padded strip*
+across the page — the visible "Admissions" bar sort of thing. That's a different result from the **Stack**
+tile, which gives you a plain transparent box. (Both used to be called "Section", which is why this note
+exists.)
+
 | Block | Use it for |
 |-------|-----------|
-| **Section** | A full‑width band of the page (e.g. a tinted "Admissions" strip). Deliberately visible chrome you fill with other blocks. |
-| **Columns** | A grid, picked the way you insert a table: sweep **how many across × how many down**. Uneven splits (sidebar, feature + two) sit underneath. Feature cards, staff photos, an article beside a sidebar. |
-| **Row** | Items sitting side‑by‑side that wrap on small screens. |
+| **Stack** | Blocks one under the other, down the page. A plain box you fill with anything. |
+| **Side by side** | Blocks in a row, across the page — they wrap onto the next line on small screens. |
+| **Grid** | Across *and* down, picked the way you insert a table: sweep **how many across × how many down**. Uneven splits (sidebar, feature + two) sit underneath. Feature cards, staff photos, an article beside a sidebar. |
 | **Spacer** | Adjustable vertical breathing room. |
 | **Divider** | A dividing line (solid, dashed, dotted, thick). |
 | **Hero** | One photograph filling the screen, with your headline over it. |
@@ -56,6 +73,8 @@ Build and maintain your school's public website by dragging blocks onto a page �
 
 ### Media
 **Image**, **Photo gallery**, **Slider**, **Video** (YouTube/Vimeo/MP4), **Icon** (searchable symbol), **Embed** (paste an iframe/HTML).
+
+**Every block publishes the box it is drawn in.** An Icon, a List and a Divider are exactly as big on the published page as in the editor, at every screen size — an icon 22px tall on a phone is 22px published, and a list keeps the same space under each item. They are never padded out to the minimum size an *empty* box is given so that you can grab it.
 
 ### Photo gallery — many photographs at once
 
@@ -121,6 +140,12 @@ Everything the tiles make is ordinary blocks. Edit the second hero's headline by
 
 The builder measures a photograph when you upload it and tells the browser its size up front, so **the space is reserved before the picture arrives**. Without that, text jumps down the page as each photo loads and readers lose their place — the single most irritating thing a photo-heavy site can do.
 
+> **Your photograph arrives at its own shape now, whichever way you added it.** Until recently an Image block
+> came with a fixed height already on it, so a tall or square picture added *from the Blocks panel* was
+> cropped to a letterbox — while the same picture *dragged* onto the page came out correctly. Two routes, two
+> results, and the common one was wrong. A picture's shape is now taken from the picture; a height you set
+> yourself still crops, exactly as before.
+
 ### Components (design‑system pieces)
 These are ready‑made, themed pieces. **Each one is a fully editable tree** — click any inner part (a card's title, its button, a rating's star) and you get that part's full controls.
 
@@ -150,14 +175,14 @@ These are ready‑made, themed pieces. **Each one is a fully editable tree** —
 
 ### Scenario B — A "Why choose us" strip of three cards
 **Goal:** three selling points with icons and a link each.
-1. Blocks → **Columns** → **3 columns**.
+1. Blocks → **Grid** → **3 across**.
 2. Into each column, add a **Card**.
 3. Click each card's **heading** and type the point ("Small classes"); click the **body** and describe it; click the **button** and set its **Link** to the relevant page.
 4. Want the heading centred? Select just that heading → **Content position** or **Text align** → centre. Only that heading changes.
 
 ### Scenario C — An eye‑catching admissions banner
 **Goal:** a coloured band with a headline and an "Apply now" button.
-1. Blocks → **Section**. In the inspector give it a **Background** colour (or image) and some **Inner spacing**.
+1. Blocks → **Stack**. In the inspector give it a **Background** colour (or image) and some **Inner spacing**.
 2. Into the section add a **Heading** ("Admissions open for September") and a **Button** ("Apply now").
 3. Select the button → set its **Link** to your application page, tick **Open in a new tab** if it's external.
 
@@ -173,12 +198,12 @@ Select any block and its settings appear on the right, in three tabs.
 
 ### Design tab
 - **Placement** — *In the layout* vs *Floating*, **Lock position & size**, and (when floating) **Front/back order**. See §7.
-- **Size** — **Width** (Fit = hug the content, Full = fill the row, Custom = a % or px), **Position in row** (Left / Centre / Right), **Content position** (a 3×3 grid — where the content sits inside the block when it's bigger than its content), **Height**, and **Trim to size**.
+- **Size** — **Width** (Fit = hug the content, Full = fill the row, Custom = a % or a size — type "240px" and it is kept as 15rem, so it grows with a reader's text size), **Position in row** (Left / Centre / Right / Spread — for the screen you are editing only), **Content position** (a 3×3 grid — where the content sits inside the block when it's bigger than its content), **Height**, and **Trim to size**.
 - **Spacing** — **Inner spacing** (padding, inside the block) and **Outer spacing** (margin, around it).
 - **Outline & effects** — rounded corners (all or per‑corner), border, shadow, tilt, **See-through** (below).
 - **Background** — a colour (with a full OKLCH picker, eyedropper, and *None* for transparent) or a background image.
 - **Typography** — font, size, weight, capitalisation, line/letter spacing (cascades into the block's text).
-- **Advanced CSS** — extra CSS declarations for power users (safely sanitised).
+- **Advanced CSS** — extra CSS declarations for power users (safely sanitised), on components. Like any style it belongs to the screen you are editing: type it with **Mobile** selected and only phones get it.
 
 #### See-through — the box fades, not what's in it
 
@@ -204,12 +229,52 @@ Overrides that apply only on the current device size (see §8).
 
 ## 6. Sizing, hugging and positioning content
 
-- **Blocks hug their content by default.** A short heading or a button is exactly as wide (and tall) as its content — no empty box stretched around it, whether the block sits in the layout or floats freely. Switch **Width** to **Full** to fill the row, or **Custom** for an exact size.
+- **Words, buttons and small things hug their content.** A short heading, a button, a link, a Stat, a Badge or a Rating is exactly as wide (and tall) as its content — no empty box stretched around it, whether the block sits in the layout or floats freely.
+- **Components and columns use the page's width.** An Accordion, an Alert, a Card or a Quote fills the line it is dropped on, so an FAQ is as wide as the page instead of hugging its questions. Columns you dropped side by side and never resized take what is left of their line: when a screen is too narrow for both and one moves down, it fills the line it moves to, and when you delete one of three, the other two close the gap. A width you set yourself — by dragging an edge, or with **Custom** — is always kept, and a space you open by dragging the outer edge of a line stays where you made it. Switch **Width** to **Fit** to make a component hug, **Full** to fill the row, or **Custom** for an exact size.
 - **A resized block is exactly the size you set.** Drag an edge or type a Width/Height and the block occupies precisely that — the box *is* the space it takes, never a larger invisible wrapper.
 - **Resize from any edge.** Drag any edge or corner handle. The grabbed edge moves; the opposite edge stays put. You can grow a block from the **top** edge too.
+- **Stays put while scrolling.** Select any block that sits in the layout — a section, a stack, a grid, a heading, a button, an image or a component — then **Design** → **Placement** → *Stays put while scrolling*. Each way is shown as a small picture of the page before and after a scroll. Two ways, and they're genuinely different:
+  - **Sticks when reached** — it scrolls with the page until it reaches the top of the window, then holds there. It keeps its own place in the layout, so it hides nothing until you scroll. Right for a header, and for a **side rail**: pin a narrow column beside taller content and it follows the reader down. Held against **Top** or **Bottom**.
+  - **Floats on screen** — it is lifted off the page and always visible at the edge or corner you pick, from the moment the page opens. Nothing keeps its space, so the page runs underneath it. Right for a cookie bar, a back-to-top button or a chat bubble. Held against any **edge** or any **corner**.
+  The line under the control tells you **where this block lets go**: a block placed straight on the page holds *for the rest of the page*; one inside a Stack, a Grid or a row of blocks names what it leaves with. A bar that **floats** against the top or bottom also says what it covers — the top of your page, or your footer — and offers **Keep its space instead**, which switches it to the way that keeps its place.
+  **A block you placed freely can hold on screen too.** Float a stack, drag it where you want it, then choose **Floats on screen** — it holds exactly there, however far the page scrolls, and it doesn't jump when you choose it. *Sticks when reached* isn't offered for a floating block and the Inspector says why: that one holds a block against the place it occupies in the page, and a freely placed block has given that place up. Put it back **In the layout** to use it.
+  **When it takes hold.** Once a block is pinned you can choose what it *becomes* as the page moves under it — each shown as a picture of the bar before and after a scroll: **Shadow** (lifts off the page), **Solid** (a see-through bar fills in), **Glass** (frosted, with the page showing through), **Rule** (a hairline underneath) or **Condense** (it gets shorter). **Nothing** is the default. *Takes hold over* sets how much scrolling it takes, 120px by default. Condense needs something to condense — a height or inner spacing of its own — and the Inspector says so when there is none. A reader who prefers reduced motion simply sees the resting look; the block is still pinned.
+  **Two bars at the same edge sit under one another.** Set a second block to **Floats on screen** at the same
+  edge and it lands *below* the first, not on top of it — a header and an announcement bar, or a cookie notice
+  and a back-to-top button. Each keeps its own height, and the one nearest the edge is the first of them down
+  the page (at the bottom, the last). It used to be that three bands all set to stay on screen pinned to the
+  same place and covered each other, so two of the three were simply invisible — each doing exactly what it was
+  told. The page now measures how much bar is already there, so they queue instead.
+
+  **And it works for *Sticks when reached* too**, with one sensible difference: those bars queue only behind
+  bars they can actually meet. Two of them **in the same box** — side by side in a Stack, or a header and an
+  announcement bar both dropped on the page — do cover each other, so they queue. Two in **different sections**
+  never share a screen at all: the first lets go exactly as the second arrives, so neither is moved. Nothing is
+  shifted to avoid a collision that cannot happen.
+
+  Both take a *distance from the edge*, and both are **per device**: turn pinning off for phones on the **Per-device** tab and it stays off there, on every reload. If something is stopping it working, the Inspector says so and **names the block**: a block that clips its contents (which includes simply having rounded corners) stops anything inside from holding its place, and a block that's been **tilted** — or a component, or the glass Alert — makes its own frame, so anything fixed inside holds against that instead of the window.
+- **The handles stay on the block, all the way.** However far you drag, the eight handles and the little toolbar ride with the edge you're moving — they never come adrift and leave you dragging a block whose handles are sitting somewhere else on the page.
+- **The top and bottom edges don't move each other.** Drag the bottom and the top stays put; drag the top and the bottom stays put. Where there's nothing left to give — a block already at the very top of the page, or a row above that has run out of room — the edge simply stops. It never grows out of the far side to make up for it.
+- **Two blocks that touch share the boundary between them.** Drag the **top** edge of a block and the block above gives back — or takes up — exactly what you gave, so the two stay flush and **no white space is ever left between them**. Shorten the last stack on a page and the one above it grows to meet it, by itself. It works the same whether the two are in one band or each in its own. If the block above is already only as tall as what's inside it, there's nothing to give and the edge stops there. This is the vertical version of how a grid cell's edge already behaves — the boundary belongs to both blocks, not to whichever one you happen to be holding.
+- **A slider always shows you the real number.** If a block has ended up taller than the height slider's own range — easily done by dragging its bottom edge down a few times — the slider stretches to reach it instead of parking at the end and pretending. That matters because the handle sitting at the far right used to look identical whether the block was 45rem or 115rem, and nudging it would have silently snapped the real height down.
+- **A boundary that meets several stacks moves all of them.** Two stacks side by side aren't separate as far as an edge is concerned — they share the band they sit in, and the band is what the edge below them belongs to. So dragging that edge moves the band, both stacks, *and* the rows inside either of them. Nothing is left hanging: you won't get the boundary closing neatly on one side while a gap opens under the last row of the column next to it. There's no grouping to switch on — putting two stacks on the same line is what groups them.
+- **A stack next to another still has whatever is above it.** A stack with a neighbour beside it behaves exactly like one on its own: drag its **top** edge up and the band above gives way, its neighbour comes along, and it stays inside its own band. It never lifts out and floats over the header above it.
+- **Space you deliberately left is spent first, and never thrown away.** If you've given a block outer spacing above it, dragging its top edge *up* closes that space before it takes anything from the block above — free space costs the neighbour nothing. Dragging *down* hands the room to the block above and leaves your spacing exactly as you set it.
+- **A block you drop takes the room it lands in.** Drop a Stack into a section or a grid cell that has height to spare and it fills it, rather than sitting as a small sliver with the rest of the space empty underneath. Where there's no room to take — a grid nobody has given a height to — it arrives at a comfortable default size instead. A height **you** set is never overruled by either.
 - **A resized block is one shape.** When you make a button, card, badge or any block bigger, the block *itself* grows to fill the new size — there's never a second empty shape left behind at the old size. Its content re‑positions inside it automatically (a resized button centres its label).
 - **Content position.** When a block is bigger than its content (e.g. you made a badge tall), use the **3×3 Content position** grid to place the content — top‑left, centre, bottom‑right, etc. Works for every block, elements and components alike.
-- **Position in row.** To left/centre/right‑align a hugging block within its row, use **Position in row**.
+- **Position in row.** To left/centre/right‑align a hugging block within its row, use **Position in row**. **Spread** shares the
+  row out: the first block at the left edge, the last at the right edge, the rest evenly between. It applies to the screen you are
+  editing, so a block can sit on the right on a phone and on the left on a desktop.
+- **Every screen, or just this one?** With Tablet or Mobile selected, a change applies to that screen only — except a few controls
+  that change the page's structure (**Floating**, its **front / back order**, a section's **Content width**). Those say *"Applies to
+  every screen"* while you are editing a smaller screen.
+- **Line up** on a box names the direction it moves: *across* in a top-to-bottom stack, *down* in a side-by-side row or a grid.
+- **A page header or footer spreads by itself.** Give a block the meaning **Page header** (or **Page footer**) and its
+  line of two or more blocks is set to **Spread** and centred on one line — the logo at the left edge, the menu between,
+  the button at the right edge — so a wide screen is never left empty on the right. It is an ordinary setting: pick
+  **Left** in **Position in row** and it stays where you put it. Lines you aligned yourself are never changed.
+- **A block you add is always big enough to see.** An empty block has nothing inside to hold it open, so it takes a small minimum size until you put something in it or size it yourself. This matters most when you add several blocks into a stack you have already given a height to: they no longer share that height until each one is a sliver — the stack grows a little instead, and every block stays large enough to click and to drag by its handles. A size **you** set is always honoured, however small; the minimum only applies where you have not said.
 
 ---
 
@@ -239,6 +304,26 @@ The builder is responsive by design, and you can fine‑tune per size.
 
 **Base size** (top bar) sets the rem base everything scales from — bump it up and the whole page scales proportionally while staying readable.
 
+### Everything scales with the screen — except below what can be read
+
+Your text, your spacing and your pictures all follow the width of the screen, so a page looks deliberate on
+a phone and on a 27‑inch monitor rather than being the same layout squeezed. Text grows from **16px** on a
+phone to about **22px** on a large desktop, and every other size — headings, buttons, captions — is a
+proportion of that one value, so they scale together and keep their relationship to each other.
+
+> **16px is a floor, not a size.** Spacing *should* close up on a narrow screen; text should not, and for a
+> while it did — body copy came out at **11.2px on every phone** and a button label at under 10px, because
+> the reading size was following the same unit as the gaps. It now stops at `1rem` and grows from there.
+> That floor is in `rem`, so a reader who has set a larger text size in their own browser still gets it.
+
+**A photograph keeps its own proportions at every width.** A 4:3 picture is 4:3 on a 320px phone and on a 4K
+monitor — only its size changes — and it never runs off the side of the screen. If you want it cropped to a
+shape of your own, set a **Height** and that is what you get.
+
+**The builder's own toolbar follows the same rule.** Narrow the window and the top bar **wraps onto more
+rows** rather than pushing Preview, Export and the device chips off the side. Every control stays on the
+screen at any width, and at desktop sizes it is the single row it always was.
+
 ---
 
 ## 9. Themes, colours and accessibility
@@ -249,6 +334,9 @@ The builder is responsive by design, and you can fine‑tune per size.
 
 - Colours come from the site's **design tokens** (an OKLCH colour system) — pick from themed swatches, a spectrum, a hex field, or the eyedropper. There are **no hardcoded colours**, so switching the Website theme re‑skins everything consistently.
 - Colour fields show a **WCAG contrast** readout so text stays legible.
+- **Text follows the page, space follows the box.** A heading is one size wherever it sits — in a sidebar, a card or a
+  wide band — so the page's hierarchy holds; a card's padding still tightens in a narrow column. (Decided 2026‑09‑28.)
+- **Links read on every Website theme.** A link's colour is your brand colour, moved lighter or darker only as far as it needs to read (4.5:1) on that theme's page and on a card — on Light the brand is used as it is; on Dark, Midnight and Purple it is lifted so a menu is legible. A link inside a coloured band takes the band's own link colour instead.
 - Every control is keyboard‑accessible and labelled.
 
 ---
@@ -257,6 +345,20 @@ The builder is responsive by design, and you can fine‑tune per size.
 
 - **Pages:** use the Pages control (top‑left) to add pages, rename them, set the **Home** page, and duplicate. Buttons can **link to a page** so your nav works.
 - **Preview:** a true, isolated preview of the exported site — **one real page at a time**, not every page stacked together. Switch devices inside preview, and click your own nav to walk from page to page exactly as a visitor will.
+- **It opens at the size of your own screen.** The page fills your whole window — the same width *and* height a visitor on your monitor gets — with no frame, no padding and no rounded corners around it. The bar floats *over* the page rather than sitting above it, so it costs the preview no height.
+- **The controls step aside when you say so — never on their own.** Press **Hide** (or **H**) and the bar slides away for an unobstructed look; a small **Controls** handle stays at the top to bring it back, and **H** works from anywhere, including after you've clicked the page you're previewing. The bar used to hide itself on a timer and again whenever the pointer left it — which meant choosing a device made the whole strip vanish before you could rotate it. It doesn't do that any more.
+- **Pick a device to see one.** A phone or tablet from the menu is shown at its real size, framed like a device sitting on a surface — which is right for a device and wrong for "show me my site".
+- **Sweep the width to find your breakpoints.** Drag **either edge** of the preview: the page narrows from both sides and stays centred, and the readout names the width and the rung it lands on — *1024 px · Tablet landscape*. Keep going and you can walk it down to a phone. Double‑click an edge to get the whole window back.
+- **Pick a screen by name.** The preview bar works like a browser's device mode. The **size** menu lists this site's own five screen sizes (Mobile, Tablet, Laptop, Desktop, Wide) and then **sixty real devices**, grouped: iPhone · Android phones · Foldables · Tablets · Laptops · Monitors — each at its true size, named with its generation and its dimensions (*iPhone SE (3rd gen) — 375 × 667*). **Responsive** just fills the window.
+- **Width and height are both real, and both editable.** Type any numbers you like into the two boxes and the page is laid out at exactly that; the menu then says *Custom*. Height matters as much as width — a hero built to be "one screen tall" is a different thing on a 667px iPhone SE than on a 1080px desktop.
+- **Rotate** turns the screen on its side. Rotating back lands on precisely the numbers you started from.
+- **Zoom** is yours: *Fit to window* shrinks a big screen until it fits, or pick 50–200% and it's obeyed exactly. Zoom past the window and the preview scrolls — every part of the page stays reachable.
+- **A band you coloured and left empty is the same size on the page as on the canvas.** An empty band — including one holding a box or a grid you haven't filled yet — keeps its visible height when published, so a coloured strip at the top of your page is still there when a visitor arrives. A height you set yourself always wins over that, and a band with something in it takes its height from the content as usual.
+- **A page shorter than the screen ends in its own colour.** If your content doesn't fill a visitor's window, the space below it takes the colour of the band your page ends on — so a dark footer simply runs to the bottom instead of stopping against a slab of white that looks like an empty block you never added. **Nothing is stretched and nothing is inserted:** your layout is untouched, it costs no height, there's no setting to find, and on any page taller than the screen you'll never see it at all.
+- **The one known difference from the canvas — a desktop scrollbar.** On a desktop browser that shows a classic scrollbar, the Preview's page is about 15px narrower than the canvas, so a block's share of the width can differ by up to about **0.4%**. That is expected and accepted; our checks allow up to **0.6%** for it. Anything larger between the canvas and the Preview is a bug — please report it.
+- **Previewing changes nothing.** Choosing a screen to look at doesn't touch your canvas or which per‑device layer you're editing; that stays with the editor's own device switcher in the top bar. Looking is not editing.
+- **The size you pick is the size the page really gets.** Choose *Wide* and the page is laid out at a genuine 1920 × 1080, so it picks the layout a 1920px screen gets — even when your own screen is smaller. It's scaled down to fit and the bar states both numbers (e.g. `1920 px · 73%`). It's never cut off, and never quietly re-laid out at your screen's size instead.
+- **Nothing is added on top of your page.** The preview shows what you designed and only that. Earlier versions prepended a navigation bar of their own; it's gone, from the preview *and* the exported site. To let visitors move between pages, build your own header and set a block's link to **another page** — it resolves to the right file when you export. While you're in the preview, the page tabs in the toolbar walk you around the site without touching the design.
 - **Export:** downloads your site as a **ZIP of real pages** — `index.html` for the home page and one `.html` per page, plus a shared `styles.css`.
 
 ### What you get in the ZIP, and why it's built that way
@@ -273,28 +375,37 @@ The builder is responsive by design, and you can fine‑tune per size.
 
 ---
 
-## 10b. Sections: edge to edge, or a centred column
+## 10b. Bands: edge to edge, or a centred column
 
-Every section sits in a full‑width band across the page. Select the section → **Design** tab → **Arrange** → **Content width**:
+Every top-level block sits in a full‑width band across the page. Select it → **Design** tab → **Arrange** → **Content width**:
 
-- **Edge to edge** — the section and its content run the full width of the page. Right for a photo strip or a colour banner.
+- **Edge to edge** — the band and its content run the full width of the page. Right for a photo strip or a colour banner.
 - **Centred column** — the **background still spans the whole page**, but the words sit in a centred column. Right for almost everything else.
 
 That second one is the setting that makes a page look professionally made. A heading stretched across a 27‑inch monitor is genuinely hard to read — the eye loses its place coming back to the start of the next line — so the text is capped at a comfortable measure that **widens by one step** as the screen grows: a phone gets the full width less a margin, a tablet ~34rem, a large tablet ~52rem, a desktop ~68rem, a very large screen ~76rem.
 
 On a phone the column always keeps a margin, so text never touches the edge of the screen.
 
+### Putting a block beside one, or underneath it
+
+When a block does not fill the width of its band, there is empty space beside it — and you can drop something into it. As you drag, the insertion line tells you which you are about to get, and it is worth learning the two shapes:
+
+- **A vertical line** means **side by side**. The new block takes the space that was free; the block already there **keeps the width you gave it**. Nothing is resized to make room.
+- **A horizontal line** means **its own line**. Dropping below a side‑by‑side band creates a **new full‑width band underneath it**, leaving the band above untouched.
+
+The whole empty area is a target, not just the edge — aim anywhere in the gap. And if you change your mind, **Ctrl+Z** puts it back.
+
 ---
 
-## 10c. Columns — laying a page out like a table
+## 10c. Grid — laying a page out like a table
 
-Most page layouts are a row split into parts: a wide article beside a narrow sidebar, three cards across, a photo next to some words. In the Blocks panel that's **Columns**.
+Most page layouts are a row split into parts: a wide article beside a narrow sidebar, three cards across, a photo next to some words. In the Blocks panel that's **Grid**.
 
 ### Pick the shape, don't do the sums
 
-Click **Columns** and you get a little grid. Sweep across it — *4 across, 3 down* — and click. You get twelve empty cells arranged exactly like that, the same way you'd insert a table in a word processor. Underneath the picker are the uneven shapes a sweep can't express: **Sidebar left · 4 · 8**, **Sidebar right · 8 · 4**, **Feature + two · 6 · 3 · 3**, **Wide + narrow · 7 · 5**.
+Click **Grid** and you get a little grid. Sweep across it — *4 across, 3 down* — and click (any count from **1 to 12** across: a count twelve divides is twelfths underneath, any other — five, seven… — is that many equal columns; the arrow keys and Enter work too). You get twelve empty cells arranged exactly like that, the same way you'd insert a table in a word processor. Underneath the picker are the uneven shapes a sweep can't express: **Sidebar left · 4 · 8**, **Sidebar right · 8 · 4**, **Feature + two · 6 · 3 · 3**, **Wide + narrow · 7 · 5**.
 
-**Dragging Columns asks the same question.** Drop the tile where you want the layout and the picker opens right there. Dragging says *where* the layout goes; it doesn't say what the layout *is*, so nothing is added to the page until you've chosen a shape — and pressing Escape (or clicking away) leaves the page exactly as it was.
+**Dragging Grid asks the same question.** Drop the tile where you want the layout and the picker opens right there. Dragging says *where* the layout goes; it doesn't say what the layout *is*, so nothing is added to the page until you've chosen a shape — and pressing Escape (or clicking away) leaves the page exactly as it was.
 
 ### Twelve columns underneath
 
@@ -307,7 +418,7 @@ You never have to think in twelfths. Select a block and the **Grid cell** panel 
 | **Width** | How much of the row this block takes — by name, or 1–12 |
 | **Start at column** | Leave columns empty before it (an offset) |
 | **Rows tall** / **Start at row** | The same two things going down, so a block can straddle rows |
-| **Line up (across)** | Where the block sits inside its own cell |
+| **Line up (across)** | Where the block sits inside its own cell. It and the nine squares under **Position** are the same setting — whichever you used last wins, and both show it |
 
 ### Drag a cell's edge
 
@@ -320,6 +431,8 @@ Select a cell and drag its edge. It behaves like a table: **the boundary between
 Dragging the **bottom** edge sets that **whole row's height**, so the row grows as one and the page grows with it. Dragging the **top** edge moves the boundary between your row and the one above: that row gives back exactly what yours takes, so your bottom edge doesn't budge. If the row above is already only as tall as the things inside it, there's nothing to give and the edge stays where it is — nothing is pushed down the page to make room.
 
 **A drag is one gesture.** The canvas shows the result as you drag, letting go commits exactly what you were being shown, and one **Ctrl+Z** puts the whole drag back — not one frame of it.
+
+**Typing is one step too.** Type a sentence and one **Ctrl+Z** takes the whole sentence back, not one letter. Your words are saved when you pause, and straight away when you click out of the block, press Escape or Enter, switch tabs or close the page — so nothing you typed is lost, and typing stays quick on a slow phone even on a long page.
 
 ### How small a box can go
 
@@ -335,7 +448,7 @@ If a row has columns left over, hover it (or select something in it) and an **Ad
 
 ### Grids inside grids
 
-A cell is just a container, so **anything you can do to the page you can do inside a cell** — including adding another Columns block with its own columns and rows, as deep as you like. Each one carries its own spacing: **Space between blocks**, plus **Space across** and **Space down** separately when a row wants more air between its columns than between its rows, and Inner/Outer spacing per side.
+A cell is just a container, so **anything you can do to the page you can do inside a cell** — including adding another Grid block with its own columns and rows, as deep as you like. Each one carries its own spacing: **Space between blocks**, plus **Space across** and **Space down** separately when a row wants more air between its columns than between its rows, and Inner/Outer spacing per side.
 
 **All three are sliders.** Spacing is something you judge by eye, so you sweep it and watch the canvas rather than typing a number and looking. Space across and Space down start out *matching* Space between blocks — sweep one and it takes on a value of its own, and the line underneath offers it straight back to matching whenever you want it. A whole sweep is **one Ctrl+Z**, however many times the slider ticked on the way.
 
@@ -372,6 +485,18 @@ It's off by default because your published pages carry **no JavaScript at all** 
 
 A twelve‑column row **stacks to one column on a phone** and to two on a tablet held upright, with each block keeping its share of the width — so three cards become three full‑width cards rather than three unreadable slivers. If you want something different, pick the device at the top of the screen and set **Columns** there; the row then does what you said from that size down.
 
+**If you placed the cells yourself, the placement is released when the row narrows.** *Start at column* and *Start at row* are written in the wide row's twelve columns, and there is nowhere to put "column 9" in a row that now has one. So at those sizes the cells simply **flow** — one after another, in the order you added them, wrapping onto new rows — and each keeps its share of the width as above. You will see three hand‑placed cells go two‑up on a tablet and fully stacked on a phone, the same as any other row.
+
+> It used to try to keep them where you put them, which sounds better and is not: two cells rescaled into the same column are both drawn, one on top of the other, and the one underneath looks like it was deleted.
+
+**A grid never breaks a word.** When the words in its cells — a big "1,000+" in a Stat, a long word in a quote — need more room than a column has, the grid gives up columns first, **one count at a time and evenly** (six go 3 + 3, never 5 + 1); a row of columns does the same. A grid of **four or more** across that holds icons, logos or pictures keeps its count on a desktop, like a row of four. Only a single column too narrow for a word still breaks it.
+
+**A grid inside something narrow narrows by its own box, too.** Put a three‑across grid inside a sidebar, a column, or another grid's cell, and it goes to two across once its *own* box is narrower than three readable cells (about 36rem), and to one column below about 24rem — on a desktop as much as on a tablet, because what matters is the room the grid actually has, not the size of the screen. A grid the full width of the page never notices this rule (the page has room); a grid you gave a column count for a device keeps your number.
+
+> Before this, a three‑quote grid nested in the middle cell of a three‑cell grid drew each quote 85px wide on a tablet and broke every word letter by letter — the screen had room for three across, the cell did not.
+
+**Setting Columns for a device works the same way.** Your *Start at column* was written in the twelve-column row's units, so it's released there too and the cells flow. If you want an exact placement at that size, set **Start at column** on the cell *while that device is picked* — then it's read in that row's own units and honoured exactly.
+
 Everything in this section is per‑device. Setting **Order** on a phone is what puts the photo above the words there and beside them on a desktop.
 
 ---
@@ -390,7 +515,7 @@ Backgrounds, borders, corners and padding stay with the box itself — they're t
 
 ## 10g. Sloped and curved section edges
 
-Sections don't have to meet in a straight line. Select one → **Design → Arrange → Edge shape**, and pick a shape for its **top** and its **bottom** independently:
+Bands don't have to meet in a straight line. Select one → **Design → Arrange → Edge shape**, and pick a shape for its **top** and its **bottom** independently:
 
 - **Straight** — the default
 - **Slope right** / **Slope left** — a diagonal cut
@@ -443,6 +568,7 @@ Click a block and you select the **outermost** box you clicked into — usually 
 
 | Action | Shortcut |
 |--------|----------|
+| **Edit the selected block's text** | **Enter** or **F2** (the caret lands at the end, so you carry on typing) |
 | Undo / Redo | Ctrl+Z / Ctrl+Y |
 | Copy / Cut / Paste | Ctrl+C / Ctrl+X / Ctrl+V |
 | Duplicate | Ctrl+D |
@@ -595,6 +721,58 @@ One difference worth knowing: an item's entrance never staggers its own parts. A
 
 ---
 
+## 14b. Pages everyone can use — meaning, headings and the Page check
+
+Your page is published as proper HTML5, however you built it — you do not need to know what that means.
+
+- **The main part of the page is found for you.** Mark your top band **Page header** and your last band **Page footer**
+  (select it → Design → **Meaning** → *What is this block?*) and everything between becomes the page's main content.
+  Mark nothing and the whole page is the main content. A **Skip to content** link is added for keyboard users — it is
+  invisible until someone presses Tab.
+- **Headings follow the page.** The first heading of your content is the page's title (level 1), later ones level 2, and
+  a heading inside a **Section** or **Article / card** sits one level below. You can set a level by hand under
+  **Meaning → Heading level**; the size is separate, under Text.
+- **A card's title is never the page's title.** A card, a quote, a sidebar or a menu is a self‑contained piece, so its
+  heading titles that piece, not the page. If your content opens with a row of cards, the first heading *outside* them
+  becomes the title; a page whose content is only cards is titled by the school's name in the header. And when the title
+  heads a section, the cards inside that section sit one level under it (2), not two — no level is skipped.
+- **Cards and quotes are already right** — a Card is published as an article, a Quote as a figure.
+- **The Page check** (toolbar) shows a number when something needs *your* words: a picture with no description
+  ("Describe this picture for people who can't see it" — type it right there, or choose *It's only decoration*), or a
+  button with no words. Everything else is fixed for you and listed under *Fixed for you*.
+
+## 14c. Sizing columns, and working on a smaller screen
+
+- **A column you size yourself can be as narrow as you like** (down to about 3rem) — a 10/90 label column, six logos
+  across. Columns you never sized keep a comfortable minimum so they wrap neatly. **On a phone every row stacks**, one
+  column under another, so nothing is ever squeezed.
+- **Rows of four or more columns** — a logo strip, four courses, a five-column footer — **stay one row on a desktop,
+  a laptop and a wide screen**. **On a tablet** they rearrange by themselves to at most three per line, as evenly as
+  they can: 4 → 2 + 2, 5 → 3 + 2, 6 → 3 + 3, 7 → 3 + 2 + 2. Each column keeps its proportions within its line, so a
+  narrow column stays narrow beside a wide one. Want something else on the tablet? Switch the editor to **Tablet** and
+  size a column there — what you set on a device always wins, and the desktop is untouched.
+- **Widening a block never makes it jump.** Pull it until its neighbour no longer fits, and the neighbour moves to the
+  next line while your block stops exactly where you let go. Drag back and everything comes home.
+- **On a smaller screen the page is shrunk to fit.** Choose Desktop 1280 on a laptop and the page is shown smaller
+  (the zoom reads *Fit · 83%*) so all of it sits beside the panels — it is still laid out, and published, at full size.
+  Everything you drag is still exact.
+- **Zoom in when something is too small to work on.** A thin column, a small icon cell, a divider: press **+** beside
+  the screen sizes, or pick a size from the zoom menu (Fit, 50–400%, or *Zoom to selection*). The page is drawn larger
+  and scrolls both ways; hold **Space** (or the middle mouse button) and drag to move around it. Zoom only changes how
+  big the page is drawn for you — what you drop, select and drag is stored exactly as at 100%, and the published page
+  never changes.
+  - Keyboard, with the pointer on the page: **Ctrl +** / **Ctrl −** step in and out, **Ctrl 0** is 100%, **Shift 1**
+    fits the page, **Shift 2** zooms to the selected block. **Ctrl + scroll** (or a pinch) zooms round the spot under
+    the pointer; scrolling alone still scrolls.
+  - Over the panels and the Inspector, Ctrl + and Ctrl − are your browser's own zoom, so you can still make the whole
+    builder bigger.
+  - The handles and toolbars stay the same size at every zoom, so their buttons are always easy to hit.
+  - The zoom you pick is remembered for each screen size on this computer; a screen size you never zoomed opens fitted.
+    It is never saved into your site.
+- **The Add-a-block panel sits beside the page** on a laptop and up, so nothing is ever hidden under it. It stays open
+  while you work; close it with its ✕, **Esc** or **B**. On a phone it floats over the page and the Inspector slides in
+  from the side.
+
 ## 15. Tips, gotchas & FAQ
 
 - **"There's an empty container/row wrapping my block."** There isn't — the structural row and the page itself are invisible scaffolding: they're never selectable and never highlight on hover, so nothing empty appears around your block. Click your block (or anywhere in its row) and you select the block itself; the only highlight you see is the block's own selection box, hugging its content.
@@ -602,6 +780,23 @@ One difference worth knowing: an item's entrance never staggers its own parts. A
 - **"My block box is bigger than its content."** With **Width → Fit** a block always hugs its content exactly (in the layout and when floating) — no empty stretched box. If you *want* a larger box (e.g. a tall badge), size it with **Width/Height** and use **Content position** to place the content inside it.
 - **"The page shows two sections I didn't add."** That's old saved data. Click **Reset** for a clean, blank page.
 - **"Text size / bold / colour didn't change my component."** Make sure you selected the exact inner piece (the card's *title*, not the card). Each piece is edited on its own.
+- **"I clicked a text block, started typing, and nothing appeared."** Fixed. Clicking a text block selects the band around it first — that is the drill‑down rule, and it is deliberate — but for a short while the editor read that as "you did not mean to be in this text" and took the cursor away a fraction of a second after the click. Click and type; the words land. The same fix cured its opposite: clicking the empty part of a box used to leave the cursor stranded in whatever text was nearest, and while it sat there **every keyboard shortcut silently did nothing** — Delete, `Ctrl+D`, the arrows, all of them.
+- **"I clicked the first word of a heading and got something else."** Fixed, twice over. The **Blocks** launcher used to float over the top‑left corner of the page, so the first word of the first block opened the panel instead of taking the cursor — the canvas now reserves the button its own gutter, so it sits beside the page rather than on it. And the **resize handles** straddle a block's edge, which is where you grab to resize; because a block starts with no padding, its first letters sit under the left handle. A *drag* on a handle still resizes, but a *click* now goes through to the text under the pointer, with the cursor landing on the letter you actually aimed at.
+- **"I can't get into the text without a mouse."** Fixed — select the block and press **Enter** (or **F2**). The cursor lands at the end of the existing words so you carry on typing; **Escape** steps back out.
+- **"Resizing a stack leaves gaps I didn't ask for."** Fixed, and the rule is now simple: **dragging an edge that touches another stack moves that stack** — it gives or takes the room and the two stay together, whichever side you drag from, horizontally or vertically. A space only ever opens at an **outer edge**: the far left when nothing is to its left, the far right, the top, the bottom. That's the one case with no neighbour to share the boundary with, and it's deliberate. One case used to break the row outright: dragging the **left edge of the leftmost stack** pushed its neighbour onto a second line, because the gap was stored as a fixed size while the widths beside it are percentages, so the row added up to slightly more than 100%. The gap is now a share of the row like everything else, so it adds up exactly at any width and scales with the page.
+- **"I made the stack I just dropped shorter and the one below it stayed where it was."** Fixed. A block you drop into empty space is set to **take the space that's there** — and when you then drag it shorter, that instruction now stands down, so the block below rides up to meet it and the room you freed collects at the **bottom of that column**, ready to build on. Blocks follow each other; leftover pools at the end.
+- **"I shrank a stack from the top and now I can't drop anything into the space above it."** Fixed. Dragging a block's **top** edge down leaves empty space above it — and that space was a *margin*, which isn't a box, so there was nothing there to drop into. Dropping there did add a block, but the gap came along with your stack into the new arrangement, so the space stayed empty **and** your stack moved down. Now the newcomer **fills that space** and your block stays anchored where its bottom edge was. This works wherever you've made room — above a block, below a short one, or beside a narrowed one.
+- **"I deleted one of my side-by-side blocks and now there's a gap I can't close."** Fixed. The deleted block's share of the row used to be left behind, so the row stopped filling its width — and dragging couldn't recover it, because dragging moves the boundary *between* two blocks and keeps their total the same. The freed width is now shared out **in proportion**: 20% / 20% / 60% becomes 25% / 75%, so the blocks keep the relationship you gave them and the row is full again. Stacked blocks and grids are untouched — they don't share a width that way.
+- **"I widened a stack until its neighbour dropped below, dragged it back — and the page never came back."** Fixed. Once the neighbour had wrapped onto the next line the builder stopped recognising it as the block beside yours, so narrowing handed the width to nobody and the pair ended up 224 / 712 instead of 512 / 512. The neighbour is now always the next block in your layout, wherever it happens to be drawn. **Drag out and back and you land exactly where you started**, however many times you do it.
+- **"I narrowed a stack and an empty space opened at the end of the line, with the other stack sitting underneath."** Fixed. As you narrow, the stack that wrapped below **comes back up as soon as it fits** and takes the rest of the line — it never leaves a hole beside you that it could have filled.
+- **"I dropped a fourth block beside three others and it jumped onto a new line, leaving a big empty space."** Fixed. A block dropped onto a full line now takes **an equal share of that line** — two become thirds, three become quarters — and the blocks already there keep their proportions. The shares can never add up to more than the line, so nothing wraps and nothing leaves a hole. A block that hugs its content, such as a **Stat**, takes a share too when the line is full; where there is room it still hugs.
+- **"A block that dropped onto its own line wouldn't get narrower."** Fixed. A block pushed onto a line by itself still **fills that line** — until you drag its edge yourself. From then on it's the size you dragged.
+- **"My header stays at the top, but the sidebar slid under it and the page's words showed through the logo."** Fixed. A bar that stays at the top of the page now covers what scrolls beneath it — it takes the page's own colour when you have not given it one — and a sidebar that sticks while the article scrolls stops **below** the header instead of under it.
+- **"I clicked a block and pressed Delete, and nothing happened."** Fixed. Clicking a block now gives it the keyboard, even straight after you clicked a button such as a screen size in the toolbar — Delete, the arrow keys and the shortcuts act on the block you picked.
+- **"Four links side by side took two lines on a phone."** Fixed. On a phone, links in a line sit 1rem apart (2rem on larger screens), and links dropped straight on the page share one gutter at the line's ends instead of each carrying its own. A space you choose with **Space across** is kept on every screen.
+- **"My Badge became a bar across the whole page."** Fixed. A Badge, a Stat and a Rating keep their own small size wherever they are dropped, on every screen.
+- **"I set my sidebar to stay on screen and it shrank to a stub."** Fixed, for both ways of staying put. A **sidebar now fills the height of the screen** — a Stack sitting beside a column of content, whether you chose *Floats on screen* or *Sticks when reached*. (With *Floats on screen* the block is lifted out of the page, so nothing gives it a size any more: that's why a bar held at the **top** has to be given its width, and the same had never been done for a rail held at the **left** or **right**. With *Sticks when reached* it can't be as tall as the column beside it — a block with no room to travel can never stick — but it can be as tall as the screen, which is what a sidebar is.) A block held at a **corner** still hugs its contents (a chat bubble isn't a sidebar), a **button or heading** in a row is never stretched, and a height you set yourself always wins.
+- **"My menu links jump to the right place, but the heading is hidden under the bar."** Fixed. A bar set to **Floats on screen** reserves no space, so the page runs underneath it — and the browser still thinks the top of the page is the very top, above anything you can see. Links now land the section *below* the bar, and the amount is the bar's real height, so it stays right when the bar's text wraps onto a second line or when two bars are stacked. This works in **Preview** as well as on the published site: in-page links used to do nothing at all in the preview, which was the one place you'd try them.
 - **Everything saves automatically** to your browser. **Reset** wipes the current site back to a blank page — use it deliberately.
 
 ---

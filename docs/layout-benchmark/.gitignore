@@ -1,0 +1,2 @@
+# Raw crawl output lives OUTSIDE the repo (C:/Users/eyite/educo-uat-harness/sites + archive/). Only pages.tsv is kept.
+sites/

@@ -61,14 +61,29 @@ describe("multi-page export", () => {
     }
   });
 
-  it("the nav appears on EVERY page and marks where the visitor is", () => {
+  it("NO navigation is injected — a page is what the user designed", () => {
+    /**
+     * This used to assert the opposite: a `.eu-site-nav` on every page, with `aria-current` marking where
+     * the visitor was. It was the builder's furniture rather than the user's design — unstylable, unmovable,
+     * unremovable, and on a one-page site it rendered as a lone bold "Home" above the canvas that read as a
+     * stray heading nobody had typed. Navigation is now BUILT, not injected (see the test below).
+     */
     const files = renderSiteFiles(site(), DEFAULT_THEME);
     for (const name of ["index.html", "admissions.html", "term-dates.html"]) {
-      expect(files[name], `${name} needs the nav`).toContain('class="eu-site-nav"');
-      // aria-current is the only thing telling a screen-reader user which page they are on
-      expect(files[name].match(/aria-current="page"/g)?.length, `${name}: exactly one current link`).toBe(1);
+      expect(files[name], `${name} must not carry an injected nav`).not.toContain("eu-site-nav");
     }
-    expect(files["admissions.html"]).toMatch(/<a href="admissions\.html" aria-current="page">/);
+  });
+
+  it("a `page:` link the USER built still resolves to the right file", () => {
+    // The whole point of dropping the injected nav: page-to-page navigation is still fully available, it is
+    // just designed rather than imposed. If this breaks, removing the bar took real capability with it.
+    const s = site();
+    const target = s.pages.find((p) => p.name === "Admissions")!;
+    s.pages[0].root.children = [
+      { id: "cta", type: "button", text: "Admissions", href: `page:${target.id}` } as unknown as (typeof s.pages)[0]["root"],
+    ];
+    const files = renderSiteFiles(s, DEFAULT_THEME);
+    expect(files["index.html"], "a page: link becomes the target page's relative filename").toContain('href="admissions.html"');
   });
 
   it("each page carries its OWN title — this is what search engines index", () => {

@@ -42,4 +42,31 @@ describe("Slider", () => {
     await user.click(screen.getByRole("slider"));
     expect(onChange).not.toHaveBeenCalled();
   });
+
+  /**
+   * A value past the end of the track. The native input would clamp the THUMB to `max` and say nothing, so
+   * the thumb and the readout beside it disagree — which is how a stack height that had run away to 114.6rem
+   * looked exactly like a deliberate 45rem in the only control showing it.
+   */
+  it("stretches the track to hold a value beyond max, so the thumb tells the truth", () => {
+    render(<Slider label="Band height" value={1834} onChange={vi.fn()} min={0} max={720} step={8} />);
+    const slider = screen.getByRole("slider");
+    expect(slider).toHaveAttribute("max", "1834");
+    // The thumb is at the value, not pinned at the old end.
+    expect(slider).toHaveValue("1834");
+  });
+
+  it("stretches the track DOWNWARD for a value below min, for the same reason", () => {
+    render(<Slider label="Offset" value={-40} onChange={vi.fn()} min={0} max={100} />);
+    const slider = screen.getByRole("slider");
+    expect(slider).toHaveAttribute("min", "-40");
+    expect(slider).toHaveValue("-40");
+  });
+
+  it("leaves the track alone when the value is inside it", () => {
+    render(<Slider label="Inside" value={300} onChange={vi.fn()} min={0} max={720} />);
+    const slider = screen.getByRole("slider");
+    expect(slider).toHaveAttribute("min", "0");
+    expect(slider).toHaveAttribute("max", "720");
+  });
 });

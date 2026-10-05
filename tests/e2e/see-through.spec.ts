@@ -1,4 +1,5 @@
 import { test, expect, type Page } from "@playwright/test";
+import { seedSite, sitePage } from "./helpers/seed-site";
 
 /**
  * SEE-THROUGH, measured in a browser: a faded box, solid contents.
@@ -11,30 +12,21 @@ import { test, expect, type Page } from "@playwright/test";
  */
 
 async function seedAndOpen(page: Page) {
-  await page.goto("/website/box-demo");
-  await page.evaluate(() => {
-    const site = { pages: [{ id: "p1", name: "Home", path: "/", root: {
-      id: "root", type: "container", direction: "column", padding: 0, gap: 0, children: [
-        { id: "band", type: "container", direction: "row", rowBand: true, width: "fill", gap: 0, padding: 0, children: [
-          { id: "grid", type: "container", layout: "grid", columns: 12, gap: 0, padding: 0, width: "100%",
-            background: "#3366cc", opacity: 30, children: [
-              { id: "solid", type: "container", layout: "flex", direction: "column", padding: 0, gap: 0, width: "100%",
-                colSpan: 6, background: "#ffffff", minHeight: 80, children: [
-                  { id: "deep", type: "container", layout: "flex", direction: "column", padding: 0, gap: 0, width: "100%",
-                    background: "#111111", minHeight: 40, children: [] },
-                ] },
-              { id: "faded", type: "container", layout: "flex", direction: "column", padding: 0, gap: 0, width: "100%",
-                colSpan: 6, background: "#ffffff", opacity: 50, minHeight: 80, children: [
-                  { id: "inFaded", type: "container", layout: "flex", direction: "column", padding: 0, gap: 0, width: "100%",
-                    background: "#008000", minHeight: 40, children: [] },
-                ] },
-            ] },
-        ] },
-      ] } }], homeId: "p1" };
-    localStorage.setItem("educo_box_site_v1", JSON.stringify(site));
-    localStorage.setItem("educo_box_site_cleaned_v1", "1");
-  });
-  await page.reload();
+  await seedSite(page, sitePage([
+    { id: "grid", type: "container", layout: "grid", columns: 12, gap: 0, padding: 0, width: "100%",
+      background: "#3366cc", opacity: 30, children: [
+        { id: "solid", type: "container", layout: "flex", direction: "column", padding: 0, gap: 0, width: "100%",
+          colSpan: 6, background: "#ffffff", minHeight: 80, children: [
+            { id: "deep", type: "container", layout: "flex", direction: "column", padding: 0, gap: 0, width: "100%",
+              background: "#111111", minHeight: 40, children: [] },
+          ] },
+        { id: "faded", type: "container", layout: "flex", direction: "column", padding: 0, gap: 0, width: "100%",
+          colSpan: 6, background: "#ffffff", opacity: 50, minHeight: 80, children: [
+            { id: "inFaded", type: "container", layout: "flex", direction: "column", padding: 0, gap: 0, width: "100%",
+              background: "#008000", minHeight: 40, children: [] },
+          ] },
+      ] },
+  ]));
   await page.waitForSelector('[data-box-id="grid"]', { timeout: 15000 });
   await page.waitForTimeout(300);
 }
@@ -103,22 +95,13 @@ test.describe("a see-through box fades, its contents do not", () => {
 const PIXEL = "data:image/gif;base64,R0lGODlhAQABAIAAAP8AAAAAACH5BAAAAAAALAAAAAABAAEAAAICRAEAOw==";
 
 async function seedImage(page: Page, opacity?: number, fadeContents?: boolean) {
-  await page.goto("/website/box-demo");
-  await page.evaluate(({ PIXEL, opacity, fadeContents }) => {
-    const site = { pages: [{ id: "p1", name: "Home", path: "/", root: {
-      id: "root", type: "container", direction: "column", padding: 0, gap: 0, children: [
-        { id: "band", type: "container", direction: "row", rowBand: true, width: "fill", gap: 0, padding: 0, children: [
-          { id: "hero", type: "container", direction: "column", padding: 0, gap: 0, width: "100%", minHeight: 200,
-            bgImage: PIXEL, opacity, fadeContents, children: [
-              { id: "card", type: "container", direction: "column", padding: 0, gap: 0, width: "100%",
-                background: "#ffffff", minHeight: 60, children: [{ id: "cap", type: "text", text: "solid caption", width: "auto" }] },
-            ] },
-        ] },
-      ] } }], homeId: "p1" };
-    localStorage.setItem("educo_box_site_v1", JSON.stringify(site));
-    localStorage.setItem("educo_box_site_cleaned_v1", "1");
-  }, { PIXEL, opacity, fadeContents });
-  await page.reload();
+  await seedSite(page, sitePage([
+    { id: "hero", type: "container", direction: "column", padding: 0, gap: 0, width: "100%", minHeight: 200,
+      bgImage: PIXEL, opacity, fadeContents, children: [
+        { id: "card", type: "container", direction: "column", padding: 0, gap: 0, width: "100%",
+          background: "#ffffff", minHeight: 60, children: [{ id: "cap", type: "text", text: "solid caption", width: "auto" }] },
+      ] },
+  ]));
   await page.waitForSelector('[data-box-id="hero"]', { timeout: 15000 });
   await page.waitForTimeout(400);
 }

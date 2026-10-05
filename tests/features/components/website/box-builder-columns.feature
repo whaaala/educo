@@ -16,37 +16,54 @@ Feature: The twelve-column grid in the Box Builder
   # ── Picking a layout ───────────────────────────────────────────────────────
 
   Scenario: Picking a shape the way you insert a table
-    When I click Columns in the blocks panel
+    When I click Grid in the blocks panel
     Then I can sweep a small grid to choose how many across and how many down
     And choosing 4 across by 3 down gives me twelve empty cells
     And each cell spans three of the twelve columns underneath
 
-  Scenario: Only the counts that divide twelve are offered
-    When I sweep past five columns in the picker
-    Then it snaps back to four
-    Because five cannot be twelfths, and a row where two cells are quietly wider is worse
+  Scenario Outline: Any count from one to twelve can be picked, and every cell is equal (L-4, decided 2026-09-29)
+    # tests/unit/grid-picker-any-count.test.ts · scripts/uat/uat-l4-headed.js (B, C)
+    When I sweep to <n> across in the picker, by pointer or with the arrow keys and Enter
+    Then I get <n> equal cells on one line on a desktop, on the canvas and in the Preview
+    And a count twelve divides is still twelfths, so a cell can later be widened by one twelfth
+    And a count twelve does not divide is a grid of exactly <n> columns — never twelfths with two cells quietly wider
+    And the picker shows all twelve squares, each at least 24px wide, nothing cut off
+
+    Examples:
+      | n  |
+      | 5  |
+      | 7  |
+      | 8  |
+      | 9  |
+      | 10 |
+      | 11 |
+
+  Scenario: A grid of four or more across keeps its count, like a row (L4-o, decided 2026-10-03)
+    Given a grid of seven icons across on a desktop page
+    Then all seven stay on one line
+    And it gives columns up only when the words in its cells need the room
 
   Scenario: The uneven shapes a sweep cannot express
-    When I open the Columns picker
+    When I open the Grid picker
     Then Sidebar left, Sidebar right, Feature + two and Wide + narrow are offered underneath
     And every one of them fills the twelve exactly
 
-  Scenario: Dragging a Columns block asks for its shape too
+  Scenario: Dragging a Grid block asks for its shape too
     # Dragging says WHERE a layout goes. It does not say what the layout IS, and the builder must not
     # answer that on my behalf — a dropped block used to divide the section into two cells nobody chose.
-    When I drag Columns onto a section
+    When I drag Grid onto a section
     Then the same "Choose a layout" picker opens where I dropped it
     And nothing is added to the page until I choose a shape
     And choosing 3 across by 2 down gives me six cells, each a third of the twelve
 
-  Scenario: Cancelling a dropped Columns block
-    When I drag Columns onto a section
+  Scenario: Cancelling a dropped Grid block
+    When I drag Grid onto a section
     And I press Escape
     Then the picker closes on the FIRST press
     And the page is exactly as it was before I dragged
 
   Scenario: One column across is one undivided cell
-    When I drag Columns onto a section
+    When I drag Grid onto a section
     And I choose 1 across by 1 down
     Then I get a single cell spanning all twelve columns
     And nothing has been split
@@ -59,7 +76,7 @@ Feature: The twelve-column grid in the Box Builder
     And a slider underneath offers any count from 1 to 12
 
   Scenario: A row is full width with no padding, at every depth
-    When I add a Columns block
+    When I add a Grid block
     Then it runs the full width of the space it was given
     And it has no inner spacing until I ask for some
     And the same is true of a grid I add inside one of its cells
@@ -233,6 +250,27 @@ Feature: The twelve-column grid in the Box Builder
     Then the phone shows a two-up layout
     And the wider devices are unaffected
 
+  Scenario: Cells I placed by hand flow instead of piling up when the row narrows
+    Given a row of twelve columns with three cells I started at columns 1, 5 and 9
+    And I also said which row each of them sits in
+    When I drag the preview narrower
+    Then every one of the three is still on the page at every width
+    And no cell is ever painted on top of another
+    And on a tablet held upright two sit side by side and the third wraps underneath
+    And on a phone all three are stacked
+    # The bug this replaced: the starts were rescaled into the narrower track and then CLAMPED, so two cells
+    # were given the same column and one was drawn underneath the other. Measured at 820px the second cell was
+    # hidden by the third; at 580px only the last of the three could be seen. Nothing errored and nothing
+    # overflowed — the blocks simply looked deleted, which is how it was reported.
+
+  Scenario: My own placement is kept at a rung where I set the column count myself
+    Given the Phone device is selected
+    And I set the row to two columns
+    When I start a cell at column 2
+    Then it stays at column 2 on a phone
+    # There I am already speaking in that rung's units, so re-flowing my placement would be the builder
+    # arguing with me.
+
   # ── Dragging a cell's edge ─────────────────────────────────────────────────
 
   Scenario: The boundary between two cells is shared
@@ -334,7 +372,7 @@ Feature: The twelve-column grid in the Box Builder
   # ── Nesting ────────────────────────────────────────────────────────────────
 
   Scenario: A cell holds whatever a page holds
-    When I select a cell and add a Columns block inside it
+    When I select a cell and add a Grid block inside it
     Then I pick its columns and rows the same way
     And I can do the same again inside one of ITS cells
 
@@ -547,3 +585,71 @@ Feature: The twelve-column grid in the Box Builder
     When I add a Rotating hero and choose my photos
     Then each page is its own full screen with its own words
     And I edit the second one's words on the canvas like any other block
+
+  Scenario: Setting the column count for a device does not pile the cells up
+    Given a twelve-column row with cells I started at columns 1, 5 and 9
+    When I pick a device and set Columns to 3 there
+    Then the cells flow one after another at that size
+    And no cell is placed on top of another
+    Because *Start at column* is written in the twelve-column row's units and I did
+      not restate it when I changed the count — so taking it at face value in a
+      three-track row put every cell in column 1, drawn one on top of another, from
+      820px down. Restating a cell's own start at that device is still honoured
+      exactly: there I really am speaking in that row's units.
+
+  # ── The last row fills, for every block in the catalogue ───────────────────
+  # tests/e2e/every-component-fills-the-row.spec.ts
+
+  Scenario: A narrowed grid never leaves half a row of background
+    Given a three-across grid inside a section with a background colour
+    When the page is viewed between 620px and 880px, where the track caps at two
+    Then the cell that wraps onto the last row stretches to fill it
+    Because any count that does not divide by the narrowed track leaves an orphan
+      — measured, a three-card row stopped 310px short of a 620px grid and the
+      gap was the section's own colour. Four cards divided evenly and filled,
+      which is why nobody had seen it. A three-card row is Scenario B of our own
+      user guide.
+
+  Scenario: …and that holds for every block the palette can add
+    Given one grid per kind — every primitive and every catalogue component
+    When each is viewed at twelve widths either side of every rung boundary
+    Then not one of them leaves a gap beside its last row
+    Because a per-component test is exactly the test that will not exist for the
+      component nobody wrote one for. The sweep enumerates the catalogue, so a
+      component added tomorrow is covered the day it appears. Measured without
+      the fix: 80 of 240 checks left a hole, across all twenty kinds.
+
+  Scenario: A layout the user made themselves is left alone
+    Given a twelve-column row holding two cells of four columns each
+    Then the third of the row they left empty stays empty
+    Because filling it would be the builder arguing with a design. Only a grid
+      the responsive ladder NARROWED is stretched.
+
+  Scenario: A grid narrows by its own box, not only by the screen
+    Given a three-cell grid whose middle cell holds another three-cell grid of quotes
+    When the page is viewed at 768px, where the ladder says three across
+    Then the outer grid is three across, because its box (the page) has room for three readable cells
+    And the inner grid is ONE column, because its box (a 256px cell) has room for one
+    And no word in any quote is broken across lines, on the canvas and in the Preview alike
+    Because the ladder reasons from the screen: measured, the inner grid drew each
+      quote 85px wide — twelve tracks of 21px — and broke "everything" letter by
+      letter, in both engines, while by the screen three across was right.
+      So below across × 12rem of ITS OWN width a grid goes two across, and below
+      24rem one — a container query on the box that holds it, one emitter for
+      both engines (Responsive Field Guide ingredient ④).
+
+  Scenario: A narrowed grid has the same rows in the editor as on the page
+    Given a grid of an icon, a short text and a long text, 1 · 3 · 8 columns wide, in the main column beside a sidebar
+    When I look at it at the Tablet size, where its own box makes it two across
+    Then the editor draws two rows, exactly as the published page does, and every cell is the same height in both
+    And the editor's "Add a block here" offer is not drawn, because a narrowed grid's last row is always full
+    Because the offer was worked out from the screen's columns while the grid had narrowed by its own box: it
+      appeared as a cell of its own on a third row, and every real cell lost a third of its height to it —
+      116px in the editor, 174px on the page (tier-99 sweep, pages 254 and 285)
+
+  Scenario: The own-box rule only ever takes columns away
+    Given a grid on the phone rung, where the ladder already says one column
+    Then the two-across rule never runs there, in either engine
+    And a count the user set at any rung switches the rule off for that grid
+    And a masonry gallery and a pager keep their tracks
+    Because a per-device setting always wins, and a masonry track is a ruler, not a row.

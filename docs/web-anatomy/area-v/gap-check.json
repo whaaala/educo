@@ -1,0 +1,1679 @@
+{
+ "at": "2026-10-03T14:28:04.253Z",
+ "items": 6736,
+ "techniques": [
+  {
+   "id": "hex 8-digit (alpha)",
+   "family": "colour",
+   "map": true,
+   "n": 154,
+   "bySrc": {
+    "codepen:shadow": 24,
+    "codepen:overlay": 24,
+    "codepen:glassmorphism": 13,
+    "codepen:backdrop-filter": 10,
+    "codepen:colorpicker": 11,
+    "codepen:texture": 6,
+    "codepen:noise": 6,
+    "codepen:grain": 2,
+    "codepen:divider": 1,
+    "codepen:gradient-border": 2,
+    "codepen:blend-mode": 2,
+    "codepen:mix-blend-mode": 6,
+    "codepen:clip-path": 17,
+    "codepen:wave": 2,
+    "aw-texture": 10,
+    "wf-glassmorphism": 9,
+    "wf-overlay": 8,
+    "wf-shadow": 1
+   },
+   "ex": [
+    "Lunar Perspective Simulator — https://codepen.io/Milan_Dupalo/pen/xbVggyg",
+    "Pure CSS Lamp Light #CodePenChallenge: Shadow — https://codepen.io/Avoloch/pen/ZYbavKN",
+    "CPChallenge: Hand Drawn Shadow — https://codepen.io/tommyho/pen/PwPJRmb",
+    "Interactive 2D Light Shadows — https://codepen.io/mtanmaym/pen/wBaQxwQ"
+   ]
+  },
+  {
+   "id": "oklch()",
+   "family": "colour",
+   "map": true,
+   "n": 949,
+   "bySrc": {
+    "codepen:shadow": 4,
+    "codepen:overlay": 2,
+    "codepen:backdrop-filter": 3,
+    "codepen:texture": 1,
+    "codepen:noise": 1,
+    "codepen:gradient-border": 1,
+    "codepen:mix-blend-mode": 6,
+    "codepen:clip-path": 3,
+    "site-grabient": 928
+   },
+   "ex": [
+    "sin cos angle background box pseudo before — https://codepen.io/tomhermans/pen/ByLzveK",
+    "Realistically Lit Ball — https://codepen.io/OuterVale/pen/ZYQLjJo",
+    "CSS @function: Re‑Creating Open Props Shadows — https://codepen.io/mobalti/pen/jEWqzrd",
+    "button, iv — https://codepen.io/dmbdesignpdx/pen/emmRdJe"
+   ]
+  },
+  {
+   "id": "hwb()",
+   "family": "colour",
+   "map": true,
+   "n": 2,
+   "bySrc": {
+    "codepen:colorpicker": 1,
+    "codepen:mix-blend-mode": 1
+   },
+   "ex": [
+    "(WIP) #CodePenChallenge: New Color — https://codepen.io/cxs7700/pen/RwBJPYq",
+    "mix-blend-mode — https://codepen.io/magiai/pen/YzaxbKz"
+   ]
+  },
+  {
+   "id": "lab() / lch()",
+   "family": "colour",
+   "map": true,
+   "n": 1,
+   "bySrc": {
+    "codepen:clip-path": 1
+   },
+   "ex": [
+    "Simple pricing cards — https://codepen.io/thebabydino/pen/ZYOJgyW"
+   ]
+  },
+  {
+   "id": "color(display-p3)",
+   "family": "colour",
+   "map": true,
+   "n": 6,
+   "bySrc": {
+    "codepen:glassmorphism": 2,
+    "codepen:gradient-text": 2,
+    "codepen:gradient-border": 1,
+    "codepen:clip-path": 1
+   },
+   "ex": [
+    "Trumps Retribution System — https://codepen.io/editor/J2A2K4E/pen/01a0344f-9ad0-7233-ad2b-22105453be17",
+    "Donald Trump Believes He is DORIAN GRAY — https://codepen.io/editor/J2A2K4E/pen/01a0344d-245c-718c-87f7-fc51114e1cdf",
+    "Typography: gradient text — https://codepen.io/dermalhealth/pen/bNENeJR",
+    "Typography: gradient text — https://codepen.io/dermalhealth/pen/NPGZQyK"
+   ]
+  },
+  {
+   "id": "color-mix()",
+   "family": "colour",
+   "map": true,
+   "n": 38,
+   "bySrc": {
+    "codepen:shadow": 1,
+    "codepen:overlay": 1,
+    "codepen:glassmorphism": 11,
+    "codepen:backdrop-filter": 1,
+    "codepen:colorpicker": 2,
+    "codepen:texture": 1,
+    "codepen:gradient-text": 1,
+    "codepen:blend-mode": 2,
+    "codepen:mix-blend-mode": 9,
+    "codepen:clip-path": 7,
+    "codepen:wave": 1,
+    "aw-texture": 1
+   },
+   "ex": [
+    "The August #CodePenChallenge continues! — https://codepen.io/Ranjith-R-the-builder/pen/PwPJLOb",
+    "njX UI — Modal & Popup System (6 color variants) — https://codepen.io/editor/njbSaab/pen/019d4282-4f63-76b9-be11-002f8220b706",
+    "✦ Enhanced Elegant Glass Slider ✦ GSAP · Full Height Fades ✦ ( HTML - CSS - jQuery - GSAP ) — https://codepen.io/editor/darshit_tank/pen/01a0c719-ee93-74ed-bae1-cf124fa3d74c",
+    "NixBenchmarkDiff — Terminal Telemetry & Web Vitals Comparator — https://codepen.io/editor/wptechnix/pen/01a07b00-ab8e-7406-90fc-5e76f029ea3d"
+   ]
+  },
+  {
+   "id": "relative colour (from …)",
+   "family": "colour",
+   "map": true,
+   "n": 17,
+   "bySrc": {
+    "codepen:shadow": 1,
+    "codepen:colorpicker": 1,
+    "codepen:texture": 1,
+    "codepen:curves": 1,
+    "codepen:dividers": 1,
+    "codepen:gradient-border": 1,
+    "codepen:blend-mode": 1,
+    "codepen:mix-blend-mode": 1,
+    "codepen:clip-path": 8,
+    "codepen:wave": 1
+   },
+   "ex": [
+    "CSS @function: Re‑Creating Open Props Shadows — https://codepen.io/mobalti/pen/jEWqzrd",
+    "WUI Colorpicker — https://codepen.io/wuijsproject/pen/bNeeobP",
+    "Tweakpane edit - Box BG layering texture, opacity, svg filtering, .. — https://codepen.io/tomhermans/pen/azzVGyJ",
+    "[wip] Responsive, dynamic curved lines joining items using SVGs & JavaScript — https://codepen.io/cbolson/pen/WNVeJjz"
+   ]
+  },
+  {
+   "id": "light-dark()",
+   "family": "colour",
+   "map": true,
+   "n": 6,
+   "bySrc": {
+    "codepen:shadow": 1,
+    "codepen:blend-mode": 1,
+    "codepen:clip-path": 4
+   },
+   "ex": [
+    "CSS @function: Re‑Creating Open Props Shadows — https://codepen.io/mobalti/pen/jEWqzrd",
+    "Noise layering problem — https://codepen.io/thebabydino/pen/qEdbEQZ",
+    "CSS shape() generator — https://codepen.io/editor/Ceecee-Hart/pen/019db6cd-2d5d-7146-a172-5cef65759fb4",
+    "Split images on hover using clip-path — https://codepen.io/cbolson/pen/QwKqRKQ"
+   ]
+  },
+  {
+   "id": "color-scheme",
+   "family": "colour",
+   "map": true,
+   "n": 51,
+   "bySrc": {
+    "codepen:shadow": 3,
+    "codepen:overlay": 1,
+    "codepen:glassmorphism": 2,
+    "codepen:backdrop-filter": 2,
+    "codepen:colorpicker": 2,
+    "codepen:texture": 1,
+    "codepen:blend-mode": 6,
+    "codepen:mix-blend-mode": 2,
+    "codepen:clip-path": 7,
+    "codepen:wave": 3,
+    "aw-texture": 13,
+    "wf-glassmorphism": 6,
+    "wf-overlay": 2,
+    "wf-shadow": 1
+   },
+   "ex": [
+    "CSS @function: Re‑Creating Open Props Shadows — https://codepen.io/mobalti/pen/jEWqzrd",
+    "LIGHT RAYS — https://codepen.io/tkmoney/pen/ZYbaQYP",
+    "CSS Shadow Elements — https://codepen.io/Jason-Davis-the-vuer/pen/OPPNyLO",
+    "Background Image Overlay — https://codepen.io/DamianS-eng/pen/XWwKYzy"
+   ]
+  },
+  {
+   "id": "accent-color",
+   "family": "colour",
+   "map": true,
+   "n": 39,
+   "bySrc": {
+    "codepen:shadow": 3,
+    "codepen:overlay": 2,
+    "codepen:glassmorphism": 22,
+    "codepen:backdrop-filter": 1,
+    "codepen:colorpicker": 1,
+    "codepen:texture": 1,
+    "codepen:noise": 3,
+    "codepen:blend-mode": 1,
+    "codepen:mix-blend-mode": 3,
+    "codepen:clip-path": 1,
+    "codepen:wave": 1
+   },
+   "ex": [
+    "Shadow Easing Tool — https://codepen.io/editor/Northstrix/pen/019ecc22-8af6-74c5-a3b0-118e2819917a",
+    "The August #CodePenChallenge continues! — https://codepen.io/Ranjith-R-the-builder/pen/PwPJLOb",
+    "Standing Icons, single element — https://codepen.io/MarkBoots/pen/XWZpRKw",
+    "Clothing cards with popover api overlay — https://codepen.io/kazmi066/pen/VYamEbL"
+   ]
+  },
+  {
+   "id": "EyeDropper API",
+   "family": "colour",
+   "map": true,
+   "n": 4,
+   "bySrc": {
+    "codepen:colorpicker": 4
+   },
+   "ex": [
+    "Color Picker — https://codepen.io/wahidullah_karimi/pen/xbKOrZO",
+    "Image Color Picker — https://codepen.io/rahul-patel-dev/pen/wvOOXPg",
+    "Image Color Picker — https://codepen.io/Coding-Artist/pen/GRGrmWy",
+    "Colorpicker — https://codepen.io/adi-dui-levy/pen/RwJrPWX"
+   ]
+  },
+  {
+   "id": "native <input type=color>",
+   "family": "colour",
+   "map": true,
+   "n": 85,
+   "bySrc": {
+    "codepen:shadow": 9,
+    "codepen:overlay": 1,
+    "codepen:glassmorphism": 3,
+    "codepen:backdrop-filter": 1,
+    "codepen:colorpicker": 44,
+    "codepen:texture": 3,
+    "codepen:curves": 1,
+    "codepen:noise": 5,
+    "codepen:grain": 1,
+    "codepen:blend-mode": 7,
+    "codepen:mix-blend-mode": 7,
+    "codepen:clip-path": 1,
+    "codepen:wave": 2
+   },
+   "ex": [
+    "ShadowForge — CSS Box Shadow Builder — https://codepen.io/Wendy-Ho/pen/wBgGMxv",
+    "ShadowForge — CSS Box Shadow Builder — https://codepen.io/Wendy-Ho/pen/myrobrY",
+    "Drop shadow generator — https://codepen.io/lionschellenberg/pen/rNgOzKo",
+    "Text Shadow Generator — https://codepen.io/replyre/pen/VwgOdPp"
+   ]
+  },
+  {
+   "id": "canvas spectrum read (getImageData)",
+   "family": "colour",
+   "map": true,
+   "n": 69,
+   "bySrc": {
+    "codepen:shadow": 1,
+    "codepen:glassmorphism": 1,
+    "codepen:colorpicker": 22,
+    "codepen:texture": 5,
+    "codepen:noise": 35,
+    "codepen:gradient-text": 2,
+    "codepen:blend-mode": 1,
+    "codepen:wave": 2
+   },
+   "ex": [
+    "plotter-XXVIII--neuomorphism — https://codepen.io/tfrere/pen/JjqLYKV",
+    "Break the Lie — https://codepen.io/HighFlyer910/pen/QwEJROy",
+    "CPChallenge: Named Colors — https://codepen.io/tommyho/pen/Pwzedwo",
+    "Hue Explorer — https://codepen.io/Raed-Ennab/pen/xbZVoag"
+   ]
+  },
+  {
+   "id": "conic-gradient",
+   "family": "gradients",
+   "map": true,
+   "n": 544,
+   "bySrc": {
+    "codepen:shadow": 10,
+    "codepen:overlay": 1,
+    "codepen:glassmorphism": 26,
+    "codepen:backdrop-filter": 3,
+    "codepen:texture": 8,
+    "codepen:noise": 2,
+    "codepen:grain": 1,
+    "codepen:gradient-text": 2,
+    "codepen:gradient-border": 9,
+    "codepen:blend-mode": 45,
+    "codepen:mix-blend-mode": 11,
+    "codepen:clip-path": 40,
+    "aw-texture": 2,
+    "site-grabient": 383,
+    "wf-glassmorphism": 1
+   },
+   "ex": [
+    "Light & Shadow Illustration - CSS -NoDiv — https://codepen.io/josetxu/pen/ZYbjrBr",
+    "The August #CodePenChallenge continues! — https://codepen.io/Ranjith-R-the-builder/pen/PwPJLOb",
+    "3D Shadowed Diamonds Tessellated Pattern - No Div - Pure CSS — https://codepen.io/josetxu/pen/OPPVYGw",
+    "Neon border animation — https://codepen.io/sdgaoqiang/pen/yLQdpzQ"
+   ]
+  },
+  {
+   "id": "repeating-*-gradient",
+   "family": "gradients",
+   "map": true,
+   "n": 136,
+   "bySrc": {
+    "codepen:shadow": 8,
+    "codepen:overlay": 3,
+    "codepen:glassmorphism": 8,
+    "codepen:backdrop-filter": 5,
+    "codepen:colorpicker": 2,
+    "codepen:texture": 10,
+    "codepen:noise": 2,
+    "codepen:grain": 1,
+    "codepen:gradient-text": 2,
+    "codepen:gradient-border": 2,
+    "codepen:blend-mode": 44,
+    "codepen:mix-blend-mode": 21,
+    "codepen:clip-path": 25,
+    "aw-texture": 3
+   },
+   "ex": [
+    "Neumorphism textures - Single DIV CSS — https://codepen.io/Pedro-Ondiviela/pen/xbOgPxL",
+    "Into the Light — https://codepen.io/Manoj-EU/pen/raLLZVE",
+    "Striped text shadow — https://codepen.io/mothier/pen/mybrEjL",
+    "3D Juggling animation — https://codepen.io/johnrjervis/pen/rNQmPrm"
+   ]
+  },
+  {
+   "id": "interpolation in <space>",
+   "family": "gradients",
+   "map": true,
+   "n": 9,
+   "bySrc": {
+    "codepen:shadow": 1,
+    "codepen:glassmorphism": 1,
+    "codepen:noise": 1,
+    "codepen:gradient-border": 1,
+    "codepen:blend-mode": 2,
+    "codepen:mix-blend-mode": 1,
+    "codepen:clip-path": 2
+   },
+   "ex": [
+    "debossed notebook cover — https://codepen.io/editor/vii120/pen/01a05ecc-dbf9-7c51-8f4a-a388d2cbaa23",
+    "PURE CSS: glassmorphism — https://codepen.io/ibbatta/pen/ZYOzrzg",
+    "text vanish effect w/ svg filter — https://codepen.io/editor/vii120/pen/019fdd6f-2e07-7e7e-a33f-8a3966d39ae3",
+    "Cards with animated gradient borders — https://codepen.io/mobalti/pen/GgpVryv"
+   ]
+  },
+  {
+   "id": "@property (animated gradient)",
+   "family": "gradients",
+   "map": true,
+   "n": 91,
+   "bySrc": {
+    "codepen:shadow": 8,
+    "codepen:glassmorphism": 8,
+    "codepen:backdrop-filter": 1,
+    "codepen:texture": 1,
+    "codepen:noise": 7,
+    "codepen:grain": 1,
+    "codepen:gradient-text": 2,
+    "codepen:gradient-border": 8,
+    "codepen:blend-mode": 25,
+    "codepen:mix-blend-mode": 2,
+    "codepen:clip-path": 26,
+    "codepen:wave": 2
+   },
+   "ex": [
+    "sin cos angle background box pseudo before — https://codepen.io/tomhermans/pen/ByLzveK",
+    "Fun shadow coding challenge — https://codepen.io/cbolson/pen/emzVbPa",
+    "Sphere with shadow — https://codepen.io/cbolson/pen/jEbGZRB",
+    "CSS-Only 3D Sphere with Dynamic Lighting and Shadow Controls — https://codepen.io/chrisrooke/pen/WbvabwE"
+   ]
+  },
+  {
+   "id": "background-clip: text",
+   "family": "gradients",
+   "map": true,
+   "n": 218,
+   "bySrc": {
+    "codepen:shadow": 20,
+    "codepen:overlay": 10,
+    "codepen:glassmorphism": 46,
+    "codepen:backdrop-filter": 4,
+    "codepen:texture": 10,
+    "codepen:noise": 6,
+    "codepen:grain": 1,
+    "codepen:gradient-text": 68,
+    "codepen:gradient-border": 4,
+    "codepen:blend-mode": 12,
+    "codepen:mix-blend-mode": 13,
+    "codepen:clip-path": 16,
+    "aw-texture": 2,
+    "wf-glassmorphism": 5,
+    "wf-overlay": 1
+   },
+   "ex": [
+    "grainy text shadow effect w/ svg filter — https://codepen.io/vii120/pen/ZYLxLya",
+    "ShadowForge — CSS Box Shadow Builder — https://codepen.io/Wendy-Ho/pen/wBgGMxv",
+    "ShadowForge — CSS Box Shadow Builder — https://codepen.io/Wendy-Ho/pen/myrobrY",
+    "MS Word 2003 Rainbow WordArt CSS — https://codepen.io/jacknguyen97/pen/LERrmPP"
+   ]
+  },
+  {
+   "id": "border-image",
+   "family": "gradients",
+   "map": true,
+   "n": 52,
+   "bySrc": {
+    "codepen:overlay": 6,
+    "codepen:glassmorphism": 2,
+    "codepen:noise": 1,
+    "codepen:gradient-border": 11,
+    "codepen:blend-mode": 1,
+    "codepen:clip-path": 9,
+    "aw-texture": 21,
+    "wf-glassmorphism": 1
+   },
+   "ex": [
+    "Background image overlay — https://codepen.io/playfulsparkle/pen/oNrZWNJ",
+    "CSS border-image — https://codepen.io/strobe-lights/pen/qBzbeVb",
+    "Overlay with one line css — https://codepen.io/TalhaZ/pen/eYadRrq",
+    "Background Image Overlay — https://codepen.io/DamianS-eng/pen/XWwKYzy"
+   ]
+  },
+  {
+   "id": "padding-box / border-box border trick",
+   "family": "gradients",
+   "map": true,
+   "n": 17,
+   "bySrc": {
+    "codepen:shadow": 1,
+    "codepen:overlay": 1,
+    "codepen:glassmorphism": 1,
+    "codepen:backdrop-filter": 1,
+    "codepen:gradient-border": 5,
+    "codepen:blend-mode": 3,
+    "codepen:clip-path": 4,
+    "aw-texture": 1
+   },
+   "ex": [
+    "Dynamic Shadows - UI Ray Tracing — https://codepen.io/Juxtopposed/pen/mdYLVVW",
+    "Gooey Liquid Style Overlay Effect With JavaScript And Canvas - Canva Like Home Page — https://codepen.io/oyzamil/pen/QVYBbB",
+    "In-progress — https://codepen.io/Lochy2000/pen/xbZPNae",
+    "Rotating Stripes × Liquid Glass — https://codepen.io/editor/mieras/pen/01a0ed9f-d167-7c3d-bcba-6b295c55d447"
+   ]
+  },
+  {
+   "id": "mask-composite (gradient border by mask)",
+   "family": "gradients",
+   "map": true,
+   "n": 41,
+   "bySrc": {
+    "codepen:shadow": 2,
+    "codepen:overlay": 1,
+    "codepen:glassmorphism": 15,
+    "codepen:backdrop-filter": 1,
+    "codepen:texture": 1,
+    "codepen:noise": 1,
+    "codepen:grain": 1,
+    "codepen:gradient-border": 4,
+    "codepen:blend-mode": 9,
+    "codepen:mix-blend-mode": 1,
+    "codepen:clip-path": 3,
+    "codepen:wave": 1,
+    "aw-texture": 1
+   },
+   "ex": [
+    "Pure CSS Lamp Light #CodePenChallenge: Shadow — https://codepen.io/Avoloch/pen/ZYbavKN",
+    "Faded Outer Box Backdrop Blur — https://codepen.io/vsync/pen/XWoYaag",
+    "Overlay Motion Slider with Layered Transitions 🍇 — https://codepen.io/bato-web-agency/pen/ByjqjLa",
+    "Liquid Glass Cards - Interactive Glassmorphism JavaScript Tutorial — https://codepen.io/editor/ash1198/pen/01a032c0-82a8-7966-b86c-a46729e90305"
+   ]
+  },
+  {
+   "id": "image-set()",
+   "family": "gradients",
+   "map": true,
+   "n": 0,
+   "bySrc": {},
+   "ex": []
+  },
+  {
+   "id": "cross-fade()",
+   "family": "gradients",
+   "map": false,
+   "n": 0,
+   "bySrc": {},
+   "ex": []
+  },
+  {
+   "id": "paint() worklet (Houdini)",
+   "family": "gradients",
+   "map": true,
+   "n": 6,
+   "bySrc": {
+    "codepen:noise": 3,
+    "codepen:gradient-border": 1,
+    "codepen:clip-path": 2
+   },
+   "ex": [
+    "Untitled — https://codepen.io/sfearl1/pen/bGyrpaj",
+    "SVG vs CSS (Paint Worklet) Noise — https://codepen.io/sfearl1/pen/gOyKoxV",
+    "Risograph Gradients with CSS Houdini — https://codepen.io/chriskirknielsen/pen/wveMqxv",
+    "Animated gradient border — https://codepen.io/seyedi/pen/OJdEVXZ"
+   ]
+  },
+  {
+   "id": "blurred blobs (aurora / mesh by blur ≥ 40px)",
+   "family": "gradients",
+   "map": true,
+   "n": 95,
+   "bySrc": {
+    "codepen:shadow": 8,
+    "codepen:overlay": 1,
+    "codepen:frosted-glass": 1,
+    "codepen:glassmorphism": 53,
+    "codepen:backdrop-filter": 7,
+    "codepen:texture": 3,
+    "codepen:noise": 5,
+    "codepen:grain": 2,
+    "codepen:gradient-border": 2,
+    "codepen:blend-mode": 3,
+    "codepen:mix-blend-mode": 4,
+    "codepen:clip-path": 1,
+    "aw-texture": 2,
+    "wf-glassmorphism": 3
+   },
+   "ex": [
+    "Into the Light — https://codepen.io/Manoj-EU/pen/raLLZVE",
+    "The August #CodePenChallenge continues! — https://codepen.io/Ranjith-R-the-builder/pen/PwPJLOb",
+    "Sombras de Color con CSS — https://codepen.io/rasenfx/pen/YPzmaQy",
+    "8ball-css-light-fx — https://codepen.io/jgreen721/pen/JjQvMXy"
+   ]
+  },
+  {
+   "id": "background-attachment: fixed",
+   "family": "gradients",
+   "map": true,
+   "n": 79,
+   "bySrc": {
+    "codepen:shadow": 1,
+    "codepen:overlay": 11,
+    "codepen:frosted-glass": 10,
+    "codepen:glassmorphism": 7,
+    "codepen:backdrop-filter": 10,
+    "codepen:texture": 3,
+    "codepen:curves": 2,
+    "codepen:gradient-text": 2,
+    "codepen:mesh-gradient": 1,
+    "codepen:blend-mode": 11,
+    "codepen:mix-blend-mode": 12,
+    "codepen:clip-path": 9
+   },
+   "ex": [
+    "Design of cards — https://codepen.io/baarbaracrr/pen/MWVOYga",
+    "Responsive Mega-Menu with Search Overlay — https://codepen.io/Aga_CW/pen/ogzGWrW",
+    "Eigeen webseite — https://codepen.io/philcool/pen/KKOEbvo",
+    "Image overlay — https://codepen.io/GuiFSouzah/pen/yLQNvMY"
+   ]
+  },
+  {
+   "id": "background-origin / clip box",
+   "family": "gradients",
+   "map": true,
+   "n": 48,
+   "bySrc": {
+    "codepen:shadow": 1,
+    "codepen:overlay": 2,
+    "codepen:frosted-glass": 1,
+    "codepen:glassmorphism": 4,
+    "codepen:backdrop-filter": 3,
+    "codepen:colorpicker": 1,
+    "codepen:texture": 1,
+    "codepen:divider": 1,
+    "codepen:gradient-text": 2,
+    "codepen:gradient-border": 7,
+    "codepen:blend-mode": 2,
+    "codepen:mix-blend-mode": 2,
+    "codepen:clip-path": 2,
+    "aw-texture": 18,
+    "wf-glassmorphism": 1
+   },
+   "ex": [
+    "Dynamic Shadows - UI Ray Tracing — https://codepen.io/Juxtopposed/pen/mdYLVVW",
+    "Show page overlay clicking an image — https://codepen.io/r-w-c/pen/QWRbrzB",
+    "Animated Menu Toggle — https://codepen.io/the-captain-america/pen/EmyvOd",
+    "Frosted Glass Title for some templates — https://codepen.io/Manamin/pen/ezejGg"
+   ]
+  },
+  {
+   "id": "::before / ::after layer inset 0",
+   "family": "overlays",
+   "map": true,
+   "n": 372,
+   "bySrc": {
+    "codepen:shadow": 24,
+    "codepen:overlay": 15,
+    "codepen:frosted-glass": 1,
+    "codepen:glassmorphism": 105,
+    "codepen:backdrop-filter": 14,
+    "codepen:colorpicker": 2,
+    "codepen:texture": 4,
+    "codepen:noise": 12,
+    "codepen:grain": 3,
+    "codepen:gradient-border": 4,
+    "codepen:blend-mode": 15,
+    "codepen:mix-blend-mode": 27,
+    "codepen:clip-path": 65,
+    "codepen:wave": 6,
+    "aw-texture": 55,
+    "wf-glassmorphism": 11,
+    "wf-overlay": 8,
+    "wf-shadow": 1
+   },
+   "ex": [
+    "Case File: An Illusion — https://codepen.io/grauconejo13/pen/yygoaKb",
+    "ShadowForge — CSS Box Shadow Builder — https://codepen.io/Wendy-Ho/pen/myrobrY",
+    "MS Word 2003 Rainbow WordArt CSS — https://codepen.io/jacknguyen97/pen/LERrmPP",
+    "sin cos angle background box pseudo before — https://codepen.io/tomhermans/pen/ByLzveK"
+   ]
+  },
+  {
+   "id": "::backdrop (modal backdrop)",
+   "family": "overlays",
+   "map": true,
+   "n": 21,
+   "bySrc": {
+    "codepen:overlay": 4,
+    "codepen:backdrop-filter": 3,
+    "aw-texture": 14
+   },
+   "ex": [
+    "Resizable browser lightbox overlay. — https://codepen.io/tomhermans/pen/yyadVXL",
+    "Pacman CSS Fun: 4 of 4 Overlay Property animations — https://codepen.io/jupago/pen/XWvmmqj",
+    "Simple Modal — https://codepen.io/m_vd_e/pen/GRYBWrV",
+    "HTML5 dialog element — https://codepen.io/robsimpson/pen/OoGreG"
+   ]
+  },
+  {
+   "id": "spotlight follows pointer (var x/y in a gradient)",
+   "family": "overlays",
+   "map": true,
+   "n": 30,
+   "bySrc": {
+    "codepen:shadow": 5,
+    "codepen:glassmorphism": 9,
+    "codepen:gradient-border": 1,
+    "codepen:blend-mode": 10,
+    "codepen:mix-blend-mode": 1,
+    "codepen:clip-path": 4
+   },
+   "ex": [
+    "Light & Shadow — https://codepen.io/Manoj-EU/pen/QwENxRM",
+    "Radiance — https://codepen.io/paesjr/pen/VYvyPxJ",
+    "Sphere with shadow — https://codepen.io/cbolson/pen/jEbGZRB",
+    "Interactive 2D Light Shadows — https://codepen.io/mtanmaym/pen/wBaQxwQ"
+   ]
+  },
+  {
+   "id": "pointer → custom property (JS)",
+   "family": "overlays",
+   "map": true,
+   "n": 92,
+   "bySrc": {
+    "codepen:shadow": 7,
+    "codepen:overlay": 2,
+    "codepen:glassmorphism": 28,
+    "codepen:colorpicker": 2,
+    "codepen:texture": 1,
+    "codepen:noise": 6,
+    "codepen:gradient-text": 2,
+    "codepen:gradient-border": 1,
+    "codepen:blend-mode": 9,
+    "codepen:mix-blend-mode": 10,
+    "codepen:clip-path": 22,
+    "codepen:wave": 2
+   },
+   "ex": [
+    "Light & Shadow — https://codepen.io/Manoj-EU/pen/QwENxRM",
+    "Radiance — https://codepen.io/paesjr/pen/VYvyPxJ",
+    "The August #CodePenChallenge continues! — https://codepen.io/Ranjith-R-the-builder/pen/PwPJLOb",
+    "CSS-Only 3D Sphere with Dynamic Lighting and Shadow Controls — https://codepen.io/chrisrooke/pen/WbvabwE"
+   ]
+  },
+  {
+   "id": "scroll-driven overlay (animation-timeline)",
+   "family": "overlays",
+   "map": true,
+   "n": 27,
+   "bySrc": {
+    "codepen:shadow": 5,
+    "codepen:glassmorphism": 1,
+    "codepen:gradient-text": 3,
+    "codepen:blend-mode": 2,
+    "codepen:clip-path": 4,
+    "aw-texture": 12
+   },
+   "ex": [
+    "Fun shadow coding challenge — https://codepen.io/cbolson/pen/emzVbPa",
+    "CSS-Only 3D Sphere with Dynamic Lighting and Shadow Controls — https://codepen.io/chrisrooke/pen/WbvabwE",
+    "CSS-Only Scroll Shadows 1 — https://codepen.io/vsync/pen/PoMQOPY",
+    "Dynamic Shadows - UI Ray Tracing — https://codepen.io/Juxtopposed/pen/mdYLVVW"
+   ]
+  },
+  {
+   "id": "box-shadow inset",
+   "family": "shadows",
+   "map": true,
+   "n": 417,
+   "bySrc": {
+    "codepen:shadow": 74,
+    "codepen:overlay": 20,
+    "codepen:frosted-glass": 9,
+    "codepen:glassmorphism": 97,
+    "codepen:backdrop-filter": 13,
+    "codepen:colorpicker": 20,
+    "codepen:texture": 11,
+    "codepen:noise": 12,
+    "codepen:grain": 6,
+    "codepen:divider": 2,
+    "codepen:gradient-border": 4,
+    "codepen:blend-mode": 22,
+    "codepen:mix-blend-mode": 23,
+    "codepen:clip-path": 34,
+    "codepen:wave": 4,
+    "codepen:pens-r2-single": 1,
+    "aw-texture": 55,
+    "wf-glassmorphism": 5,
+    "wf-overlay": 2,
+    "wf-shadow": 3
+   },
+   "ex": [
+    "Neumorphism textures - Single DIV CSS — https://codepen.io/Pedro-Ondiviela/pen/xbOgPxL",
+    "Into the Light — https://codepen.io/Manoj-EU/pen/raLLZVE",
+    "Lunar Perspective Simulator — https://codepen.io/Milan_Dupalo/pen/xbVggyg",
+    "Animations — https://codepen.io/alobuuls/pen/myVKVxW"
+   ]
+  },
+  {
+   "id": "filter: drop-shadow",
+   "family": "shadows",
+   "map": true,
+   "n": 219,
+   "bySrc": {
+    "codepen:shadow": 30,
+    "codepen:overlay": 5,
+    "codepen:frosted-glass": 1,
+    "codepen:glassmorphism": 27,
+    "codepen:backdrop-filter": 9,
+    "codepen:colorpicker": 2,
+    "codepen:texture": 3,
+    "codepen:noise": 10,
+    "codepen:grain": 1,
+    "codepen:divider": 1,
+    "codepen:gradient-text": 3,
+    "codepen:gradient-border": 1,
+    "codepen:blend-mode": 47,
+    "codepen:mix-blend-mode": 8,
+    "codepen:clip-path": 69,
+    "aw-texture": 1,
+    "wf-glassmorphism": 1
+   },
+   "ex": [
+    "Case File: An Illusion — https://codepen.io/grauconejo13/pen/yygoaKb",
+    "ShadowForge — CSS Box Shadow Builder — https://codepen.io/Wendy-Ho/pen/wBgGMxv",
+    "MS Word 2003 Rainbow WordArt CSS — https://codepen.io/jacknguyen97/pen/LERrmPP",
+    "Into the Light — https://codepen.io/Manoj-EU/pen/raLLZVE"
+   ]
+  },
+  {
+   "id": "text-shadow",
+   "family": "shadows",
+   "map": true,
+   "n": 560,
+   "bySrc": {
+    "codepen:shadow": 91,
+    "codepen:overlay": 51,
+    "codepen:frosted-glass": 14,
+    "codepen:glassmorphism": 67,
+    "codepen:backdrop-filter": 22,
+    "codepen:colorpicker": 12,
+    "codepen:texture": 12,
+    "codepen:curves": 3,
+    "codepen:noise": 12,
+    "codepen:grain": 3,
+    "codepen:divider": 6,
+    "codepen:gradient-text": 13,
+    "codepen:gradient-border": 7,
+    "codepen:mesh-gradient": 2,
+    "codepen:blend-mode": 67,
+    "codepen:mix-blend-mode": 36,
+    "codepen:clip-path": 60,
+    "codepen:wave": 3,
+    "aw-texture": 14,
+    "wf-glassmorphism": 37,
+    "wf-overlay": 22,
+    "wf-shadow": 6
+   },
+   "ex": [
+    "MS Word 2003 Rainbow WordArt CSS — https://codepen.io/jacknguyen97/pen/LERrmPP",
+    "CSS | Text with border and shadow — https://codepen.io/ejlambo/pen/WbxqEqp",
+    "Into the Light — https://codepen.io/Manoj-EU/pen/raLLZVE",
+    "Light & Shadow — https://codepen.io/Manoj-EU/pen/QwENxRM"
+   ]
+  },
+  {
+   "id": "-webkit-box-reflect (reflection)",
+   "family": "shadows",
+   "map": true,
+   "n": 4,
+   "bySrc": {
+    "codepen:shadow": 2,
+    "codepen:mix-blend-mode": 1,
+    "codepen:wave": 1
+   },
+   "ex": [
+    "Light & Shadow — Reflection — https://codepen.io/Raed-Ennab/pen/PwPaNGb",
+    "Pure CSS 3D Cube with Realistic Shadows and Reflections — https://codepen.io/aldrie/pen/JjWbwBN",
+    "mix-blend-mode — https://codepen.io/magiai/pen/YzaxbKz",
+    "Tunnel — https://codepen.io/daniel-mu-oz/pen/GRbKpod"
+   ]
+  },
+  {
+   "id": "shadow follows pointer (JS sets shadow)",
+   "family": "shadows",
+   "map": true,
+   "n": 50,
+   "bySrc": {
+    "codepen:shadow": 26,
+    "codepen:glassmorphism": 16,
+    "codepen:colorpicker": 2,
+    "codepen:mix-blend-mode": 2,
+    "codepen:clip-path": 2,
+    "codepen:wave": 1,
+    "codepen:pens-r2-single": 1
+   },
+   "ex": [
+    "ShadowForge — CSS Box Shadow Builder — https://codepen.io/Wendy-Ho/pen/wBgGMxv",
+    "ShadowForge — CSS Box Shadow Builder — https://codepen.io/Wendy-Ho/pen/myrobrY",
+    "Credit Card — https://codepen.io/Manoj-EU/pen/myEVzaP",
+    "Box Shadow — https://codepen.io/codePen234999/pen/YPqKwVg"
+   ]
+  },
+  {
+   "id": "backdrop-filter",
+   "family": "glass",
+   "map": true,
+   "n": 525,
+   "bySrc": {
+    "codepen:shadow": 11,
+    "codepen:overlay": 16,
+    "codepen:frosted-glass": 9,
+    "codepen:glassmorphism": 249,
+    "codepen:backdrop-filter": 124,
+    "codepen:colorpicker": 2,
+    "codepen:texture": 5,
+    "codepen:noise": 13,
+    "codepen:grain": 3,
+    "codepen:gradient-border": 4,
+    "codepen:mesh-gradient": 1,
+    "codepen:blend-mode": 5,
+    "codepen:mix-blend-mode": 11,
+    "codepen:clip-path": 20,
+    "codepen:wave": 3,
+    "aw-texture": 21,
+    "wf-glassmorphism": 25,
+    "wf-overlay": 1,
+    "wf-shadow": 2
+   },
+   "ex": [
+    "Case File: An Illusion — https://codepen.io/grauconejo13/pen/yygoaKb",
+    "Neon Cathedral Shader | #CodePenChallenge August 2025: Light & Shadow — https://codepen.io/andrewuru/pen/LEpBmPL",
+    "The August #CodePenChallenge continues! — https://codepen.io/Ranjith-R-the-builder/pen/PwPJLOb",
+    "Dynamic Shadows — https://codepen.io/cmillard/pen/zYQPxMj"
+   ]
+  },
+  {
+   "id": "progressive blur (backdrop-filter + mask)",
+   "family": "glass",
+   "map": true,
+   "n": 15,
+   "bySrc": {
+    "codepen:shadow": 1,
+    "codepen:overlay": 1,
+    "codepen:frosted-glass": 1,
+    "codepen:glassmorphism": 3,
+    "codepen:backdrop-filter": 4,
+    "codepen:clip-path": 1,
+    "aw-texture": 4
+   },
+   "ex": [
+    "Faded Outer Box Backdrop Blur — https://codepen.io/vsync/pen/XWoYaag",
+    "Figcaption Overlay — https://codepen.io/flostrasser/pen/XJXgmRg",
+    "Frosted Glass with Soft Feathered Edges — CSS mask-image — https://codepen.io/devyatov/pen/EaZrWpK",
+    "Frosted Glass with Soft Feathered Edges — CSS mask-image — https://codepen.io/devyatov/pen/EaZrWpK"
+   ]
+  },
+  {
+   "id": "backdrop-filter: url(#svg) (liquid glass)",
+   "family": "glass",
+   "map": true,
+   "n": 9,
+   "bySrc": {
+    "codepen:glassmorphism": 3,
+    "codepen:backdrop-filter": 4,
+    "codepen:mix-blend-mode": 1,
+    "codepen:clip-path": 1
+   },
+   "ex": [
+    "iOS Liquid Glass — Real Refraction with CSS + SVG — https://codepen.io/Sachin-Kizhakkepurath/pen/VYPpWvB",
+    "Liquid Glass: Slimy Morphic Distortion — https://codepen.io/Umut501/pen/pvEzzbP",
+    "Liquid Glass Distortion UI — Realistic SVG Refraction & Chromatic Blur — https://codepen.io/oathanrex/pen/ByojBQo",
+    "Rotating Stripes × Liquid Glass — https://codepen.io/editor/mieras/pen/01a0ed9f-d167-7c3d-bcba-6b295c55d447"
+   ]
+  },
+  {
+   "id": "filter: url(#svg)",
+   "family": "glass",
+   "map": true,
+   "n": 81,
+   "bySrc": {
+    "codepen:shadow": 4,
+    "codepen:overlay": 1,
+    "codepen:frosted-glass": 1,
+    "codepen:glassmorphism": 10,
+    "codepen:backdrop-filter": 6,
+    "codepen:texture": 6,
+    "codepen:noise": 23,
+    "codepen:grain": 2,
+    "codepen:gradient-text": 2,
+    "codepen:blend-mode": 10,
+    "codepen:mix-blend-mode": 2,
+    "codepen:clip-path": 12,
+    "aw-texture": 1,
+    "wf-overlay": 1
+   },
+   "ex": [
+    "grainy text shadow effect w/ svg filter — https://codepen.io/vii120/pen/ZYLxLya",
+    "clay — https://codepen.io/indie__/pen/YPzvRLV",
+    "Shadow Palm — https://codepen.io/Calleb/pen/ZEyNZPo",
+    "CSS Natural Shadow with inlined SVG filter — https://codepen.io/bramus/pen/oNWedQB"
+   ]
+  },
+  {
+   "id": "feGaussianBlur",
+   "family": "glass",
+   "map": true,
+   "n": 65,
+   "bySrc": {
+    "codepen:shadow": 4,
+    "codepen:overlay": 1,
+    "codepen:frosted-glass": 1,
+    "codepen:glassmorphism": 10,
+    "codepen:backdrop-filter": 3,
+    "codepen:texture": 17,
+    "codepen:noise": 5,
+    "codepen:gradient-text": 2,
+    "codepen:gradient-border": 1,
+    "codepen:blend-mode": 1,
+    "codepen:mix-blend-mode": 3,
+    "codepen:clip-path": 12,
+    "aw-texture": 2,
+    "wf-glassmorphism": 3
+   },
+   "ex": [
+    "Light & Shadow — Reflection — https://codepen.io/Raed-Ennab/pen/PwPaNGb",
+    "The August #CodePenChallenge continues! — https://codepen.io/Ranjith-R-the-builder/pen/PwPJLOb",
+    "clay — https://codepen.io/indie__/pen/YPzvRLV",
+    "CSS Natural Shadow with inlined SVG filter — https://codepen.io/bramus/pen/oNWedQB"
+   ]
+  },
+  {
+   "id": "feColorMatrix",
+   "family": "glass",
+   "map": true,
+   "n": 127,
+   "bySrc": {
+    "codepen:shadow": 1,
+    "codepen:glassmorphism": 10,
+    "codepen:backdrop-filter": 3,
+    "codepen:colorpicker": 1,
+    "codepen:texture": 73,
+    "codepen:noise": 11,
+    "codepen:grain": 2,
+    "codepen:gradient-border": 1,
+    "codepen:blend-mode": 7,
+    "codepen:mix-blend-mode": 3,
+    "codepen:clip-path": 9,
+    "aw-texture": 3,
+    "wf-glassmorphism": 2,
+    "wf-shadow": 1
+   },
+   "ex": [
+    "Shadow Palm — https://codepen.io/Calleb/pen/ZEyNZPo",
+    "GLASS OS — Interactive Glassmorphism Components — https://codepen.io/Chathura-Jayasanka/pen/MYJOONN",
+    "Glassmorphic Navbar with Cinematic Fluid Dynamics — https://codepen.io/Deva-Kumar-the-bold/pen/VYPjBPv",
+    "Ersoftdev / Glassmorphic Keypad — https://codepen.io/editor/Edson-Rondilla/pen/019e75e1-a12c-7a96-851e-f10ed986a999"
+   ]
+  },
+  {
+   "id": "feComponentTransfer (duotone)",
+   "family": "glass",
+   "map": true,
+   "n": 51,
+   "bySrc": {
+    "codepen:overlay": 1,
+    "codepen:glassmorphism": 1,
+    "codepen:backdrop-filter": 1,
+    "codepen:texture": 35,
+    "codepen:noise": 2,
+    "codepen:grain": 1,
+    "codepen:mix-blend-mode": 1,
+    "codepen:clip-path": 7,
+    "aw-texture": 2
+   },
+   "ex": [
+    "SVG Filters - Overlay Menu — https://codepen.io/Lucas_Mes/pen/RwvPLjj",
+    "Liquid Glass Navbar | Switcher — https://codepen.io/Sis-the-builder/pen/GgjppJe",
+    "Rotating Stripes × Liquid Glass — https://codepen.io/editor/mieras/pen/01a0ed9f-d167-7c3d-bcba-6b295c55d447",
+    "Tweakpane edit - Box BG layering texture, opacity, svg filtering, .. — https://codepen.io/tomhermans/pen/azzVGyJ"
+   ]
+  },
+  {
+   "id": "feDisplacementMap (distort / liquid)",
+   "family": "glass",
+   "map": true,
+   "n": 96,
+   "bySrc": {
+    "codepen:shadow": 2,
+    "codepen:overlay": 2,
+    "codepen:glassmorphism": 9,
+    "codepen:backdrop-filter": 3,
+    "codepen:texture": 50,
+    "codepen:noise": 20,
+    "codepen:gradient-text": 1,
+    "codepen:blend-mode": 2,
+    "codepen:mix-blend-mode": 2,
+    "codepen:clip-path": 5
+   },
+   "ex": [
+    "grainy text shadow effect w/ svg filter — https://codepen.io/vii120/pen/ZYLxLya",
+    "Light & Shadow — Reflection — https://codepen.io/Raed-Ennab/pen/PwPaNGb",
+    "SVG Filters - Overlay Menu — https://codepen.io/Lucas_Mes/pen/RwvPLjj",
+    "Menu transition overlay — https://codepen.io/Korabl/pen/NWWYEYL"
+   ]
+  },
+  {
+   "id": "feMorphology",
+   "family": "glass",
+   "map": true,
+   "n": 33,
+   "bySrc": {
+    "codepen:texture": 21,
+    "codepen:noise": 6,
+    "codepen:gradient-text": 1,
+    "codepen:blend-mode": 1,
+    "codepen:clip-path": 4
+   },
+   "ex": [
+    "Star City 🌆 (709 bytes) #PetitePatterns — https://codepen.io/finnhvman/pen/ByjWGNa",
+    "Tweakpane edit - Box BG layering texture, opacity, svg filtering, .. — https://codepen.io/tomhermans/pen/azzVGyJ",
+    "Impossible Maze 🌽 (897 bytes) #PetitePatterns — https://codepen.io/finnhvman/pen/rNgYNmV",
+    "Gem Cuts 💎 (933 bytes) #PetitePatterns — https://codepen.io/finnhvman/pen/YzbKNbV"
+   ]
+  },
+  {
+   "id": "feSpecular/DiffuseLighting (emboss)",
+   "family": "glass",
+   "map": true,
+   "n": 43,
+   "bySrc": {
+    "codepen:backdrop-filter": 2,
+    "codepen:texture": 34,
+    "codepen:noise": 5,
+    "codepen:clip-path": 2
+   },
+   "ex": [
+    "Rotating Stripes × Liquid Glass — https://codepen.io/editor/mieras/pen/01a0ed9f-d167-7c3d-bcba-6b295c55d447",
+    "lighting-saturate — https://codepen.io/guedesvictor/pen/yyNGyjP",
+    "Flow Field 🔀 (401 bytes) #PetitePatterns — https://codepen.io/finnhvman/pen/pvgBVrQ",
+    "Nonfigurative no. 6 💚 (401 bytes) #PetitePatterns — https://codepen.io/finnhvman/pen/LEGBewV"
+   ]
+  },
+  {
+   "id": "feBlend / feComposite",
+   "family": "glass",
+   "map": true,
+   "n": 128,
+   "bySrc": {
+    "codepen:shadow": 4,
+    "codepen:glassmorphism": 9,
+    "codepen:backdrop-filter": 2,
+    "codepen:texture": 68,
+    "codepen:noise": 13,
+    "codepen:gradient-text": 1,
+    "codepen:gradient-border": 1,
+    "codepen:blend-mode": 7,
+    "codepen:mix-blend-mode": 2,
+    "codepen:clip-path": 14,
+    "aw-texture": 3,
+    "wf-glassmorphism": 3,
+    "wf-shadow": 1
+   },
+   "ex": [
+    "grainy text shadow effect w/ svg filter — https://codepen.io/vii120/pen/ZYLxLya",
+    "The August #CodePenChallenge continues! — https://codepen.io/Ranjith-R-the-builder/pen/PwPJLOb",
+    "clay — https://codepen.io/indie__/pen/YPzvRLV",
+    "Shadow Palm — https://codepen.io/Calleb/pen/ZEyNZPo"
+   ]
+  },
+  {
+   "id": "gooey (blur + contrast)",
+   "family": "glass",
+   "map": true,
+   "n": 39,
+   "bySrc": {
+    "codepen:shadow": 1,
+    "codepen:frosted-glass": 1,
+    "codepen:glassmorphism": 1,
+    "codepen:backdrop-filter": 7,
+    "codepen:grain": 1,
+    "codepen:blend-mode": 15,
+    "codepen:mix-blend-mode": 8,
+    "codepen:clip-path": 3,
+    "codepen:wave": 1,
+    "site-convertflow": 1
+   },
+   "ex": [
+    "neon button shadow — https://codepen.io/upo11o/pen/qBpOZRX",
+    "iOS 7 Control Center — https://codepen.io/Edo_M/pen/kKvBYL",
+    "Reflective UI — https://codepen.io/kazmi066/pen/bNpZgOJ",
+    "Background Effects for Text Readability — https://codepen.io/scardust/pen/PwNabLz"
+   ]
+  },
+  {
+   "id": "mix-blend-mode",
+   "family": "glass",
+   "map": true,
+   "n": 843,
+   "bySrc": {
+    "codepen:shadow": 12,
+    "codepen:overlay": 35,
+    "codepen:frosted-glass": 2,
+    "codepen:glassmorphism": 32,
+    "codepen:backdrop-filter": 7,
+    "codepen:colorpicker": 6,
+    "codepen:texture": 14,
+    "codepen:noise": 22,
+    "codepen:grain": 8,
+    "codepen:gradient-text": 14,
+    "codepen:gradient-border": 5,
+    "codepen:mesh-gradient": 1,
+    "codepen:blend-mode": 236,
+    "codepen:mix-blend-mode": 393,
+    "codepen:clip-path": 32,
+    "codepen:wave": 3,
+    "aw-texture": 14,
+    "wf-glassmorphism": 4,
+    "wf-overlay": 3
+   },
+   "ex": [
+    "Into the Light — https://codepen.io/Manoj-EU/pen/raLLZVE",
+    "Light & Shadow — https://codepen.io/Manoj-EU/pen/QwENxRM",
+    "Credit Card — https://codepen.io/Manoj-EU/pen/myEVzaP",
+    "Sphere with shadow — https://codepen.io/cbolson/pen/jEbGZRB"
+   ]
+  },
+  {
+   "id": "mix-blend-mode: difference",
+   "family": "glass",
+   "map": true,
+   "n": 210,
+   "bySrc": {
+    "codepen:overlay": 12,
+    "codepen:glassmorphism": 4,
+    "codepen:backdrop-filter": 3,
+    "codepen:colorpicker": 4,
+    "codepen:texture": 2,
+    "codepen:noise": 5,
+    "codepen:gradient-text": 2,
+    "codepen:gradient-border": 1,
+    "codepen:blend-mode": 56,
+    "codepen:mix-blend-mode": 110,
+    "codepen:clip-path": 5,
+    "codepen:wave": 1,
+    "aw-texture": 3,
+    "wf-overlay": 2
+   },
+   "ex": [
+    "Untitled — https://codepen.io/aowgiwdq-the-lessful/pen/mdgRZMQ",
+    "SVG Filters - Overlay Menu — https://codepen.io/Lucas_Mes/pen/RwvPLjj",
+    "Untitled — https://codepen.io/Oluwasegun-Peter/pen/GRXZQMY",
+    "Untitled — https://codepen.io/Oluwasegun-Peter/pen/mdGPXBG"
+   ]
+  },
+  {
+   "id": "background-blend-mode",
+   "family": "glass",
+   "map": true,
+   "n": 206,
+   "bySrc": {
+    "codepen:shadow": 3,
+    "codepen:overlay": 9,
+    "codepen:glassmorphism": 5,
+    "codepen:backdrop-filter": 3,
+    "codepen:colorpicker": 2,
+    "codepen:texture": 2,
+    "codepen:curves": 1,
+    "codepen:noise": 7,
+    "codepen:grain": 2,
+    "codepen:gradient-text": 4,
+    "codepen:blend-mode": 129,
+    "codepen:mix-blend-mode": 25,
+    "codepen:clip-path": 14
+   },
+   "ex": [
+    "Shadow Easing Tool — https://codepen.io/editor/Northstrix/pen/019ecc22-8af6-74c5-a3b0-118e2819917a",
+    "Dynamic Shadows — https://codepen.io/cmillard/pen/zYQPxMj",
+    "Test CSS Skill Level — https://codepen.io/VoodooApe/pen/podObxv",
+    "CSS overlay examples — https://codepen.io/r-w-c/pen/oNOKYEr"
+   ]
+  },
+  {
+   "id": "isolation: isolate",
+   "family": "glass",
+   "map": true,
+   "n": 81,
+   "bySrc": {
+    "codepen:shadow": 1,
+    "codepen:overlay": 2,
+    "codepen:glassmorphism": 16,
+    "codepen:backdrop-filter": 2,
+    "codepen:noise": 4,
+    "codepen:gradient-border": 1,
+    "codepen:blend-mode": 18,
+    "codepen:mix-blend-mode": 26,
+    "codepen:clip-path": 11
+   },
+   "ex": [
+    "The August #CodePenChallenge continues! — https://codepen.io/Ranjith-R-the-builder/pen/PwPJLOb",
+    "CSS overlay examples — https://codepen.io/r-w-c/pen/oNOKYEr",
+    "SVG Multiply Overlay Effect — https://codepen.io/photodow/pen/LymbEQ",
+    "✦ Enhanced Elegant Glass Slider ✦ GSAP · Full Height Fades ✦ ( HTML - CSS - jQuery - GSAP ) — https://codepen.io/editor/darshit_tank/pen/01a0c719-ee93-74ed-bae1-cf124fa3d74c"
+   ]
+  },
+  {
+   "id": "@supports backdrop fallback",
+   "family": "glass",
+   "map": true,
+   "n": 13,
+   "bySrc": {
+    "codepen:glassmorphism": 3,
+    "codepen:backdrop-filter": 9,
+    "codepen:mix-blend-mode": 1
+   },
+   "ex": [
+    "iOS Liquid Glass — Real Refraction with CSS + SVG — https://codepen.io/Sachin-Kizhakkepurath/pen/VYPpWvB",
+    "Pure CSS Glassmorphism Liquid Glass UI kit — https://codepen.io/Margarita-the-solid/pen/NPRPBjd",
+    "Glassmorphism Login Form — https://codepen.io/bogdansandu/pen/azNXxVG",
+    "Rotating Stripes × Liquid Glass — https://codepen.io/editor/mieras/pen/01a0ed9f-d167-7c3d-bcba-6b295c55d447"
+   ]
+  },
+  {
+   "id": "prefers-reduced-transparency",
+   "family": "glass",
+   "map": true,
+   "n": 0,
+   "bySrc": {},
+   "ex": []
+  },
+  {
+   "id": "feTurbulence",
+   "family": "textures",
+   "map": true,
+   "n": 225,
+   "bySrc": {
+    "codepen:shadow": 3,
+    "codepen:overlay": 2,
+    "codepen:glassmorphism": 16,
+    "codepen:backdrop-filter": 2,
+    "codepen:texture": 134,
+    "codepen:noise": 42,
+    "codepen:grain": 7,
+    "codepen:gradient-text": 3,
+    "codepen:blend-mode": 5,
+    "codepen:mix-blend-mode": 3,
+    "codepen:clip-path": 8
+   },
+   "ex": [
+    "grainy text shadow effect w/ svg filter — https://codepen.io/vii120/pen/ZYLxLya",
+    "Light & Shadow — Reflection — https://codepen.io/Raed-Ennab/pen/PwPaNGb",
+    "Shadow Palm — https://codepen.io/Calleb/pen/ZEyNZPo",
+    "SVG Filters - Overlay Menu — https://codepen.io/Lucas_Mes/pen/RwvPLjj"
+   ]
+  },
+  {
+   "id": "canvas noise (putImageData / random pixels)",
+   "family": "textures",
+   "map": true,
+   "n": 53,
+   "bySrc": {
+    "codepen:glassmorphism": 2,
+    "codepen:colorpicker": 6,
+    "codepen:texture": 9,
+    "codepen:noise": 32,
+    "codepen:grain": 2,
+    "codepen:blend-mode": 1,
+    "codepen:wave": 1
+   },
+   "ex": [
+    "Liquid Glass Navbar | Switcher — https://codepen.io/Sis-the-builder/pen/GgjppJe",
+    "Break the Lie — https://codepen.io/HighFlyer910/pen/QwEJROy",
+    "CPChallenge: Named Colors — https://codepen.io/tommyho/pen/Pwzedwo",
+    "Hue Explorer — https://codepen.io/Raed-Ennab/pen/xbZVoag"
+   ]
+  },
+  {
+   "id": "animated grain (steps())",
+   "family": "textures",
+   "map": true,
+   "n": 38,
+   "bySrc": {
+    "codepen:shadow": 1,
+    "codepen:overlay": 1,
+    "codepen:glassmorphism": 2,
+    "codepen:noise": 7,
+    "codepen:grain": 9,
+    "codepen:gradient-text": 4,
+    "codepen:blend-mode": 5,
+    "codepen:mix-blend-mode": 2,
+    "codepen:clip-path": 7
+   },
+   "ex": [
+    "Responsive Grid + Animation — https://codepen.io/karein/pen/YzBxoaY",
+    "Around the clock — https://codepen.io/_Sabine/pen/xQLdoO",
+    "Glassmorphic Liquid Flask Loader — https://codepen.io/Trefcon/pen/xbRgMGM",
+    "Crypto-trend-cards — https://codepen.io/Lochy2000/pen/raeeeMO"
+   ]
+  },
+  {
+   "id": "halftone (dots + contrast / blend)",
+   "family": "textures",
+   "map": true,
+   "n": 64,
+   "bySrc": {
+    "codepen:shadow": 4,
+    "codepen:glassmorphism": 14,
+    "codepen:texture": 1,
+    "codepen:noise": 5,
+    "codepen:grain": 2,
+    "codepen:gradient-text": 2,
+    "codepen:blend-mode": 23,
+    "codepen:mix-blend-mode": 10,
+    "codepen:clip-path": 1,
+    "codepen:wave": 1,
+    "wf-glassmorphism": 1
+   },
+   "ex": [
+    "Into the Light — https://codepen.io/Manoj-EU/pen/raLLZVE",
+    "Light & Shadow — https://codepen.io/Manoj-EU/pen/QwENxRM",
+    "Sphere with shadow — https://codepen.io/cbolson/pen/jEbGZRB",
+    "Dynamic Shadows — https://codepen.io/cmillard/pen/zYQPxMj"
+   ]
+  },
+  {
+   "id": "WebGL / shader texture",
+   "family": "textures",
+   "map": true,
+   "n": 271,
+   "bySrc": {
+    "codepen:shadow": 10,
+    "codepen:overlay": 1,
+    "codepen:glassmorphism": 10,
+    "codepen:colorpicker": 1,
+    "codepen:texture": 83,
+    "codepen:curves": 3,
+    "codepen:noise": 150,
+    "codepen:grain": 2,
+    "codepen:mesh-gradient": 1,
+    "codepen:blend-mode": 5,
+    "codepen:mix-blend-mode": 2,
+    "codepen:clip-path": 1,
+    "codepen:wave": 2
+   },
+   "ex": [
+    "animate-geometry-threejs — https://codepen.io/jessicaagrs/pen/VYjgbXx",
+    "shadow-threejs — https://codepen.io/jessicaagrs/pen/raLPyPN",
+    "Paper Cutout Light — https://codepen.io/Manoj-EU/pen/Ggqvmar",
+    "Neon Cathedral Shader | #CodePenChallenge August 2025: Light & Shadow — https://codepen.io/andrewuru/pen/LEpBmPL"
+   ]
+  },
+  {
+   "id": "clip-path polygon",
+   "family": "shapes",
+   "map": true,
+   "n": 519,
+   "bySrc": {
+    "codepen:shadow": 11,
+    "codepen:overlay": 9,
+    "codepen:glassmorphism": 7,
+    "codepen:texture": 3,
+    "codepen:curves": 1,
+    "codepen:noise": 2,
+    "codepen:grain": 1,
+    "codepen:divider": 7,
+    "codepen:gradient-text": 1,
+    "codepen:blend-mode": 24,
+    "codepen:mix-blend-mode": 9,
+    "codepen:clip-path": 362,
+    "aw-texture": 82
+   },
+   "ex": [
+    "Pure CSS Lamp Light #CodePenChallenge: Shadow — https://codepen.io/Avoloch/pen/ZYbavKN",
+    "CSS Art - Combining polygon() and drop-shadow() Functions — https://codepen.io/pyxofy/pen/qBexXga",
+    "CSS Illusions — https://codepen.io/samsimite/pen/yLdMyLN",
+    "One side only shadow — https://codepen.io/r-w-c/pen/poGOoZg"
+   ]
+  },
+  {
+   "id": "clip-path path()",
+   "family": "shapes",
+   "map": true,
+   "n": 28,
+   "bySrc": {
+    "codepen:noise": 2,
+    "codepen:clip-path": 25,
+    "aw-texture": 1
+   },
+   "ex": [
+    "northern Lights 4.0 kb html5 — https://codepen.io/fluidoil/pen/abBLPdR",
+    "ROUND expansion 3.3 kb — https://codepen.io/fluidoil/pen/GRNWNpa",
+    "Molly tea - pure CSS logo — https://codepen.io/editor/merrybottle/pen/019f93de-5ff2-78ab-a80d-f963019dd259",
+    "Pure CSS Fade-Sequence Loader Spinner #5 — https://codepen.io/editor/hsuoisfz-the-flexboxer/pen/019f449a-9321-7bf2-b86f-e53a2e24fe9c"
+   ]
+  },
+  {
+   "id": "clip-path shape()",
+   "family": "shapes",
+   "map": true,
+   "n": 21,
+   "bySrc": {
+    "codepen:clip-path": 21
+   },
+   "ex": [
+    "Non-rectangular shape with border and rounded corners — https://codepen.io/thebabydino/pen/gbmwXmz",
+    "Wave header — https://codepen.io/thebabydino/pen/YPZzmZE",
+    "Responsive Inverted Card with CSS clip-path: shape() — https://codepen.io/pixelgridui/pen/WboNzba",
+    "Modern clip-path with shape() — curves, variables, and animations — https://codepen.io/NewKrok/pen/YPGMLYQ"
+   ]
+  },
+  {
+   "id": "clip-path circle / ellipse",
+   "family": "shapes",
+   "map": true,
+   "n": 144,
+   "bySrc": {
+    "codepen:shadow": 3,
+    "codepen:overlay": 5,
+    "codepen:frosted-glass": 1,
+    "codepen:glassmorphism": 2,
+    "codepen:texture": 1,
+    "codepen:blend-mode": 6,
+    "codepen:mix-blend-mode": 2,
+    "codepen:clip-path": 118,
+    "codepen:wave": 1,
+    "aw-texture": 5
+   },
+   "ex": [
+    "Pyramide Animation — https://codepen.io/Quyx/pen/qBMNxyj",
+    "100 Day Challenge - Day 3: CSS Animation — https://codepen.io/ShannonDurkinBouiges/pen/MWowxxe",
+    "Shop layout — https://codepen.io/seragshash/pen/ZEeZxWX",
+    "Point-Origin Circular Reveal Overlay — https://codepen.io/M-Bahn/pen/dPXwvMX"
+   ]
+  },
+  {
+   "id": "clip-path inset() / rect() / xywh()",
+   "family": "shapes",
+   "map": true,
+   "n": 151,
+   "bySrc": {
+    "codepen:overlay": 1,
+    "codepen:glassmorphism": 3,
+    "codepen:backdrop-filter": 1,
+    "codepen:colorpicker": 1,
+    "codepen:noise": 3,
+    "codepen:dividers": 1,
+    "codepen:blend-mode": 16,
+    "codepen:mix-blend-mode": 1,
+    "codepen:clip-path": 56,
+    "codepen:wave": 1,
+    "aw-texture": 67
+   },
+   "ex": [
+    "Overlay Motion Slider with Layered Transitions 🍇 — https://codepen.io/bato-web-agency/pen/ByjqjLa",
+    "NixRedesignSlider — Retro 90s vs. Modern Glassmorphism Comparison — https://codepen.io/editor/wptechnix/pen/01a07aaf-4bd5-7004-b2b6-a85d5fa3055d",
+    "Liquid Glass Navbar | Switcher — https://codepen.io/Sis-the-builder/pen/GgjppJe",
+    "Pure CSS Glassmorphism Liquid Glass UI kit — https://codepen.io/Margarita-the-solid/pen/NPRPBjd"
+   ]
+  },
+  {
+   "id": "clip-path url(#clipPath)",
+   "family": "shapes",
+   "map": true,
+   "n": 47,
+   "bySrc": {
+    "codepen:frosted-glass": 1,
+    "codepen:backdrop-filter": 2,
+    "codepen:texture": 1,
+    "codepen:noise": 1,
+    "codepen:blend-mode": 1,
+    "codepen:mix-blend-mode": 1,
+    "codepen:clip-path": 38,
+    "aw-texture": 1,
+    "wf-glassmorphism": 1
+   },
+   "ex": [
+    "Blurry Modal — https://codepen.io/ste-vg/pen/oqzvoM",
+    "mix-blend-mode rounded to black or white only — https://codepen.io/riccardobattiato/pen/PwYLGWd",
+    "Aero, Approximately — https://codepen.io/studiochris/pen/NZYzWq",
+    "Grainy Gradient, Card, Hover Effect, Border Gradient (Daily Design + Code #4) — https://codepen.io/Juxtopposed/pen/zYmoRKo"
+   ]
+  },
+  {
+   "id": "<clipPath objectBoundingBox>",
+   "family": "shapes",
+   "map": true,
+   "n": 25,
+   "bySrc": {
+    "codepen:noise": 1,
+    "codepen:blend-mode": 1,
+    "codepen:clip-path": 23
+   },
+   "ex": [
+    "gsap side scrolling changing 4:3 aspect ratio smooth scroll grainy page transition effect WIP — https://codepen.io/aosceola56/pen/ExBJMVB",
+    "Reverse clip path with blend modes — https://codepen.io/ZachSaucier/pen/mVEwje",
+    "POLYCLIP - Visual CSS clip-path Studio with Draggable Vertices & Code Export — https://codepen.io/Wendy-Ho/pen/ByWWrOw",
+    "canned herring — https://codepen.io/anvlaibar/pen/RNWZZVy"
+   ]
+  },
+  {
+   "id": "mask-image",
+   "family": "shapes",
+   "map": true,
+   "n": 151,
+   "bySrc": {
+    "codepen:shadow": 13,
+    "codepen:overlay": 3,
+    "codepen:frosted-glass": 1,
+    "codepen:glassmorphism": 27,
+    "codepen:backdrop-filter": 5,
+    "codepen:colorpicker": 1,
+    "codepen:texture": 4,
+    "codepen:curves": 1,
+    "codepen:noise": 9,
+    "codepen:grain": 2,
+    "codepen:divider": 1,
+    "codepen:gradient-border": 6,
+    "codepen:blend-mode": 17,
+    "codepen:mix-blend-mode": 4,
+    "codepen:clip-path": 18,
+    "codepen:wave": 2,
+    "aw-texture": 34,
+    "wf-glassmorphism": 2,
+    "wf-overlay": 1
+   },
+   "ex": [
+    "MS Word 2003 Rainbow WordArt CSS — https://codepen.io/jacknguyen97/pen/LERrmPP",
+    "Light & Shadow — https://codepen.io/Manoj-EU/pen/QwENxRM",
+    "Credit Card — https://codepen.io/Manoj-EU/pen/myEVzaP",
+    "Pure CSS Lamp Light #CodePenChallenge: Shadow — https://codepen.io/Avoloch/pen/ZYbavKN"
+   ]
+  },
+  {
+   "id": "shape-outside (words wrap the shape)",
+   "family": "shapes",
+   "map": true,
+   "n": 19,
+   "bySrc": {
+    "codepen:clip-path": 19
+   },
+   "ex": [
+    "Non-rectangular shape with border and rounded corners — https://codepen.io/thebabydino/pen/gbmwXmz",
+    "Name on hover reveal/ Image zoom out & blur — https://codepen.io/Eli-Mu/pen/EagMNRp",
+    "Clip-path — https://codepen.io/Akash_Ramani/pen/GggRoOv",
+    "grid en losange — https://codepen.io/gc-nomade/pen/xxoGjyL"
+   ]
+  },
+  {
+   "id": "border-radius blob (8 values with /)",
+   "family": "shapes",
+   "map": true,
+   "n": 36,
+   "bySrc": {
+    "codepen:shadow": 6,
+    "codepen:overlay": 3,
+    "codepen:glassmorphism": 8,
+    "codepen:texture": 1,
+    "codepen:curves": 2,
+    "codepen:noise": 2,
+    "codepen:grain": 1,
+    "codepen:gradient-text": 1,
+    "codepen:blend-mode": 2,
+    "codepen:mix-blend-mode": 2,
+    "codepen:clip-path": 8
+   },
+   "ex": [
+    "Into the Light — https://codepen.io/Manoj-EU/pen/raLLZVE",
+    "Pure CSS Lamp Light #CodePenChallenge: Shadow — https://codepen.io/Avoloch/pen/ZYbavKN",
+    "Double Semicircle Loader - CSS — https://codepen.io/josetxu/pen/oNyxEJO",
+    "cloud file storage ui to code — https://codepen.io/omid_mazaheri/pen/ZEXxwRw"
+   ]
+  },
+  {
+   "id": "corner-shape (squircle / scoop / notch / bevel)",
+   "family": "shapes",
+   "map": true,
+   "n": 5,
+   "bySrc": {
+    "codepen:glassmorphism": 1,
+    "codepen:clip-path": 4
+   },
+   "ex": [
+    "OPIT - Open Program for Interface Training — https://codepen.io/Julibe/pen/NPrgKWj",
+    "sticky image effect (clip-path version) — https://codepen.io/editor/vii120/pen/019ff1e2-2758-71e9-8c29-54a22f6773e5",
+    "Bevel side tabs with border — https://codepen.io/thebabydino/pen/XJKpedW",
+    "CSS Harvest: Shapes Lab (HTML/CSS/JS) — https://codepen.io/Raed-Ennab/pen/OPMrezx"
+   ]
+  },
+  {
+   "id": "inline SVG wave path",
+   "family": "shapes",
+   "map": true,
+   "n": 182,
+   "bySrc": {
+    "codepen:shadow": 6,
+    "codepen:overlay": 18,
+    "codepen:glassmorphism": 35,
+    "codepen:backdrop-filter": 6,
+    "codepen:colorpicker": 8,
+    "codepen:texture": 8,
+    "codepen:curves": 6,
+    "codepen:noise": 7,
+    "codepen:grain": 2,
+    "codepen:divider": 8,
+    "codepen:dividers": 1,
+    "codepen:gradient-text": 2,
+    "codepen:gradient-border": 2,
+    "codepen:blend-mode": 14,
+    "codepen:mix-blend-mode": 20,
+    "codepen:clip-path": 35,
+    "codepen:wave": 4
+   },
+   "ex": [
+    "Into the Light — https://codepen.io/Manoj-EU/pen/raLLZVE",
+    "Lunar Perspective Simulator — https://codepen.io/Milan_Dupalo/pen/xbVggyg",
+    "clay — https://codepen.io/indie__/pen/YPzvRLV",
+    "Mp3 card with hover shadow — https://codepen.io/conkolokythas/pen/NWBwyzX"
+   ]
+  }
+ ]
+}

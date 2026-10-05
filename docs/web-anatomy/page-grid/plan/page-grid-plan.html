@@ -1,0 +1,648 @@
+<title>The Page Grid Plan</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: a single reading column (~68ch) that widens to full width only for the live mockups and side-by-side choices. */
+:root{
+  --paper:#f5f6f2; --panel:#ffffff; --ink:#1c2321; --muted:#5a6461; --line:#d9ddd6;
+  --accent:#0f6b5c; --accent-ink:#ffffff; --guide:#b0236e; --guide-soft:rgba(176,35,110,.10);
+  --warn:#8a5a00; --warn-bg:#fff4dc; --ok:#1d6b34; --ok-bg:#e5f4e8;
+  --display:"Familjen Grotesk",ui-sans-serif,system-ui,sans-serif;
+  --body:"IBM Plex Sans",ui-sans-serif,system-ui,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --paper:#121615; --panel:#1a201e; --ink:#e7ece9; --muted:#9aa6a2; --line:#2e3734;
+  --accent:#4fc2a9; --accent-ink:#0b1412; --guide:#f06aae; --guide-soft:rgba(240,106,174,.12);
+  --warn:#f2c46b; --warn-bg:#2d2412; --ok:#7ad49a; --ok-bg:#16291c; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#121615; --panel:#1a201e; --ink:#e7ece9; --muted:#9aa6a2; --line:#2e3734;
+  --accent:#4fc2a9; --accent-ink:#0b1412; --guide:#f06aae; --guide-soft:rgba(240,106,174,.12);
+  --warn:#f2c46b; --warn-bg:#2d2412; --ok:#7ad49a; --ok-bg:#16291c; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--paper);color:var(--ink);font:400 1rem/1.6 var(--body);margin:0}
+.wrap{padding-inline:1rem;padding-block:2.5rem 5rem;max-width:72rem;margin-inline:auto}
+.read{max-width:44rem}
+h1,h2,h3{font-family:var(--display);line-height:1.15;text-wrap:balance;margin:0}
+h1{font-size:clamp(2rem,1.4rem + 2.6vw,3.2rem);font-weight:700;letter-spacing:-.01em}
+h2{font-size:clamp(1.4rem,1.15rem + 1vw,1.9rem);font-weight:650;margin-top:4rem;padding-top:1.25rem;border-top:1px solid var(--line)}
+h3{font-size:1.15rem;font-weight:600;margin-top:2rem}
+p{margin:.75rem 0}
+.eyebrow{font:500 .78rem/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+code,.mono{font-family:var(--mono);font-size:.88em}
+code{background:var(--panel);border:1px solid var(--line);padding:.05em .35em;border-radius:4px}
+a{color:var(--accent)}
+.lede{font-size:1.15rem;color:var(--ink);max-width:44rem}
+.meta{display:flex;flex-wrap:wrap;gap:.5rem 1.25rem;color:var(--muted);font:400 .85rem var(--mono);margin-top:1rem}
+.callout{background:var(--panel);border:1px solid var(--line);border-left:4px solid var(--accent);padding:1rem 1.25rem;border-radius:6px;margin:1.5rem 0}
+.callout.warn{border-left-color:var(--warn);background:var(--warn-bg)}
+.callout h3{margin-top:0}
+ul.tight{padding-left:1.2rem;margin:.5rem 0}ul.tight li{margin:.25rem 0}
+.tbl{overflow-x:auto;margin:1rem 0}
+table{border-collapse:collapse;width:100%;font-size:.92rem;min-width:36rem}
+th,td{text-align:left;vertical-align:top;padding:.55rem .7rem;border-bottom:1px solid var(--line)}
+th{font:600 .78rem var(--mono);text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
+.pill{display:inline-block;font:500 .72rem var(--mono);padding:.15rem .5rem;border-radius:99px;border:1px solid var(--line);color:var(--muted);white-space:nowrap}
+.pill.rec{background:var(--ok-bg);color:var(--ok);border-color:transparent}
+.pill.new{background:var(--guide-soft);color:var(--guide);border-color:transparent}
+
+/* ---------- controls ---------- */
+.controls{display:flex;flex-wrap:wrap;gap:.5rem;align-items:center;margin:1rem 0}
+.tog{font:500 .88rem var(--body);display:inline-flex;align-items:center;gap:.55rem;padding:.45rem .8rem;border-radius:8px;border:1px solid var(--line);background:var(--panel);color:var(--ink);cursor:pointer}
+.tog .sw{width:2rem;height:1.1rem;border-radius:99px;background:var(--line);position:relative;flex:none;transition:background .15s}
+.tog .sw::after{content:"";position:absolute;top:.15rem;left:.15rem;width:.8rem;height:.8rem;border-radius:50%;background:var(--panel);transition:left .15s}
+.tog[aria-pressed="true"] .sw{background:var(--accent)}
+.tog[aria-pressed="true"] .sw::after{left:1.05rem}
+.tog:focus-visible,button:focus-visible,select:focus-visible{outline:3px solid var(--guide);outline-offset:2px}
+.kbd{font:500 .72rem var(--mono);border:1px solid var(--line);border-bottom-width:2px;border-radius:4px;padding:0 .3rem;color:var(--muted)}
+
+/* ---------- device frames ---------- */
+.devices{display:grid;gap:1.25rem;grid-template-columns:1fr}
+@media (min-width:56rem){.devices .row2{display:grid;grid-template-columns:1.25fr 1fr;gap:1.25rem;align-items:start}}
+.devices .row2{display:grid;gap:1.25rem}
+.device{min-width:0}
+.device-cap{display:flex;justify-content:space-between;gap:1rem;font:500 .78rem var(--mono);color:var(--muted);margin-bottom:.4rem}
+.device-box{position:relative;border:1px solid var(--line);border-radius:10px;background:var(--panel);overflow:hidden}
+.frame{transform-origin:0 0;overflow:auto;position:absolute;top:0;left:0;background:#fff}
+.frame::-webkit-scrollbar{width:8px}
+
+/* ---------- the mock school page (fixed school palette: it is the site being built, not the plan) ---------- */
+.pg{--school:#174d36;--school-2:#0f3a28;--gold:#e2b33c;--cream:#fbf8f1;--sink:#1a2420;--soft:#e9efe9;
+  --u:clamp(7px,1cqi,14px);--gap:max(.75rem,calc(var(--u) * 1.6));--side:max(.8rem,calc(var(--u) * 1.6));
+  --cols:12;--row:24px;
+  container-type:inline-size;container-name:pg;position:relative;font:400 15px/1.5 var(--body);color:var(--sink);background:var(--cream)}
+.band{--half:calc(var(--gap) / 2);display:grid;
+  grid-template-columns:repeat(var(--cols),minmax(0,1fr));
+  padding-block:calc(var(--u) * 3);padding-inline:var(--side);position:relative}
+@container pg (max-width:599px){.band{--cols:6}}
+.slot{grid-column:var(--d,1 / -1);grid-row:var(--dr,auto);padding:var(--half);min-width:0;position:relative}
+@container pg (min-width:600px) and (max-width:899px){.slot{grid-column:var(--t,var(--d,1 / -1))}}
+@container pg (max-width:599px){.slot{grid-column:var(--p,1 / -1);grid-row:var(--pr,auto);order:var(--po,0)}}
+.slot.bleed-r{padding-right:0;margin-right:calc(-1 * var(--side))}
+@container pg (max-width:599px){.slot.pbleed{padding-inline:0;margin-inline:calc(-1 * var(--side))}}
+.pg p{max-inline-size:75ch}
+.pg h4{font:700 1.6em/1.1 var(--display);margin:0 0 .4em;color:var(--school-2)}
+.pg h5{font:600 1.05em/1.25 var(--display);margin:.2em 0}
+.pg p{margin:.3em 0;font-size:.95em}
+.pg .btn{display:inline-block;background:var(--gold);color:var(--sink);font-weight:600;padding:.55em 1em;border-radius:6px;font-size:.9em;margin-top:.6em}
+.hdr{background:var(--school);color:#fff;padding-block:calc(var(--u)*1.2)}
+.logo{font:700 1.05em var(--display);display:flex;align-items:center;gap:.5em;height:100%}
+.logo i{width:1.6em;height:1.6em;border-radius:50%;background:var(--gold);display:inline-block}
+.nav{display:flex;justify-content:flex-end;flex-wrap:wrap;gap:.3em 1.2em;font-size:.9em;align-items:center;height:100%}
+.burger{display:none;justify-content:flex-end;align-items:center;height:100%;font-weight:600}
+@container pg (max-width:599px){.nav{display:none}.burger{display:flex}}
+.hero{background:var(--cream)}
+.hero h4{font-size:2.4em}
+@container pg (max-width:599px){.hero h4{font-size:1.8em}}
+.photo{background:linear-gradient(135deg,#6f8f6a,#2f5944 60%,#1d3d2f);border-radius:0;min-height:12em;height:100%;display:flex;align-items:flex-end;padding:.6em;color:#fff;font:500 .75em var(--mono)}
+.photo.r{border-radius:8px}
+.card{background:#fff;border:1px solid #dfe5df;border-radius:8px;overflow:hidden;height:100%}
+.card .photo{min-height:7em;border-radius:0}
+.card .in{padding:.8em}
+.tag{font:500 .7em var(--mono);text-transform:uppercase;letter-spacing:.06em;color:#6b5a1d}
+.statsband{background:var(--soft)}
+.stat{text-align:center;padding:.4em}
+.stat b{display:block;font:700 2em/1 var(--display);color:var(--school)}
+.stat span{font-size:.85em}
+.staff .photo{min-height:8em;border-radius:8px 8px 0 0}
+.gallery .photo{min-height:8em;border-radius:6px}
+.gallery{padding-bottom:calc(var(--u)*7)}
+.ctaband{background:var(--school-2);color:#fff;padding-top:0}
+.straddle{margin-top:calc(var(--u) * -6);z-index:2}
+@container pg (max-width:599px){.straddle{margin-top:calc(var(--u) * -4)}}
+.ctacard{background:#fff;color:var(--sink);border-radius:10px;padding:1.2em 1.4em;box-shadow:0 10px 30px rgba(0,0,0,.18);display:flex;flex-wrap:wrap;gap:.6em 1.5em;align-items:center;justify-content:space-between}
+.ctacard h5{font-size:1.3em}
+.foot{background:var(--school-2);color:#dfe9e3;font-size:.9em}
+.foot h5{color:var(--gold);font-size:.95em}
+.secthead{display:flex;justify-content:space-between;align-items:baseline;gap:1em}
+.secthead a{color:var(--school);font-size:.85em;font-weight:600}
+
+/* layout guides: drawn from the SAME template, faint, Chrome-overlay style */
+.guides{position:absolute;inset:0;pointer-events:none;z-index:5;display:none;padding-inline:var(--side);
+  grid-template-columns:repeat(var(--cols),minmax(0,1fr));
+  background-image:linear-gradient(to right,rgba(46,140,90,.16) 0 var(--side),transparent var(--side) calc(100% - var(--side)),rgba(46,140,90,.16) calc(100% - var(--side))),repeating-linear-gradient(to bottom,transparent 0 calc(var(--row)*4 - 1px),rgba(176,35,110,.28) calc(var(--row)*4 - 1px) calc(var(--row)*4)),
+                   repeating-linear-gradient(to bottom,transparent 0 calc(var(--row) - 1px),rgba(176,35,110,.10) calc(var(--row) - 1px) var(--row))}
+.guides.norows{background-image:linear-gradient(to right,rgba(46,140,90,.16) 0 var(--side),transparent var(--side) calc(100% - var(--side)),rgba(46,140,90,.16) calc(100% - var(--side)))}
+@container pg (max-width:599px){.guides{--cols:6}.guides .gc:nth-child(n+7){display:none}}
+.guides .gc{border-left:1px dashed rgba(176,35,110,.55)}
+.guides .gc.last{border-right:1px dashed rgba(176,35,110,.55)}
+.guides .gc.mid{background:linear-gradient(to right,transparent calc(50% - .5px),rgba(176,35,110,.22) calc(50% - .5px) calc(50% + .5px),transparent calc(50% + .5px))}
+.pg.on .guides{display:grid}
+.pg .chip{display:none}
+.pg.on .chip{display:block;position:absolute;top:2px;right:2px;z-index:6;font:500 10px/1 var(--mono);background:#b0236e;color:#fff;padding:3px 5px;border-radius:3px;white-space:nowrap}
+.pg.on .chip::after{content:attr(data-d)}
+@container pg (min-width:600px) and (max-width:899px){.pg.on .chip[data-t]::after{content:attr(data-t)}}
+@container pg (max-width:599px){.pg.on .chip::after{content:attr(data-p)}}
+
+/* ---------- builder chrome mock ---------- */
+.chrome{background:var(--panel);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.chrome-bar{display:flex;flex-wrap:wrap;gap:.6rem;align-items:center;padding:.6rem .8rem;border-bottom:1px solid var(--line);font-size:.85rem}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:7px;overflow:hidden}
+.seg span{padding:.3rem .6rem;border-right:1px solid var(--line);color:var(--muted)}
+.seg span:last-child{border-right:0}.seg span.on{background:var(--accent);color:var(--accent-ink)}
+.spacer{flex:1}
+.chrome-body{display:grid;grid-template-columns:1fr;gap:0}
+@media (min-width:52rem){.chrome-body{grid-template-columns:1fr 19rem}}
+.chrome-canvas{padding:1rem;min-height:14rem;background:repeating-linear-gradient(90deg,transparent 0 calc(100%/12 - 1px),var(--guide-soft) calc(100%/12 - 1px) calc(100%/12));background-clip:content-box;border-right:1px solid var(--line)}
+.panel{padding:1rem;display:grid;gap:.85rem;font-size:.88rem}
+.panel h4{font:600 .95rem var(--display);margin:0}
+.field{display:grid;grid-template-columns:1fr auto;gap:.5rem;align-items:center}
+.field .val{font:500 .85rem var(--mono);display:inline-flex;align-items:center;gap:.3rem}
+.step{width:1.6rem;height:1.6rem;border:1px solid var(--line);border-radius:5px;display:inline-grid;place-items:center;background:var(--paper);color:var(--ink)}
+.hint{font-size:.78rem;color:var(--muted)}
+.rungs{display:flex;flex-wrap:wrap;gap:.3rem}
+.rungs span{font:500 .72rem var(--mono);padding:.15rem .45rem;border-radius:5px;border:1px solid var(--line)}
+.rungs span.set{border-color:var(--guide);color:var(--guide)}
+
+/* ---------- mini diagrams ---------- */
+.minis{display:grid;gap:1rem;grid-template-columns:repeat(auto-fit,minmax(min(100%,15rem),1fr));margin:1rem 0}
+.mini{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:.85rem;min-width:0}
+.mini h4{font:600 .95rem var(--display);margin:0 0 .25rem}
+.mini p{font-size:.85rem;color:var(--muted);margin:.4rem 0 0}
+.g12{position:relative;display:grid;grid-template-columns:repeat(12,1fr);height:4.5rem;margin-top:.5rem;
+  background:repeating-linear-gradient(90deg,transparent 0 calc(100%/12 - 1px),rgba(176,35,110,.35) calc(100%/12 - 1px) calc(100%/12));border:1px dashed rgba(176,35,110,.45)}
+.g12.tall{height:6.5rem}
+.g12 .b{background:var(--accent);opacity:.85;margin:.35rem .2rem;border-radius:3px;color:var(--accent-ink);font:500 .66rem var(--mono);display:grid;place-items:center;text-align:center;min-width:0}
+.g12 .b.alt{background:#c98a1a;color:#1b1407}
+.g12 .b.free{background:transparent;border:2px dashed var(--accent);color:var(--ink)}
+.g12 .ghost{position:absolute;top:-.3rem;bottom:-.3rem;width:2px;background:var(--guide)}
+.g12 .lbl{position:absolute;top:-1.55rem;font:500 .66rem var(--mono);background:var(--guide);color:#fff;padding:.12rem .35rem;border-radius:3px;white-space:nowrap;transform:translateX(-50%)}
+.g12 .inner{display:grid;gap:3px;margin:.35rem .2rem;outline:1px dashed #c98a1a;outline-offset:-1px;padding:3px}
+.g12 .inner i{background:#c98a1a;border-radius:2px}
+.flexrow{display:flex;height:4.5rem;margin-top:.5rem;border:1px dashed rgba(176,35,110,.45);background:repeating-linear-gradient(90deg,transparent 0 calc(100%/12 - 1px),rgba(176,35,110,.35) calc(100%/12 - 1px) calc(100%/12))}
+.flexrow .b{background:#7f8b87;margin:.35rem .2rem;border-radius:3px;color:#fff;font:500 .66rem var(--mono);display:grid;place-items:center}
+.bandmini{position:relative;height:6rem;margin-top:.5rem;border-radius:4px;overflow:visible}
+.bandmini .bg1{position:absolute;inset:0 0 50% 0;background:#d9e4dc}
+.bandmini .bg2{position:absolute;inset:50% 0 0 0;background:#174d36}
+.bandmini .cols{position:absolute;inset:0 8%;background:repeating-linear-gradient(90deg,transparent 0 calc(100%/12 - 1px),rgba(176,35,110,.4) calc(100%/12 - 1px) calc(100%/12));border-inline:1px dashed rgba(176,35,110,.5)}
+.bandmini .piece{position:absolute;background:var(--accent);border-radius:3px;color:var(--accent-ink);font:500 .64rem var(--mono);display:grid;place-items:center}
+.phonepair{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+.phone{width:100%;max-width:12rem;border:1px solid var(--line);border-radius:14px;padding:.6rem .5rem;background:#fbf8f1;margin-inline:auto}
+.phone .r{display:flex;padding-inline:.6rem}
+.phone .s{flex:1;background:#e9efe9;border-radius:5px;height:3.4rem;display:grid;place-items:center;font:700 .9rem var(--display);color:#174d36}
+.phone small{display:block;text-align:center;font:500 .68rem var(--mono);color:#5a6461;margin-top:.4rem}
+
+.choice{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:1.1rem;margin:1.25rem 0}
+.choice h3{margin-top:0}
+.ab{display:grid;gap:1rem;grid-template-columns:repeat(auto-fit,minmax(min(100%,16rem),1fr));margin-top:.75rem}
+.opt{border:1px solid var(--line);border-radius:8px;padding:.85rem;min-width:0;background:var(--paper)}
+.opt h4{font:600 .95rem var(--display);margin:0 0 .3rem;display:flex;gap:.5rem;align-items:center;flex-wrap:wrap}
+.opt p{font-size:.86rem;margin:.35rem 0}
+.rowsnap{display:grid;grid-template-columns:1fr 1fr;gap:.4rem;height:7rem;margin-top:.5rem;
+  background:repeating-linear-gradient(to bottom,transparent 0 calc(1rem - 1px),rgba(176,35,110,.28) calc(1rem - 1px) 1rem);padding:.25rem;border:1px dashed rgba(176,35,110,.4)}
+.rowsnap i{background:var(--accent);opacity:.8;border-radius:3px;display:block}
+
+details.batch{background:var(--panel);border:1px solid var(--line);border-radius:8px;margin:.75rem 0}
+details.batch summary{cursor:pointer;padding:.85rem 1rem;font:600 1rem var(--display);display:flex;gap:.75rem;align-items:baseline;flex-wrap:wrap;list-style:none}
+details.batch summary::-webkit-details-marker{display:none}
+details.batch summary::before{content:"▸";color:var(--muted);transition:transform .15s}
+details.batch[open] summary::before{transform:rotate(90deg)}
+details.batch .bd{padding:0 1rem 1rem 2.1rem;font-size:.92rem}
+details.batch h4{font:600 .82rem var(--mono);text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin:1rem 0 .3rem}
+ol.changes{margin:.25rem 0;padding-left:1.2rem}ol.changes li{margin:.3rem 0}
+ul.check{list-style:none;padding:0;margin:.25rem 0}
+ul.check li{padding-left:1.6rem;position:relative;margin:.35rem 0}
+ul.check li::before{content:"";position:absolute;left:0;top:.3rem;width:.9rem;height:.9rem;border:1.5px solid var(--muted);border-radius:3px}
+.approve{background:var(--panel);border:2px solid var(--accent);border-radius:12px;padding:1.25rem 1.4rem;margin-top:3rem}
+.approve h2{border:0;margin-top:0;padding-top:0}
+.approve ol li{margin:.4rem 0}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<div class="wrap">
+  <p class="eyebrow">AC-37b · plan APPROVED 2026-10-04 · builder/layout-uat</p>
+  <h1>The page grid</h1>
+  <p class="lede">One invisible set of columns runs across every page. Blocks land on it, snap to it and re-flow by it on every screen, so a photo in the hero and a card in the footer share the same edges without anyone measuring. You never see it unless you switch on <b>Layout guides</b>.</p>
+  <div class="meta"><span>2026-10-04</span><span>research R-3 signed 2026-10-04 (ff5c53a, 4418202)</span><span>approved with the decisions below · next: batch G-1</span></div>
+
+  <div class="callout" id="yours">
+    <h3>Your decisions, 2026-10-04</h3>
+    <ol class="tight">
+      <li><b>Plan approved</b>, with the grid running <b>edge to edge</b>: no fixed side margins. The space at the sides is padding you can change, down to zero.</li>
+      <li><b>Rows follow the content</b> (no row snap). <b>Every block, component and item keeps a default margin and padding</b>, so nothing ever sits flush against its neighbour.</li>
+      <li><b>Phone gap: tested, 0.75 rem (12 px)</b> as the minimum between blocks. 0.6 rem left tiles almost touching and 1 rem squeezed the cards (see choice 2).</li>
+      <li><b>One grid for the whole site</b>, with a per-page exception.</li>
+      <li><b>Alt = free placement, Shift = half-lines.</b> MUST: free placement never breaks the page (see <a href="#free">Free placement keeps the page whole</a>).</li>
+      <li><b>Readable text width on by default</b> (about 75 characters a line), and a small <b>default side space of 0.8 rem</b> minimum.</li>
+      <li><b>Everything here applies at every breakpoint, every screen size and device preset, in every module, and under every rule</b> (rules 16 and 18, RULE AF, Z and Q, WCAG).</li>
+    </ol>
+  </div>
+
+  <div class="read">
+  <h2 id="plain">In plain words</h2>
+  <p>A teacher drags a photo beside their words. Without being told, the photo takes exactly half the page and the words the other half. On a tablet it stays half and half. On a phone the photo goes under the words, full width. Three news cards further down line up with those same two halves, and so does the footer. Nobody typed a number.</p>
+  <p>That is the whole idea. The page is divided into <b>12 equal columns</b> from tablet width up and <b>6 on a phone</b>. The columns run <b>from one edge of the page to the other</b>: a block can be dragged right to the far left or far right. Between the columns there is <b>no gap</b>; the space between blocks comes from the blocks themselves, half each side (at least 0.75 rem between two blocks). The space at the sides of the page is a small default <b>padding</b> on each section (at least 0.8 rem), which you can drag or set to anything, down to zero. Paragraphs stop at a comfortable reading width (about 75 characters), so wide screens stay readable without shrinking the grid.</p>
+  <p>When a row cannot keep its shape on a narrower screen, it becomes the fewest <b>equal</b> columns whose words still fit: four cards go to two, then to one. Never a staircase, never a broken word.</p>
+  </div>
+
+  <h2 id="decided">Already decided by you (built to, not re-asked)</h2>
+  <div class="tbl"><table>
+    <thead><tr><th>Decision</th><th>What it means in the build</th></tr></thead>
+    <tbody>
+      <tr><td>6 columns on the phone · 12 from 600 px</td><td>Every rung re-declares the template. Placements are stored as shares, so "half" stays half on 6 and on 12.</td></tr>
+      <tr><td>Fit-based re-split on every rung</td><td>L-4's <code>rowNarrowsAt</code> / <code>gridNarrowsAt</code> become the one rule for rows on the page grid: most equal columns whose words fit, 4 → 2 → 1.</td></tr>
+      <tr><td>Half-steps in the model, whole-column snap by default</td><td>The template has a middle line in every column; the snap ignores it unless asked.</td></tr>
+      <tr><td>Page order on phones + "picture first" switch</td><td>Source order is reading order. One switch per split writes <code>order</code> at the phone rung only.</td></tr>
+      <tr><td>Zero grid gap; every block keeps a default margin and padding</td><td><code>gutterCSS</code> already gives each block half the spacing each side; the page grid reuses it, with a 0.75 rem floor. Nothing sits flush against a neighbour unless the person sets it to zero.</td></tr>
+      <tr><td>Edge to edge, whole height (replaces "margin | columns | margin, stop at 1280")</td><td>The template is just the columns. Side space is section padding (0.8 rem minimum, fluid, overridable to zero). Readable width lives on the text (≈ 75 characters). Rows run the full document.</td></tr>
+      <tr><td>Invisible in the editor; "Layout guides" switch OFF by default</td><td>The canvas looks as it does today. Guides drawn faint, never published.</td></tr>
+      <tr><td>An advanced panel; everything follows per rung</td><td>Column count, row step, side space, block gap. A change re-derives every block from its stored share; nothing moves or is lost.</td></tr>
+      <tr><td>Best of both worlds</td><td>Snap by default; free placement as today; old pages untouched, with an optional, undoable "Line up with the grid". The engine is extended, not replaced.</td></tr>
+      <tr><td>The content minimum survives large text</td><td>The export writes per-row <code>em</code> container queries measured from the words at build time (finding #24). No script on the published page.</td></tr>
+    </tbody>
+  </table></div>
+
+  <h2 id="mock">The school page, on three screens</h2>
+  <p class="read">The same page drawn at phone, tablet and desktop width. It is built with the real page-grid CSS from the research examples, so what you see is how the CSS behaves, not a drawing. Each frame scrolls. Switch the guides on to see the columns, the side padding (green), the row lines and a label on each block saying how many columns it takes on that screen.</p>
+  <div class="controls" role="group" aria-label="Mockup options">
+    <button class="tog" id="t-guides" aria-pressed="false"><span class="sw" aria-hidden="true"></span>Layout guides <span class="kbd">G</span></button>
+    <button class="tog" id="t-rows" aria-pressed="true"><span class="sw" aria-hidden="true"></span>Row lines in the guides</button>
+        <button class="tog" id="t-pic" aria-pressed="false"><span class="sw" aria-hidden="true"></span>Hero: picture first on phones</button>
+  </div>
+  <div class="devices">
+    <div class="device" data-w="1280" data-h="800"><div class="device-cap"><span>Desktop · 1280 px · 12 columns</span><span class="sc"></span></div><div class="device-box"><div class="frame"></div></div></div>
+    <div class="row2">
+      <div class="device" data-w="768" data-h="1024"><div class="device-cap"><span>Tablet portrait · 768 px · 12 columns</span><span class="sc"></span></div><div class="device-box"><div class="frame"></div></div></div>
+      <div class="device" data-w="360" data-h="740"><div class="device-cap"><span>Phone · 360 px · 6 columns</span><span class="sc"></span></div><div class="device-box"><div class="frame"></div></div></div>
+    </div>
+  </div>
+  <div class="read">
+  <p>What to look for, guides on (the green strips at the sides are padding, not part of the grid):</p>
+  <ul class="tight">
+    <li><b>Hero</b>: words take 6 of 12; the photo starts on the middle line and runs over the side padding to the right edge of the window (a half-bleed). On the phone it goes full width under the words, or above them with "picture first".</li>
+    <li><b>News</b>: three cards, 4 of 12 each. On the phone three cannot become an even two, so they stack.</li>
+    <li><b>Stats</b>: 3 of 12 each. A Stats block keeps two across on the phone (3 of 6), because its words fit.</li>
+    <li><b>Staff</b>: four across, two across on the phone. The same fit rule, no special case.</li>
+    <li><b>Gallery</b>: a bento. The big photo takes 6 columns and two rows.</li>
+    <li><b>Admissions card</b>: it straddles the edge between the gallery and the green band, inset to 8 of 12.</li>
+    <li>Every left edge on the page sits on one of the same 13 lines; the first and last are the page's edges, inside its side padding.</li>
+  </ul>
+  </div>
+
+  <h2 id="chrome">Where the controls live</h2>
+  <p class="read">The toolbar gets one new switch beside the device picker. Turning it on draws the guides and opens a small panel for the grid. Turning it off hides both; the grid keeps working.</p>
+  <div class="chrome" aria-label="Builder toolbar mockup">
+    <div class="chrome-bar">
+      <span class="seg" aria-label="Device"><span>Mobile</span><span>Tablet</span><span>Laptop</span><span class="on">Desktop</span><span>Wide</span><span>Full</span></span>
+      <span class="pill">100%</span>
+      <span class="spacer"></span>
+      <span class="tog" aria-pressed="true" role="img" aria-label="Layout guides switch, on"><span class="sw" aria-hidden="true"></span>Layout guides <span class="kbd">Shift G</span></span>
+      <span class="pill">Page settings</span>
+      <span class="pill">Preview</span>
+    </div>
+    <div class="chrome-body">
+      <div class="chrome-canvas"><p class="hint" style="margin:0">Canvas with the guides on (faint columns). With the switch off this area looks exactly as it does today.</p></div>
+      <div class="panel" aria-label="Page grid panel mockup">
+        <h4>Page grid <span class="pill">this site</span></h4>
+        <div class="rungs" aria-label="Screen"><span>Phone</span><span>Tablet</span><span>Laptop</span><span class="set">Desktop</span><span>Wide</span></div>
+        <div class="field"><span>Columns</span><span class="val"><span class="step">−</span>12<span class="step">+</span></span></div>
+        <div class="field"><span>Columns on phones</span><span class="val">half (6) ▾</span></div>
+        <div class="field"><span>Row step</span><span class="val"><span class="step">−</span>1.5 rem<span class="step">+</span></span></div>
+        <div class="field"><span>Space between columns</span><span class="val"><span class="step">−</span>0<span class="step">+</span></span></div>
+        <div class="field"><span>Side space (padding)</span><span class="val">auto, ≥ 0.8 rem ▾</span></div>
+        <div class="field"><span>Gap between blocks</span><span class="val">auto, ≥ 0.75 rem ▾</span></div>
+        <p class="hint">Changing a number moves every block with it. Half stays half. Nothing is lost, and Undo puts it back.</p>
+        <div class="field"><span class="hint">This page uses its own grid</span><span class="val">off</span></div>
+        <span class="pill">Reset to default</span>
+      </div>
+    </div>
+  </div>
+  <div class="read">
+  <p><b>Shortcut.</b> <span class="kbd">Shift G</span> toggles the guides, as in Figma. It is free: <span class="kbd">Ctrl Shift G</span> is Ungroup and stays so; <span class="kbd">Shift 0/1/2</span> remain zoom. The switch is also in the canvas right-click menu.</p>
+  <p><b>Ranges</b> for the panel: columns 4 – 24 (desktop), phones "half" by default or 2 – 12; row step 0.5 – 3 rem; extra space between columns 0 – 4 rem; side space automatic (≥ 0.8 rem, growing a little on bigger screens) or 0 – 6 rem; block gap automatic (≥ 0.75 rem) or 0 – 4 rem. Every block's own margin and padding stays changeable in Spacing, each side alone. A count that does not divide a split (3 across on 10) rounds to the nearest whole column, and the panel says which blocks did.</p>
+  </div>
+
+  <h2 id="placing">Placing and resizing a block</h2>
+  <div class="minis">
+    <div class="mini"><h4>Drag an edge: it snaps</h4>
+      <div class="g12" style="margin-top:1.8rem"><div class="b" style="grid-column:1/span 5">5 of 12</div><div class="b alt" style="grid-column:6/span 7">7 of 12</div><span class="ghost" style="left:calc(100%*5/12)"></span><span class="lbl" style="left:calc(100%*5/12)">5 of 12 · phone 6 of 6</span></div>
+      <p>The edge moves line to line. The label shows the span on this screen and what the phone will do. The partner gives up exactly what this block takes (rule 19).</p></div>
+    <div class="mini"><h4>Hold Shift: half-lines</h4>
+      <div class="g12" style="margin-top:1.8rem;grid-template-columns:repeat(24,1fr)"><div class="b" style="grid-column:1/span 9">4½</div><div class="b alt" style="grid-column:10/span 15">7½</div><span class="ghost" style="left:calc(100%*9/24)"></span><span class="lbl" style="left:calc(100%*9/24)">4½ of 12</span></div>
+      <p>The middle line of each column becomes a stop too. No quarters.</p></div>
+    <div class="mini"><h4>Hold Alt: free, as today</h4>
+      <div class="g12" style="margin-top:1.8rem;display:flex"><div class="b free" style="width:37.4%">37.4%</div><div class="b alt" style="flex:1">62.6%</div><span class="ghost" style="left:37.4%;background:var(--muted)"></span><span class="lbl" style="left:37.4%;background:var(--muted)">37.4% · free</span></div>
+      <p>Any width. The block still follows every screen by the same fit rule. A "Free placement" switch in Position keeps it free for later drags.</p></div>
+  </div>
+  <div class="read">
+  <p><b>Keyboard</b> (rule 2), with the block selected: <span class="kbd">Alt →</span> / <span class="kbd">Alt ←</span> grow or shrink by one column, <span class="kbd">Alt Shift →</span> by half a column, <span class="kbd">Ctrl Alt →</span> move the start one column. Each change is announced ("5 of 12 columns") to screen readers. The Position panel holds the same numbers as fields: start column, span, per screen, with "set here / inherited" for each rung.</p>
+  </div>
+
+  <h3 id="keys">The modifier keys</h3>
+  <div class="callout"><p><b>Settled 2026-10-04:</b> <span class="kbd">Alt</span> = free placement (as decided, and as the canvas already does), <span class="kbd">Shift</span> = half-lines while resizing.</p></div>
+
+  <h2 id="free">Free placement keeps the page whole (MUST)</h2>
+  <div class="read">
+  <p>Free placement is the person's choice, and the builder respects it. It must never make the page look broken. A freely placed block:</p>
+  <ul class="tight">
+    <li><b>keeps its default margin and padding</b>, so it never sits flush against a neighbour or the page edge unless the person sets that;</li>
+    <li><b>never overlaps</b> its neighbours or <b>pushes the page sideways</b>: its partner gives up exactly what it takes (rule 19), and the row wraps instead of squeezing;</li>
+    <li><b>follows every screen</b> by the same fit rule as snapped blocks: its share is kept where it fits, and the row becomes even columns where it does not;</li>
+    <li><b>keeps everything the person set</b> (spacing, order, per-screen choices) when they switch back to snapping: the block moves to the nearest line, nothing else is lost, and Undo returns the free width.</li>
+  </ul>
+  <p>The page check warns about anything that still looks wrong after a free move: words too close to an edge, a block overlapping another, or a row that leaves one block stranded.</p>
+  </div>
+
+  <h2 id="lineup">Old pages and "Line up with the grid"</h2>
+  <p class="read">Pages saved before the grid keep their exact widths: no migration, no surprise. Page settings gets one button, <b>Line up with the grid</b>. It moves each block on that page to the nearest whole column, shows how many it moved, and one Undo puts them back.</p>
+  <div class="minis">
+    <div class="mini"><h4>Before: a saved page</h4>
+      <div class="flexrow"><div class="b" style="width:41.3%">41.3%</div><div class="b" style="flex:1">58.7%</div></div>
+      <p>Edges fall between the lines.</p></div>
+    <div class="mini"><h4>After "Line up with the grid"</h4>
+      <div class="g12"><div class="b" style="grid-column:1/span 5">5 of 12</div><div class="b alt" style="grid-column:6/span 7">7 of 12</div></div>
+      <p>41.3% is 4.96 columns, so 5. A block marked "Free placement" is left alone.</p></div>
+  </div>
+
+  <h2 id="gridblock">The Grid block on the page grid</h2>
+  <p class="read">The Grid block keeps its name and its picker. Underneath, the builder maps it onto the page grid. A count twelve divides lands on page lines; any other count keeps its own equal columns inside the span it covers (already how <code>gridForAcross</code> works).</p>
+  <div class="minis">
+    <div class="mini"><h4>3 across</h4><div class="g12"><div class="b" style="grid-column:1/span 4">4</div><div class="b" style="grid-column:5/span 4">4</div><div class="b" style="grid-column:9/span 4">4</div></div><p>Each card spans 4 of 12.</p></div>
+    <div class="mini"><h4>4 across</h4><div class="g12"><div class="b" style="grid-column:1/span 3">3</div><div class="b" style="grid-column:4/span 3">3</div><div class="b" style="grid-column:7/span 3">3</div><div class="b" style="grid-column:10/span 3">3</div></div><p>Each spans 3 of 12.</p></div>
+    <div class="mini"><h4>5 across</h4><div class="g12"><div class="inner" style="grid-column:1/-1;grid-template-columns:repeat(5,1fr)"><i></i><i></i><i></i><i></i><i></i></div></div><p>12 does not divide by 5: the block spans 12 and holds 5 equal columns of its own (dashed).</p></div>
+    <div class="mini"><h4>3 across inside 8</h4><div class="g12"><div class="b alt" style="grid-column:1/span 4">words</div><div class="inner" style="grid-column:5/span 8;grid-template-columns:repeat(3,1fr)"><i></i><i></i><i></i></div></div><p>A Grid placed on 8 columns keeps page lines through <code>subgrid</code>, falling back to its own columns.</p></div>
+  </div>
+
+  <h2 id="purpose">Choose by purpose (AC-37c)</h2>
+  <p class="read">The "Add" panel offers sections by what they are for. The builder picks rows, grid or a wrapping line underneath; the raw choice stays in the Inspector under friendly names.</p>
+  <div class="tbl"><table>
+    <thead><tr><th>Pick</th><th>Desktop</th><th>Phone (fit rule)</th><th>Underneath</th></tr></thead>
+    <tbody>
+      <tr><td><b>Photo beside words</b></td><td>6 + 6 (or 5 + 7, 4 + 8 in one click)</td><td>stacks; "picture first" switch</td><td>two page-grid columns</td></tr>
+      <tr><td><b>Cards</b></td><td>3 or 4 across</td><td>2 or 1 across</td><td>a Grid of flex columns on page lines</td></tr>
+      <tr><td><b>Stats</b></td><td>3 or 4 across</td><td>keeps 2 across</td><td>Grid; short words keep it wide</td></tr>
+      <tr><td><b>Logos</b></td><td>a line of 5 – 8</td><td>wraps, 3 across</td><td>a wrapping flex line inside a full span</td></tr>
+      <tr><td><b>Gallery</b></td><td>bento, one big photo</td><td>2 across, big photo full</td><td>Grid with row spans</td></tr>
+      <tr><td><b>Label beside content</b></td><td>3 + 9, label stays put while you scroll</td><td>stacks, not sticky</td><td>sticky cell (map A19, CORE)</td></tr>
+      <tr><td><b>Menu</b></td><td colspan="3">Waits for the Navigation component's own plan (RULE C). Until then the placeholder menu stays.</td></tr>
+    </tbody>
+  </table></div>
+  <p class="read">The six one-click splits (6 + 6 · 4 + 4 + 4 · 3 + 3 + 3 + 3 · 4 + 8 · 5 + 7 · 3 + 9, with mirrors) cover about 57% of the 23,728 rows measured in the crawl. They are shown as live previews (RULE S).</p>
+
+  <h2 id="bleed">Reaching past the columns</h2>
+  <p class="read">All of these are placements on the grid's lines, set in the Position panel under <b>Reaches</b> and <b>Overlap</b>, or by dragging an edge past the outermost line. Without the guides on, the canvas shows only the block moving; with them on, the lines it snaps to light up.</p>
+  <div class="minis">
+    <div class="mini"><h4>Full bleed</h4><div class="bandmini"><div class="bg1"></div><div class="cols"></div><div class="piece" style="left:0;right:0;top:20%;bottom:20%">edge to edge</div></div><p>One block runs window edge to window edge inside a contained section.</p></div>
+    <div class="mini"><h4>Half bleed</h4><div class="bandmini"><div class="bg1"></div><div class="cols"></div><div class="piece" style="left:8%;width:calc(84%*6/12 - 4px);top:20%;bottom:20%;background:#c98a1a;color:#1b1407">words</div><div class="piece" style="left:50%;right:0;top:20%;bottom:20%">photo →</div></div><p>Inner edge on a column line, outer edge on the window.</p></div>
+    <div class="mini"><h4>Straddle</h4><div class="bandmini"><div class="bg1"></div><div class="bg2"></div><div class="cols"></div><div class="piece" style="left:calc(8% + 84%*2/12);width:calc(84%*8/12);top:32%;bottom:32%;box-shadow:0 6px 14px rgba(0,0,0,.25)">card over the edge</div></div><p>Overlaps the band above by 1 – 3 row steps; sits on top; less on a phone; the page check warns if it covers words.</p></div>
+    <div class="mini"><h4>Half-step start</h4><div class="g12" style="grid-template-columns:repeat(24,1fr)"><div class="b" style="grid-column:1/span 8">words</div><div class="b alt" style="grid-column:10/span 15">from 4½</div></div><p>Starts on a middle line. Rare on real sites (1 in 26), so Shift-only.</p></div>
+  </div>
+
+  <h2 id="choices">The three open choices</h2>
+  <div class="choice">
+    <h3>1 · Do blocks snap to the row step? <span class="pill rec">you chose A</span></h3>
+    <p class="read">The guides draw a row line every 1.5 rem. The question is whether block heights and vertical spacing round to it.</p>
+    <div class="ab">
+      <div class="opt"><h4>A · No, rows follow the content <span class="pill rec">recommended</span></h4>
+        <div class="rowsnap"><i style="height:2.6rem"></i><i style="height:4.1rem"></i></div>
+        <p>Each section is as tall as its words and pictures. The row lines are a reference for eyeballing. This is what 26 of 26 measured live sites do, and the map marks page-level rows and baseline grids as AVOID.</p></div>
+      <div class="opt"><h4>B · Yes, heights round to 1.5 rem</h4>
+        <div class="rowsnap"><i style="height:3rem"></i><i style="height:4rem"></i></div>
+        <p>A tidier rhythm on paper. On a phone with 150% text, words change height and the rounding adds stray space under every block. More code for a look few people notice.</p></div>
+    </div>
+  </div>
+  <div class="choice">
+    <h3>2 · The space between blocks on a phone <span class="pill rec">you chose B · tested: 0.75 rem</span></h3>
+    <p class="read">Today the builder's spacing comes to about 11 px between two blocks on a 360 px phone. Most design systems use 16 px.</p>
+    <div class="ab">
+      <div class="opt"><h4>A · 11 px, today's spacing</h4>
+        <div class="phone"><div class="r" style="gap:11px"><div class="s">640</div><div class="s">38</div></div><small>11 px</small></div>
+        <p>No change anywhere. Tighter: two stat tiles almost touch.</p></div>
+      <div class="opt"><h4>B · a floor, tested: 0.75 rem <span class="pill rec">chosen</span></h4>
+        <div class="phone"><div class="r" style="gap:12px"><div class="s">640</div><div class="s">38</div></div><small>12 px (0.75 rem)</small></div>
+        <p>You asked me to test whether 1 rem was too much. On a 360 px phone, at normal and 150% text: 0.6 rem left the stat tiles almost touching, 1 rem squeezed the cards, and 0.75 rem separated them clearly. With 0.8 rem side space, words sit 1.18 rem from the edge, above the audit's 1 rem floor. For blocks on the page grid only; saved pages keep their spacing.</p></div>
+    </div>
+  </div>
+  <div class="choice">
+    <h3>3 · Is the page grid set for the whole site, or page by page? <span class="pill rec">you chose A</span></h3>
+    <div class="ab">
+      <div class="opt"><h4>A · The whole site, a page may opt out <span class="pill rec">recommended</span></h4>
+        <p>One grid for every page, so the header, footer and content line up when a visitor moves between pages. A page that needs something different (a landing page on 16 columns) switches on "This page uses its own grid". Stored on the site, with an override on the page.</p></div>
+      <div class="opt"><h4>B · Each page its own</h4>
+        <p>Simpler to explain, but a teacher who changes the home page's columns finds the About page no longer matches, and has to repeat the change on each page.</p></div>
+    </div>
+  </div>
+
+  <h2 id="engine">How it sits on today's engine</h2>
+  <p class="read">Extended, not replaced. Every row below names what exists today and what is added to it.</p>
+  <div class="tbl"><table>
+    <thead><tr><th>Today</th><th>Where</th><th>What the page grid adds</th></tr></thead>
+    <tbody>
+      <tr><td>A block's width is a share (<code>width: "41.3%"</code>) of its row</td><td><code>lib/box-model.ts</code> <code>BoxNode.width</code>, <code>widthPct</code></td><td>Kept as the stored truth. Snapping makes the share a multiple of 1/12 (or 1/24). Free blocks keep any share.</td></tr>
+      <tr><td><code>colStart</code> / <code>colSpan</code> / <code>rowStart</code> / <code>rowSpan</code> per rung</td><td><code>BoxNode</code>, <code>ResponsiveOverride</code></td><td>Derived from the share on each rung's count; written only when someone sets a rung on purpose.</td></tr>
+      <tr><td>The five rungs, <code>base</code> is desktop</td><td><code>Breakpoint</code>, <code>RUNG_PX</code></td><td>Each rung gets a column count: 6 below 600, 12 above, or the panel's numbers.</td></tr>
+      <tr><td>Half spacing each side of a column</td><td><code>gutterCSS</code>, <code>SPACE_DEFAULT.columns</code>, <code>u()</code></td><td>The same numbers inside each slot; the grid itself has zero gap. Choice 2 adds a 1 rem floor.</td></tr>
+      <tr><td>Rows and grids narrow without breaking words</td><td><code>longestWordRem</code>, <code>rowNarrowsAt</code>, <code>rowQueryCss</code>, <code>gridNarrowsAt</code></td><td>The same measurement drives the fit-based re-split on page-grid rows, written as <code>em</code> container queries.</td></tr>
+      <tr><td>Grid blocks emit their own template</td><td><code>gridColumnsAt</code>, <code>gridForAcross</code></td><td>Mapped onto page lines when 12 divides the count; <code>subgrid</code> for a nested Grid on page lines.</td></tr>
+      <tr><td>No page-wide template, no named lines</td><td></td><td><b>New:</b> one emitter writes the template (<code>full</code> · <code>content</code> · column and middle lines) on every band, canvas and export alike. Safe-area aware.</td></tr>
+      <tr><td>Resize snaps only to "fit words"</td><td><code>BoxCanvas.tsx</code> <code>startResize</code>, <code>HUG_SNAP_PX</code></td><td>Snaps to column lines; Shift for half-lines; Alt for free (Alt+drag already lifts a block free in <code>startDrag</code>).</td></tr>
+      <tr><td>No site-level layout settings</td><td><code>lib/box-site.ts</code> <code>BoxSite</code>, <code>BoxPage</code></td><td><b>New:</b> <code>BoxSite.pageGrid</code> with a per-page override on the page's root (choice 3A).</td></tr>
+    </tbody>
+  </table></div>
+  <p class="read">The engine files stay free of React and the DOM (rule 20, guarded). The phone and tablet app shows the exported page in a webview, so the export's responsiveness is the mobile work; the builder itself has no native counterpart today.</p>
+
+  <h2 id="batches">The build, in batches</h2>
+  <p class="read">Six batches, one area each, at most six changes, one open at a time (RULE X). Each starts with its <code>.feature</code> file and ends with one headed UAT pass in six windows on a fresh production build, built through the UI, then the Preview at every rung. The checklists below are the first draft; each is written in full in the task tree before its batch opens.</p>
+
+  <details class="batch" open><summary>G-1 · The page grid in the engine <span class="pill">engine + export</span></summary><div class="bd">
+    <h4>Changes</h4>
+    <ol class="changes">
+      <li><code>PageGrid</code> settings on the site (and the page override): columns per rung, row step, extra gap, side space, block gap.</li>
+      <li>One emitter for the template on every band: columns edge to edge with a middle line per column, zero grid gap, side space as section padding (≥ 0.8 rem, safe-area aware), every block keeping its default margin and padding (≥ 0.75 rem between blocks), readable width on text.</li>
+      <li>Share ↔ column maths as pure functions: snap a share, derive span and start per rung, half-steps, rounding for counts that do not divide.</li>
+      <li>Fit-based re-split for page-grid rows, from <code>longestWordRem</code>, as <code>em</code> container queries in the export.</li>
+      <li>Canvas uses the same emitter (canvas = export), with saved pages untouched.</li>
+      <li>Guards that enumerate the palette: units (rem / %, no stored px), canvas = export, saved-page export byte-identical.</li>
+    </ol>
+    <h4>UAT checklist</h4>
+    <ul class="check">
+      <li>Build the school page through the UI; Preview at 360 · 375 · 600 · 768 · 900 · 1024 · 1280 · 1536 · 1920 and every device preset: every left edge on a page-grid line, no sideways scroll.</li>
+      <li>Same page at 150% and 200% browser text: rows re-split evenly, no word broken, no staircase.</li>
+      <li>Drag a block to the far left and far right edge; set side padding to 0 and back; words stay ≥ 1 rem from the edge by default.</li>
+      <li>Three saved pages from before the change: Preview pixel-identical to before.</li>
+      <li>All four themes; RTL page mirrors its lines.</li>
+      <li>Export weight on the 360 phone within RULE AF's budget.</li>
+    </ul>
+  </div></details>
+
+  <details class="batch"><summary>G-2 · Layout guides and the grid panel <span class="pill">builder chrome</span></summary><div class="bd">
+    <h4>Changes</h4>
+    <ol class="changes">
+      <li>"Layout guides" switch in the toolbar, <span class="kbd">Shift G</span>, and the canvas right-click menu; off by default, remembered per person.</li>
+      <li>The guides overlay, drawn from the same template at the rung being edited: dashed columns, side padding shaded as padding, row lines, faint, ≥ 3:1 in every theme.</li>
+      <li>A span label on each block while guides are on ("6 of 12 · phone 6 of 6").</li>
+      <li>The page-grid panel: columns, phones, row step, gap, margin, widest; per rung; reset.</li>
+      <li>Everything follows: a panel change re-derives every block from its share, in one undo step.</li>
+      <li>"This page uses its own grid" override (if choice 3A).</li>
+    </ol>
+    <h4>UAT checklist</h4>
+    <ul class="check">
+      <li>Switch on and off by toolbar, keyboard and menu, at each canvas breakpoint; the published page never shows guides.</li>
+      <li>12 → 10 → 16 → 12 columns: nothing lost, half stays half, Undo returns the exact page.</li>
+      <li>Panel fully usable by keyboard and screen reader; focus visible in four themes.</li>
+      <li>Reload: settings and the switch's state survive.</li>
+    </ul>
+  </div></details>
+
+  <details class="batch"><summary>G-3 · Placing on the grid <span class="pill">canvas + inspector</span></summary><div class="bd">
+    <h4>Changes</h4>
+    <ol class="changes">
+      <li>Resize snaps to column lines, edge-anchored (rule 19), with the partner giving exactly what is taken.</li>
+      <li><span class="kbd">Shift</span> while resizing: half-lines.</li>
+      <li><span class="kbd">Alt</span> while resizing: free, as today; the "Free placement" switch per block.</li>
+      <li>Position panel: start, span, per rung with "set here / inherited"; offset start and an empty column that survives edits.</li>
+      <li>Keyboard: grow, shrink, move by a column or half; announced.</li>
+      <li>"Line up with the grid" in page settings, undoable, skips free blocks.</li>
+    </ol>
+    <h4>UAT checklist</h4>
+    <ul class="check">
+      <li>Both edges × grow and shrink × 2, 3, 4 siblings × nested in a stack, a row, a grid cell × at the width where the partner runs out (rule 19).</li>
+      <li>Round trips: drag out and back, width and height, ten times; no drift.</li>
+      <li>Alt, Shift and plain drags on the same block in turn; the switch keeps it free.</li>
+      <li>Free placement never breaks the page: no overlap, no sideways scroll, default spacing kept, the row re-splits evenly on every rung; switching back to snap keeps every other setting.</li>
+      <li>Line up, then Undo, on three saved pages.</li>
+    </ul>
+  </div></details>
+
+  <details class="batch"><summary>G-4 · The Grid block, splits and purpose picks <span class="pill">add panel + inspector</span></summary><div class="bd">
+    <h4>Changes</h4>
+    <ol class="changes">
+      <li>Grid block mapped onto the page grid (12 divides → page lines; otherwise own columns inside the span).</li>
+      <li><code>subgrid</code> for a nested Grid on page lines, own columns as the fallback.</li>
+      <li>The six one-click splits as a live preview gallery.</li>
+      <li>Purpose picks: Photo beside words, Cards, Stats, Logos, Gallery, Label beside content.</li>
+      <li>"On phones: picture first", per split; the page check notes it.</li>
+      <li>Orphans keep their span; a cell hidden on phones does not download its picture (gap G7).</li>
+    </ol>
+    <h4>UAT checklist</h4>
+    <ul class="check">
+      <li>Every pick added through the panel at every rung, in the Preview, four themes, short and long words.</li>
+      <li>1 – 12 across from the picker, each at 360 / 768 / 1280.</li>
+      <li>Screen reader on "picture first": reading order matches what is seen.</li>
+      <li>Network log at 360: the hidden picture is never fetched.</li>
+    </ul>
+  </div></details>
+
+  <details class="batch"><summary>G-5 · Bleed, straddle and sticky <span class="pill">position</span></summary><div class="bd">
+    <h4>Changes</h4>
+    <ol class="changes">
+      <li>Reaches: inside · left edge · right edge · both edges (full and half bleed).</li>
+      <li>Overlap the band above by row steps (straddle), less on a phone, with layer order.</li>
+      <li>No ancestor clips a bleed or a straddle (no <code>overflow: hidden</code> in the chain).</li>
+      <li>Sticky cell for "label beside content", off on phones.</li>
+      <li>Page check warns when an overlap covers words.</li>
+      <li>A gallery of ready-made placements (RULE S).</li>
+    </ol>
+    <h4>UAT checklist</h4>
+    <ul class="check">
+      <li>Each reach × band backgrounds (colour, photo, gradient) × next band × every rung.</li>
+      <li>Straddled card with hover and focus: focus ring visible over the next band.</li>
+      <li>Stacked on one block: half bleed + straddle + shadow + rounded corners; no cut shadow.</li>
+      <li>Sticky cell on a 3G-throttled 360 phone and with reduced motion.</li>
+    </ul>
+  </div></details>
+
+  <details class="batch"><summary>G-6 · Close-out <span class="pill">docs + sweep</span></summary><div class="bd">
+    <h4>Changes</h4>
+    <ol class="changes">
+      <li>The page-grid chapter of <code>docs/guide/layout-story.md</code> (RULE L): "I want my photo to reach the edge", "three cards that line up with the hero", and so on.</li>
+      <li>Website Builder Guide, Layout System and Builder Hub artifacts updated.</li>
+      <li>The dressed sweep re-run, tier by tier, with page-grid pages added.</li>
+      <li>Real-world pass: a low-cost Android webview (Chromium version vs <code>subgrid</code>), 360 px on Slow 3G.</li>
+    </ol>
+    <h4>UAT checklist</h4>
+    <ul class="check">
+      <li>A teacher-level read of the story chapter, following it click by click.</li>
+      <li>Sweep clean at tiers 80 / 95 / 99, canvas = Preview.</li>
+    </ul>
+  </div></details>
+
+  <h2 id="later">Not in this build</h2>
+  <p class="read">Kept possible in the model, built later: staggered columns (G1), visible grid lines on the published page (G2), content in the outer margin (G3), landscape-phone rung (G5), masonry phone order (G8), equal-height cards by subgrid rows, sideways scroll strips, overlapping collages, fit-to-width type. Real users: the pilot schools (RULE RK) once G-4 ships.</p>
+
+  <div class="approve" id="approve">
+    <h2>Approved</h2>
+    <p>Approved by you on 2026-10-04, with the decisions at the top of this page. Batch G-1 (the page grid in the engine) opens next in the task tree, with its full checklist written first.</p>
+  </div>
+</div>
+
+<template id="school">
+  <div class="guides" aria-hidden="true"></div>
+  <header class="band hdr">
+    <div class="slot" style="--d:1 / span 3;--p:1 / span 4"><span class="chip" data-d="3 of 12" data-p="4 of 6"></span><div class="logo"><i></i>Adenta Hills Academy</div></div>
+    <div class="slot" style="--d:4 / span 9;--p:5 / span 2"><span class="chip" data-d="9 of 12" data-p="2 of 6"></span><nav class="nav"><span>Home</span><span>About</span><span>Admissions</span><span>News</span><span>Staff</span><span>Contact</span></nav><div class="burger">Menu ☰</div></div>
+  </header>
+  <section class="band hero">
+    <div class="slot" style="--d:1 / span 6;--p:1 / -1;align-self:center"><span class="chip" data-d="6 of 12" data-p="6 of 6"></span>
+      <h4>A school where every child is known by name.</h4>
+      <p>Nursery to Junior High in Adenta, Accra. Small classes, a library open every afternoon, and teachers who stay.</p>
+      <span class="btn">Apply for 2027</span></div>
+    <div class="slot bleed-r pbleed hero-pic" style="--d:7 / -1;--p:1 / -1"><span class="chip" data-d="6 of 12 + edge" data-p="full bleed"></span><div class="photo" style="min-height:16em">photo · pupils at assembly</div></div>
+  </section>
+  <section class="band">
+    <div class="slot" style="--d:1 / -1"><div class="secthead"><h4>Latest news</h4><a>All news →</a></div></div>
+    <div class="slot" style="--d:1 / span 4;--p:1 / -1"><span class="chip" data-d="4 of 12" data-p="6 of 6"></span><div class="card"><div class="photo">photo</div><div class="in"><span class="tag">Sport · 2 Oct</span><h5>Inter-house sports day results</h5><p>Yellow House take the trophy for the second year.</p></div></div></div>
+    <div class="slot" style="--d:5 / span 4;--p:1 / -1"><span class="chip" data-d="4 of 12" data-p="6 of 6"></span><div class="card"><div class="photo">photo</div><div class="in"><span class="tag">Facilities · 28 Sep</span><h5>New science lab opens in January</h5><p>Funded by the PTA and the old pupils' association.</p></div></div></div>
+    <div class="slot" style="--d:9 / span 4;--p:1 / -1"><span class="chip" data-d="4 of 12" data-p="6 of 6"></span><div class="card"><div class="photo">photo</div><div class="in"><span class="tag">Term 1 · 20 Sep</span><h5>Timetable and term dates published</h5><p>Download the PDF or view it on the calendar.</p></div></div></div>
+  </section>
+  <section class="band statsband">
+    <div class="slot" style="--d:1 / span 3;--p:1 / span 3"><span class="chip" data-d="3 of 12" data-p="3 of 6"></span><div class="stat"><b>640</b><span>pupils</span></div></div>
+    <div class="slot" style="--d:4 / span 3;--p:4 / span 3"><span class="chip" data-d="3 of 12" data-p="3 of 6"></span><div class="stat"><b>38</b><span>teachers</span></div></div>
+    <div class="slot" style="--d:7 / span 3;--p:1 / span 3"><span class="chip" data-d="3 of 12" data-p="3 of 6"></span><div class="stat"><b>1 : 17</b><span>teacher to pupils</span></div></div>
+    <div class="slot" style="--d:10 / span 3;--p:4 / span 3"><span class="chip" data-d="3 of 12" data-p="3 of 6"></span><div class="stat"><b>96%</b><span>BECE pass, 2026</span></div></div>
+  </section>
+  <section class="band staff">
+    <div class="slot" style="--d:1 / -1"><h4>Meet our teachers</h4></div>
+    <div class="slot" style="--d:1 / span 3;--p:1 / span 3"><span class="chip" data-d="3 of 12" data-p="3 of 6"></span><div class="card"><div class="photo">photo</div><div class="in"><h5>Mrs Akua Mensah</h5><p>Head teacher</p></div></div></div>
+    <div class="slot" style="--d:4 / span 3;--p:4 / span 3"><span class="chip" data-d="3 of 12" data-p="3 of 6"></span><div class="card"><div class="photo">photo</div><div class="in"><h5>Mr Chinedu Okafor</h5><p>Mathematics</p></div></div></div>
+    <div class="slot" style="--d:7 / span 3;--p:1 / span 3"><span class="chip" data-d="3 of 12" data-p="3 of 6"></span><div class="card"><div class="photo">photo</div><div class="in"><h5>Ms Efua Boateng</h5><p>English</p></div></div></div>
+    <div class="slot" style="--d:10 / span 3;--p:4 / span 3"><span class="chip" data-d="3 of 12" data-p="3 of 6"></span><div class="card"><div class="photo">photo</div><div class="in"><h5>Mr Yaw Darko</h5><p>Science</p></div></div></div>
+  </section>
+  <section class="band gallery">
+    <div class="slot" style="--d:1 / -1"><h4>School life</h4></div>
+    <div class="slot" style="--d:1 / span 6;--dr:span 2;--p:1 / -1"><span class="chip" data-d="6 of 12 · 2 rows" data-p="6 of 6"></span><div class="photo r" style="min-height:17em">photo · choir</div></div>
+    <div class="slot" style="--d:7 / span 3;--p:1 / span 3"><span class="chip" data-d="3 of 12" data-p="3 of 6"></span><div class="photo r">photo</div></div>
+    <div class="slot" style="--d:10 / span 3;--p:4 / span 3"><span class="chip" data-d="3 of 12" data-p="3 of 6"></span><div class="photo r">photo</div></div>
+    <div class="slot" style="--d:7 / span 3;--p:1 / span 3"><span class="chip" data-d="3 of 12" data-p="3 of 6"></span><div class="photo r">photo</div></div>
+    <div class="slot" style="--d:10 / span 3;--p:4 / span 3"><span class="chip" data-d="3 of 12" data-p="3 of 6"></span><div class="photo r">photo</div></div>
+  </section>
+  <section class="band ctaband">
+    <div class="slot straddle" style="--d:3 / span 8;--p:1 / -1"><span class="chip" data-d="8 of 12 · overlaps" data-p="6 of 6 · overlaps"></span><div class="ctacard"><div><h5>Admissions for 2027 are open</h5><p>Visit on a school day, or call the office.</p></div><span class="btn">Book a visit</span></div></div>
+  </section>
+  <footer class="band foot">
+    <div class="slot" style="--d:1 / span 3;--p:1 / span 3"><h5>Visit</h5><p>14 Ashiyie Road<br>Adenta, Accra</p></div>
+    <div class="slot" style="--d:4 / span 3;--p:4 / span 3"><h5>Call</h5><p>+233 30 254 1180</p></div>
+    <div class="slot" style="--d:7 / span 3;--p:1 / span 3"><h5>Office hours</h5><p>Mon – Fri<br>7:30 – 16:00</p></div>
+    <div class="slot" style="--d:10 / span 3;--p:4 / span 3"><h5>Follow</h5><p>WhatsApp · Facebook</p></div>
+  </footer>
+</template>
+
+<script>
+(function(){
+  const tpl=document.getElementById('school');
+  const devices=[...document.querySelectorAll('.device')];
+  const pages=[];
+  devices.forEach(d=>{
+    const w=+d.dataset.w,h=+d.dataset.h;
+    const frame=d.querySelector('.frame');
+    frame.style.width=w+'px';frame.style.height=h+'px';
+    const pg=document.createElement('div');pg.className='pg';
+    pg.appendChild(tpl.content.cloneNode(true));
+    const g=pg.querySelector('.guides');
+    let html='';
+    for(let i=1;i<=12;i++){html+='<div class="gc mid'+(i===12?' last':'')+'"></div>'}
+    g.innerHTML=html;
+    frame.appendChild(pg);pages.push(pg);
+    const box=d.querySelector('.device-box'),cap=d.querySelector('.sc');box.style.maxWidth=w+'px';box.style.marginInline='auto';
+    const fit=()=>{const s=Math.min(1,box.clientWidth/w);frame.style.transform='scale('+s+')';box.style.height=Math.round(h*s)+'px';cap.textContent=Math.round(s*100)+'%';
+      /* the last column is drawn with a right edge; at the phone rung that is column 6 */
+      const cols=w<600?6:12;g.querySelectorAll('.gc').forEach((c,i)=>c.classList.toggle('last',i===cols-1));};
+    new ResizeObserver(fit).observe(box);fit();
+  });
+  const bind=(id,fn)=>{const b=document.getElementById(id);b.addEventListener('click',()=>{const on=b.getAttribute('aria-pressed')!=='true';b.setAttribute('aria-pressed',String(on));fn(on);});return b;};
+  const guides=bind('t-guides',on=>pages.forEach(p=>p.classList.toggle('on',on)));
+  bind('t-rows',on=>pages.forEach(p=>p.querySelector('.guides').classList.toggle('norows',!on)));
+  bind('t-pic',on=>pages.forEach(p=>{const s=p.querySelector('.hero-pic');s.style.setProperty('--po',on?'-1':'0');}));
+  document.addEventListener('keydown',e=>{if((e.key==='g'||e.key==='G')&&!e.ctrlKey&&!e.metaKey&&!e.altKey&&!/INPUT|TEXTAREA|SELECT/.test(e.target.tagName)){guides.click();}});
+})();
+</script>

@@ -84,8 +84,8 @@ const kidsOfType = (node: BoxNode, type: string, patch: Partial<BoxNode>): BoxNo
 // a node that is, structurally, just a container.
 
 function makeCard(): BoxNode {
-  return createContainer("column", { preset: "card", width: "100%", padding: 24, gap: 12, radius: 16, shadow: "md", borderWidth: 1, borderColor: "var(--eu-color-border)", background: "var(--eu-color-surface)", align: "stretch", children: [
-    createElement("image", { width: "100%", height: "160px", radius: 12 }),
+  return createContainer("column", { preset: "card", tag: "article", width: "100%", padding: 24, gap: 12, radius: 16, shadow: "md", borderWidth: 1, borderColor: "var(--eu-color-border)", background: "var(--eu-color-surface)", align: "stretch", children: [
+    createElement("image", { width: "100%", height: "10rem", radius: 12 }),
     createElement("heading", { text: "Card title", fontSize: 22, bold: true, width: "100%", color: "var(--eu-color-text)" }),
     createElement("text", { text: "A short description for this card goes right here.", width: "100%", color: "var(--eu-color-muted)" }),
     createElement("button", { text: "Learn more", background: "var(--eu-color-brand)", color: "var(--eu-color-on-brand)" }),
@@ -93,15 +93,20 @@ function makeCard(): BoxNode {
 }
 
 function makeQuote(): BoxNode {
-  return createContainer("column", { preset: "quote", width: "100%", padding: 20, paddingLeft: 24, gap: 8, borderWidth: 0, align: "start", children: [
+  return createContainer("column", { preset: "quote", tag: "figure", width: "100%", padding: 20, paddingLeft: 24, gap: 8, borderWidth: 0, align: "start", children: [
     createElement("text", { text: "“This changed everything for us — we couldn't be happier.”", fontSize: 22, italic: true, width: "100%", color: "var(--eu-color-text)" }),
-    createElement("text", { text: "— Happy Customer", fontSize: 14, width: "100%", color: "var(--eu-color-muted)" }),
+    // Body-sized, never smaller: a caption at 14 drew below the 16px floor Web Design Rule #1 sets for every paragraph
+    // (measured by the page audit on every dressed page, #93). Muted colour already sets it apart from the quote.
+    createElement("text", { text: "— Happy Customer", fontSize: 16, width: "100%", color: "var(--eu-color-muted)" }),
   ] });
 }
 
 function makeStat(): BoxNode {
-  return createContainer("column", { preset: "stat", width: "auto", padding: 16, gap: 4, align: "center", children: [
-    createElement("heading", { text: "1,000+", fontSize: 44, bold: true, textAlign: "center", color: "var(--eu-color-brand)" }),
+  // gap 0.5rem, not 0.25: at 0.25 the comma of "1,000+" sat 1.2px above its label (S2-d, `component-breathing.spec.ts`).
+  return createContainer("column", { preset: "stat", width: "auto", padding: 16, gap: 8, align: "center", children: [
+    // The brand AS WORDS is the readable link token (the brand moved until it reads on the page): the raw brand read
+    // 2.95:1 on Purple Dream and Midnight, on every stat of every dressed page (#139).
+    createElement("heading", { text: "1,000+", fontSize: 44, bold: true, textAlign: "center", color: "var(--eu-color-link, var(--eu-color-brand))" }),
     createElement("text", { text: "Happy customers", textAlign: "center", color: "var(--eu-color-muted)" }),
   ] });
 }
@@ -138,7 +143,7 @@ function makeRating(): BoxNode {
 const cardLook = (patch: Partial<BoxNode>, media: Partial<BoxNode>): ((n: BoxNode) => BoxNode) => (n) =>
   kidsOfType({ ...n, direction: "column", align: "stretch", gap: 12, ...patch }, "image", media);
 
-const STACKED_MEDIA: Partial<BoxNode> = { width: "100%", height: "160px" };
+const STACKED_MEDIA: Partial<BoxNode> = { width: "100%", height: "10rem" };
 
 const CARD_VARIANTS: PresetVariant[] = [
   { id: "", label: "Default", apply: cardLook({ background: "var(--eu-color-surface)", borderWidth: 1, borderColor: "var(--eu-color-border)", shadow: "md", radius: 16, padding: 24 }, STACKED_MEDIA) },

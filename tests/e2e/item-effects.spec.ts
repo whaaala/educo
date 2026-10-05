@@ -1,4 +1,5 @@
 import { test, expect } from "@playwright/test";
+import { seedSite } from "./helpers/seed-site";
 import type { BoxNode } from "@/lib/box-model";
 import { siteFromRoot } from "@/lib/box-site";
 import { renderSitePage } from "@/lib/box-export";
@@ -42,14 +43,7 @@ async function openExport(page: import("@playwright/test").Page, root: BoxNode) 
 /** Seed the builder with a tree and open the canvas on it. */
 async function openCanvas(page: import("@playwright/test").Page, root: BoxNode) {
   await page.setViewportSize({ width: 1280, height: 900 });
-  await page.goto("/website/box-demo");
-  await page.evaluate((tree) => {
-    localStorage.setItem("educo_box_site_v1", JSON.stringify({
-      homeId: "p1", pages: [{ id: "p1", name: "Home", path: "/", root: tree }],
-    }));
-    localStorage.setItem("educo_box_site_cleaned_v1", "1");
-  }, root as unknown as Record<string, unknown>);
-  await page.reload();
+  await seedSite(page, { homeId: "p1", pages: [{ id: "p1", name: "Home", path: "/", root }] });
   await page.waitForSelector('[data-box-id="root"]', { timeout: 30000 });
   await page.waitForSelector('[data-box-id="acc"] .eu-accordion__item', { timeout: 20000 });
 }

@@ -2,43 +2,67 @@
  * Static HTML export for the box builder — the publish GROUNDWORK.
  *
  * A BoxSite becomes a FOLDER of files, delivered as a ZIP: one `.html` per page plus a shared `styles.css`
- * the browser caches once. A sticky nav appears on every page and `page:<id>` links resolve to the other
- * page's relative filename, so the site works opened from a folder or a USB stick as well as from a host.
+ * the browser caches once. Each page is exactly what the user designed — nothing is injected above it — and
+ * `page:<id>` links in the blocks THEY built resolve to the other page's relative filename, so the site works
+ * opened from a folder or a USB stick as well as from a host.
  * Styles come from the same pure box-model helpers the editor uses, so the canvas and the export agree.
  */
 
 import type { CSSProperties } from "react";
-import {
-  type BoxNode, type Breakpoint, BP_ORDER, containerStyle, childStyle, marginCSS, sizeToCSS, radiusCSS, SHADOW_CSS, u, baseUnit, fadedPaint, boxOpacity, backgroundCss, paintLayerCss,
-  resolveResponsive, floatStacksOnMobile, alertToastCss, accordionClasses, bandClasses, videoEmbedSrc, isContainer, sanitizeCssDeclarations, expandScopedCss, COMPONENT_PARTS, itemFloatContextCss, itemOverrideCss, itemNumberVars, richBody, plainBody, componentTextCss, componentBoxCss, renderAlertHTML, alertDismissScript, masonryMeasureAttr, masonryMeasureScript, isPager, pagerNavHTML, pagerScript, pagerStripCss, pagerSlideId, bgShowThroughCss, blockContainmentCss, COMPONENT_ITEM_SEL, remLen, imageSizing, hasIntrinsicSize, itemNeedsClass, itemScope, floatZIndex, typoRole, typoRootVars, typoCascadeCss, bandEdgeCSS,
+import { PILL, dividerThickness, blockTypography,pinArrivalCss, pinArrivalKeyframes, floatHoldCSS,
+  type BoxNode, type Breakpoint, type SectionFlag, BP_ORDER, containerStyle, childStyle, hostSizedFor, marginCSS, leafPaddingCSS, outerSpaceCSS, pageBandInset, pagePinCover, sectionContent, sizeToCSS, radiusCSS, SHADOW_CSS, u, LIST_ITEM_GAP, textLen, baseUnit, fadedPaint, boxOpacity, backgroundCss, paintLayerCss,
+  resolveResponsive, floatStacksOnMobile, floatingReserve, alertToastCss, accordionClasses, bandClasses, videoEmbedSrc, isContainer, sanitizeCssDeclarations, expandScopedCss, COMPONENT_PARTS, itemFloatContextCss, itemOverrideCss, itemNumberVars, richBody, plainBody, componentTextCss, componentBoxCss, renderAlertHTML, alertDismissScript, masonryMeasureAttr, masonryMeasureScript, pinStackMarker, pinStackGroupMarker, pinStackNeeded, pinStackScript, isPager, pagerNavHTML, pagerScript, pagerStripCss, pagerSlideId, bgShowThroughCss, blockContainmentCss, COMPONENT_ITEM_SEL, remLen, imageSizing, hasIntrinsicSize, itemNeedsClass, itemScope, floatZIndex, typoRole, typoRootVars, typoCascadeCss, bandEdgeCSS, LINK_COLOR_CSS, gridQueryCss, TYPE_UNIT_PROPERTY_CSS,
 } from "@/lib/box-model";
 import { isRegistryComponent, renderComponent, componentScripts } from "@/lib/educo-ui/registry";
 import { iconSvg } from "@/lib/educo-ui/icon-svg";
+import { resolvePage, type PageSemantics } from "@/lib/semantics";
+import { PAGE_Z_CEILING } from "@/lib/educo-ui/stacking";
 import type { BoxSite } from "@/lib/box-site";
 import type { SiteTheme } from "@/lib/site-storage";
 import { colorToCSS } from "@/components/shared/ColorPalettePicker";
 import { BREAKPOINTS_EM, BASE_CSS } from "@/lib/educo-ui/base";
 import { COMPONENT_CSS } from "@/lib/educo-ui/components";
 import { tokensFromTheme, tokensToCss } from "@/lib/educo-ui/tokens";
-import { PAGE_Z } from "@/lib/educo-ui/stacking";
 import { subsetCss, usedEuClasses, stripComments } from "@/lib/educo-ui/subset";
 import { familiesInUse } from "@/lib/educo-ui/font-embed";
 import { zipSync, strToU8 } from "fflate";
 import { hoverCss, revealCss, revealKeyframes, itemEffectsCss } from "@/lib/interactions";
 
-const UNITLESS = new Set(["opacity", "zIndex", "lineHeight", "fontWeight", "flexGrow", "flexShrink", "order", "flex"]);
+/**
+ * The properties a bare number is UNITLESS for — React's own list, because React is what draws the canvas.
+ *
+ * This used to be eight properties of our own choosing, so anything else stored as a number was right on the canvas
+ * and wrong in the export: `grid-column-start: 2px` is not a grid line, and it is simply dropped. Custom properties
+ * were worse — React never gives them a unit, this did, and the theme's heading weight went out as "600px", which is
+ * not a weight at all, so the published page lost it while the canvas showed 600 (found by the Preview units check,
+ * 2026-09-26). One list, the canvas's, is the only way the two cannot disagree (rule 11).
+ */
+const UNITLESS = new Set([
+  "animationIterationCount", "aspectRatio", "borderImageOutset", "borderImageSlice", "borderImageWidth", "boxFlex",
+  "boxFlexGroup", "boxOrdinalGroup", "columnCount", "columns", "flex", "flexGrow", "flexPositive", "flexShrink",
+  "flexNegative", "flexOrder", "gridArea", "gridRow", "gridRowEnd", "gridRowSpan", "gridRowStart", "gridColumn",
+  "gridColumnEnd", "gridColumnSpan", "gridColumnStart", "fontWeight", "lineClamp", "lineHeight", "opacity", "order",
+  "orphans", "scale", "tabSize", "widows", "zIndex", "zoom", "fillOpacity", "floodOpacity", "stopOpacity",
+  "strokeDasharray", "strokeDashoffset", "strokeMiterlimit", "strokeOpacity", "strokeWidth",
+]);
 
-/** Serialize a React style object to an inline CSS string (px added to bare numbers except unitless props). */
-export function styleString(css: CSSProperties): string {
+/**
+ * Serialize a React style object to CSS declarations (px added to bare numbers except unitless props), for WHERE it goes:
+ * an `attr` (style="…", quotes entity-escaped) or a `sheet` rule inside <style>, where entities are never decoded — so
+ * quotes stay quotes and only `<` is escaped, the CSS way, so no value can close the element. Using the attribute form in
+ * the sheet published `url(&quot;…&quot;)`: every picture background and quoted font stack dropped from the Preview.
+ */
+export function styleString(css: CSSProperties, into: "attr" | "sheet" = "attr"): string {
   return Object.entries(css)
     .filter(([, v]) => v != null && v !== "")
     .map(([k, v]) => {
       const prop = k.startsWith("--") ? k : k.replace(/[A-Z]/g, (m) => `-${m.toLowerCase()}`);
-      const raw = typeof v === "number" && !UNITLESS.has(k) ? `${v}px` : String(v);
+      // A custom property never gains a unit — React writes it as given, and so must we.
+      const raw = typeof v === "number" && !UNITLESS.has(k) && !k.startsWith("--") ? `${v}px` : String(v);
       // Escape double quotes so a value that legitimately contains them — a font stack like
       // "Playfair Display", serif or a background-image url("data:…") — can't close the HTML style="…"
       // attribute early and corrupt the rest of the document. Browsers decode &quot; back to " in the value.
-      const val = raw.replace(/"/g, "&quot;");
+      const val = into === "attr" ? raw.replace(/"/g, "&quot;") : raw.replace(/</g, "\\3c ");
       return `${prop}:${val}`;
     })
     .join(";");
@@ -73,15 +97,7 @@ function decorCss(node: BoxNode): CSSProperties {
  * role vars (see TYPO_VAR) carry the same defaults while still letting any ancestor redefine them.
  */
 function typoCss(node: BoxNode, role: "heading" | "body", weight: number): CSSProperties {
-  return {
-    fontFamily: node.fontFamily || typoRole.font(role),
-    fontWeight: node.fontWeight ?? (node.bold ? 800 : typoRole.weight(role, weight)),
-    lineHeight: node.lineHeight,
-    letterSpacing: node.letterSpacing != null ? `${node.letterSpacing}px` : undefined,
-    fontStyle: node.italic ? "italic" : undefined,
-    textDecoration: node.underline ? "underline" : undefined,
-    textTransform: node.textTransform && node.textTransform !== "none" ? node.textTransform : undefined,
-  };
+  return blockTypography(node, role, weight); // the SAME resolver the canvas calls — see blockTypography
 }
 
 /**
@@ -96,18 +112,38 @@ const hrefFor = (node: BoxNode, pageMap: Map<string, string>): string => {
   return h;
 };
 
+/**
+ * THE PAGE'S SEMANTICS for the page being rendered (lib/semantics.ts — the SAME resolver the canvas uses). Set by
+ * `renderPageHTML` for the length of one render; null for a fragment rendered on its own, which then keeps plain divs.
+ */
+let SEM: PageSemantics | null = null;
+
+/** The first thing on every page: keyboard users jump straight past the header (WCAG 2.4.1). System colours — no hex.
+ *  Parked off the START side by a LOGICAL inset (G-1 #4): parked by `left`, a right-to-left page — whose start is the
+ *  right and whose left is the side that scrolls — scrolled 16,000px sideways (measured, HEADED UAT G-1, dir=rtl). */
+export const SKIP_LINK_HTML = `<a class="eu-skip" href="#main">Skip to content</a>`;
+export const SKIP_LINK_CSS = ".eu-skip{position:absolute;inset-inline-start:-999rem;top:0}.eu-skip:focus{inset-inline-start:1rem;top:1rem;z-index:" + PAGE_Z_CEILING + ";padding:0.5rem 1rem;background:Canvas;color:CanvasText;outline:0.125rem solid CanvasText;font:inherit}"
+  // The AUTOMATIC main wraps whole bands without changing the layout; a list the user chose loses the browser's bullets
+  // and indent, so choosing "List" changes the meaning and never the look.
+  + ".eu-main{display:contents}.eu-list{list-style:none;margin:0;padding-left:0}.eu-li{display:contents}"
+  // The skip link's TARGET: a <main> with display:contents has no box and cannot take focus, so Enter on the link left
+  // focus where it was (#72). This marker can — and, out of the layout, it adds no gap.
+  + ".eu-main-start{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}";
+
 /** Render a single element's inner HTML (its wrapper div is added by renderNode). */
 function elementHTML(node: BoxNode, theme: SiteTheme, pageMap: Map<string, string>): string {
   // Emitted only when the block itself sets one — a hard-coded "left" is an explicit value, and an explicit
   // value on the child beats the alignment its container was told to have.
   const align = node.textAlign;
   switch (node.type) {
-    case "heading": return `<h2 style="${styleString({ color: node.color || typoRole.color("text"), fontSize: node.fontSize != null ? u(node.fontSize) : typoRole.size(2), textAlign: align, width: "100%", ...typoCss(node, "heading", 600) })}">${esc(node.text ?? "")}</h2>`;
-    case "text": return `<p style="${styleString({ color: node.color || typoRole.color("muted"), fontSize: node.fontSize != null ? u(node.fontSize) : typoRole.size(1), textAlign: align, width: "100%", ...typoCss(node, "body", 400) })}">${esc(node.text ?? "")}</p>`;
+    case "heading": { const hl = SEM?.byId.get(node.id)?.level ?? 2; return `<h${hl} style="${styleString({ color: node.color || typoRole.color("text"), fontSize: node.fontSize != null ? textLen(node.fontSize) : typoRole.size(2), textAlign: align, width: "100%", ...typoCss(node, "heading", 600) })}">${esc(node.text ?? "")}</h${hl}>`; }
+    case "text": return `<p style="${styleString({ color: node.color || typoRole.color("muted"), fontSize: node.fontSize != null ? textLen(node.fontSize) : typoRole.size(1), textAlign: align, width: "100%", ...typoCss(node, "body", 400) })}">${esc(node.text ?? "")}</p>`;
+    // A LINK: a plain <a href>, styled as words in the brand colour — never a button's pill (html-semantics.md).
+    case "link": return `<a href="${esc(hrefFor(node, pageMap))}"${node.newTab ? ' target="_blank" rel="noopener noreferrer"' : ""} style="${styleString({ color: node.color || LINK_COLOR_CSS, fontSize: node.fontSize != null ? textLen(node.fontSize) : typoRole.size(1), textAlign: align, textUnderlineOffset: "0.15em", ...typoCss(node, "body", 500), textDecoration: node.underline ? "underline" : "none" })}">${esc(node.text ?? "")}</a>`; // "off" is WRITTEN — a browser underlines every <a> (#106)
     case "button": { // fills its box + paints its own visual + centres its label (matches the editor) — one shape when resized
       const fp = (v?: string) => (v === "center" ? "center" : v === "end" ? "flex-end" : "flex-start");
       const deco = decorCss(node);
-      return `<a href="${esc(hrefFor(node, pageMap))}"${node.newTab ? ' target="_blank" rel="noopener noreferrer"' : ""} style="${styleString({ display: "flex", width: "100%", height: "100%", boxSizing: "border-box", alignItems: fp(node.contentY ?? "center"), justifyContent: fp(node.contentX ?? "center"), gap: "8px", background: node.background ? colorToCSS(node.background) : colorToCSS(theme.primary), color: node.color || "#fff", fontSize: node.fontSize != null ? u(node.fontSize) : typoRole.size(0.875), padding: `${u(12)} ${u(24)}`, textDecoration: "none", ...deco, borderRadius: deco.borderRadius ?? "9999px", ...typoCss(node, "body", 600) })}">${esc(node.text ?? "")}</a>`;
+      return `<a href="${esc(hrefFor(node, pageMap))}"${node.newTab ? ' target="_blank" rel="noopener noreferrer"' : ""} style="${styleString({ display: "flex", width: "100%", height: "100%", boxSizing: "border-box", alignItems: fp(node.contentY ?? "center"), justifyContent: fp(node.contentX ?? "center"), gap: u(8), background: node.background ? colorToCSS(node.background) : colorToCSS(theme.primary), color: node.color || "var(--eu-color-on-brand)", fontSize: node.fontSize != null ? textLen(node.fontSize) : typoRole.size(0.875), padding: `${u(12)} ${u(24)}`, textDecoration: "none", ...deco, borderRadius: deco.borderRadius ?? PILL, ...typoCss(node, "body", 600) })}">${esc(node.text ?? "")}</a>`;
     }
     // `loading`/`decoding` are set from the block's own settings: a hero must load eagerly or the page opens
     // blank at the top, while a photo further down should wait until it is nearly on screen.
@@ -115,17 +151,29 @@ function elementHTML(node: BoxNode, theme: SiteTheme, pageMap: Map<string, strin
     // byte of the photo has arrived — without them the page reflows as each picture lands and the reader's
     // line of text jumps out from under them (Cumulative Layout Shift).
     case "image": {
-      if (!node.src) return "";
       const { height, aspectRatio } = imageSizing(node);
+      /**
+       * A PICTURE NOT UPLOADED YET KEEPS ITS PLACE (G3b-12, found by the user 2026-10-04: "are you sure the item added in the canvas is
+       * actually showing?"). It published nothing, so its block was 0px tall in the Preview while the canvas drew it 368 × 159, and
+       * everything below moved up — canvas ≠ export. The user's choice: the same box, a soft placeholder (a tint of the theme's muted
+       * colour and a picture icon, no Upload button); the Page check lists every picture still missing.
+       */
+      if (!node.src) {
+        const muted = typoRole.color("muted");
+        return `<div role="img" aria-label="Picture to come" style="${styleString({ width: "100%", height, aspectRatio, display: "flex", alignItems: "center", justifyContent: "center", color: muted, background: `color-mix(in oklch, ${muted} 14%, transparent)`, fontSize: "2rem" })}">${iconSvg("Image")}</div>`;
+      }
       const dims = hasIntrinsicSize(node) ? ` width="${node.imgW}" height="${node.imgH}"` : "";
       return `<img src="${esc(node.src)}" alt="${esc(node.alt ?? "")}"${dims} loading="${node.eager ? "eager" : "lazy"}" decoding="async" style="${styleString({ width: "100%", height, aspectRatio, objectFit: "cover", display: "block" })}" />`;
     }
     case "video": { const embed = videoEmbedSrc(node.src); const h = sizeToCSS(node.height) ?? "315px"; if (embed) return `<iframe src="${esc(embed)}" title="Video" allowfullscreen style="${styleString({ width: "100%", height: h, border: "0" })}"></iframe>`; return node.src ? `<video src="${esc(node.src)}" controls style="${styleString({ width: "100%", height: h })}"></video>` : ""; }
-    case "divider": return `<div aria-hidden="true" style="${styleString({ width: "100%", borderTopWidth: node.borderWidth || 2, borderTopStyle: node.borderStyle ?? "solid", borderTopColor: node.color ? colorToCSS(node.color) : node.borderColor ? colorToCSS(node.borderColor) : typoRole.color("muted") })}"></div>`;
-    case "list": { const items = (node.listItems ?? []).map((it) => `<li>${esc(it)}</li>`).join(""); const st = styleString({ color: node.color || typoRole.color("text"), fontSize: node.fontSize != null ? u(node.fontSize) : typoRole.size(1), textAlign: align, width: "100%", paddingLeft: u(22), ...typoCss(node, "body", 400) }); return node.listStyle === "number" ? `<ol style="${st}">${items}</ol>` : `<ul style="${st}">${items}</ul>`; }
+    case "divider": return `<hr style="${styleString({ border: "0", margin: "0", height: "0", width: "100%", borderTopWidth: dividerThickness(node),borderTopStyle: node.borderStyle ?? "solid", borderTopColor: node.color ? colorToCSS(node.color) : node.borderColor ? colorToCSS(node.borderColor) : typoRole.color("muted") })}">`;
+    case "list": { const li = styleString({ marginBottom: u(LIST_ITEM_GAP) }); const items = (node.listItems ?? []).map((it) => `<li style="${li}">${esc(it)}</li>`).join(""); const st = styleString({ color: node.color || typoRole.color("text"), fontSize: node.fontSize != null ? textLen(node.fontSize) : typoRole.size(1), textAlign: align, width: "100%", paddingLeft: u(22), ...typoCss(node, "body", 400) }); return node.listStyle === "number" ? `<ol style="${st}">${items}</ol>` : `<ul style="${st}">${items}</ul>`; }
     case "embed": return node.html ?? "";
-    case "spacer": return `<div aria-hidden="true" style="${styleString({ width: "100%", height: sizeToCSS(node.height) ?? "48px" })}"></div>`;
-    case "icon": { const svg = iconSvg(node.icon ?? "Star"); return svg ? `<span aria-hidden="true" style="${styleString({ display: "inline-flex", color: node.color ? colorToCSS(node.color) : typoRole.color("text"), fontSize: node.fontSize != null ? u(node.fontSize) : typoRole.size(1.5) })}">${svg}</span>` : ""; }
+    case "spacer": return `<div aria-hidden="true" style="${styleString({ width: "100%", height: sizeToCSS(node.height) ?? "3rem" })}"></div>`;
+    // THE SAME BOX THE CANVAS DRAWS (#143): a wrapper with no line-height (an inline SVG in a normal line box gained the
+    // leading — 40px published for a 32px icon on the canvas), the icon exactly 1em square, the same default size (32 in
+    // the spacing unit) and the same default colour (the brand, as the canvas has always drawn it).
+    case "icon": { const svg = iconSvg(node.icon ?? "Star"); return svg ? `<div style="${styleString({ textAlign: align, color: node.color ? colorToCSS(node.color) : colorToCSS(theme.primary), width: "100%", lineHeight: 0 })}"><span aria-hidden="true" style="${styleString({ display: "inline-flex", fontSize: u(node.fontSize ?? 32), width: "1em", height: "1em" })}">${svg}</span></div>` : ""; }
     case "component": return componentHTML(node);
     default: return "";
   }
@@ -234,7 +282,7 @@ function componentHTML(node: BoxNode): string {
 function componentTypoCss(node: BoxNode): CSSProperties {
   const s: CSSProperties = {};
   if (node.fontFamily) s.fontFamily = node.fontFamily;
-  if (node.fontSize) s.fontSize = u(node.fontSize);
+  if (node.fontSize) s.fontSize = textLen(node.fontSize);
   if (node.fontWeight) s.fontWeight = node.fontWeight;
   if (node.lineHeight) s.lineHeight = node.lineHeight;
   if (node.letterSpacing != null) s.letterSpacing = `${node.letterSpacing}px`;
@@ -273,12 +321,47 @@ const RUNG_MIN_EM: Record<Exclude<Breakpoint, "phone">, number> = {
   base: BREAKPOINTS_EM.desktop, // 1200px — `base` IS the desktop rung
   wide: BREAKPOINTS_EM.wide, // 1800px
 };
+/** `css` held to the widths of `screens` (G3b-11): one media range per run of neighbouring screens, as `overridesByRung` writes them. */
+function onlyOnScreens(css: string, screens: Breakpoint[]): string {
+  if (!screens.length) return "";
+  const minEm = (i: number) => RUNG_MIN_EM[BP_ORDER[i] as Exclude<Breakpoint, "phone">];
+  const on = BP_ORDER.map((bp) => screens.includes(bp)), ranges: string[] = [];
+  for (let i = 0; i < on.length; i++) {
+    if (!on[i]) continue; let j = i; while (j + 1 < on.length && on[j + 1]) j++;
+    ranges.push([i > 0 ? `(min-width:${minEm(i)}em)` : "", j < on.length - 1 ? `(max-width:${(minEm(j + 1) - 0.001).toFixed(3)}em)` : ""].filter(Boolean).join(" and ") || "all");
+    i = j;
+  }
+  return `@media ${ranges.join(",")}{${css}}`;
+}
 /** One bucket of rules per rung. The phone rung is the unqualified base of a mobile-first sheet. */
-type Sheet = { rungs: Record<Breakpoint, string[]>; reveals: Set<string> };
+type Sheet = { rungs: Record<Breakpoint, string[]>; reveals: Set<string>; arrivals: Set<string>; overrides: string[]; queries: string[] };
 export const emptySheet = (): Sheet => ({
   rungs: { phone: [], tabletPortrait: [], tabletLandscape: [], base: [], wide: [] },
   reveals: new Set<string>(),
+  arrivals: new Set<string>(),
+  overrides: [], // a block's own Advanced CSS / token overrides, per screen — after every rung, as the canvas applies them last
+  queries: [], // container queries — a grid narrowing by its own box (`gridQueryCss`), emitted after every rung
 });
+
+/**
+ * A block's Advanced CSS and token overrides AT EACH SCREEN (R4-1). Each run of rungs with the same value is ONE rule
+ * limited to that range of widths, so nothing set at one screen leaks into another and no declaration has to be undone at
+ * the next rung. Emitted after the generated rules, because the canvas applies them inline, LAST, at every rung.
+ */
+function overridesByRung(node: BoxNode, cls: string): string[] {
+  const ovs = BP_ORDER.map((bp) => overridesCss(resolveResponsive(node, bp)));
+  const minEm = (i: number) => RUNG_MIN_EM[BP_ORDER[i] as Exclude<Breakpoint, "phone">];
+  const out: string[] = [];
+  for (let i = 0; i < ovs.length; ) {
+    let j = i; while (j + 1 < ovs.length && ovs[j + 1] === ovs[i]) j++;
+    if (ovs[i]) {
+      const q = [i > 0 ? `(min-width:${minEm(i)}em)` : "", j < ovs.length - 1 ? `(max-width:${(minEm(j + 1) - 0.001).toFixed(3)}em)` : ""].filter(Boolean).join(" and ");
+      out.push(q ? `@media ${q}{.${cls}{${ovs[i]}}}` : `.${cls}{${ovs[i]}}`);
+    }
+    i = j + 1;
+  }
+  return out;
+}
 const classFor = (id: string) => "bx-" + id.replace(/[^A-Za-z0-9_-]/g, "-");
 // When a property is set at BASE but dropped at a breakpoint, we must actively neutralise it (the base rule
 // still applies at every width) — reset it to its layout initial rather than leaving the desktop value.
@@ -295,8 +378,44 @@ const RESET: Record<string, string> = {
   columnGap: "normal", rowGap: "normal",
 };
 
+/**
+ * Does this subtree put ANYTHING on the page?
+ *
+ * "Empty" used to mean "has no children", which is a fact about an array rather than about what a visitor
+ * sees: a coloured band holding one empty box has a child and shows nothing. A node renders something if it
+ * has words, a picture, or a component of its own — or if anything inside it paints or renders.
+ */
+function rendersNothing(node: BoxNode): boolean {
+  if (node.text?.trim() || node.src || node.type === "component") return false;
+  if (!isContainer(node) && node.type !== "container") return false; // an element with no text still draws (a divider, a button)
+  for (const c of node.children ?? []) {
+    if (c.background || c.bgImage || c.bgOverlay) return false;
+    if (!rendersNothing(c)) return false;
+  }
+  return true;
+}
+
+/**
+ * Is the height already there SMALLER than the empty-band floor — and therefore safe to raise?
+ *
+ * The floor must beat a floor the code derived (that veto is what hid an empty band at 40px), and must never
+ * touch a real height. Dropping the "only if nothing is set" guard outright did both, and the gate caught it
+ * immediately: a FULL-SCREEN section carries `min-height: 100svh` through the same field, so an 8rem band
+ * was written straight over one screen and the hero rendered 772px instead of the window.
+ *
+ * So only a plain, absolute, comparable length may be raised. A viewport unit, a percentage or a `calc()`
+ * means something this cannot reason about, and anything it cannot reason about it leaves exactly alone.
+ */
+function belowFloor(current: CSSProperties["minHeight"]): boolean {
+  if (current == null || current === "") return true;
+  if (typeof current === "number") return current < 128;
+  const m = /^([\d.]+)(px|rem)$/.exec(current.trim());
+  if (!m) return false; // svh / vh / % / calc() — a real decision by something else; never overwritten
+  return Number(m[1]) * (m[2] === "rem" ? 16 : 1) < 128;
+}
+
 /** The full style object for a node at a breakpoint — mirrors BoxCanvas's wrapStyle so editor == export. */
-function styleAt(node: BoxNode, rawParent: BoxNode | null, bp: Breakpoint, theme: SiteTheme): CSSProperties {
+function styleAt(node: BoxNode, rawParent: BoxNode | null, bp: Breakpoint, theme: SiteTheme, hostSized = false, section: SectionFlag = false, onPage = false): CSSProperties {
   const r = resolveResponsive(node, bp);
   const parent = rawParent ? resolveResponsive(rawParent, bp) : null;
   const isRoot = rawParent === null;
@@ -313,23 +432,26 @@ function styleAt(node: BoxNode, rawParent: BoxNode | null, bp: Breakpoint, theme
     maxWidth: "100%", // never wider than the container → no horizontal scrollbar on a phone
     ...(selfPaint ? {} : decorCss(r)), // a component/button's border/radius/shadow style the block element, not this wrapper
     ...(floating ? {} : marginCSS(r)),
+    ...leafPaddingCSS(r, section), // inner spacing on a plain element (c-23) — the canvas writes the same
     opacity: !isComp ? boxOpacity(r) : undefined, // paint-only fades live in the colours (fadedPaint), not here
     overflow: stacked ? "visible" : (!selfPaint && (r.clip || radiusCSS(r))) ? "hidden" : undefined,
     ...(floating
-      ? { left: `${r.left ?? 0}%`, top: `${r.top ?? 0}%`, width: sizeToCSS(r.width), height: r.height ? sizeToCSS(r.height) : undefined, minHeight: r.minHeight, zIndex: floatZIndex(r) } // no width ⇒ auto ⇒ hug content (never a wide default box)
+      ? { left: `${r.left ?? 0}%`, top: `${r.top ?? 0}%`, width: sizeToCSS(r.width), height: r.height ? sizeToCSS(r.height) : undefined, minHeight: r.minHeight != null ? remLen(r.minHeight) : undefined, zIndex: floatZIndex(r), ...floatHoldCSS(r) } // no width ⇒ auto ⇒ hug content; a floated block may still hold on screen
       : stacked
       ? { position: "relative", width: "100%", height: "auto", minHeight: "auto", zIndex: "auto" } // full-width flow, grows with content
       // The PAGE ROOT publishes the theme's typography as the role defaults everything below inherits — which
       // is what lets a block stop hard-coding them and a section start overriding them.
-      : parent ? childStyle(r, parent, bp) : { width: "100%", ["--box-u" as string]: baseUnit(r.baseFont ?? 10), ...typoRootVars(theme) }),
+      : parent ? childStyle(r, parent, bp, hostSized) : { width: "100%", ["--box-u" as string]: baseUnit(r.baseFont ?? 10), ["--box-t" as string]: baseUnit(r.baseFont ?? 10), ...typoRootVars(theme) }),
     // A CONTAINER hands its typography down to everything inside it (see typoCascadeCss).
     ...(isContainer(r) ? typoCascadeCss(r) : {}),
     ...(selfPaint ? {} : bgCss(r)), // background styles the block element (component/button), not this wrapper
     ...(isComp ? componentTypoCss(r) : {}),
   };
+  // The space OUTSIDE a block that paints its own box (S-2 (5)) — the canvas writes the same, from the same helper.
+  if (!floating && !stacked) Object.assign(wrap, outerSpaceCSS(r, section && (rawParent?.rowBand ? "band" : "page")));
   if (r.hidden) wrap.display = "none"; // hidden-on-this-device → removed at that breakpoint
   if (isContainer(r)) {
-    const cs: CSSProperties = { ...containerStyle(r, bp), ...wrap };
+    const cs: CSSProperties = { ...containerStyle(r, bp, section), ...pageBandInset(r, onPage), ...wrap, ...pagePinCover(r, onPage) };
     // An EMPTY container that paints a background would collapse to 0px in the exported/preview site (the editor's
     // "Drag a block here" placeholder gives it height, but that's editor-only). Give it a visible band so the
     // background actually shows — unless the user gave it an explicit height/min-height.
@@ -340,9 +462,31 @@ function styleAt(node: BoxNode, rawParent: BoxNode | null, bp: Breakpoint, theme
     // them because its "drag a block in" hint gave them height. Canvas ≠ export, in the direction where the
     // editor lies to you, which is the worst of the two. The band stays, and the rows sharing the height
     // evenly (`minmax(min-content, 1fr)`) is what stops it distorting a row that has real content in it.
-    const empty = !(r.children && r.children.length);
+    /**
+     * …AND THE FLOOR HAS TO BEAT THE ONE THE CODE DERIVED, OR IT NEVER APPLIES.
+     *
+     * Reported with screenshots: a band added at the top of a page, given a colour and left empty, showed in
+     * the editor and was missing from the preview. It was not missing — it was a THIRD of its size, which
+     * against a tall row of cells underneath is indistinguishable from gone. Measured, editor → page:
+     *
+     *     band with a background, empty              128px → 40px
+     *     band with a background, holding an empty box   128px → 40px
+     *     band with a background, holding an empty grid  128px → 40px
+     *
+     * Two separate reasons, and the first hid the second:
+     *
+     *   • `cs.minHeight == null` — `containerStyle` has already derived a floor of its own by this point, so
+     *     the guard was false and the 8rem band was never written. A floor the CODE worked out must not be
+     *     allowed to veto a rule about what the USER can see; only a height the user set themselves may.
+     *   • `empty` meant "no children". A band holding one empty box has a child, so it was not empty — while
+     *     nothing inside it renders anything at all. Emptiness is about what appears, not about array length.
+     *
+     * A floating child's reserved height is still respected, because the floor is the LARGER of the two.
+     */
     const paints = !selfPaint && (r.bgImage || r.background || r.bgOverlay);
-    if (empty && paints && r.minHeight == null && r.height == null && cs.minHeight == null && cs.height == null) cs.minHeight = "8rem";
+    if (paints && rendersNothing(r) && r.minHeight == null && r.height == null && belowFloor(cs.minHeight)) {
+      cs.minHeight = remLen(Math.max(128, floatingReserve(r, bp))); // 8rem, in rem — never a stored pixel (field guide ②)
+    }
     return cs;
   }
   // Elements apply their OWN minHeight/height (containers get it from containerStyle) so a height-resized
@@ -364,7 +508,7 @@ function styleAt(node: BoxNode, rawParent: BoxNode | null, bp: Breakpoint, theme
 
 /** Properties of `bp` that DIFFER from `base` (missing-at-bp keys reset to their initial), as a CSS string. */
 function diffStyle(base: CSSProperties, bp: CSSProperties): string {
-  const ser = (k: string, v: unknown) => (v == null || v === "" ? "" : styleString({ [k]: v } as CSSProperties));
+  const ser = (k: string, v: unknown) => (v == null || v === "" ? "" : styleString({ [k]: v } as CSSProperties, "sheet"));
   const keys = new Set([...Object.keys(base), ...Object.keys(bp)]);
   const out: string[] = [];
   for (const k of keys) {
@@ -372,22 +516,30 @@ function diffStyle(base: CSSProperties, bp: CSSProperties): string {
     const pv = (bp as Record<string, unknown>)[k];
     if (ser(k, bv) === ser(k, pv)) continue;
     const val = pv != null && pv !== "" ? pv : (RESET[k] ?? "revert");
-    out.push(styleString({ [k]: val } as CSSProperties));
+    out.push(styleString({ [k]: val } as CSSProperties, "sheet"));
   }
   return out.filter(Boolean).join(";");
 }
 
 /** Render a node (and subtree) to HTML, pushing its base + per-breakpoint rules into `sheet`. */
-function renderNode(node: BoxNode, rawParent: BoxNode | null, theme: SiteTheme, pageMap: Map<string, string>, sheet: Sheet, isPageSection = false): string {
+function renderNode(node: BoxNode, rawParent: BoxNode | null, theme: SiteTheme, pageMap: Map<string, string>, sheet: Sheet, isPageSection = false, hostSized = false, section: SectionFlag = false): string {
   const r = resolveResponsive(node, "base");
   if (r.hidden && !node.responsive) return ""; // hidden at base with no per-device un-hide → skip entirely
+  const sem = SEM?.byId.get(node.id);
+  if (sem?.omit) return ""; // an empty heading is not published (semantics, C1)
   const cls = classFor(node.id);
+  // The ELEMENT this block publishes as (lib/semantics.ts). A list item that is otherwise a plain block becomes the <li>
+  // itself; one with a meaning of its own (a card = <article>) is wrapped in a layout-neutral <li>.
+  const own = sem && isContainer(r) && sem.tag && !/^h[1-6]$/.test(sem.tag) ? sem.tag : "div";
+  const el = sem?.listItem && own === "div" ? "li" : own;
+  const wrapLi = (html: string) => (sem?.listItem && el !== "li" ? `<li class="eu-li">${html}</li>` : html);
+  const semAttr = (sem?.label ? ` aria-label="${esc(sem.label)}"` : "") + (el === "main" && !r.anchor ? ' id="main" tabindex="-1"' : "");
   // Build UP: the phone layout is the unqualified rule and every wider rung adds only what CHANGES from the
   // rung below it. Diffing against the neighbour rather than the base is what keeps the sheet small — a rung
   // that changes nothing emits nothing at all.
-  const byRung = BP_ORDER.map((bp) => styleAt(node, rawParent, bp, theme));
-  const ov = overridesCss(r);
-  sheet.rungs.phone.push(`.${cls}{${[styleString(byRung[0]), ov].filter(Boolean).join(";")}}`);
+  const byRung = BP_ORDER.map((bp) => styleAt(node, rawParent, bp, theme, hostSized, section, isPageSection));
+  sheet.rungs.phone.push(`.${cls}{${styleString(byRung[0], "sheet")}}`);
+  sheet.overrides.push(...overridesByRung(node, cls));
   // Hover & focus (Interactions 1a) — the SAME emitter the canvas uses, so the builder shows exactly what a
   // visitor gets. Pure CSS: a page with no effects ships nothing extra.
   const hov = hoverCss(`.${cls}`, r.hoverEffect);
@@ -401,6 +553,10 @@ function renderNode(node: BoxNode, rawParent: BoxNode | null, theme: SiteTheme, 
   // alert messages — its wrapper's direct children are a <style> tag and the component itself.
   const rev = revealCss(`.${cls}`, r, { staggerSelector: r.component ? COMPONENT_ITEM_SEL[r.component] : undefined });
   if (rev) { sheet.rungs.phone.push(rev); if (r.revealEffect) sheet.reveals.add(r.revealEffect); }
+  // ARRIVAL (Step 2b) — what a pinned block becomes once the page has moved under it. Same resolver the
+  // canvas calls, so the editor cannot show an arrival the published page will not play.
+  const arrive = pinArrivalCss(`.${cls}`, r);
+  if (arrive) { sheet.rungs.phone.push(arrive); if (r.pinArrival) sheet.arrivals.add(r.pinArrival); }
   // An ITEM's entrance needs its keyframes on the page too. They are emitted once, at assembly, from this
   // set — so an item effect whose id never reached it would animate to a name that does not exist, which is
   // silently nothing at all.
@@ -409,24 +565,40 @@ function renderNode(node: BoxNode, rawParent: BoxNode | null, theme: SiteTheme, 
     const diff = diffStyle(byRung[i - 1], byRung[i]);
     if (diff) sheet.rungs[BP_ORDER[i]].push(`.${cls}{${diff}}`);
   }
+  // A grid narrows by ITS OWN box too (#111) — the same emitter the canvas injects; "above the phone" is the tablet
+  // rung's media query here, so the two-across rule can never widen the phone's single column.
+  const gq = gridQueryCss(`.${cls}`, r, (id) => `.${classFor(id)}`, (css) => `@media (min-width:${RUNG_MIN_EM.tabletPortrait}em){${css}}`, undefined, isPageSection, onlyOnScreens); // the same "on the page" as `pageBandInset`
+  if (gq) sheet.queries.push(gq);
   // A PAGE of a pager always carries an id, because the dots link to it — `pagerSlideId` is the one
   // function that decides what it is, so the link and the target cannot disagree. It also carries the
   // marker the script counts pages by; without it a nav or a toolbar inside the strip would be counted
   // as a page.
   const inPager = !!rawParent && isPager(resolveResponsive(rawParent, "base"));
-  const idAttr = inPager ? ` id="${esc(pagerSlideId(r))}" data-eu-slide` : r.anchor ? ` id="${esc(r.anchor)}"` : "";
+  const idAttr = (inPager ? ` id="${esc(pagerSlideId(r))}" data-eu-slide` : r.anchor ? ` id="${esc(r.anchor)}"` : "")
+    // STACKED PINS (Step 2c). The marker names the edge this block is ever held against; the measuring pass
+    // reads the computed position to decide whether it is held HERE, so one static attribute serves every
+    // rung. Folded into `idAttr` deliberately — four return paths below write it, and adding it to one of
+    // them and forgetting the others is exactly the seam this project keeps paying for.
+    + ((m) => (m ? ` data-eu-pin="${m}"` : ""))(pinStackMarker(node, rawParent ?? undefined))
+    // WHICH stack it joins (2e) — the window for a fixed bar, the box it travels inside for a sticky one.
+    + ((g) => (g ? ` data-eu-pin-in="${esc(g)}"` : ""))(pinStackGroupMarker(node, rawParent ?? undefined));
   // A structural band also carries its layout classes — computed by box-model, so the canvas gets the same ones.
-  const allCls = [cls, bandClasses(r, isPageSection)].filter(Boolean).join(" ");
+  const allCls = [cls, bandClasses(r, isPageSection), el === "ul" || el === "ol" ? "eu-list" : ""].filter(Boolean).join(" ");
   if (isContainer(r)) {
     // Children of the PAGE ROOT (the only call with no parent) are the page's sections; nothing deeper is.
     const kidsAreSections = rawParent === null;
-    const kids = (r.children ?? []).map((c) => renderNode(c, node, theme, pageMap, sheet, kidsAreSections)).join("");
+    const kidList = (r.children ?? []).map((c) => renderNode(c, node, theme, pageMap, sheet, kidsAreSections, hostSizedFor(node, hostSized, rawParent), sectionContent(c, kidsAreSections, isPageSection && !!r.rowBand, r)));
+    // A1 — the AUTOMATIC <main>: the page's bands between its header and footer regions, wrapped without a box of its own.
+    const mw = rawParent === null ? SEM?.mainWrap : null;
+    const kids = mw
+      ? kidList.slice(0, mw.start).join("") + `<main class="eu-main"><span id="main" tabindex="-1" class="eu-main-start"></span>${kidList.slice(mw.start, mw.end).join("")}</main>` + kidList.slice(mw.end).join("")
+      : kidList.join("");
     // MASONRY, measured (C). The marker and the script ride WITH the gallery, in the same shape the Alert's
     // dismiss script uses: one guarded global, so ten measured galleries still run one copy, and a page with
     // none ships no script at all. The attribute's value is the down-gap in row units — the one number the
     // script cannot read back, because masonry spends that gap as empty units rather than as `row-gap`.
     const mGap = masonryMeasureAttr(r);
-    if (mGap != null) return `<div${idAttr} class="${allCls}" data-eu-masonry="${mGap}">${kids}${masonryMeasureScript()}</div>`;
+    if (mGap != null) return wrapLi(`<${el}${idAttr}${semAttr} class="${allCls}" data-eu-masonry="${mGap}">${kids}${masonryMeasureScript()}</${el}>`);
     // SHOW ONE AT A TIME. The strip carries the marker the script looks for; the nav is a sibling of the
     // strip rather than a child of it, or it would become a page of its own and scroll away with them.
     //
@@ -439,36 +611,114 @@ function renderNode(node: BoxNode, rawParent: BoxNode | null, theme: SiteTheme, 
       // `tabindex="0"` + a label is the whole keyboard story, and it needs no script at all: an overflow
       // container is not focusable by default, and once it is, one arrow key moves exactly one page —
       // measured, with the page itself never moving.
-      return `<div${idAttr} class="${allCls}">`
+      return wrapLi(`<${el}${idAttr}${semAttr} class="${allCls}">`
         + `<div data-eu-pager${auto} tabindex="0" role="group" aria-roledescription="carousel"`
         + ` aria-label="One at a time" style="${styleString(pagerStripCss())}">${kids}</div>`
-        + `${nav}${script}</div>`;
+        + `${nav}${script}</${el}>`);
     }
-    return `<div${idAttr} class="${allCls}">${kids}</div>`;
+    return wrapLi(`<${el}${idAttr}${semAttr} class="${allCls}">${kids}</${el}>`);
   }
-  return `<div${idAttr} class="${allCls}">${elementHTML(r, theme, pageMap)}</div>`;
+  return wrapLi(`<${el}${idAttr}${semAttr} class="${allCls}">${elementHTML(r, theme, pageMap)}</${el}>`);
 }
 
 /** Turn the collected rules into a stylesheet: the phone layout first, then each wider screen adds to it. */
 function sheetCss(sheet: Sheet): string {
   return [
+    // The type unit's registration, so `--box-t` is computed at the page root and inherited as a length (#133).
+    TYPE_UNIT_PROPERTY_CSS,
     // One copy of each entrance's keyframes, for the effects this page actually uses.
     revealKeyframes(sheet.reveals),
+    // …and one copy of each arrival’s, for the same reason.
+    pinArrivalKeyframes(sheet.arrivals),
     sheet.rungs.phone.join(""),
     // In ladder order, so a wider rung's rules come later and win on the cascade — which is the whole reason
     // a mobile-first sheet needs no specificity tricks.
     ...BP_ORDER.slice(1).map((bp) =>
       sheet.rungs[bp].length ? `@media (min-width:${RUNG_MIN_EM[bp as Exclude<Breakpoint, "phone">]}em){${sheet.rungs[bp].join("")}}` : ""),
+    // A block's own Advanced CSS, per screen, after every generated rule (R4-1: the canvas applies it last).
+    sheet.overrides.join(""),
+    // LAST: a grid's own-box narrowing only ever takes columns away, so it sits after every rung it can override.
+    sheet.queries.join(""),
   ].filter(Boolean).join("");
 }
 
 /** Render one page's tree to an HTML fragment. The page's own responsive stylesheet is emitted as a leading
  *  `<style>` block (a passed `sheet` instead accumulates into a shared document-level sheet, no inline block). */
+/**
+ * WHAT A VISITOR SEES BELOW A PAGE THAT DOES NOT FILL THEIR SCREEN.
+ *
+ * Measured on an iPad Pro 11 (834 × 1210) with a real three-band page: the content ended at 410px and **800
+ * pixels of white followed it** — two thirds of the screen, directly under a dark footer. Reported exactly as
+ * it looks: "it looks like a user is seeing what they have not added."
+ *
+ * Nothing was being added. `<body>` is white by default, the document is taller than the page, and the
+ * leftover is the browser's own backdrop. But a slab of white under a dark footer reads as an empty block,
+ * and the fact that it is technically nothing is no help to the person looking at it.
+ *
+ * THE FIX ADDS NOTHING — no element, no space, no setting, no height. The DOCUMENT is simply painted the
+ * colour of the band that ends the page, so the last band appears to run to the bottom of the screen. On a
+ * page taller than the screen it is invisible (you never see past the content). On a short one the footer
+ * finishes the page instead of a white void. It is a background, so it is responsive by construction: every
+ * screen, every orientation, nothing to recompute and nothing to maintain.
+ *
+ * The alternatives were both worse and both were rejected. STRETCHING the last band to `100vh` changes the
+ * user's own layout and makes a 90px footer 800px tall — adding exactly the empty space this is about. A
+ * PER-PAGE SETTING asks someone to fix a problem they did not cause.
+ *
+ * Deliberately conservative about what counts as "the band that ends the page":
+ *   • floating blocks are skipped — they are on their own layer, not the bottom of the flow;
+ *   • a block hidden at every rung is skipped — it ends nothing;
+ *   • a band carrying a background IMAGE contributes only its colour, never the image: repeating a photograph
+ *     below the fold would be adding something, which is the one thing this must not do;
+ *   • nothing suitable → nothing is emitted, and the browser default stands exactly as before.
+ */
+/**
+ * BELOW YOUR CONTENT IS YOUR PAGE'S OWN BACKGROUND. That is the whole rule, and it replaces one that tried
+ * to be cleverer.
+ *
+ * The problem is real and unchanged: a page shorter than the screen leaves the browser's own backdrop
+ * below it, and a slab of white under a dark footer reads as an empty block somebody added by mistake.
+ * Measured on an iPad Pro 11 with a real three-band page: content ended at 410px and **800 pixels of white
+ * followed it**.
+ *
+ * WHAT THIS USED TO DO was infer the colour from the last band. That works only when the last band is a
+ * single full-width block, and silently misbehaves otherwise: on a band holding two columns it picked ONE
+ * of them and painted the FULL WIDTH with it, so a 28%-wide green stack produced a green slab under the
+ * entire page. Reported as *"it covers everything, which is wrong"* — and it was, in the export as well as
+ * in the builder, which is why inferring was abandoned rather than patched.
+ *
+ * The page background is better on every count that matters here. It is ONE sentence a user already
+ * understands, it is theirs to set rather than the system guessing, and the builder paints the page with
+ * that same colour — so the two surfaces agree by construction instead of by a mirroring rule somebody has
+ * to keep in sync. A dark site is dark below its content because the site is dark, not because a footer
+ * happened to be.
+ *
+ * It adds no element, no height and no space, exactly as before: only the document is painted, so a page
+ * taller than the screen never shows it at all.
+ */
+export function documentBackdropCss(theme: SiteTheme): string {
+  const colour = theme.background;
+  if (!colour || !colour.trim()) return "";
+  // A gradient is a paint, not a colour: `background-color` cannot take one, and `background` on <html>
+  // would draw the whole gradient again below the page.
+  if (colour.includes("gradient(")) return "";
+  return `html{background-color:${colour}}`;
+}
+
 export function renderPageHTML(root: BoxNode, theme: SiteTheme, pageMap: Map<string, string> = new Map(), sheet?: Sheet): string {
-  if (sheet) return renderNode(root, null, theme, pageMap, sheet); // shared sheet → caller emits the CSS
-  const own: Sheet = emptySheet();
-  const body = renderNode(root, null, theme, pageMap, own);
-  return `<style>${sheetCss(own)}</style>${body}`;
+  /**
+   * STACKED PINS (Step 2c) ride with the PAGE, not with a block — because the thing being measured is the
+   * relationship BETWEEN blocks, and no one of them owns it. `pinStackNeeded` is what keeps zero-JS the
+   * default: fewer than two bars at one edge and nothing is emitted at all, at any rung.
+   */
+  const stack = pinStackNeeded(root) ? pinStackScript() : "";
+  const prev = SEM; SEM = resolvePage(root);
+  try {
+    if (sheet) return SKIP_LINK_HTML + renderNode(root, null, theme, pageMap, sheet) + stack; // shared sheet → caller emits the CSS
+    const own: Sheet = emptySheet();
+    const body = renderNode(root, null, theme, pageMap, own);
+    return `<style>${sheetCss(own)}${SKIP_LINK_CSS}</style>${SKIP_LINK_HTML}${body}${stack}`;
+  } finally { SEM = prev; }
 }
 
 
@@ -504,21 +754,20 @@ export function siteFileMap(site: BoxSite): Map<string, string> {
 }
 
 /**
- * The nav, rendered into EVERY page.
+ * THE PAGE IS WHAT THE USER DESIGNED — nothing is injected above it.
  *
- * `aria-current="page"` marks where the visitor is — without it a screen-reader user has no way to tell which
- * of five links is the page they are on. Links are RELATIVE (`about.html`, never `/about`) so the export still
- * works opened from a folder, a USB stick, or a subdirectory on a host.
+ * A `<nav class="eu-site-nav">` listing every page used to be prepended to every rendered page. It was
+ * well-meant, and it was the BUILDER's furniture rather than the user's design: it arrived unasked, it could
+ * not be styled, moved or removed, and on a ONE-PAGE site it rendered as a lone bold "Home" at the top of the
+ * canvas that read as a stray heading nobody had typed.
+ *
+ * Page-to-page navigation is still fully supported — it is BUILT now rather than injected. A Button or Link
+ * block whose destination is `page:<id>` resolves through `siteFileMap` to the right file (see `href` above),
+ * so a header you design yourself navigates exactly as the old bar did and looks the way you meant it to.
+ *
+ * Inside the editor's Preview, moving between pages is the job of the preview's own toolbar, which carries a
+ * tab per page: chrome belongs AROUND the page, never inside it.
  */
-function siteNav(site: BoxSite, files: Map<string, string>, currentId: string): string {
-  const ordered = orderedPages(site);
-  const links = ordered.map((p) => {
-    const href = files.get(p.id) ?? "index.html";
-    const current = p.id === currentId ? ` aria-current="page"` : "";
-    return `<a href="${esc(href)}"${current}>${esc(p.name)}</a>`;
-  }).join("");
-  return `<nav class="eu-site-nav">${links}</nav>`;
-}
 
 /** Home first, then the rest in their existing order — the nav reads the way a visitor expects. */
 function orderedPages(site: BoxSite) {
@@ -542,17 +791,19 @@ function orderedPages(site: BoxSite) {
  * same result — only how it arrives differs, and it has to, because a srcdoc document has nothing to resolve a
  * relative URL against.
  */
-export function renderSitePage(site: BoxSite, theme: SiteTheme, pageId: string, opts: { inlineShared?: boolean } = {}): string {
+export function renderSitePage(site: BoxSite, theme: SiteTheme, pageId: string, opts: { inlineShared?: boolean; fontCss?: string } = {}): string {
   const files = siteFileMap(site);
   const page = site.pages.find((p) => p.id === pageId) ?? orderedPages(site)[0];
   if (!page) return "";
   const sheet: Sheet = emptySheet();
-  const body = renderPageHTML(page.root, theme, files, sheet);
-  const nav = siteNav(site, files, page.id);
-  const markup = `${nav}\n${body}`;
+  const markup = renderPageHTML(page.root, theme, files, sheet);
   const components = subsetCss(COMPONENT_CSS, usedEuClasses(markup));
-  const shared = opts.inlineShared ? `${sharedCss(theme)}\n${SITE_CHROME_CSS}` : undefined;
-  return pageDocument(theme, page.name, markup, [components, sheetCss(sheet)].filter(Boolean).join("\n"), shared);
+  // Fonts go FIRST, exactly as the downloaded stylesheet has them (see renderSiteFiles). Without them Preview drew
+  // every page in the browser's fallback sans-serif while the download used the school's chosen typeface — a
+  // heading measured 13% wider in Preview than on the canvas (found by the Preview check, 2026-09-27).
+  const shared = opts.inlineShared ? [opts.fontCss, sharedCss(theme), SITE_CHROME_CSS].filter(Boolean).join("\n") : undefined;
+  // Per PAGE, not per site: each page ends with its own band, and two pages need not end the same way.
+  return pageDocument(theme, page.name, markup, [components, sheetCss(sheet), documentBackdropCss(theme)].filter(Boolean).join("\n"), shared);
 }
 
 /**
@@ -589,13 +840,13 @@ export function renderSiteFiles(site: BoxSite, theme: SiteTheme, fontCss = ""): 
   for (const page of orderedPages(site)) {
     // Each page gets its own sheet, so a page carries only the rules for the blocks actually on it.
     const sheet: Sheet = emptySheet();
-    const body = renderPageHTML(page.root, theme, files, sheet);
-    const nav = siteNav(site, files, page.id);
-    const markup = `${nav}\n${body}`;
+    const markup = renderPageHTML(page.root, theme, files, sheet);
     // Only the component rules this page's markup actually uses — read from the RENDERED HTML, so it
     // cannot disagree with what the page contains.
     const components = subsetCss(COMPONENT_CSS, usedEuClasses(markup));
-    out[files.get(page.id)!] = pageDocument(theme, page.name, markup, [components, sheetCss(sheet)].filter(Boolean).join("\n"), undefined, prefetchLinks(files, page.id));
+    // Per PAGE, and so NOT in the shared stylesheet: each page ends with its own band, and two pages need
+    // not end the same way. A downloaded site gets exactly what the preview showed.
+    out[files.get(page.id)!] = pageDocument(theme, page.name, markup, [components, sheetCss(sheet), documentBackdropCss(theme)].filter(Boolean).join("\n"), undefined, prefetchLinks(files, page.id));
   }
 
   // The SHARED sheet is only what is identical everywhere — tokens, base, site chrome. The component
@@ -616,16 +867,49 @@ export function renderSiteFiles(site: BoxSite, theme: SiteTheme, fontCss = ""): 
 function sharedCss(theme: SiteTheme): string {
   // Comments are for whoever maintains this stylesheet, not for a parent loading it on a phone. The component
   // half already drops them; the shared half was shipping every one of its own to every visitor of every page.
-  return stripComments(`${tokensToCss(tokensFromTheme(theme))}\n${BASE_CSS}`);
+  // + the skip link, the automatic main and the list resets (semantics) — every page needs them.
+  return stripComments(`${tokensToCss(tokensFromTheme(theme))}\n${BASE_CSS}\n${SKIP_LINK_CSS}`);
 }
 
-/** The nav's own styling — part of the shared sheet because it appears on every page. */
+/**
+ * The page-level guard that belongs on every exported page — and the line that silently broke pinning.
+ *
+ * This was the injected nav's stylesheet. The nav is gone (see above), so what survives is the one rule that
+ * is about the PAGE rather than about the bar that used to sit on top of it: nothing may scroll the document
+ * sideways. Kept deliberately — dropping it would let any over-wide block reintroduce a horizontal scrollbar
+ * on every exported site.
+ *
+ * WHY `clip`, AND WHY `hidden` IS STILL HERE UNDERNEATH IT.
+ *
+ * `overflow-x: hidden` forces the computed `overflow-y` to `auto`, which makes `<body>` a SCROLL CONTAINER.
+ * The page itself scrolls on the viewport, so every `position: sticky` block on every exported page was
+ * being measured against a box that never moves: correct CSS, completely inert, no error anywhere.
+ *
+ * Measured on a pinned nav with the page scrolled 600px: it moved the full 600px and left the screen. With
+ * this one clause changed, it moved 8px and held. Nothing else differed between the two runs — and the
+ * builder's own canvas held it correctly the whole time, so the editor was showing a behaviour it had never
+ * once published.
+ *
+ * `clip` prevents sideways scrolling exactly as `hidden` does but creates NO scroll container, so sticky
+ * survives. It is layered as progressive enhancement rather than swapped: a browser too old for `clip`
+ * (below Safari 16) drops the `@supports` block and keeps `hidden` — no sideways scroll, no working sticky,
+ * which is precisely where it was before. Removing `hidden` outright would have traded a dead feature for a
+ * horizontally scrolling page on those browsers.
+ */
+/**
+ * AND `margin: 0`, WHICH EVERY PUBLISHED PAGE HAS BEEN MISSING.
+ *
+ * A browser gives `<body>` an 8px margin of its own unless it is told otherwise. Nothing here ever told it,
+ * so every exported site sat **8px in from all four edges**: an "edge to edge" band was not edge to edge,
+ * a full-width photo strip had a white line down each side, and the only things that reached the real edges
+ * were blocks measured against the VIEWPORT rather than the page — which is exactly what a user noticed and
+ * reported, seeing floated bars spanning the window while everything else kept a sliver of white.
+ *
+ * Measured on a 1440px window before the fix: a full-width block ran 8 → 1432 and was 1424px wide.
+ */
 const SITE_CHROME_CSS = `html,body{max-width:100%;overflow-x:hidden}
-.eu-site-nav{position:sticky;top:0;z-index:${PAGE_Z.sticky};display:flex;gap:4px;padding:8px 16px;background:var(--eu-color-surface);border-bottom:1px solid var(--eu-color-border)}
-.eu-site-nav a{color:var(--eu-color-text);text-decoration:none;padding:8px 12px;border-radius:var(--eu-radius-md)}
-.eu-site-nav a:hover{background:var(--eu-color-surface-2)}
-.eu-site-nav a[aria-current="page"]{background:var(--eu-color-surface-2);font-weight:600}
-.eu-site-nav a:focus-visible{outline:2px solid var(--eu-color-brand);outline-offset:2px}`;
+body{margin:0}
+@supports (overflow-x:clip){html,body{overflow-x:clip}}`;
 
 /**
  * Fetch the site's OTHER pages while the browser is idle, so following a nav link opens instantly.

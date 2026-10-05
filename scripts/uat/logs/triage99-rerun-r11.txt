@@ -1,0 +1,27 @@
+   6 pages ·    6×  button width @<600   Δh median -8px (-8…0)   e.g. idx 109 @Preview Mobile (375px) 1x-8 Δw -0.2% Δh 0px
+   6 pages ·    6×  heading width @<600   Δh median -10px (-10…0)   e.g. idx 109 @Preview Mobile (375px) k-19 Δw 3.2% Δh 0px
+   6 pages ·    6×  link width @600–899   Δh median 0px (0…0)   e.g. idx 109 @Preview Tablet (768px) ps-c Δw -0.5% Δh 0px
+   6 pages ·    6×  heading width @600–899   Δh median 5px (0…5)   e.g. idx 109 @Preview Tablet (768px) k-19 Δw 1.9% Δh 0px
+   6 pages ·    6×  link width @900–1199   Δh median 0px (0…0)   e.g. idx 109 @Preview Laptop (1024px) ps-c Δw -0.4% Δh 0px
+   6 pages ·    6×  button width @900–1199   Δh median 4px (0…4)   e.g. idx 109 @Preview Laptop (1024px) b1-7 Δw -0.4% Δh 0px
+   5 pages ·    5×  heading width @1200–1799   Δh median 5px (5…5)   e.g. idx 141 @Preview Desktop (1280px) s6-5 Δw -2.2% Δh 5px
+   5 pages ·    5×  link width @1200–1799   Δh median 3px (3…3)   e.g. idx 141 @Preview Desktop (1280px) md-c Δw -0.4% Δh 3px
+   5 pages ·    5×  heading width @≥1800   Δh median 10px (10…10)   e.g. idx 141 @Preview Wide (1920px) s6-5 Δw -3.6% Δh 10px
+   5 pages ·    5×  link width @≥1800   Δh median 7px (7…7)   e.g. idx 141 @Preview Wide (1920px) md-c Δw -0.8% Δh 7px
+   4 pages ·    4×  container shorter in Preview @≥1800   Δh median -137px (-198…-122)   e.g. idx 134 @Preview Wide (1920px) l-19 Δw 0.1% Δh -156px
+   3 pages ·    3×  text shorter in Preview @<600   Δh median -24px (-24…-24)   e.g. idx 109 @Preview Mobile (375px) o-1e Δw 0.0% Δh -24px
+   3 pages ·    3×  link width @<600   Δh median -1px (-1…-1)   e.g. idx 329 @Preview Mobile (375px) nk-l Δw 14.1% Δh -1px
+   2 pages ·    2×  heading width @900–1199   Δh median 8px (8…8)   e.g. idx 141 @Preview Laptop (1024px) yd-q Δw 1.5% Δh 8px
+   2 pages ·    2×  component width @600–899   Δh median 24px (24…24)   e.g. idx 209 @Preview Tablet (768px) t-6a Δw -3.6% Δh 24px
+   2 pages ·    2×  component width @900–1199   Δh median 24px (24…24)   e.g. idx 209 @Preview Laptop (1024px) t-6a Δw -2.6% Δh 24px
+   2 pages ·    2×  component width @1200–1799   Δh median 23px (23…23)   e.g. idx 209 @Preview Desktop (1280px) t-6a Δw -2.2% Δh 23px
+   2 pages ·    2×  component width @≥1800   Δh median 20px (20…20)   e.g. idx 209 @Preview Wide (1920px) t-6a Δw -1.5% Δh 20px
+   1 pages ·    1×  text width @<600   Δh median 0px (0…0)   e.g. idx 109 @Preview Mobile (375px) 2-1l Δw -2.0% Δh 0px
+   1 pages ·    1×  link shorter in Preview @600–899   Δh median 0px (0…0)   e.g. idx 109 @Preview Tablet (768px) uv-f Δw 0.0% Δh 0px
+   1 pages ·    1×  button width @600–899   Δh median 0px (0…0)   e.g. idx 109 @Preview Tablet (768px) b1-7 Δw -0.5% Δh 0px
+   1 pages ·    1×  text width @600–899   Δh median 0px (0…0)   e.g. idx 109 @Preview Tablet (768px) 2-1l Δw -1.0% Δh 0px
+   1 pages ·    1×  link shorter in Preview @900–1199   Δh median 0px (0…0)   e.g. idx 109 @Preview Laptop (1024px) uv-f Δw 0.0% Δh 0px
+   1 pages ·    1×  container shorter in Preview @<600   Δh median -96px (-96…-96)   e.g. idx 132 @Preview Mobile (375px) g-7a Δw 0.0% Δh -96px
+   1 pages ·    1×  ? taller in Preview @1200–1799   Δh median 28px (28…28)   e.g. idx 272 @Preview Desktop (1280px) (m-1m Δw 0.0% Δh 28px
+   1 pages ·    1×  container taller in Preview @900–1199   Δh median 121px (121…121)   e.g. idx 41 @Preview Laptop (1024px) 9-5a Δw 0.0% Δh 121px
+   1 pages ·    1×  container taller in Preview @1200–1799   Δh median 55px (55…55)   e.g. idx 41 @Preview Desktop (1280px) 9-5a Δw 0.0% Δh 55px

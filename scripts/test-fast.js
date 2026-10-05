@@ -1,0 +1,284 @@
+#!/usr/bin/env node
+/**
+ * THE FAST GATE — the browser suites against a production build instead of the dev server.
+ *
+ * Which server these run against is the single biggest thing about how long they take. `next dev` compiles a
+ * route the first time it is asked for, so the builder page costs ~35s cold and ~5s warm, and every test that
+ * opens it pays again. `next start` has the routes already built, so the same page is served in ~100ms.
+ *
+ * Measured on this machine, desktop-chrome:
+ *   `test:layout`          5.4 min  ->  40s
+ *   `test:invariants:rest` 7.4 min  ->  ~3 min
+ *
+ * Most of that is the server, and the rest came from lifting the forced-serial mode the seeding race had made
+ * look necessary — see `tests/e2e/helpers/seed-site.ts`.
+ *
+ * Usage:
+ *   npm run test:fast                 build, serve, run every invariant suite, stop the server
+ *   npm run test:fast -- --no-build   reuse the existing .next build (fine if nothing app-side changed)
+ *   npm run test:fast -- tests/e2e/pager-hero.spec.ts        just these files
+ *
+ * A build cannot run while `next dev` holds `.next/trace`, so stop the dev server first — the build failing
+ * with a file lock is that, not a broken build.
+ */
+
+const { spawn, spawnSync } = require("node:child_process");
+const http = require("node:http");
+const { existsSync, readFileSync } = require("node:fs");
+
+const PORT = Number(process.env.TEST_PORT ?? 3100);
+const BASE_URL = `http://localhost:${PORT}`;
+const isWindows = process.platform === "win32";
+const npx = isWindows ? "npx.cmd" : "npx";
+// Node 20 refuses to spawn a `.cmd` without a shell (EINVAL), so Windows needs one. The arguments here are
+// all plain paths and flags with no spaces, so nothing is exposed to shell parsing.
+const useShell = isWindows;
+
+/**
+ * The invariant suites, listed once.
+ *
+ * Kept here rather than duplicated from `test:invariants:rest` in package.json, because two copies of a list
+ * like this drift and the drift is invisible — a spec quietly stops being run and nothing says so.
+ * `tests/unit/test-scripts.test.ts` asserts the two agree.
+ */
+const INVARIANT_SPECS = [
+  "tests/e2e/component-layout-invariants.spec.ts",
+  "tests/e2e/export-layout-invariants.spec.ts",
+  "tests/e2e/component-breathing.spec.ts",
+  "tests/e2e/page-audit-whitespace.spec.ts",
+  "tests/e2e/page-audit-spill.spec.ts",
+  "tests/e2e/page-audit-unused-space.spec.ts",
+  "tests/e2e/drop-under-icon.spec.ts",
+  "tests/e2e/drop-into-empty.spec.ts",
+  "tests/e2e/item-ring-zoom.spec.ts",
+  "tests/e2e/canvas-zoom.spec.ts",
+  "tests/e2e/canvas-scale-parity.spec.ts",
+  "tests/e2e/interactions.spec.ts",
+  "tests/e2e/design-distinctness.spec.ts",
+  "tests/e2e/alert-actions.spec.ts",
+  "tests/e2e/multipage-preview.spec.ts",
+  "tests/e2e/preview-viewport.spec.ts",
+  "tests/e2e/pinning-holds.spec.ts",
+  "tests/e2e/pinning-warnings.spec.ts",
+  "tests/e2e/pinning-explained.spec.ts",
+  "tests/e2e/pin-arrival.spec.ts",
+  "tests/e2e/pins-stack.spec.ts",
+  "tests/e2e/float-pin.spec.ts",
+  "tests/e2e/preview-fills-the-screen.spec.ts",
+  "tests/e2e/every-screen-size.spec.ts",
+  "tests/e2e/builder-chrome-fits.spec.ts",
+  "tests/e2e/grid-cells-never-overlap.spec.ts",
+  "tests/e2e/keyboard-survives-selection.spec.ts",
+  "tests/e2e/select-takes-keys.spec.ts",
+  "tests/e2e/text-is-reachable.spec.ts",
+  "tests/e2e/typing-is-one-step.spec.ts",
+  "tests/e2e/frame-observer-stays.spec.ts",
+  "tests/e2e/drag-keeps-flex.spec.ts",
+  "tests/e2e/hug-round-trip.spec.ts",
+  "tests/e2e/row-never-stores-over-100.spec.ts",
+  "tests/e2e/pinned-bar-anchors.spec.ts",
+  "tests/e2e/resize-leaves-no-gap.spec.ts",
+  "tests/e2e/empty-band-shows.spec.ts",
+  "tests/e2e/exported-site.spec.ts",
+  "tests/e2e/layout-bands.spec.ts",
+  "tests/e2e/advanced-css.spec.ts",
+  "tests/e2e/export-fonts.spec.ts",
+  "tests/e2e/image-intrinsic.spec.ts",
+  "tests/e2e/item-effects.spec.ts",
+  "tests/e2e/stacking.spec.ts",
+  "tests/e2e/twelve-columns.spec.ts",
+  "tests/e2e/paragraph-measure.spec.ts",
+  "tests/e2e/grid-own-box.spec.ts",
+  "tests/e2e/hidden-blocks-leave-the-canvas.spec.ts",
+  "tests/e2e/every-component-fills-the-row.spec.ts",
+  "tests/e2e/grid-cell-resize.spec.ts",
+  "tests/e2e/add-grid-in-grid.spec.ts",
+  "tests/e2e/drag-grid-in.spec.ts",
+  "tests/e2e/masonry.spec.ts",
+  "tests/e2e/masonry-builder.spec.ts",
+  "tests/e2e/spacing-gestures.spec.ts",
+  "tests/e2e/photo-gallery.spec.ts",
+  "tests/e2e/pager-hero.spec.ts",
+  "tests/e2e/add-without-asking.spec.ts",
+  "tests/e2e/side-by-side-drop.spec.ts",
+  "tests/e2e/empty-block-floor.spec.ts",
+  // These three are builder invariants that were on disk but in NEITHER list, so `test:fast` never ran them
+  // and neither did `test:invariants:rest`. That is the exact silent stop this file's guard exists to catch,
+  // one level up: the guard checks the two lists agree with EACH OTHER, which a spec missing from both
+  // satisfies perfectly. `tests/unit/test-scripts.test.ts` now also checks the builder specs on disk are
+  // listed, so the next one cannot go missing the same way.
+  "tests/e2e/empty-box-height.spec.ts",
+  "tests/e2e/float-round-trip.spec.ts",
+  "tests/e2e/see-through.spec.ts",
+  "tests/e2e/side-by-side-resize.spec.ts",
+  "tests/e2e/stack-under-column.spec.ts",
+  "tests/e2e/build-from-blank.spec.ts",
+  "tests/e2e/drop-placement.spec.ts",
+  "tests/e2e/palette-adds-after.spec.ts",
+  "tests/e2e/add-inside-empty-box.spec.ts",
+  "tests/e2e/selection-drills-inward.spec.ts",
+  "tests/e2e/chrome-follows-resize.spec.ts",
+  "tests/e2e/dropped-block-fills-space.spec.ts",
+  "tests/e2e/vertical-edges-anchored.spec.ts",
+  "tests/e2e/page-height-is-content.spec.ts",
+  "tests/e2e/parity-every-arrangement.spec.ts",
+  "tests/e2e/width-round-trip.spec.ts",
+];
+
+const argv = process.argv.slice(2);
+const skipBuild = argv.includes("--no-build");
+const specs = argv.filter((a) => !a.startsWith("--"));
+
+/** Run a command to completion, inheriting stdio. Returns its exit code. */
+function run(cmd, args, extraEnv = {}) {
+  const r = spawnSync(cmd, args, { stdio: "inherit", env: { ...process.env, ...extraEnv }, shell: useShell });
+  return r.status ?? 1;
+}
+
+/**
+ * Resolve once the server answers WELL, or reject after `timeoutMs`.
+ *
+ * "Answers" is not enough. A `.next` that `next start` cannot serve still binds the port and replies 500 to
+ * everything, so a readiness check that accepts any response hands the suites a dead server and lets every
+ * test fail on its own wait — which says nothing about the real cause. A 5xx here is a broken build, and
+ * saying so once beats hundreds of timeouts that do not.
+ */
+function waitForServer(timeoutMs = 60_000, probePath = "/") {
+  const deadline = Date.now() + timeoutMs;
+  return new Promise((resolve, reject) => {
+    const poll = () => {
+      const req = http.get(BASE_URL + probePath, (res) => {
+        let body = "";
+        res.setEncoding("utf8");
+        res.on("data", (c) => { if (body.length < 400_000) body += c; });
+        res.on("end", () => {
+          if (res.statusCode < 500) resolve(body);
+          else if (Date.now() > deadline) reject(new Error(`${BASE_URL} answers ${res.statusCode} — the build cannot be served. Run a clean \`next build\` (a dev server may have overwritten .next).`));
+          else setTimeout(poll, 300);
+        });
+      });
+      req.on("error", () => {
+        if (Date.now() > deadline) reject(new Error(`no server on ${BASE_URL} after ${timeoutMs}ms`));
+        else setTimeout(poll, 300);
+      });
+    };
+    poll();
+  });
+}
+
+/**
+ * IS ANYTHING ALREADY ON THE PORT? Asked BEFORE spawning, because `next start` on a taken port does not fail
+ * loudly enough to notice — and `waitForServer` then greets the squatter as if it were ours.
+ */
+function portTaken(timeoutMs = 2_000) {
+  return new Promise((resolve) => {
+    const req = http.get(BASE_URL, (res) => { res.resume(); resolve(true); });
+    req.on("error", () => resolve(false));
+    req.setTimeout(timeoutMs, () => { req.destroy(); resolve(false); });
+  });
+}
+
+/**
+ * IS THE SERVER SERVING *THIS* BUILD? A readiness check that accepts any response under 500 cannot tell.
+ *
+ * Measured, and the whole reason this exists: a `next start` left over from an earlier run — started 28
+ * minutes before the build under test — sat on the port serving its OWN prerendered HTML. That HTML named a
+ * page chunk this build had since deleted, so the browser got **400 Bad Request** for
+ * `app/website/box-demo/page-<hash>.js`, the builder never hydrated, and **263 of 491 browser tests** timed
+ * out. Nothing in the output said "stale server": it read exactly like a product regression, and the first
+ * hour went into looking for one.
+ *
+ * Next stamps `BUILD_ID` into every prerendered page, so one string comparison settles it — and it catches
+ * the whole class: a squatter from another build, a `--no-build` run against a `.next` rebuilt underneath a
+ * live server, and any in-memory HTML left over from a previous build.
+ */
+function assertServingThisBuild(html) {
+  let id = "";
+  try { id = readFileSync(".next/BUILD_ID", "utf8").trim(); } catch { /* no build to compare against */ }
+  if (!id) return;
+  if (html.includes(id)) return;
+  throw new Error(
+    `${BASE_URL} is NOT serving this build.\n` +
+    `  .next/BUILD_ID is ${id}, and the page the server returned does not carry it.\n` +
+    "  Almost always a `next start` left over from an earlier run holding the port. It answers 200, so every\n" +
+    "  suite would silently test the WRONG build and fail on its own wait. Free the port and run again:\n" +
+    `    netstat -ano | grep ":${PORT} .*LISTENING"   then   taskkill /pid <pid> /T /F     (Windows)\n` +
+    `    lsof -ti:${PORT} | xargs kill                                                     (macOS/Linux)`,
+  );
+}
+
+/**
+ * Stop the server AND anything it started.
+ *
+ * `child.kill()` on Windows kills only the launcher, leaving the actual Next process holding the port — so the
+ * next run finds it occupied and silently tests a stale build. `taskkill /T` takes the whole tree.
+ */
+function stop(child) {
+  if (!child || child.exitCode !== null) return;
+  if (isWindows) spawnSync("taskkill", ["/pid", String(child.pid), "/T", "/F"], { stdio: "ignore" });
+  else child.kill("SIGTERM");
+}
+
+/**
+ * Is `.next` the output of `next dev` rather than `next build`?
+ *
+ * `npm run dev` runs `next dev --turbopack`, and it writes into the SAME `.next` a build does — so starting
+ * the dev server after a build silently replaces the build. `next start` then serves a hybrid and answers
+ * every request with a 500: "Expected to use Webpack bindings ... referencing the Turbopack bindings". None of
+ * that reaches the test output, which shows only a page that never rendered, so it reads as a product
+ * regression or a flaky wait. It cost an afternoon once; the runner detects it now rather than trusting
+ * `--no-build`.
+ */
+const devContaminated = () => existsSync(".next/server/chunks/ssr/[turbopack]_runtime.js");
+
+(async () => {
+  let build = !skipBuild;
+  if (skipBuild && devContaminated()) {
+    console.log("\n.next holds `next dev` (turbopack) output, which `next start` cannot serve — building anyway.");
+    build = true;
+  }
+  if (build) {
+    console.log("\n=== building (next build) ===");
+    const code = run(npx, ["next", "build"]);
+    if (code !== 0) { console.error("\nBuild failed — the suites would only test a stale .next."); process.exit(code); }
+  }
+
+  if (await portTaken()) {
+    console.error(
+      `\nSomething is ALREADY answering on ${BASE_URL} — almost certainly a \`next start\` left behind by an\n` +
+      "earlier run. It would serve its own, older build while these suites assumed ours, so the run is\n" +
+      "stopping here rather than reporting hundreds of timeouts. Free the port and try again:\n" +
+      `  netstat -ano | grep ":${PORT} .*LISTENING"   then   taskkill /pid <pid> /T /F     (Windows)\n` +
+      `  lsof -ti:${PORT} | xargs kill                                                     (macOS/Linux)`,
+    );
+    process.exit(1);
+  }
+
+  console.log(`\n=== serving the build on ${BASE_URL} ===`);
+  const server = spawn(npx, ["next", "start", "-p", String(PORT)], { stdio: ["ignore", "pipe", "pipe"], shell: useShell });
+  server.stdout.on("data", (b) => process.stdout.write(`[server] ${b}`));
+  server.stderr.on("data", (b) => process.stderr.write(`[server] ${b}`));
+
+  const bail = () => { stop(server); process.exit(130); };
+  process.on("SIGINT", bail);
+  process.on("SIGTERM", bail);
+
+  try {
+    const html = await waitForServer();
+    assertServingThisBuild(html);
+  } catch (err) {
+    console.error(String(err instanceof Error ? err.message : err));
+    stop(server);
+    process.exit(1);
+  }
+
+  const target = specs.length
+    ? ["playwright", "test", ...specs, "--project=desktop-chrome", "--workers=3"]
+    : ["playwright", "test", "--project=desktop-chrome", "--workers=3", ...INVARIANT_SPECS];
+
+  console.log("\n=== running the browser suites ===");
+  const code = run(npx, target, { BASE_URL });
+
+  stop(server);
+  process.exit(code);
+})();

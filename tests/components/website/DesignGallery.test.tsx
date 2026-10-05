@@ -142,11 +142,12 @@ describe("RULE S — every component shows its designs", () => {
     }
   });
 
-  it("a plain container is still called a Section", () => {
-    // The fallback must survive: only a catalogue component gets its own name.
+  it("a plain container is named for its ARRANGEMENT — a column of blocks is a Stack", () => {
+    // The fallback must survive: only a catalogue component gets its own name. The name itself comes from
+    // `containerLabel`, so the inspector, the canvas and the palette cannot drift apart again.
     cleanup();
     renderFor(createContainer("column", { id: "plain", width: "100%" }));
-    expect(screen.getByText(/^Editing:/).textContent).toContain("Section");
+    expect(screen.getByText(/^Editing:/).textContent).toContain("Stack");
   });
 
   it("the applied design is previewed at hero size for a component too", () => {

@@ -57,6 +57,21 @@ Feature: Shared ColorField and Slider components
     When the user interacts with it
     Then onChange is not called
 
+  # The thumb and the readout must never disagree. A native range input clamps the thumb to max in silence,
+  # so a runaway value looks exactly like a deliberate one — and the first nudge snaps it down without warning.
+  Scenario: The track stretches to hold a value beyond its range
+    Given a Slider ranging 0 to 720 holding the value 1834
+    Then the track's max is 1834, not 720
+    And the thumb sits at 1834 rather than pinned at the end
+
+  Scenario: The track stretches downward for a value below its range
+    Given a Slider ranging 0 to 100 holding the value -40
+    Then the track's min is -40, not 0
+
+  Scenario: A value inside the range leaves the track untouched
+    Given a Slider ranging 0 to 720 holding the value 300
+    Then the track still runs from 0 to 720
+
   # ── Reuse-first rule ─────────────────────────────────────────────────────────
   Scenario: The token playground consumes only shared components
     Given the Educo UI token playground at /website/educo-tokens

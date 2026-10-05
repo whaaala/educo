@@ -11,15 +11,18 @@
  */
 
 import type { CSSProperties } from "react";
-import { isRegistryComponent, defaultComponentFields, defaultComponentWidth, componentIsColumn } from "@/lib/educo-ui/registry";
+import { isRegistryComponent, defaultComponentFields, defaultComponentWidth, componentIsColumn, HUGS_BY_NATURE } from "@/lib/educo-ui/registry";
 import { iconSvg } from "@/lib/educo-ui/icon-svg";
 import { BREAKPOINTS_EM } from "@/lib/educo-ui/base";
-import { RUNG_MEASURE, type RungName } from "@/lib/educo-ui/layout";
-import { hasItemEffects, itemEffectsCss } from "@/lib/interactions";
+import { RUNG_MEASURE, RUNG_PX, type RungName } from "@/lib/educo-ui/layout";
+import { hasItemEffects, itemEffectsCss, revealEffect, REVEAL_DUR, REVEAL_EASE, REVEAL_VIEW_RANGE } from "@/lib/interactions";
 import { PAGE_Z, clampPageZ } from "@/lib/educo-ui/stacking";
+import { remLen, SHADOW_SCALE } from "@/lib/educo-ui/tokens";
+import { contrastRatio, hexToRgb, oklchToRgb, rgbToHex, rgbToOklch } from "@/lib/educo-ui/color";
 import { colorToCSS } from "@/components/shared/ColorPalettePicker";
+import { PAGE_GRID_DEFAULT, columnsAt, gridTemplate, rowTrackCount } from "@/lib/page-grid";
 
-export type BoxType = "container" | "text" | "heading" | "button" | "image" | "video" | "icon" | "divider" | "list" | "embed" | "spacer" | "component";
+export type BoxType = "container" | "text" | "heading" | "button" | "link" | "image" | "video" | "icon" | "divider" | "list" | "embed" | "spacer" | "component";
 
 /** One row of an accordion component (title + body, plus optional media thumbnail / right-aligned meta). */
 /** Point-and-click styling for one PART (the header, or the content/body) of a single accordion item. */
@@ -257,6 +260,55 @@ export interface BoxNode {
   paddingTop?: number; paddingRight?: number; paddingBottom?: number; paddingLeft?: number; // per-side overrides
   margin?: number;          // px outer margin (all sides)
   marginTop?: number; marginRight?: number; marginBottom?: number; marginLeft?: number;     // per-side overrides
+  /**
+   * THE GAP BEFORE THIS BLOCK ON ITS LINE, AS A % OF THE ROW — not a length, deliberately.
+   *
+   * Every other margin is emitted in the fluid unit, which is a `clamp()` and therefore NOT proportional to
+   * the row. That is right for spacing you choose and wrong for a gap that has to SUM with the percentage
+   * widths beside it: measured, dragging the left edge of a 50% block wrote a 140.15px margin next to widths
+   * of 35.83% + 50% = 848.0px, making 988.15px in a 988px row — an overflow of **0.15px**, and the block
+   * beside it wrapped onto a second line and doubled the band's height.
+   *
+   * A percentage margin resolves against the parent's width, so the row adds up exactly at every width and
+   * the gap scales with the page instead of being frozen at one size. `marginCSS` prefers it over `marginLeft`.
+   */
+  marginLeftPct?: number;
+  /**
+   * The user has dragged THIS block's own width (never set on a neighbour that merely gave way). Rule 2: a block
+   * never resized fills a line it is pushed onto; one somebody sized keeps that size. Without it a block wrapped
+   * onto its own line could not be narrowed — the grow handed the space straight back.
+   */
+  widthByHand?: boolean;
+  /**
+   * The width this block RESTS at, recorded while a NEIGHBOUR's drag holds it away from that — squeezed below it, or
+   * stretched past it as the last block on a line taking the leftover (never set by a drag of its own edge). It is
+   * what makes a round trip made of SEPARATE drags come back (rule 7): each drag starts from the rest widths, so
+   * the leftover one drag handed out never becomes anybody's new normal.
+   * Cleared as soon as the block is back at rest, or when the user sizes it by hand — so nothing accumulates.
+   * Editor bookkeeping only; the export ignores it.
+   */
+  restWidth?: string;
+  /**
+   * WHEN it was pulled away from `restWidth` (a drag's start time). Space handed back goes to the most recently
+   * squeezed block first, so a round trip returns exactly even when an EARLIER drag also squeezed a block (#53).
+   * Editor bookkeeping only; cleared with `restWidth`.
+   */
+  restAt?: number;
+  /**
+   * WHOSE drag pulled it away from `restWidth` — the id of the block whose edge was dragged (#77). The memory is that
+   * drag's to spend: another block's drag sees this block at the width it HOLDS (see `restForDrag`). Editor
+   * bookkeeping only; cleared with `restWidth`. Absent on older pages, which keep the behaviour they always had.
+   */
+  restBy?: string;
+  /**
+   * Space at the END of its line that this block's widening used up, still owed back to it. Narrowing the block returns
+   * it there before giving its neighbour anything, so a round trip comes home (#59). Editor bookkeeping only.
+   */
+  endOwed?: number;
+  /** The block whose widening pushed this one onto the next line — it waits to come home before that block's `endOwed` is paid. */
+  wrapBy?: string;
+  /** The width it STORED before a drag rewrote it in drawn terms (it was below its 14rem floor) — written back when it returns (#65). */
+  origWidth?: string;
   radius?: number;          // px corner radius (all corners)
   radiusTopLeft?: number; radiusTopRight?: number; radiusBottomRight?: number; radiusBottomLeft?: number; // per-corner overrides
   opacity?: number;         // 0–100 (%), default 100 (fully opaque) — the BOX's own paint, not its contents
@@ -308,6 +360,13 @@ export interface BoxNode {
   placeY?: "start" | "center" | "end"; // down the parent
   clip?: boolean;           // allow sizing SMALLER than content (min:0) and hide overflow; default off = hug content
   baseFont?: number;        // page root only: the global base unit in px (default 10); rendered as rem so it scales with the browser font size (WCAG)
+  spaced?: boolean;         // made under SPACE BY DEFAULT (2026-09-30): unset spacing reads `spaceDefaults`; saved pages lack it and keep theirs
+  pageGrid?: boolean;       // page root only: laid out on the PAGE GRID (AC-37b, 2026-10-04) — every page made from now; saved pages lack it
+  onPageGrid?: boolean;     // a block of a page-grid page (`markPageGrid`): its unset spacing reads `SPACE_GRID`
+  pageRow?: boolean;        // a row band straight on a page-grid page (`markPageGrid`): drawn as a CSS grid on the page's lines (G-3b, `isPageRow`)
+  bleed?: "left" | "right" | "both"; // on a row of the page: where it starts / ends a line, that side reaches the page edge (G-3b (2), per screen)
+  freeInset?: { left?: number; right?: number }; // placed FREE with Alt (G-3b (3), map §1): its columns stay on the lines and its box sits this % of them in from each side, per screen; "Line up with the grid" leaves its row alone
+  gridSpace?: GridSpace;    // the site's / page's own side space and gap (G-2), on the page root and every block `markPageGrid` marks
   rowBand?: boolean;        // structural ROW band: a direct child of the page root that lays its sections out side-by-side (the page is a vertical stack of these)
   // Does this band run edge to edge, or sit its content on the page's measure? "band" (the default) is what
   // every band did before this existed. "contained" keeps the background full-bleed and insets only the
@@ -333,8 +392,70 @@ export interface BoxNode {
   /** How deep the shape cuts, as a percentage of the band's height. Default 6. */
   edgeDepth?: number;
 
+  /**
+   * PINNING — the block stays visible while the page scrolls past it. Phase 3 of the Layout System.
+   *
+   * `position: sticky`, said once: which edge of the screen it holds itself against. Undefined is the
+   * default and means what it has always meant — the block scrolls away with everything else.
+   *
+   * It is a per-rung control like every other layout decision, which is the point: a sidebar that follows
+   * you down a desktop is useful, and the same sidebar pinned on a phone eats a screen that has none to
+   * spare. Set it at the base and turn it off at `phone`.
+   */
+  pin?: "top" | "bottom" | "left" | "right"
+      | "top-left" | "top-right" | "bottom-left" | "bottom-right";
+  /** How far from that edge it comes to rest, in px (emitted as rem). Default 0 — flush against the edge. */
+  pinOffset?: number;
+  /**
+   * WHICH KIND of staying put — and they are genuinely different things, not a preference.
+   *
+   * `sticky` (the default, and what every page saved before this field existed means) keeps the block in the
+   * flow: it holds against its edge while its PARENT is on screen and leaves with the parent, so it occupies
+   * real space and can never cover the footer.
+   *
+   * `fixed` takes the block out of the document entirely and measures it against the VIEWPORT. It holds
+   * whatever you scroll, ignores its column and its gutters, reserves no space — so the page runs underneath
+   * it — and it can sit in a corner, which sticky cannot. A cookie bar, a back-to-top button, a chat bubble.
+   *
+   * Absent means `sticky`, so not one saved page changes the day this ships.
+   */
+  hold?: "sticky" | "fixed";
+  /**
+   * HOW IT ARRIVES once the page has moved — Step 2b of the Layout System.
+   *
+   * A bar that looks the same held as it did sitting in the page tells the reader nothing about what just
+   * happened. These are the five changes worth making, and absent means NOTHING changes: rule 11, nothing
+   * arrives that nobody asked for.
+   */
+  pinArrival?: "shadow" | "solid" | "glass" | "rule" | "condense";
+  /** How much scrolling the arrival takes to complete, in the fluid base unit. Default 12 (~120px). */
+  pinArrivalAfter?: number;
+  /**
+   * WHERE A FLOATED BLOCK HOLDS ON SCREEN — px from the top-left of the box it is measured against.
+   *
+   * A block placed freely stores `left`/`top` as a PERCENTAGE of the section it sits in. Lifted to the
+   * window those percentages mean something else entirely: measured, a block resting 720px down a tall
+   * section landed at 240px once fixed, because 30% of a 2400px section is not 30% of an 800px window.
+   * So the moment a floated block is set to float on screen, its place is measured and kept here in a unit
+   * that means the same in both boxes. `left`/`top` are untouched, so returning it puts it back exactly.
+   */
+  pinX?: number;
+  pinY?: number;
+
   // ── free / floating position (escape the flow: lift a section onto its OWN layer to OVERLAP others) ──
   position?: "flow" | "absolute"; // default "flow" (in the row-band stack); "absolute" = free-floating layer
+  /**
+   * WHAT THE BLOCK WAS BEFORE IT WAS LIFTED — so putting it back is a round trip and not an edit.
+   *
+   * Floating turns a block into a card: it writes a definite height and drops the block's own `minHeight`.
+   * Returning it used to delete both, which threw the ORIGINAL size away — measured, a 120px stack came
+   * back 49px tall (the height of its text), and floating it again started from that. Two or three cycles
+   * and an empty box has nothing left to see or click, which is exactly what a user reported.
+   *
+   * `sized` records what the float itself wrote, so a size the USER changed while it floated can be told
+   * apart from the one the builder wrote — theirs is kept, the builder's is undone.
+   */
+  floatFrom?: { width?: string; height?: string; minHeight?: number; clip?: boolean; sized?: string; sizedMin?: number };
   left?: number;            // absolute only: X offset as % of the positioning parent's content box (responsive)
   top?: number;             // absolute only: Y offset as % of the positioning parent's content box
   zIndex?: number;          // absolute only: stacking order among floating siblings (higher = on top)
@@ -362,6 +483,13 @@ export interface BoxNode {
   href?: string;          // button/link target: external URL, "#anchor", or "page:<id>"
   newTab?: boolean;       // open the link in a new tab
   anchor?: string;        // a named anchor on ANY box — rendered as its id so links can scroll to it
+  // ── HTML5 semantics (lib/semantics.ts resolves them; the canvas and the export both use that resolver) ──
+  /** What this CONTAINER is — "What is this block?" in the Inspector. Absent = a plain `div`. */
+  tag?: import("./semantics").SemanticTag;
+  /** A HEADING's level, set by hand (1–6). Absent = automatic, following the page (decision B1). */
+  level?: number;
+  /** A name for a landmark ("Main menu", "School news") — announced by screen readers. */
+  landmarkName?: string;
   src?: string;           // image / video URL (data URL for uploads)
   // What the image SAYS, for someone who cannot see it — and for search engines. The export hardcoded alt="",
   // which tells a screen reader the picture is decorative and to skip it, so every photo a school added was
@@ -464,6 +592,40 @@ export function isContainer(node: BoxNode): boolean {
   return node.type === "container";
 }
 
+/**
+ * What to CALL a container, in the one place that decides it.
+ *
+ * A container is a single object that wears three arrangements — down the page, across it, or both at once —
+ * and switching between them is one click in "Arrange as". So the name has to follow the arrangement, or the
+ * block is called one thing in the palette, another in the inspector, and a third on the drag preview.
+ *
+ * It was exactly that: the inspector and the canvas each computed "Grid" / "Row" / "Section" from their own
+ * copy of this expression, and the palette called the same blocks Section / Columns / Row. UAT found four
+ * separate complaints in that one gap. One resolver, so they cannot drift again — and so a rename lands
+ * everywhere at once.
+ *
+ * These are the names a USER sees. The stored `layout` and `direction` are untouched.
+ */
+export function containerLabel(node: BoxNode): string {
+  if (node.layout === "grid") return "Grid";
+  return (node.direction ?? "column") === "row" ? "Side by side" : "Stack";
+}
+
+/**
+ * What to CALL a block when a warning has to name it — “the Card around it”, “the Grid around it”.
+ *
+ * `containerLabel` answers for containers and would call a Card a “Stack”, which is worse than saying
+ * nothing: the user would look for a Stack and find none. A component is named for what it is, and the
+ * null case is carried here so both pin warnings read from one function rather than each guarding it.
+ */
+export function blockedByLabel(node: BoxNode | null): string | null {
+  if (!node) return null;
+  if (node.type === "component" && node.component) {
+    return node.component.charAt(0).toUpperCase() + node.component.slice(1);
+  }
+  return isContainer(node) ? containerLabel(node) : "block";
+}
+
 /** Lifted out of the flow onto its own free-floating layer (can overlap siblings)? */
 export function isFloating(node: BoxNode): boolean {
   return node.position === "absolute";
@@ -486,9 +648,175 @@ export function floatStacksOnMobile(node: BoxNode): boolean {
 
 const round1 = (n: number) => Math.round(n * 10) / 10;
 
-/** A box with nothing inside — no children, no text, no image. It can shrink to ~1px. */
+/**
+ * A box with nothing inside — no children, no text, no image. It can shrink to ~1px.
+ *
+ * A BLOCK THAT DRAWS ITS OWN CONTENT IS NOT EMPTY (#143). An Icon, a Divider and a List hold no words, picture or
+ * children, so they were counted as empty and given the empty-box floor (2.5rem each way): a 22px icon published in a
+ * 40px box on a phone, and its minimum width became 60px at 150% browser text and spilled out of a 55px column.
+ */
 export function isEmptyBox(node: BoxNode): boolean {
+  if (node.type === "icon" || node.type === "divider" || (node.listItems?.length ?? 0) > 0) return false;
   return (node.children?.length ?? 0) === 0 && !node.text && !node.src && node.type !== "component";
+}
+
+/** Block types that draw a line rather than occupy a band — they have no height worth the name. */
+const NO_HEIGHT_OF_ITS_OWN = new Set<BoxType>(["divider"]);
+
+/** A measured rectangle, as the editor's selection chrome mirrors it. */
+export type MirrorBox = { left: number; top: number; width: number; height: number; clipPath?: string; flush?: string };
+
+/** The room a handle drawn OUTSIDE a block needs: the corner dot (0.75rem) and its 2px clearance, at a 16px root. */
+export const HANDLE_ROOM_PX = 14;
+
+/**
+ * c-21 — WHICH SIDES OF A SELECTED BLOCK HAVE NO ROOM for a handle drawn outside it, before the canvas edge clips
+ * it away: "n s e w" order, space-separated (`[data-flush~=e]`), "" when every side has room.
+ */
+export function mirrorFlushSides(
+  block: { top: number; right: number; bottom: number; left: number },
+  canvas: { top: number; right: number; bottom: number; left: number },
+): string {
+  const tight = (room: number) => room < HANDLE_ROOM_PX;
+  return [
+    tight(block.top - canvas.top) && "n",
+    tight(canvas.bottom - block.bottom) && "s",
+    tight(canvas.right - block.right) && "e",
+    tight(block.left - canvas.left) && "w",
+  ].filter(Boolean).join(" ");
+}
+
+/**
+ * SHOULD THE SELECTION CHROME TAKE THIS NEW MEASUREMENT, or has the layout stopped settling?
+ *
+ * The editor mirrors a selected block's rectangle so its toolbar and handles sit on it. Measuring happens
+ * after every render, because a block's geometry changes without any prop changing — a longer heading, a
+ * reflow, a drag in progress. That makes a cycle: measure → setState → render → measure.
+ *
+ * Deferring the re-measure to the next frame stops React counting the updates as nested, and was believed
+ * to be the whole fix. It is not: it breaks the COUNTING, not the CYCLE. A layout that never settles — a
+ * grid whose rows are partly `auto` and partly `1fr` can disagree with itself by a fraction of a pixel
+ * indefinitely — produces a different answer every frame and the chain runs on until React gives up with
+ * "Maximum update depth exceeded". That crash was reported twice.
+ *
+ * So the chase is given a budget: chasing a value that keeps changing spends it, and the layout holding
+ * still gives it back. When it runs out the mirror keeps the last rectangle it had.
+ *
+ * ── WHICH RECTANGLE "HOLDING STILL" IS MEASURED AGAINST, AND WHY IT IS NOT THE OBVIOUS ONE ──────────
+ *
+ * The first version asked "does this measurement match the one the chrome is DISPLAYING?" — and that
+ * wrecked every resize, which is the one gesture the mirror exists to follow. Two faults, one root:
+ *
+ *   · A drag commits a tree PER FRAME, so its loop runs take → quiet → take → quiet. Exactly ONE quiet
+ *     frame per move. Requiring two (added to close an alternating-oscillation loophole) meant the budget
+ *     was never restored during a drag at all: eight mousemoves, about 130ms, and the handles stopped.
+ *   · Worse, the freeze was PERMANENT. Once it stops taking, the displayed rectangle is stale by
+ *     definition, so it can never again match a block that is still moving — the way back was sealed by
+ *     the same comparison that closed the road. Reported with the handles marooned some 550px from the
+ *     block they belonged to, and only re-selecting the block cleared it.
+ *
+ * Both dissolve once the two questions are asked separately, because they were never the same question:
+ *
+ *   · `settled` — has the LAYOUT stopped changing? This measurement against the LAST MEASUREMENT, taken
+ *     or not. It keeps advancing while the chase is abandoned, so a layout that finally holds still is
+ *     always noticed, and one that alternates forever never reads as settled.
+ *   · `showing` — is the CHROME already drawn there? That decides whether an update is needed at all.
+ *
+ * A settle then both restores the budget AND takes the measurement, which is the way back: however badly
+ * a chase was abandoned, the chrome lands on the block the moment the block stops moving.
+ *
+ * Pure and exported so the rule can be tested. The browser condition that triggers the runaway has
+ * resisted every attempt to reproduce — including a drag driven at 120 events/sec with sub-pixel jitter —
+ * so testing the DECISION is the only honest guard available for that half of it. The half the user hit
+ * is driven in a real browser by `tests/e2e/chrome-follows-resize.spec.ts`.
+ */
+export type MirrorChase = { churn: number; seen: MirrorBox | null };
+
+/**
+ * MAY A FRESHLY-MOUNTED MIRROR MEASURE SYNCHRONOUSLY, OR MUST IT WAIT FOR A FRAME?
+ *
+ * The first measurement of a block is deliberately synchronous, so selecting it shows its toolbar and handles
+ * without a frame of lag. That is right exactly once. On a REMOUNT the box is already known, so there is no
+ * lag to avoid — and measuring synchronously again is what turns a mirror that remounts on every render into
+ * an unbounded synchronous chain: measure → setState → render → remount → measure, with no frame boundary to
+ * end it. React reports that as "Maximum update depth exceeded", which the user hit twice.
+ *
+ * The guard written last time could not help, because every piece of it — the measured flag, the churn
+ * budget, the last box — lived in a `useRef`, and a ref is born again with the component.
+ *
+ * Kept here, pure, for the reason `shouldTakeMirrorBox` is: the browser condition that triggers the runaway
+ * has resisted every attempt to reproduce, so testing the rule is the only honest guard for it.
+ */
+export function mirrorMeasuresNow(hasMeasured: boolean, remembersBlock: boolean): boolean {
+  return !hasMeasured && !remembersBlock;
+}
+
+export function shouldTakeMirrorBox(
+  prev: MirrorBox | null,
+  next: MirrorBox | null,
+  state: MirrorChase,
+  maxChurn: number,
+): { take: boolean; state: MirrorChase } {
+  const near = (a: number, b: number) => Math.abs(a - b) < 0.5;
+  const same = (a: MirrorBox | null, b: MirrorBox | null) =>
+    a && b
+      ? near(a.left, b.left) && near(a.top, b.top) && near(a.width, b.width) && near(a.height, b.height) && a.clipPath === b.clipPath && a.flush === b.flush
+      : a === b;
+
+  const settled = same(state.seen, next);   // the layout gave the same answer twice running
+  const showing = same(prev, next);         // the chrome is already drawn on it
+
+  // Nothing to update. A repeat measurement still counts as the layout holding still.
+  if (showing) return { take: false, state: { churn: settled ? 0 : state.churn, seen: next } };
+  // It held still, and the chrome is somewhere else: catch up, and start the budget fresh.
+  if (settled) return { take: true, state: { churn: 0, seen: next } };
+  // Still moving with the budget gone — keep the last rectangle rather than chase a layout arguing with
+  // itself. `seen` keeps advancing, so the branch above brings the chrome back the moment it does settle.
+  if (state.churn >= maxChurn) return { take: false, state: { churn: state.churn, seen: next } };
+  return { take: true, state: { churn: state.churn + 1, seen: next } };
+}
+
+/**
+ * A GRID with nothing in it to give it height — every cell empty and unsized.
+ *
+ * A grid's rows are `minmax(min-content, 1fr)`: they SHARE whatever height the grid has. Given one (a grid
+ * with its own `min-height`, or one stretched by its parent) that works out. Given none — a grid sitting in
+ * a stack that hugs its content — there is nothing to share: the cells are 0, so the grid is 0, so the stack
+ * holding it collapses with it. Measured: a Grid added inside a child stack left the stack under 8px.
+ */
+export function gridHasNothingToShare(node: BoxNode): boolean {
+  if (node.layout !== "grid") return false;
+  const cells = node.children ?? [];
+  return cells.length > 0 && cells.every((c) => isEmptyBox(c) && c.minHeight == null && c.height == null);
+}
+
+/**
+ * Does this box hold nothing that gives it height?
+ *
+ * Broader than `isEmptyBox`, and the difference is the case it exists for: a stack whose only content is a
+ * DIVIDER is not empty, but a divider is a 2px line, so the stack came out 2px tall. Correct arithmetic and
+ * useless in practice — at 2px the box cannot be clicked, selected or dragged by any of its handles, which
+ * is the same "too small to grab" failure the empty-box floor was written for.
+ *
+ * Recursive, because the wrapping is: `normalizeRowBands` puts every child of a content container inside a
+ * band of its own, so the thing directly under a stack is usually another container rather than the divider.
+ */
+export function holdsNothingTall(node: BoxNode): boolean {
+  if (!isContainer(node)) return NO_HEIGHT_OF_ITS_OWN.has(node.type);
+  const kids = node.children ?? [];
+  /**
+   * AN EMPTY CONTAINER IS NOT A THIN LINE, and conflating the two broke a deliberate rule.
+   *
+   * Written first as "no children, or every child holds nothing tall", this returned true for a box holding
+   * an EMPTY GRID — the grid's cells have no children, so the whole chain read as height-less and the box
+   * got a floor. That contradicts a contract with its own tests: "a box holding an empty grid shrinks too —
+   * its cells' hints do not hold it open", which exists so a box can be dragged small.
+   *
+   * Emptiness is `isEmptyBox`'s question and is answered elsewhere. This one is narrower: does the box hold
+   * something that DRAWS but has no height — a divider — and nothing else? An empty box is not that.
+   */
+  if (!kids.length) return false;
+  return kids.every(holdsNothingTall);
 }
 
 // ── See-through ─────────────────────────────────────────────────────────────
@@ -569,15 +897,12 @@ export function fadedPaint(node: BoxNode): { background?: string; bgOverlay?: st
 // ── Factories ───────────────────────────────────────────────────────────────
 
 /**
- * A container. NO SPACE OF ANY KIND until someone asks for it.
+ * A container. SPACE BY DEFAULT (rule 3, 2026-09-29): it is born `spaced` with its gap and padding UNSET, so it
+ * reads `spaceDefaults` — a gap between its blocks, padding once it has an edge you can see, the gutter and
+ * section space when it is a section — and the inspector shows those as "Default" until someone sets one.
  *
- * `gap: 16` and `padding: 24` used to be born into every container, which meant a grid's rows and columns
- * arrived with white bands between them that nobody had chosen — and, being real stored values, they showed
- * up in the controls as though they had been. Space is a decision: the builder offers it three ways (the gap
- * between blocks, inner spacing per side, outer spacing per side) and all three now start at zero.
- *
- * Saved pages are untouched: these were written INTO every node at creation, so an existing box carries its
- * own 16 and 24 and keeps them. Only newly added blocks start flush.
+ * A stored number is a decision, which is why the defaults are not written in: 0 must stay the user's zero.
+ * Saved pages are untouched: they carry no `spaced` mark and the explicit values they were created with.
  */
 export function createContainer(direction: FlexDir = "column", overrides: Partial<BoxNode> = {}): BoxNode {
   return {
@@ -585,11 +910,10 @@ export function createContainer(direction: FlexDir = "column", overrides: Partia
     type: "container",
     layout: "flex",
     direction,
-    gap: 0,
+    spaced: true,
     align: "stretch",
     justify: "start",
     wrap: direction === "row",
-    padding: 0,
     width: "fill",
     children: [],
     ...overrides,
@@ -607,21 +931,43 @@ export function createContainer(direction: FlexDir = "column", overrides: Partia
  * make, rather than a default they have to find and undo.
  */
 export function createGrid(columns = 3, overrides: Partial<BoxNode> = {}): BoxNode {
-  return createContainer("row", { layout: "grid", columns, wrap: false, width: "100%", padding: 0, ...overrides });
+  return createContainer("row", { layout: "grid", columns, wrap: false, width: "100%", ...overrides });
 }
 
 export function createElement(type: Exclude<BoxType, "container">, overrides: Partial<BoxNode> = {}): BoxNode {
-  const base: BoxNode = { id: newBoxId(), type, width: "auto" };
+  const base: BoxNode = { id: newBoxId(), type, width: "auto", spaced: true };
   switch (type) {
     case "heading": return { ...base, text: "New heading", fontSize: 32, bold: true, ...overrides };
     case "button": return { ...base, text: "Button", href: "#", ...overrides };
-    case "image": return { ...base, src: "", width: "100%", height: "260px", ...overrides };
-    case "video": return { ...base, src: "", width: "100%", height: "315px", ...overrides };
+    /**
+     * A LINK — words that GO somewhere (user, 2026-09-27: "buttons are buttons, menus are menus"). Published as a plain
+     * `<a href>` styled as text: underlined by default (WCAG 1.4.1 — a link in running text must not be told apart by
+     * colour alone), the Underline toggle takes it off for a menu. A button DOES something (html-semantics.md, "Buttons
+     * vs links"); until this block existed a menu could only be built from buttons.
+     */
+    case "link": return { ...base, text: "New link", href: "#", underline: true, ...overrides };
+    /**
+     * `height: "auto"` — NOT a stored pixel. A picture's shape is a fact to be discovered, not a default.
+     *
+     * It used to be born carrying `260px`, and because `imageSizing` rightly lets a stated height win, that
+     * birth default beat the photograph's own measured shape for ever. Measured through the real route:
+     * add an Image block from the menu, upload a 4:3 photograph, and the block still said `260px` while
+     * `imgW: 4, imgH: 3` sat beside it unused — rendered 1024×260, cropped to a letterbox at every screen
+     * size. The very same photograph DROPPED onto the canvas came out at its natural 4:3, because that path
+     * passes `height: "auto"` explicitly. Two routes, two answers, and the common one was wrong.
+     *
+     * `"auto"` is not a size: `sizeToCSS` returns undefined for it, so `imageSizing` still falls back to the
+     * 260px letterbox while the shape is genuinely unknown, and still crops to any height the user types.
+     * All that changes is that a shape we DO know is no longer overruled by a number nobody chose.
+     */
+    case "image": return { ...base, src: "", width: "100%", height: "auto", ...overrides };
+    // 315px was the 16:9 height of a 560px embed. In rem it follows the reader, like every other size here.
+    case "video": return { ...base, src: "", width: "100%", height: remLen(315), ...overrides };
     case "icon": return { ...base, icon: "Star", fontSize: 32, ...overrides };
     case "divider": return { ...base, width: "fill", ...overrides };
     case "list": return { ...base, listStyle: "bullet", listItems: ["First item", "Second item", "Third item"], fontSize: 16, ...overrides };
-    case "embed": return { ...base, width: "100%", height: "260px", html: "", ...overrides };
-    case "spacer": return { ...base, width: "100%", height: "48px", ...overrides };
+    case "embed": return { ...base, width: "100%", height: "16.25rem", html: "", ...overrides };
+    case "spacer": return { ...base, width: "100%", height: remLen(48), ...overrides };
     default: return { ...base, type: "text", text: "New text — click to edit.", ...overrides };
   }
 }
@@ -641,8 +987,8 @@ export function defaultAccordionItems(): ComponentItem[] {
  *  Accordion keeps its bespoke item model; every other component draws its default content fields from the
  *  registry, so ADDING a future component needs no change here — just a registry entry + its CSS. */
 export function createComponent(component: string, overrides: Partial<BoxNode> = {}): BoxNode {
-  // RULE L: a newly added component sizes to its content (see defaultComponentWidth). Full/Custom stay opt-in.
-  const base: BoxNode = { id: newBoxId(), type: "component", component, variant: "", width: "auto" };
+  // F-1: a newly added component fills its line unless it hugs by nature (`defaultComponentWidth`). Hug/Custom stay opt-in.
+  const base: BoxNode = { id: newBoxId(), type: "component", component, variant: "", width: defaultComponentWidth(component), spaced: true };
   if (component === "accordion") return { ...base, items: defaultAccordionItems(), accMultiOpen: false, ...overrides };
   if (component === "alert") return { ...base, items: defaultAlertItems(), alertSeverity: "info", alertForm: "inline", alertDismiss: false, ...overrides };
   if (isRegistryComponent(component)) return { ...base, width: defaultComponentWidth(component), componentFields: defaultComponentFields(component), ...overrides };
@@ -1550,8 +1896,21 @@ export function resizeTopEdge(
 ): { top: number; height: number } {
   const wantedTop = Math.min(startBotPx - minHpx, startTopPx + dy); // where the pointer asks the top to be
   const top = Math.max(topFloorPx, wantedTop);                      // …clamped to the page
-  const overshoot = Math.max(0, topFloorPx - wantedTop);            // how far past the page top it asked for
-  return { top, height: Math.round(startBotPx + overshoot - top) };
+  /**
+   * AT THE WALL THE EDGE STOPS. It does not grow out of the far side.
+   *
+   * This used to add whatever was dragged past the page top onto the HEIGHT, so the block kept growing —
+   * downward. The reasoning was that a handle which does nothing feels broken, and a block flush against
+   * the page top is the common case for a first block. Measured on exactly that block: dragging the top
+   * edge UP by 80px moved the top edge 0px and the BOTTOM edge 80px DOWN. The user is holding one edge and
+   * watching the opposite one move away from them, in the opposite direction to the drag.
+   *
+   * RULE 19 settles it, and settles it against the old reading: "the edge you grab is the ONLY one that
+   * moves; the opposite edge stays fixed… where the partner cannot give, the edge stops; it does not grow
+   * out of the far side." A dead handle at the wall is the honest answer — there is nowhere above the page
+   * for the edge to go, and growing the other end is not the same gesture.
+   */
+  return { top, height: Math.round(startBotPx - top) };
 }
 
 /**
@@ -1657,6 +2016,22 @@ export function accordionClasses(node: BoxNode): string {
 export function treeHasToast(node: BoxNode): boolean {
   if (node.component === "alert" && node.alertForm === "toast") return true;
   return (node.children ?? []).some(treeHasToast);
+}
+
+/**
+ * Does anything in this tree hold itself FIXED? The same question `treeHasToast` asks, for the same reason.
+ *
+ * A toast has been `position: fixed` all along, and the canvas already answers it by making the page root a
+ * containing block — so the toast pins to the PAGE FRAME while editing and to the viewport once published.
+ * Identical CSS, and it can never float over the editor's own toolbar where nobody could click it.
+ *
+ * A user-held fixed block needs exactly that, so it asks through the same door rather than growing a second
+ * mechanism beside it. The irony is worth keeping: a containing block is what BREAKS fixed by accident
+ * everywhere else in this file, and it is what CONTAINS it on purpose here.
+ */
+export function treeHasFixedHold(node: BoxNode): boolean {
+  if (node.pin && node.hold === "fixed") return true;
+  return (node.children ?? []).some(treeHasFixedHold);
 }
 
 /** The opt-in dismiss script for the export (guarded global; canvas doesn't need it). */
@@ -1793,6 +2168,26 @@ export function selectionChain(root: BoxNode, id: string): string[] {
   return path.filter((n) => n.id !== root.id && !n.rowBand).map((n) => n.id);
 }
 
+/**
+ * WHERE A PALETTE CLICK PUTS THE NEW BLOCK, given what is selected — the rule is written out in the builder page's
+ * `insertBlock`: AFTER the selection, stepping out of a row band so it gets a line of its own; INSIDE only a grid or a
+ * grid cell, the one place a block arriving inside is visible at once.
+ *
+ * ONLY A CONTAINER CAN BE A CELL THAT RECEIVES (L-1 · e-1). "A grid cell" was tested as "its parent is a grid", and an
+ * Image that IS a grid cell passed — so a Stack clicked with that Image selected was inserted as the IMAGE'S CHILD,
+ * which an image never draws: nothing appeared, 3 of 3 through the UI (`scripts/uat/probe-l1e1.js`), and 7 tier-99
+ * pages could not be built. A leaf cell gets the new block AFTER it — the next cell of the grid.
+ */
+export function paletteClickSlot(root: BoxNode, selectedId: string | null): { parentId: string; index: number } {
+  const selected = selectedId ? findBox(root, selectedId) : null;
+  const here = selected ? findParent(root, selected.id) : null;
+  const intoSelection = !!selected && isContainer(selected) && (selected.layout === "grid" || here?.parent.layout === "grid");
+  if (intoSelection) return { parentId: selected.id, index: selected.children?.length ?? 0 };
+  const band = here?.parent.rowBand ? findParent(root, here.parent.id) : null;
+  const at = band ?? here;
+  return at ? { parentId: at.parent.id, index: at.index + 1 } : { parentId: root.id, index: root.children?.length ?? 0 };
+}
+
 /** Insert `node` into `parentId` at `index` (clamped). No-op if the parent is missing. */
 export function insertBox(root: BoxNode, parentId: string, index: number, node: BoxNode): BoxNode {
   if (root.id === parentId) {
@@ -1806,12 +2201,69 @@ export function insertBox(root: BoxNode, parentId: string, index: number, node: 
 }
 
 /** Remove the node with `id` (cannot remove the root). */
+/**
+ * A ROW STILL FILLS ITS WIDTH AFTER ONE OF ITS BLOCKS IS TAKEN OUT.
+ *
+ * Reported by the user as empty space beside a stack that no amount of dragging would close, and measured:
+ * three blocks at 20% · 20% · 60% filled the row exactly; deleting the middle one left the other two still
+ * saying 20% and 60%, so **197px of the row was simply dead**. Nothing closes it afterwards either — a drag
+ * moves the boundary BETWEEN two blocks and faithfully preserves their total, which is correct for a drag and
+ * useless here, so the hole is permanent and the only way back is undo.
+ *
+ * The freed width is handed out IN PROPORTION, so 20/60 becomes 25/75: the blocks keep their relationship to
+ * one another, which is what someone who chose those widths meant by them. Giving it all to one neighbour
+ * would silently redesign the row around whichever block happened to be adjacent.
+ *
+ * It stands down wherever percentages are not the language being spoken — a grid places by `colSpan`, and a
+ * sibling set to Fit or Full is already sized by its content or the row, so there is nothing to hand it.
+ */
+function healRowWidths(parent: BoxNode, kept: BoxNode[], gone: BoxNode): BoxNode[] {
+  const isRow = !!parent.rowBand || (parent.direction ?? "column") === "row";
+  if (!isRow || parent.layout === "grid" || !kept.length) return kept;
+  const pct = (n: BoxNode) => {
+    const w = typeof n.width === "string" ? n.width.trim() : "";
+    if (!w.endsWith("%")) return null;
+    const v = parseFloat(w);
+    return Number.isFinite(v) ? v : null;
+  };
+  const freed = pct(gone);
+  if (freed == null || freed <= 0) return kept;
+  const shares = kept.map(pct);
+  if (shares.some((s) => s == null)) return kept; // a Fit or Full sibling takes up the slack by itself
+  const total = (shares as number[]).reduce((a, b) => a + b, 0);
+  if (total <= 0) return kept;
+  return kept.map((k, i) => ({ ...k, width: `${round1((shares[i] as number) * (1 + freed / total))}%` }));
+}
+
+/**
+ * DETACH a node, changing nothing else. The plumbing every restructuring move is built out of.
+ *
+ * It must stay exactly this dumb: `moveBox` is `removeBox` followed by `insertBox`, and so are "turn this
+ * slot into a column" and grouping. Healing the row here looked right and broke all three — dragging a block
+ * within the page redistributed its siblings' widths and then put the block back, so the row ended up over
+ * 100%. Two browser guards caught it within one gate. Deleting is the only operation that leaves a gap;
+ * `deleteBox` is the one that heals.
+ */
 export function removeBox(root: BoxNode, id: string): BoxNode {
   if (!root.children) return root;
   return {
     ...root,
     children: root.children.filter((c) => c.id !== id).map((c) => removeBox(c, id)),
   };
+}
+
+/**
+ * REMOVE a block for good, and let the row it was in close up behind it.
+ *
+ * The user-facing delete — the Delete key, the ⋯ menu, a bulk delete, and a cut, which takes the block out of
+ * the page just as finally. Everything else that calls `removeBox` is putting the block back somewhere else in
+ * the same breath and must not touch the widths.
+ */
+export function deleteBox(root: BoxNode, id: string): BoxNode {
+  if (!root.children) return root;
+  const gone = root.children.find((c) => c.id === id);
+  const kept = root.children.filter((c) => c.id !== id).map((c) => deleteBox(c, id));
+  return { ...root, children: gone ? healRowWidths(root, kept, gone) : kept };
 }
 
 /** Reorder a node within its own parent by one step (dir -1 up / +1 down). */
@@ -1831,6 +2283,85 @@ export function moveBoxStep(root: BoxNode, id: string, dir: -1 | 1): BoxNode {
  * Move `id` to be a child of `newParentId` at `index`. Guards against dropping a node into itself
  * or a descendant (which would detach the subtree). Returns the original tree if the move is invalid.
  */
+/**
+ * Put `node` UNDER (or over) the block `id`, by turning that block's SLOT into a vertical Stack.
+ *
+ * "One tall block on the left, two stacked beside it on the right" is an ordinary page and the model has
+ * always been able to hold it — a row band whose second child is a column of two. What there was no way to
+ * DO was reach it: a band is a row, a row only knows side-by-side, so a block dropped under one of its
+ * columns was read as "another column" and wedged in beside. The model reached further than the controls,
+ * and the lever for that is always more controls, never more model.
+ *
+ * So the column is created on demand: the block you aimed under is lifted into a new Stack together with the
+ * newcomer, and the Stack takes its place — same slot, same width, so nothing else on the line moves. Its
+ * NEIGHBOUR is not touched at all, which is the property that makes this safe to do automatically.
+ *
+ * The inner block goes to `width: 100%` because it now measures against the Stack rather than the band; the
+ * Stack carries the width it used to have, so the line is unchanged.
+ */
+export function stackWithBlock(root: BoxNode, id: string, node: BoxNode, before = false): BoxNode {
+  const target = findBox(root, id);
+  const info = findParent(root, id);
+  if (!target || !info) return root;
+  const column = createContainer("column", { width: target.width ?? "100%", padding: 0, gap: 0, align: "stretch", justify: "start" });
+  /**
+   * THE NEWCOMER TAKES THE HOLE THE TARGET'S OWN MARGIN OPENED, AND THE TARGET DOES NOT MOVE.
+   *
+   * Dragging a block's TOP edge down opens a `margin-top` — deliberately, where the block sits BESIDE a
+   * neighbour rather than below one, because then no single block owns that edge. The space that appears is
+   * therefore a margin, and a margin is not a box: there is nothing there to drop into, and aiming at it hit
+   * the band instead. Reported as *"I cannot add a stack… wherever there's an empty space"*.
+   *
+   * Dropping there did add a block, and made things worse in the two ways the user described. The margin rode
+   * along on `{ ...target }` into the new column, so the hole was still there AND the newcomer was above it:
+   * measured, the existing stack was pushed from y=287 to y=336 while the 199px hole remained. "Nothing
+   * appears and it breaks the positions of the stacks."
+   *
+   * So the hole is handed over: the margin is CLEARED and the newcomer fills the space it was holding open.
+   *
+   * IT MUST NOT BE SIZED FROM THE STORED NUMBER, which is the version of this that was written first. Spacing
+   * is emitted in the builder's FLUID unit and a size is not — measured, a stored `200` renders as a margin of
+   * 157.2px at 1024, 182.8px at 1280 and 198.8px at 1440, while a `minHeight` of 200 is 200px at every one of
+   * them. Handing the newcomer `minHeight: 200` therefore matched the hole at exactly one width and drifted at
+   * every other, and would have gone on drifting as the window resized. Filling asks no unit question at all.
+   */
+  const holeAbove = before ? Math.max(0, Math.round(target.marginTop ?? target.margin ?? 0)) : 0;
+  const inner: BoxNode = { ...target, width: "100%", ...(holeAbove > 0 ? { marginTop: 0 } : {}) };
+  /**
+   * THE NEWCOMER TAKES THE SPACE THAT IS ACTUALLY THERE.
+   *
+   * You aim at a gap under a short column because you can SEE the gap — so arriving at a courtesy 8rem and
+   * leaving the rest of it empty is the builder ignoring the thing you pointed at. `height: "fill"` is the
+   * model's existing way of saying "take what is left on this axis" (`flexForWidth` turns it into
+   * `1 1 0%`), so the block fills the column down to the height its taller neighbour sets.
+   *
+   * Only when the block has no height of its own: a size somebody set is a decision, and this must not
+   * overrule one. Dragging its height afterwards writes a real height and takes the fill off — which is the
+   * user's own statement of the rule: it should fill "unless I resize the height of it".
+   */
+  /**
+   * THE BANDS ARE BUILT HERE, and that is what makes the fill land on the right axis.
+   *
+   * `normalizeRowBands` wraps every child of a content container in a row band of its own. Inside a row,
+   * height is the CROSS axis — so `height: "fill"` written on the BLOCK is not a main-axis instruction at
+   * all, and the band around it stayed `flex: 0 0 auto` and zero pixels tall. The block was there, correct,
+   * and invisible.
+   *
+   * Making the bands here puts the fill on the band, where height IS the main axis of the column holding
+   * it, and leaves the block to stretch inside its band as any block does.
+   */
+  // BOTH halves, because the two axes are different questions. The BAND takes the leftover height of the
+  // column (`height: "fill"` is main-axis there), and the block takes the height of its band (`100%` is
+  // cross-axis there). With only the first the band filled and the block sat 40px tall inside it, which
+  // looks exactly like the bug it was meant to fix.
+  const fills = !(node.height || node.minHeight);
+  const newBand = makeRowBand([fills ? { ...node, height: "100%" } : node]);
+  if (fills) newBand.height = "fill";
+  const keepBand = makeRowBand([inner]);
+  column.children = before ? [newBand, keepBand] : [keepBand, newBand];
+  return insertBox(removeBox(root, id), info.parent.id, info.index, column);
+}
+
 export function moveBox(root: BoxNode, id: string, newParentId: string, index: number): BoxNode {
   if (id === newParentId || isAncestor(root, id, newParentId)) return root;
   const node = findBox(root, id);
@@ -1856,8 +2387,10 @@ export function dropIndexAmong(mids: number[], pointer: number): number {
 
 /** A structural ROW band: a full-width horizontal container that lays its sections out side-by-side.
  *  The page is a vertical stack of these. `gap` is the spacing between sections within the row. */
-export function makeRowBand(children: BoxNode[] = [], gap = 0): BoxNode {
-  const r = createContainer("row", { rowBand: true, width: "fill", padding: 0, gap, wrap: false, align: "stretch", justify: "start" });
+export function makeRowBand(children: BoxNode[] = [], gap?: number): BoxNode {
+  // No gap given → left UNSET, so the band takes the columns' default gutter (S1-a). A given one — 0 included — is kept.
+  // `justify` left UNSET — it still means Start — so a line nobody aligned can be told from one set to Start (L2-d)
+  const r = createContainer("row", { rowBand: true, width: "fill", padding: 0, ...(gap !== undefined ? { gap } : {}), wrap: false, align: "stretch", justify: undefined });
   r.children = children;
   return r;
 }
@@ -1875,10 +2408,95 @@ export function widthPct(token?: string): number {
 export function clampRowWidths(row: BoxNode): BoxNode {
   const kids = row.children ?? [];
   if (!kids.length) return row;
+  /**
+   * A ROW THAT WRAPS IS ALLOWED TO ADD UP TO MORE THAN 100%. That is what wrapping IS.
+   *
+   * This rescaled every row whose widths exceeded the line, to stop a row running off the page. For a row
+   * that cannot wrap that is right. For a row band it is exactly wrong, because a band wraps
+   * (`flexWrap: node.wrap || node.rowBand ? "wrap"`), so the overflow was never going to leave the page —
+   * it was going to become a second line.
+   *
+   * The cost was that a block could not be widened past its neighbours at all: push the boundary and the
+   * sum went over 100, this rescaled everything back down, and the drag was undone on commit. "Make this
+   * one full width and let the other drop below" — the ordinary way a person rearranges two columns — was
+   * unreachable, and so was its reverse, because nothing had moved to reverse.
+   *
+   * Leaving a wrapping row alone makes both directions fall out of the layout itself: widen and the
+   * neighbour goes to the next line; narrow and it comes back, with nothing remembered and nothing moved.
+   */
+  if (row.rowBand || row.wrap) return row;
+  return fitRowWidths(row);
+}
+
+/**
+ * Scale a row's widths down so they fit on ONE line — the old `clampRowWidths`, now called deliberately
+ * instead of on every commit.
+ *
+ * The difference is everything. As an invariant it made the wrap impossible: widen a block past its
+ * neighbours and the sum went over 100, this pulled it straight back, and the drag was undone on commit.
+ * As a step taken at INSERT time it does the job it was always for — a block dropped beside one that
+ * already fills the line has to come from somewhere, so the line is shared out — while a width the user
+ * dragged is left exactly as they set it, free to push a neighbour onto the next line.
+ */
+export function fitRowWidths(row: BoxNode): BoxNode {
+  const kids = row.children ?? [];
+  if (!kids.length) return row;
   const sum = kids.reduce((s, k) => s + widthPct(k.width), 0);
   if (sum <= 100) return row;
   const f = 100 / sum;
   return { ...row, children: kids.map((k) => ({ ...k, width: `${Math.max(3, Math.round(widthPct(k.width) * f))}%` })) };
+}
+
+/**
+ * Share out the widths of the band `bandId` when a block is added to it.
+ *
+ * WITH `newId` — the ordinary drop — ONLY THE LINE THE BLOCK LANDS ON is shared out, and the newcomer takes an
+ * EQUAL share of it (1 / n) while the blocks already there keep their proportions in the rest.
+ *
+ * It used to scale the WHOLE ROW by 100 / sum and round to whole percents. A block dropped onto a full line
+ * arrives at 100%, so 50/50 + 100 became 25/25/50 — the newcomer took half, not a third — and the next drop
+ * made 12.5 round up to 13: 13/13/25/50 = **101%**, so the fourth block wrapped the moment it landed and left
+ * a 502px hole on a page nobody had resized (found by the RULE Q sweep, 2026-09-26). Scaling the whole row
+ * also squashed a line the user had deliberately pushed onto the next row.
+ *
+ * Shares are FLOORED to hundredths and the newcomer takes the exact remainder, so a line can never add up past
+ * 100% — a wrapping row wraps on a hundredth. A line that still has room is left alone: the drop has already
+ * sized the newcomer to that room.
+ */
+export function fitBand(root: BoxNode, bandId: string, newId?: string): BoxNode {
+  const band = findBox(root, bandId);
+  if (!band?.rowBand) return root;
+  if (!newId) {
+    const fitted = fitRowWidths(band);
+    return fitted === band ? root : updateBox(root, bandId, { children: fitted.children });
+  }
+  const kids = (band.children ?? []).filter((k) => !isFloating(k) && !k.hidden);
+  const at = kids.findIndex((k) => k.id === newId);
+  if (at < 0) return root;
+  const others = kids.filter((k) => k.id !== newId);
+  const lines = packRowLines(others);
+  // The line it joins: the one of the block it was dropped AFTER, else the one it was dropped before.
+  const anchorIdx = at > 0 ? at - 1 : 0;
+  if (!others.length) return root;
+  const line = lines[anchorIdx];
+  const members = others.filter((_, i) => lines[i] === line);
+  const isPct = (k: BoxNode) => typeof k.width === "string" && k.width.trim().endsWith("%");
+  if (!members.every(isPct)) return root; // a Fit / Full block already on the line sizes itself
+  const used = members.reduce((s, k) => s + widthPct(k.width), 0);
+  // A HUGGING newcomer (a Stat, a Fit block) keeps hugging where the line has room. On a FULL line it has
+  // nowhere to hug, so it wrapped below at its floor — measured: a Stat dropped beside two 50% stacks landed on
+  // the next line at 224px. There it takes an equal share like anything else dropped onto a full line.
+  if (!isPct(kids[at])) { if (used < 99.5) return root; }
+  else if (used + widthPct(kids[at].width) <= 100.001) return root;  // it fits as it is — as strictly as a browser measures (#69)
+  const n = members.length + 1;
+  const newShare = 100 / n;
+  const factor = (100 - newShare) / Math.max(used, 1e-6);
+  const floor2 = (v: number) => Math.floor(v * 100 + 1e-6) / 100;
+  const widths = new Map<string, string>();
+  let spent = 0;
+  for (const k of members) { const w = Math.max(3, floor2(widthPct(k.width) * factor)); widths.set(k.id, `${w}%`); spent += w; }
+  widths.set(newId, `${Math.max(3, floor2(100 - spent))}%`);
+  return updateBox(root, bandId, { children: (band.children ?? []).map((k) => (widths.has(k.id) ? { ...k, width: widths.get(k.id)! } : k)) });
 }
 
 /** Canonicalize a container tree RECURSIVELY: every CONTENT container (the page root, a section, a block)
@@ -1887,7 +2505,23 @@ export function clampRowWidths(row: BoxNode): BoxNode {
  *  wrapped in its OWN full-width row → so dragging an item down makes a NEW row. Empty rows are pruned.
  *  Widths are clamped ≤100% (shrink-to-fit). The user's MARGINS are respected (never stripped). Items keep
  *  their id. Recurses into every item so a child-of-a-child behaves exactly the same. Idempotent in shape. */
-export function normalizeRowBands(node: BoxNode, gap = 0): BoxNode {
+/**
+ * A PAGE HEADER OR FOOTER USES ITS WIDTH (L2-d; the user, 2026-10-01: "a whole lot of space on the right… it looks
+ * proper bad", and chose "Header spreads"). Every item in a line hugs its words, so a line left at Start packed the logo,
+ * the menu and "Apply now" into the left half of a wide screen. A header is logo at the left edge, the menu between, the
+ * buttons at the right edge (`docs/web-anatomy/regions-and-education.md`), so a line of two or more in a header or footer
+ * that nobody has aligned is set to Spread out — a stored value the Inspector shows and the user can change. A line set
+ * to Start (every line saved before this) is the user's, and is never touched.
+ */
+function spreadBarLine(row: BoxNode): BoxNode {
+  if (!row.rowBand || row.justify != null) return row;
+  const items = (row.children ?? []).filter((k) => !isFloating(k));
+  // …and on ONE centre line (L2-f): left to stretch, the menu's words sat at its top, 12px above the logo's and the button's
+  // middles at 1920. Set once, with the spread — a value the user can change afterwards like any other.
+  return items.length >= 2 ? { ...row, justify: "between", ...(row.align == null || row.align === "stretch" ? { align: "center" as const } : {}) } : row;
+}
+
+export function normalizeRowBands(node: BoxNode, gap?: number): BoxNode {
   if (!isContainer(node)) return node; // leaf — nothing to organize
   if (node.rowBand) {
     // A ROW: recurse into its items (each may itself be a content container / leaf).
@@ -1915,11 +2549,13 @@ export function normalizeRowBands(node: BoxNode, gap = 0): BoxNode {
       // Bare item → wrap in its own new row. A CONTAINER (section) fills the row; an ELEMENT/COMPONENT keeps
       // its own width so it HUGS its content (a short heading / button is exactly as wide as its content, not a
       // full-width "container" box). Width is still user-editable via Fit / Full / Custom.
-      const forced = isContainer(c) ? { ...c, width: "100%" } : c;
+      // …except a component that HUGS BY NATURE (F1-e): a Stat, Badge or Rating is built as a container, and forcing it to
+      // 100% drew a Badge as a pill across the whole line and spread a Rating's stars over it (`HUGS_BY_NATURE`).
+      const forced = isContainer(c) && !(c.preset && HUGS_BY_NATURE.has(c.preset)) ? { ...c, width: "100%" } : c;
       rows.push(makeRowBand([normalizeRowBands(forced, gap)], gap));
     }
   }
-  return { ...node, children: rows };
+  return { ...node, children: node.tag === "header" || node.tag === "footer" ? rows.map(spreadBarLine) : rows };
 }
 
 /**
@@ -2012,8 +2648,15 @@ export function floatBox(root: BoxNode, id: string, targetParentId: string, left
   const sizing: Partial<BoxNode> = hugging
     ? { minHeight: Math.max(8, Math.round(height)), height: undefined, clip: undefined }
     : { width: geom.width, height: remLen(Math.max(8, Math.round(height)), rootFontPx()), minHeight: undefined, clip: true };
+  // Remembered BEFORE the card sizing is written over it — the whole point is to be able to undo exactly this.
+  const was = findBox(root, id);
+  const floatFrom: NonNullable<BoxNode["floatFrom"]> = {
+    width: was?.width, height: was?.height, minHeight: was?.minHeight, clip: was?.clip,
+    sized: sizing.height as string | undefined, sizedMin: sizing.minHeight as number | undefined,
+  };
   let next = moveBox(root, id, targetParentId, tp?.children?.length ?? 0);
   next = updateBox(next, id, {
+    floatFrom,
     // A free-floating layer is a fixed-size CARD: a DEFINITE height (not a min-height floor that content can grow
     // past) so the box, its parent's reserved height, and the export all agree on exactly how tall it is. `clip`
     // lets the width AND height handles shrink it below its content.
@@ -2034,11 +2677,46 @@ export function floatBox(root: BoxNode, id: string, targetParentId: string, left
  *  the user had set on the section, months earlier and for their own reasons: float a grid inside a 400px
  *  section, return it, and the section collapsed to its content — so the grid came back at 60px instead of the
  *  400 it had filled. Floating and un-floating is a round trip; it has to land where it started. */
+/**
+ * PUT IT BACK — and putting it back is a ROUND TRIP, never an edit.
+ *
+ * This used to delete the height AND the `minHeight`, on the reasoning that both were the float's doing.
+ * Only one of them was: floating writes a definite height and clears the block's own floor, so deleting
+ * both threw away a size the user had set long before they ever floated it. Measured on a 120px stack:
+ * float, put back, and it returned 49px tall — the height of the text inside it. Float it again and the
+ * next round trip started from 49. An empty box ends up with nothing left to see or to click, which is
+ * what "I don't see the stack any more" was.
+ *
+ * So `floatFrom` is restored, with one exception that matters more than the rule: if the block was RESIZED
+ * while it floated, that size is the user's own and is kept — as a floor, so content can still grow it.
+ *
+ * The pin's free placement goes too. `pinX`/`pinY` are where a FLOATING block holds on screen; back in the
+ * layout the block holds against an edge instead, and stale coordinates would place it somewhere nobody
+ * chose. The pin itself is kept: "floats on screen" is a decision about scrolling, not about placement.
+ */
 export function unfloatBox(root: BoxNode, id: string): BoxNode {
   const node = findBox(root, id);
-  // Drop everything the float set: geometry, the auto `clip`, and the card's `minHeight` (so the box hugs its
-  // content again). A COMPONENT also returns to full width (its compact fixed px width was only for the card).
-  const patch: Partial<BoxNode> = { position: undefined, left: undefined, top: undefined, zIndex: undefined, clip: undefined, minHeight: undefined, height: undefined };
+  const patch: Partial<BoxNode> = {
+    position: undefined, left: undefined, top: undefined, zIndex: undefined, clip: undefined,
+    minHeight: undefined, height: undefined, floatFrom: undefined, pinX: undefined, pinY: undefined,
+  };
+  const was = node?.floatFrom;
+  if (was) {
+    const resized = node?.height !== was.sized || node?.minHeight !== was.sizedMin;
+    if (resized) {
+      // Their size, kept as a floor rather than a hard height, so the box can still grow with its content.
+      // `lenToPx` is this file's own converter — it understands rem as well as px, which is the whole
+      // reason it exists: reading only px silently treated every rem height as "no height".
+      const kept = lenToPx(node?.height, rootFontPx());
+      patch.minHeight = node?.minHeight ?? (kept != null ? Math.round(kept) : was.minHeight);
+    } else {
+      patch.width = was.width;
+      patch.height = was.height;
+      patch.minHeight = was.minHeight;
+      patch.clip = was.clip;
+    }
+  }
+  // A COMPONENT returns to full width — its compact fixed px width was only ever for the card.
   if (node?.type === "component") patch.width = "100%";
   return updateBox(root, id, patch);
 }
@@ -2083,15 +2761,16 @@ export function ungroupBoxes(root: BoxNode, groupId: string): BoxNode {
 /** Position a block within its own container (its row band / flex parent): sets the PARENT's justify-content
  *  so the child sits at the start / center / end. Because blocks now HUG their content, this is how you
  *  left / centre / right a heading, button, badge, etc. Fluid (justify-content, no fixed px) → Field-Guide-safe. */
-export function alignInRow(root: BoxNode, id: string, justify: FlexJustify): BoxNode {
+export function alignInRow(root: BoxNode, id: string, justify: FlexJustify, bp: Breakpoint = "base"): BoxNode {
   const info = findParent(root, id);
   if (!info) return root;
-  return updateBox(root, info.parent.id, { justify });
+  return updateBoxResponsive(root, info.parent.id, { justify }, bp); // for the screen being edited only (R4-3)
 }
 
-/** The block's current position within its container (its parent row's justify-content). */
-export function alignInRowOf(root: BoxNode, id: string): FlexJustify {
-  return findParent(root, id)?.parent.justify ?? "start";
+/** The block's current position within its container (its parent row's justify-content) on that screen. */
+export function alignInRowOf(root: BoxNode, id: string, bp: Breakpoint = "base"): FlexJustify {
+  const p = findParent(root, id)?.parent;
+  return (p && resolveResponsive(p, bp).justify) ?? "start";
 }
 
 /**
@@ -2168,6 +2847,9 @@ export function resolveResponsive(node: BoxNode, bp: Breakpoint): BoxNode {
   if (bp === "base" || !node.responsive) return node;
   const ov: ResponsiveOverride = {};
   for (const slot of RUNG_CASCADE[bp]) Object.assign(ov, node.responsive[slot] ?? {});
+  // A stored `null` is a CLEAR made at this rung (see `updateBoxResponsive`): it resolves to the default,
+  // which is ABSENT — never to a null value that a `!== undefined` check downstream would take for a setting.
+  for (const k of Object.keys(ov) as (keyof ResponsiveOverride)[]) if (ov[k] === null) ov[k] = undefined;
   return Object.keys(ov).length ? { ...node, ...ov } : node;
 }
 
@@ -2179,7 +2861,18 @@ export function updateBoxResponsive(root: BoxNode, id: string, patch: Partial<Bo
   // Always the NEW slot name: it is last in the rung's cascade, so it wins over anything the three-layer
   // model left behind without having to rewrite that older value.
   const prev = node.responsive?.[bp] ?? {};
-  return updateBox(root, id, { responsive: { ...node.responsive, [bp]: { ...prev, ...patch } } });
+  /**
+   * A CLEAR AT A RUNG IS STORED AS `null`, because `undefined` does not survive being saved.
+   *
+   * Every control that goes back to its default writes `undefined` — "Scrolls away", "Fit content", no
+   * entrance. At the base that is right: absent IS the default. At a rung it must OVERRIDE the base, and
+   * `{ pin: undefined }` did, for exactly as long as the tab stayed open: `JSON.stringify` drops the key, so
+   * the save held `{ phone: {} }` and the reload brought the desktop's pin back onto the phone. "Stop pinning
+   * this on phones" — the spec's whole answer to a header eating a small screen — could not be kept.
+   * `resolveResponsive` turns the `null` back into absent, so nothing downstream ever sees one.
+   */
+  const stored = Object.fromEntries(Object.entries(patch).map(([k, v]) => [k, v === undefined ? null : v])) as ResponsiveOverride;
+  return updateBox(root, id, { responsive: { ...node.responsive, [bp]: { ...prev, ...stored } } });
 }
 
 /** Does this box carry any override OF ITS OWN at this rung? Inherited ones belong to the rung above. */
@@ -2206,20 +2899,41 @@ export function clearOverride(root: BoxNode, id: string, bp: Breakpoint): BoxNod
 
 // ── Decoration (border / shadow / corners / rotation) ────────────────────────
 
-/** Preset drop shadows (elevation scale). Kept subtle + theme-neutral (soft black). */
-export const SHADOW_CSS: Record<NonNullable<BoxNode["shadow"]>, string> = {
-  sm: "0 1px 2px rgba(0,0,0,0.08), 0 1px 1px rgba(0,0,0,0.06)",
-  md: "0 4px 8px rgba(0,0,0,0.10), 0 2px 4px rgba(0,0,0,0.06)",
-  lg: "0 12px 24px rgba(0,0,0,0.12), 0 4px 8px rgba(0,0,0,0.08)",
-  xl: "0 24px 48px rgba(0,0,0,0.18), 0 8px 16px rgba(0,0,0,0.10)",
-};
+/**
+ * Preset drop shadows (elevation scale). Kept subtle + theme-neutral (soft black).
+ *
+ * IN `rem`, LIKE EVERY OTHER SIZE. An elevation is part of the design: when a reader enlarges their browser
+ * text the card grows, and a shadow still measured in device pixels becomes a hairline under a large card
+ * rather than the lift it was drawn to be. `1px` offsets and spreads are left alone — a hairline is one
+ * device pixel by definition, which is the one case the units rule admits px for.
+ */
+/**
+ * The elevation scale — ONE definition, which lives with the other design tokens and is re-exported here.
+ *
+ * It was declared in both places, byte for byte. Moving shadows to rem changed only this copy, so every block
+ * lifted in rem while every design-system component (`--eu-shadow-*`) stayed in pixels — invisible until a
+ * card and a section sat side by side at a large text size. The name stays so nothing that imports it has to
+ * change; the values can no longer diverge because there is only one set.
+ */
+export const SHADOW_CSS: Record<NonNullable<BoxNode["shadow"]>, string> = SHADOW_SCALE;
 
 /** Per-corner border-radius (px) → CSS, falling back to the all-corners `radius`. Undefined when none set. */
 export function radiusCSS(node: BoxNode): string | undefined {
   const r = node.radius;
   const tl = node.radiusTopLeft ?? r, tr = node.radiusTopRight ?? r, br = node.radiusBottomRight ?? r, bl = node.radiusBottomLeft ?? r;
   if (tl == null && tr == null && br == null && bl == null) return undefined;
-  return `${tl ?? 0}px ${tr ?? 0}px ${br ?? 0}px ${bl ?? 0}px`;
+  /**
+   * IN `rem`, BECAUSE A CORNER IS PART OF THE DESIGN AND THE DESIGN FOLLOWS THE READER.
+   *
+   * This emitted raw pixels for its whole life, and because rule 3 makes it the ONE resolver every block and
+   * every future component goes through, that was every rounded corner in the product pinned to a size that
+   * ignores a reader who has enlarged their browser text — while the text beside it grew. A 16px radius on a
+   * card whose type has doubled is not the same design; it is a tighter one.
+   *
+   * Fixing it in the single resolver is the whole value of having a single resolver: nothing had to be found,
+   * and a component added tomorrow inherits it by existing.
+   */
+  return `${remLen(tl ?? 0)} ${remLen(tr ?? 0)} ${remLen(br ?? 0)} ${remLen(bl ?? 0)}`;
 }
 
 /** Does this box round or clip its content (so overflow must be hidden)? */
@@ -2268,6 +2982,34 @@ export const typoRole = {
   size: (mult: number) => (mult === 1 ? `var(${TYPO_VAR.size})` : `calc(var(${TYPO_VAR.size}) * ${mult})`),
 } as const;
 
+/**
+ * A BLOCK'S OWN TYPOGRAPHY — the ONE resolver the canvas and the export both call (rule 11).
+ *
+ * There were two copies, `typoStyle` in the canvas and `typoCss` in the export, nearly identical, and neither set a
+ * heading's line height: the export got it from its base stylesheet (`.eu-root h1…h6 { line-height: tight }`),
+ * which the editor never loads and whose `.eu-root` no canvas heading sits inside. So every heading was 1.5× on
+ * the canvas and 1.15× on the published page — measured 55px vs 42px at desktop — and every block holding one was
+ * taller in the editor than on the real site (found by the Preview check, 2026-09-27).
+ *
+ * The role defaults now live HERE, as tokens with their real values as fallbacks (the editor does not define the
+ * `--eu-*` tokens): a heading is tight, tightly tracked and balanced; body text is normal. A value the user set
+ * still wins. Letter spacing is rem, not px — the units rule (rule 16) — through the same `remLen` everything uses.
+ */
+export function blockTypography(node: BoxNode, role: "heading" | "body", weight: number): CSSProperties {
+  // ONLY the keys it has a value for (L2-g): spread after a block's own `text-decoration: none`, an `undefined` here
+  // erased it, and every button's words were underlined by the browser's default for an <a> — "Apply now" in the header.
+  return Object.fromEntries(Object.entries({
+    fontFamily: node.fontFamily || typoRole.font(role),
+    fontWeight: node.fontWeight ?? (node.bold ? 800 : typoRole.weight(role, weight)),
+    lineHeight: node.lineHeight ?? (role === "heading" ? "var(--eu-leading-tight, 1.15)" : "var(--eu-leading-normal, 1.5)"),
+    letterSpacing: node.letterSpacing != null ? remLen(node.letterSpacing) : role === "heading" ? "var(--eu-tracking-tight, -0.025em)" : undefined,
+    textWrap: role === "heading" ? "balance" : undefined,
+    fontStyle: node.italic ? "italic" : undefined,
+    textDecoration: node.underline ? "underline" : undefined,
+    textTransform: node.textTransform && node.textTransform !== "none" ? node.textTransform : undefined,
+  } satisfies CSSProperties).filter(([, v]) => v !== undefined)) as CSSProperties;
+}
+
 /** The role defaults a PAGE ROOT publishes, from the site theme. Everything below inherits these. */
 export function typoRootVars(theme: { text: string; textMuted: string; headingFont: string; bodyFont: string }): CSSProperties {
   return {
@@ -2275,7 +3017,7 @@ export function typoRootVars(theme: { text: string; textMuted: string; headingFo
     [TYPO_VAR.muted]: theme.textMuted,
     [TYPO_VAR.headingFont]: theme.headingFont,
     [TYPO_VAR.bodyFont]: theme.bodyFont,
-    [TYPO_VAR.size]: u(16),
+    [TYPO_VAR.size]: textUnit(), // fluid like everything else, but never below a readable floor — see `textUnit`
     [TYPO_VAR.headingWeight]: 600,
     [TYPO_VAR.bodyWeight]: 400,
   } as CSSProperties;
@@ -2292,7 +3034,7 @@ export function typoCascadeCss(node: BoxNode): CSSProperties {
   const s: Record<string, string | number> = {};
   if (node.color) { s[TYPO_VAR.text] = node.color; s[TYPO_VAR.muted] = node.color; s.color = node.color; }
   if (node.fontFamily) { s[TYPO_VAR.headingFont] = node.fontFamily; s[TYPO_VAR.bodyFont] = node.fontFamily; s.fontFamily = node.fontFamily; }
-  if (node.fontSize != null) s[TYPO_VAR.size] = u(node.fontSize);
+  if (node.fontSize != null) s[TYPO_VAR.size] = textLen(node.fontSize);
   if (node.fontWeight != null) { s[TYPO_VAR.headingWeight] = node.fontWeight; s[TYPO_VAR.bodyWeight] = node.fontWeight; s.fontWeight = node.fontWeight; }
   else if (node.bold) { s[TYPO_VAR.headingWeight] = 800; s[TYPO_VAR.bodyWeight] = 800; s.fontWeight = 800; }
   // These have no per-role default to preserve, so plain inheritance already carries them — they only have to
@@ -2359,11 +3101,61 @@ function setAtRung(node: BoxNode, key: keyof ResponsiveOverride, bp: Breakpoint)
  * the clamp off from that rung down — a two-up phone photo gallery is one click, and it is stated in data
  * rather than guessed at.
  */
+/**
+ * How narrow a cell may get before the row must shed a column, in rem.
+ *
+ * `12rem` is 192px at a default browser, which is about the narrowest a card with a heading and a line of
+ * text reads properly. In REM rather than px so the whole decision follows the reader's own text size: a
+ * person who has enlarged their browser text gets fewer columns sooner, which is the point of the rule.
+ */
+export const CELL_MIN_REM = 12;
+
+/**
+ * How many blocks a row puts ACROSS at the stored count — which is not the track count.
+ *
+ * A twelve-track row of span-4 cells is THREE across, and the difference is the whole reason the old cap was
+ * wrong: it reduced tracks, and reducing 12 tracks to 2 turns three cards into two.
+ */
+function acrossAt(node: BoxNode, cols: number, bp: Breakpoint): number {
+  const kids = node.children ?? [];
+  // RESOLVED at this rung: a cell can carry a per-rung span, and the count across is what decides whether a
+  // cell would be too narrow. Reading the base span would answer for a layout that is not on screen.
+  const spans = kids.map((c) => Math.max(1, Math.round(resolveResponsive(c, bp).colSpan ?? 1)));
+  const span = spans.length ? Math.min(...spans) : 1;
+  return Math.max(1, Math.floor(cols / span));
+}
+
 export function gridColumnsAt(node: BoxNode, bp: Breakpoint = "base"): number {
   const cols = gridColumns(node);
   if (setAtRung(node, "columns", bp)) return cols;
   if (bp === "phone") return 1;
-  if (bp === "tabletPortrait") return Math.min(cols, 2);
+  if (bp === "tabletPortrait") {
+    /**
+     * THE CAP IS ABOUT HOW NARROW A CELL WOULD GET, NOT ABOUT A NUMBER — and capping by the number was wrong.
+     *
+     * `Math.min(cols, 2)` sheared every row to two across on a tablet held upright, whatever it held. For a
+     * twelve-cell row that is right and necessary. For a THREE-CARD row — the commonest layout on a school
+     * site, and Scenario B of this project's own guide — it is not: three cards do not tile two columns, so
+     * one is orphaned and the result is wrong whichever way the orphan is treated. Both were rendered and
+     * looked at, at 760px:
+     *
+     *   • orphan left as it fell → half a row of the section's background beside it. Reported, with a
+     *     screenshot, as the grid "not fully expanding on the width".
+     *   • orphan stretched to fill → a full-width card carrying one line of text, twice the width of its
+     *     siblings. It reads as a mistake rather than a design.
+     *
+     * And three across at that width was neither: three equal 250px cards, balanced, nothing left over. The
+     * cells were never too narrow, so there was never anything to fix by capping them.
+     *
+     * So the question asked is the one the cap always meant: at the NARROWEST width this rung covers, would a
+     * cell fall below what can be read? If it would not, the row keeps its shape. `RUNG_PX.tabletPortrait` is
+     * that width, taken from the ladder rather than re-typed.
+     */
+    const across = acrossAt(node, cols, bp);
+    const cellPx = RUNG_PX.tabletPortrait / across;
+    if (cellPx >= CELL_MIN_REM * 16) return cols;
+    return Math.min(cols, 2);
+  }
   return cols;
 }
 
@@ -2379,19 +3171,478 @@ export function gridColumnsAt(node: BoxNode, bp: Breakpoint = "base"): number {
  * When the USER has stated the count at this rung they are already speaking in that rung's units, so the span
  * is taken at face value and only clamped. Rescaling their number would be the builder arguing with them.
  */
+/**
+ * Has the RESPONSIVE LADDER narrowed this grid's track at `bp` — rather than the user stating the count?
+ *
+ * The distinction decides whether the cells' stored placement is still speaking the same language as the
+ * track they are being placed into. Shared, so the canvas, the export and the guards give one answer.
+ */
+export function gridReflowsAt(parent: BoxNode, bp: Breakpoint = "base"): boolean {
+  // Stated AT this rung — so the count is not the base's, whatever number it happens to be.
+  if (setAtRung(parent, "columns", bp)) return true;
+  return gridColumnsAt(parent, bp) !== gridColumns(parent); // …or the ladder narrowed it by itself
+}
+
+/**
+ * A child's effective span and start at a rung, in that rung's own track units.
+ *
+ * WHEN THE LADDER NARROWS THE TRACK, EXPLICIT PLACEMENT IS DROPPED AND THE CELLS AUTO-FLOW.
+ *
+ * This is the half that was missing, and it made blocks VANISH. Spans were re-fitted proportionally, but a
+ * `colStart` written in twelve-column units was merely rescaled and then clamped into the narrow track — and
+ * a clamp is not an injection. Measured on three cells at columns 1 / 5 / 9 (span 4), reported by a user who
+ * watched the top of their page empty out as they dragged the preview narrower:
+ *
+ *   1400px → columns 1, 5, 9     three cells across, correct
+ *    820px → columns 1, 2, 2     the second cell sits UNDER the third — one block invisible
+ *    580px → columns 1, 1, 1     all three in one cell — only the LAST one can be seen
+ *
+ * Nothing overflowed and nothing errored: two blocks were simply painted on top of each other, which is
+ * indistinguishable from having been deleted. Auto-placement cannot rescue them, because placement that is
+ * stated explicitly is honoured exactly — including when it is stated on top of something else.
+ *
+ * So at a rung the ladder narrowed, a placed cell becomes an auto-placed one and the grid flows it after the
+ * cell before it — which is precisely what an UNPLACED cell has always done correctly at the same widths.
+ * The span still rescales (a third of twelve is a third of two), so the row keeps its proportions; only the
+ * absolute position, which can no longer be expressed in the narrower track, is given up.
+ *
+ * WHOSE UNITS IS A PLACEMENT WRITTEN IN? The track it was AUTHORED AGAINST — which is the cell's own
+ * question, never the row's.
+ *
+ * This was first written as "the user's own column count at that rung is not touched: there they are already
+ * speaking in the rung's units." That is true of the COUNT and false of the CELLS. Setting Columns on a
+ * device is a control the guide actively recommends — and nobody restates every cell's *Start at column*
+ * while doing it. So a row of three cells at columns 1 / 5 / 9 of twelve, given `columns: 3` on a tablet,
+ * had all three starts taken at face value and clamped into a three-track row:
+ *
+ *     span  = min(3, 4)               = 3   → every cell fills the row
+ *     start = min(3 − 3 + 1, 1|5|9)   = 1   → every cell begins in column 1
+ *
+ * All three landed in the same cell, drawn one on top of another, and only the last could be seen. Swept
+ * across every width, it began at 820px and never recovered. It is the same defect as the ladder case
+ * below, reached by the one route that had been deliberately exempted from the fix.
+ *
+ * So the rule is per-CELL, and it is the only rule that holds in both directions: a span or start the CHILD
+ * states at this rung is already in this rung's units and is honoured exactly; one inherited from the base
+ * is written in the BASE row's units, so when the track differs the span is rescaled proportionally and the
+ * start is given up — the cell auto-flows, which is what an unplaced cell has always done correctly.
+ */
 export function gridPlacementAt(parent: BoxNode, child: BoxNode, bp: Breakpoint = "base"): { track: number; span: number; start: number | null } {
-  const track = gridColumnsAt(parent, bp);
+  return placementForTrack(parent, child, gridColumnsAt(parent, bp), { reflow: gridReflowsAt(parent, bp), spanSet: setAtRung(child, "colSpan", bp), startSet: setAtRung(child, "colStart", bp) });
+}
+/**
+ * The same placement for ANY track count — the rung's (`gridPlacementAt`) or one a container query narrows to
+ * (`gridQueryCss`). `spanSet` / `startSet`: did the person state the span / start in THIS track's units?
+ */
+function placementForTrack(parent: BoxNode, child: BoxNode, track: number, o: { reflow: boolean; spanSet: boolean; startSet: boolean }): { track: number; span: number; start: number | null } {
   const stored = gridColumns(parent);
-  const rescale = track !== stored && !setAtRung(parent, "columns", bp);
-  const fit = (v: number) => (rescale ? Math.max(1, Math.round((v * track) / stored)) : v);
+  /**
+   * `stored` IS ALREADY THE RUNG'S COUNT when the row states one there — `gridColumnsAt` is handed a
+   * RESOLVED node, so `node.columns` has been overwritten by the override and the base number is gone. The
+   * first attempt at this fix compared `track` with `stored`, found them equal, concluded nothing had
+   * changed, and left every placement at face value: the bug survived the fix untouched.
+   *
+   * There is nothing to rescale proportionally in that case, so the span is only CLAMPED to the track. A
+   * quarter of twelve becomes the whole of a three-track row, the starts are given up, and the cells flow
+   * one per row — wider than ideal, and every one of them visible, which is the property that matters.
+   */
+  const fit = (v: number) => (o.reflow && track !== stored && !o.spanSet ? Math.max(1, Math.round((v * track) / stored)) : v);
   const span = Math.min(track, fit(Math.max(1, Math.round(child.colSpan ?? 1))));
   if (child.colStart == null) return { track, span, start: null };
-  const raw = rescale
-    ? Math.round(((Math.round(child.colStart) - 1) * track) / stored) + 1
-    : Math.round(child.colStart);
+  if (o.reflow && !o.startSet) return { track, span, start: null };
   // Clamped to a track the block can actually FINISH inside, so it never lands in an implicit column and
   // stretches the row past the edge of the screen.
+  const raw = Math.round(child.colStart);
   return { track, span, start: Math.min(track - span + 1, Math.max(1, raw)) };
+}
+
+/**
+ * THE LAST ROW FILLS. When the responsive ladder narrows a grid's track, the cells must still tile the row.
+ *
+ * Reported from a real page, with a screenshot: a 3×3 grid inside a dark stack, previewed narrower, showed a
+ * column of content with the stack's background filling the rest — "the three rows and three columns doesn't
+ * fully expand on the width". Measured on the exported page across ten widths, and it is not that layout, it
+ * is ARITHMETIC:
+ *
+ *     width 620–880 → the ladder caps the track at 2 (tablet portrait)
+ *     3 cards        → 2 up, 1 alone, HALF A ROW of background
+ *     9 cells        → 4 rows of 2, 1 alone, same
+ *     4 cards        → 2 up, 2 up, fills — which is why nobody had seen it
+ *
+ * Any count that does not divide by the narrowed track leaves an orphan, and that includes the three-card row
+ * this project's own guide teaches as Scenario B. The 2-across cap is deliberate and tested ("two up, and the
+ * third wraps"), so the fix is not to change the ladder: the wrapped cell STRETCHES to fill what is left.
+ *
+ * ONLY WHEN THE LADDER REFLOWED, never at a width the user laid out themselves. A row of two span-4 cells in a
+ * twelve-column grid leaves a third of the row empty on purpose, and filling that would be the builder
+ * arguing with a design. `gridReflowsAt` is the same test every other rung-aware resolver asks.
+ *
+ * Returns the span this child should take, which is its ordinary span except for the one cell that ends a
+ * short final row.
+ */
+export function gridSpanAt(parent: BoxNode, child: BoxNode, bp: Breakpoint = "base"): number {
+  const own = gridPlacementAt(parent, child, bp).span;
+  if (parent.layout !== "grid") return own;
+  /**
+   * THE LADDER NARROWED IT, AND THE PERSON DID NOT ASK FOR THIS COUNT — both halves, and the first version of
+   * this line had neither.
+   *
+   * It asked `gridReflowsAt`, which looked like the right question and is not: `setAtRung(node, key, "base")`
+   * returns TRUE unconditionally, because the base IS the node's own value. So `gridReflowsAt` is true at base
+   * for every grid that has ever been given a column count — harmless where it is used for PLACEMENT, which
+   * also requires the track to have actually changed, and not harmless here. Measured: a deliberate
+   * two-thirds row at 1440px had its second cell stretched to `span 8` and the empty third filled in.
+   *
+   * The guard that caught it is the one written for exactly this — "a layout the person made themselves is
+   * left alone" — which is why it was written at the same time as the rule rather than afterwards.
+   *
+   * And a count stated AT a rung is a decision too: three columns asked for on a phone with four cells leaves
+   * a short last row, and that is the person's arithmetic, not the ladder's.
+   */
+  const narrowed = !setAtRung(parent, "columns", bp) && gridColumnsAt(parent, bp) < gridColumns(parent);
+  if (!narrowed) return own;
+  if (isMasonry(parent, bp)) return own; // a masonry track is a measuring unit, not a row to fill
+  const kids = (parent.children ?? []).filter((c) => !isFloating(c) && !resolveResponsive(c, bp).hidden);
+  return lastRowFills(kids, child, own, gridColumnsAt(parent, bp), (c) => gridPlacementAt(parent, c, bp).span);
+}
+/** The cell that ENDS a short final row stretches to fill it — for the rung's track or a container query's. */
+function lastRowFills(kids: BoxNode[], child: BoxNode, own: number, track: number, spanOf: (c: BoxNode) => number): number {
+  if (kids.length < 2) return own; // one cell already spans what it was given
+  // The same walk `gridRowTracks` makes, so the two cannot disagree about where a row breaks.
+  let used = 0;
+  for (const c of kids) {
+    const span = spanOf(c);
+    if (used + span > track) used = 0;
+    used += span;
+  }
+  if (used === 0 || used >= track) return own;      // the final row filled by itself
+  if (kids[kids.length - 1].id !== child.id) return own; // only the cell that ends it stretches
+  return Math.min(track, own + (track - used));
+}
+
+/**
+ * THE COLUMNS LEFT FREE AT THE END OF A GRID'S LAST ROW — what the editor may offer as "Add a block here".
+ *
+ * The same walk once more, because the offer was counted as `used % track`, which assumes the cells pack tightly. They
+ * do not: a cell that does not fit what is left of a row starts the next one and leaves its hole BEHIND it. Measured at
+ * the Tablet size on an icon cell beside a text cell (1 + 2 columns of 2): one column "free", the offer drawn after the
+ * text on a third row of its own, and every real cell a third shorter in the editor than on the page (116px · 174px).
+ *
+ * Counted in the spans the cells are DRAWN at (`gridSpanAt`): where the ladder narrowed the grid, the cell that ends a
+ * short last row stretches to fill it, so there is nothing left to offer — 11 + 1 of twelve is two full rows of two.
+ */
+export function gridLeftoverAt(node: BoxNode, bp: Breakpoint = "base"): number {
+  const track = gridColumnsAt(node, bp);
+  let used = 0;
+  for (const c of node.children ?? []) {
+    if (isFloating(c) || resolveResponsive(c, bp).hidden) continue;
+    const span = Math.min(track, gridSpanAt(node, c, bp));
+    if (used + span > track) used = 0;
+    used += span;
+  }
+  return used ? track - used : 0;
+}
+
+// ── A GRID NARROWS BY ITS OWN BOX (Responsive Field Guide ④ — container queries) ─────────────────────
+/**
+ * THE LADDER KNOWS THE SCREEN; IT DOES NOT KNOW THE BOX.
+ *
+ * `gridColumnsAt` caps a grid on a tablet by asking how narrow a cell would get at the rung's narrowest width — as if
+ * every grid were as wide as the page. A grid nested in a column, or in another grid's cell, is not. Measured on a
+ * dressed page (#111): a three-quote grid dropped into the middle cell of a three-cell grid drew each quote **85px**
+ * wide at 768px — its twelve tracks 21px each — and broke every word letter by letter ("ev / er / yt / hi / ng"), on
+ * the canvas and in the Preview alike. By the screen the ladder was right: 768 / 3 is a readable cell. By the box it
+ * was three cells in 256px.
+ *
+ * So a grid also narrows by ITS OWN width, through a container query on the box that holds it: below
+ * `across × CELL_MIN_REM` (the same 12rem floor the ladder uses) it goes two across; below `2 × CELL_MIN_REM`, one.
+ *
+ *   • Only ever NARROWER than the ladder. The two-across rule is guarded so it never runs on the phone rung (where
+ *     the ladder already says one); the one-across rule agrees with every rung it could meet.
+ *   • Never for a grid whose count somebody set at a rung — a per-device setting always wins — nor a masonry gallery
+ *     or a pager, whose tracks are not rows.
+ *   • `!important`, because the canvas draws the rung's columns as an INLINE style and a stylesheet cannot otherwise
+ *     reach past one; the export carries the same mark so the two engines cannot differ. The user cannot set these
+ *     properties by hand, so nothing of theirs is overridden.
+ *   • The HOST (the band or cell holding the grid) becomes the query container (`hostsNarrowingGrid` →
+ *     `container-type: inline-size`) — never a hugging box, whose width would then have nothing to come from.
+ */
+/** A glyph's width as a share of its font size — generous (bold figures run ~0.55), so a word is never under-counted. */
+const GLYPH_EM = 0.6;
+/**
+ * c-8 — THE LONGEST WORD IN A CELL, in rem, at the LARGEST size its font can reach (the type unit is capped at
+ * `hiRem`, so the ceiling is known from the model: `px / 10 × hiRem`). 0 for a cell with no words.
+ * ponytail: an estimate from character counts, not a measurement — `GLYPH_EM` errs wide, so a grid gives up a column
+ * slightly early rather than break a word; the page audit (L8) measures what the reader actually gets.
+ */
+export function longestWordRem(cell: BoxNode): number {
+  const { hiRem } = baseUnitParts();
+  let best = 0;
+  const walk = (n: BoxNode, px: number) => {
+    const size = n.fontSize ?? px;
+    for (const s of [n.text, ...(n.listItems ?? [])]) {
+      if (!s) continue;
+      const longest = Math.max(0, ...s.replace(/<[^>]*>/g, " ").replace(/&[a-z#0-9]+;/gi, " ").split(/\s+/).map((w) => w.length));
+      best = Math.max(best, longest * GLYPH_EM * (size / 10) * hiRem);
+    }
+    for (const c of n.children ?? []) walk(c, size);
+  };
+  walk(cell, 16);
+  return +best.toFixed(4);
+}
+
+export function gridNarrowsAt(node: BoxNode): { two: number | null; one: number; more?: { track: number; below: number }[] } | null {
+  if (node.layout !== "grid" || isPager(node) || node.rowFlow === "masonry") return null;
+  if (BP_ORDER.some((bp) => bp !== "base" && setAtRung(node, "columns", bp))) return null;
+  /**
+   * "Across" is how many cells actually SHARE THE FIRST ROW by their spans — not `acrossAt`, which divides the track
+   * by the smallest span. An 11 / 1 split (a wide cell dragged against a one-track neighbour) is two across; by the
+   * smallest span it read as twelve, so the rule fired below 144rem and re-fitted the pair onto two tracks: the
+   * narrow cell dropped to a new row and the wide cell's far edge moved 414px in a resize guard (test:fast, 3 specs).
+   */
+  const cols = gridColumns(node);
+  let used = 0, across = 0;
+  const line: { span: number; word: number }[] = [];
+  for (const c of (node.children ?? []).filter((k) => !isFloating(k))) { const s = Math.min(cols, Math.max(1, Math.round(c.colSpan ?? 1))); if (used + s > cols) break; used += s; across++; line.push({ span: s, word: longestWordRem(c) }); }
+  if (across < 2) return null;
+  /**
+   * c-8 (decided by the user 2026-09-29, B): THE GRID GIVES UP COLUMNS RATHER THAN BREAK A WORD. The cell floor above
+   * knows nothing about what a cell holds: six Stats across a 1,300px column at Wide had 163px cells and a "1,000+" that
+   * needed ~200, so the "+" fell to a line of its own (L-4, probe-l4-c8, built through the UI). Where the words need
+   * more than the floor — the narrowest cell that holds them, by its share of the line, plus the gaps between cells —
+   * the grid steps down ONE COLUMN AT A TIME, each step as soon as the longest word no longer fits; breaking the word is
+   * left for one column that cannot hold it alone. A grid whose words fit the floor keeps exactly today's two rules.
+   */
+  const gap = ((node.gapX ?? node.gap ?? spaceDefaults(node).gapX) / 10) * baseUnitParts().hiRem;
+  const word = Math.max(...line.map((l) => l.word));
+  /**
+   * L4-o (decided by the user 2026-10-03: "like rows — keep its count"): A GRID OF FOUR OR MORE ACROSS IS A DESIGN. With
+   * every cell floored at 12rem, seven across needed 84rem and a desktop page never showed it — the picker offered counts
+   * nobody could see. The rule rows already follow (#78): four or more across keep their count, each cell floored only
+   * at `HAND_FLOOR_REM`, and give columns up when their WORDS need it. Fewer than four keep today's 12rem floor.
+   */
+  const floor = across >= MANY_COLUMNS ? HAND_FLOOR_REM : CELL_MIN_REM;
+  const needs = (k: number) => Math.max(k * floor, k * word + (k - 1) * gap); // k equal tracks, each holding the word
+  const atStart = Math.max(across * floor, ...line.map((l) => (l.word * cols) / l.span + (across - 1) * gap));
+  if (floor === CELL_MIN_REM && atStart <= across * CELL_MIN_REM) return { two: across > 2 ? across * CELL_MIN_REM : null, one: 2 * CELL_MIN_REM };
+  /**
+   * …AND THE LINES IT GIVES UP COME OUT EVEN. Stepping 6 → 5 left the sixth Stat alone on a second line (L4-c, seen in
+   * the Preview at Wide). When k fit, the grid takes the BALANCED count for its cells — as many lines as k needs, shared
+   * evenly — so six go 3 + 3 and twelve at five go 4 × 3. A step that balances to the count already in force is skipped.
+   */
+  const r = (n: number) => +n.toFixed(4);
+  const cells = (node.children ?? []).filter((k) => !isFloating(k)).length;
+  const balanced = (k: number) => Math.ceil(cells / Math.ceil(cells / k));
+  const steps: { track: number; below: number }[] = [];
+  for (let k = across - 1; k >= 1; k--) {
+    const track = balanced(k);
+    if (steps.length && steps[steps.length - 1].track === track) continue;
+    steps.push({ track, below: r(k === across - 1 ? atStart : needs(k + 1)) });
+  }
+  const more = steps.filter((s) => s.track >= 3);
+  return { two: steps.find((s) => s.track === 2)?.below ?? null, one: steps.find((s) => s.track === 1)!.below, ...(more.length ? { more } : {}) };
+}
+/** Does this box hold a grid that narrows by the box's width? Then it is that grid's query container. */
+export function hostsNarrowingGrid(node: BoxNode): boolean {
+  if (!isContainer(node) || hugsContent(node) || node.layout === "grid") return false;
+  return (node.children ?? []).some((c) => (c.layout === "grid" && !!gridNarrowsAt(c)) || !!rowNarrowsAt(c));
+}
+/**
+ * The container-query rules for one grid: `scope` selects the grid, `cellScope(id)` a cell, and `aboveThePhone` wraps
+ * the two-across rule in whatever says "not the phone rung" in that engine (the export: the tablet rung's media query;
+ * the canvas: nothing at all when the preset is not the phone, and the rule left out when it is).
+ */
+/**
+ * `editorOnly` — rules the CANVAS adds inside each query, for things that exist only while editing. A narrowed grid's
+ * last row is always full (`lastRowFills`), so the editor's "Add a block here" offer has no leftover columns to stand in;
+ * worked out from the screen's columns it appeared anyway, as a cell on a row of its own, and every real cell lost a
+ * share of the height to it (116px drawn, 174px published). The export passes nothing and carries none of it.
+ */
+export function gridQueryCss(scope: string, node: BoxNode, cellScope: (id: string) => string, aboveThePhone: (css: string) => string, editorOnly: (scope: string) => string = () => "", onPage = false, onlyOn?: OnlyOn): string {
+  if (node.rowBand) return rowQueryCss(node, cellScope, aboveThePhone, onPage, onlyOn);
+  const n = gridNarrowsAt(node); if (!n) return "";
+  const kids = (node.children ?? []).filter((c) => !isFloating(c));
+  const at = (track: number) => {
+    const spanOf = (c: BoxNode) => placementForTrack(node, c, track, { reflow: true, spanSet: false, startSet: false }).span;
+    const cells = kids.map((c) => {
+      const p = placementForTrack(node, c, track, { reflow: true, spanSet: false, startSet: false });
+      const span = lastRowFills(kids, c, p.span, track, spanOf);
+      const col = p.start != null ? `${p.start} / span ${span}` : span > 1 ? `span ${span}` : "auto";
+      const rowSpan = Math.max(1, Math.round(c.rowSpan ?? 1)); // the row's START is given up with the column (see childStyle)
+      return `${cellScope(c.id)}{grid-column:${col} !important;grid-row:${rowSpan > 1 ? `span ${rowSpan}` : "auto"} !important}`;
+    }).join("");
+    return `${scope}{grid-template-columns:repeat(${track},minmax(0,1fr)) !important}${cells}${editorOnly(scope)}`;
+  };
+  // Strictly BELOW the threshold, in the unit the floor is written in.
+  const below = (rem: number, css: string) => `@container (max-width:${rem - 0.01}rem){${css}}`;
+  // Widest first: every narrower query also matches, and the later rule wins.
+  return (n.more ?? []).map((m) => aboveThePhone(below(m.below, at(m.track)))).join("")
+    + (n.two != null ? aboveThePhone(below(n.two, at(2))) : "") + below(n.one, at(1));
+}
+/** Every grid's query rules on a page — the canvas's per-tree stylesheet; the export walks its own render. */
+/** Rules that hold on some screens only (G3b-11): the export writes them as media ranges, the canvas checks the screen it shows. */
+export type OnlyOn = (css: string, screens: Breakpoint[]) => string;
+export function treeGridQueryCss(root: BoxNode, scopeFor: (id: string) => string, aboveThePhone: (css: string) => string, editorOnly?: (scope: string) => string, onlyOn?: OnlyOn): string {
+  let out = "";
+  // `onPage`: a row directly on the page — its query container is the page, and it keeps the page's side space (G-1 #16)
+  const walk = (n: BoxNode, onPage: boolean) => { if (n.layout === "grid" || n.rowBand) out += gridQueryCss(scopeFor(n.id), n, scopeFor, aboveThePhone, editorOnly, onPage, onlyOn); for (const c of n.children ?? []) walk(c, n === root); };
+  walk(root, false);
+  return out;
+}
+
+/**
+ * L4-h (decided by the user 2026-10-03: "rows balance too") — A ROW THAT HAS TO WRAP SHARES ITS COLUMNS EVENLY.
+ *
+ * A row of four Stats in a 70% column at Laptop wrapped 3 + 1 — `flex-wrap` fills each line greedily, so whatever is
+ * left over sits alone (L-4's headed pass, canvas and Preview). Grids already step down balanced (c-8, L4-c); a row of
+ * words now does the same, by its HOST's width: below the width its longest word needs on every column (each column's
+ * stored share, plus the gutters), each stored line is regrouped into `balancedLines` — the tablet's own rule (#78) —
+ * one count at a time (4 → 2 + 2, 5 → 3 + 2 → 2 + 2 + 1… as even as they can be). A line that is not words (a table of
+ * ticks, c-11c) or a menu line is left alone; on the phone every column stacks as before.
+ *
+ * ON THE PAGE GRID (G-1 #12 / #13, the user's decision 2026-10-04: "the most EQUAL columns whose words still fit — 4 → 2
+ * → 1, never a staircase", on EVERY rung): a page-grid row steps only through counts that divide it evenly (3 → 1, never
+ * 2 + 1), each column's minimum is what it is really held to on screen (its words, or a section's readable floor — so
+ * the step fires BEFORE the browser would wrap the line greedily), and the phone follows the same steps instead of
+ * always stacking: four Stats whose words fit stay two across on a 360 phone.
+ */
+export function rowNarrowsAt(band: BoxNode, onPage = false): { ids: string[]; steps: { lines: number[]; below: number }[] }[] | null {
+  if (!band.rowBand || (band.direction ?? "column") !== "row" || isMenuLine(band)) return null;
+  const gridRow = gridBandOwnsGutter(band);
+  const kids = rowColumnsAt(band, "base"); const lines = packRowLines(kids);
+  const gap = (bandGutter(band) / 10) * baseUnitParts().hiRem;
+  const out: { ids: string[]; steps: { lines: number[]; below: number }[] }[] = [];
+  for (let line = 0; line <= (lines.at(-1) ?? -1); line++) {
+    const cols = kids.filter((_, i) => lines[i] === line); const n = cols.length;
+    // a row of the page is a grid, which never wraps a block that is too narrow: every line of it steps (G-3b (4))
+    if (n < 2 || (!(onPage && isPageRow(band)) && cols.filter(holdsWords).length < 2)) continue;
+    const floorOf = (k: BoxNode) => { if (!gridRow || !isContainer(k) || k.clip || isEmptyBox(k)) return 0; const f = columnFloorRem(band, k, "base"); return f === HAND_FLOOR_REM ? 0 : f; };
+    const words = cols.map((k) => Math.max(longestWordRem(k), floorOf(k))); const word = Math.max(...words); if (!word) continue;
+    const share = (k: BoxNode) => (widthPct(k.width) || 100 / n) / 100;
+    let needs = (k: number) => k * word + (k - 1) * gap;
+    let atStart = Math.max(...cols.map((k, i) => words[i] / share(k))) + (n - 1) * gap;
+    if (gridRow) {
+      /**
+       * G-1 #14 — AT THE SIZE THE WORDS REALLY HAVE THERE. The type is fluid: the unit is `clamp(lo, remHalf + cqwHalf·cqw,
+       * hi)`, so at a line w rem wide it is known exactly, in rem (it follows the reader's text size too). Sized at its
+       * CEILING, "1,000+" read 1.6× wider on a 360 phone than it is drawn, and four Stats that fit two across stacked. The
+       * width where k columns stop fitting is then a fixed point (the words shrink as the line does): solved by iterating
+       * from the ceiling estimate, which only ever comes down. Saved pages keep L-4's ceiling estimate.
+       */
+      const { loRem, hiRem, remHalf, cqwHalf } = baseUnitParts();
+      const unitAt = (w: number) => Math.min(hiRem, Math.max(loRem, remHalf + (cqwHalf * w) / 100));
+      // …PLUS the space around the words (G-1 #15): a Stat's own 16-unit padding each side made its column 26px wider than
+      // "1,000+" at 600px, and four wrapped 3 + 1 before the step fired. Every horizontal padding and border on the way down.
+      const chrome = (n: BoxNode): { u: number; px: number } => {
+        const kids = (n.children ?? []).map(chrome); const deepest = kids.reduce((a, c) => (c.u + c.px / 10 > a.u + a.px / 10 ? c : a), { u: 0, px: 0 });
+        return { u: padSide(n, "Left") + padSide(n, "Right") + deepest.u, px: (n.borderWidth && n.type !== "divider" ? 2 * n.borderWidth : 0) + deepest.px };
+      };
+      const around = cols.map(chrome);
+      const minAt = (i: number, w: number) => Math.max((longestWordRem(cols[i]) / hiRem) * unitAt(w) + (around[i].u / 10) * unitAt(w) + around[i].px / 16, floorOf(cols[i]));
+      const gapAt = (w: number) => (bandGutter(band) / 10) * unitAt(w);
+      // A row ON THE PAGE keeps the page's side space itself (`pageBandInset`), and its query container is the page: every
+      // width below is the PAGE's, so it carries that side space twice (G-1 #16 — three cards wrapped 2 + 1 at 1440 / 200%).
+      const edgeAt = (w: number) => (onPage ? rowSideRemAt(band, "left", w) + rowSideRemAt(band, "right", w) : 0); // the frame as drawn (G-3c)
+      const solve = (f: (w: number) => number, from: number) => { let w = from; for (let i = 0; i < 12; i++) w = f(w); return w; };
+      needs = (k: number) => solve((w) => k * Math.max(...cols.map((_, i) => minAt(i, w))) + (k - 1) * gapAt(w) + edgeAt(w), k * word + (k - 1) * gap);
+      atStart = solve((w) => Math.max(...cols.map((k, i) => minAt(i, w) / share(k))) + (n - 1) * gapAt(w) + edgeAt(w), atStart);
+    }
+    const steps: { lines: number[]; below: number }[] = [];
+    let wider = n; // the count across the line had before this step
+    for (let k = n - 1; k >= 1; k--) {
+      if (gridRow && n % k) continue; // only EQUAL lines on the page grid: 3 → 1, 4 → 2 → 1, 6 → 3 → 2 → 1
+      const ls = balancedLines(n, k);
+      if (steps.length && steps[steps.length - 1].lines.join() === ls.join()) continue;
+      // saved pages: exactly as before (`needs(k + 1)`); a page-grid row: from the count it had before this step
+      steps.push({ lines: ls, below: +(k === n - 1 || (gridRow && wider === n) ? atStart : needs(gridRow ? wider : k + 1)).toFixed(4) });
+      wider = k;
+    }
+    out.push({ ids: cols.map((k) => k.id), steps });
+  }
+  return out.length ? out : null;
+}
+/** Does a block span rows on any screen (G-3b (6))? */
+const hasRowSpan = (k: BoxNode) => [k, ...Object.values(k.responsive ?? {})].some((r) => ((r as Partial<BoxNode> | null)?.rowSpan ?? 1) > 1);
+/** G3b-27 — a block's readable floor with the margins it is DRAWN with on a stepped line: the floor of `pageRowCSS` subtracts the
+ *  margins of its desktop line, so where the fit rule gives it the frame on both sides it held the box 27px past the row's edge at
+ *  200 % text on a phone. Empty when the block has no such floor. */
+function floorWith(band: BoxNode, k: BoxNode, ml: string, mr: string): string {
+  const f = /, ([\d.]+rem)\)$/.exec(String(childStyle(k, band).minWidth ?? ""))?.[1];
+  return f ? `;min-width:min(calc(100% - ${ml} - ${mr}), ${f}) !important` : "";
+}
+/** The same row with no block spanning rows on any screen — where each block sits once the spans are stepped away. */
+const withoutRowSpans = (band: BoxNode): BoxNode => ({
+  ...band,
+  children: (band.children ?? []).map((k) => ({ ...k, rowSpan: undefined, responsive: k.responsive && Object.fromEntries(Object.entries(k.responsive).map(([b, r]) => [b, r && { ...r, rowSpan: undefined }])) })),
+});
+/** The container-query rules for one row band (see `rowNarrowsAt`), widest first; the phone keeps its own stacking. */
+export function rowQueryCss(band: BoxNode, cellScope: (id: string) => string, aboveThePhone: (css: string) => string, onPage = false, onlyOn?: OnlyOn): string {
+  const lines = rowNarrowsAt(band, onPage); if (!lines) return "";
+  const gut = gapOf(band).x;
+  // a row of the page (G-3b): the same tracks on every screen, so a step is a span — and every block of a new line takes its
+  // share of that line's side space and gaps (`pageRowSides`)
+  const T = onPage && isPageRow(band) ? pageRowTracks(band) : 0;
+  const byId = new Map((band.children ?? []).map((k) => [k.id, k]));
+  let css = "";
+  for (const { ids, steps } of lines) for (const st of steps) {
+    let i = 0; let rules = "";
+    if (T) {
+      for (const across of st.lines) {
+        ids.slice(i, i + across).forEach((id, j) => {
+          const k = byId.get(id)!;
+          // …and a block spanning rows (G-3b (6)) spans one again: on a stepped line it has no neighbours beside it to span
+          const ml = pageRowMargin(band, k, "left", j, across), mr = pageRowMargin(band, k, "right", j, across);
+          rules += `${cellScope(id)}{grid-column:span ${T / across} !important;${hasRowSpan(k) ? "grid-row:auto !important;" : ""}margin-left:${ml} !important;margin-right:${mr} !important${st.lines.length < ids.length ? ";min-width:min-content !important" : floorWith(band, k, ml, mr)}}`;
+        });
+        i += across;
+      }
+      // G3b-23: where a block spanning rows is stepped it spans one, so the blocks that sat BESIDE it go back to where they are
+      // without it — measured on a phone: the third block kept the side space of "beside the photo", 10px inside the frame
+      if (ids.some((id) => hasRowSpan(byId.get(id)!))) {
+        const flat = pageRowCells(withoutRowSpans(band), "base");
+        for (const k of band.children ?? []) {
+          const c = !ids.includes(k.id) && flat.get(k.id); if (!c) continue;
+          const ml = pageRowMargin(band, k, "left", c.at, c.of, +(c.gapPct + c.insetL).toFixed(4)), mr = pageRowMargin(band, k, "right", c.at, c.of, c.insetR);
+          rules += `${cellScope(k.id)}{grid-row:auto !important;margin-left:${ml} !important;margin-right:${mr} !important${floorWith(band, k, ml, mr)}}`;
+        }
+      }
+      css += `@container (max-width:${st.below - 0.01}rem){${rules}}`;
+      continue;
+    }
+    for (const across of st.lines) {
+      // Side by side, a column is never narrower than its longest word. Stacked (one a line) it keeps its OWN minimum: the
+      // phone's is `100%`, and `min-content` here overrode it — at 150% text a column grew to its word and spilled 6px out
+      // of its band on a 375 phone (L4-s, pages 393 and 396).
+      for (const id of ids.slice(i, i + across)) rules += `${cellScope(id)}{flex:1 1 ${tabletBasis({ share: 1 / across, across, marginsPct: 0 }, gut)} !important${st.lines.length < ids.length ? ";min-width:min-content !important" : ""}}`;
+      i += across;
+    }
+    const q = `@container (max-width:${st.below - 0.01}rem){${rules}}`;
+    css += st.lines.length === ids.length || gridBandOwnsGutter(band) ? q : aboveThePhone(q); // a page-grid row: the phone too (#12)
+  }
+  if (!T) return css;
+  /**
+   * A WIDTH A PERSON SET FOR A SCREEN WINS THERE (G3b-11, the user 2026-10-04: "your setting wins"): on a screen where any block of
+   * the row has its own width or gap, the fit rule stands aside for this row — it is drawn as set (Page check warns if its words
+   * then break). Measured: "To line 5" at Mobile changed nothing you could see, the stacked row overriding it.
+   */
+  const fits = fitScreens(band);
+  return fits.length === BP_ORDER.length || !onlyOn ? css : onlyOn(css, fits);
+}
+/** The screens a row's fit rule acts on: every one where no block of it has a width or gap of its own (G3b-11). */
+const fitScreens = (band: BoxNode) => BP_ORDER.filter((bp) => bp === "base" || !(band.children ?? []).some((k) => { const r = resolveResponsive(k, bp); return r.width !== k.width || r.marginLeftPct !== k.marginLeftPct; }));
+
+/**
+ * G3b-24 — WHAT THE FIT RULE DRAWS HERE: how many blocks across the line of block `id` is drawn on a page `widthRem` wide on `bp`, or
+ * null when the fit rule leaves its row as stored there (it fits, or a width set for this screen wins). The panel says so, so its
+ * numbers never disagree with the canvas: measured, "Columns 3 of 6 · lines 1–4" beside a block drawn 6 of 6 on a phone.
+ */
+export function fitStepAt(band: BoxNode, id: string, widthRem: number, bp: Breakpoint): number | null {
+  if (!isPageRow(band) || !fitScreens(band).includes(bp)) return null;
+  const group = rowNarrowsAt(band, true)?.find((g) => g.ids.includes(id)); if (!group) return null;
+  const step = group.steps.filter((s) => widthRem < s.below).sort((a, b) => a.below - b.below)[0]; if (!step) return null;
+  const at = group.ids.indexOf(id); let i = 0;
+  for (const across of step.lines) { if (at < i + across) return across; i += across; }
+  return null;
 }
 
 /**
@@ -2553,7 +3804,7 @@ export function pagerNavHTML(node: BoxNode): string {
         // indigo on a dark navy hero. White reads on a dark photograph, the ring reads on a pale one, and
         // between them the pair is legible on any picture at all.
         `<a href="#${pagerSlideId(s)}" data-eu-pager-dot="${i}" aria-label="Show ${i + 1} of ${slides.length}"`
-        + ` style="width:.7rem;height:.7rem;border-radius:999px;background:#fff;opacity:.55;`
+        + ` style="width:.7rem;height:.7rem;border-radius:50%;background:#fff;opacity:.55;`
         + `box-shadow:0 0 0 1px rgba(0,0,0,.45)"></a>`).join("")
       + `</div>`
     : "";
@@ -2568,7 +3819,7 @@ export function pagerNavHTML(node: BoxNode): string {
     `<a href="#" hidden data-eu-pager-${dir} aria-label="${dir === "prev" ? "Show the previous one" : "Show the next one"}"`
     // Same reasoning as the dots: white on a soft dark disc, so it reads over any photograph, rather
     // than `currentColor` — which on an `<a>` is the link colour and came out indigo on a navy hero.
-    + ` style="width:2.25rem;height:2.25rem;border-radius:999px;border:1px solid rgba(255,255,255,.7);`
+    + ` style="width:2.25rem;height:2.25rem;border-radius:50%;border:1px solid rgba(255,255,255,.7);`
     + `background:rgba(0,0,0,.3);text-align:center;line-height:2.15rem;text-decoration:none;color:#fff">`
     + `${dir === "prev" ? "&#8249;" : "&#8250;"}</a>`;
   const body = wants("arrows") ? `${arrow("prev")}${dots}${arrow("next")}` : dots;
@@ -2679,6 +3930,29 @@ if(document.readyState==='loading')addEventListener('DOMContentLoaded',all);else
 export const MASONRY_ROW_REM = 0.5;
 
 /**
+ * The smallest an EMPTY, UNSIZED box may render — the floor that stops a block you just added from being
+ * too small to see or to grab. See the long note in `childStyle` for what it is defending against.
+ *
+ * 2.5rem (40px at the default root) is chosen against the thing that has to work: a block carries four edge
+ * handles and four corner handles, each about 8px. Below roughly 32px they overlap and there is no part of
+ * the block left to click that is not a handle, so it cannot be selected OR resized. 40px leaves a usable
+ * band in the middle, and is still small enough that six of them barely move a parent somebody sized.
+ *
+ * In `rem`, never px, per the Responsive Field Guide — a reader who has raised their browser font gets a
+ * bigger floor too, which is exactly right, because their handles are bigger as well.
+ */
+export const EMPTY_BOX_MIN = "2.5rem";
+
+/**
+ * FULLY ROUND — the pill a button starts as. One value, used by the canvas and the export alike.
+ *
+ * It was `9999px` in both, the web's usual idiom, and the one pixel length the units rule (rule 16: px only for a
+ * 1px hairline) had no reason to allow: a radius larger than any box is round in any unit, so a rem says the same
+ * thing without a pixel reaching the page. Found by the Preview units check, 2026-09-27.
+ */
+export const PILL = "999rem";
+
+/**
  * The shape assumed for a cell whose height CANNOT be known statically — a card, a caption, any text.
  *
  * Something has to be assumed or such a cell claims one unit and renders 8px tall, which is not "approximate",
@@ -2753,7 +4027,7 @@ export function masonryCellPx(containerPx: number, track: number, colSpan: numbe
  * px height can be used: a percentage is a share of a row height that masonry has deliberately stopped having.
  */
 export function masonryCellHeightPx(cell: BoxNode, cellPx: number): number {
-  const padV = (cell.paddingTop ?? cell.padding ?? 0) + (cell.paddingBottom ?? cell.padding ?? 0);
+  const padV = padSide(cell, "Top") + padSide(cell, "Bottom");
   const stated = statedPx(cell.height) ?? cell.minHeight ?? null;
   if (stated != null) return Math.max(0, stated + padV);
   return Math.max(0, cellPx * masonryRatio(cell) + padV);
@@ -2791,9 +4065,9 @@ export function masonryRowSpan(parent: BoxNode, child: BoxNode, bp: Breakpoint =
   if (!isMasonry(parent, bp)) return null;
   const containerPx = masonryContainerPx(bp);
   if (containerPx == null) return null;
-  const padH = (parent.paddingLeft ?? parent.padding ?? 0) + (parent.paddingRight ?? parent.padding ?? 0);
-  const gapX = parent.gapX ?? parent.gap ?? 16;
-  const gapY = parent.gapY ?? parent.gap ?? 16;
+  const padH = padSide(parent, "Left") + padSide(parent, "Right");
+  const gapX = gapOf(parent).x;
+  const gapY = gapOf(parent).y;
   const { track, span } = gridPlacementAt(parent, child, bp);
   const cellPx = masonryCellPx(Math.max(0, containerPx - padH), track, span, gapX);
   return masonrySpanUnits(masonryCellHeightPx(child, cellPx), gapY);
@@ -2802,7 +4076,7 @@ export function masonryRowSpan(parent: BoxNode, child: BoxNode, bp: Breakpoint =
 /** The down-gap, expressed in row units — what a cell adds to its own height to leave air beneath it. */
 export function masonryGapUnits(node: BoxNode, rowPx = MASONRY_ROW_REM * 16): number {
   const r = rowPx > 0 ? rowPx : MASONRY_ROW_REM * 16;
-  return Math.ceil(Math.max(0, node.gapY ?? node.gap ?? 16) / r);
+  return Math.ceil(Math.max(0, gapOf(node).y) / r);
 }
 
 /**
@@ -2982,6 +4256,11 @@ export function canSetColumnFraction(track: number, den: number, bp: Breakpoint 
 }
 
 /** Convert a width/height token ("auto" | "fill" | "50%" | "200px") to a CSS length or undefined. */
+/** A length a person TYPES ("300px", "50%", "40vh"): any px becomes rem, so no stored pixel reaches the page (rule 16, R4-5). */
+export function typedLength(v: string): string {
+  return v.replace(/(-?\d*\.?\d+)px\b/g, (_, n: string) => remLen(Number(n)));
+}
+
 export function sizeToCSS(token?: string): string | undefined {
   if (!token || token === "auto") return undefined;
   if (token === "fill") return "100%";
@@ -3012,7 +4291,7 @@ export function imageSizing(node: BoxNode): { height: string; aspectRatio?: stri
   // No height asked for. Take the photo's own shape if we know it; otherwise fall back to the letterbox,
   // because an image of unknown shape with `height:auto` and `object-fit:cover` collapses to nothing.
   if (hasIntrinsicSize(node)) return { height: "auto", aspectRatio: `${node.imgW} / ${node.imgH}` };
-  return { height: "260px" };
+  return { height: "16.25rem" }; // the letterbox, in rem — a stored pixel box for media breaks rule 16
 }
 
 /** How long to wait for a decode before giving up and letting the picture through unmeasured. */
@@ -3123,10 +4402,384 @@ export async function importPhoto(file: File): Promise<{ src: string; imgW?: num
  *  An explicit size is a FIXED share (no grow/shrink) so a section keeps exactly the width you give it —
  *  you can resize it narrower to open space, and drop another section into that space. `fill` grows to
  *  take whatever is left. Dropping a section beside another sets its width to the leftover so it fits. */
-export function flexForWidth(token?: string): string | undefined {
+/**
+ * Is this child ALONE on its line, once a wrapping row has packed its children?
+ *
+ * The reason this is computed rather than left to `flex-grow: 1` is a regression it caused within minutes:
+ * grow spends whatever is LEFT OVER on a line, and narrowing a block is exactly how a line comes to have
+ * space left over. So a block dragged narrower had the space handed straight back to it and would not
+ * shrink at all — "I can no longer decrease the width of a stack from the right".
+ *
+ * Flexbox packs greedily, so the same walk here tells us what it will do: fill a line until the next child
+ * would take it past 100%, then start another. A child that ends up on a line by itself is the only case
+ * that should grow — it has room beside it that nothing else is asking for.
+ *
+ * AND ONLY ON A LINE IT WAS PUSHED ONTO (`lineIndex > 0`). This is the second correction, and the symptom
+ * was a dead end rather than a cosmetic one. Widen a block until its neighbour wraps away and that block is
+ * then alone on the FIRST line — so it grew to fill the row whatever its stored width said. Narrowing it
+ * changed the stored number and nothing on screen: 100% → 88.43% while it still rendered 864px. The next
+ * drag measured that same inflated edge, computed the same answer, and the block could never be narrowed
+ * again. Widening was a one-way door, and the neighbour could never be brought back up.
+ *
+ * The first line is where the user is working and must show the width they set. A LATER line exists only
+ * because something was pushed onto it, and there the fill is what they asked for — "when they move to the
+ * bottom, they should occupy the width of that row".
+ */
+/** Is this column the LAST on its stored line — the one whose right edge ends the line (#131, the pixel of slack)? */
+export function lastOnItsLine(parent: BoxNode, child: BoxNode): boolean {
+  const kids = (parent.children ?? []).filter((k) => !isFloating(k) && !k.hidden);
+  if (kids.length < 2) return false;
+  const lines = packRowLines(kids);
+  const at = kids.findIndex((k) => k.id === child.id);
+  if (at < 0) return false;
+  return !lines.some((l, i) => i > at && l === lines[at]);
+}
+/**
+ * DOES THIS BAND HOLD SPACE SOMEBODY CHOSE? (F-1, c-7 B.) Only a stored line whose shares leave room can: dragging the
+ * OUTER edge of a line inward is the one gesture that opens a space (rule 1), and it leaves that line's shares short of the
+ * whole. A band nobody sized holds none, and neither does one whose every line adds up to 100% — measured on three tier-80
+ * pages, hand-sized 16.74 / 26.38 / 56.86 and 24.67 / 75.32 lines WRAPPED at a laptop or a tablet because a longest word
+ * floored one column, and the line it left behind was a hole nobody made. Where nothing was chosen, a column may take
+ * what its line has left: the grow spends only what a wrap, a floor or a deleted column left.
+ */
+export function bandHoldsChosenSpace(band: BoxNode, bp: Breakpoint = "base"): boolean {
+  const kids = (band.children ?? []).filter((k) => !isFloating(k) && !k.hidden).map((k) => resolveResponsive(k, bp));
+  if (!kids.some((k) => k.widthByHand || (bp !== "base" && setAtRung(k, "width", bp)))) return false;
+  const lines = packRowLines(kids); const used = new Map<number, number>();
+  kids.forEach((k, i) => used.set(lines[i], (used.get(lines[i]) ?? 0) + widthPct(k.width) + (k.marginLeftPct ?? 0)));
+  return [...used.values()].some((v) => v < 99.5);
+}
+
+export function aloneOnItsLine(parent: BoxNode, child: BoxNode): boolean {
+  const kids = (parent.children ?? []).filter((k) => !isFloating(k) && !k.hidden);
+  if (kids.length < 2) return false;                    // the only child already fills the row by other means
+  const lines = packRowLines(kids);
+  const at = kids.findIndex((k) => k.id === child.id);
+  if (at < 0) return false;
+  return lines[at] > 0 && lines.filter((l) => l === lines[at]).length === 1;
+}
+
+/**
+ * BAND IS COMPACT — every stored line adds up to 100% (≥ 99.5%).
+ *
+ * When all lines are full, flex-grow=1 is safe: it spends only the sub-pixel remainder, never real space. A
+ * partial line (after a deletion, or when only some columns are present) must NOT grow — that is what turns a
+ * narrowing gesture into something the user cannot undo (the freed space is immediately taken back by grow).
+ * Single-column bands are excluded: a lone column fills its band by other means (width="100%" or basis).
+ */
+export function bandIsCompact(band: BoxNode, bp: Breakpoint = "base"): boolean {
+  const kids = (band.children ?? []).filter((k) => !isFloating(k) && !k.hidden).map((k) => resolveResponsive(k, bp));
+  if (kids.length < 2) return false;
+  const lines = packRowLines(kids);
+  const used = new Map<number, number>();
+  kids.forEach((k, i) => used.set(lines[i], (used.get(lines[i]) ?? 0) + widthPct(k.width) + (k.marginLeftPct ?? 0)));
+  return [...used.values()].every((v) => v >= 99.5);
+}
+
+
+/**
+ * THE REST A FOLLOWER BRINGS TO A DRAG — its remembered rest only when THIS block's drag made it (#77).
+ *
+ * A remembered rest exists so that one edge's round trip comes home: the block it squeezed or stretched is handed
+ * back exactly what it lost. Another edge's drag must not spend that memory. Measured through the UI, three columns
+ * sized 30 / 30 / 40 by dragging edge 2 (column 3 stretched from 33.34 to 40, remembering 33.34): taking edge 1 out
+ * by 60px shrank COLUMN 3 back towards 33.34 — not the nearest block — and bringing it back handed the space to column 2
+ * (the joined edge). Out and back ended 30 / 36.64 / 33.34. Nothing a user did asked for column 3 to change.
+ *
+ * So to any OTHER block's drag, a block away from its rest is simply the width it holds, at rest there: the nearest
+ * gives first as everywhere else, and the round trip comes home. The memory itself is kept unless this drag moves the
+ * block (the canvas writes nothing for a block whose width did not change), so edge 2's own round trip still works.
+ * A rest with no `restBy` predates this and is honoured as before, so no saved page changes on load.
+ */
+export function restForDrag(b: { rest?: number; at?: number; restBy?: string }, cur: number, draggedId: string): { rest: number; at?: number; foreign: boolean } {
+  // Any unit, so long as `rest` and `cur` share it — the canvas works in px, the replayed stories in %.
+  if (b.rest === undefined) return { rest: cur, at: undefined, foreign: false };
+  const foreign = b.restBy !== undefined && b.restBy !== draggedId;
+  return foreign ? { rest: cur, at: undefined, foreign } : { rest: b.rest, at: b.at, foreign };
+}
+
+/** One block after the dragged one, as `allocateLine` needs it — all in % of the row. */
+export type LineFollower = {
+  id: string; rest: number; floor: number; gap: number;
+  /** when it was squeezed (none = at rest) */ at?: number;
+  /** the width it HOLDS when the drag starts (defaults to `rest`) — what it keeps if it wraps (#53) */ cur?: number;
+  /** pushed below by THIS block (on its line when the drag began, or `wrapBy` names it) — owed its way home first */ pending?: boolean;
+  /** below since BEFORE this block's drags (another drag put it there) — it only comes back once every block before it on the line is back at its REST, never by squeezing them (#62) */ late?: boolean;
+};
+/**
+ * WHERE THE WIDTH COMES FROM when one block on a line is resized from its right edge — a pure function, so every
+ * row, width and drag position can be tested (decided with the user 2026-09-27, #43).
+ *
+ * `own` is the width the pointer asks for; `room` is the line from the dragged block's left edge to the row's end.
+ * The blocks after it (in order) share the rest:
+ *   • each takes its REST width while the line allows it;
+ *   • short of room, they give it back NEAREST FIRST — the next block shrinks to its floor, then the one after it;
+ *   • when even their floors do not fit, the LAST one wraps, then the next-to-last — only what no longer fits
+ *     moves down, and flexbox's order is respected (a later block can never stay while an earlier one wraps);
+ *   • the last block still on the line takes any leftover, so no hole opens.
+ * It used to wrap the IMMEDIATE neighbour — and, flexbox being ordered, everything after it — and then widen the
+ * dragged block to the whole line: an 80px drag in a row of four became a 770px jump. Only when nothing at all
+ * stays beside it does the dragged block fill the line, because then nothing else can.
+ *
+ * Stateless in the pointer: the answer depends only on `own` and each block's rest width, so dragging back to where
+ * the edge started returns every width exactly (rule 7).
+ */
+export function allocateLine(own: number, room: number, followers: LineFollower[], opts: {
+  fillWhenAlone?: boolean;
+  /**
+   * Space at the END of the line that belonged to nobody when the drag began, and the dragged block's width then.
+   * Widening SPENDS that space first; whatever of it is left stays empty rather than being handed to the last block —
+   * handing it over made a row that started with room at its end come home one block wider (#58, five stacks at 1024).
+   */
+  endSpace?: number; own0?: number;
+  /** End-of-line space this block's earlier widening SPENT, still owed back to the line's end (`endOwed`). */
+  owed?: number;
+} = {}): {
+  own: number; widths: Map<string, { width: number; rest?: number }>; wrapped: string[];
+  /** what the dragged block still owes the end of its line after this drag — store it as `endOwed` */ owed: number;
+} {
+  const r2 = (v: number) => Math.floor(v * 100 + 1e-6) / 100;
+  const widths = new Map<string, { width: number; rest?: number }>();
+  let a = Math.max(0, Math.min(room, own));
+  // The longest PREFIX whose floors (plus gaps) fit beside the dragged block.
+  const fit = (rem: number) => {
+    let k = 0, used = 0, usedAtRest = 0;
+    for (const f of followers) {
+      const need = Math.min(f.floor, f.rest) + f.gap;
+      // A LATE block needs the blocks before it at their rest, not squeezed to their floors, to make room for it —
+      // otherwise a block an earlier drag pushed below comes back by taking a neighbour's width (#62).
+      if (f.late ? usedAtRest + need > rem + 0.05 : used + need > rem + 0.05) break;
+      used += need; usedAtRest += (f.late ? need : Math.max(need, f.rest + f.gap)); k++;
+    }
+    return k;
+  };
+  const k = fit(room - a);
+  // Nothing can stay beside it — it fills the line rather than leave a hole. Not when they were ALREADY below
+  // before the drag (`fillWhenAlone: false`): then narrowing it is the user opening space, and it must be allowed
+  // to narrow a step at a time until the next one fits again (#6, #45).
+  if (k === 0 && followers.length && opts.fillWhenAlone !== false) a = room;
+  const rem = room - a;
+  const kept = followers.slice(0, k);
+  const wrapped = followers.slice(k);
+  // Start every kept block at its floor, then hand back towards REST from the FARTHEST first — the mirror of
+  // "nearest gives first", so the nearest block is the one that stays squeezed longest.
+  const w = kept.map((f) => Math.min(f.floor, f.rest));
+  let slack = rem - kept.reduce((s, f, i) => s + w[i] + f.gap, 0);
+  /**
+   * WHO GETS SPACE BACK FIRST — last squeezed, first restored (#53). Blocks at their rest come back first (farthest
+   * first, so the NEAREST is the one that gives first when this drag widens), then blocks an earlier drag squeezed,
+   * most recent first. Farthest-first alone gave a drag's space to a block an OLDER drag had squeezed: a round trip
+   * of the first block turned 341/459/224 into 342/342/341 even dragged back to the pixel it started from.
+   */
+  const order = kept.map((_, i) => i).sort((i, j) => {
+    const ai = kept[i].at, aj = kept[j].at;
+    if ((ai === undefined) !== (aj === undefined)) return ai === undefined ? -1 : 1;
+    if (ai !== undefined && aj !== undefined && ai !== aj) return aj - ai;
+    return j - i;
+  });
+  for (const i of order) { if (slack <= 0) break; const add = Math.min(slack, kept[i].rest - w[i]); w[i] += add; slack -= add; }
+  /**
+   * WHERE WHAT IS LEFT GOES — remembering where space came from, so every round trip comes home (#58, #59).
+   *
+   * WIDENING spends the empty space at the end of the line FIRST (a neighbour does not balloon into it, #59), and the
+   * block records what it spent (`owed`). If a neighbour wraps, the last block still on the line takes the rest, so no
+   * sudden gap opens.
+   *
+   * NARROWING is the exact mirror: squeezed blocks get their width back (above, most recent first), then the space this
+   * block once took from the END of the line goes back there, and only THEN does anything more go to the NEIGHBOUR
+   * ACROSS THE JOINED EDGE — the rule agreed with the user: shrinking a block hands its space to the block beside it.
+   * Handing everything to the neighbour made a row that began with room at its end come home one block wider; handing
+   * nothing to it left a gap at a joined edge. Both were measured.
+   */
+  const end0 = opts.endSpace ?? 0, owed0 = opts.owed ?? 0;
+  const widening = opts.own0 === undefined || a > opts.own0 + 1e-9;
+  let owed = owed0;
+  if (widening) {
+    const keepEmpty = opts.own0 === undefined ? 0 : Math.max(0, end0 - (a - opts.own0));
+    owed = owed0 + (opts.own0 === undefined ? 0 : end0 - keepEmpty);
+    slack -= Math.min(slack, keepEmpty);
+    if (kept.length && slack > 0) w[kept.length - 1] += slack;
+  } else {
+    const beyond = Math.max(0, slack - end0);          // what this narrowing freed past the space already empty
+    // …returned to the end of the line, up to what was taken from it — but only once the NEXT block is back on the line.
+    // While it still waits below, what this frees is ITS space on the way home, not the end's: paying the debt then
+    // spent it early, and the neighbour ballooned on its return (a 30/30 pair came home 30/46).
+    const waiting = wrapped.some((f) => f.pending);    // a block this one pushed below is not home yet
+    const back = kept.length && !waiting ? Math.min(beyond, owed0) : 0;
+    owed = owed0 - back;
+    slack -= Math.min(slack, end0 + back);
+    if (kept.length && slack > 0) w[0] += slack;       // the rest to the neighbour across the joined edge
+  }
+  // A block away from its rest width — squeezed OR stretched by taking the leftover — REMEMBERS it. Forgetting it
+  // when stretched made the leftover its new normal, and a round trip of separate drags came home 255/417/352 with
+  // the last block stranded below (#45, found by the HEADED UAT, 2026-09-27).
+  kept.forEach((f, i) => { const v = r2(w[i]); widths.set(f.id, { width: v, rest: Math.abs(v - f.rest) > 0.05 ? r2(f.rest) : undefined }); });
+  // A block that wraps KEEPS THE WIDTH IT HELD, and its memory — writing it back at its rest threw away a squeeze an
+  // earlier drag had made, so the round trip could not come home (#53, the matrix's "unequal" row).
+  wrapped.forEach((f) => { const c = f.cur ?? f.rest; widths.set(f.id, { width: r2(c), rest: Math.abs(c - f.rest) > 0.05 ? r2(f.rest) : undefined }); });
+  return { own: r2(a), widths, wrapped: wrapped.map((f) => f.id), owed: owed > 0.005 ? r2(owed) : 0 };
+}
+
+/**
+ * WHICH LINE OF A WRAPPING ROW EACH BLOCK LANDS ON — decided from the STORED widths, never by asking the page.
+ *
+ * The resize used to find a block's neighbour by looking for whatever was drawn on the same visual line. The
+ * moment the neighbour wrapped it stopped matching, so narrowing the block again released width to nobody —
+ * measured `nextSibId: null, gapPx: 200` from inside the drag — and a width round trip never came back
+ * (start 512 / 512, end 224 / 712). Rendered geometry is also timing-dependent, so two identical runs could
+ * disagree. The stored widths are the layout's own answer and are the same every time.
+ *
+ * ONE packing, shared by the renderer (`aloneOnItsLine`, which decides who grows) and the resize (which decides
+ * who shares a boundary), so the two can never disagree about where a line ends. A line breaks exactly where a
+ * BROWSER breaks it: over 100% (beyond float noise) is two lines — 100.4 wraps on the page, so it wraps here (#69).
+ * (A line a hair over — 100.01 — can still be DRAWN as one line inside #131's one-pixel slack; the drag never writes
+ * one, c-11b, and the user decided 2026-10-03 to leave this packing as it is, c-11a.)
+ */
+/**
+ * THE NARROWEST A COLUMN IN A ROW IS DRAWN (decided with the user 2026-09-27, #75). A column nobody has sized keeps the
+ * 14rem reflow floor, so rows of untouched columns still wrap into readable widths. A column the user SIZED BY HAND keeps
+ * the size they chose, down to 3rem — real sites are full of 10/90 label columns and six-across logo rows, and the 14rem
+ * floor made roughly 3,000 real sections impossible to build. On a PHONE every column stacks full-width (childStyle), so
+ * a narrow column is never squeezed there.
+ */
+export const REFLOW_FLOOR_REM = 14;
+export const HAND_FLOOR_REM = 3;
+export const floorRemOf = (k: BoxNode) => (k.widthByHand ? HAND_FLOOR_REM : REFLOW_FLOOR_REM);
+
+export function packRowLines(kids: BoxNode[], minPct: number | ((k: BoxNode) => number) = 0): number[] {
+  const out: number[] = [];
+  let used = 0, line = 0, count = 0;
+  for (const k of kids) {
+    // A gap on a line is a share of it too (`marginLeftPct`) — the browser counts it, so the packing must.
+    // `minPct` is the reflow floor as a share of THIS row (14rem at the width being shown): a block stored below it is
+    // DRAWN at it, and the browser wraps on what it draws. Omitted, the packing is the stored one (#58).
+    const w = Math.max(widthPct(k.width) || 100, typeof minPct === "function" ? minPct(k) : minPct) + (k.marginLeftPct ?? 0);
+    if (count && used + w > 100.001) { line++; used = 0; count = 0; }
+    out.push(line); used += w; count++;
+  }
+  return out;
+}
+
+/**
+ * ROWS OF FOUR OR MORE COLUMNS (decided with the user 2026-09-27, #78).
+ *
+ * A row the user dropped four or more columns into is a DESIGN — a logo strip, a four-up of courses, a five-column
+ * footer — and it stays one row on a desktop and a laptop. The 14rem reflow floor did not respect that: six columns
+ * wrapped 5 + 1 at 1280px and five wrapped 4 + 1 at 1024px, leaving one orphan under a full line. On those screens a
+ * column on such a line is floored at 3rem instead, like a column sized by hand.
+ *
+ * On a TABLET HELD UPRIGHT (600–900px) the line rearranges to at most three per line, BALANCED rather than filled
+ * first: 4 → 2 + 2, 5 → 3 + 2, 6 → 3 + 3, 7 → 3 + 2 + 2. Each column takes its share of its OWN line in proportion to
+ * the width it has on the desktop, so a 10 / 40 pair keeps its 1 : 4 look. On a phone every column stacks (#75).
+ *
+ * "A line" is a STORED line (`packRowLines` on the desktop widths), so a row the user already wrapped on purpose is
+ * rearranged line by line. A column with its own width set at the tablet keeps it — a per-device setting always wins.
+ */
+export const MANY_COLUMNS = 4;
+export const TABLET_MOST_ACROSS = 3;
+
+/** How many columns each line gets: as few lines as allow `most` across, and as even as they can be. */
+export function balancedLines(n: number, most = TABLET_MOST_ACROSS): number[] {
+  if (n <= 0) return [];
+  const lines = Math.ceil(n / most), each = Math.floor(n / lines), extra = n % lines;
+  return Array.from({ length: lines }, (_, i) => each + (i < extra ? 1 : 0));
+}
+
+/** The row band's in-flow columns AT a rung, in order — the set every line decision is made over. */
+function rowColumnsAt(parent: BoxNode, bp: Breakpoint): BoxNode[] {
+  return (parent.children ?? []).filter((k) => !isFloating(k) && !resolveResponsive(k, bp).hidden);
+}
+
+/** Is this column on a stored line of four or more (so it keeps its line on a desktop and a laptop)? */
+export function onManyColumnLine(parent: BoxNode, childId: string, bp: Breakpoint = "base"): boolean {
+  if (!parent.rowBand) return false;
+  const kids = rowColumnsAt(parent, bp);
+  const lines = packRowLines(kids);
+  const at = kids.findIndex((k) => k.id === childId);
+  return at >= 0 && lines.filter((l) => l === lines[at]).length >= MANY_COLUMNS;
+}
+
+/** The floor a column in a row band is DRAWN at, in rem — shared by `childStyle` and the canvas resize maths. */
+export function columnFloorRem(parent: BoxNode, child: BoxNode, bp: Breakpoint = "base"): number {
+  return onManyColumnLine(parent, child.id, bp) ? HAND_FLOOR_REM : floorRemOf(child);
+}
+
+/**
+ * Does this cell hold words or a card — anything but icons (c-11c, decided by the user 2026-09-29: B)? A table of ticks —
+ * one cell of words beside three cells of one icon each — is not four columns to rearrange on a tablet; a line of four is
+ * rearranged only when at least two of its cells hold more than an icon. The audit's L6 check takes the same rule.
+ */
+function holdsWords(cell: BoxNode): boolean {
+  return isContainer(cell) ? (cell.children ?? []).some(holdsWords) : cell.type !== "icon";
+}
+
+/** One column's place on a tablet: its share of its line (0–1), how many share that line, and their gap-margins (%). */
+export type TabletPlace = { share: number; across: number; marginsPct: number };
+
+/**
+ * Where each column of a row band sits on a TABLET HELD UPRIGHT, or `null` for a column that is not rearranged (not
+ * that rung, not a row band, a line of three or fewer, or a column whose tablet width the user set themselves).
+ */
+export function tabletPlaces(parent: BoxNode, bp: Breakpoint): Map<string, TabletPlace> | null {
+  // A page-grid row is held to the fit rule on every rung instead (`rowNarrowsAt`, G-1 #13): three across at most,
+  // balanced, gave 5 → 3 + 2 here — a staircase the user ruled out.
+  if (bp !== "tabletPortrait" || !parent.rowBand || (parent.direction ?? "column") !== "row" || gridBandOwnsGutter(parent)) return null;
+  const kids = rowColumnsAt(parent, bp);
+  const lines = packRowLines(kids);
+  const out = new Map<string, TabletPlace>();
+  for (let line = 0, from = 0; from < kids.length; line++) {
+    const onLine = kids.filter((_, i) => lines[i] === line);
+    from += onLine.length;
+    if (onLine.length < MANY_COLUMNS || onLine.filter(holdsWords).length < 2) continue;
+    /**
+     * A column the user sized AT the tablet is theirs, and keeps its place in the grouping: the lines are counted over
+     * EVERY column, and the free ones on a line share what the sized ones leave of it. Grouping only the free ones
+     * looked equivalent and is not — a tablet drag sizes the dragged column and its neighbour, and every line after
+     * them would be re-balanced without them, reshuffling the whole row under the pointer.
+     */
+    let i = 0;
+    for (const across of balancedLines(onLine.length)) {
+      const group = onLine.slice(i, i + across); i += across;
+      const own = (k: BoxNode) => setAtRung(k, "width", bp);
+      const free = group.filter((k) => !own(k));
+      const taken = group.filter(own).reduce((n, k) => n + widthPct(resolveResponsive(k, bp).width), 0);
+      const left = taken < 99 ? (100 - taken) / 100 : 1; // nothing left: the free ones share a line of their own
+      const total = free.reduce((n, k) => n + widthPct(k.width), 0) || 1;
+      const marginsPct = free.reduce((n, k) => n + (k.marginLeftPct ?? 0), 0);
+      for (const k of free) out.set(k.id, { share: (widthPct(k.width) / total) * left, across: free.length, marginsPct });
+    }
+  }
+  return out.size ? out : null;
+}
+
+/**
+ * The flex basis a rearranged column is drawn at: its share of what its line has left after its gap-margins, less
+ * the one gap its slot gives up (the band's gutter, `gutterCSS`). Floored to a thousandth of a percent so a line of shares can never add up to
+ * a hair over 100% and push its last column down; the `1` grow hands that thousandth back.
+ */
+export function tabletBasis(place: TabletPlace, gapPx: number): string {
+  const pct = Math.floor(place.share * (100 - place.marginsPct) * 1000) / 1000;
+  if (!gapPx) return `${pct}%`;
+  // The band's gap is a GUTTER (`gutterCSS`): each column's slot is its share of the line, and it gives up one gap.
+  return `calc((100% - ${place.marginsPct}%) * ${Math.floor(place.share * 1e5) / 1e5} - ${u(gapPx)})`;
+}
+
+export function flexForWidth(token?: string, fillsItsLine = false): string | undefined {
   if (token === "fill") return "1 1 0%";
   if (!token || token === "auto") return "0 0 auto";
-  return `0 1 ${token}`; // fixed share, but MAY SHRINK to fit — so a row's sections can never overflow / run off the page
+  /**
+   * `fillsItsLine` — A BLOCK ALONE ON A LINE GROWS TO FILL IT; one that shares a line keeps its share.
+   *
+   * Both halves come from the single `1` in the grow position, and that is the whole trick: `flex-grow`
+   * only ever spends space that is LEFT OVER on a line. Two blocks at 50% leave none, so they stay at 50%
+   * and "a resized block is exactly the size you set" still holds. A block wrapped onto a line by itself
+   * leaves 50% over, so it takes it.
+   *
+   * That is what makes widening a block and narrowing it again symmetrical: the neighbour drops to the next
+   * line and spreads to fill it, then comes back up to its own share, and nothing was moved or remembered
+   * to achieve either. Only row bands ask for this — a row that cannot wrap has no "alone on its line".
+   */
+  return `${fillsItsLine ? 1 : 0} 1 ${token}`; // fixed share, but MAY SHRINK to fit — so a row's sections can never run off the page
 }
 
 /**
@@ -3159,9 +4812,11 @@ export function isDefiniteLen(token?: string): boolean {
   return lenToPx(token) !== null;
 }
 
-export function remLen(px: number, rootPx = 16): string {
-  return `${Math.round((px / (rootPx || 16)) * 1000) / 1000}rem`;
-}
+/**
+ * Re-exported from the token module, where it now lives beside the radius and shadow scales that need it.
+ * Defined only there, so the token system and the block model convert lengths the same way by construction.
+ */
+export { remLen };
 
 /** The document's root font size — the basis for every rem the editor writes. */
 export function rootFontPx(): number {
@@ -3169,9 +4824,20 @@ export function rootFontPx(): number {
   return parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
 }
 
+/**
+ * A Divider's line thickness — ONE answer for the canvas and the export (R-23, L3-l): rem, except a 1px hairline.
+ * Plain rem, NOT the fluid `u()`: measured in the headed pass, `u(12)` drew 8px on a phone and 16.8px on a wide screen —
+ * a line is the thickness the user chose; it grows with their text size, not with the screen.
+ */
+export const dividerThickness = (node: BoxNode): string => (!node.borderWidth ? "0.125rem" : node.borderWidth === 1 ? "1px" : remLen(node.borderWidth));
+
 export function u(px: number): string {
   return `calc(var(--box-u, 0.625rem) * ${+(px / 10).toFixed(4)})`;
 }
+
+/** The space under every item of a List, in the spacing unit — ONE number for the canvas and the export (#135): the
+ *  canvas had it and the published page did not, so a List was shorter in the Preview than it was drawn. */
+export const LIST_ITEM_GAP = 4;
 
 /**
  * The page base unit as a FLUID length: `clamp(minRem, cqw, maxRem)`.
@@ -3183,8 +4849,119 @@ export function u(px: number): string {
 export function baseUnit(baseFontPx = 10): string {
   const lo = +((baseFontPx * 0.7) / 16).toFixed(4);   // rem floor (≈0.7× base)
   const hi = +((baseFontPx * 1.4) / 16).toFixed(4);   // rem ceiling (≈1.4× base)
-  const cqw = +(baseFontPx / 10).toFixed(4);          // 1cqw ≈ base at a 1000px-wide container
-  return `clamp(${lo}rem, ${cqw}cqw, ${hi}rem)`;
+  /**
+   * THE IDEAL TERM CARRIES A `rem`, AND IT DID NOT USED TO — which is how the whole page stopped listening to
+   * the reader's own text size.
+   *
+   * It was a bare `1cqw`. The floor and the ceiling are rem, so they follow a reader who has enlarged their
+   * browser text — but between them, which is nearly always, the unit was 1% of the CONTAINER and knew nothing
+   * about font size at all. Measured on the exported page at 1280px wide:
+   *
+   *     reader 16px → section padding 2.56px      reader 24px → 2.56px      reader 32px → 2.8px
+   *
+   * Setting the browser to 24px changed the spacing of the page by NOTHING. Text scaled (it has its own rem
+   * floor); every gap, pad, radius and offset in the product did not. That is the opposite of what
+   * `--box-u` exists for, and it silently failed the accessibility promise the 62.5% note in the Responsive
+   * Field Guide makes explicitly — the whole design is supposed to scale WITH the reader's preference.
+   *
+   * The Field Guide's own formula was right all along and this was not following it: `clamp(2rem, 1rem + 5vw,
+   * 4.5rem)` — the ideal is a rem PLUS a viewport term, never a viewport term alone.
+   *
+   * SPLIT HALF AND HALF at the reference width, so the unit is unchanged where it was calibrated: at a
+   * 1000px container with a 16px reader, `base/32 rem` = base/2 px and `base/20 cqw` = base/2 px, which sum
+   * to exactly the `baseFontPx` this has always resolved to. Narrower and wider it now moves a little less
+   * with the container and a great deal more with the reader, which is the trade this is for.
+   */
+  const { remHalf, cqwHalf } = baseUnitParts(baseFontPx);
+  return `clamp(${lo}rem, calc(${remHalf}rem + ${cqwHalf}cqw), ${hi}rem)`;
+}
+
+/**
+ * THE FLUID UNIT'S FOUR NUMBERS, IN ONE PLACE — because there are two consumers and they must never drift.
+ *
+ * `baseUnit()` writes them as a CSS `clamp()`; the canvas's `measureBoxU` resolves the same formula to a live
+ * pixel value so an edge-anchored drag can convert a measured offset into the stored unit. Those were two
+ * hand-written copies of one rule, and the day the CSS gained its rem term the JavaScript kept the old bare
+ * `cqw` — so the drag did its arithmetic in a unit the page was not using, and the anchored bottom edge
+ * drifted 3px. Rule 19, broken a fourth time, by a seam rather than by the resize logic.
+ *
+ * One definition, two renderings of it. The same remedy the Hub records for every other case of this:
+ * collapse onto one emitter rather than fix both.
+ */
+export function baseUnitParts(baseFontPx = 10): { loRem: number; hiRem: number; remHalf: number; cqwHalf: number } {
+  return {
+    loRem: +((baseFontPx * 0.7) / 16).toFixed(4),   // rem floor (≈0.7× base)
+    hiRem: +((baseFontPx * 1.4) / 16).toFixed(4),   // rem ceiling (≈1.4× base)
+    remHalf: +(baseFontPx / 32).toFixed(4),         // half the unit, in rem — follows the READER
+    cqwHalf: +(baseFontPx / 20).toFixed(4),         // the other half, in cqw — follows the CONTAINER
+  };
+}
+
+/** A body-text floor, in rem, below which no reading size may be emitted — the browser's own default. */
+export const TEXT_FLOOR_REM = 1;
+
+/**
+ * READING SIZE IS NOT A SPACING SIZE — the same lesson as `scrollLen` above, on the axis that matters most.
+ *
+ * `--box-u` is the right unit for a gap or a padding: on a narrow screen those SHOULD close up. Text must
+ * not, and while the text size was simply `u(16)` it did, all the way down. Measured on the exported page at
+ * ten widths:
+ *
+ *     320px → 11.2px    375px → 11.2px    414px → 11.2px    619px → 11.2px    768px → 12.3px
+ *     1024px → 16.4px   1280px → 20.5px   1536px → 22.4px   1920px → 22.4px
+ *
+ * Every phone, and a Fold opened out, rendered body copy at 11.2px — and the roles are multiples of this
+ * one value, so a button label came out at 0.875 × 11.2 = 9.8px. Reported as content "becoming smaller" as
+ * the preview narrows, which is exactly what it was doing.
+ *
+ * The fluid growth is kept, because that part was right: text still tracks the container's width through
+ * `cqw`, and still tops out at the same ceiling, so nothing changes at 1024px and above. Only the bottom is
+ * held — at `1rem`, the reader's own default size, so it honours a browser text setting instead of
+ * overriding it. Above ~1000px the fluid term wins and this floor is invisible.
+ *
+ * `max()` rather than a wider `clamp()` on purpose: the ceiling already lives inside `--box-u`, so the floor
+ * is the only thing being added, and a page's `baseFont` still scales the whole ramp.
+ */
+/**
+ * A SIZE SOMEBODY GAVE TEXT, with a readable floor (#107). Explicit sizes were written in the SPACING unit, which is 0.7× on
+ * a phone and has no floor: a card title of 22 drew at 15.4px (smaller than the 16px body beside it) and a caption of 14
+ * at 9.8px — measured on a dressed page at 375px. Reading size is not a spacing size (see `textUnit`).
+ *
+ * The size stays fluid, but never below a floor in rem — so a reader's own text size still moves it (WCAG 1.4.4):
+ * a size of 16 or less never shrinks below itself; a larger one keeps at least half of what it has above 16. So on a
+ * phone a 22 title is 19, a 44 stat 30 — still above body text, in the same order: the hierarchy survives.
+ */
+export function textLen(px: number): string {
+  const floorPx = px <= 16 ? px : 16 + (px - 16) / 2;
+  return `max(${+(floorPx / 16).toFixed(4)}rem, ${t(px)})`;
+}
+
+export function textUnit(): string {
+  return `max(${TEXT_FLOOR_REM}rem, ${t(16)})`;
+}
+
+/**
+ * TYPE SCALES WITH THE PAGE, SPACING WITH THE BOX (decided with the user 2026-09-28, option A of #133).
+ *
+ * `--box-u` is the SPACING unit and is meant to be read per box: 1% of the nearest container, so a card's padding
+ * tightens in a narrow column. Type used the same unit — so a section heading in a 30% sidebar drew 19px while a card's
+ * title in a wide band drew 20px, and a page title in a 55% hero column came out under the section headings below it.
+ * The design rules make hierarchy a PAGE decision (Rule #7): an h2 is one size wherever it sits.
+ *
+ * So type has its own unit, `--box-t`: the same fluid formula, but REGISTERED (`@property`, syntax `<length>`) and set on
+ * the page root — a registered length is computed where it is declared, so its `cqw` reads the page's frame (the
+ * editor's frame is a size container; a published page's root has none above it and reads the viewport), and every box
+ * inherits the resolved length rather than the formula. Both engines emit the registration (`TYPE_UNIT_PROPERTY_CSS`)
+ * and set the root value (`baseUnit`); a browser without `@property` falls back to the inherited formula, which is what
+ * it had before.
+ */
+// …and the columns' GUTTER, `--bx-gut` (E0-e): a band is a size container, so `--box-u`'s `cqw` read the section outside
+// it for the band's reach and the BAND for its columns' margins — 16.07px out, 11.2px back, a column 5px past its section
+// in every narrow one. Registered, it resolves once on the band and the columns inherit that length.
+export const TYPE_UNIT_PROPERTY_CSS = "@property --box-t{syntax:'<length>';inherits:true;initial-value:0px}"
+  + "@property --bx-gut{syntax:'<length>';inherits:true;initial-value:0px}";
+export function t(px: number): string {
+  return `calc(var(--box-t, var(--box-u, 0.625rem)) * ${+(px / 10).toFixed(4)})`;
 }
 
 /**
@@ -3195,20 +4972,686 @@ export function baseUnit(baseFontPx = 10): string {
  * them — which is the commonest grid there is: cards with air between the columns and less between the rows.
  */
 export function gapCSS(node: BoxNode): CSSProperties {
-  const base = node.gap ?? 16;
-  const x = node.gapX ?? base, y = node.gapY ?? base;
+  const d = spaceDefaults(node);
+  const base = node.gap;
+  const x = node.gapX ?? base ?? d.gapX, y = node.gapY ?? base ?? d.gapY;
+  // across is the columns' gutter (`gutterCSS`), resolved ONCE here on the band as `--bx-gut` (E0-e)
+  if (node.rowBand && x > 0) {
+    const gut = bandGutter(node);
+    return { columnGap: u(0), rowGap: u(y), ...(gut > 0 ? { ["--bx-gut" as string]: u(gut) } : {}) } as CSSProperties;
+  }
   return x === y ? { gap: u(x) } : { columnGap: u(x), rowGap: u(y) };
 }
 
-/** Per-side padding CSS (responsive rem): a side override falls back to the general `padding`, then 0. */
-export function paddingCSS(node: BoxNode): CSSProperties {
-  const p = node.padding ?? 0;
-  return {
-    paddingTop: u(node.paddingTop ?? p),
-    paddingRight: u(node.paddingRight ?? p),
-    paddingBottom: u(node.paddingBottom ?? p),
-    paddingLeft: u(node.paddingLeft ?? p),
+/**
+ * SPACE BY DEFAULT — words never touch an edge (CLAUDE.md rule 3; the user, 2026-09-29). In stored px, emitted
+ * through `u()` like every other spacing value, so it is rem with a fluid term and the canvas and the export agree.
+ * The values are the user's decision of 2026-09-29; the header/footer bar and "a box you cannot see gets no padding"
+ * are theirs of 2026-09-30.
+ */
+// section: 4rem → 1rem, the user 2026-09-30 ("the heading is too far from the top… 2rem is too much"); columns 1.5rem →
+// 1rem the same day ("do one rem… and let the user decide to update the gap as they want").
+export const SPACE_DEFAULT = { gutter: 32, section: 16, bar: 16, stack: 16, columns: 16, inner: 24 } as const;
+
+/**
+ * THE PAGE GRID'S DEFAULTS (AC-37b, the user 2026-10-04: "the whole page to design… a default margin… very minimum, not
+ * too much"). The grid runs edge to edge, so the side space is only the sections' own padding: 23 is ≥ 1 rem on a 360
+ * phone (the page audit's floor — words never touch the edge) rising to ≈ 2 rem wide, against 32's 1.4 → 2.8 rem. The
+ * gap between blocks, 17, is ≥ 0.75 rem on a phone (chosen in a headed test of 0.6 / 0.75 / 1 rem: 0.6 left tiles nearly
+ * touching, 1 squeezed the cards) → ≈ 1.5 rem wide. Same fluid unit as everything else, so every geometry stays exact.
+ * Only blocks of a page-grid page (`onPageGrid`) read these; a page saved before keeps `SPACE_DEFAULT`.
+ */
+export const SPACE_GRID = { ...SPACE_DEFAULT, gutter: 16, columns: 17 } as const; // gutter: the FRAME's value in the arithmetic (`frameCss` draws it)
+
+/**
+ * THE PAGE'S FRAME (BATCH G-3c, the user 2026-10-04: "1 rem, growing a little" — and "the same for the bottom, the right, the left").
+ * The page grid's side space by default, at all four edges of the page. A number of the fluid unit cannot be it — the unit doubles
+ * from a phone to a wide screen, so 1 rem on a phone was 2 rem wide (the 23 it replaces: 1 → 1.6 → 2 rem) — so it is its own
+ * length: 1 rem on a 360 phone (the page audit's floor), ~1.14 rem at 1280, 1.25 rem from ~1500 up; rem with a fluid term (rule 16).
+ * The site's own side space, once set (0 included), is drawn as set. `SPACE_GRID.gutter` (16) is the same frame in the arithmetic;
+ * where the arithmetic has to be exact at a width, `frameRemAt` gives it.
+ */
+export const FRAME_CSS = "clamp(1rem, calc(var(--box-u, 0.625rem) * 1.6), 1.25rem)";
+/** The frame as CSS for a block of a page-grid page — the ONE emitter of the side space there. */
+export const frameCss = (node: BoxNode): string => (node.gridSpace?.gutter !== undefined ? u(node.gridSpace.gutter) : FRAME_CSS);
+/**
+ * THE FRAME AT THE PAGE'S TOP AND BOTTOM (G-3c (1), the user: "do the same thing for the bottom"). A page-grid page keeps the frame
+ * above its first section and below its last — except where that section is coloured or a picture, which still reaches the edge
+ * (its words keep their space inside it). Saved pages (no `pageGrid`) are untouched.
+ */
+export function pageFrameEnds(root: BoxNode): CSSProperties {
+  if (!root.pageGrid) return {};
+  const bands = (root.children ?? []).filter((b) => !b.hidden && !isFloating(b));
+  const bleeds = (band?: BoxNode) => !!band && (hasVisibleEdge(band) || (band.children ?? []).filter((c) => !isFloating(c)).every((c) => (!selfPaints(c) && !c.preset && hasVisibleEdge(c)) || BLEEDS.has(c.type))); // a Card or a Button keeps its frame outside its box (G3c-2)
+  return { ...(bleeds(bands[0]) ? {} : { paddingTop: frameCss(root) }), ...(bleeds(bands[bands.length - 1]) ? {} : { paddingBottom: frameCss(root) }) };
+}
+/**
+ * WHAT A VALUE OF THE FLUID UNIT REALLY IS, phone → wide (G3c-1, G3c-10; the user 2026-10-05: "phone → wide range"). Spacing and sizes
+ * are numbers of `--box-u` / `--box-t`, which run from 0.4375 to 0.875 rem per 10 — read as "value ÷ 16 rem" every slider claimed a
+ * size it has on no screen ("Text size 1rem" is 0.7 rem on a phone, 1.4 rem wide). The ONE way a label says it.
+ */
+export function fluidRemRange(v: number): string {
+  const { loRem, hiRem } = baseUnitParts(); const a = +((v / 10) * loRem).toFixed(2), b = +((v / 10) * hiRem).toFixed(2);
+  return a === b ? `${a}rem` : `${a}–${b}rem`;
+}
+/** The fluid unit in rem on a page `w` rem wide (`--box-u`). */
+const unitRemAt = (w: number) => { const { loRem, hiRem, remHalf, cqwHalf } = baseUnitParts(); return Math.min(hiRem, Math.max(loRem, remHalf + (cqwHalf * w) / 100)); };
+/** The frame in rem on a page `w` rem wide — exactly what `frameCss` draws there. */
+export const frameRemAt = (node: BoxNode, w: number): number => (node.gridSpace?.gutter !== undefined ? (node.gridSpace.gutter / 10) * unitRemAt(w) : Math.min(1.25, Math.max(1, 1.6 * unitRemAt(w))));
+
+/** A page grid's own side space (`gutter`) and gap between blocks (`gap`), set in its panel (G-2) — stored fluid units. */
+export interface GridSpace { gutter?: number; gap?: number; gapX?: number; gapY?: number; cols?: Partial<Record<Breakpoint, number>> } // `gapX` / `gapY`: across / down when they differ (G-3b (5)); `cols`: columns per screen, when not the default (G-3b)
+
+/** The defaults a block reads: the page grid's on a page-grid page (with the site's own side space and gap), else the
+ *  ones it was made with. The ONE place both the canvas and the export read them. */
+const spaceFor = (node: BoxNode) => {
+  if (!node.onPageGrid) return SPACE_DEFAULT;
+  const g = node.gridSpace;
+  if (!g) return SPACE_GRID;
+  const x = g.gapX ?? g.gap, y = g.gapY ?? g.gap; // "Space between columns" / "…rows" (G-3b (5))
+  return { ...SPACE_GRID, ...(g.gutter !== undefined ? { gutter: g.gutter } : {}), ...(x !== undefined ? { columns: x } : {}), ...(y !== undefined ? { stack: y } : {}) };
+};
+
+/** The side space a page's sections keep by default — what the layout guides draw as padding (G-2). Stored fluid units. */
+export const pageSideSpace = (root: BoxNode): number => spaceFor({ onPageGrid: !!root.pageGrid, gridSpace: root.gridSpace } as BoxNode).gutter;
+
+const sameSpace = (a?: GridSpace, b?: GridSpace) => a?.gutter === b?.gutter && a?.gap === b?.gap && a?.gapX === b?.gapX && a?.gapY === b?.gapY && JSON.stringify(a?.cols) === JSON.stringify(b?.cols);
+
+/** A page-grid page with the side space and gap `space` (`undefined` = the defaults) — the root keeps it for the blocks
+ *  dropped later, and every block takes it now. Returns the SAME tree when nothing changes. */
+export function withGridSpace(root: BoxNode, space: GridSpace | undefined): BoxNode {
+  if (!root.pageGrid || sameSpace(root.gridSpace, space)) return markPageGrid(root);
+  const next: BoxNode = { ...root };
+  if (space) next.gridSpace = space; else delete next.gridSpace;
+  return markPageGrid(next);
+}
+
+/**
+ * Marks every spaced block of a page-grid page as belonging to it (AC-37b) — run where the editor commits a page, so a
+ * block dropped, pasted or moved onto the page takes the page grid's spacing. Returns the SAME tree when nothing changes.
+ */
+export function markPageGrid(root: BoxNode): BoxNode {
+  if (!root.pageGrid) return root;
+  const mark = (n: BoxNode, onPage: boolean): BoxNode => {
+    const kids = n.children?.map((k) => mark(k, n === root));
+    const changedKids = !!kids && kids.some((k, i) => k !== n.children![i]);
+    const needs = n !== root && n.spaced && (!n.onPageGrid || !sameSpace(n.gridSpace, root.gridSpace));
+    // a row band straight on the page is drawn on the page's lines (G-3b); moved into a column, it is a flex row again
+    const row = onPage && !!n.rowBand;
+    if (!needs && !changedKids && !!n.pageRow === row) return n;
+    const out: BoxNode = { ...n, ...(needs ? { onPageGrid: true } : {}), ...(changedKids ? { children: kids } : {}) };
+    if (needs) { if (root.gridSpace) out.gridSpace = root.gridSpace; else delete out.gridSpace; }
+    if (row) out.pageRow = true; else delete out.pageRow;
+    return out;
   };
+  return mark(root, false);
+}
+
+/** A box someone can SEE the edge of — a background, a picture, a colour scheme or a border. A Divider's `borderWidth`
+ *  is its LINE's thickness, not a box edge: read as one, it padded the line 28px in from the words beside it (L3-r). */
+export function hasVisibleEdge(node: BoxNode): boolean {
+  return !!(node.background || node.bgImage || node.bgOverlay || (node.borderWidth && node.type !== "divider"));
+}
+
+/** Blocks that are pictures, not words: they may bleed to the page edge, so a section gutter never pushes them in. */
+const BLEEDS = new Set<BoxType>(["image", "video", "embed", "spacer", "divider"]);
+
+/**
+ * The space a block has when nobody has set it. Only blocks made since space-by-default (`spaced`) have any:
+ * a page saved before it keeps exactly the spacing it had (the user, 2026-09-29), including the old 16px gap
+ * an unset container gap always meant. Scaffolding (the page root, a row band) never has any — its space
+ * belongs to the blocks inside it.
+ *
+ * `section` = this block sits directly in a band of the page (a section of the page): it keeps the side gutter
+ * and the space above and below. Deeper blocks never do, so a section inside a section is not inset twice.
+ */
+export function spaceDefaults(node: BoxNode, section: SectionFlag = false): { pad: [number, number, number, number]; gapX: number; gapY: number; framed?: boolean } {
+  if (!node.spaced) return { pad: [0, 0, 0, 0], gapX: 16, gapY: 16 };
+  const S = spaceFor(node);
+  const scaffold = !!node.rowBand;
+  const across = node.layout === "grid" || (node.direction ?? "column") === "row";
+  // A band's gap across is its columns' gutter (`gutterCSS`), and down is the space between lines once they wrap or
+  // stack (the user, 2026-09-30: "1rem down too").
+  const gapX = across ? S.columns : S.stack;
+  // DOWN IS ALWAYS "SPACE BETWEEN ROWS" (G-3b (5), the user's split, 2026-10-04): a Row's wrapped lines too, not its gap across.
+  // On a saved page the two defaults are both 16, so nothing it publishes changes.
+  const gapY = S.stack;
+  // A self-painting block's own padding is part of its design (`componentBoxCss` draws only what is set), so its
+  // default is 0 — its section space lives OUTSIDE it (`outerDefaults`), and the control never shows space not drawn (S2-a).
+  if (scaffold || selfPaints(node)) return { pad: [0, 0, 0, 0], gapX, gapY };
+  // A Divider breathes ABOVE and BELOW only: its line stays level with the words beside it (L3-r), and a 1px line is
+  // still a box a hand can drop under — with no space it was 3px tall and "cannot drop under" in the headed pass (L3-s).
+  if (node.type === "divider") return { pad: [S.stack / 2, 0, S.stack / 2, 0], gapX, gapY };
+  const inner = hasVisibleEdge(node) ? S.inner : 0;
+  if (section && !BLEEDS.has(node.type) && !node.preset) { // a Card or a Quote is spaced OUTSIDE its box (`outerSpaceCSS`)
+    // The page's header and footer are BARS, not bands: 1rem above and below keeps a logo and a menu breathing
+    // without a tall strip (the user, 2026-09-30). The side gutter is the page's, like any section.
+    const bar = node.tag === "header" || node.tag === "footer";
+    // In a row of the page that OWNS the side space (a page-grid row of 2+ columns, `gridBandOwnsGutter`) a column keeps
+    // none at its sides: neighbours sit one gap apart, the page's edges keep the side space (G-1 #6).
+    const s = Math.max(bar ? S.bar : S.section, inner), g = section === "gridBand" ? inner : Math.max(S.gutter, inner);
+    // its sides ARE the page's frame on a page-grid page (G-3c) — drawn by `frameCss`, not as a number of the fluid unit
+    return { pad: [s, g, s, g], gapX, gapY, framed: !!node.onPageGrid && section !== "gridBand" && g === S.gutter };
+  }
+  return { pad: [inner, inner, inner, inner], gapX, gapY };
+}
+
+/** Blocks that paint their own element (a component, a button): the wrapper around them stays transparent. */
+export function selfPaints(node: BoxNode): boolean {
+  return node.type === "component" || node.type === "button";
+}
+
+/** Where a page section's content sits: straight on the page, or as a column of a band of the page. */
+export type SectionPlace = "page" | "band";
+
+/**
+ * The space OUTSIDE a block that paints its own box — a component, a button, or a component built as a tree (a
+ * Card, a Quote…) — when it is a section of the page (S-2 (5), the user 2026-09-30): the section space above and
+ * below, and on the page the gutter at the sides (in a band the columns' gutter already spaces them across). So
+ * blocks one under another never touch, and two coloured sections, which paint no box of their own, still meet.
+ * Shown as Outer spacing's default; deeper blocks are spaced by their parent's gap.
+ */
+export function outerDefaults(node: BoxNode, place?: SectionPlace | false): [number, number, number, number] {
+  if (!place || !node.spaced || !(selfPaints(node) || node.preset)) return [0, 0, 0, 0];
+  const S = spaceFor(node), s = S.section, g = place === "page" ? S.gutter : 0;
+  return [s, g, s, g];
+}
+
+/**
+ * `outerDefaults` as CSS: a MARGIN on each side the user has not set (a side they set is `marginCSS`'s), and a
+ * block that fills the line gives the side margins back from its width, so it never runs past the page.
+ * Applied last, over the block's own sizing, by the canvas and the export alike.
+ */
+export function outerSpaceCSS(node: BoxNode, place: SectionPlace | false | undefined): CSSProperties {
+  const d = outerDefaults(node, place);
+  const out: CSSProperties = {};
+  let across = 0;
+  const framed = place === "page" && !!node.onPageGrid; // its sides are the page's frame (G-3c)
+  const sides: string[] = [];
+  (["Top", "Right", "Bottom", "Left"] as const).forEach((k, i) => {
+    if (!d[i] || (node[`margin${k}`] ?? node.margin) !== undefined) return;
+    out[`margin${k}`] = i % 2 && framed ? frameCss(node) : u(d[i]);
+    if (i % 2) { across += d[i]; sides.push(out[`margin${k}`] as string); }
+  });
+  if (across) {
+    out.maxWidth = framed ? `calc(100% - ${sides.join(" - ")})` : `calc(100% - ${u(across)})`;
+    if (node.width === "100%") out.width = out.maxWidth; // `childStyle` writes a stored 100% as width: 100%
+  }
+  return out;
+}
+
+/**
+ * A BAND OF THE PAGE THAT HOLDS A COMPONENT keeps the page gutter (S2-f). Everything dropped on the page lands as a
+ * column of such a band, whose gutter puts its outer columns flush with the page edges — right for a coloured section,
+ * which bleeds, but a Card or a Button then touched the edge. The inset is the band's, not the column's, so the band's
+ * gap arithmetic (`gutterCSS`) and the canvas resize's slot measurement are untouched. It steps aside once a component
+ * in it has its Outer spacing across set (0 included).
+ * ponytail: a coloured section sharing a band with a component is inset with it.
+ */
+export function pageBandInset(band: BoxNode, onPage: boolean): CSSProperties {
+  if (!onPage || !band.rowBand || isPageRow(band)) return {}; // a row of the page: the side space is its blocks' (G-3b)
+  // A menu line on the page is ONE section: the gutter at its ends and the section space above and below (F1-d).
+  const S = spaceFor(band);
+  if (gridBandOwnsGutter(band)) return { paddingLeft: u(rowSide(band, "left")), paddingRight: u(rowSide(band, "right")) };
+  const side = band.onPageGrid ? frameCss(band) : u(S.gutter); // the page's frame on a page-grid page (G-3c)
+  if (isMenuLine(band)) return { paddingLeft: side, paddingRight: side, paddingTop: u(S.section), paddingBottom: u(S.section) };
+  const needs = (band.children ?? []).some((c) => c.spaced && (selfPaints(c) || c.preset)
+    && c.margin === undefined && c.marginLeft === undefined && c.marginRight === undefined);
+  return needs ? { paddingLeft: side, paddingRight: side } : {};
+}
+
+/**
+ * A BAR PINNED TO THE PAGE COVERS WHAT SCROLLS UNDER IT (F1-b, tier-80 page 13, seen on the canvas and in the Preview): a
+ * header with no colour of its own let the page's words show through its logo ("Hillside School" over a heading), and at
+ * the same z as a sticky sidebar in a section, the sidebar's card painted over it once its row ended. So it takes the
+ * page's own colour when it has none, and one step above the sticky tier — the page's bar is outermost. Applied LAST in
+ * both engines, after the band's own style, which carries the pin's z.
+ */
+export function pagePinCover(band: BoxNode, onPage: boolean): CSSProperties {
+  const pinned = onPage && band.rowBand ? bandCarriesPin(band) : null;
+  if (!pinned) return {};
+  const painted = band.background || band.bgImage || pinned.background || pinned.bgImage;
+  return painted ? { zIndex: PAGE_Z.sticky + 1 } : { zIndex: PAGE_Z.sticky + 1, backgroundColor: "var(--eu-color-bg)" };
+}
+
+/** Where `id` sits as a page section — the inspector's question, answered as the canvas and export answer it. */
+export function sectionPlaceIn(root: BoxNode, id: string): SectionPlace | undefined {
+  const p = findParent(root, id);
+  if (!p || !isSectionContentIn(root, id)) return undefined;
+  return p.parent.rowBand ? "band" : "page";
+}
+
+/** One side's inner spacing in stored px, default included — for the geometry that has to agree with `paddingCSS`. */
+export function padSide(node: BoxNode, side: "Top" | "Right" | "Bottom" | "Left", section: SectionFlag = false): number {
+  const i = { Top: 0, Right: 1, Bottom: 2, Left: 3 }[side];
+  return node[`padding${side}`] ?? node.padding ?? spaceDefaults(node, section).pad[i];
+}
+
+/** The gap across and down in stored px, default included — the same numbers `gapCSS` emits. */
+export function gapOf(node: BoxNode): { x: number; y: number } {
+  const d = spaceDefaults(node);
+  return { x: node.gapX ?? node.gap ?? d.gapX, y: node.gapY ?? node.gap ?? d.gapY };
+}
+
+/** Per-side padding CSS (responsive rem): a side override falls back to the general `padding`, then the default. */
+export function paddingCSS(node: BoxNode, section: SectionFlag = false): CSSProperties {
+  const { pad: [t, r, b, l], framed } = spaceDefaults(node, section);
+  const p = node.padding;
+  const side = (own: number | undefined, d: number) => (own ?? p) !== undefined ? u((own ?? p)!) : framed ? frameCss(node) : u(d);
+  return {
+    paddingTop: u(node.paddingTop ?? p ?? t),
+    paddingRight: side(node.paddingRight, r),
+    paddingBottom: u(node.paddingBottom ?? p ?? b),
+    paddingLeft: side(node.paddingLeft, l),
+  };
+}
+
+/**
+ * Inner spacing on a block that is NOT a container (a Heading, Text, Link, Image, Icon…), which had none at all
+ * (c-23). Only emitted when there is some, so a page saved before this publishes byte for byte what it did.
+ * A self-painting block (button, component) keeps its padding on its own element: its padding is part of its
+ * design. Its section space is OUTSIDE the painted box — see `outerSpaceCSS`.
+ */
+export function leafPaddingCSS(node: BoxNode, section: SectionFlag = false): CSSProperties {
+  if (isContainer(node)) return {};
+  if (selfPaints(node)) return {};
+  const s = paddingCSS(node, section);
+  return Object.values(s).every((v) => v === u(0)) ? {} : s;
+}
+
+/**
+ * Is this block the CONTENT of a page section — the thing that keeps the side gutter and the section space?
+ * A block in a band of the page, or a block sitting straight on the page. Never the band itself (scaffolding),
+ * and never anything deeper, so a section inside a section is not inset twice.
+ */
+export function isSectionContentIn(root: BoxNode, id: string): SectionFlag {
+  const p = findParent(root, id);
+  if (!p) return false;
+  const node = p.parent.children![p.index];
+  return sectionContent(node, p.parent.id === root.id, !!p.parent.rowBand && (root.children ?? []).some((c) => c.id === p.parent.id), p.parent);
+}
+
+/**
+ * Is a block a SECTION of the page — and, on the page grid, a column of a row that owns the side space (G-1 #6)?
+ * Truthy either way, so every "is it a section" check is unchanged; only the side space reads the difference.
+ */
+export type SectionFlag = boolean | "gridBand";
+
+/** A row of a page-grid page with 2+ columns keeps the page's side space at its OUTER edges (`pageBandInset`), so its
+ *  columns sit one gap apart instead of two side spaces and a gap — 80px apart against 30px to the edge, seen at 1536
+ *  in the HEADED UAT. It stays when the columns stack, because it is the row's, not the columns'. */
+export function gridBandOwnsGutter(band: BoxNode): boolean {
+  return !!band.onPageGrid && !!band.rowBand && bandGutter(band) > 0;
+}
+
+/**
+ * EDGE TO EDGE (the user, 2026-10-04, G-3 (1)): the page grid's first and last columns are ordinary columns, and the side
+ * space is the default OUTER margin of what sits in them. In a row that owns the side space, the row's left side is its FIRST
+ * block's left margin and its right side its LAST block's right margin — the site's side space until that block sets its own
+ * (0 reaches the page edge). Kept on the row, not moved onto the blocks, so cards stay equal and a stack on a phone shares it.
+ */
+export function rowSide(band: BoxNode, side: "left" | "right"): number {
+  const kids = band.children ?? [];
+  const edge = side === "left" ? kids[0] : kids[kids.length - 1];
+  const own = edge && (side === "left" ? edge.marginLeft : edge.marginRight) ;
+  return own ?? edge?.margin ?? spaceFor(band).gutter;
+}
+
+/**
+ * G-3b (1), D5 — A ROW OF THE PAGE IS A CSS GRID ON THE PAGE'S OWN LINES. The layout guides draw the page's columns edge to
+ * edge with no gap (the space between two blocks is centred on a line), so the row is `repeat(T, minmax(0, 1fr))` with no
+ * column gap over the page's whole width: each block spans the tracks of its share, and its margins are its part of the line's
+ * side space and gaps (`pageRowSides`). G3-8: the flex band's shares were of the row inset by its side space, 1.7–2.6px off the
+ * lines at 1280. A grid never wraps a block that is too narrow, so every narrowing is the fit rule's (`rowNarrowsAt`, every line
+ * on the page). Saved pages and rows inside a block (`pageRow` unset) keep the flex band.
+ */
+export function isPageRow(band: BoxNode | null | undefined): boolean {
+  return !!band?.pageRow && gridBandOwnsGutter(band) && (band.direction ?? "column") === "row" && !isMenuLine(band);
+}
+
+/** The page grid's columns on `bp` for a row of the page — the page's own count when the site set one (`gridSpace.cols`). */
+const pageRowCols = (band: BoxNode, bp: Breakpoint) => band.gridSpace?.cols?.[bp] ?? columnsAt(PAGE_GRID_DEFAULT, bp);
+
+/** The row's blocks on `bp`, line by line as the stored shares pack them (`packRowLines`) — a gap before a block included. */
+/** `x`: where its AREA starts on the line (%), `rows`: how many rows it spans; `cont`: a block spanning down INTO this line from
+ *  the one above (G-3b (6)) — it holds its place here, but it belongs to the line it starts on. */
+type RowLineItem = { id: string; gapPct: number; sharePct: number; shared: boolean; bleed?: BoxNode["bleed"]; inset?: BoxNode["freeInset"]; x: number; rows: number; cont?: boolean };
+function rowLinesAt(band: BoxNode, bp: Breakpoint): RowLineItem[][] {
+  const kids = rowColumnsAt(band, bp).map((k) => resolveResponsive(k, bp));
+  const shared = (k: BoxNode) => !k.width?.trim().endsWith("%");
+  const rowsOf = (k: BoxNode) => Math.max(1, Math.round(k.rowSpan ?? 1));
+  // a block with no share (fill / auto) takes an equal part of what the shares leave on its line, so it packs as nothing
+  const lines = packRowLines(kids.map((k) => (shared(k) ? { ...k, width: "0.001%" } : k)));
+  const out: RowLineItem[][] = [];
+  kids.forEach((k, i) => (out[lines[i]] ??= []).push({ id: k.id, gapPct: k.marginLeftPct ?? 0, sharePct: shared(k) ? 0 : widthPct(k.width), shared: shared(k), bleed: k.bleed, inset: k.freeInset ?? undefined, x: 0, rows: rowsOf(k) }));
+  for (const line of out) {
+    const free = line.filter((c) => c.shared); if (!free.length) continue;
+    const left = Math.max(0, 100 - line.reduce((n, c) => n + c.gapPct + c.sharePct, 0));
+    for (const c of free) c.sharePct = left / free.length;
+  }
+  if (!kids.some((k) => rowsOf(k) > 1)) {
+    for (const line of out) { let x = 0; for (const c of line) { c.x = x; x += c.gapPct + c.sharePct; } }
+    return out;
+  }
+  /**
+   * G-3b (6) — A BLOCK THAT SPANS ROWS: placed as the browser's grid auto-placement places it (sparse, row by row): each block's
+   * area goes to the first place at or after the last one that is free on EVERY row it covers. So a photo two rows tall leaves its
+   * columns taken on the second row, and the blocks after it sit beside it there. Every line lists what occupies it — a block
+   * spanning down into it too (`cont`) — so the side space, the gaps and the neighbours read the line as drawn.
+   */
+  const e = 0.001, occ: { x: number; end: number; it: RowLineItem }[][] = [];
+  let row = 0, cur = 0;
+  for (const it of out.flat()) {
+    const w = Math.min(100, it.gapPct + it.sharePct);
+    for (;;) {
+      if (cur + w > 100 + e && cur > e) { row++; cur = 0; continue; }
+      let hit: number | null = null;
+      for (let r = row; r < row + it.rows; r++) for (const o of occ[r] ?? []) if (o.x < cur + w - e && o.end > cur + e) hit = Math.max(hit ?? 0, o.end);
+      if (hit === null) break;
+      cur = hit;
+    }
+    it.x = cur;
+    for (let r = row; r < row + it.rows; r++) (occ[r] ??= []).push({ x: cur, end: cur + w, it: r === row ? it : { ...it, cont: true } });
+    cur += w;
+  }
+  return occ.map((l) => (l ?? []).sort((a, b) => a.x - b.x).map((o) => o.it)).filter((l) => l.some((c) => !c.cont));
+}
+
+/** How many tracks a row of the page is drawn on — the same on every screen (`rowTrackCount`). */
+export function pageRowTracks(band: BoxNode): number {
+  const cols: number[] = [], edges: number[] = [], across: number[] = [];
+  for (const bp of BP_ORDER) {
+    cols.push(pageRowCols(band, bp));
+    for (const line of rowLinesAt(band, bp)) {
+      across.push(line.length);
+      for (const c of line) { edges.push(c.x / 100, (c.x + c.gapPct) / 100, Math.min(1, (c.x + c.gapPct + c.sharePct) / 100)); }
+    }
+  }
+  return rowTrackCount(cols, edges, across);
+}
+
+/** Where a block of a row of the page sits on `bp`: the tracks of its area (its gap before it included), that gap as a share
+ *  of the area (a `%` margin on a grid item is of its area), and its place `at` on a line `of` blocks. */
+export type PageRowCell = { span: number; gapPct: number; at: number; of: number; bleed?: BoxNode["bleed"]; insetL: number; insetR: number; rows: number };
+export function pageRowCells(band: BoxNode, bp: Breakpoint, T = pageRowTracks(band)): Map<string, PageRowCell> {
+  const out = new Map<string, PageRowCell>();
+  for (const line of rowLinesAt(band, bp)) {
+    let at = 0, end = 0;
+    // a line a block spans into (G-3b (6)) is placed where the grid places it; any other packs end to end, as it always did
+    const placed = line.some((c) => c.cont || c.rows > 1);
+    line.forEach((c, i) => {
+      if (placed) { at = c.x; end = Math.round((c.x / 100) * T); }
+      if (c.cont) { at += c.gapPct + c.sharePct; return; } // drawn on the line it starts on
+      const from = end; at += c.gapPct;
+      const boxAt = Math.min(T - 1, Math.max(from, Math.round((at / 100) * T))); at += c.sharePct;
+      end = Math.min(T, Math.max(boxAt + 1, Math.round((at / 100) * T)));
+      const span = end - from;
+      // a FREE placement (G-3b (3)): a share of its own columns, as a share of its area (a `%` margin on a grid item is of its area)
+      const ofArea = (p?: number) => +(((p ?? 0) * (end - boxAt)) / span).toFixed(4);
+      out.set(c.id, { span, gapPct: +(((boxAt - from) / span) * 100).toFixed(4), at: i, of: line.length, bleed: c.bleed, insetL: ofArea(c.inset?.left), insetR: ofArea(c.inset?.right), rows: c.rows });
+    });
+  }
+  return out;
+}
+
+/**
+ * THE SPACE AROUND A BLOCK OF A ROW OF THE PAGE, in stored units, before its own margin (G3b-3, the user 2026-10-04: "equal
+ * cards" — over "exactly on the lines"). A line of `of` blocks has the side space at its two ends and one gap between every two
+ * blocks, and EVERY block on it gives up the same width of that: (left + right + (of − 1) gaps) / of. So blocks of the same share
+ * are the same width whatever the side space; two blocks' gap is always centred on their line, and in a line of three or more the
+ * gaps sit (side − ½ gap) × |1 − 2(i+1)/of| from theirs. The space between two neighbours is always exactly one gap.
+ */
+export function pageRowSides(band: BoxNode, at: number, of: number): { left: number; right: number } {
+  const L = rowSide(band, "left"), R = rowSide(band, "right"), G = bandGutter(band), d = (G - L - R) / of;
+  return { left: L + at * d, right: G - L - (at + 1) * d };
+}
+
+/** A block's margin on one side in a row of the page: its share of the line's space (`pageRowSides`) plus its own margin — except
+ *  the row's first / last block, whose own margin IS the row's side (`rowSide`). A gap dragged open before it rides on its left. */
+/** A row's side as CSS: its first / last block's own margin when set, else the page's frame (G-3c). */
+function rowSideCss(band: BoxNode, side: "left" | "right"): string {
+  const kids = band.children ?? []; const edge = side === "left" ? kids[0] : kids[kids.length - 1];
+  const own = edge && ((side === "left" ? edge.marginLeft : edge.marginRight) ?? edge.margin);
+  return own !== undefined ? u(own) : frameCss(band);
+}
+/** …and in rem on a page `w` rem wide, for the arithmetic that must agree with it (`rowNarrowsAt`, the canvas's slots). */
+export function rowSideRemAt(band: BoxNode, side: "left" | "right", w: number): number {
+  const kids = band.children ?? []; const edge = side === "left" ? kids[0] : kids[kids.length - 1];
+  const own = edge && ((side === "left" ? edge.marginLeft : edge.marginRight) ?? edge.margin);
+  return own !== undefined ? (own / 10) * unitRemAt(w) : frameRemAt(band, w);
+}
+const coef = (n: number) => +n.toFixed(4);
+function pageRowMargin(band: BoxNode, child: BoxNode, side: "left" | "right", at: number, of: number, gapPct = 0, bleed = child.bleed): string {
+  // BLEED (G-3b (2)): where it starts / ends a line, that side gives up its side space and reaches the page edge — nothing else moves
+  if (bleeds(bleed, side, at, of)) return `calc(${gapPct ? `${gapPct}% + ` : ""}${u(0)})`;
+  const k = band.children ?? [];
+  const ownsSide = (side === "left" ? k[0] : k[k.length - 1])?.id === child.id;
+  const own = ownsSide ? 0 : (side === "left" ? child.marginLeft : child.marginRight) ?? child.margin ?? 0;
+  // `pageRowSides` as CSS: left = L + at·d, right = G − L − (at + 1)·d, d = (G − L − R) / of — with L and R the frame (G-3c)
+  const L = rowSideCss(band, "left"), R = rowSideCss(band, "right"), G = "var(--bx-gut)";
+  const f = side === "left" ? at / of : (at + 1) / of; // the share of the line's side space and gaps up to this edge
+  const terms = side === "left"
+    ? [[L, 1 - f], [G, f], [R, -f]]
+    : [[G, 1 - f], [L, -(1 - f)], [R, f]];
+  const sum = new Map<string, number>(); for (const [x, c] of terms as [string, number][]) sum.set(x, (sum.get(x) ?? 0) + c); // the frame on both sides cancels
+  const parts = [...sum].filter(([x, c]) => coef(c) !== 0 && x !== u(0)).map(([x, c]) => (coef(c) === 1 ? x : `${x} * ${coef(c)}`));
+  if (own) parts.push(u(own));
+  return `calc(${gapPct ? `${gapPct}% + ` : ""}${parts.length ? parts.join(" + ") : u(0)})`;
+}
+
+/** A block of a row of the page, placed on the grid (replaces the flex basis and the gutter margins of `gutterCSS`). */
+function pageRowCSS(s: CSSProperties, child: BoxNode, band: BoxNode, bp: Breakpoint): void {
+  const cell = pageRowCells(band, bp).get(child.id);
+  delete s.flex;
+  if (!cell) return; // floating or hidden here: not on the grid
+  s.gridColumn = `span ${cell.span}`;
+  if (cell.rows > 1) s.gridRow = `span ${cell.rows}`; // G-3b (6): rows follow the content, so it covers the rows its neighbours make
+  if (s.marginLeft !== "auto") s.marginLeft = pageRowMargin(band, child, "left", cell.at, cell.of, +(cell.gapPct + cell.insetL).toFixed(4), cell.bleed);
+  if (s.marginRight !== "auto") s.marginRight = pageRowMargin(band, child, "right", cell.at, cell.of, cell.insetR, cell.bleed);
+  // THE READABLE FLOOR IS OF ITS OWN SPACE (G3b-18): on a grid item `100%` is the whole grid AREA, margins included, so
+  // `min(100%, 14rem)` held words at 2 of 6 on a phone 22px past their columns, over the picture beside them. Never more than
+  // the area less its margins; a line too tight for the words is the Page check's warning ("words-too-tight"), not an overlap.
+  const ml = s.marginLeft === "auto" ? "0px" : String(s.marginLeft ?? "0px"), mr = s.marginRight === "auto" ? "0px" : String(s.marginRight ?? "0px");
+  if (typeof s.minWidth === "string" && s.minWidth.startsWith("min(100%,")) s.minWidth = s.minWidth.replace("min(100%,", `min(calc(100% - ${ml} - ${mr}),`);
+}
+
+/** The canvas's slot of a block of a row of the page: the space on each side of its box that belongs to its grid area, in stored
+ *  units (`pageRowSides`, without its own margin or a gap dragged open — those the resize reads on their own). */
+export function pageRowSlot(band: BoxNode, id: string, bp: Breakpoint, w?: number): { left: number; right: number } | null {
+  const T = pageRowTracks(band), cell = pageRowCells(band, bp, T).get(id);
+  if (!cell) return null;
+  // with a page width (rem): the same shares in rem, the frame as drawn there (G-3c) — the canvas's slots; without: stored units
+  const sides = w === undefined ? pageRowSides(band, cell.at, cell.of) : (() => {
+    const L = rowSideRemAt(band, "left", w), R = rowSideRemAt(band, "right", w), G = (bandGutter(band) / 10) * unitRemAt(w), d = (G - L - R) / cell.of;
+    return { left: L + cell.at * d, right: G - L - (cell.at + 1) * d };
+  })();
+  // …and with a page width, a free placement's margin too (G-3b (3)): the slot is its columns, the box sits inside them
+  const free = (p: number) => (w === undefined ? 0 : (p / 100) * (cell.span / T) * w);
+  return { left: (bleeds(cell.bleed, "left", cell.at, cell.of) ? 0 : sides.left) + free(cell.insetL), right: (bleeds(cell.bleed, "right", cell.at, cell.of) ? 0 : sides.right) + free(cell.insetR) };
+}
+
+/** Does a block bleed on `side` here — it asked to, and that side starts / ends its line (only there is there a page edge to reach)? */
+const bleeds = (bleed: BoxNode["bleed"], side: "left" | "right", at: number, of: number) =>
+  !!bleed && (bleed === "both" || bleed === side) && (side === "left" ? at === 0 : at === of - 1);
+
+/**
+ * G-3b (2) — WHERE A BLOCK SITS ON THE PAGE'S LINES on `bp` (map A1–A3): line `from` to line `to` (1 = the page's left edge, `cols` + 1
+ * its right; halves on half-lines), read from its share and the gap before it — or null when it is not a column of a row of the page.
+ */
+export function linesAt(root: BoxNode, id: string, cols: number, bp: Breakpoint = "base"): { from: number; to: number; first: boolean; last: boolean } | null {
+  const p = findParent(root, id);
+  if (!root.pageGrid || !p || !isPageRow(p.parent) || !(root.children ?? []).some((c) => c.id === p.parent.id)) return null;
+  const half = (pct: number) => Math.round((pct / 100) * cols * 2) / 2;
+  for (const line of rowLinesAt(p.parent, bp)) {
+    const i = line.findIndex((c) => c.id === id && !c.cont); if (i < 0) continue;
+    const c = line[i], at = c.x + c.gapPct;
+    return { from: 1 + half(at), to: 1 + half(at + c.sharePct), first: i === 0, last: i === line.length - 1 };
+  }
+  return null;
+}
+
+/**
+ * Moves ONE edge of a block to a line on `bp` (rule 19: only the edge you move moves). `to` — the block after it on its line gives
+ * what this one takes, never below one column; with none after it, the room left on the line. `from` — the block before it gives
+ * way, or the space before it does when it starts its line. A block never goes below half a column. Returns the same tree when
+ * nothing can change. "To the last line" is `to: cols + 1`: a share, so it still reaches the end after a column-count change.
+ */
+export function setLinesAt(root: BoxNode, id: string, want: { from?: number; to?: number }, cols: number, bp: Breakpoint = "base"): BoxNode {
+  const now = linesAt(root, id, cols, bp); const p = findParent(root, id);
+  if (!now || !p) return root;
+  const line = rowLinesAt(p.parent, bp).find((l) => l.some((c) => c.id === id && !c.cont))!; const i = line.findIndex((c) => c.id === id && !c.cont);
+  const colsOf = (pct: number) => (pct / 100) * cols, pct = (c: number) => `${((c / cols) * 100).toFixed(2)}%`, gapPct = (c: number) => (c > 0.001 ? +((c / cols) * 100).toFixed(2) : undefined);
+  const span = now.to - now.from; let next = root;
+  if (want.to !== undefined && want.to !== now.to) {
+    const next1 = line[i + 1], after = next1?.cont ? null : next1;
+    // the partner keeps a column; alone, the line's end; a block spanning down beside it (G-3b (6)) is a wall it grows only to
+    const room = after ? colsOf(after.sharePct) - 1 : next1 ? colsOf(next1.x) + 1 - now.to : cols + 1 - now.to;
+    const d = Math.max(0.5 - span, Math.min(room, want.to - now.to));
+    if (!d) return root;
+    next = updateBoxResponsive(next, id, { width: pct(span + d) }, bp);
+    if (after) next = updateBoxResponsive(next, after.id, { width: pct(colsOf(after.sharePct) - d) }, bp);
+    return next;
+  }
+  if (want.from !== undefined && want.from !== now.from) {
+    const before = i > 0 && !line[i - 1].cont ? line[i - 1] : null, gap = colsOf(line[i].gapPct);
+    const give = before ? colsOf(before.sharePct) - 1 : gap; // how far left it can go
+    const d = Math.max(-give, Math.min(span - 0.5, want.from - now.from));
+    if (!d) return root;
+    next = updateBoxResponsive(next, id, { width: pct(span - d), ...(before ? {} : { marginLeftPct: gapPct(gap + d) }) }, bp);
+    if (before) next = updateBoxResponsive(next, before.id, { width: pct(colsOf(before.sharePct) + d) }, bp);
+    return next;
+  }
+  return root;
+}
+
+/**
+ * FREE PLACEMENT (G-3b (3), map §1): never page x / y — the nearest lines around the box, and the rest as a margin INSIDE those
+ * columns (`freeInset`, a % of them, so it keeps its place at every screen). `setFreeInset` sets one side (from the panel or an
+ * Alt-dragged edge); the box always keeps a tenth of its columns. `undefined` puts that side back on its line.
+ */
+const insetPct = (v: number | undefined) => (v !== undefined && v >= 0.01 ? +v.toFixed(2) : undefined);
+export function setFreeInset(root: BoxNode, id: string, side: "left" | "right", pct: number | undefined, bp: Breakpoint = "base"): BoxNode {
+  const node = findBox(root, id); if (!node) return root;
+  const now = resolveResponsive(node, bp).freeInset ?? {}, other = (side === "left" ? now.right : now.left) ?? 0;
+  const v = insetPct(pct === undefined ? undefined : Math.min(Math.max(0, pct), 90 - other));
+  const next = { ...now, [side]: v };
+  return updateBoxResponsive(root, id, { freeInset: next.left === undefined && next.right === undefined ? undefined : { left: next.left, right: next.right } }, bp);
+}
+
+/**
+ * An Alt-drag of a block of a row of the page (G-3b (3)): it SLIDES along its line, its box `left` columns from the page's left
+ * edge, keeping its width — between the block before it and the block after it, which never move (decision 5: free placement
+ * never overlaps; the person who wants overlap chooses to float it). Its columns become the nearest lines around the box, the
+ * gap before it and the one after it what is left over, the rest of its columns its free margin. `by`: how many columns to move
+ * its box (the drag's distance), from where it sits now.
+ */
+export function slideFreeAt(root: BoxNode, id: string, by: number, cols: number, bp: Breakpoint = "base"): BoxNode {
+  const p = findParent(root, id);
+  if (!p || !linesAt(root, id, cols, bp)) return root;
+  const line = rowLinesAt(p.parent, bp).find((l) => l.some((c) => c.id === id && !c.cont))!; const i = line.findIndex((c) => c.id === id && !c.cont);
+  const C = (pct: number) => (pct / 100) * cols, pct = (c: number) => `${((c / cols) * 100).toFixed(2)}%`, gapPct = (c: number) => (c > 0.001 ? +((c / cols) * 100).toFixed(2) : undefined);
+  const prevEnd = C(line[i].x);
+  const c = line[i], s = C(c.sharePct), after = line[i + 1];
+  const bw = s * (1 - ((c.inset?.left ?? 0) + (c.inset?.right ?? 0)) / 100), left = prevEnd + C(c.gapPct) + (s * (c.inset?.left ?? 0)) / 100 + by;
+  const limit = after ? C(after.x + (after.cont ? 0 : after.gapPct)) : cols;
+  // within a hundredth of a column is ON the line: shares are stored to 0.01 %, so a box read back sits a hair off it (G3b-15)
+  const x = Math.min(Math.max(prevEnd, left), limit - bw), e = 0.01;
+  const place = (start: number, end: number) => {
+    const share = end - start;
+    let next = updateBoxResponsive(root, id, { width: pct(share), marginLeftPct: gapPct(start - prevEnd), widthByHand: true }, bp);
+    next = updateBoxResponsive(next, id, { freeInset: undefined }, bp);
+    const off = (c: number) => (c < e ? undefined : (c / share) * 100);
+    next = setFreeInset(setFreeInset(next, id, "left", off(x - start), bp), id, "right", off(end - x - bw), bp);
+    if (after && !after.cont) next = updateBoxResponsive(next, after.id, { marginLeftPct: gapPct(limit - end) }, bp);
+    return next;
+  };
+  const start = Math.max(prevEnd, Math.floor(x + e)), end = Math.min(limit, Math.max(start + e, Math.ceil(x + bw - e)));
+  const next = place(start, end);
+  // A SLIDE NEVER RE-PACKS THE ROW (G3b-16): a block that ends its line, slid left, left room for the next line's first block, which
+  // came up beside it; one starting a later line, slid left, could fit on the line above. When the lines would change, its columns
+  // keep covering their old place too — the box still goes where it was let go, inside them — so the row frees and takes nothing.
+  const packing = (t: BoxNode) => rowLinesAt(findParent(t, id)!.parent, bp).map((l) => l.map((k) => k.id).join()).join("|");
+  if (packing(next) === packing(root)) return next;
+  const s0 = prevEnd + C(c.gapPct);
+  return place(Math.min(start, s0), Math.max(end, Math.min(limit, s0 + s)));
+}
+
+/** "Full width" (map A4): the block takes its whole line on `bp`; the blocks beside it go to lines of their own. */
+export const fullWidthAt = (root: BoxNode, id: string, bp: Breakpoint = "base"): BoxNode => updateBoxResponsive(root, id, { width: "100%", marginLeftPct: undefined }, bp);
+
+/**
+ * THE SPAN OF A COLUMN OF A PAGE ROW (G-3 (3)) — how many of the page grid's `cols` columns its share covers on `bp`, or
+ * null when the block is not a column of a row of the page (its share is not of the page's width).
+ */
+export function spanAt(root: BoxNode, id: string, cols: number, bp: Breakpoint = "base"): number | null {
+  const p = findParent(root, id);
+  if (!root.pageGrid || !p || !p.parent.rowBand || !(root.children ?? []).some((c) => c.id === p.parent.id) || (p.parent.children?.length ?? 0) < 2) return null;
+  const w = resolveResponsive(p.parent.children![p.index], bp).width;
+  return w?.trim().endsWith("%") ? Math.min(cols, Math.max(0.5, Math.round((widthPct(w) / 100) * cols * 2) / 2)) : null;
+}
+
+/**
+ * Sets that span on `bp` (base or the screen's own slot): the block takes `span` of `cols`, and the block AFTER it on the
+ * row (the one before, for the last) gives exactly what it takes — never below one column (rule 19: the partner gives what
+ * it can, the edge stops there). Returns the same tree when nothing can change.
+ */
+export function setSpan(root: BoxNode, id: string, span: number, cols: number, bp: Breakpoint = "base"): BoxNode {
+  const p = findParent(root, id); const now = spanAt(root, id, cols, bp);
+  if (!p || now === null) return root;
+  const kids = p.parent.children!; const partner = kids[p.index + 1] ?? kids[p.index - 1];
+  const pw = resolveResponsive(partner, bp).width; const pSpan = pw?.trim().endsWith("%") ? (widthPct(pw) / 100) * cols : 1;
+  const want = Math.min(Math.max(0.5, span), now + Math.max(0, pSpan - 1));
+  if (want === now) return root;
+  const pct = (k: number) => `${((k / cols) * 100).toFixed(2)}%`;
+  let next = updateBoxResponsive(root, id, { width: pct(want) }, bp);
+  next = updateBoxResponsive(next, partner.id, { width: pct(pSpan - (want - now)) }, bp);
+  return next;
+}
+
+/**
+ * "LINE UP WITH THE GRID" (G-3 (5)): every column of every row of the page to the nearest whole column of `cols`, on `bp`.
+ * The row's EDGES are snapped (a gap before a block included), never each width alone, so a row still adds up to its line;
+ * every block keeps at least one column. A row holding a block placed free on purpose (`freeInset`) is left alone.
+ */
+export function lineUpWithGrid(root: BoxNode, cols: number, bp: Breakpoint = "base"): { root: BoxNode; moved: number } {
+  let next = root, moved = 0;
+  for (const band of root.children ?? []) {
+    const kids = band.children ?? [];
+    if (!band.rowBand || kids.length < 2 || kids.some((k) => resolveResponsive(k, bp).freeInset)) continue;
+    const rk = kids.map((k) => resolveResponsive(k, bp));
+    if (rk.some((k) => !k.width?.trim().endsWith("%"))) continue;
+    let at = 0, line = 0; const out: { id: string; gap: number; width: number; was: BoxNode }[] = [];
+    for (const k of rk) {
+      const gap = k.marginLeftPct ?? 0, w = widthPct(k.width);
+      const start = Math.max(line, Math.round(((at + gap) / 100) * cols)); at += gap + w;
+      const end = Math.max(start + 1, Math.round((at / 100) * cols));
+      out.push({ id: k.id, gap: start - line, width: end - start, was: k }); line = end;
+    }
+    for (const o of out) {
+      const width = `${((o.width / cols) * 100).toFixed(2)}%`, gapPct = o.gap ? +((o.gap / cols) * 100).toFixed(2) : undefined;
+      if (Math.abs(parseFloat(width) - widthPct(o.was.width)) < 0.006 && Math.abs((gapPct ?? 0) - (o.was.marginLeftPct ?? 0)) < 0.006) continue; // already on its lines (as numbers: "50%" is "50.00%")
+      next = updateBoxResponsive(next, o.id, { width, marginLeftPct: gapPct, restWidth: undefined, restAt: undefined, restBy: undefined }, bp); moved++;
+    }
+  }
+  return { root: next, moved };
+}
+
+/** The outer-spacing defaults the Inspector shows for a block: `outerDefaults`, plus the row's side on the first / last block
+ *  of a row that owns the side space (`rowSide`) — so "Default" there is the space it really has. */
+export function outerSpaceDefaults(root: BoxNode, id: string): [number, number, number, number] {
+  const node = findBox(root, id); const p = findParent(root, id);
+  const d = node ? outerDefaults(node, sectionPlaceIn(root, id)) : ([0, 0, 0, 0] as [number, number, number, number]);
+  if (!p || !gridBandOwnsGutter(p.parent)) return d;
+  const kids = p.parent.children ?? []; const g = spaceFor(p.parent).gutter;
+  return [d[0], kids[kids.length - 1]?.id === id ? g : d[1], d[2], kids[0]?.id === id ? g : d[3]];
+}
+
+export function sectionContent(child: BoxNode, parentIsPage: boolean, parentIsPageBand: boolean, band?: BoxNode): SectionFlag {
+  // A link of a MENU LINE is an item of that line, not a section of its own (F1-d): each one took the 2rem gutter as its own
+  // padding, so four links on the page could not share a phone's line. The line carries the section space once (`pageBandInset`).
+  if (parentIsPageBand && band && isMenuLine(band)) return false;
+  if (parentIsPageBand && band && gridBandOwnsGutter(band)) return "gridBand";
+  return parentIsPageBand || (parentIsPage && !child.rowBand);
 }
 
 /** Per-side margin CSS (responsive rem): a side override falls back to the general `margin` (undefined = none). */
@@ -3218,7 +5661,9 @@ export function marginCSS(node: BoxNode): CSSProperties {
     marginTop: m(node.marginTop),
     marginRight: m(node.marginRight),
     marginBottom: m(node.marginBottom),
-    marginLeft: m(node.marginLeft),
+    // A gap on a LINE is a share of that line — see `marginLeftPct`. It wins, because the two describe the
+    // same space and a length cannot be made to sum exactly with the percentage widths beside it.
+    marginLeft: node.marginLeftPct !== undefined ? `${node.marginLeftPct}%` : m(node.marginLeft),
   };
 }
 
@@ -3245,12 +5690,119 @@ export function floatingReserve(node: BoxNode, bp: Breakpoint = "base"): number 
     if (n > need) need = n;
   }
   if (need <= 0) return 0;
-  const padV = (node.paddingTop ?? node.padding ?? 0) + (node.paddingBottom ?? node.padding ?? 0);
+  const padV = padSide(node, "Top") + padSide(node, "Bottom");
   return Math.round(need + padV);
 }
 
 /** The container's own layout CSS (flex or grid), as inline style. `bp` makes the floating reserve device-aware. */
-export function containerStyle(node: BoxNode, bp: Breakpoint = "base"): CSSProperties {
+/**
+ * A BAND'S COLOUR SCHEME FOLLOWS ITS BACKGROUND (#92). Contrast is asserted, never assumed (Core Rule 17, Rule D).
+ *
+ * Measured through the UI: a call-to-action band and a footer coloured dark blue kept the page's dark words — 71 text
+ * elements under WCAG contrast on one dressed page, and a Quote dropped on the band read dark-on-dark too. Switching
+ * only the words would not do: components paint from the SITE tokens, so a white Card on that band would have got
+ * light words. So a band with a solid background switches EVERY colour token inside it — words, muted words, surfaces,
+ * borders, links and the focus ring — to the scheme that reads on it, the way a design system nests a dark section.
+ *
+ * The side is decided by which reads better on it: light words where white out-contrasts black, dark words otherwise.
+ * The colours are computed FROM the band (below) — a hex typed in code would ignore the band it sits on. A colour the
+ * user set on a block still wins — it is set on the block. A background that cannot be read (a photo, a gradient, a token, one
+ * that is see-through) imposes nothing.
+ */
+export function bandScheme(bg: string | undefined): { dark: boolean; vars: Record<string, string> } | null {
+  const hex = solidHex(bg); if (!hex) return null;
+  // Light words where white out-contrasts black; dark words otherwise — the side that CAN reach the ratios.
+  const dark = contrastRatio("#ffffff", hex) > contrastRatio("#000000", hex);
+  const base = rgbToOklch(hexToRgb(hex));
+  const at = (L: number, C = base.C) => rgbToHex(oklchToRgb({ L: Math.max(0, Math.min(1, L)), C, h: base.h }));
+  /**
+   * The words are COMPUTED from the band, not picked from a ramp — measured, no ramp shade could do it: on a mid-tone
+   * band (a dusky pink, a mid grey) even the darkest token read 4.3:1. Each colour keeps the band's own hue at a whisper
+   * of chroma (Rule #2.9: never pure black or white — a tint), and moves away from the band's lightness until it reads:
+   * 7:1 for words, 4.5:1 for muted words, against the band AND against a card's surface lifted from it. Where the band is
+   * so mid-tone that no colour can reach a ratio, the most extreme one — the best there is — is used.
+   */
+  // A card's surface moves AWAY from the words — darker on a dark band, lighter on a light one. Lifted towards them, a
+  // mid-grey band's cards took light words down to 4.29:1 (measured by the sweep in tests/unit/band-scheme.test.ts).
+  const surface = at(base.L + (dark ? -0.06 : 0.03), base.C * 0.8);
+  const border = at(base.L + (dark ? 0.16 : -0.12), base.C * 0.6);
+  const reads = (ratio: number) => {
+    const C = Math.min(base.C, 0.02);
+    for (let k = 0; k <= 100; k++) {
+      const L = dark ? base.L + (k / 100) * (1 - base.L) : base.L - (k / 100) * base.L;
+      const c = at(L, C);
+      if (Math.min(contrastRatio(c, hex), contrastRatio(c, surface)) >= ratio) return c;
+    }
+    return dark ? "#ffffff" : "#000000"; // nothing reaches it — the extreme is the best there is
+  };
+  const text = reads(7), muted = reads(4.5);
+  const vars = {
+    "--bx-text": text, "--bx-text-muted": muted, "--bx-link": text, "--bx-focus": text,
+    "--eu-color-text": text, "--eu-color-muted": muted, "--eu-color-surface": surface, "--eu-color-border": border,
+  };
+  return { dark, vars };
+}
+/** A solid, opaque colour as #rrggbb — or null when it is not one (see-through, a gradient, a token, a photo). */
+function solidHex(bg: string | undefined): string | null {
+  const v = bg?.trim().toLowerCase(); if (!v) return null;
+  let m = /^#([0-9a-f]{3})$/.exec(v); if (m) return "#" + m[1].split("").map((c) => c + c).join("");
+  m = /^#([0-9a-f]{6})([0-9a-f]{2})?$/.exec(v); if (m) return m[2] && parseInt(m[2], 16) < 230 ? null : "#" + m[1];
+  const r = /^rgba?\(\s*(\d+)[\s,]+(\d+)[\s,]+(\d+)(?:[\s,/]+([\d.]+%?))?\s*\)$/.exec(v);
+  if (r) { const a = r[4] == null ? 1 : r[4].endsWith("%") ? parseFloat(r[4]) / 100 : parseFloat(r[4]); if (a < 0.9) return null; return "#" + [r[1], r[2], r[3]].map((x) => Math.min(255, +x).toString(16).padStart(2, "0")).join(""); }
+  return null;
+}
+
+/**
+ * LINKS ARE ALWAYS SPACED, AND THE PERSON CHOOSES HOW MUCH (user, 2026-09-27: "make sure that there's always spaces
+ * between the links … the user can select what kind of space they want"). Measured through the UI: a menu of four Links
+ * published as "AboutAdmissionsNewsContact" — every block starts with no space (Core Rule 3), and the line that holds
+ * them side by side is scaffolding nobody can select, so there was no way to space them at all.
+ *
+ * So a LINE OF MENU ITEMS (links and buttons, two or more) takes its spacing from the block it sits in — the menu or
+ * list the person can select: "Space across" between items, "Space down" between wrapped lines ("Space between blocks"
+ * sets both). Until they choose, it is the design foundation's grouping space (Rule #7): 2rem across, 0.75rem down, in
+ * rem so it grows with the reader's text. Rows of COLUMNS are never touched — their widths are shares of the line.
+ */
+export const LINK_GAP_ACROSS = "2rem";
+/** …on a PHONE, 1rem (F-1, the user 2026-10-01): at 2rem a pager of four links needed 340px of a 315px line and its last link
+ *  sat alone on a second line; 1rem is still far above the space between touch targets. A gap somebody set is kept. */
+export const LINK_GAP_ACROSS_PHONE = "1rem";
+export const LINK_GAP_DOWN = "0.75rem";
+/**
+ * A LINK'S COLOUR, in both engines: the band's own link colour when the band has a colour scheme (`bandScheme`), else the
+ * theme's READABLE link token (`readableLink` — the brand moved until it reads 4.5:1 on the page), else the brand. The
+ * brand alone read 3.02:1 on the Midnight page (#108); the middle fallback is what fixed it.
+ */
+export const LINK_COLOR_CSS = "var(--bx-link, var(--eu-color-link, var(--eu-color-brand)))";
+const isMenuItem = (k: BoxNode) => k.type === "link" || k.type === "button";
+/** A band holding a line of menu items (Links, Buttons) — spaced by `linkLineGap`, never by the columns' gutter. */
+function isMenuLine(line: BoxNode): boolean {
+  if (!line.rowBand) return false;
+  const kids = (line.children ?? []).filter((k) => !isFloating(k) && !k.hidden);
+  return kids.length >= 2 && kids.every(isMenuItem);
+}
+export function linkLineGap(line: BoxNode, parent: BoxNode, bp: Breakpoint = "base"): CSSProperties | null {
+  if (!isMenuLine(line)) return null;
+  const chosen = (v?: number) => (v != null && v > 0 ? v : undefined); // a 0 "Space between blocks" is the untouched default
+  const across = parent.gapX ?? chosen(parent.gap), down = parent.gapY ?? chosen(parent.gap);
+  // LONGHANDS ONLY (E0-b): they override a `gap` shorthand in either engine, and a `gap: undefined` beside them made React
+  // drop both on the canvas — its links sat 18px apart while the published page had 2rem.
+  return { columnGap: across != null ? u(across) : bp === "phone" ? LINK_GAP_ACROSS_PHONE : LINK_GAP_ACROSS, rowGap: down != null ? u(down) : LINK_GAP_DOWN };
+}
+/** …and a LIST of menu items one per line is spaced down the same way (a footer column of links). */
+function listLinesGap(node: BoxNode): CSSProperties | null {
+  if ((node.tag !== "ul" && node.tag !== "ol") || (node.direction ?? "column") !== "column" || node.gapY != null || (node.gap ?? 0) > 0) return null;
+  const items = (node.children ?? []).flatMap((k) => (k.rowBand ? k.children ?? [] : [k]));
+  return items.length > 1 && items.every(isMenuItem) ? { rowGap: LINK_GAP_DOWN } : null;
+}
+
+export function containerStyle(node: BoxNode, bp: Breakpoint = "base", section: SectionFlag = false): CSSProperties {
+  const scheme = node.bgImage ? null : bandScheme(node.background);
+  const s = { ...containerStyleOf(node, bp, section), ...pageFrameEnds(node) };
+  const lines = listLinesGap(node);
+  return { ...s, ...(lines ?? {}), ...((scheme?.vars ?? {}) as CSSProperties) };
+}
+function containerStyleOf(node: BoxNode, bp: Breakpoint = "base", section: SectionFlag = false): CSSProperties {
   // Computed in px (measurements are px) but EMITTED in rem, per the field guide: a stored size must never
   // reach the page as a pixel value, or a reader who has raised their base font gets a box that ignores them.
   const minHpx = Math.max(node.minHeight ?? 0, floatingReserve(node, bp)) || undefined;
@@ -3259,7 +5811,7 @@ export function containerStyle(node: BoxNode, bp: Breakpoint = "base"): CSSPrope
   // the box's, exactly as on any other container — and the scrolling strip is an element INSIDE it
   // (`pagerStripCss`). It has to be two elements: the navigation must sit outside the scroll container or
   // it scrolls away with the pages, and a child of the strip cannot sit outside it.
-  if (isPager(node)) return { position: "relative", ...paddingCSS(node), minHeight: minH };
+  if (isPager(node)) return { position: "relative", ...paddingCSS(node, section), minHeight: minH };
   if (node.layout === "grid") {
     // MASONRY changes exactly three of the declarations below and nothing else — the columns, the spans, the
     // offsets, the order and the reading order are all untouched, which is the whole reason it is a row option
@@ -3274,7 +5826,7 @@ export function containerStyle(node: BoxNode, bp: Breakpoint = "base"): CSSPrope
       // per track, where an estimate of the fluid unit could compound (see `masonrySpanUnits`). Both longhands
       // are written, never the `gap` shorthand, so the property set matches at every rung and the export's
       // rung-to-rung diff has something to neutralise when a narrower rung stops being masonry.
-      ...(masonry ? { columnGap: u(node.gapX ?? node.gap ?? 16), rowGap: "0px" } : gapCSS(node)),
+      ...(masonry ? { columnGap: u(node.gapX ?? node.gap ?? spaceDefaults(node).gapX), rowGap: "0px" } : gapCSS(node)),
       // A masonry cell HUGS its content. The tracks it spans are a ruler, not a row, so stretching to fill
       // them would stretch a photo to a number that was only ever a measurement of the photo.
       alignItems: masonry ? "start" : ALIGN_CSS[node.align ?? "stretch"],
@@ -3317,9 +5869,14 @@ export function containerStyle(node: BoxNode, bp: Breakpoint = "base"): CSSPrope
       // `grid-auto-rows` alone cannot express that: it is one value for every row, so a row dragged taller
       // was immediately levelled back down by the `1fr` its neighbours were also claiming. See `gridRowTracks`.
       ...(() => { const t = gridRowTracks(node, bp); return t ? { gridTemplateRows: t } : {}; })(),
-      ...paddingCSS(node),
+      ...paddingCSS(node, section),
       minHeight: minH,
     };
+  }
+  // a row of the page: a grid on the page's lines (G-3b, `isPageRow`) — no column gap: the blocks' margins are it
+  if (isPageRow(node)) {
+    return { display: "grid", gridTemplateColumns: gridTemplate(pageRowTracks(node)), ...gapCSS(node), alignItems: ALIGN_CSS[node.align ?? "stretch"],
+      ...(hostsNarrowingGrid(node) ? { containerType: "inline-size" as const } : {}), ...paddingCSS(node, section), minHeight: minH };
   }
   return {
     display: "flex",
@@ -3327,18 +5884,34 @@ export function containerStyle(node: BoxNode, bp: Breakpoint = "base"): CSSPrope
     ...gapCSS(node),
     alignItems: ALIGN_CSS[node.align ?? "stretch"],
     justifyContent: JUSTIFY_CSS[node.justify ?? "start"],
+    // The box a grid measures ITSELF against (`gridNarrowsAt`): a nested grid narrows by this width, not the screen's.
+    ...(hostsNarrowingGrid(node) ? { containerType: "inline-size" as const } : {}),
     // Responsive Field Guide: a ROW BAND always allows wrapping so its sections REFLOW (stack) on narrow
     // screens instead of shrinking to unreadable slivers. On desktop they still sit side-by-side (they fit).
     flexWrap: node.wrap || node.rowBand ? "wrap" : "nowrap",
-    // Pack wrapped lines to the top so they never stretch apart and leave gaps between sections — EXCEPT when
-    // this box exists to hold something that wants the height it is given (a grid, or a band holding one).
-    //
-    // A row band always wraps, and on a wrapping flex container `align-content: flex-start` makes each LINE
-    // hug its content. `align-items: stretch` then stretches the child inside that line — which is already
-    // zero tall — so a nested grid measured 0px inside a band that was itself correctly 500px. Two rules that
-    // are each right on their own, cancelling each other out, and nothing in the class names said so.
-    alignContent: fillsGivenHeight(node) ? "stretch" : "flex-start",
-    ...paddingCSS(node),
+    /**
+     * WRAPPED LINES FILL THE BOX — and getting this wrong collapses everything dropped into a sized box.
+     *
+     * A row band always wraps, and on a wrapping flex container it is `align-content` that hands out the
+     * cross-axis space, NOT `align-items`. With `flex-start` the single line hugs its content and every
+     * spare pixel is left at the bottom; `align-items: stretch` then dutifully stretches the child to fill
+     * a line that is already as short as the child. Two rules each right on their own, cancelling out.
+     *
+     * Measured: a Stack dropped into a 400px section landed 40px tall inside a band that was correctly
+     * 400px — 360px of the box left empty, with nothing in the styles to say why. Reported as "it collapses
+     * to the minimum height instead of taking the rest of the space".
+     *
+     * This was patched once for the case that was reported then — a nested GRID — by asking
+     * `fillsGivenHeight`. That was too narrow by exactly one step: a grid is not the only thing that wants
+     * the height it is given, every CONTAINER does. An element still hugs, because `childStyle` pins it to
+     * the start of its line, so a heading sits in the same place either way.
+     *
+     * `stretch` is also the CSS default, so this is the browser's own answer rather than a second opinion:
+     * where a line has no spare room the two are identical, and the only case they differ is the one the
+     * user is complaining about.
+     */
+    alignContent: "stretch",
+    ...paddingCSS(node, section),
     minHeight: minH,
   };
 }
@@ -3370,7 +5943,67 @@ function fillsGivenHeight(node: BoxNode): boolean {
   return !!node.rowBand && kids.length === 1 && fillsGivenHeight(kids[0]);
 }
 
-export function childStyle(child: BoxNode, parent: BoxNode, bp: Breakpoint = "base"): CSSProperties {
+/**
+ * Has the nearest REAL container above this block been given a height?
+ *
+ * "Real" excludes row bands, which are scaffolding: `normalizeRowBands` puts one around every child of a
+ * content container, so the thing directly above a block is almost never the box a person thinks of as its
+ * container. A band carries no height of its own and passes the question straight through.
+ *
+ * The distinction matters for exactly one rule — the floor under a grid that has nothing to share (see
+ * `gridHasNothingToShare`) — and it has to be this narrow. "Any ancestor sized" is too broad: a grid inside
+ * an unsized child stack, itself inside a stack somebody sized, would count as sized and collapse anyway,
+ * which is the reported case. "The immediate parent" is too narrow: that is the band, always unsized.
+ */
+export function hostSizedFor(node: BoxNode, inheritedHostSized: boolean, parent?: BoxNode | null): boolean {
+  const ownSize = node.minHeight != null || node.height != null || !!node.screenHeight;
+  /**
+   * A BAND IS SCAFFOLDING — UNTIL SOMEONE GIVES IT A HEIGHT.
+   *
+   * Passing the question straight through was right while a band only ever hugged its child, and wrong the
+   * moment a gesture wrote a height onto one: closing the boundary between two stacks writes the new height
+   * to the BAND, because that is the thing both columns sit in. The band then stretched its children and
+   * told them nothing, so a column inside it went on hugging its own rows.
+   *
+   * Measured, and the user's report in their words — *"when I decrease the height from the top it creates a
+   * space at the bottom of the ones on the right"*: dragging the teal stack's top edge down moved the shared
+   * boundary 300 → 366, the green stack and the right-hand column both followed to 366, and the tan row
+   * inside that column stayed at 120 — leaving a **66px hole** between it and the teal stack below.
+   */
+  if (node.rowBand) return inheritedHostSized || ownSize;
+  /**
+   * A GRID CELL IS GIVEN ITS HEIGHT BY THE ROW, and stores nothing to say so.
+   *
+   * Every other box answers this question out of its own tokens, and a cell cannot: the rows are
+   * `minmax(min-content, 1fr)`, so a cell in a grid that HAS a height is handed a share of it while its
+   * own `height` and `minHeight` stay empty. Reading only the tokens therefore called every cell unsized,
+   * and everything dropped into one hugged its content in a box with room to spare — measured: a Stack
+   * dropped into a 200px cell sat at 40px with 160px left under it.
+   *
+   * It inherits rather than assuming: a grid with no height of its own has nothing to share out (see
+   * `gridHasNothingToShare`), so its cells really are unsized and the floor that keeps them grabbable
+   * still applies. Sized grid, sized cells; unsized grid, unsized cells.
+   */
+  if (parent?.layout === "grid") return inheritedHostSized || ownSize;
+  /**
+   * …AND SO IS A SECTION IN A ROW THAT STRETCHES, for exactly the grid cell's reason above: the row hands it
+   * a height and it stores nothing to say so. Without this the answer stopped at the band — the band knew it
+   * had a height, the column it stretched did not pass that on, and the column's last row still hugged.
+   *
+   * It answers YES OUTRIGHT, not "yes if the row stored a height". A row hands its children its own height
+   * however that height arose — and most of the time it arose from the TALLEST CHILD, with nothing stored
+   * anywhere. Asking for a stored number missed exactly that case: drag the navy stack's bottom edge down and
+   * the band grows because the navy is now the tallest, the column beside it stretches to match, and the rows
+   * inside that column go on hugging — measured, a **200px hole** under the last one.
+   *
+   * `align: stretch` is the default a band is built with, so the common case is the one that needs it; a row
+   * told to align its children any other way is not handing out a height and is left alone.
+   */
+  if (parent?.direction === "row" && (parent.align ?? "stretch") === "stretch") return true;
+  return ownSize;
+}
+
+export function childStyle(child: BoxNode, parent: BoxNode, bp: Breakpoint = "base", hostSized = false): CSSProperties {
   const s: CSSProperties = {};
   // A PAGE of a pager, and nothing else: no span, no offset, no order. Its width comes from the strip
   // (`grid-auto-columns: 100%`), so any stored `colSpan` from before the mode was turned on is ignored
@@ -3380,7 +6013,10 @@ export function childStyle(child: BoxNode, parent: BoxNode, bp: Breakpoint = "ba
     // Re-fitted to the track the row actually has AT THIS RUNG (see `gridPlacementAt`). A span of 8 left over
     // from a twelve-column desktop would otherwise generate implicit columns on a phone and blow the row's
     // width past the screen — the horizontal-scrollbar bug guarded against in three other places already.
-    const { span, start } = gridPlacementAt(parent, child, bp);
+    const { start } = gridPlacementAt(parent, child, bp);
+    // …and the cell that ends a SHORT final row stretches to fill it, so a narrowed grid never leaves half a
+    // row of the section's background showing beside the content. See `gridSpanAt`.
+    const span = gridSpanAt(parent, child, bp);
     const place = start != null ? `${start} / span ${span}` : span > 1 ? `span ${span}` : undefined;
     if (place) s.gridColumn = place;
     // The down axis. On a MASONRY grid it is computed, not stored: the cell claims as many measuring units as
@@ -3391,8 +6027,16 @@ export function childStyle(child: BoxNode, parent: BoxNode, bp: Breakpoint = "ba
     else {
       // No rung re-fit and no clamp: rows are implicit, so the grid simply makes as many as the placement asks
       // for — a block on row 4 of a two-row grid creates rows 3 and 4 rather than overflowing.
+      //
+      // …EXCEPT at a rung the ladder narrowed, where the row is given up together with the column. The two
+      // halves of a placement only mean anything together: releasing the column while holding "row 1" pins
+      // every cell of that row back into one row, and with the columns now auto they either pile up again or
+      // generate implicit columns and push the page sideways. Both were measured. Dropping both is what lets
+      // the grid do the one thing that works at these widths — flow the cells one after another.
       const rowSpan = Math.max(1, Math.round(child.rowSpan ?? 1));
-      const rowStart = child.rowStart == null ? null : Math.max(1, Math.round(child.rowStart));
+      // Same per-cell question as the column: a row stated AT this rung is in this rung's terms and is kept.
+      const rowGivenUp = gridReflowsAt(parent, bp) && !setAtRung(child, "rowStart", bp);
+      const rowStart = child.rowStart == null || rowGivenUp ? null : Math.max(1, Math.round(child.rowStart));
       if (rowStart != null) s.gridRow = `${rowStart} / span ${rowSpan}`;
       else if (rowSpan > 1) s.gridRow = `span ${rowSpan}`;
     }
@@ -3403,15 +6047,80 @@ export function childStyle(child: BoxNode, parent: BoxNode, bp: Breakpoint = "ba
     placeInSequence(s, child);
     // LAST, so the nine-point position wins over the older per-axis controls it replaces.
     Object.assign(s, placeCSS(child, parent));
+    // …and pinning after even that: it writes `position`, which none of the above touches, and it must
+    // land identically on a grid child and a flex child or "stays visible while scrolling" would depend
+    // on which engine the parent happens to use.
+    Object.assign(s, pinCSS(child, parent, bp));
+    /**
+     * AN EMPTY CELL KEEPS A FLOOR — and it took being wrong about this twice to pin down when it matters.
+     *
+     * A grid whose rows have a height to share (`minmax(min-content, 1fr)` inside a grid that was given a
+     * `min-height`) hands every cell a share whatever the cell's own minimum says. Measured against such a
+     * grid, removing this floor changes nothing, which is why it was first added on a guess, then withdrawn
+     * as unprovable.
+     *
+     * The case it exists for is a grid with NO HEIGHT OF ITS OWN — one sitting inside a stack that hugs its
+     * content. There is nothing to share out: an empty cell is 0, so the grid is 0, so the stack holding it
+     * collapses too. Measured: adding a Grid inside a child stack left the child stack under 8px along with
+     * three of its descendants. "The inner child breaks the page" was this.
+     *
+     * HEIGHT only. In a grid the width is the SPAN's job — `grid-column` decides it, and a `min-width` here
+     * would fight the track rather than help it.
+     */
+    /**
+     * NO FLOOR ON A GRID CELL — and this is an open question, not a settled one.
+     *
+     * A grid with no height of its own (one inside a stack that hugs) has nothing to share out, so its
+     * empty cells are 0, the grid is 0, and the stack holding it collapses. That is real and measured:
+     * adding a Grid inside a child stack left the stack under 8px.
+     *
+     * Flooring the cells fixes it and breaks something else — `empty-box-height` asserts "a box holding an
+     * EMPTY GRID shrinks too — its cells' hints do not hold it open", which exists so a box can be dragged
+     * small. A floor on the cells survives the box's own resize and stops it.
+     *
+     * Both are rules someone asked for, so the choice is not mine to make quietly. Left as it was until it
+     * is decided; the collapse is recorded in the ledger rather than papered over.
+     */
     return s;
   }
   const isRow = (parent.direction ?? "column") === "row";
-  const mainToken = isRow ? child.width : child.height;   // grows/divides along the main axis
+  /**
+   * A BAND STOPS FILLING THE MOMENT THE BLOCK INSIDE IT IS GIVEN A HEIGHT.
+   *
+   * A block dropped beside another is wrapped in a band marked `height: "fill"`, so it takes the space that is
+   * actually there rather than arriving at a courtesy size. `stackWithBlock` already states the rule that
+   * follows from that — *"dragging its height afterwards writes a real height and takes the fill off"* — but
+   * the height is written on the BLOCK and the fill lives on the BAND, so the band never found out.
+   *
+   * Reported by the user, with a screenshot: shrink the stack you just dropped and the one below it stays
+   * where it was. Measured — the newcomer went 400 → 300 while its band went on holding all 400, leaving a
+   * **100px hole** and the block below stranded at y=488.
+   *
+   * Asked here rather than at every place a height can be written, because there are several — the edge drag,
+   * the Band height slider, the Per‑device tab — and a rule that has to be remembered by each of them is the
+   * shape of bug this file already records twice. A band's fill is a rendering decision, so it is decided
+   * where the rendering happens.
+   *
+   * `100%` is NOT a height for this purpose: it is what the drop writes on the block so that it stretches
+   * inside its band, so counting it would switch the fill off the instant it was created.
+   */
+  const sizedByHand = (n: BoxNode) => !!n.minHeight || (!!n.height && n.height !== "100%" && n.height !== "fill");
+  const fillSpent = !isRow && child.rowBand === true && child.height === "fill"
+    && (child.children ?? []).length === 1 && sizedByHand((child.children ?? [])[0]);
+  const mainToken = isRow ? child.width : (fillSpent ? undefined : child.height); // grows/divides along the main axis
   const crossToken = isRow ? child.height : child.width;  // fixed size across the main axis
   const parentMain = isRow ? parent.width : parent.height;
   // "Definite" main size means the child should fill+follow it. For a column, an explicit height OR a
   // min-height (set by resizing the section's height) both count — so children fill/shrink with the floor.
-  const parentDefinite = (!!parentMain && parentMain !== "auto" && parentMain !== "fill") || (!isRow && !!parent.minHeight);
+  // …and a GRID CELL is definite too, though it stores nothing: the row hands it a height (`hostSizedFor`).
+  // Without this clause a block dropped into a cell hugged its content and left the rest of the cell empty.
+  // A column stretched by its host (a grid cell, a column beside a taller one, a shared edge dragged) keeps its blocks at
+  // the TOP with the normal gap, and its LAST block takes the spare height (E0-h, the user 2026-09-30: "last block takes
+  // it"). Shared between all of them it opened a 55px hole under an icon; given to none, a dragged shared edge left a
+  // hole at the column's foot. A lone block is its own last one, so a row of Cards stays equal height.
+  const hostKids = (parent.children ?? []).filter((c) => !isFloating(c));
+  const hostFills = hostSized && hostKids[hostKids.length - 1]?.id === child.id;
+  const parentDefinite = (!!parentMain && parentMain !== "auto" && parentMain !== "fill") || (!isRow && !!parent.minHeight) || (!isRow && hostFills);
   // When the child has no explicit MAIN size and the parent's main axis is DEFINITE (e.g. a section with a
   // set height), the child FILLS + follows the parent (`1 1 auto`: grow to fill, shrink to fit, content
   // basis) — so shrinking the parent's height shrinks its children. Otherwise it hugs / uses its token
@@ -3420,7 +6129,58 @@ export function childStyle(child: BoxNode, parent: BoxNode, bp: Breakpoint = "ba
   // `!isRow` — because in a row the main axis is width, and a grid should take its share of the width like
   // anything else, not all of it.
   const fillsMain = !isRow && fillsGivenHeight(child) && (!mainToken || mainToken === "auto");
-  s.flex = fillsMain || ((!mainToken || mainToken === "auto") && parentDefinite) ? "1 1 auto" : flexForWidth(mainToken);
+  /**
+   * WHO GETS THE LEFTOVER — because "everyone, equally" is not an answer, it is a way of losing track of it.
+   *
+   * A definite parent hands `1 1 auto` to every child with no size of its own, so they share what is spare in
+   * equal parts. That is right when they are peers and nothing else is claiming it, and wrong the moment
+   * something IS, because the space then lands half where it was meant and half as a hole somewhere else.
+   *
+   * ONE thing claims it, and it is the user speaking rather than the layout guessing: A SIBLING SAYS `fill`.
+   * That block exists to take the space. Measured, and reported with three screenshots: a 70px gap opened
+   * above a stack, then a Stack dropped into it. The newcomer's band said `fill` and the stack's band hugged
+   * 93px of content — and both were given `flex-grow: 1`, so the 70 split down the middle. The newcomer came
+   * out **35px tall**, a sliver, and the other 35 became a hole under the stack below it. One gesture, two
+   * spaces, neither asked for.
+   *
+   * A DELIBERATE SPACE IS NOT HANDLED HERE, and two clauses that tried to were deleted rather than kept.
+   * They froze a column while one of its blocks held a size, so the space stopped being the size the user
+   * made and started absorbing every later growth: grow the band by 90 from somewhere else entirely and the
+   * gap became 90 bigger. A space is written as a MARGIN by the resize instead (see the mouse-up in
+   * BoxCanvas) — a fixed quantity that survives growth, which is what the top edge had always done and the
+   * bottom edge had not.
+   */
+  const inFlowKids = (parent.children ?? []).filter((c) => !isFloating(c));
+  const siblingClaimsIt = !isRow && inFlowKids.some((c) => c.id !== child.id && c.height === "fill");
+  // A section of a ROW BAND fills its line ONLY when it is alone on it (`aloneOnItsLine`). Granting the grow
+  // unconditionally looks equivalent and is not: grow spends leftover space, and narrowing a block is how a
+  // line gets leftover space — so every block became un-shrinkable the moment it stopped sharing a full line.
+  // …UNLESS NOBODY HAS SIZED ANY COLUMN OF THE BAND (F-1, c-7 B: "a column nobody has sized by hand takes what is left of
+  // its line"). Such a band holds no space anybody chose, so the grow only spends what a wrap, a floor or a deleted column
+  // left — two unsized 50% columns whose 14rem floors wrap at 768 each kept half a line. The first frame of a drag writes
+  // `widthByHand` (BoxCanvas), so a space opened at an outer edge leaves its line short of 100% and stays (`bandHoldsChosenSpace`). A width set AT this rung is a choice too.
+  s.flex = fillsMain || ((!mainToken || mainToken === "auto") && parentDefinite && !siblingClaimsIt)
+    ? "1 1 auto"
+    : flexForWidth(mainToken, !!parent.rowBand && isRow && (
+        (!child.widthByHand && (bandIsCompact(parent, bp) || aloneOnItsLine(parent, child) || (parent.wrap && !bandHoldsChosenSpace(parent, bp)))) ||
+        (child.widthByHand && !bandHoldsChosenSpace(parent, bp))
+      ));
+  /**
+   * ONE PIXEL OF SLACK ON EVERY LINE THAT HOLDS A HAND-SIZED COLUMN (decided with the user 2026-09-28, option D of #131).
+   *
+   * A hand-sized column's floor is its longest word (#102). When that word is a hair wider than the share, the column
+   * is drawn a hair wider — and a line of shares that added up to 100% no longer fits, so the NEXT column drops to the
+   * next line and leaves a hole. Measured on a dressed page: a 15.8% column at 154px on the canvas and 155px in the
+   * Preview — the same word, one pixel of font rendering apart — and only the Preview wrapped. A 70 / 30 sidebar row
+   * did the same at 768px.
+   *
+   * The slack is a NEGATIVE RIGHT MARGIN of 0.0625rem on the LAST column of the line, never a smaller share: a smaller
+   * share moved edges (measured: the far edge of a pair 2.09px off, a width round trip 510 for 512), and "the size you
+   * drag is the size you get" is a rule. A margin changes no box; the line simply has one pixel more room in its sum, so
+   * a hair never wraps a neighbour, while a word that is GENUINELY too wide still wraps as before. A margin the user set
+   * on that column is theirs and is left alone.
+   */
+  if (parent.rowBand && isRow && lastOnItsLine(parent, child) && child.marginRight == null && child.margin == null && (parent.children ?? []).some((k) => k.widthByHand)) s.marginRight = "-0.0625rem";
   // A box can pin its OWN cross-axis alignment (used by edge-anchored resize to keep the far edge fixed
   // even when the parent centres/stretches its children).
   if (child.alignSelf) s.alignSelf = child.alignSelf;
@@ -3430,12 +6190,115 @@ export function childStyle(child: BoxNode, parent: BoxNode, bp: Breakpoint = "ba
   // A SCREEN HEIGHT counts as an explicit floor too. Without that clause an empty box lost it — and a hero is
   // empty right up until you put something in it, so "make this section full screen" appeared to do nothing
   // at the exact moment a person would try it.
-  if (child.clip || isEmptyBox(child)) { s.minWidth = 0; if (child.minHeight == null && !child.screenHeight) s.minHeight = 0; } // keep an EXPLICIT resize floor; only drop the content-min when there's none
+  //
+  // …BUT NOT ALL THE WAY TO NOTHING, unless the user asked for that.
+  //
+  // An empty box has nothing inside to hold it open, so with a zero minimum it collapses to whatever its
+  // parent has spare — and in a parent that has been GIVEN a height, what it has spare is that height split
+  // between however many children there are. Measured: six blocks added one at a time into a 200px stack
+  // came out 159 · 79 · 53 · 40 · 32 · **26px**. At 26px you cannot tell what a block is, and its four
+  // resize handles sit on top of one another, so the block you just added is neither visible nor grabbable.
+  //
+  // The same six added to an UNSIZED parent are 128px each and the parent grows to hold them — correct, and
+  // the reason this hid for so long: every test for it, and the editor's own courtesy height, used a parent
+  // nobody had resized. The bug lives entirely in the state a user reaches by resizing something, which is
+  // to say the normal one.
+  //
+  // So the floor is small rather than generous — enough to see and to grab, not enough to fight a parent
+  // somebody sized. A 200px stack with six blocks in it becomes 240px rather than 768px.
+  //
+  // TWO THINGS THE FLOOR MUST NEVER DO, and they are the reason for the conditions rather than a flat value:
+  //   • override a size the user set. `minHeight`, `height` and `screenHeight` are all somebody's decision,
+  //     and a decision wins however small it is.
+  //   • override `clip`, which IS the explicit "let this shrink past its content" opt-in. It keeps its zero.
+  // A box holding only ZERO-HEIGHT content gets the floor too, and for the same reason it exists: a stack
+  // whose sole content is a divider came out 2px tall — correct arithmetic, and impossible to click, select
+  // or drag by any of its handles. `holdsNothingTall` is the broader question, `isEmptyBox` the special case
+  // of it, and only the empty one also wants its width floored.
+  // A box holding only ZERO-HEIGHT content gets the floor too, for the reason the floor exists: a stack
+  // whose sole content is a divider came out 2px tall — correct arithmetic, and impossible to click, select
+  // or drag by any of its handles. `holdsNothingTall` is deliberately NARROW: whether a box is EMPTY is
+  // `isEmptyBox`'s question, and treating the two as one floored a box holding an empty grid, which has a
+  // rule of its own ("a box holding an empty grid shrinks too").
+  // A BOX holding only a divider — never the divider itself, which is a line and is as tall as it is drawn (#143).
+  if (!child.clip && isContainer(child) && !isEmptyBox(child) && holdsNothingTall(child)
+      && child.minHeight == null && child.height == null && !child.screenHeight) {
+    s.minHeight = EMPTY_BOX_MIN;
+  }
+  /**
+   * A GRID WITH NOTHING TO SHARE KEEPS A FLOOR — unless you have sized the box it is in.
+   *
+   * That second clause is the whole design, and it took two attempts to find. Flooring the grid's CELLS
+   * fixes the collapse and breaks a rule with its own tests: "a box holding an EMPTY GRID shrinks too", so
+   * that a box can be dragged small. A floor on the cells survives the box's resize and blocks it.
+   *
+   * Reading the PARENT settles both. Squeeze the box and it gains an explicit height — a decision — so the
+   * courtesy stands aside and the grid shrinks with it, exactly as that rule requires. Leave the box alone,
+   * as a freshly added child stack is, and the grid keeps a height you can see and grab. One is a size
+   * somebody chose; the other is the absence of one.
+   */
+  /**
+   * A GRID WITH NOTHING TO SHARE KEEPS A FLOOR — unless you have sized the box it sits in.
+   *
+   * A grid's rows share whatever height the grid has. Given none — a grid in a stack that hugs its content
+   * — there is nothing to share: the cells are 0, the grid is 0, and the stack collapses with it. Measured:
+   * adding a Grid inside a child stack left the stack under 8px, reported as "the inner child breaks".
+   *
+   * The second clause is what lets this coexist with a rule that says the opposite. `empty-box-height`
+   * asserts "a box holding an EMPTY GRID shrinks too", so a box can be dragged small; squeezing that box
+   * gives it an explicit height, and a courtesy must always yield to a size somebody chose.
+   *
+   * `hostSized` and not "any ancestor sized" — see `hostSizedFor`. The reported case has an outer stack
+   * that IS sized, so the broader question answers yes and the collapse survives it.
+   */
+  if (!hostSized && !child.clip && gridHasNothingToShare(child)
+      && child.minHeight == null && child.height == null && !child.screenHeight) {
+    /**
+     * ONE FLOOR PER ROW, because the rows share whatever the grid gets.
+     *
+     * A single floor is the right answer for one row and the wrong one for four: a 2×2 grid handed 40px
+     * splits it into two 20px rows, which is back under the size at which a cell can be seen or grabbed —
+     * the very thing the floor exists to prevent. The grid asks for as much as its rows need.
+     */
+    const track = Math.max(1, gridColumns(child));
+    const used = (child.children ?? []).reduce((n, c) => n + Math.max(1, Math.round(c.colSpan ?? 1)), 0);
+    const rows = Math.max(1, Math.ceil(used / track));
+    s.minHeight = rows > 1 ? `calc(${EMPTY_BOX_MIN} * ${rows})` : EMPTY_BOX_MIN;
+  }
+  if (child.clip || isEmptyBox(child)) {
+    const floor = child.clip ? 0 : EMPTY_BOX_MIN;
+    // Width: only where the user has not stated one. A stored width ("50%", "fill") is already an answer.
+    s.minWidth = child.width == null || child.width === "auto" ? floor : 0;
+    // Height: keep an EXPLICIT resize floor; only replace the content-min when there is none.
+    if (child.minHeight == null && child.height == null && !child.screenHeight) s.minHeight = floor;
+    else if (child.minHeight == null && !child.screenHeight) s.minHeight = 0;
+  }
   // ── Responsive Field Guide reflow ──
   // A section inside a ROW BAND keeps a usable minimum width (`min(100%, 14rem)`): its siblings stay side-by-side
   // while they fit, but once the row is too narrow for everyone at that minimum, it WRAPS — so on a phone the
   // sections stack (each ~14rem-or-full) instead of cramming into unreadable columns. Doesn't touch resize/grow.
-  if (parent.rowBand && isRow && !child.clip && !isEmptyBox(child) && isContainer(child)) s.minWidth = "min(100%, 14rem)"; // only SECTIONS get the reflow floor; elements/components hug their content
+  // Only SECTIONS get the floor; elements/components hug their content. A hand-sized column keeps its size down to 3rem;
+  // on a PHONE every column takes the whole line, so rows stack and nothing narrow is squeezed (#75).
+  // …and a column on a line of four or more keeps that line on a desktop and a laptop (#78): it floors at 3rem too.
+  /**
+   * …and a narrow column is never DRAWN narrower than its own longest word (#102). Since #75 it could be drawn at 3rem
+   * whatever it held, so in a crowded line the browser broke words letter by letter ("Thi / s / cha / nge") or let the
+   * content spill out of the column at 150% text — both measured on a dressed page. It can still be DRAGGED down to 3rem
+   * (the canvas clamps there); on screen the floor is its content's, and a line too full for it wraps instead.
+   */
+  // A component that HUGS BY NATURE is not a section even though it is built as a container (F1-e): the floor made a
+  // Badge a 14rem pill round "New", and on a phone a pill across the whole line with a Rating's stars spread over it.
+  if (parent.rowBand && isRow && !child.clip && !isEmptyBox(child) && isContainer(child) && !(child.preset && HUGS_BY_NATURE.has(child.preset))) {
+    const floor = columnFloorRem(parent, child, bp);
+    // On a phone every column takes the line — except on the page grid, where the fit rule decides there too (G-1 #12)
+    s.minWidth = bp === "phone" && !gridBandOwnsGutter(parent) ? "100%" : floor === HAND_FLOOR_REM ? "min-content" : `min(100%, ${floor}rem)`;
+  }
+  // On a tablet held upright that line is rearranged, at most three across and balanced (#78, `tabletPlaces`).
+  const place = isRow ? tabletPlaces(parent, bp)?.get(child.id) : undefined;
+  if (place) {
+    s.flex = `1 1 ${tabletBasis(place, gapOf(parent).x)}`;
+    if (isContainer(child) && !child.clip && !isEmptyBox(child)) s.minWidth = "min-content"; // never narrower than its longest word (#102)
+  }
   const crossCss = sizeToCSS(crossToken);
   // RULE O — inside a ROW a block's height is its CROSS size. For a self-painting block (component/button) that
   // must be a FLOOR, not a cap: a hard height here is what let the content spill out below the box after the
@@ -3458,7 +6321,67 @@ export function childStyle(child: BoxNode, parent: BoxNode, bp: Breakpoint = "ba
   // LAST, so the nine-point position wins over the older per-axis controls it replaces (`push`, and the
   // hug-to-content `alignSelf` just above): a block told where to sit goes there.
   Object.assign(s, placeCSS(child, parent));
+  // …and pinning after even that — see the matching line in the grid branch above.
+  Object.assign(s, pinCSS(child, parent, bp));
+  // A line of menu items is spaced by the block it sits in (`linkLineGap`) — the only one of the two you can select.
+  const lg = linkLineGap(child, parent, bp); if (lg) Object.assign(s, lg);
+  gutterCSS(s, child, parent, bp);
   return s;
+}
+
+/** The gap across a row band — its columns' GUTTER (S1-a). 0 for a band saved before space by default. */
+export function bandGutter(band: BoxNode): number {
+  // A line of menu items is spaced by its own gap (`linkLineGap`): a gutter on top put the links 2rem + 1rem apart (E0-b).
+  // A gutter lies BETWEEN columns: a band of one column has none (L-2, L2-b). Its reach `calc(100% + gut)` and the
+  // column's give-back `calc(100% - gut)` change nothing you can see, but each rounds to the browser's 1/64px, and in a
+  // menu that hugs its links the column came out one unit short of them — "Contact" wrapped on the PUBLISHED page at
+  // 1024 · 1280 · 1366 · 1440 · 1550 · 1650 · 1750 (7 of 20 widths measured), and on the canvas at Wide.
+  const columns = (band.children ?? []).filter((k) => !isFloating(k) && !k.hidden).length;
+  return band.rowBand && columns >= 2 && !isMenuLine(band) ? gapOf(band).x : 0;
+}
+
+/**
+ * COLUMNS SIDE BY SIDE KEEP A GAP, AND THE LINE STILL FITS (S1-a; the user, 2026-09-30: 1rem, the widths give way).
+ *
+ * A flex `gap` on a band that WRAPS is added on top of the shares, so three 33.33% columns plus two gaps no longer fit
+ * and the third drops to a second line. The gap is a GUTTER instead, the way Bootstrap's rows do it: the band reaches
+ * half a gap past each side of its parent, and every column gives up one gap from its share of that wider line and
+ * takes half a gap of margin on each side. A line of shares that adds up to 100% then fits EXACTLY, however many
+ * columns share it — so wrapping one column never resizes the others — the outer columns still meet the page edge,
+ * and a stored % still means "this share of the line": the canvas resize measures each column's SLOT (the column plus
+ * its half gaps), which is exactly what the % describes.
+ */
+function gutterCSS(s: CSSProperties, child: BoxNode, parent: BoxNode, bp: Breakpoint): void {
+  if (isPageRow(parent)) { pageRowCSS(s, child, parent, bp); return; }
+  // a row of the page is exactly the page's width: its lines are the guides' (G-3b)
+  const bandG = child.rowBand && (parent.direction ?? "column") !== "row" && !isPageRow(child) ? bandGutter(child) : 0;
+  // THE BAND'S OWN `--bx-gut` (`gapCSS`), for the reach AND the columns: one length, resolved on the band (E0-e).
+  const GUT = "var(--bx-gut)";
+  if (bandG > 0) {
+    s.marginLeft = s.marginRight = `calc(${GUT} * -0.5)`;
+    s.width = `calc(100% + ${GUT})`;
+    s.maxWidth = "none";
+  }
+  const g = parent.rowBand && (parent.direction ?? "column") === "row" ? bandGutter(parent) : 0;
+  if (!g) return;
+  const G = GUT, half = `calc(${GUT} / 2)`;
+  const basis = typeof s.flex === "string" ? /^(\d) (\d) (\d+(?:\.\d+)?)%$/.exec(s.flex) : null;
+  // `%` here is already the WIDENED band (the line plus one gap), so the slot is the stored share of it as written.
+  if (basis && +basis[3] > 0) s.flex = `${basis[1]} ${basis[2]} calc(${basis[3]}% - ${G})`;
+  s.maxWidth = `calc(100% - ${G})`; // `100%` is the widened band: a block that fills its width would run one gap past the edge
+  if (s.minWidth === "100%") s.minWidth = `calc(100% - ${G})`;
+  else if (typeof s.minWidth === "string" && s.minWidth.startsWith("min(100%,")) s.minWidth = s.minWidth.replace("min(100%,", `min(100% - ${G},`);
+  const m = marginCSS(child);
+  if (gridBandOwnsGutter(parent)) {
+    const k = parent.children ?? [];
+    // only a LENGTH margin is the row's side (`rowSide`); a gap opened by dragging the left edge is a share of the line
+    // (`marginLeftPct`) and stays the block's own (G3-11 — the width round trip could no longer open a space)
+    if (k[0]?.id === child.id && child.marginLeftPct === undefined) { m.marginLeft = undefined; if (s.marginLeft !== "auto") s.marginLeft = undefined; }
+    if (k[k.length - 1]?.id === child.id) { m.marginRight = undefined; if (s.marginRight !== "auto") s.marginRight = undefined; }
+  }
+  const side = (v: unknown) => (v === "auto" ? "auto" : `calc(${v ?? "0px"} + ${half})`);
+  s.marginLeft = side(s.marginLeft ?? m.marginLeft);
+  s.marginRight = side(s.marginRight ?? m.marginRight);
 }
 
 /**
@@ -3495,6 +6418,954 @@ export function combineMinHeight(own: string | undefined, screen: BoxNode["scree
   const wanted = screen === "full" ? "100svh" : screen === "half" ? "50svh" : undefined;
   if (!wanted) return own;
   return own ? `max(${own}, ${wanted})` : wanted;
+}
+
+// ── Pinning: a block that stays put while the page scrolls ───────────────────
+
+/**
+ * THE ONE RESOLVER for pinning — `radiusCSS`'s rule, for the same reason.
+ *
+ * The canvas and the export must agree about a pinned block or the builder is lying about the published
+ * page, and they agree here by both calling `childStyle`, which calls this. Nothing else may write
+ * `position: sticky`.
+ *
+ * `sticky` and not `fixed`, deliberately. A fixed block leaves the document entirely — it is measured
+ * against the viewport, so it escapes its column, ignores the page's gutters and sits on top of whatever
+ * scrolls beneath it. Sticky stays a member of its parent: it occupies its space in the flow, holds itself
+ * against the named edge while its PARENT is on screen, and leaves with the parent. That is what "a sidebar
+ * that follows you down the page" actually means, and it is also what makes it safe — a sticky block cannot
+ * cover the footer, because it stops when its parent does.
+ *
+ * TWO THINGS ARE NOT NEGOTIABLE, and both are one-line clauses here:
+ *
+ *  1. **A floating block is never pinned.** `position: absolute` and `position: sticky` are the same
+ *     property, so a block carrying both would have whichever the object spread wrote last — which is to
+ *     say, whichever the reader of that code happened to order first. Free positioning wins, because the
+ *     user placed that block by hand and sticky would silently move it.
+ *
+ *  2. **The edge is an offset, not a side.** `top` for a block pinned to the top, `bottom` for the bottom.
+ *     Writing both (or neither) is how a sticky block ends up inert — present in the CSS, doing nothing —
+ *     which is the defect class this project keeps meeting.
+ *
+ * `PAGE_Z.sticky` comes from the stacking ladder rather than a literal, so a pinned block sits above
+ * ordinary flow content and still cannot reach the editor's chrome.
+ */
+/**
+ * A WRAPPER BAND TAKES ON ITS ONLY CHILD'S PIN — because otherwise the child has nowhere to travel.
+ *
+ * The builder gives every top-level block its own band, so a user who pins a header produces
+ * `root › band › header` where the band HUGS the header: parent 64px, child 64px, travel 0px. The header
+ * is correctly `position: sticky` and scrolls away with the page, for the same reason a stretched rail does.
+ *
+ * Measured: alone in its band a pinned nav lost the whole 700px it was scrolled; with the pin moved up to
+ * the band it moved 8px and held. The band's own parent is the page, which is as tall as the site.
+ *
+ * This is the shape of bug this project keeps meeting from ONE cause — a test that builds its tree by hand.
+ * The guard for pinning put the header and the body in a single band, which is a page no user can make, and
+ * every assertion in it passed while the real thing did nothing.
+ *
+ * Only a band that HUGS. A band carrying its own height gives its child real travel, and hoisting there
+ * would change a working case into a different one — the whole band would stick instead of the block.
+ * Returns the child whose pin is being carried, so both sides of the decision read from one function.
+ *
+ * AT THE RUNG BEING DRAWN. `resolveResponsive` resolves a node and not its children, so the band arrived with
+ * its children as the DESKTOP had them. A pin set only on phones was therefore never carried — the block went
+ * sticky inside a band that hugs it, the zero-travel shape above, and did nothing — while a pin turned OFF on
+ * phones was still carried, so the band went on sticking. Resolving each child here is the whole fix.
+ */
+export function bandCarriesPin(band: BoxNode, bp: Breakpoint = "base"): BoxNode | null {
+  if (!band.rowBand || band.pin || band.minHeight != null || band.height != null) return null;
+  const inFlow = (band.children ?? []).map((k) => resolveResponsive(k, bp)).filter((k) => !isFloating(k));
+  const only = inFlow.length === 1 ? inFlow[0] : null;
+  // STICKY ONLY. The hoist exists to buy TRAVEL inside a parent, and a fixed block does not travel inside
+  // anything — it is measured against the viewport. Hoisting it would move the pin onto a band that is not
+  // the thing the user pinned, for no gain at all.
+  return only?.pin && (only.hold ?? "sticky") === "sticky" ? only : null;
+}
+
+/** Which physical edges a pin names. A corner is two, which is why only `fixed` may use one. */
+const PIN_EDGES: Record<NonNullable<BoxNode["pin"]>, ("top" | "right" | "bottom" | "left")[]> = {
+  top: ["top"], right: ["right"], bottom: ["bottom"], left: ["left"],
+  "top-left": ["top", "left"], "top-right": ["top", "right"],
+  "bottom-left": ["bottom", "left"], "bottom-right": ["bottom", "right"],
+};
+
+/**
+ * The one edge a STICKY block may hold, whatever the stored value says.
+ *
+ * Sticky is measured against a scroll container, and a page scrolls vertically — so `left`/`right` need a
+ * horizontally scrolling parent, which is never what "a rail on the right" means, and a CORNER writes two
+ * insets, which is precisely how a sticky block ends up inert (the clause above). The UI offers neither for
+ * sticky, but the model can still hold one after a user switches from fixed back to sticky, so it resolves
+ * here rather than trusting the control to have tidied up.
+ */
+const stickyEdge = (pin: NonNullable<BoxNode["pin"]>): "top" | "bottom" =>
+  PIN_EDGES[pin].includes("bottom") ? "bottom" : "top";
+
+/**
+ * The marker both renderers put on a block that holds its place: which edge it is held against.
+ *
+ * It names the VERTICAL edge only, because that is the axis bars stack down. A block pinned to `left` or
+ * `right` alone spans the height and has nothing to stack under, so it carries no marker and the pass never
+ * sees it.
+ *
+ * The same standing-down rule as `pinCSS`: when a band is carrying the pin on its child's behalf, the marker
+ * belongs on the band, since the band is the element that will actually be `fixed` or `sticky`.
+ */
+export function pinStackAttr(node: BoxNode, parent?: BoxNode, bp: Breakpoint = "base"): "top" | "bottom" | null {
+  if (parent && bandCarriesPin(parent, bp)?.id === node.id) return null;
+  const src = bandCarriesPin(node, bp) ?? node;
+  if (!src.pin) return null;
+  if (src.position === "absolute" || node.position === "absolute") return null;
+  /**
+   * BOTH MECHANISMS STACK NOW — but only against bars they can actually meet (Step 2e).
+   *
+   * 2c was scoped to `hold: "fixed"` and said so here, because reaching for sticky without a way to tell
+   * WHICH box each bar holds within shoved a sticky rail 160px down the page: it was offset for a collision
+   * that could not happen. The missing piece was the resolver, and `pinStackGroup` is it.
+   *
+   * A fixed bar is held against the WINDOW, so every fixed bar on a page shares one coordinate space. A sticky
+   * bar is held against the box it travels inside, so two sticky bars stack only when that box is the same one.
+   * Measured across three arrangements:
+   *
+   *     two sticky bars as siblings in one Stack     40px of overlap   → same holder, must stack
+   *     two sticky bars placed straight on the page   40px of overlap   → both hold within the page
+   *     two sticky bars in different sections          0px             → they hand over, must NOT be moved
+   *
+   * The middle one is the common shape — a header and an announcement bar — and it is the reported bug's own
+   * shape with the other mechanism selected. Leaving it out would have fixed the symptom for one setting only.
+   */
+  // Bars queue DOWN a screen, never across it, so a pure left/right rail joins no stack.
+  if (!PIN_EDGES[src.pin].some((e) => e === "top" || e === "bottom")) return null;
+  return stickyEdge(src.pin);
+}
+
+/**
+ * WHICH SET OF BARS THIS ONE CAN COVER — the grouping key, emitted so the measuring pass can use it.
+ *
+ * `"window"` for a fixed bar: every one of them is held against the viewport, so they share a single queue.
+ * For a sticky bar it is the box it holds within, and that is simply **the parent of the element carrying the
+ * marker** — which is exact, not an approximation. When a band carries the pin on its child's behalf the
+ * marker is on the BAND, so the band's parent is the holder; when a block is pinned directly the marker is on
+ * the block, so its parent is. Both cases are the same lookup, and `"page"` names the root.
+ */
+export function pinStackGroup(node: BoxNode, parent?: BoxNode, bp: Breakpoint = "base"): string | null {
+  if (!pinStackAttr(node, parent, bp)) return null; // this element does not join a stack at all
+  const src = bandCarriesPin(node, bp) ?? node;
+  if ((src.hold ?? "sticky") === "fixed") return "window";
+  return parent?.id ?? "page";
+}
+
+/**
+ * ONE measuring pass that stacks the pinned bars, as plain DOM.
+ *
+ * THE CANVAS CALLS THIS FUNCTION AND THE EXPORT SHIPS ITS SOURCE, exactly as `masonryMeasurePass` does, and
+ * for the same reason: two implementations of one algorithm is a canvas ≠ export bug with a delay on it.
+ *
+ * WHY A MEASUREMENT IS UNAVOIDABLE. To put the second bar under the first, its offset must be the first
+ * bar's RENDERED height — and CSS cannot ask that question. The two alternatives were considered and are
+ * worse: summing the heights the user happened to TYPE is silently wrong for a bar whose height is just its
+ * text (the common case) and wrong again at any width where that text wraps to a second line; and refusing to
+ * stack at all leaves the reported bug in place.
+ *
+ * IT READS THE COMPUTED POSITION RATHER THAN THE MARKUP, which is what makes it right per device for free. A
+ * bar whose pin is turned off at the phone rung still carries `data-eu-pin` — the attribute is static — but
+ * its computed `position` is not `fixed` or `sticky` there, so it takes up no room in the stack. A guess from
+ * the breakpoint would have had to be kept in step with the CSS; a measurement cannot drift from it.
+ *
+ * Setting the property cannot feed back into the measurement: `--eu-pin-above` moves a bar's inset, and an
+ * inset does not change a height. One pass settles, and there is nothing here to ratchet.
+ */
+export function pinStackPass(root: ParentNode): void {
+  const all = Array.from(root.querySelectorAll("[data-eu-pin]")) as HTMLElement[];
+  // Cleared first, every time: a bar that has stopped being pinned at this width would otherwise keep the
+  // offset it was given at the last one, and sit that far down the screen for no visible reason.
+  for (const el of all) el.style.removeProperty("--eu-pin-above");
+  for (const edge of ["top", "bottom"]) {
+    const held = all.filter((el) => {
+      if (el.getAttribute("data-eu-pin") !== edge) return false;
+      /**
+       * `absolute` IS ON THIS LIST BECAUSE THE CANVAS CANNOT USE `fixed` AT ALL.
+       *
+       * The builder's page frame declares `container-type: inline-size` — which is what makes container
+       * queries work — and that makes it the containing block for anything fixed inside it. So the editor
+       * renders a held block as `absolute` with a computed offset (`canvasFixedStyle`) instead.
+       *
+       * Measured before this line existed: on the exported page the three bars stacked correctly, and on the
+       * canvas all three sat at the same 88px with `--eu-pin-above` never set — canvas ≠ export, in the
+       * direction where the editor lies to you, which the Definition of Done forbids outright.
+       *
+       * Widening it costs nothing, because the filter has already required `data-eu-pin`, and that marker is
+       * only ever written for a block that is pinned, held FIXED, and not freely positioned. So an absolute
+       * element carrying this marker is a canvas-held bar and nothing else.
+       */
+      const p = getComputedStyle(el).position;
+      return p === "fixed" || p === "sticky" || p === "absolute";
+    });
+    /**
+     * QUEUED PER GROUP (2e), not per edge. A fixed bar is held against the window so all of them share one
+     * queue (`"window"`); a sticky bar is held against the box it travels inside, so it queues only behind
+     * bars in that same box. Without this, two sticky bars in different sections were offset for a collision
+     * that cannot happen — measured at 160px of unwanted movement on a rail.
+     *
+     * `querySelectorAll` returns document order, so each group is already in the order it appears.
+     */
+    const groups = new Map<string, HTMLElement[]>();
+    for (const el of held) {
+      const key = el.getAttribute("data-eu-pin-in") || "window";
+      const members = groups.get(key);
+      if (members) members.push(el);
+      else groups.set(key, [el]);
+    }
+    /**
+     * …AND BEHIND EVERY BAR THAT IS STILL STUCK WHILE IT TRAVELS (F1-b, measured on four tier-80 pages): a bar held to the
+     * WINDOW (fixed) covers every sticky one, and a sticky bar whose HOLDER contains this one — a header held by the page
+     * above a sidebar in the page — is stuck for this one's whole journey. Grouping alone put the sidebar at top 0 under a
+     * 87px sticky header (z 30 / 30, so its heading painted over the logo and "Apply now"). Two bars in SIBLING sections
+     * still never meet (2e): neither holder contains the other.
+     */
+    const keyOf = (el: Element) => el.getAttribute("data-eu-pin-in") || "window";
+    // The holder BY ITS ID (canvas `data-box-id`, export `bx-` class): a landmark (`<header>`, `<main>`) can sit between a bar and it.
+    const holderOf = (b: Element) => { const k = keyOf(b); return (root.querySelector(`[data-box-id="${k}"], .bx-${CSS.escape(k)}`)) ?? b.parentElement; };
+    const nearer = (b: Element, el: Element) => !!((edge === "top" ? b.compareDocumentPosition(el) : el.compareDocumentPosition(b)) & Node.DOCUMENT_POSITION_FOLLOWING);
+    const outer = (el: Element) => held.filter((b) => keyOf(b) !== keyOf(el) && !b.contains(el) && nearer(b, el) && (keyOf(b) === "window" ? keyOf(el) !== "window" : keyOf(b) === "page" || !!holderOf(b)?.contains(el)))
+      .reduce((n, b) => n + b.getBoundingClientRect().height, 0);
+    let windowStack = 0; // the FIXED bars' total, which is the only one 2d's padding may use
+    for (const [key, members] of groups) {
+      // Down the page for a top edge; up it for a bottom one — in both cases, nearest the edge is first.
+      const order = edge === "top" ? members : members.slice().reverse();
+      let above = 0;
+      for (const el of order) {
+        el.style.setProperty("--eu-pin-above", above + outer(el) + "px");
+        above += el.getBoundingClientRect().height;
+      }
+      if (key === "window") windowStack = above;
+    }
+    /**
+     * STEP 2d — AND THE SAME MEASUREMENT ANSWERS "WHERE IS THE TOP OF THE PAGE?"
+     *
+     * A held bar is out of the flow, so the browser's idea of the top of the scrollport is still y=0 —
+     * several centimetres above anything the reader can see. Follow a link to `#term-dates` and the section
+     * lands at 0, behind the bar: measured at y=0 under a bar reaching y=62. `scroll-padding-top` states the
+     * usable top instead, and every scroll the browser performs itself respects it — a fragment link,
+     * `scrollIntoView`, Page Down, snapping.
+     *
+     * It is the height of the whole TOP stack, which is exactly the number this loop has just finished
+     * totalling, so 2d costs one assignment rather than a second mechanism. A bottom stack covers the end of
+     * the page, where nothing is scrolled TO, so it is not owed any.
+     *
+     * ONLY WHEN THIS PASS IS RUNNING OVER A WHOLE DOCUMENT (`nodeType === 9`) — the published page or the
+     * preview. On the canvas the pass is given the canvas host, and the document it belongs to is the
+     * BUILDER's, whose scrollport is the editor itself; padding that would be meddling with the app's own
+     * scrolling to fix a link the canvas never follows.
+     */
+    if (edge === "top" && root.nodeType === 9) {
+      const scroller = (root as Document).scrollingElement as HTMLElement | null;
+      if (scroller) {
+        // The FIXED bars only. A sticky bar covers the top of the screen just while it is stuck, and
+        // `scroll-padding-top` is one static number — padding for it would push every landing down the page
+        // at every other moment.
+        if (windowStack > 0) scroller.style.setProperty("scroll-padding-top", windowStack + "px");
+        else scroller.style.removeProperty("scroll-padding-top"); // nothing held here now — owe nothing
+      }
+    }
+  }
+}
+
+/**
+ * The script the export ships for the stacking — one guarded global, in the established pattern.
+ *
+ * Zero JS stays the default: `pinStackNeeded` decides, and a page with fewer than two bars at one edge gets
+ * nothing at all. It re-runs whenever a height it measured could have changed — the window resizing, the web
+ * fonts landing — because each of those lands after the first pass and silently invalidates it.
+ */
+export function pinStackScript(): string {
+  return `<script>(function(){if(window.__euPinStack)return;window.__euPinStack=1;
+var pass=${String(pinStackPass)};
+var queued=0;
+function all(){queued=0;try{pass(document);}catch(e){}}
+function soon(){if(queued)return;queued=1;requestAnimationFrame(all);}
+soon();
+addEventListener('resize',soon);
+addEventListener('load',soon);
+if(document.fonts&&document.fonts.ready)document.fonts.ready.then(soon).catch(function(){});
+})();</script>`;
+}
+
+/**
+ * Does this page actually stack pinned bars? Two or more held against the SAME edge, at any rung.
+ *
+ * Every rung is checked, not just the base: "a header on desktop and an announcement bar on phones" is two
+ * bars that never meet, and shipping a script for it would be paying for nothing. The reverse matters more —
+ * a stack that only exists at one rung still needs the script at that rung.
+ */
+const PIN_RUNGS: Breakpoint[] = ["base", "phone", "tabletPortrait", "tabletLandscape", "wide"];
+
+/**
+ * The marker for the MARKUP — which is written once and must serve every rung.
+ *
+ * The CSS is emitted per rung; the HTML is not. So this asks "is this block held at ANY width?", and the
+ * script sorts out where it actually holds by reading the computed position at the width in front of it.
+ *
+ * Known limit, written down rather than left to be found: a block held at the TOP on a desktop and at the
+ * BOTTOM on a phone can only carry one edge in one attribute, and takes the first rung that pins it. Nothing
+ * in the Inspector encourages that, and the cost if someone does it is a bar that does not join the stack at
+ * one rung — not a broken page.
+ */
+export function pinStackMarker(node: BoxNode, parent?: BoxNode): "top" | "bottom" | null {
+  for (const bp of PIN_RUNGS) {
+    const edge = pinStackAttr(node, parent, bp);
+    if (edge) return edge;
+  }
+  return null;
+}
+
+/** The group marker, taken from the same rung as the edge marker so the pair can never describe two states. */
+export function pinStackGroupMarker(node: BoxNode, parent?: BoxNode): string | null {
+  for (const bp of PIN_RUNGS) {
+    if (pinStackAttr(node, parent, bp)) return pinStackGroup(node, parent, bp);
+  }
+  return null;
+}
+
+export function pinStackNeeded(root: BoxNode): boolean {
+  for (const bp of PIN_RUNGS) {
+    // PER EDGE **AND** PER GROUP (2e): two bars only need a pass if they can actually cover each other. Counting
+    // by edge alone would ship a script for two sticky bars in different sections, which hand over untouched.
+    // …AND across groups when one bar's holder CONTAINS the other bar, or one is held to the window (F1-b): a sticky
+    // header held by the page covers a sticky sidebar in a section for the sidebar's whole travel (`pinStackPass`).
+    const bars: { edge: string; group: string; anc: Set<string> }[] = [];
+    const walk = (n: BoxNode, parent: BoxNode | undefined, anc: Set<string>): void => {
+      const edge = pinStackAttr(n, parent, bp);
+      if (edge) bars.push({ edge, group: pinStackGroup(n, parent, bp) ?? "window", anc });
+      const inner = new Set(anc).add(n.id);
+      for (const k of n.children ?? []) walk(k, n, inner);
+    };
+    walk(root, undefined, new Set());
+    const covers = (a: (typeof bars)[number], b: (typeof bars)[number]) => a.group === b.group || (a.group === "window" && b.group !== "window") || a.group === "page" || b.anc.has(a.group);
+    for (let i = 0; i < bars.length; i++) for (let j = i + 1; j < bars.length; j++) {
+      const a = bars[i], b = bars[j];
+      if (a.edge === b.edge && (covers(a, b) || covers(b, a))) return true;
+    }
+  }
+  return pinPaddingNeeded(root);
+}
+
+/**
+ * STEP 2d's half of the question: does this page need the pass for `scroll-padding-top` alone?
+ *
+ * Stacking needs TWO bars at an edge; the padding needs only ONE, because a single held bar hides whatever a
+ * link scrolls to just as completely. But a page with a held bar and nothing to scroll TO is owed nothing, and
+ * zero JS stays the default — so both halves have to be true.
+ *
+ * "Something to scroll to" is an anchor on any box or component item, or any `#` link. The TARGET is what
+ * matters as much as the link: a visitor can arrive from another page at `term-dates.html#autumn`, in which
+ * case the link does not live on this page at all. A pager is deliberately not counted — it ships its own
+ * script precisely because a bare fragment link nudges the page, and that script does the scrolling itself.
+ */
+export function pinPaddingNeeded(root: BoxNode): boolean {
+  let held = false;
+  let scrollTarget = false;
+  const walk = (n: BoxNode, parent?: BoxNode): void => {
+    /**
+     * A FIXED top bar only — `group === "window"`. Asked explicitly rather than inherited from
+     * `pinStackAttr`, which is the trap 2e nearly walked into: 2d was written while that function returned
+     * null for sticky, so "a held top bar" and "a FIXED top bar" were accidentally the same question. Dropping
+     * that restriction for sticky stacking would silently have started padding the page for a sticky bar too.
+     *
+     * And the padding would be wrong if it did: `scroll-padding-top` is one static number, while a sticky bar
+     * covers the top of the screen only while it happens to be stuck. A fixed bar covers it always.
+     */
+    for (const bp of PIN_RUNGS) {
+      if (pinStackAttr(n, parent, bp) === "top" && pinStackGroup(n, parent, bp) === "window") { held = true; break; }
+    }
+    if (n.anchor || (n.items ?? []).some((it) => it.anchor)) scrollTarget = true;
+    if (typeof n.href === "string" && n.href.startsWith("#") && n.href.length > 1) scrollTarget = true;
+    for (const k of n.children ?? []) walk(k, n);
+  };
+  walk(root);
+  return held && scrollTarget;
+}
+
+export function pinCSS(node: BoxNode, parent?: BoxNode, bp: Breakpoint = "base"): CSSProperties {
+  // The child half of the hoist above: it stands down so the band alone writes `position`.
+  if (parent && bandCarriesPin(parent, bp)?.id === node.id) return {};
+  // The band half: it pins on behalf of the child it wraps, at that child's edge and offset.
+  const src = bandCarriesPin(node, bp) ?? node;
+  if (!src.pin) return {};
+  if (src.position === "absolute" || node.position === "absolute") return {}; // clause 1 — free positioning wins
+  const fixed = (src.hold ?? "sticky") === "fixed";
+  const offset = u(src.pinOffset ?? 0);
+  const css: CSSProperties = { position: fixed ? "fixed" : "sticky", zIndex: PAGE_Z.sticky };
+  /**
+   * CLAUSE 5 — A FIXED BLOCK HAS TO BE GIVEN ITS WIDTH, because nothing else will.
+   *
+   * Out of flow, a block takes no size from the row, band or grid it came from: `flex-basis` and
+   * `grid-column` simply do not reach it. Measured on BOTH engines before this line existed, a full-width
+   * bar set to "Floats on screen" rendered **0px wide** — an invisible block on the canvas, unclickable, and
+   * an invisible block on the published page. The feature shipped that way, and its guards passed, because
+   * every one of them measured WHERE the bar was and never how wide.
+   *
+   * The floating (`position: absolute`) branch of both renderers has always written the width itself for
+   * exactly this reason; fixed is the same shape of thing and now does it in the one resolver. A width of
+   * `auto` is left alone: that is a block told to hug its content, and a chat bubble or an "Apply now"
+   * button should be exactly as wide as what is in it.
+   */
+  if (fixed) {
+    const w = sizeToCSS(src.width);
+    if (w) css.width = w;
+  }
+  /**
+   * CLAUSE 5b — AND A RAIL HELD AGAINST A VERTICAL EDGE HAS TO BE GIVEN ITS HEIGHT.
+   *
+   * The exact mirror of clause 5, and it was missing for the whole life of the feature. Out of flow a block
+   * takes no size from its row, so a rail set to "Floats on screen" against the LEFT edge collapsed to the
+   * height of its contents and sat as a stub at the top of the screen. Reported by the user as *"when I make
+   * it sticky or fixed, in the preview it's just completely wrong — it doesn't take over the whole view
+   * height"*, and measured: beside a 900px column the rail rendered **300px**, short by 600.
+   *
+   * Clause 5 fixed the horizontal case because a full-width bar rendered 0px wide; nobody then asked the same
+   * question of the vertical one. A bar is held against a horizontal edge and spans the width; a rail is held
+   * against a vertical edge and spans the height. That is the whole of it.
+   *
+   * ONLY A PURE LEFT OR RIGHT EDGE. A CORNER means "sit in that corner" — a chat bubble, a back-to-top
+   * button — and stretching one to the full height is the opposite of what it is for. And a height the user
+   * set themselves always wins: this supplies the one nothing else will, it does not overrule a decision.
+   */
+  if (fixed && !src.height) {
+    const edges = PIN_EDGES[src.pin];
+    const verticalEdge = edges.length === 1 && (edges[0] === "left" || edges[0] === "right");
+    if (verticalEdge) { css.top = offset; css.bottom = offset; }
+  }
+  /**
+   * CLAUSE 6 — TWO BARS HELD AT THE SAME EDGE SIT UNDER ONE ANOTHER, NOT ON TOP OF EACH OTHER.
+   *
+   * Reported by the user: three bands each set to stay on screen all pinned to the top and covered each
+   * other, so two of the three were simply invisible. Every one of them is doing exactly what it was told —
+   * "hold against the top" — and with one offset each, the top is where they all go.
+   *
+   * The vertical inset therefore carries `--eu-pin-above`: how much pinned bar is already stacked at this
+   * edge. The horizontal insets of a CORNER do not, because bars stack down a screen and not across it.
+   *
+   * `var(--eu-pin-above, 0rem)` is the whole compatibility story. Nothing sets that property until the
+   * measuring pass runs, so a page without it behaves precisely as it did before — the bars overlap, which is
+   * the state this is improving on rather than a regression. See `pinStackPass` for why a measurement is
+   * unavoidable here.
+   */
+  const stacked = `calc(var(--eu-pin-above, 0rem) + ${offset})`;
+  const vertical = stickyEdge(src.pin);
+  // Fixed may hold a corner — two insets against the viewport. Sticky gets exactly one, resolved above.
+  if (fixed) for (const edge of PIN_EDGES[src.pin]) css[edge] = edge === vertical ? stacked : offset;
+  else css[vertical] = stacked;
+  /**
+   * CLAUSE 3 — A BLOCK STRETCHED TO ITS PARENT'S HEIGHT HAS NOWHERE TO TRAVEL.
+   *
+   * Sticky moves a box WITHIN its parent. A row and a grid both hand their children the full height of the
+   * line or the row (`align-items: stretch`, which is the initial value for both), so a pinned child is made
+   * exactly as tall as the thing beside it and has zero room to move. The CSS is present and correct and the
+   * block simply scrolls away — the same shape of silent failure as clause 2 above.
+   *
+   * Measured before this line existed: a 200px rail beside 2400px of content was itself 2400px tall, giving
+   * it 0px of travel. It could not have held even with a working scroll container.
+   *
+   * Only where the parent WOULD stretch it. In a column the cross axis is horizontal, so `align-self` there
+   * governs WIDTH — writing it would shrink a full-width pinned header to the width of its text, which is a
+   * different bug in exchange for this one.
+   *
+   * It overrides a stretch the user may have set, and that is deliberate: stretching and pinning are not
+   * both satisfiable, and pinning is the thing they asked for. `flex-start` rather than `start` to match
+   * every other alignment this file writes; it is valid in grid too.
+   */
+  // …and only for STICKY. A fixed block is out of the flow, so its parent's alignment reaches it no more
+  // than its parent's width does — writing `align-self` there would be a declaration about nothing.
+  const stretchesChildren = !fixed && !!parent && (parent.layout === "grid" || (parent.direction ?? "column") === "row");
+  if (stretchesChildren) css.alignSelf = "flex-start";
+  /**
+   * CLAUSE 3b — A STICKY SIDEBAR IS THE HEIGHT OF THE SCREEN.
+   *
+   * Reported alongside the fixed rail: *"when I make it sticky or fixed… it doesn't take over the whole view
+   * height."* Clause 3 above has just refused to let the row stretch this block, and it has to — stretched to
+   * a 2400px column a sticky block has **zero travel** and can never stick, which is the silent failure that
+   * clause existed to end. So it cannot be as tall as the thing beside it. It can be as tall as the SCREEN,
+   * and that is what a sidebar is: 100dvh against a taller column leaves it a full column of travel.
+   *
+   * `dvh` rather than `vh` because a phone's toolbars come and go, and `vh` measures the tallest case — the
+   * one where the bottom of the rail is behind the browser's own chrome.
+   *
+   * WHERE THE ROW IS SHORTER THAN THE SCREEN nothing overflows: the row takes its height from its items, so a
+   * 100dvh rail simply makes the row that tall, and there was nothing to scroll past anyway.
+   *
+   * SCOPED TO A CONTAINER IN A ROW. A Stack beside a column of content is a sidebar; a sticky BUTTON or
+   * heading in a row is not, and stretching one to the height of the screen would be absurd. A grid is left
+   * out too — its cells are placed by track, and a cell is not a sidebar. And a height the user set
+   * themselves always wins.
+   *
+   * AT LEAST THE SCREEN, NEVER AT MOST (L-1 · L1-3). This was `height`, and a sidebar whose CONTENT is taller than
+   * the screen — a heading, a list, two cards and two pictures — kept a 720px box while its content ran on below it,
+   * out of the row, over the sections after it and off the end of the page. Measured through the UI
+   * (`scripts/uat/probe-l1-sticky.js --tall=1`): content 736px past the rail's foot at every scroll position, on the
+   * canvas AND the export (this one resolver feeds both); three tier-95/99 pages could not be built because a click
+   * on the section below landed on the sidebar. `min-height` keeps both promises of clause 3b — a short sidebar is
+   * the height of the screen, and it keeps its travel beside a taller column — and a tall one grows to hold what
+   * is in it, so nothing can leave its row.
+   */
+  // A HEADER, NAV OR FOOTER IS NEVER A SIDEBAR (L1-9): a pinned page header that shares its band with a column was made
+  // the height of the screen — measured 720px on tier-95 page 124. Its meaning says what it is; a sidebar is an `aside`
+  // or a plain Stack beside the content.
+  const bar = src.tag === "header" || src.tag === "nav" || src.tag === "footer";
+  if (stretchesChildren && isContainer(src) && !bar && !src.height && (parent!.direction ?? "column") === "row" && parent!.layout !== "grid") {
+    // Applied AFTER the block's own styles, so a min-height the user set is kept by taking the larger of the two.
+    const screen = `calc(100dvh - ${offset})`;
+    css.minHeight = typeof src.minHeight === "number" ? `max(${remLen(src.minHeight)}, ${screen})` : screen;
+  }
+  return css;
+}
+
+// ── Arrival: what changes once the page has moved under a pinned block (Step 2b) ─────────────────────
+
+export type PinArrival = NonNullable<BoxNode["pinArrival"]>;
+
+/** The five arrivals, in the order they are offered. Absent is the default and changes nothing. */
+export const PIN_ARRIVALS: { id: PinArrival; label: string; hint: string }[] = [
+  { id: "shadow", label: "Shadow", hint: "lifts off the page" },
+  { id: "solid", label: "Solid", hint: "fills in behind it" },
+  { id: "glass", label: "Glass", hint: "frosted, with the page showing through" },
+  { id: "rule", label: "Rule", hint: "a hairline underneath" },
+  { id: "condense", label: "Condense", hint: "it gets shorter" },
+];
+
+/** How much scrolling an arrival takes by default, in px at ordinary text size — the distance Elementor uses. */
+export const PIN_ARRIVAL_AFTER = 120;
+
+/**
+ * A SCROLL DISTANCE IS NOT A LAYOUT SIZE, and `u()` — the builder's fluid unit — is the wrong tool for it.
+ *
+ * Measured: `--box-u` resolves to `clamp(0.4375rem, 1cqw, 0.875rem)`, which is deliberately tied to the
+ * CONTAINER'S WIDTH, so "50 units of scrolling" came out as 64px and an arrival the user had set to take
+ * 500px of scroll was over in 64. Scrolling has nothing to do with how wide a box is.
+ *
+ * `remLen` instead — the file's existing px→rem converter: it scales with the reader's own text size, which
+ * is what a scroll distance should follow, and it keeps the rule that no stored pixel reaches the page.
+ */
+const scrollLen = (px: number) => remLen(px);
+
+/**
+ * THE CANVAS CANNOT USE `position: fixed` AT ALL — and must still SHOW what it does.
+ *
+ * Reported by the user, and reproduced exactly: a block set to float on screen kept its place on the
+ * published page and scrolled away in the editor, travelling the full 600px of a canvas scroll. The reason
+ * is not a bug that can be removed. A fixed box is measured against the viewport UNLESS an ancestor carries
+ * a transform, a filter or a `container-type` — and the builder's page frame declares
+ * `container-type: inline-size`, because that is what makes container queries work at all. So inside the
+ * canvas, fixed is always captured by the frame, which scrolls with the page. Removing the containment
+ * would only hand the block to the frame above it; taking the container-type away would break every
+ * component's responsiveness.
+ *
+ * So the canvas stops pretending and simulates instead: the block stays positioned in the page and is
+ * offset by however far the canvas has been scrolled, which is what "it does not move on screen" means.
+ * The export keeps real `position: fixed`; this is the editor's picture of it, from the same declarations.
+ *
+ * `translate` rather than `transform` for the bottom case: a block may carry a tilt, and `transform` is
+ * where that lives — writing it here would silently erase it.
+ */
+export function canvasFixedStyle(css: CSSProperties): CSSProperties {
+  if (css.position !== "fixed") return css;
+  /**
+   * THE PAGE IS INSET INSIDE THE CANVAS, AND THE OFFSET HAS TO PAY FOR IT.
+   *
+   * Reported second time round: a bar placed flush against the top of the page held with a visible gap
+   * above it once the canvas was scrolled. The block is positioned inside the PAGE, and the page sits a
+   * padding's width below the top of the scrolling area — so "the scroll" alone holds it level with where
+   * the page's top edge used to be, not with the top of what is on screen. `--canvas-top` is that inset,
+   * and taking it off puts the block against the visible edge, which is what the window does on the
+   * published page. `max(0px, …)` keeps it honest before the page's top has scrolled away at all: there
+   * the page top IS the top of the view, and the block belongs exactly where it was placed.
+   */
+  /**
+   * …AND LESS WHERE THE BLOCK'S OWN HOLDER SITS. An absolute box is measured from its nearest POSITIONED
+   * ancestor, which for a block in the layout is the band it lives in — not the page. A bar in the first
+   * band is a few pixels from the page's top, so it looked right and the guard passed; a block further down
+   * landed at its band instead, measured 1,488px down the page. `--holder-top` is that distance, written on
+   * the element by the canvas, so every held block is measured from the same origin the window would use.
+   */
+  const scroll = "max(0px, var(--canvas-scroll, 0px) - var(--canvas-top, 0px)) - var(--holder-top, 0px)";
+  const view = "var(--canvas-h, 100%)";
+  const { bottom, ...rest } = css;
+  const out: CSSProperties = { ...rest, position: "absolute" };
+  if (css.top != null && bottom != null) {
+    /**
+     * A FULL-HEIGHT RAIL — held against a vertical edge, so clause 5b gave it BOTH vertical insets.
+     *
+     * Two insets against the window mean "stretch between them", and this is the one case where that is the
+     * point rather than a mistake. The editor cannot use them both: an absolute box here is measured from the
+     * band it lives in, not the viewport, so `bottom` would be a distance from the wrong edge. The height is
+     * therefore stated outright — the visible canvas, less the insets — and the top follows the scroll like
+     * every other held block.
+     *
+     * Missing this left the canvas showing a 300px stub while the published page showed the full-height rail
+     * the user asked for: canvas ≠ export, in the direction where the editor lies to you.
+     */
+    out.top = `calc(${scroll} + (${String(css.top)}))`;
+    out.height = `calc(${view} - (${String(css.top)}) - (${String(bottom)}))`;
+  } else if (bottom != null) {
+    // Held against the bottom of the screen: the scroll, plus the height of the visible canvas, less the
+    // distance from that edge — then pulled back by its own height, which only `translate` knows.
+    out.top = `calc(${scroll} + ${view} - (${String(bottom)}))`;
+    out.translate = "0 -100%";
+  } else {
+    out.top = `calc(${scroll} + (${String(css.top ?? "0px")}))`;
+  }
+  return out;
+}
+
+/**
+ * A FLOATED BLOCK CAN STILL BE LIFTED TO THE WINDOW — and only to the window.
+ *
+ * Asked directly: "if I float a stack and then make it sticky or fixed, it should work, right?" For FIXED,
+ * yes, and it was refused only because clause 1 threw away the pin for anything floating. Measured on a real
+ * page: the same block emitted as `fixed` travelled 0px over a 900px scroll while the `absolute` one lost
+ * the whole 900. Free placement and floating on screen are not in conflict — the place you dragged it to
+ * simply becomes the place it holds.
+ *
+ * For STICKY they ARE in conflict, and the measurement says why rather than the spec: forced to `sticky`,
+ * the block returns to its position in the FLOW and starts taking space again — it stops being where you
+ * put it. Sticky holds a box relative to where it sits in the document, and a floated block does not sit
+ * there. Making that work needs a zero-height sticky wrapper around it, a structural edit to the user's
+ * tree — the same reason "hold until a block you choose" is deferred. The Inspector says so instead.
+ */
+export function floatHoldCSS(node: BoxNode): CSSProperties {
+  if (!isFloating(node) || !node.pin || (node.hold ?? "sticky") !== "fixed") return {};
+  const css: CSSProperties = { position: "fixed" };
+  // Measured at the moment it was lifted, so it does not jump — see `pinX`/`pinY`. Absent (an older page,
+  // or a tree built by hand) leaves the float's own left/top in place rather than moving it somewhere new.
+  if (node.pinX != null) css.left = remLen(node.pinX);
+  if (node.pinY != null) css.top = remLen(node.pinY);
+  return css;
+}
+
+const ARRIVE_SHADOW = "0 0.6rem 1.4rem rgba(2, 6, 23, 0.20)";
+const ARRIVE_RULE = "0 1px 0 0 var(--eu-color-border, #e2e7ee)";
+const ARRIVE_SURFACE = "var(--eu-color-surface, #ffffff)";
+
+/**
+ * ONE SET OF KEYFRAMES PER ARRIVAL, and the per-block values ride in custom properties.
+ *
+ * A keyframes block per pinned block would be the easy way and the wrong one: the same page can pin several
+ * blocks, and each would carry a near-identical copy of the same animation. The properties a block differs
+ * in — the shadow it already had, the colour it fills to, the height it condenses from — are variables set
+ * on the block itself, which is also what keeps the canvas and the export reading from one definition.
+ */
+const PIN_ARRIVAL_KEYFRAMES: Record<PinArrival, string> = {
+  shadow: `@keyframes eu-arrive-shadow{from{box-shadow:var(--eu-arrive-rest,none)}to{box-shadow:var(--eu-arrive-on,${ARRIVE_SHADOW})}}`,
+  rule: `@keyframes eu-arrive-rule{from{box-shadow:var(--eu-arrive-rest,none)}to{box-shadow:var(--eu-arrive-on,${ARRIVE_RULE})}}`,
+  solid: `@keyframes eu-arrive-solid{from{background-color:transparent}to{background-color:var(--eu-arrive-bg,${ARRIVE_SURFACE})}}`,
+  // Both spellings: Safari still needs the prefix, and a bar that is meant to be frosted must not simply be
+  // transparent there — the background-color half carries the look on its own if the blur never applies.
+  glass: `@keyframes eu-arrive-glass{from{background-color:transparent;-webkit-backdrop-filter:blur(0);backdrop-filter:blur(0)}`
+    + `to{background-color:var(--eu-arrive-bg,color-mix(in srgb, ${ARRIVE_SURFACE} 72%, transparent));-webkit-backdrop-filter:blur(0.6rem);backdrop-filter:blur(0.6rem)}}`,
+  condense: `@keyframes eu-arrive-condense{from{padding-block:var(--eu-arrive-pad-rest,0);min-height:var(--eu-arrive-h-rest,auto)}`
+    + `to{padding-block:var(--eu-arrive-pad-on,0);min-height:var(--eu-arrive-h-on,auto)}}`,
+};
+
+/** The keyframes a page actually uses — emitted once, exactly like the entrance effects. */
+export function pinArrivalKeyframes(used: Set<PinArrival | string>): string {
+  return [...used].map((id) => PIN_ARRIVAL_KEYFRAMES[id as PinArrival] ?? "").join("");
+}
+
+/** The vertical padding a block rests at, in base units — both sides, per-side winning over the shorthand. */
+const ownPadBlock = (node: BoxNode): number =>
+  Math.max(padSide(node, "Top"), padSide(node, "Bottom"));
+
+/**
+ * CONDENSE NEEDS SOMETHING TO CONDENSE. A bar whose height is simply its text has no padding and no
+ * min-height, so "it gets shorter" would be a promise the page never keeps — and a control that appears to
+ * work and does nothing is the defect this project meets most. The Inspector asks this and says so.
+ */
+export function pinArrivalHasEffect(node: BoxNode): boolean {
+  if (!node.pinArrival) return false;
+  if (node.pinArrival !== "condense") return true;
+  return ownPadBlock(node) > 0 || (node.minHeight ?? 0) > 0;
+}
+
+/** A block's own colour, when it has a flat one to fill to — a gradient or a photo is not a colour. */
+const flatColour = (bg?: string): string | null =>
+  bg && !bg.startsWith("gradient:") && !bg.startsWith("url(") && !bg.includes("linear-gradient") ? bg : null;
+
+/** The per-block variables one arrival needs: what it looks like at rest, and what it becomes. */
+function arrivalVars(node: BoxNode, fx: PinArrival): string {
+  const rest = node.shadow ? SHADOW_CSS[node.shadow] : "none";
+  const add = (extra: string) => (rest === "none" ? extra : `${rest}, ${extra}`);
+  switch (fx) {
+    // The block KEEPS the shadow it already had and gains the arrival on top, rather than having its own
+    // design overwritten by an effect — the two are different decisions.
+    case "shadow": return `--eu-arrive-rest:${rest};--eu-arrive-on:${add(ARRIVE_SHADOW)}`;
+    case "rule": return `--eu-arrive-rest:${rest};--eu-arrive-on:${add(ARRIVE_RULE)}`;
+    case "solid": return `--eu-arrive-bg:${flatColour(node.background) ?? ARRIVE_SURFACE}`;
+    case "glass": return `--eu-arrive-bg:color-mix(in srgb, ${flatColour(node.background) ?? ARRIVE_SURFACE} 72%, transparent)`;
+    case "condense": {
+      const pad = ownPadBlock(node), h = node.minHeight ?? 0;
+      // 60% of itself, with a floor: the research is blunt that a bar on a phone lives between 48 and 56px,
+      // and condensing past that trades one problem for a smaller tap target.
+      const padOn = pad ? Math.max(pad * 0.4, 0) : 0;
+      const hOn = h ? Math.max(h * 0.6, 48) : 0;
+      return `--eu-arrive-pad-rest:${u(pad)};--eu-arrive-pad-on:${u(padOn)}`
+        + (h ? `;--eu-arrive-h-rest:${u(h)};--eu-arrive-h-on:${u(Math.min(hOn, h))}` : "");
+    }
+  }
+}
+
+/**
+ * ONE BLOCK'S ARRIVAL — the single resolver, called by the canvas and the exporter, like everything else
+ * about pinning.
+ *
+ * The timeline is the SCROLL of the nearest scroll container over a distance, not `scroll-state(stuck:)`:
+ * that would be the exact question to ask, and it is Chrome and Edge only at ~72%, needs a wrapper because
+ * an element cannot query its own state, and would leave Safari and Firefox showing nothing. A scroll
+ * timeline is ~84% and includes Firefox, and this codebase already ships one for entrances.
+ *
+ * It is emitted on the BLOCK, never on the band that may be carrying the pin: the band is transparent
+ * scaffolding, so a colour filling in there would sit behind the block's own background and be invisible.
+ * The trigger is the page's scroll, which does not care which element holds the position.
+ */
+export function pinArrivalCss(scope: string, node: BoxNode): string {
+  const fx = node.pinArrival;
+  if (!fx || !node.pin || !pinArrivalHasEffect(node)) return "";
+  const after = scrollLen(node.pinArrivalAfter ?? PIN_ARRIVAL_AFTER);
+  let css = `${scope}{${arrivalVars(node, fx)}}`;
+  /**
+   * AN ENTRANCE AND AN ARRIVAL ARE TWO DECISIONS, AND THE ELEMENT CAN ONLY HAVE ONE `animation-name` RULE.
+   *
+   * `revealCss` writes the entrance on this same block, so the rule emitted LAST takes the element over
+   * completely. Measured in a browser with both chosen: the only animation running was the arrival, and the
+   * entrance the user had picked was simply gone. Nothing errored, and the editor showed the same.
+   *
+   * Both are therefore declared here, in one rule, as the lists CSS was designed for — this rule is emitted
+   * after the entrance's by both engines, so it is the one that stands. Staggered entrances are untouched:
+   * those animate the block's CHILDREN, which never collide with the block's own arrival.
+   */
+  const rev = node.revealStagger ? null : revealEffect(node.revealEffect);
+  const names = rev ? `eu-reveal-${rev.id},eu-arrive-${fx}` : `eu-arrive-${fx}`;
+  const durs = rev ? `${REVEAL_DUR},auto` : "auto";
+  const eases = rev ? `${REVEAL_EASE},linear` : "linear";
+  const fills = rev ? "both,both" : "both";
+  const timelines = rev ? `${node.revealScroll ? "view()" : "auto"},scroll()` : "scroll()";
+  const ranges = rev ? `${node.revealScroll ? REVEAL_VIEW_RANGE : "normal"},0 ${after}` : `0 ${after}`;
+  /**
+   * LONGHANDS, and `animation-duration: auto` written out. The `animation` shorthand resets duration to 0s,
+   * and a 0s animation on a progress timeline is finished before the range begins — the arrival would appear
+   * fully applied from the very first pixel. `auto` is what makes the animation take the whole range.
+   */
+  css += `@supports (animation-timeline: scroll()){${scope}{`
+    + `animation-name:${names};animation-duration:${durs};animation-timing-function:${eases};`
+    + `animation-fill-mode:${fills};animation-timeline:${timelines};animation-range:${ranges}}}`;
+  // Decorative, so reduced motion simply gets the resting look. Nothing is lost: the block is still pinned.
+  css += `@media (prefers-reduced-motion:reduce){${scope}{animation:none !important}}`;
+  return css;
+}
+
+/** Every arrival rule in a tree, plus one copy of each keyframes it needs — the canvas's half. */
+export function treePinArrivalCss(node: BoxNode, scopeFor: (id: string) => string): string {
+  const used = new Set<PinArrival>();
+  const walk = (n: BoxNode): string => {
+    if (n.pinArrival && pinArrivalHasEffect(n)) used.add(n.pinArrival);
+    return pinArrivalCss(scopeFor(n.id), n) + (n.children ?? []).map(walk).join("");
+  };
+  const rules = walk(node);
+  return rules ? pinArrivalKeyframes(used) + rules : "";
+}
+
+/**
+ * Does an ancestor stop this block from ever being FIXED? The mirror of `pinBlockedBy`, and sharper.
+ *
+ * `position: fixed` is measured against the viewport — UNLESS an ancestor carries `transform`, `filter`,
+ * `backdrop-filter`, `perspective` or `will-change` (NOT `container-type`: measured in Chromium, Firefox and WebKit, #144).
+ * Any one of those makes that ancestor
+ * the containing block, and the fixed element quietly holds itself against a box halfway down the page
+ * instead. No error, no warning; it simply stops staying on screen.
+ *
+ * This builder emits two of them, and neither looks like it has anything to do with pinning:
+ *
+ *   • `transform: rotate()` on any block given a TILT.
+ *   • `backdrop-filter` on the Alert's GLASS design.
+ *
+ * So "my fixed bar stopped working when I tilted the section" is a sentence a user could otherwise never
+ * explain. Returns the nearest offending ancestor so the inspector can name the block rather than say
+ * "something above this".
+ */
+/**
+ * Does THIS block make its own frame, capturing any fixed descendant? One predicate, two callers.
+ *
+ * The warning that names the offender and the canvas that decides whether to SHOW a block holding have to
+ * agree exactly, or the editor tells you a bar will not stay on screen while drawing it staying on screen.
+ * `transform` and `backdrop-filter` do it, and this builder emits both: a tilt and the glass Alert.
+ */
+export function capturesFixed(node: BoxNode): boolean {
+  // NOT `container-type` (#144, measured 2026-10-01 by scripts/uat/probe-144.js): a size container left a fixed bar on
+  // screen in Chromium, Firefox AND WebKit — the 2023 spec dropped its layout containment — while a tilt and the glass
+  // captured it (−607 / −600px after a 1200px scroll) in all three. Counting it warned "will not stay on screen" for a
+  // bar inside any component that does not hug its content, and it did stay.
+  if (node.rotate) return true;                                   // transform: rotate()
+  return !!node.variant?.includes("glass");                        // backdrop-filter
+}
+
+/**
+ * ── STEP 2e · WHICH BOX DOES THIS BLOCK RESOLVE AGAINST? ──────────────────────────────────────────────
+ *
+ * Four features asked that question and each had written its own answer: `pinBlockedBy` (does a scroll
+ * container capture a sticky block?), `fixedBlockedBy` (does an ancestor capture a fixed one?), `pinScope`
+ * (which box does a sticky block hold within, so the Inspector can name it) and — from 2e onwards — which
+ * sticky bars can be on screen together and therefore have to stack. All four walked the same chain with the
+ * same `resolveResponsive` map and the same rung caveat, three times over.
+ *
+ * Collapsing them is not tidying. Building this kind of thing separately is how they drift, and this file has
+ * paid for that repeatedly: one seam per feature is the rule the build spec draws from Phase 2's three
+ * picker-vs-drag bugs. There is one walk here, and each resolver is the predicate that walks it.
+ *
+ * `null` from a container resolver means "nothing above this captures it" — the page for sticky, the window
+ * for fixed — which is the answer the browser gives too.
+ */
+function chainTo(root: BoxNode, id: string, bp: Breakpoint): BoxNode[] | null {
+  const walk = (node: BoxNode, trail: BoxNode[]): BoxNode[] | null => {
+    const path = [...trail, node];
+    if (node.id === id) return path;
+    for (const kid of node.children ?? []) {
+      const hit = walk(kid, path);
+      if (hit) return hit;
+    }
+    return null;
+  };
+  // Every node AT THE RUNG BEING DRAWN. `resolveResponsive` resolves a node and not its children, so a tilt or
+  // a pin that exists only on phones is invisible to a walk that reads the base values — which is the bug F10
+  // was, in a different resolver.
+  return walk(root, [])?.map((n) => resolveResponsive(n, bp)) ?? null;
+}
+
+/**
+ * The nearest ancestor that CLIPS, which is the scroll container a sticky block is measured against.
+ *
+ * `overflow: hidden` makes a scroll container, and in this builder a block clips whenever `clip` is set **or it
+ * has a corner radius** — so rounding a section, an entirely ordinary thing to do, silently re-points every
+ * sticky block inside it. The page root is excluded: the page is the thing being scrolled.
+ */
+export function scrollContainerOf(root: BoxNode, id: string, bp: Breakpoint = "base"): BoxNode | null {
+  const path = chainTo(root, id, bp);
+  return path ? scrollContainerIn(path) : null;
+}
+
+/** The predicate itself, over a chain already walked — so a caller that needs both does not walk twice. */
+function scrollContainerIn(path: BoxNode[]): BoxNode | null {
+  // The block's OWN clipping is irrelevant — an element is not inside itself.
+  for (let i = path.length - 2; i >= 1; i--) {
+    const a = path[i];
+    if (a.clip || radiusCSS(a)) return a;
+  }
+  return null;
+}
+
+/**
+ * The nearest ancestor that makes its own containing block, which a FIXED block holds against instead of the
+ * window. A transform, `container-type` or `backdrop-filter` each do it — see `capturesFixed`.
+ */
+export function fixedContainerOf(root: BoxNode, id: string, bp: Breakpoint = "base"): BoxNode | null {
+  const path = chainTo(root, id, bp);
+  return path ? fixedContainerIn(path) : null;
+}
+
+function fixedContainerIn(path: BoxNode[]): BoxNode | null {
+  for (let i = path.length - 2; i >= 1; i--) {
+    if (capturesFixed(path[i])) return path[i];
+  }
+  return null;
+}
+
+/**
+ * The box a sticky block HOLDS WITHIN — its identity, not the Inspector's words for it.
+ *
+ * `"page"` when that box is the page itself. This is what `pinScope` says in words and what sticky stacking
+ * groups by: two sticky bars can only cover each other if they hold within the SAME box, and two that do not
+ * hand over instead (measured: 40px of overlap for siblings in one Stack and for two bars placed straight on
+ * the page, 0px for two in different sections).
+ */
+export function pinHolder(root: BoxNode, id: string, bp: Breakpoint = "base"): BoxNode | "page" | null {
+  const path = chainTo(root, id, bp);
+  return path ? holderIn(root, path, bp) : null;
+}
+
+function holderIn(root: BoxNode, path: BoxNode[], bp: Breakpoint): BoxNode | "page" | null {
+  if (path.length < 2) return null;
+  const parent = path[path.length - 2];
+  // The band carries the pin when it hugs this block alone — then the BAND sticks, inside ITS parent.
+  const carried = bandCarriesPin(parent, bp)?.id === path[path.length - 1].id;
+  const container = carried ? path[path.length - 3] : parent;
+  if (!container || container.id === root.id) return "page";
+  return container;
+}
+
+export function fixedBlockedBy(root: BoxNode, id: string, bp: Breakpoint = "base"): BoxNode | null {
+  const path = chainTo(root, id, bp);
+  const self = path?.at(-1);
+  if (!self?.pin || (self.hold ?? "sticky") !== "fixed") return null; // only a FIXED block can be captured this way
+  return fixedContainerIn(path!);
+}
+
+/**
+ * Does an ancestor of this block stop it from ever sticking?
+ *
+ * `position: sticky` is measured against the nearest **scroll container**, and `overflow: hidden` makes one.
+ * So a pinned block inside a clipped ancestor is pinned to a box that never scrolls: the CSS is present,
+ * correct and completely inert. Nothing errors, nothing warns, and the block simply scrolls away.
+ *
+ * This is not a rare corner. The wrapper clips whenever `clip` is set **or the block has a corner radius**
+ * (canvas and export both), so rounding a section — an ordinary thing to do — would quietly switch off a
+ * sticky sidebar inside it. A teacher would have no way to connect the two.
+ *
+ * Returns the nearest offending ancestor, so the inspector can name it rather than say "something above".
+ */
+export function pinBlockedBy(root: BoxNode, id: string, bp: Breakpoint = "base"): BoxNode | null {
+  const path = chainTo(root, id, bp);
+  const self = path?.at(-1);
+  if (!self?.pin) return null; // nothing to warn about on a block that is not pinned
+  return scrollContainerIn(path!);
+}
+
+/**
+ * WHERE A STICKY BLOCK LETS GO — the box it travels inside, so the Inspector can say it in words.
+ *
+ * Sticky holds a box inside its containing block and nowhere else, so "until when does it hold?" has exactly
+ * one true answer, and it is not "its section". The Inspector said that for months and it was wrong in the
+ * case a user meets first: `normalizeRowBands` wraps EVERY block in a band of its own, the band hugs it, and
+ * `bandCarriesPin` moves the pin up onto that band — whose parent, for a block placed straight on the page,
+ * is the page. So a pinned header holds for the whole page, and the line underneath promised it would leave.
+ *
+ *   • `"page"` — the thing that sticks sits directly in the page: it holds to the very end.
+ *   • `"row"`  — it shares a band with blocks beside it, and lets go when that row of blocks does.
+ *   • a block  — the nearest real container around it, to be NAMED ("the Stack around it", "the Grid…").
+ *
+ * A GRID CELL IS THE LAST CASE, NOT THE ROW CASE — and that was measured, not reasoned. The first version of
+ * this returned "row" for a grid cell on the strength of "a grid item's containing block is its grid area",
+ * and the browser disagreed: a pinned cell in row 1 of a two-row grid was still held 900px into row 2, and
+ * let go only when the whole grid did. Words written from the spec would have told the user the wrong thing.
+ *
+ * `null` when sticky does not apply at all: not pinned, held fixed (measured against the window, so it never
+ * lets go), or floating (clause 1 of `pinCSS` — free positioning wins and the pin is ignored).
+ */
+export function pinScope(root: BoxNode, id: string, bp: Breakpoint = "base"): "page" | "row" | BoxNode | null {
+  const path = chainTo(root, id, bp);
+  const self = path?.at(-1);
+  if (!self?.pin || (self.hold ?? "sticky") !== "sticky" || isFloating(self)) return null;
+  const holder = holderIn(root, path!, bp);
+  if (holder === null || holder === "page") return holder;
+  // The only difference from the identity: a structural band is scaffolding the user never made, so it is
+  // described as "the row it sits in" rather than named.
+  return holder.rowBand ? "row" : holder;
+}
+
+/** `pinScope` in the words the Inspector says: the page, the row, or the NAME of the block around it. */
+export type PinScopeWords = "page" | "row" | { around: string };
+export function pinScopeWords(root: BoxNode, id: string, bp: Breakpoint = "base"): PinScopeWords | null {
+  const scope = pinScope(root, id, bp);
+  if (scope === null || scope === "page" || scope === "row") return scope;
+  return { around: blockedByLabel(scope) ?? "block" };
 }
 
 // ── Band edges: sloped and curved section boundaries ─────────────────────────

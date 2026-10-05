@@ -104,3 +104,209 @@ Feature: Box Builder — floating layers (free overlap)
 
   Scenario: Every floating action is reachable without a mouse
     Then float/return, nudge, resize and layering are all available via keyboard shortcuts and inspector controls with aria labels
+
+  # ── The keyboard survives a click ──────────────────────────────────────────
+  # tests/e2e/keyboard-survives-selection.spec.ts
+
+  Scenario: Selecting a container with a click leaves every shortcut working
+    Given a section with a text block inside it
+    When I click the section to select it
+    Then the caret is not left behind inside the text block
+    And Alt+F floats the section, and floats it back
+    And Ctrl+D duplicates it, and Delete removes it
+    Because the click that selects the section also lands on the text inside it,
+      and that text's editable span takes focus. The key handler refuses to act
+      while focus is in editable text — rightly, nobody wants Delete removing a
+      section mid-word — so with the caret stranded in a block I never chose,
+      EVERY shortcut silently did nothing. Measured: selection "sec", focus a
+      contentEditable span in block "tc1". It was reported as a section that
+      would not float.
+
+  Scenario: …and typing is still typing
+    When I click into a text block until it is the selection
+    Then the caret is in that block and what I type appears in it
+    Because the fix above must not be paid for with the thing it protects
+
+  # ── Clicking a text block, and clicking away from it ───────────────────────
+  # tests/e2e/keyboard-survives-selection.spec.ts
+
+  Scenario: One click into a text block, a pause, then typing — and the text lands
+    Given a page I have just opened, with nothing selected
+    When I click once on a text block and wait before typing
+    Then the caret is in that block and every word I type appears in it
+    Because the drill-down rule means that first click selects the outermost
+      BAND, not the text — so "is the caret's block the selected one?" is FALSE
+      of the very span I clicked into, and answering it by taking the caret away
+      threw my words on the floor. Measured: the text went nowhere in 2 of 3
+      attempts from a fresh load.
+
+  Scenario: Clicking the empty part of a box does not hand the caret to the text inside it
+    Given a box with a text block in it and empty space below that text
+    When I click the empty space
+    Then the caret is left nowhere, and Ctrl+D still duplicates the selection
+    Because it is the BROWSER that puts it there: clicking empty space inside a
+      box means "put the caret in the nearest text" to Chrome. Measured — the
+      focus arrived 17ms after mousedown, which is mouseup, on the original span,
+      with no .focus() call and no Selection call anywhere in the trace. Clearing
+      up afterwards lost that race three different ways, one of them leaving the
+      caret stranded permanently, so the default action is refused instead.
+
+  # ── Stacked pins (Phase 3 · Step 2c) ───────────────────────────────────────
+  # tests/e2e/pins-stack.spec.ts
+
+  Scenario: Two bands held at the same edge sit under one another
+    Given three bands each set to stay on screen at the top
+    When the page is opened, and again after it is scrolled
+    Then each band sits directly below the one before it, and none is hidden
+    Because each was doing exactly what it was told — "hold against the top" —
+      and with one offset apiece, the top is where all three went. Two of the
+      three were simply invisible.
+
+  Scenario: A bottom stack builds upwards
+    Given a cookie bar and a back-to-top button both held to the bottom
+    Then the LAST of them sits on the edge and the one before it rests on top
+    Because a footer is last in the document and at the bottom, so the bottom
+      stack has to be read in the opposite direction from the top one. With a
+      single bottom bar both directions look identical, which is how the first
+      version of the guard passed while the order was reversed.
+
+  Scenario: The editor shows the same stack the published page will
+    Given the same three bands on the canvas
+    Then they are offset by exactly the same amounts as in the export
+    Because the builder's page frame declares container-type, which makes it the
+      containing block for anything fixed — so the editor renders a held block as
+      `absolute` instead, and the measuring pass has to recognise that. Measured
+      before it did: the export stacked correctly and the canvas drew all three
+      bands at the same 88px.
+
+  Scenario: A page with one pinned bar ships no stacking script
+    Given a page with a single band held at the top
+    Then the exported page contains no stacking script at all
+    Because zero JavaScript stays the default: a bar with nothing to stack under
+      must not cost the page a script it cannot use.
+
+  # ── Reaching the words: the chrome that floats over the canvas must not steal them ──
+
+  Scenario: The blocks launcher sits beside the page, never on it
+    Given the builder is open at a width where the page fills its column
+    Then the launcher's right edge is outside the page's left edge
+    Because the launcher is a button that opens a panel, so it cannot fall through
+      to anything underneath: the only correct state is not covering the page at
+      all. Measured at 1440px before the gutter reserved its footprint — the page
+      began at 32px and the button ended at 56px, so the first word of the first
+      block opened the panel instead of taking the caret.
+
+  Scenario: Clicking a word puts the caret in that word, anywhere along the line
+    Given a selected heading whose text starts flush against its box
+    When each of a spread of plausible aim points across the words is clicked
+    Then the caret arrives at the point that was aimed at, every time
+    Because the edge handles straddle the box edge — 4px out and 6px in — and a
+      block is created with no padding, so they sit over the first letters. Asking
+      "is the caret in this block" proves nothing here: selecting the heading means
+      clicking its words, so the caret was already there and a swallowed click
+      still left it there. The caret has to MOVE to where the user pointed.
+
+  Scenario: A resize is a drag, so a click on a handle belongs to the text
+    Given a selected block with its text under the left edge handle
+    When the pointer goes down on the handle and up again without moving
+    Then the caret lands in the text under the pointer
+    But when the pointer is dragged, the block resizes and the far edge stays put
+    Because moving the handles fully outside would only hand the same problem to
+      the neighbour in a zero-gap row. The caret is placed while the chrome is
+      still switched off: working out which character was clicked hit-tests the
+      point a second time, and with the handle live again the caret fell back to
+      the end of the block instead.
+
+  Scenario: Text can be reached without a mouse
+    Given a heading that has just been added from the palette and is selected
+    Then nothing holds the caret yet
+    When Enter or F2 is pressed
+    Then editing begins with the caret at the END of the existing words
+    And typing adds to them rather than replacing them
+    Because every other operation on the canvas had a shortcut — undo, duplicate,
+      delete, nudge, float, group, lock, the z-order pair, the panel, and Escape to
+      step OUT of text. There was no way IN, so a keyboard-only user could select a
+      heading and never type a word into it.
+
+  # ── Step 2d: a link must not send the reader behind the bar ──
+
+  Scenario: Following an in-page link clears the bar held over the page
+    Given a page with a bar set to stay on screen at the top
+    And a link pointing at a section further down that page
+    When a visitor follows the link
+    Then the section comes to rest just below the bar, fully readable
+    Because a held bar reserves no space, so the browser's idea of the top of
+      the page is still y=0 — several centimetres above anything the reader can
+      see. Measured before this existed: the section landed at y=0 under a bar
+      reaching y=62. `scroll-padding-top` states the usable top instead, and
+      every scroll the browser performs itself then respects it.
+
+  Scenario: The padding is the bar's rendered height, not a number typed into it
+    Given two bars of different heights stacked at the top
+    Then the landing clears both of them together
+    Because summing the heights someone entered is wrong for a bar whose height
+      is just its text, and wrong again wherever that text wraps. It is the same
+      argument Step 2c settled, so this rides on 2c's single measuring pass
+      rather than adding a second mechanism.
+
+  Scenario: A page with nothing pinned is left exactly as it was
+    Given the same page with no bar held over it
+    Then no scroll padding is applied and the target lands at the very top
+    Because nothing is owed, and zero cost stays the default: the pass is only
+      shipped when a held top bar and something to scroll to both exist.
+
+  Scenario: An in-page link works in the Preview too
+    Given the same page, opened with Preview
+    When the link is followed inside the preview
+    Then the preview scrolls and the section lands below the bar
+    Because the preview renders the real exported page but as a `srcDoc`
+      document, and Chrome updates the hash for a fragment link there without
+      ever performing the scroll — measured, the hash changed and the scroll
+      position stayed at 0. The same export served over http scrolled correctly,
+      so the fault existed only in the one place a teacher would check their own
+      navigation. The preview now performs that scroll itself, honouring the
+      same padding.
+
+  # ── Step 2e: one resolver, and sticky bars stack against bars they can meet ──
+
+  Scenario: Two bars that stick within the same box sit under one another
+    Given two blocks set to "Sticks when reached" inside one Stack
+    When the page is scrolled until both are held
+    Then the second rests directly below the first, and neither is hidden
+    Because they hold within the same box, so they are on screen together for
+      most of that box's travel. Measured before this shipped: 40px of overlap,
+      the shorter bar buried entirely behind the taller one.
+
+  Scenario: Two bars placed straight on the page do the same
+    Given a header and an announcement bar, both set to "Sticks when reached"
+    Then they queue rather than covering each other
+    Because each gets a band of its own and the band hugs it, so the pin is
+      carried up to a band whose parent is the page — and both then hold for the
+      whole page. This is the commonest real shape, and it is the reported bug's
+      own shape with the other mechanism chosen.
+
+  Scenario: A bar in its own section is never pushed down for one elsewhere
+    Given two sections, each with its own block set to "Sticks when reached"
+    When the page is scrolled to where each one holds in turn
+    Then each holds at the very top, unmoved
+    Because they hand over instead of coinciding: the first lets go exactly as
+      the second arrives. Offsetting them is movement nobody asked for, and it is
+      what happened when Step 2c first reached for sticky — a rail dropped 160px
+      down the page and the warning test failed because the block it clicks had
+      moved.
+
+  Scenario: A page whose sticky bars cannot collide ships no stacking script
+    Given one block set to "Sticks when reached" in each of two sections
+    Then the exported page contains no stacking script at all
+    Because zero JavaScript stays the default, and it is now decided per edge AND
+      per box rather than per edge alone.
+
+  Scenario: The editor stacks sticky bars the same way the published page does
+    Given the same two bars on the canvas
+    Then the second carries an offset of at least the first bar's height
+    And both are recorded as belonging to the same queue
+    Because sticky takes a different route through the pass than fixed does — it
+      stays `sticky` in the editor, where a fixed block becomes `absolute` — so
+      "the export is right" says nothing about it. Canvas ≠ export is this
+      project's most expensive bug class, and it arrives through the second route
+      nobody measured.

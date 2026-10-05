@@ -1,7 +1,8 @@
 "use client";
 
 /**
- * Blocks palette — a FLOATING insert panel. A COMPACT launcher tucked in the left gutter (off the page) opens a
+ * Blocks palette — a FLOATING insert panel. A COMPACT launcher sits in the canvas gutter, which reserves the
+ * button's exact footprint (`LAUNCHER_GUTTER_REM`) so it is genuinely off the page rather than over it, and opens a
  * modern, spacious flyout that floats OVER the canvas (the canvas keeps its full width). Search to filter, category
  * tabs to jump, big tiles you DRAG onto the page (a glowing drop line shows where) or CLICK to pick a style.
  * Toggle with the launcher, the ✕, a click outside, Escape, or the keyboard (B toggles, / opens + focuses search).
@@ -14,7 +15,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   LayoutPanelTop, Columns3, Rows3, MoveVertical, Minus, GalleryHorizontal, GalleryThumbnails, Sunrise,
-  Heading as HeadingIcon, Pilcrow, MousePointerClick, ListOrdered,
+  Heading as HeadingIcon, Pilcrow, MousePointerClick, ListOrdered, Link2,
   Image as ImageIcon, Film, Shapes, CodeXml,
   PanelTopOpen, LayoutGrid, MessageSquareQuote, Hash, BadgeCheck, Star, BellRing,
   Blocks, LayoutTemplate, Type, Images, Component, Search, X, Plus, Sparkles, ChevronDown, type LucideIcon,
@@ -31,6 +32,27 @@ import { CHROME_Z } from "@/lib/educo-ui/stacking";
 /** The catalogue names its icon as a string so it can stay React-free; this maps those names to the icons. */
 export const COMPONENT_ICONS: Record<string, LucideIcon> = { PanelTopOpen, BellRing, LayoutGrid, MessageSquareQuote, Hash, BadgeCheck, Star };
 
+/**
+ * The launcher's FOOTPRINT in the canvas gutter — ONE definition, shared with the canvas.
+ *
+ * The button is the only piece of builder chrome that sits over the editing surface, so the canvas reserves
+ * exactly `LAUNCHER_GUTTER_REM` down its left side and the page can never slide underneath it. It has to be one
+ * definition because it was two: the inset and the size lived only in this file's Tailwind classes (`left-3
+ * w-11`) while the canvas padded itself `p-8`, and nothing made the two agree. Measured at a 1440px window, the
+ * page's left edge landed at 32px and the button's right edge at 56px — so the first word of the first block was
+ * under the button and could not be clicked or typed into at all.
+ *
+ * In `rem`, not pixels, so the gutter grows with the reader's text size exactly as the button does (Core Rule 16).
+ */
+export const LAUNCHER_INSET_REM = 0.75; // from the column's left edge
+export const LAUNCHER_SIZE_REM = 2.75; // the square button itself
+export const LAUNCHER_GAP_REM = 0.75; // breathing room before the page begins
+export const LAUNCHER_GUTTER_REM = LAUNCHER_INSET_REM + LAUNCHER_SIZE_REM + LAUNCHER_GAP_REM;
+/** The open panel's width — ONE number, used by the panel and by the gutter the page leaves for it (#55). */
+export const PANEL_WIDTH_REM = 20;
+/** The room the page leaves on its left while the panel is open and DOCKED, so nothing is ever hidden under it. */
+export const PANEL_GUTTER_REM = LAUNCHER_INSET_REM + PANEL_WIDTH_REM + LAUNCHER_GAP_REM;
+
 type Block = { kind: string; label: string; Icon: LucideIcon; hint: string };
 
 /**
@@ -43,9 +65,19 @@ type Block = { kind: string; label: string; Icon: LucideIcon; hint: string };
 const OPENS_A_PICKER = new Set(["grid", "gallery", "slider", "hero", "rotatingHero"]);
 const GROUPS: { name: string; Icon: LucideIcon; blocks: Block[] }[] = [
   { name: "Layout", Icon: LayoutTemplate, blocks: [
-    { kind: "container", label: "Section", Icon: LayoutPanelTop, hint: "A band you fill with anything" },
-    { kind: "grid", label: "Columns", Icon: Columns3, hint: "Pick a split — equal, sidebar, feature" },
-    { kind: "row", label: "Row", Icon: Rows3, hint: "Items side by side" },
+    // NAMED FOR WHAT THEY DO, and ordered by it: down the page, across the page, both at once.
+    //
+    // These three were Section / Columns / Row, and UAT found four separate problems with that. "Section"
+    // meant one thing here (a plain transparent box) and something else on the top bar (a tinted, padded
+    // band) — and this tile's own hint, "A band you fill with anything", described the TOP BAR rather than
+    // the tile. "Columns" named a picker that sweeps across AND down, so it is a grid, not columns. And the
+    // three names gave a reader no way to tell them apart, which matters more than usual here because they
+    // are ONE object wearing three hats: the same node goes flex-column → flex-row → grid with a single
+    // click in **Arrange as**. Naming them after the arrangement makes that switch legible instead of
+    // surprising.
+    { kind: "container", label: "Stack", Icon: LayoutPanelTop, hint: "Blocks one under the other" },
+    { kind: "row", label: "Side by side", Icon: Rows3, hint: "Blocks in a row, across the page" },
+    { kind: "grid", label: "Grid", Icon: Columns3, hint: "Sweep across and down. Widths line up across the whole page." },
     { kind: "spacer", label: "Spacer", Icon: MoveVertical, hint: "Empty vertical space" },
     { kind: "divider", label: "Divider", Icon: Minus, hint: "A dividing line" },
     { kind: "hero", label: "Hero", Icon: Sunrise, hint: "A full screen photo with a headline" },
@@ -55,6 +87,7 @@ const GROUPS: { name: string; Icon: LucideIcon; blocks: Block[] }[] = [
     { kind: "heading", label: "Heading", Icon: HeadingIcon, hint: "A big title" },
     { kind: "text", label: "Text", Icon: Pilcrow, hint: "A paragraph" },
     { kind: "button", label: "Button", Icon: MousePointerClick, hint: "A clickable button" },
+    { kind: "link", label: "Link", Icon: Link2, hint: "Words that go to a page — menus, footers" },
     { kind: "list", label: "List", Icon: ListOrdered, hint: "Bulleted or numbered" },
   ] },
   { name: "Media", Icon: Images, blocks: [
@@ -79,13 +112,22 @@ const TABS: { name: string; Icon: LucideIcon }[] = [
 
 type Anchor = { top: number; left: number; bottom: number; right: number };
 
-export default function BlocksPanel({ theme, onDragKind, onPick, defaultOpen = false }: {
+export default function BlocksPanel({ theme, onDragKind, onPick, defaultOpen = false, docked = false, onOpenChange }: {
   theme?: SiteTheme;
   onDragKind?: (kind: string | null) => void;
   onPick?: (kind: string, patch?: Partial<BoxNode>) => void; // click-to-add with an optional style variation
   defaultOpen?: boolean;
+  /**
+   * DOCKED: the page has made room for the panel (#55), so it behaves as a sidebar — it stays open while the user
+   * clicks and edits on the page, and closes with its ✕, Escape or B. Closing it on every click outside, as the
+   * floating overlay does, would slide the page back under the pointer on each click.
+   */
+  docked?: boolean;
+  /** Told whenever the panel opens or closes, so the page can make room for it. */
+  onOpenChange?: (open: boolean) => void;
 }) {
   const [open, setOpen] = useState(defaultOpen);
+  useEffect(() => { onOpenChange?.(open); }, [open]);
   const [shown, setShown] = useState(defaultOpen); // drives the enter transition
   const [q, setQ] = useState("");
   const [tab, setTab] = useState("All");
@@ -103,14 +145,14 @@ export default function BlocksPanel({ theme, onDragKind, onPick, defaultOpen = f
 
   // Click-outside closes (the panel floats over the canvas). Skipped while the portaled variation picker is open.
   useEffect(() => {
-    if (!open) return;
+    if (!open || docked) return;
     const onDown = (e: MouseEvent) => {
       if (menu) return;
       if (panelRef.current && !panelRef.current.contains(e.target as Node)) setOpen(false);
     };
     document.addEventListener("mousedown", onDown);
     return () => document.removeEventListener("mousedown", onDown);
-  }, [open, menu]);
+  }, [open, menu, docked]);
 
   // Keyboard: B toggles, / opens + focuses search, Esc closes. Ignored while typing in a field.
   useEffect(() => {
@@ -186,8 +228,9 @@ export default function BlocksPanel({ theme, onDragKind, onPick, defaultOpen = f
           aria-label="Open blocks panel"
           aria-expanded={false}
           title="Add blocks (B)"
-          style={{ zIndex: CHROME_Z.panel }}
-          className="absolute top-4 left-3 grid place-items-center w-11 h-11 rounded-2xl bg-gradient-to-br from-brand to-brand-600 text-brand-fg shadow-lg ring-1 ring-black/5 hover:shadow-xl hover:scale-105 transition"
+          /* Geometry inline so it is the SAME value the canvas reserves as a gutter; colour stays in classes. */
+          style={{ zIndex: CHROME_Z.panel, left: `${LAUNCHER_INSET_REM}rem`, width: `${LAUNCHER_SIZE_REM}rem`, height: `${LAUNCHER_SIZE_REM}rem` }}
+          className="absolute top-4 grid place-items-center rounded-2xl bg-gradient-to-br from-brand to-brand-600 text-brand-fg shadow-lg ring-1 ring-black/5 hover:shadow-xl hover:scale-105 transition"
         >
           <Blocks className="w-5 h-5" strokeWidth={1.9} />
         </button>
@@ -199,8 +242,8 @@ export default function BlocksPanel({ theme, onDragKind, onPick, defaultOpen = f
           ref={panelRef}
           role="dialog"
           aria-label="Blocks"
-          style={{ zIndex: CHROME_Z.panel }}
-          className={`absolute top-4 left-3 flex w-[20rem] max-w-[calc(100%-1.5rem)] max-h-[calc(100%-2rem)] flex-col rounded-2xl border border-line bg-surface shadow-2xl shadow-black/10 overflow-hidden transition duration-200 ease-out motion-reduce:transition-none ${shown ? "opacity-100 translate-x-0 scale-100" : "opacity-0 -translate-x-2 scale-[0.98]"}`}
+          style={{ zIndex: CHROME_Z.panel, left: `${LAUNCHER_INSET_REM}rem`, width: `${PANEL_WIDTH_REM}rem` }}
+          className={`absolute top-4 flex max-w-[calc(100%-1.5rem)] max-h-[calc(100%-2rem)] flex-col rounded-2xl border border-line bg-surface shadow-2xl shadow-black/10 overflow-hidden transition duration-200 ease-out motion-reduce:transition-none ${shown ? "opacity-100 translate-x-0 scale-100" : "opacity-0 -translate-x-2 scale-[0.98]"}`}
         >
           {/* Header */}
           <div className="flex items-center gap-2.5 px-4 pt-3.5 pb-3">

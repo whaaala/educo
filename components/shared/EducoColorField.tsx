@@ -84,7 +84,18 @@ export default function EducoColorField({ label, ariaLabel, value, onChange, con
 
   const isNone = !value || value === "transparent";
   const normalized = normalizeHex(value) ?? "#000000";
-  const commit = (raw: string) => { const n = normalizeHex(raw); if (n) onChange(n); else setText(value); };
+  /**
+   * TYPING BELONGS TO THE BLOCK IT WAS TYPED FOR (#89). The `onChange` of the render in which the user typed is kept
+   * with the text, and only still-PENDING typing is committed on blur — to that block. Measured through the UI: a colour
+   * typed for a stack (Enter), then a click on a heading, painted the heading too — the click moves the selection and
+   * re-renders this field for the heading BEFORE the hex box loses focus, so its blur ran the heading's onChange.
+   */
+  const pending = useRef<{ onChange: (v: string) => void } | null>(null);
+  const commit = (raw: string) => {
+    const target = pending.current?.onChange; pending.current = null;
+    if (!target) return;                       // nothing typed since the last commit — a blur is not an edit
+    const n = normalizeHex(raw); if (n) target(n); else setText(value);
+  };
   const pickEyedropper = async () => {
     try { const res = await new (window as unknown as { EyeDropper: new () => { open: () => Promise<{ sRGBHex: string }> } }).EyeDropper().open(); if (res?.sRGBHex) onChange(res.sRGBHex); } catch { /* cancelled */ }
   };
@@ -98,7 +109,7 @@ export default function EducoColorField({ label, ariaLabel, value, onChange, con
       <div className="flex items-center gap-2 rounded-lg border border-gray-200 dark:border-white/10 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0f1428] purple:bg-purple-900/30 px-2 py-1.5">
         <button ref={btnRef} type="button" onClick={() => setOpen((o) => !o)} aria-label={`${aria} swatch`} aria-haspopup="dialog" aria-expanded={open}
           className="h-7 w-7 shrink-0 rounded-md ring-1 ring-inset ring-black/10 dark:ring-white/15" style={{ background: isNone ? CHECKER : normalized }} title={isNone ? "No colour" : normalized} />
-        <input id={id} type="text" value={text} onChange={(e) => setText(e.target.value)} onBlur={(e) => commit(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") commit((e.target as HTMLInputElement).value); }}
+        <input id={id} type="text" value={text} onChange={(e) => { setText(e.target.value); pending.current = { onChange }; }} onBlur={(e) => commit(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") commit((e.target as HTMLInputElement).value); }}
           aria-label={`${aria} hex value`} placeholder="#000000"
           className="w-full min-w-0 bg-transparent font-mono text-sm text-gray-700 dark:text-gray-200 midnight:text-slate-200 purple:text-purple-100 outline-none placeholder:text-gray-400" />
         {hasEye && (

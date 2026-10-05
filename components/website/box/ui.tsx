@@ -12,15 +12,26 @@ import { ChevronDown, type LucideIcon } from "lucide-react";
 import { CHROME_Z } from "@/lib/educo-ui/stacking";
 
 /** A quiet ghost button (icon and/or text) with an optional active state + tooltip. `primary` = the one CTA. */
-export function ToolBtn({ onClick, title, ariaLabel, active, disabled, primary, children }: {
-  onClick?: () => void; title?: string; ariaLabel?: string; active?: boolean; disabled?: boolean; primary?: boolean; children: ReactNode;
+export function ToolBtn({ onClick, title, ariaLabel, active, disabled, primary, compact, children }: {
+  onClick?: () => void; title?: string; ariaLabel?: string; active?: boolean; disabled?: boolean; primary?: boolean;
+  /** An ICON-ONLY button: text padding made it 34px wide where 26px (still over the 24px target) will do — it kept the
+   *  builder's bar to one row at 1536px once the zoom controls joined it (Z1-m). */
+  compact?: boolean; children: ReactNode;
 }) {
-  const base = "inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed";
+  /**
+   * `whitespace-nowrap shrink-0` — a toolbar button never breaks its own label.
+   *
+   * Seen at 768px and 375px in the builder: "Add a band" wrapped onto THREE lines inside a 56px-tall bar,
+   * turning a button into a tall blue block, and the page tab was clipped to "Hom". A flex row hands out the
+   * shortage by shrinking its children, and text is what gives first — so the label becomes unreadable long
+   * before anything runs out of room. A control that cannot be read cannot be used.
+   */
+  const base = `inline-flex items-center gap-1.5 rounded-lg ${compact ? "px-1.5" : "px-2.5"} py-1.5 text-xs font-medium whitespace-nowrap shrink-0 transition-colors disabled:opacity-40 disabled:cursor-not-allowed`;
   const look = primary
     ? "bg-brand text-brand-fg shadow-sm hover:brightness-105"
     : active
-      ? "bg-gray-100 dark:bg-white/10 text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50"
-      : "text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-100 dark:hover:bg-white/10";
+      ? "bg-gray-100 dark:bg-white/10 midnight:bg-white/10 purple:bg-white/10 text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50"
+      : "text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-100 dark:hover:bg-white/10 midnight:hover:bg-white/10 purple:hover:bg-white/10";
   return <button onClick={onClick} title={title} aria-label={ariaLabel} aria-pressed={active} disabled={disabled} className={`${base} ${look}`}>{children}</button>;
 }
 
@@ -63,13 +74,17 @@ export function Segmented<T extends string>({ value, onChange, options, ariaLabe
  * because "four across, three down" is a shape a person can see, while "each block spans three of twelve" is
  * one they have to work out.
  *
- * Only the column counts that divide the twelve are offered — five across cannot be twelfths (12/5 is 2.4),
- * and a row of five where two are quietly wider is worse than not offering five at all. `columns` is passed
- * in rather than assumed here so the ladder stays in one place.
+ * Every count from 1 to 12 is offered (decided by the user 2026-09-29, B). A count twelve divides is still a
+ * twelve-column grid; five across cannot be twelfths (12/5 is 2.4), so it becomes a grid of five equal columns
+ * instead — never a row of five where two are quietly wider (`gridForAcross`). `columns` is passed in rather than
+ * assumed here so the ladder stays in one place.
  *
  * Keyboard-reachable as a real grid: arrows move the size, Enter picks it, so it is never a mouse-only
  * control (WCAG 2.1.1). The live region says the current shape out loud for a screen reader.
  */
+/** One picker square's width: twelve of them fit `GRID_MENU_WIDTH` (with its scrollbar), and 1.5rem is 24px, the WCAG 2.5.8 target. */
+const PICKER_CELL = "1.5rem";
+
 export function TablePicker({ columns, maxRows = 6, onPick, label = "Choose a layout" }: {
   columns: number[]; maxRows?: number; onPick: (cols: number, rows: number) => void; label?: string;
 }) {
@@ -106,7 +121,7 @@ export function TablePicker({ columns, maxRows = 6, onPick, label = "Choose a la
         tabIndex={0}
         onKeyDown={onKey}
         className="inline-grid gap-1 rounded-xl bg-surface-2 p-1.5 outline-none ring-1 ring-line focus-visible:ring-2 focus-visible:ring-brand"
-        style={{ gridTemplateColumns: `repeat(${columns.length}, 2.1rem)`, gridTemplateRows: `repeat(${maxRows}, 1.15rem)` }}
+        style={{ gridTemplateColumns: `repeat(${columns.length}, ${PICKER_CELL})`, gridTemplateRows: `repeat(${maxRows}, 1.15rem)` }}
       >
         {Array.from({ length: columns.length * maxRows }, (_, i) => {
           const ci = i % columns.length, r = Math.floor(i / columns.length) + 1;
@@ -125,9 +140,8 @@ export function TablePicker({ columns, maxRows = 6, onPick, label = "Choose a la
           );
         })}
       </div>
-      {/* What each column actually MEANS. Without this a sweep to the fifth square gives six columns and the
-          jump from 4 to 6 to 12 looks like a bug rather than the only counts twelve divides into. */}
-      <div aria-hidden className="mt-1 inline-grid gap-1 px-1.5" style={{ gridTemplateColumns: `repeat(${columns.length}, 2.1rem)` }}>
+      {/* What each column actually MEANS — the count under each square, so a sweep is read, never counted. */}
+      <div aria-hidden className="mt-1 inline-grid gap-1 px-1.5" style={{ gridTemplateColumns: `repeat(${columns.length}, ${PICKER_CELL})` }}>
         {columns.map((c, i) => (
           <span key={c} className={`text-center text-[0.625rem] tabular-nums transition-colors ${i === hover.ci ? "font-bold text-brand" : "text-muted"}`}>{c}</span>
         ))}

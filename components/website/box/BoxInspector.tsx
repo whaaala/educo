@@ -8,11 +8,12 @@
  */
 
 import { useState, useRef } from "react";
-import { Plus, X, Rows3, Columns3, Upload, AlignLeft, AlignCenter, AlignRight, Layers, Move, BringToFront, SendToBack, ChevronUp, ChevronDown, Italic, Underline, LayoutGrid, Maximize2, Sparkles, Paintbrush, Ruler, Type as TypeIcon, MonitorSmartphone, Bookmark, Lock, LockOpen } from "lucide-react";
+import { Plus, X, Tags, Rows3, Columns3, Upload, ArrowRight, AlignLeft, AlignCenter, AlignRight, AlignHorizontalSpaceBetween, Layers, Move, BringToFront, SendToBack, ChevronUp, ChevronDown, Italic, Underline, LayoutGrid, Maximize2, Sparkles, Paintbrush, Ruler, Type as TypeIcon, MonitorSmartphone, Bookmark, Lock, LockOpen } from "lucide-react";
 import type { SiteTheme } from "@/lib/site-storage";
-import type { BoxNode, FlexAlign, FlexJustify, AccPartStyle, Breakpoint, PagerNav } from "@/lib/box-model";
+import type { BoxNode, FlexAlign, FlexJustify, AccPartStyle, Breakpoint, PagerNav, PinScopeWords, SectionFlag } from "@/lib/box-model";
 import { RUNG_LABEL } from "@/lib/educo-ui/layout";
-import { type ItemAction, TOAST_CORNERS, isContainer, isFloating, isCssBg, addItem, removeItem, moveItem, updateItem, addChildItem, updateChildItem, removeChildItem, moveChildItem , isMultiItemComponent, hasIntrinsicSize, sizeToCSS, GRID_MAX, COLUMN_FRACTIONS, columnFractionOf, canSetColumnFraction, gridColumns, bandEdgeCSS } from "@/lib/box-model";
+import { type ItemAction, TOAST_CORNERS, fluidRemRange, isContainer, containerLabel, isFloating, isCssBg, addItem, removeItem, moveItem, updateItem, addChildItem, updateChildItem, removeChildItem, moveChildItem , isMultiItemComponent, hasIntrinsicSize, sizeToCSS, typedLength, GRID_MAX, COLUMN_FRACTIONS, columnFractionOf, canSetColumnFraction, gridColumns, bandEdgeCSS, PIN_ARRIVALS, PIN_ARRIVAL_AFTER, pinArrivalHasEffect, linkLineGap, LINK_GAP_ACROSS, LINK_GAP_ACROSS_PHONE, spaceDefaults, outerDefaults, type SectionPlace, gapOf } from "@/lib/box-model";
+import { remLen } from "@/lib/educo-ui/tokens";
 import { ACCORDION_DESIGNS, ACCORDION_DESIGN_COUNT, ACCORDION_AXES } from "@/lib/educo-ui/accordions";
 import { ALERT_DESIGNS, ALERT_DESIGN_COUNT, ALERT_AXES } from "@/lib/educo-ui/alerts";
 import { COMPONENT_REGISTRY, isRegistryComponent, defaultComponentFields, renderComponent } from "@/lib/educo-ui/registry";
@@ -25,17 +26,21 @@ import { getPresets, presetKindFor } from "@/lib/box-presets";
 import IconPicker from "@/components/shared/IconPicker";
 import BackgroundPicker from "@/components/shared/BackgroundPicker";
 import GradientEditor, { parseGradient } from "@/components/shared/GradientEditor";
-import { Tabs, Accordion, Segmented, type SegOption } from "./ui";
+import { Tabs, Accordion, Segmented, ToolBtn, type SegOption } from "./ui";
 import EducoColorField from "@/components/shared/EducoColorField";
 import Slider from "@/components/shared/Slider";
 import CompactField from "@/components/shared/CompactField";
+import { rowsOf, rowsToMinHeight } from "@/lib/page-grid";
 import CompactSelect from "@/components/shared/CompactSelect";
+import { CONTAINER_TAGS, type SemanticTag } from "@/lib/semantics";
 import CompactTextarea from "@/components/shared/CompactTextarea";
 
 const label = "text-[0.6875rem] font-semibold text-muted";
 
-const toRem = (px: number) => +(px / 10).toFixed(2);
-const fromRem = (rem: number) => Math.round(rem * 10);
+// A stored spacing number is in the builder's base-10 steps; `u()` turns 10 of them into ≈0.625rem at the normal text
+// size, so a REAL rem is the number ÷ 16 (S1-b, the user 2026-09-30: the controls said "3.2rem" for a ~2rem gutter).
+const toRem = (px: number) => +(px / 16).toFixed(2);
+const fromRem = (rem: number) => Math.round(rem * 16);
 
 // Plain-language option lists (value = the real CSS token, label = what the user reads).
 const JUSTIFY_OPTS: [FlexJustify, string][] = [["start", "Start"], ["center", "Center"], ["end", "End"], ["between", "Spread out"], ["around", "Even gaps"]];
@@ -91,7 +96,7 @@ function ColumnFractions({ track, span, breakpoint, onSet }: { track: number; sp
 // Reuses the shared <Slider> (labelled range control) instead of a raw <input type="range">.
 function Range({ title, value, min, max, fallback, onChange, unit = "px" }: { title: string; value?: number; min: number; max: number; fallback: number; onChange: (n: number) => void; unit?: string }) {
   const v = value ?? fallback;
-  return <Slider label={title} value={v} min={min} max={max} onChange={onChange} formatValue={unit === "rem" ? (x) => `${toRem(x)}rem` : (x) => `${x}${unit}`} />;
+  return <Slider label={title} value={v} min={min} max={max} onChange={onChange} formatValue={unit === "rem" ? fluidRemRange : (x) => `${x}${unit}`} />; // phone → wide (G3c-10)
 }
 
 /**
@@ -109,7 +114,7 @@ function GapRange({ label, value, fallback, onChange, onMatch }: {
   const own = value != null;
   return (
     <div className="flex flex-col gap-0.5">
-      <Slider label={label} value={value ?? fallback} min={0} max={128} onChange={onChange} formatValue={(x) => `${toRem(x)}rem`} />
+      <Slider label={label} value={value ?? fallback} min={0} max={128} onChange={onChange} formatValue={fluidRemRange} /> {/* phone → wide (G3c-10) */}
       <button
         type="button" onClick={onMatch} disabled={!own}
         aria-label={`${label} — use the same spacing as "Space between blocks"`}
@@ -198,27 +203,43 @@ function WidthControl({ node, onPatch }: { node: BoxNode; onPatch: (p: Partial<B
       <span className={label}>Width</span>
       <Segmented full ariaLabel="Width" value={mode} onChange={(m) => onPatch({ width: m === "auto" ? "auto" : m === "fill" ? "fill" : isCustom ? w : "50%" })}
         options={[{ value: "auto", label: "Fit" }, { value: "fill", label: "Full" }, { value: "custom", label: "Custom" }]} />
-      {isCustom && <CompactField ariaLabel="Custom width" value={w} onChange={(v) => onPatch({ width: v })} placeholder="50% or 240px" />}
+      {isCustom && <CompactField ariaLabel="Custom width" value={w} onChange={(v) => onPatch({ width: typedLength(v) })} placeholder="50% or 15rem" />}
     </div>
   );
 }
 
 /** All-sides slider + four per-side overrides (Top/Right/Bottom/Left). Used for inner & outer spacing. */
-function SideSpacing({ title, node, base, sides, onPatch, max = 96 }: {
+/**
+ * Four-sided spacing. `defaults` is the space the block has when nothing is set (rule 3, space by default): the
+ * control SHOWS it — "Default" with the size — so it never reads a size the block does not have (c-24), and
+ * "Back to default" clears every side so the block reads the default again.
+ */
+function SideSpacing({ title, node, base, sides, onPatch, max = 96, defaults = [0, 0, 0, 0] }: {
   title: string; node: BoxNode; base: keyof BoxNode; sides: [keyof BoxNode, keyof BoxNode, keyof BoxNode, keyof BoxNode]; onPatch: (p: Partial<BoxNode>) => void; max?: number;
+  defaults?: [number, number, number, number];
 }) {
-  const g = (node[base] as number | undefined) ?? 0;
+  const own = node[base] as number | undefined;
+  const set = own !== undefined || sides.some((k) => node[k] !== undefined);
+  const g = own ?? Math.max(...defaults);
   const setPx = (k: keyof BoxNode, px: number) => onPatch({ [k]: px } as Partial<BoxNode>);
   const setRem = (k: keyof BoxNode, v: string) => onPatch({ [k]: v === "" ? undefined : fromRem(Number(v)) } as Partial<BoxNode>);
   const [t, r, b, l] = sides;
+  const hasDefault = defaults.some((d) => d > 0);
   return (
     <div className="space-y-1.5">
-      <Slider label={title} value={g} min={0} max={max} onChange={(n) => setPx(base, n)} formatValue={(x) => `${toRem(x)}rem`} />
+      <Slider label={title} value={g} min={0} max={max} onChange={(n) => setPx(base, n)} formatValue={(x) => (set ? fluidRemRange(x) : `Default · ${fluidRemRange(x)}`)} />
+      {hasDefault && (
+        <button type="button" disabled={!set} onClick={() => onPatch({ [base]: undefined, [t]: undefined, [r]: undefined, [b]: undefined, [l]: undefined } as Partial<BoxNode>)}
+          aria-label={`${title} — back to default`}
+          className="text-[0.625rem] text-gray-500 hover:text-brand disabled:hover:text-gray-500 disabled:cursor-default dark:text-gray-400 midnight:text-slate-400 purple:text-purple-300">
+          {set ? "Back to default" : "At the default"}
+        </button>
+      )}
       <div className="grid grid-cols-4 gap-1">
         {([["Top", t], ["Right", r], ["Bottom", b], ["Left", l]] as const).map(([lab, key]) => (
           <label key={lab} className="flex flex-col items-center gap-0.5">
             <span className="text-[0.5625rem] uppercase tracking-wide text-gray-400">{lab}</span>
-            <input type="number" step={0.1} min={0} value={node[key] !== undefined ? toRem(node[key] as number) : ""} placeholder={String(toRem(g))} onChange={(e) => setRem(key, e.target.value)} aria-label={`${title} ${lab.toLowerCase()}`} className="w-full text-xs px-1 py-1 rounded-lg border border-gray-200 dark:border-white/10 bg-transparent text-center outline-none focus:ring-1 focus:ring-indigo-400" />
+            <input type="number" step={0.1} min={0} value={node[key] !== undefined ? toRem(node[key] as number) : ""} placeholder={String(toRem(own ?? defaults[[t, r, b, l].indexOf(key)]))} onChange={(e) => setRem(key, e.target.value)} aria-label={`${title} ${lab.toLowerCase()}`} className="w-full text-xs px-1 py-1 rounded-lg border border-gray-200 dark:border-white/10 midnight:border-white/10 purple:border-white/10 bg-transparent text-center outline-none focus:ring-1 focus:ring-indigo-400" />
           </label>
         ))}
       </div>
@@ -313,6 +334,120 @@ function HoverPreview({ effect }: { effect: HoverEffect }) {
   );
 }
 
+/**
+ * THE THREE SCROLL BEHAVIOURS, SHOWN (RULE S) — a page at the top, then the same page scrolled.
+ *
+ * A behaviour cannot be scaled down from real markup the way a design can: what differs is what happens
+ * OVER TIME, so each tile is a before-and-after pair. The words alone did not work — "While its section
+ * shows" and "Always on screen" were the two a user could not tell apart — and the difference is one a
+ * picture makes at a glance: the bar that leaves, the bar that catches at the top, the button that never
+ * moved while the page slid under it. Theme tokens throughout, so every theme draws it in its own colours.
+ */
+type PinMode = "off" | "sticky" | "fixed";
+function PinFrame({ mode, scrolled }: { mode: PinMode; scrolled: boolean }) {
+  // Content lines, down the frame. Scrolled, they have all moved up. Whole class names, so Tailwind sees them.
+  const lines = scrolled
+    ? ["top-[16%]", "top-[28%]", "top-[40%]", "top-[52%]", "top-[64%]", "top-[76%]", "top-[88%]"]
+    : ["top-[60%]", "top-[72%]", "top-[84%]"];
+  return (
+    <span className="relative block h-full aspect-[3/4] overflow-hidden rounded-[3px] border border-line bg-surface">
+      {!scrolled && <span className="absolute inset-x-[10%] top-[6%] h-[26%] rounded-[2px] bg-muted/25" />}
+      {lines.map((t) => (
+        <span key={t} className={`absolute left-[10%] w-[70%] h-[5%] rounded-full bg-muted/40 ${t}`} />
+      ))}
+      {/* THE BAR — in the page at the top; after the scroll it has left (off) or caught the edge (sticky). */}
+      {mode !== "fixed" && !(mode === "off" && scrolled) && (
+        <span data-pin-bar className={`absolute inset-x-0 h-[15%] bg-brand ${scrolled ? "top-0 shadow-sm" : "top-[38%]"}`} />
+      )}
+      {/* THE FLOATING BUTTON — the same corner in both frames: that it never moved IS the point. */}
+      {mode === "fixed" && (
+        <span data-pin-bar className="absolute right-[8%] bottom-[7%] h-[14%] w-[40%] rounded-full bg-brand shadow-sm" />
+      )}
+    </span>
+  );
+}
+function PinPreview({ mode }: { mode: PinMode }) {
+  return (
+    <span aria-hidden="true" data-pin-preview={mode} className="flex h-full w-full items-center justify-center gap-1.5 bg-surface-2 p-1">
+      <PinFrame mode={mode} scrolled={false} />
+      <ArrowRight className="h-3 w-3 shrink-0 text-muted" />
+      <PinFrame mode={mode} scrolled />
+    </span>
+  );
+}
+
+/**
+ * THE ARRIVALS, SHOWN (RULE S) — the bar in the page, then the bar once the page has moved under it.
+ *
+ * Same before-and-after as the mechanism tiles, because an arrival is also a change over time. Each tile
+ * draws the real difference: the shadow that appears, the colour that fills in, the frost, the hairline, the
+ * bar that gets shorter. `Nothing` draws the bar unchanged, which is exactly what it does.
+ */
+const ARRIVAL_BAR: Record<string, { before: string; after: string; afterH?: string; rule?: boolean }> = {
+  "": { before: "bg-brand", after: "bg-brand" },
+  shadow: { before: "bg-brand", after: "bg-brand shadow-[0_3px_5px_rgba(2,6,23,.5)]" },
+  solid: { before: "bg-brand/20", after: "bg-brand" },
+  glass: { before: "bg-brand/10", after: "bg-brand/50 backdrop-blur-[1px]" },
+  rule: { before: "bg-brand", after: "bg-brand", rule: true },
+  condense: { before: "bg-brand", after: "bg-brand", afterH: "h-[9%]" },
+};
+function ArrivalFrame({ fx, after }: { fx: string; after: boolean }) {
+  const look = ARRIVAL_BAR[fx] ?? ARRIVAL_BAR[""];
+  return (
+    <span className="relative block h-full aspect-[3/4] overflow-hidden rounded-[3px] border border-line bg-surface">
+      {["top-[30%]", "top-[44%]", "top-[58%]", "top-[72%]", "top-[86%]"].map((t) => (
+        <span key={t} className={`absolute left-[10%] w-[70%] h-[5%] rounded-full bg-muted/40 ${t}`} />
+      ))}
+      {/* Content sits UNDER the bar once the page has moved — which is what makes solid and glass visible. */}
+      <span className={`absolute left-[10%] w-[70%] h-[5%] rounded-full bg-muted/40 ${after ? "top-[10%]" : "top-[16%]"}`} />
+      <span data-arrival-bar className={`absolute inset-x-0 top-0 ${after && look.afterH ? look.afterH : "h-[15%]"} ${after ? look.after : look.before}`} />
+      {after && look.rule && <span className="absolute inset-x-0 top-[15%] h-px bg-ink/50" />}
+    </span>
+  );
+}
+function ArrivalPreview({ fx }: { fx: string }) {
+  return (
+    <span aria-hidden="true" data-arrival-preview={fx || "none"} className="flex h-full w-full items-center justify-center gap-1.5 bg-surface-2 p-1">
+      <ArrivalFrame fx={fx} after={false} />
+      <ArrowRight className="h-3 w-3 shrink-0 text-muted" />
+      <ArrivalFrame fx={fx} after />
+    </span>
+  );
+}
+
+/**
+ * THE LINE UNDER THE PIN CONTROL — what the block will actually do, in the words a teacher would use.
+ *
+ * It used to say "then leaves with the section" for every sticky block, which was false for the block a user
+ * pins first: placed straight on the page, its band hugs it, the pin moves up to the band, and the band's
+ * parent is the page — so it holds to the very end. `scope` comes from `pinScopeWords` and is the one true
+ * answer to "until when?".
+ *
+ * Top and bottom are different sentences because they are different behaviours: a block held to the top
+ * catches as you reach it, while one held to the bottom waits at the bottom of the window until you reach
+ * the place it sits.
+ */
+export function pinSummary(node: BoxNode, scope: PinScopeWords | null): string {
+  if (!node.pin) return "It scrolls with the rest of the page.";
+  if ((node.hold ?? "sticky") === "fixed") {
+    const where: Record<NonNullable<BoxNode["pin"]>, string> = {
+      top: "along the top of the window", bottom: "along the bottom of the window",
+      left: "down the left side of the window", right: "down the right side of the window",
+      "top-left": "in the top-left corner of the window", "top-right": "in the top-right corner of the window",
+      "bottom-left": "in the bottom-left corner of the window", "bottom-right": "in the bottom-right corner of the window",
+    };
+    return `Always visible ${where[node.pin]}, from the moment the page opens. It is lifted off the page and keeps no space, so the page scrolls underneath it.`;
+  }
+  const around = scope && typeof scope === "object" ? `the ${scope.around} around it` : scope === "row" ? "the row of blocks it sits in" : null;
+  if (node.pin.includes("bottom")) {
+    return around
+      ? `Waits at the bottom of the window while ${around} is on screen, until you scroll down to where it sits. It keeps its own place in the layout.`
+      : "Waits at the bottom of the window until you scroll down to where it sits, then carries on with the page. It keeps its own place in the layout.";
+  }
+  const until = around ? `until ${around} scrolls away` : "for the rest of the page";
+  return `Scrolls with the page until it reaches the top of the window, then holds there ${until}. It keeps its own place in the layout, so it hides nothing until you scroll.`;
+}
+
 /** Turn an effect's CSS declaration string into React inline style — the same declarations the page will use. */
 function declsToStyle(decls: string): Record<string, string> {
   const out: Record<string, string> = {};
@@ -354,7 +489,10 @@ function AccPreview({ id, size, axes = [] }: { id: string; size: ThumbSize; axes
   );
 }
 
-export default function BoxInspector({ node, theme, onPatch, onAddChild, onFloat, onUnfloat, onLayer, onAlignInRow, rowJustify, onSectionWidth, sectionWidth, canFloat = true, inGrid = false, inMasonry = false, gridTrack, onSetFraction, onRetrack, breakpoint = "base", overridden = false, onResetOverride, pages, currentPageId }: {
+export default function BoxInspector({ section = false, sectionPlace, outerDefault, pageSpan, onSetSpan, pageLines, onSetLines, onSetFreeInset, rowStepRem, node, theme, onPatch, onAddChild, onFloat, onUnfloat, onLayer, onAlignInRow, rowJustify, onSectionWidth, sectionWidth, canFloat = true, inGrid = false, inMasonry = false, gridTrack, onSetFraction, onRetrack, breakpoint = "base", overridden = false, onResetOverride, pages, currentPageId, pinBlockedBy = null, fixedBlockedBy = null, pinScope = null }: {
+  section?: SectionFlag; // the block is the content of a page section, so its default inner spacing is the gutter and the section space
+  outerDefault?: [number, number, number, number]; // the outer space it really has by default (`outerSpaceDefaults`, G-3 (1)); else `outerDefaults`
+  sectionPlace?: SectionPlace; // …and where: straight on the page or a column of a band — the default space OUTSIDE a self-painted block (S-2 (5))
   node: BoxNode;
   theme: SiteTheme;
   onPatch: (patch: Partial<BoxNode>) => void;
@@ -374,6 +512,13 @@ export default function BoxInspector({ node, theme, onPatch, onAddChild, onFloat
   inMasonry?: boolean;
   /** How many columns the PARENT row is cut into — the denominator every named fraction is measured against. */
   gridTrack?: number;
+  /** A column of a page row on the page grid (G-3 (3)): how many of the page's columns it covers on this screen, and its setter. */
+  pageSpan?: { value: number; cols: number }; onSetSpan?: (span: number) => void;
+  pageLines?: { from: number; to: number; first: boolean; last: boolean; cols: number; drawnAcross?: number }; onSetLines?: (want: { from?: number; to?: number } | "full") => void;
+  /** G-3b (3): the block's free margin inside its columns, per side ("both" with undefined puts it back on its lines) */
+  onSetFreeInset?: (side: "left" | "right" | "both", pct: number | undefined) => void;
+  /** The page grid's row step (rem) on a page-grid page — "Rows: N" sets the block at least N rows tall (G-3 (4)). */
+  rowStepRem?: number;
   /** Set this block to a named fraction of its row. Refines the row to twelve first when it has to (base only,
    *  since that changes the row's children) — which is why it writes upward instead of through `onPatch`. */
   onSetFraction?: (num: number, den: number) => void;
@@ -384,6 +529,21 @@ export default function BoxInspector({ node, theme, onPatch, onAddChild, onFloat
   onResetOverride?: () => void;
   pages?: { id: string; name: string }[];
   currentPageId?: string;
+  /**
+   * The name of an ancestor that would stop this block ever sticking, or null when nothing does.
+   *
+   * `position: sticky` is measured against the nearest SCROLL CONTAINER, and `overflow: hidden` makes one —
+   * which the wrapper sets whenever a block is clipped or merely has a corner radius. A pinned block inside
+   * one is pinned to a box that never scrolls: correct CSS, completely inert, no error anywhere. The
+   * inspector has to say so, because nothing else in the product can.
+   *
+   * Computed by the caller, which is what holds the tree (`pinBlockedBy` in box-model).
+   */
+  pinBlockedBy?: string | null;
+  /** The block whose frame captures a FIXED descendant — a tilt, a component, or the glass Alert. */
+  fixedBlockedBy?: string | null;
+  /** Where a STICKY block lets go — `pinScopeWords` in box-model, computed by the caller that holds the tree. */
+  pinScope?: PinScopeWords | null;
 }) {
   const [tab, setTab] = useState<"design" | "content" | "device">("design");
   const [accSel, setAccSel] = useState<string[]>([]); // accordion items ticked for grouping
@@ -392,7 +552,9 @@ export default function BoxInspector({ node, theme, onPatch, onAddChild, onFloat
   const container = isContainer(node);
   const isGrid = node.layout === "grid";
   const floating = isFloating(node);
-  const textual = node.type === "text" || node.type === "heading" || node.type === "button" || node.type === "list";
+  /** Does this block hold a line of links or buttons side by side (a menu)? Its gaps are the links' spacing. */
+  const holdsLinks = (node.children ?? []).some((k) => linkLineGap(k, node) != null);
+  const textual = node.type === "text" || node.type === "heading" || node.type === "button" || node.type === "link" || node.type === "list";
   // A design-system TREE (Card, Quote, Stat, Badge, Rating) is structurally a container, so it used to say
   // "Editing: Section" — telling a user they had selected something they had not. `preset` knows what it
   // really is, and a `component` node knows its own name, so both say what the user actually picked.
@@ -400,12 +562,15 @@ export default function BoxInspector({ node, theme, onPatch, onAddChild, onFloat
   const componentEntry = catalogueEntry(node.component);
   const typeLabel = presetEntry?.label
     ?? componentEntry?.label
-    ?? (container ? (isGrid ? "Grid" : node.direction === "row" ? "Row" : "Section") : node.type);
+    ?? (container ? containerLabel(node) : node.type);
 
   // The ladder names the rungs; repeating them here is how the chips and the model drifted apart before.
   // The `?? ""` is not decoration: an unrecognised rung used to reach `.toLowerCase()` on undefined and take
   // the ENTIRE inspector down, so a stale value anywhere upstream would cost the user every control at once.
   const bpLabel = breakpoint === "base" ? "" : RUNG_LABEL[breakpoint] ?? "";
+  // R4-3: a few controls change the STRUCTURE (a class, a move into a floating layer, an order among siblings), which is
+  // the same on every screen — they say so while another screen is being edited, so the Per-device promise stays true.
+  const everyScreen = breakpoint === "base" ? null : <p role="note" className="text-[11px] leading-snug text-amber-700 dark:text-amber-300 midnight:text-amber-300 purple:text-amber-300">Applies to every screen, not only {bpLabel}.</p>;
 
   const AlignRow = () => (
     <div className="flex items-center justify-between">
@@ -471,8 +636,8 @@ export default function BoxInspector({ node, theme, onPatch, onAddChild, onFloat
       {/* At tablet/mobile, changes here only affect that screen (content stays shared). */}
       {breakpoint !== "base" && (
         <div className="rounded-xl border border-amber-300 dark:border-amber-500/30 bg-amber-50 dark:bg-amber-500/10 p-2.5 space-y-1.5">
-          <div className="text-[0.6875rem] font-semibold text-amber-700 dark:text-amber-300 flex items-center gap-1.5"><MonitorSmartphone className="w-3.5 h-3.5" /> Editing {bpLabel} — size &amp; layout only change here.</div>
-          {overridden && onResetOverride && <button onClick={onResetOverride} className="text-[0.6875rem] text-amber-700 dark:text-amber-300 underline hover:no-underline">Reset {bpLabel.toLowerCase()} changes to default</button>}
+          <div className="text-[0.6875rem] font-semibold text-amber-700 dark:text-amber-300 midnight:text-amber-300 purple:text-amber-300 flex items-center gap-1.5"><MonitorSmartphone className="w-3.5 h-3.5" /> Editing {bpLabel} — size &amp; layout only change here, unless a control says “every screen”.</div>
+          {overridden && onResetOverride && <button onClick={onResetOverride} className="text-[0.6875rem] text-amber-700 dark:text-amber-300 midnight:text-amber-300 purple:text-amber-300 underline hover:no-underline">Reset {bpLabel.toLowerCase()} changes to default</button>}
         </div>
       )}
 
@@ -504,10 +669,48 @@ export default function BoxInspector({ node, theme, onPatch, onAddChild, onFloat
       {/* ─────────────── DESIGN ─────────────── */}
       {tab === "design" && (
         <div>
+          {/* MEANING — what this block IS, so the page publishes as correct HTML5 however it was built (semantics,
+              lib/semantics.ts). Plain words; the element and what a screen reader announces are shown underneath. */}
+          {(isContainer(node) || node.type === "heading") && (
+            <Accordion title="Meaning" icon={Tags} defaultOpen={false}>
+              {isContainer(node) && (() => {
+                const cur = CONTAINER_TAGS.find((t) => t.tag === (node.tag ?? "div")) ?? CONTAINER_TAGS[0];
+                const named = node.tag === "nav" || node.tag === "section" || node.tag === "aside" || node.tag === "article";
+                return (
+                  <>
+                    <CompactSelect label="What is this block?" ariaLabel="What is this block"
+                      value={node.tag ?? "div"}
+                      onChange={(v) => onPatch({ tag: v === "div" ? undefined : (v as SemanticTag) })}
+                      options={CONTAINER_TAGS.map((t) => ({ value: t.tag, label: t.label }))} />
+                    <p className="text-[0.625rem] text-gray-500 dark:text-gray-400 midnight:text-slate-400 purple:text-purple-200">
+                      {cur.hint}. Published as <code>&lt;{cur.tag}&gt;</code>; a screen reader announces: {cur.announces}.
+                    </p>
+                    {named && (
+                      <CompactField label="Name (read out by screen readers)" ariaLabel="Name for screen readers"
+                        value={node.landmarkName ?? ""} placeholder={node.tag === "nav" ? "e.g. Main menu" : "e.g. School news"}
+                        onChange={(v) => onPatch({ landmarkName: String(v).trim() ? String(v) : undefined })} />
+                    )}
+                  </>
+                );
+              })()}
+              {node.type === "heading" && (
+                <>
+                  <CompactSelect label="Heading level" ariaLabel="Heading level"
+                    value={node.level ? String(node.level) : ""}
+                    onChange={(v) => onPatch({ level: v ? Number(v) : undefined })}
+                    options={[{ value: "", label: "Automatic — follows the page" }, ...[1, 2, 3, 4, 5, 6].map((l) => ({ value: String(l), label: `Level ${l}${l === 1 ? " — the page's title" : ""}` }))]} />
+                  <p className="text-[0.625rem] text-gray-500 dark:text-gray-400 midnight:text-slate-400 purple:text-purple-200">
+                    The level is its place in the page&rsquo;s outline, not its size — change the size under Text.
+                  </p>
+                </>
+              )}
+            </Accordion>
+          )}
           {canFloat && (
             <Accordion title="Placement" icon={Move}>
               <Segmented full ariaLabel="Placement" value={floating ? "float" : "flow"} onChange={(v) => (v === "float" ? onFloat?.() : onUnfloat?.())}
                 options={[{ value: "flow", label: "In the layout", Icon: Rows3 }, { value: "float", label: "Floating", Icon: Layers }]} />
+              {everyScreen}
               <button
                 onClick={() => onPatch({ locked: !node.locked })}
                 aria-pressed={!!node.locked}
@@ -532,7 +735,148 @@ export default function BoxInspector({ node, theme, onPatch, onAddChild, onFloat
                       <button onClick={() => onLayer?.("front")} aria-label="Bring to front" title="Bring to front" className={iconBtn(false)}><BringToFront className="w-4 h-4" /></button>
                     </div>
                   </div>
+                  {/* A FLOATED BLOCK CAN FLOAT ON SCREEN — and cannot stick.
+                      Measured: emitted as `fixed` it travelled 0px over a 900px scroll, so free placement and
+                      holding on screen are not in conflict at all; the place it was dragged to becomes the
+                      place it holds. Sticky is the one that cannot, because it holds a box relative to where
+                      it sits in the FLOW and a floated block does not sit there — forced, it jumps back into
+                      the layout and starts taking space. Said plainly, rather than offered and ignored. */}
+                  <div className="space-y-1.5">
+                    <DesignGallery
+                      label="Stays put while scrolling" hint="a floated block can hold on screen" ariaLabel="Stays put while scrolling" itemNoun="option"
+                      value={node.pin && (node.hold ?? "sticky") === "fixed" ? "fixed" : "off"}
+                      onPick={(v) => onPatch(v === "off" ? { pin: undefined, hold: undefined } : { pin: node.pin ?? "top", hold: "fixed" })}
+                      groups={[{ items: ([["off", "Scrolls away"], ["fixed", "Floats on screen"]] as const).map(([id, name]) => ({
+                        id, label: name, preview: () => <PinPreview mode={id} />,
+                      })) }]}
+                    />
+                    <p data-float-pin-note className="text-[11px] leading-snug text-gray-500 dark:text-gray-400 midnight:text-cyan-200/80 purple:text-pink-200/80">
+                      {node.pin && (node.hold ?? "sticky") === "fixed"
+                        ? "It holds exactly where you placed it, on every screen and however far the page scrolls."
+                        : "It scrolls with the page. “Sticks when reached” needs it back in the layout — that one holds a block against where it sits in the page, and a freely placed block has no place there."}
+                    </p>
+                    {node.pin && (node.hold ?? "sticky") === "fixed" && fixedBlockedBy && (
+                      <p role="status" className="text-[11px] leading-snug rounded-md px-2 py-1.5 bg-amber-50 text-amber-900 ring-1 ring-amber-200 dark:bg-amber-950/40 dark:text-amber-200 dark:ring-amber-900 midnight:bg-amber-950/40 midnight:text-amber-200 midnight:ring-amber-900 purple:bg-amber-950/40 purple:text-amber-200 purple:ring-amber-900">
+                        This will not stay on screen: the <b>{fixedBlockedBy}</b> around it makes its own frame,
+                        so anything fixed inside holds against that instead of the window.
+                      </p>
+                    )}
+                  </div>
                 </>
+              )}
+              {/* PINNING — Phase 3 of the Layout System, on ANY block that sits in the layout.
+                  It lived under Arrange, which only a container has, so a heading, a button, an image or a
+                  component could never be pinned — and the "Apply now" button is the very thing "Floats on
+                  screen" is for. Placement is where the guide always said it was. Worded as what it does, and
+                  per-rung like every other layout control: a rail that follows you down a desktop eats a phone
+                  screen that has none to spare. */}
+              {!floating && (
+                <div className="space-y-1.5">
+                  {/* AXIS 1 — THE MECHANISM, SHOWN (RULE S). Words alone failed UAT: "While its section shows"
+                      and "Always on screen" could not be told apart. Each tile is the page before and after
+                      a scroll, and the line underneath says precisely what THIS block will do. */}
+                  <DesignGallery
+                    label="Stays put while scrolling" hint="what it does as the page moves" ariaLabel="Stays put while scrolling" itemNoun="option"
+                    value={!node.pin ? "off" : (node.hold ?? "sticky")}
+                    onPick={(v) => onPatch(
+                      v === "off" ? { pin: undefined, hold: undefined }
+                      // Leaving fixed for sticky can strand a corner or a side, which sticky cannot express —
+                      // `stickyEdge` brings the anchor back to the nearest edge sticky actually has.
+                      : v === "sticky" ? { pin: node.pin ?? "top", hold: undefined }
+                      : { pin: node.pin ?? "top", hold: "fixed" })}
+                    groups={[{ items: ([["off", "Scrolls away"], ["sticky", "Sticks when reached"], ["fixed", "Floats on screen"]] as const).map(([id, name]) => ({
+                      id, label: name, preview: () => <PinPreview mode={id} />,
+                    })) }]}
+                  />
+                  <p data-pin-summary className="text-[11px] leading-snug text-gray-500 dark:text-gray-400 midnight:text-cyan-200/80 purple:text-pink-200/80">
+                    {pinSummary(node, pinScope)}
+                  </p>
+                  {/* AXIS 2 — THE ANCHOR. Sticky gets the two edges a vertical scroll can mean; fixed gets all
+                      eight, because every one of them is meaningful against the viewport. */}
+                  {node.pin && (
+                    <Segmented full ariaLabel="Held against"
+                      value={node.pin}
+                      onChange={(v) => onPatch({ pin: v as NonNullable<BoxNode["pin"]> })}
+                      options={(node.hold ?? "sticky") === "fixed"
+                        ? [
+                            { value: "top", label: "Top" }, { value: "bottom", label: "Bottom" },
+                            { value: "left", label: "Left" }, { value: "right", label: "Right" },
+                            { value: "top-left", label: "↖", title: "Top-left corner" }, { value: "top-right", label: "↗", title: "Top-right corner" },
+                            { value: "bottom-left", label: "↙", title: "Bottom-left corner" }, { value: "bottom-right", label: "↘", title: "Bottom-right corner" },
+                          ]
+                        : [{ value: "top", label: "Top" }, { value: "bottom", label: "Bottom" }]} />
+                  )}
+                  {node.pin && (
+                    <Range title="Distance from the edge" value={node.pinOffset} min={0} max={120} fallback={0} onChange={(n) => onPatch({ pinOffset: n || undefined })} unit="rem" />
+                  )}
+                  {/* AXIS 3 — THE ARRIVAL. A bar that looks the same held as it did in the page tells the
+                      reader nothing about what just happened. Nothing is the default: rule 11, nothing
+                      arrives that nobody asked for. */}
+                  {node.pin && (
+                    <>
+                      <DesignGallery
+                        label="When it takes hold" hint="what changes as the page moves" ariaLabel="When it takes hold" itemNoun="arrival"
+                        value={node.pinArrival ?? ""}
+                        onPick={(id) => onPatch({ pinArrival: (id || undefined) as BoxNode["pinArrival"] })}
+                        groups={[{ items: [{ id: "", label: "Nothing" }, ...PIN_ARRIVALS.map((a) => ({ id: a.id, label: a.label }))].map((a) => ({
+                          id: a.id, label: a.label, preview: () => <ArrivalPreview fx={a.id} />,
+                        })) }]}
+                      />
+                      {node.pinArrival && (
+                        <Range title="Takes hold over" value={node.pinArrivalAfter} min={40} max={600} fallback={PIN_ARRIVAL_AFTER}
+                          onChange={(n) => onPatch({ pinArrivalAfter: n === PIN_ARRIVAL_AFTER ? undefined : n })} unit="px of scrolling" />
+                      )}
+                      {/* A CONTROL THAT APPEARS TO WORK AND DOES NOTHING IS THE DEFECT THIS PROJECT MEETS
+                          MOST. A bar whose height is simply its text has neither inner spacing nor a height,
+                          so there is nothing for "Condense" to take away — said here rather than left to be
+                          discovered by scrolling a published page. */}
+                      {node.pinArrival === "condense" && !pinArrivalHasEffect(node) && (
+                        <p role="status" className="text-[11px] leading-snug rounded-md px-2 py-1.5 bg-amber-50 text-amber-900 ring-1 ring-amber-200 dark:bg-amber-950/40 dark:text-amber-200 dark:ring-amber-900 midnight:bg-amber-950/40 midnight:text-amber-200 midnight:ring-amber-900 purple:bg-amber-950/40 purple:text-amber-200 purple:ring-amber-900">
+                          There is nothing to condense yet: this block has no height and no inner spacing of
+                          its own. Give it one under <b>Size</b> or <b>Spacing</b>, or pick another arrival.
+                        </p>
+                      )}
+                    </>
+                  )}
+                  {/* THE OTHER SILENT FAILURE, and it is the one nobody could ever diagnose. A fixed block is
+                      captured by any ancestor carrying a transform, a container-type or a backdrop-filter —
+                      which here means a TILTED block, any COMPONENT, or the glass Alert. "My fixed bar stopped
+                      working when I tilted the section" is otherwise an unexplainable sentence. */}
+                  {node.pin && (node.hold ?? "sticky") === "fixed" && fixedBlockedBy && (
+                    <p role="status" className="text-[11px] leading-snug rounded-md px-2 py-1.5 bg-amber-50 text-amber-900 ring-1 ring-amber-200 dark:bg-amber-950/40 dark:text-amber-200 dark:ring-amber-900 midnight:bg-amber-950/40 midnight:text-amber-200 midnight:ring-amber-900 purple:bg-amber-950/40 purple:text-amber-200 purple:ring-amber-900">
+                      This will not stay on screen: the <b>{fixedBlockedBy}</b> around it makes its own frame,
+                      so anything fixed inside holds against that instead of the window.
+                    </p>
+                  )}
+                  {/* IT COVERS SOMETHING, AND ONLY THE BUILDER KNOWS IT WILL. A block that floats on screen
+                      keeps no space, so the page starts underneath it: measured, a 64px bar hid 56px of the
+                      block below it the moment the page opened, and a bar held to the bottom sits over the
+                      footer for good. The space is NOT reserved automatically — how tall a floating bar will be
+                      on every screen is not known — so this says what will happen and offers the one-click alternative.
+                      Sticky at the top of a page looks identical and keeps its place in the layout. */}
+                  {node.pin && (node.hold ?? "sticky") === "fixed" && (node.pin === "top" || node.pin === "bottom") && (
+                    <div className="text-[11px] leading-snug rounded-md px-2 py-1.5 space-y-1 bg-amber-50 text-amber-900 ring-1 ring-amber-200 dark:bg-amber-950/40 dark:text-amber-200 dark:ring-amber-900 midnight:bg-amber-950/40 midnight:text-amber-200 midnight:ring-amber-900 purple:bg-amber-950/40 purple:text-amber-200 purple:ring-amber-900">
+                      <p role="status">
+                        {node.pin === "top"
+                          ? "This covers the top of your page when it opens, because it keeps no space."
+                          : "This sits over the bottom of every screen — your footer included — because it keeps no space."}
+                      </p>
+                      <button type="button" onClick={() => onPatch({ hold: undefined })}
+                        className="font-semibold underline underline-offset-2 hover:no-underline">
+                        Keep its space instead
+                      </button>
+                    </div>
+                  )}
+                  {/* THE SILENT FAILURE, SAID OUT LOUD. A clipping ancestor makes a scroll container, and a
+                      block pinned inside one simply never sticks — no error, no warning, nothing to connect
+                      the cause to the effect. This is the only place that can tell them. */}
+                  {node.pin && (node.hold ?? "sticky") === "sticky" && pinBlockedBy && (
+                    <p role="status" className="text-[11px] leading-snug rounded-md px-2 py-1.5 bg-amber-50 text-amber-900 ring-1 ring-amber-200 dark:bg-amber-950/40 dark:text-amber-200 dark:ring-amber-900 midnight:bg-amber-950/40 midnight:text-amber-200 midnight:ring-amber-900 purple:bg-amber-950/40 purple:text-amber-200 purple:ring-amber-900">
+                      This will not hold: the <b>{pinBlockedBy}</b> around it clips its contents, which stops
+                      anything inside from pinning. Turn off that block&apos;s rounding or clipping to let this work.
+                    </p>
+                  )}
+                </div>
               )}
             </Accordion>
           )}
@@ -550,6 +894,7 @@ export default function BoxInspector({ node, theme, onPatch, onAddChild, onFloat
                   <Segmented full ariaLabel="Content width" value={sectionWidth ?? "band"}
                     onChange={(v) => onSectionWidth(v === "contained" ? "contained" : "band")}
                     options={[{ value: "band", label: "Edge to edge" }, { value: "contained", label: "Centred column" }]} />
+                  {everyScreen}
                   <p className="text-[11px] leading-snug text-gray-500 dark:text-gray-400">
                     {sectionWidth === "contained"
                       ? "The background still spans the page; the content sits on a centred column."
@@ -691,16 +1036,20 @@ export default function BoxInspector({ node, theme, onPatch, onAddChild, onFloat
                   <label className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-300"><input type="checkbox" checked={!!node.wrap} onChange={(e) => onPatch({ wrap: e.target.checked })} /> Let blocks wrap to a new line</label>
                 </>
               )}
-              <CompactSelect label="Line up (across)" ariaLabel="Line up" value={node.align ?? "stretch"} onChange={(v) => onPatch({ align: v as FlexAlign })} options={ALIGN_OPTS.map(([v, l]) => ({ value: v, label: l }))} />
-              <Range title="Space between blocks" value={node.gap} min={0} max={64} fallback={16} onChange={(n) => onPatch({ gap: n, gapX: undefined, gapY: undefined })} unit="rem" />
+              {/* `align-items` lines blocks up across a top-to-bottom stack, but DOWN in a side-by-side row and in a grid
+                  (R4-4) — the label names the direction the blocks really move. */}
+              <CompactSelect label={node.layout === "grid" || node.direction === "row" ? "Line up (down)" : "Line up (across)"} ariaLabel="Line up" value={node.align ?? "stretch"} onChange={(v) => onPatch({ align: v as FlexAlign })} options={ALIGN_OPTS.map(([v, l]) => ({ value: v, label: l }))} />
+              <Range title="Space between blocks" value={node.gap} min={0} max={64} fallback={Math.max(gapOf({ ...node, gap: undefined }).x, gapOf({ ...node, gap: undefined }).y)} onChange={(n) => onPatch({ gap: n, gapX: undefined, gapY: undefined })} unit="rem" />
               {/* Across and down separately — the commonest grid there is wants air between its columns and
                   less between its rows, and one number cannot say that. Unset means "same as above".
                   SLIDERS, like the control above them. They were number boxes, so the only way to find the
                   spacing you wanted was to type a guess, look, and type another — and spacing is judged by
                   eye, never by arithmetic. A slider is the control for a value you sweep until it looks
                   right, and it is the same gesture as every other spacing control in this panel. */}
-              <GapRange label="Space across" value={node.gapX} fallback={node.gap ?? 16} onChange={(n) => onPatch({ gapX: n })} onMatch={() => onPatch({ gapX: undefined })} />
-              <GapRange label="Space down" value={node.gapY} fallback={node.gap ?? 16} onChange={(n) => onPatch({ gapY: n })} onMatch={() => onPatch({ gapY: undefined })} />
+              {/* A block holding LINKS side by side: the sliders start where the links are (2rem / 0.75rem at the default
+                  16px, `linkLineGap`), so the first nudge moves the space from what is on screen instead of jumping it. */}
+              <GapRange label="Space across" value={node.gapX} fallback={holdsLinks ? parseFloat(breakpoint === "phone" ? LINK_GAP_ACROSS_PHONE : LINK_GAP_ACROSS) * 16 : gapOf({ ...node, gapX: undefined }).x} onChange={(n) => onPatch({ gapX: n })} onMatch={() => onPatch({ gapX: undefined })} />
+              <GapRange label="Space down" value={node.gapY} fallback={holdsLinks ? 12 : gapOf({ ...node, gapY: undefined }).y} onChange={(n) => onPatch({ gapY: n })} onMatch={() => onPatch({ gapY: undefined })} />
             </Accordion>
           )}
 
@@ -728,8 +1077,10 @@ export default function BoxInspector({ node, theme, onPatch, onAddChild, onFloat
                   <CompactField label="Start at row" ariaLabel="Start at row" type="number" min={1} placeholder="auto"
                     value={node.rowStart ?? ""} onChange={(v) => onPatch({ rowStart: v === "" ? undefined : Math.max(1, Number(v) || 1) })} />
                 )}
-                <CompactSelect label="Line up (across)" ariaLabel="Line up (across)" value={node.justifySelf ?? "stretch"}
-                  onChange={(v) => onPatch({ justifySelf: v as NonNullable<BoxNode["justifySelf"]> })}
+                {/* ONE source of truth with the nine squares below (R4-2): both place the cell across, so whichever was
+                    used last wins — this shows the squares' choice, and choosing here clears the squares' across value. */}
+                <CompactSelect label="Line up (across)" ariaLabel="Line up (across)" value={node.placeX ?? node.justifySelf ?? "stretch"}
+                  onChange={(v) => onPatch({ justifySelf: v as NonNullable<BoxNode["justifySelf"]>, placeX: undefined })}
                   options={[{ value: "stretch", label: "Fill" }, { value: "start", label: "Left" }, { value: "center", label: "Center" }, { value: "end", label: "Right" }]} />
               </div>
             </Accordion>
@@ -756,7 +1107,7 @@ export default function BoxInspector({ node, theme, onPatch, onAddChild, onFloat
                     const name = `${y === "start" ? "Top" : y === "end" ? "Bottom" : "Middle"} ${x === "start" ? "left" : x === "end" ? "right" : "centre"}`;
                     return (
                       <button key={`${y}-${x}`} aria-label={name} title={name} aria-pressed={on}
-                        onClick={() => onPatch(on ? { placeX: undefined, placeY: undefined } : { placeX: x, placeY: y })}
+                        onClick={() => onPatch(on ? { placeX: undefined, placeY: undefined } : { placeX: x, placeY: y, justifySelf: undefined })}
                         className={`grid h-6 w-6 place-items-center rounded-md transition-colors ${on ? "bg-brand text-brand-fg" : "text-muted hover:bg-brand/10 hover:text-brand"}`}>
                         <span className="block h-2 w-2 rounded-sm bg-current" />
                       </button>
@@ -775,17 +1126,68 @@ export default function BoxInspector({ node, theme, onPatch, onAddChild, onFloat
 
           <Accordion title="Size" icon={Maximize2}>
             <WidthControl node={node} onPatch={onPatch} />
+            {pageSpan && onSetSpan && (
+              <div className="space-y-0.5">
+                <CompactField label={`Columns (of ${pageSpan.cols})`} ariaLabel={`Columns of ${pageSpan.cols}`} type="number" min={0.5} max={pageSpan.cols} step={0.5} value={pageSpan.value}
+                  onChange={(v) => { const n = Number(v); if (Number.isFinite(n) && n > 0) onSetSpan(n); }} />
+                <p className="text-[0.625rem] text-gray-500 dark:text-gray-400 midnight:text-slate-400 purple:text-purple-300">On this screen. Alt ← / → one column, with Shift half a column; the block beside it gives what this one takes.</p>
+              </div>
+            )}
+            {pageLines && onSetLines && (
+              <div className="space-y-1">
+                {pageLines.drawnAcross && (
+                  <p role="note" className="text-[0.625rem] text-amber-700 dark:text-amber-300 midnight:text-amber-300 purple:text-amber-200">
+                    On this screen the row steps down to fit: this block is drawn {pageLines.drawnAcross === 1 ? "on a line of its own" : `${pageLines.drawnAcross} across`}. Set its lines here and your setting wins.
+                  </p>
+                )}
+                <div className="grid grid-cols-2 gap-2">
+                  <CompactField label="From line" ariaLabel="From line" type="number" min={1} max={pageLines.cols} step={0.5} value={pageLines.from}
+                    onChange={(v) => { const n = Number(v); if (Number.isFinite(n) && n >= 1) onSetLines({ from: n }); }} />
+                  <CompactField label="To line" ariaLabel="To line" type="number" min={1.5} max={pageLines.cols + 1} step={0.5} value={pageLines.to}
+                    onChange={(v) => { const n = Number(v); if (Number.isFinite(n) && n > 1) onSetLines({ to: n }); }} />
+                </div>
+                <div className="flex flex-wrap gap-1.5">
+                  <ToolBtn onClick={() => onSetLines("full")} active={pageLines.from === 1 && pageLines.to === pageLines.cols + 1 && pageLines.first && pageLines.last}>Whole line</ToolBtn>
+                  <ToolBtn onClick={() => onSetLines({ to: pageLines.cols + 1 })} disabled={pageLines.to === pageLines.cols + 1}>To the last line</ToolBtn>
+                </div>
+                <CompactField label="Rows tall" ariaLabel="Rows tall" type="number" min={1} max={6} step={1} value={node.rowSpan ?? 1}
+                  onChange={(v) => { const n = Math.round(Number(v)); if (Number.isFinite(n) && n >= 1) onPatch({ rowSpan: n > 1 ? n : undefined }); }} />
+                <span className={label}>Bleed to the page edge</span>
+                <Segmented full ariaLabel="Bleed to the page edge" value={node.bleed ?? "off"} onChange={(v) => onPatch({ bleed: v === "off" ? undefined : (v as "left" | "right" | "both") })}
+                  options={[{ value: "off", label: "Off" }, { value: "left", label: "Left" }, { value: "right", label: "Right" }, { value: "both", label: "Both" }]} />
+                {onSetFreeInset && (
+                  <>
+                    <span className={label}>Free inside its columns (% of them)</span>
+                    <div className="grid grid-cols-2 gap-2">
+                      <CompactField label="Left" ariaLabel="Free space on the left, percent of its columns" type="number" min={0} max={90} step={1} value={node.freeInset?.left ?? 0}
+                        onChange={(v) => { const n = Number(v); if (Number.isFinite(n) && n >= 0) onSetFreeInset("left", n || undefined); }} />
+                      <CompactField label="Right" ariaLabel="Free space on the right, percent of its columns" type="number" min={0} max={90} step={1} value={node.freeInset?.right ?? 0}
+                        onChange={(v) => { const n = Number(v); if (Number.isFinite(n) && n >= 0) onSetFreeInset("right", n || undefined); }} />
+                    </div>
+                    <ToolBtn onClick={() => onSetFreeInset("both", undefined)} disabled={!node.freeInset?.left && !node.freeInset?.right}>Back on the lines</ToolBtn>
+                  </>
+                )}
+                <p className="text-[0.625rem] text-gray-500 dark:text-gray-400 midnight:text-slate-400 purple:text-purple-300">On this screen. Lines run from 1 (the page&apos;s left edge) to {pageLines.cols + 1}. Bleed takes away the side space where this block starts or ends a line, so it reaches the page edge; nothing else moves. Hold Alt while dragging an edge or the block to place it free: it keeps to the nearest lines, with the rest as free space inside them. Rows tall: it covers that many rows of the blocks beside it, and still grows with its words; where the row stacks, it spans one.</p>
+              </div>
+            )}
+            {rowStepRem && (
+              <div className="space-y-0.5">
+                <CompactField label="At least rows tall" ariaLabel="At least this many rows tall" type="number" min={0} max={40} step={1} value={rowsOf(node.minHeight, rowStepRem) || ""} placeholder="auto"
+                  onChange={(v) => onPatch({ minHeight: rowsToMinHeight(Number(v) || 0, rowStepRem) })} />
+                <p className="text-[0.625rem] text-gray-500 dark:text-gray-400 midnight:text-slate-400 purple:text-purple-300">At least this many row lines tall; it still grows with its words. Empty: as tall as its content.</p>
+              </div>
+            )}
             {!container && onAlignInRow && (
               <div className="space-y-1">
                 <span className={label}>Position in row</span>
                 <Segmented full ariaLabel="Position in row" value={rowJustify ?? "start"} onChange={(v) => onAlignInRow(v as FlexJustify)}
-                  options={[{ value: "start", label: "Left", Icon: AlignLeft }, { value: "center", label: "Center", Icon: AlignCenter }, { value: "end", label: "Right", Icon: AlignRight }]} />
+                  options={[{ value: "start", label: "Left", Icon: AlignLeft }, { value: "center", label: "Center", Icon: AlignCenter }, { value: "end", label: "Right", Icon: AlignRight }, { value: "between", label: "Spread", Icon: AlignHorizontalSpaceBetween }]} />
               </div>
             )}
             {/* Typing a height (or clearing it) also clears any shrink a DRAG applied: the scale exists only to make
                 content fit a box you dragged smaller than it, so a height set by hand starts from full-size text
                 again. Without this the text stayed small with no visible reason once the height was cleared. */}
-            <CompactField label="Height" ariaLabel="Height" value={node.height ?? ""} onChange={(v) => onPatch({ height: v || undefined, contentScale: undefined })} placeholder="auto, 300px or 40vh" />
+            <CompactField label="Height" ariaLabel="Height" value={node.height ?? ""} onChange={(v) => onPatch({ height: typedLength(v) || undefined, contentScale: undefined })} placeholder="auto, 18rem or 40vh" />
             {node.contentScale != null && node.contentScale < 1 && (
               <div className="flex items-center justify-between gap-2 rounded-lg bg-surface-2 px-2 py-1.5">
                 <span className="text-[0.6875rem] text-muted">
@@ -824,8 +1226,9 @@ export default function BoxInspector({ node, theme, onPatch, onAddChild, onFloat
           </Accordion>
 
           <Accordion title="Spacing" icon={Ruler}>
-            {(container || node.type === "component") && <SideSpacing title="Inner spacing" node={node} base="padding" sides={["paddingTop", "paddingRight", "paddingBottom", "paddingLeft"]} onPatch={onPatch} />}
-            <SideSpacing title="Outer spacing" node={node} base="margin" sides={["marginTop", "marginRight", "marginBottom", "marginLeft"]} onPatch={onPatch} />
+            {/* EVERY block has inner spacing (c-23; rule 3) — a Heading, Link or Image as much as a Stack. */}
+            {node.type !== "button" && <SideSpacing title="Inner spacing" node={node} base="padding" sides={["paddingTop", "paddingRight", "paddingBottom", "paddingLeft"]} onPatch={onPatch} defaults={spaceDefaults(node, section).pad} />}
+            <SideSpacing title="Outer spacing" node={node} base="margin" sides={["marginTop", "marginRight", "marginBottom", "marginLeft"]} onPatch={onPatch} defaults={outerDefault ?? outerDefaults(node, sectionPlace)} />
           </Accordion>
 
           <Accordion title="Outline & effects" icon={Sparkles}>
@@ -877,7 +1280,7 @@ export default function BoxInspector({ node, theme, onPatch, onAddChild, onFloat
               {([["TL", "radiusTopLeft", "top-left"], ["TR", "radiusTopRight", "top-right"], ["BR", "radiusBottomRight", "bottom-right"], ["BL", "radiusBottomLeft", "bottom-left"]] as const).map(([lab, key, full]) => (
                 <label key={key} className="flex flex-col items-center gap-0.5">
                   <span className="text-[0.5625rem] uppercase tracking-wide text-gray-400">{lab}</span>
-                  <input type="number" min={0} value={node[key] !== undefined ? (node[key] as number) : ""} placeholder={String(node.radius ?? 0)} onChange={(e) => onPatch({ [key]: e.target.value === "" ? undefined : Number(e.target.value) } as Partial<BoxNode>)} aria-label={`Rounded corner ${full}`} className="w-full text-xs px-1 py-1 rounded-lg border border-gray-200 dark:border-white/10 bg-transparent text-center outline-none focus:ring-1 focus:ring-indigo-400" />
+                  <input type="number" min={0} value={node[key] !== undefined ? (node[key] as number) : ""} placeholder={String(node.radius ?? 0)} onChange={(e) => onPatch({ [key]: e.target.value === "" ? undefined : Number(e.target.value) } as Partial<BoxNode>)} aria-label={`Rounded corner ${full}`} className="w-full text-xs px-1 py-1 rounded-lg border border-gray-200 dark:border-white/10 midnight:border-white/10 purple:border-white/10 bg-transparent text-center outline-none focus:ring-1 focus:ring-indigo-400" />
                 </label>
               ))}
             </div>
@@ -1027,10 +1430,10 @@ export default function BoxInspector({ node, theme, onPatch, onAddChild, onFloat
           ) : (
             <>
               <Accordion title="Content" icon={TypeIcon}>
-                {(node.type === "text" || node.type === "heading" || node.type === "button") && (
+                {(node.type === "text" || node.type === "heading" || node.type === "button" || node.type === "link") && (
                   <CompactTextarea label="Text" value={node.text ?? ""} onChange={(v) => onPatch({ text: v })} rows={2} />
                 )}
-                {node.type === "button" && (
+                {(node.type === "button" || node.type === "link") && (
                   <>
                     <CompactField label="Link (web address or #bookmark)" ariaLabel="Link" value={node.href ?? ""} onChange={(v) => onPatch({ href: v })} placeholder="https://… or #pricing" />
                     {pages && pages.filter((p) => p.id !== currentPageId).length > 0 && (
@@ -1059,7 +1462,7 @@ export default function BoxInspector({ node, theme, onPatch, onAddChild, onFloat
                     {hasIntrinsicSize(node) && (
                       <>
                         <label className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-300">
-                          <input type="checkbox" checked={!sizeToCSS(node.height)} onChange={(e) => onPatch({ height: e.target.checked ? "auto" : "260px" })} />
+                          <input type="checkbox" checked={!sizeToCSS(node.height)} onChange={(e) => onPatch({ height: e.target.checked ? "auto" : remLen(260) })} />
                           Show the whole picture (don&apos;t crop it)
                         </label>
                         <p className="text-[0.6875rem] text-gray-500 dark:text-gray-400">
@@ -1511,7 +1914,7 @@ export default function BoxInspector({ node, theme, onPatch, onAddChild, onFloat
       {/* ─────────────── PER-DEVICE ─────────────── */}
       {tab === "device" && (
         <div className="space-y-3">
-          <p className="text-[0.6875rem] text-gray-400 flex items-start gap-1.5"><MonitorSmartphone className="w-3.5 h-3.5 mt-0.5 shrink-0" /> {breakpoint === "base" ? "Switch the screen-size buttons at the top to Tablet or Mobile to fine-tune those sizes. Text and content stay the same everywhere." : `You're editing ${bpLabel}. Size, spacing and layout you change now only apply here.`}</p>
+          <p className="text-[0.6875rem] text-gray-400 flex items-start gap-1.5"><MonitorSmartphone className="w-3.5 h-3.5 mt-0.5 shrink-0" /> {breakpoint === "base" ? "Switch the screen-size buttons at the top to Tablet or Mobile to fine-tune those sizes. Text and content stay the same everywhere." : `You're editing ${bpLabel}. Size, spacing and layout you change now only apply here — except a control marked “every screen”.`}</p>
           <label className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-300"><input type="checkbox" checked={!!node.hidden} onChange={(e) => onPatch({ hidden: e.target.checked || undefined })} /> Hidden {breakpoint === "base" ? "everywhere" : `on ${bpLabel.toLowerCase()}`}</label>
         </div>
       )}

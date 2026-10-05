@@ -1,0 +1,287 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Placement combinations</title>
+<!--
+  BATCH R-4 · RULE MAP steps 2–3 (07-map.md §4). One page, every CORE value of the map selectable by the URL, on the page
+  grid written as a REAL CSS grid (07 §6 question 5): [full-start] side [content-start] 2n half-tracks [content-end] side
+  [full-end], zero column gap, each block's own margin making the gap (G-1: side 0.8rem, gap 0.75rem on a phone).
+  4 columns on a phone, 8 from 600px (37.5em), 12 from 900px (56.25em) — the five-rung ladder's column counts.
+
+  ?place=span:<s>:<n> | se:<s>:<e> | last:<s> | full | bleed | bleedL | bleedR     (s, n, e in TWELFTHS; .5 = a half-line)
+   &x=start|center|end|fill  &y=top|center|bottom|fill  &out=def|0|2s|pushEnd|pushBottom  &in=def|0|2
+   &size=free|square|16x9|read|max20  &layer=flow|over|floatTR|cover
+   &cont=stack|spread|even|wrapmid|cardsfit|cardsfill|subgrid  &dir=ltr|rtl  &text=100|150|200  &guides=1
+  window.__check() measures the page against what the URL asked for and returns [name, ok, detail] rows;
+  scripts/research/css-layout-combos.js drives it in six headed windows over scripts/uat/screens.js.
+-->
+<style>
+  :root {
+    --pad: clamp(0.75rem, 0.5rem + 2cqi, 1.5rem); /* the default inner space, FLUID like the engine's (rule 3 / 16) */
+    --side: clamp(0.8rem, 0.6rem + 1cqi, 2rem); --gap: clamp(0.75rem, 0.6rem + 0.6cqi, 1.5rem);
+    --ink: oklch(0.25 0.02 260); --paper: oklch(0.985 0.005 260); --band: oklch(0.93 0.03 250); --card: oklch(1 0 0);
+    --line: oklch(0.82 0.02 260); --brand: oklch(0.45 0.15 260); --on-brand: oklch(0.98 0.01 260); --guide: oklch(0.6 0.2 25);
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; container-type: inline-size; font: 1rem/1.6 system-ui, sans-serif; color: var(--ink); background: var(--paper); }
+  .pg { position: relative; display: grid; column-gap: 0; row-gap: var(--gap); padding-block: 2rem;
+        grid-template-columns: [full-start] var(--side) [content-start] repeat(8, minmax(0, 1fr)) [content-end] var(--side) [full-end]; }
+  @media (min-width: 37.5em) { .pg { grid-template-columns: [full-start] var(--side) [content-start] repeat(16, minmax(0, 1fr)) [content-end] var(--side) [full-end]; } }
+  @media (min-width: 56.25em) { .pg { grid-template-columns: [full-start] var(--side) [content-start] repeat(24, minmax(0, 1fr)) [content-end] var(--side) [full-end]; } }
+  .pg > * { margin-inline: calc(var(--gap) / 2); min-inline-size: 0; }
+  .pg:nth-of-type(even) { background: var(--band); }
+  .cell { background: var(--card); border: 1px solid var(--line); padding: var(--pad); overflow-wrap: anywhere; }
+  .cell h2, .cell h3, .cell p { margin: 0 0 0.5rem; } .cell > :last-child { margin-block-end: 0; }
+  .pic { background: linear-gradient(135deg, oklch(0.72 0.1 200), oklch(0.5 0.12 260)); color: var(--on-brand); }
+
+  /* header: logo at the start, the links PUSHED to the end (G2) — logical, so Arabic mirrors (G7) */
+  header.pg { padding-block: 1rem; background: var(--brand); color: var(--on-brand); }
+  header .bar { grid-column: content-start / content-end; display: flex; flex-wrap: wrap; align-items: center; gap: var(--gap); }
+  header nav { margin-inline-start: auto; } header ul { display: flex; flex-wrap: wrap; gap: 0.5rem 1rem; list-style: none; margin: 0; padding: 0; }
+  header a { color: inherit; }
+
+  /* the hero: its first row at least 16rem, so "down" has room to show (H6) */
+  #hero { grid-template-rows: minmax(16rem, auto); }
+
+  /* the container section (C1, C2, D, J) */
+  #c .holder { grid-column: content-start / content-end; padding: var(--pad); border: 1px dashed var(--line); }
+  #c .holder > .cell { padding: var(--pad); }
+  .k-stack { display: flex; flex-direction: column; gap: var(--gap); }
+  .k-spread, .k-even, .k-wrapmid { display: flex; flex-wrap: wrap; gap: var(--gap); }
+  .k-spread { justify-content: space-between; } .k-even { justify-content: space-evenly; }
+  .k-wrapmid { align-content: center; min-block-size: 20rem; }
+  .k-cardsfit, .k-cardsfill, .k-subgrid { display: grid; gap: var(--gap); }
+  .k-cardsfit { grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr)); }
+  .k-cardsfill { grid-template-columns: repeat(auto-fill, minmax(min(100%, 14rem), 1fr)); }
+  .k-subgrid { grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr)); }
+  .k-subgrid > .cell { grid-row: span 3; display: grid; grid-template-rows: subgrid; row-gap: 0.5rem; }
+  .btn { display: inline-block; padding: 0.5rem 1rem; background: var(--brand); color: var(--on-brand); border-radius: 0; text-decoration: none; justify-self: start; }
+
+  /* fees: words of different sizes lined up on their TEXT (C9) */
+  .fees { grid-column: content-start / content-end; display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.25rem 1rem; }
+  .fees .big { font-size: clamp(1.5rem, 1rem + 4cqi, 2.5rem); font-weight: 700; } .fees .small { font-size: 0.875rem; }
+  .probe { display: inline-block; inline-size: 0; block-size: 0; }
+
+  footer.pg { background: var(--ink); color: var(--paper); }
+  footer p { grid-column: content-start / content-end; margin: 0; }
+  .guides { position: absolute; inset: 0; display: grid; grid-template-columns: inherit; pointer-events: none; z-index: 9; }
+  .guides span { grid-row: 1 / -1; border-inline-start: 1px solid color-mix(in oklch, var(--guide) 60%, transparent); }
+  .s-target { outline: 2px solid var(--guide); outline-offset: -2px; }
+</style>
+</head>
+<body>
+<header class="pg"><div class="bar"><strong>St Mary's School</strong><nav aria-label="Main"><ul><li><a href="#hero">About</a></li><li><a href="#c">Admissions</a></li><li><a href="#fees">Fees</a></li><li><a href="#f">Contact</a></li></ul></nav></div></header>
+<main>
+  <section class="pg" id="hero" aria-labelledby="h-subject">
+    <div class="cell s-target" id="subject"><h2 id="h-subject">Welcome to St Mary's</h2><p>A small school with big ideas.</p></div>
+    <div class="cell pic" id="partner"><h3>Open day</h3><p>Saturday 14 November, 10am to 2pm. Meet the teachers, see the classrooms and the new science lab, and stay for lunch with the pupils.</p></div>
+  </section>
+  <section class="pg" id="c" aria-labelledby="h-c">
+    <h2 id="h-c" style="grid-column: content-start / content-end; margin: 0" class="cell">What we offer</h2>
+    <div class="holder" id="holder"></div>
+  </section>
+  <section class="pg" id="fees" aria-labelledby="h-fees">
+    <div class="fees"><h2 id="h-fees" class="small"><span class="probe"></span>Fees per term</h2><span class="big"><span class="probe"></span>₦150,000</span><span class="small"><span class="probe"></span>including books</span></div>
+  </section>
+</main>
+<footer class="pg" id="f"><p>St Mary's School · 12 Allen Avenue, Ikeja, Lagos</p></footer>
+<script>
+const q = new URLSearchParams(location.search);
+const P = { place: q.get('place') || 'span:0:6', x: q.get('x') || 'fill', y: q.get('y') || 'fill', out: q.get('out') || 'def',
+  in: q.get('in') || 'def', size: q.get('size') || 'free', layer: q.get('layer') || 'flow', cont: q.get('cont') || 'cardsfit',
+  dir: q.get('dir') || 'ltr', text: +(q.get('text') || 100) };
+document.documentElement.dir = P.dir; document.documentElement.style.fontSize = P.text + '%';
+const S = document.getElementById('subject'), PT = document.getElementById('partner'), hero = document.getElementById('hero');
+// an RTL page is an ARABIC page (RULE AF), and every text block takes its own direction from its words (07 L4) —
+// English on an RTL page put its full stop on the wrong side (ledger 14)
+if (P.dir === 'rtl') {
+  document.documentElement.lang = 'ar';
+  S.innerHTML = '<h2 id="h-subject">مرحبا بكم في مدرسة سانت ماري</h2><p>مدرسة صغيرة بأفكار كبيرة.</p>';
+  PT.innerHTML = '<h3>يوم مفتوح</h3><p>السبت 14 نوفمبر، من الساعة 10 صباحا إلى 2 ظهرا. تعرّفوا على المعلمين وشاهدوا الفصول ومختبر العلوم الجديد.</p>';
+}
+document.querySelectorAll('h2, h3, p, a, strong, .fees span').forEach((e) => e.setAttribute('dir', 'auto'));
+
+// ---- the container section (cont) ----
+const words = ['Science', 'Music and drama', 'Sports', 'Clubs after school', 'Languages', 'Art', 'Computing'];
+const H = document.getElementById('holder'); H.className = 'holder k-' + P.cont;
+const N = P.cont === 'cardsfit' || P.cont === 'cardsfill' ? 2 : P.cont === 'subgrid' ? 3 : P.cont === 'stack' ? 3 : 5;
+for (let i = 0; i < N; i++) {
+  const c = document.createElement('div'); c.className = 'cell';
+  c.innerHTML = P.cont === 'subgrid'
+    ? `<h3>${['Science', 'Music, drama and the school orchestra', 'Sport'][i]}</h3><p>${['Labs for every year.', 'Two concerts a term.', 'Football, athletics, swimming and table tennis every week of the year.'][i]}</p><a class="btn" href="#c">Find out more</a>`
+    : `<h3>${words[i]}</h3>`;
+  H.append(c);
+}
+
+// ---- the subject's placement, from twelfths to the half-lines of the columns in force ----
+const cols = () => innerWidth >= 900 ? 12 : innerWidth >= 600 ? 8 : 4;
+function place() {
+  const n = cols(), half = 2 * n, f = n / 12, [kind, a, b] = P.place.split(':');
+  const hl = (t) => Math.round(+t * f * 2);                 // twelfths → half-lines in force
+  let s = 0, e = half, area;
+  if (kind === 'span') { const hn = Math.max(2, hl(b)); s = Math.min(hl(a), half - hn); e = s + hn; area = `${s + 2} / span ${hn}`; }
+  else if (kind === 'se') { s = hl(a); e = Math.max(s + 2, Math.min(half, hl(b))); area = `${s + 2} / ${e + 2}`; }
+  else if (kind === 'last') { s = Math.min(hl(a), half - 2); area = `${s + 2} / content-end`; }
+  else if (kind === 'full') area = 'content-start / content-end';
+  else if (kind === 'bleed') { s = -1; e = half + 1; area = 'full-start / full-end'; }
+  else if (kind === 'bleedL') { s = -1; e = n; area = `full-start / ${n + 2}`; }
+  else if (kind === 'bleedR') { s = n; e = half + 1; area = `${n + 2} / full-end`; }
+  S.style.gridColumn = area; S.style.gridRow = '1 / 2'; S.dataset.s = s; S.dataset.e = e;   // -1 / half+1 = the outer lines
+  // BOTH row lines: an absolute grid child's `auto` line is the container's padding edge, not the row (07 §4.1)
+  partner();
+}
+// the partner: same lines if layered over, else beside the subject when two columns are free, else the next row —
+// re-run whenever the subject's lines change (the fit rule), so the row WRAPS rather than overlaps
+function partner() {
+  const half = 2 * cols(), s = +S.dataset.s, e = +S.dataset.e;
+  const free = s >= 4 ? [0, s] : (half - e >= 4 && e <= half) ? [e, half] : null;
+  if (P.layer === 'over') { PT.style.gridColumn = S.style.gridColumn; PT.style.gridRow = '1'; }
+  else if (free) { PT.style.gridColumn = `${free[0] + 2} / ${free[1] + 2}`; PT.style.gridRow = '1'; }
+  else { PT.style.gridColumn = 'content-start / content-end'; PT.style.gridRow = '2'; }
+}
+// ---- everything else about the subject ----
+const st = S.style;
+st.justifySelf = { start: 'start', center: 'center', end: 'end', fill: 'stretch' }[P.x];
+st.alignSelf = { top: 'start', center: 'center', bottom: 'end', fill: 'stretch' }[P.y];
+if (P.place.startsWith('bleed')) { if (P.place !== 'bleedR') st.marginInlineStart = '0'; if (P.place !== 'bleedL') st.marginInlineEnd = '0'; S.classList.add('pic'); }
+if (P.out === '0') st.marginInline = '0';
+if (P.out === '2s') st.marginInlineStart = '2rem';
+if (P.out === 'pushEnd') st.marginInlineStart = 'auto';
+if (P.out === 'pushBottom') st.marginBlockStart = 'auto';
+st.padding = { def: '', 0: '0', 2: '2rem' }[P.in];
+if (P.size === 'square') st.aspectRatio = '1'; if (P.size === '16x9') st.aspectRatio = '16 / 9';
+if (P.size === 'read') st.maxInlineSize = '65ch'; if (P.size === 'max20') st.maxInlineSize = '20rem';
+if (P.layer === 'over') { st.zIndex = '1'; PT.style.minBlockSize = '18rem'; }
+if (P.layer === 'floatTR') { st.position = 'absolute'; st.insetBlockStart = '1rem'; st.insetInlineEnd = '1rem'; st.margin = '0'; }
+if (P.layer === 'cover') { st.position = 'absolute'; st.inset = '0'; st.margin = '0'; }
+// CLASH RULES found by the proof (07-map §4.1): COVER fills its area whatever else is set — box alignment applies to an
+// absolute box too, and a cap or a shape would shrink it; a SHAPE always fills across (a definite width) and never
+// fills down, or its width is taken from its height and spills past its lines
+if (P.layer === 'cover') { st.justifySelf = st.alignSelf = 'stretch'; st.maxInlineSize = 'none'; st.aspectRatio = 'auto'; }
+else if (P.size === 'square' || P.size === '16x9') { st.justifySelf = 'stretch'; if (P.y === 'fill') st.alignSelf = 'start'; }
+// would a whole word not fit? measured with normal wrapping — `overflow-wrap: anywhere` HIDES the overflow by cutting
+// the word ("Welco / me"), so the box must be measured as if it could not (ledger 13)
+function wordsBreak(el) {
+  const kids = [el, ...el.querySelectorAll('*')], was = kids.map((k) => k.style.overflowWrap);
+  kids.forEach((k) => (k.style.overflowWrap = 'normal'));
+  const bad = kids.some((k) => k.scrollWidth > k.clientWidth + 1);
+  kids.forEach((k, i) => (k.style.overflowWrap = was[i])); return bad;
+}
+// a FLOATING block with words falls back into the flow on a screen where its words do not fit its area (ledger 12;
+// 05 rank 5: words in an absolute box do not reflow)
+function floatFits() {
+  if (P.layer !== 'floatTR' || S.dataset.fallback) return;
+  const rows = getComputedStyle(hero).gridTemplateRows.split(/\s+/).map(parseFloat), top = hero.getBoundingClientRect().top + parseFloat(getComputedStyle(hero).paddingTop);
+  if (wordsBreak(S) || S.getBoundingClientRect().bottom > top + rows[0] + 1) { S.dataset.fallback = '1'; Object.assign(S.style, { position: '', insetBlockStart: '', insetInlineEnd: '', margin: '' }); }
+}
+// THE FIT RULE (G-1): the words decide the span — a block too narrow for its words at this text size takes more lines
+function fit() {
+  const half = 2 * cols(); let s0 = +S.dataset.s, e0 = +S.dataset.e;
+  const tr = () => getComputedStyle(hero).gridTemplateColumns.replace(/\[[^\]]*\]/g, ' ').trim().split(/\s+/).map(parseFloat);
+  const tooNarrow = () => { const t = tr(), cs = getComputedStyle(S), w = t.slice(s0 + 1, e0 + 1).reduce((a, b) => a + b, 0);   // the box + its margins wider than its lines, or words overflowing it
+    return wordsBreak(S) || (P.layer === 'over' && wordsBreak(PT)) || S.getBoundingClientRect().width + (parseFloat(cs.marginInlineStart) || 0) + (parseFloat(cs.marginInlineEnd) || 0) > w + 1; };
+  // a bleed sits on an OUTER line (-1 or half+1) and grows toward the content; anything else grows at its end first
+  const bl = P.place.startsWith('bleed'), lo = bl ? -1 : 0, hi = bl ? half + 1 : half;   // only a bleed may cover the side space
+  // the partner settles FIRST — moving it out of row 1 shrinks the row a floating block is measured against (ledger 17)
+  partner(); if (P.layer !== 'over' && PT.style.gridRow === '1' && wordsBreak(PT)) { PT.style.gridColumn = 'content-start / content-end'; PT.style.gridRow = '2'; }
+  floatFits();
+  while (P.layer !== 'floatTR' || S.dataset.fallback) { if (!(tooNarrow() && (s0 > lo || e0 < hi))) break;   // EVERY block, cover too (ledger 16)
+    if (e0 < half) e0++; else if (s0 > 0) s0--; else if (s0 > lo) s0 = lo; else e0 = hi; S.style.gridColumn = `${s0 + 2} / ${e0 + 2}`; S.dataset.s = s0; S.dataset.e = e0;
+  }
+  partner();
+  // the partner too: words that do not fit beside the subject take a row of their own
+  if (P.layer !== 'over' && PT.style.gridRow === '1' && wordsBreak(PT)) { PT.style.gridColumn = 'content-start / content-end'; PT.style.gridRow = '2'; }
+}
+place(); fit(); addEventListener('resize', () => { place(); fit(); });
+if (q.get('guides')) { const g = document.createElement('div'); g.className = 'guides'; g.setAttribute('aria-hidden', 'true'); g.innerHTML = '<span></span>'.repeat(2 * cols() + 3); hero.append(g); }
+
+// ---- the check: does the page do what the URL asked? ----
+window.__check = () => {
+  const out = []; const ok = (nm, v, d = '') => out.push([nm, !!v, d]); const T = 1.5; const R = (el) => el.getBoundingClientRect();
+  const rtl = P.dir === 'rtl', doc = document.documentElement, rem = parseFloat(getComputedStyle(doc).fontSize);
+  // inline positions measured from the inline START edge, so one rule serves both directions
+  const hr = R(hero), toI = (r) => rtl ? { s: hr.right - r.right, e: hr.right - r.left } : { s: r.left - hr.left, e: r.right - hr.left };
+  const tracks = getComputedStyle(hero).gridTemplateColumns.replace(/\[[^\]]*\]/g, ' ').trim().split(/\s+/).map(parseFloat);
+  const line = (k) => tracks.slice(0, k).reduce((a, b) => a + b, 0);              // grid line k+1, from the start
+  const half = 2 * cols();
+  ok('no sideways scroll', doc.scrollWidth <= doc.clientWidth + 1, `${doc.scrollWidth} > ${doc.clientWidth}`);
+  ok('the page grid has the columns of this rung', tracks.length === half + 2, `${tracks.length - 2} half-tracks`);
+  for (const c of document.querySelectorAll('.cell')) if (c.scrollWidth > c.clientWidth + 1) ok('no words cut', false, c.textContent.slice(0, 24));
+  // a person's OWN inner space (2rem) may leave too little room on a small phone at large text: the page check WARNS
+  // (it is their choice); with the default fluid space a broken word is a failure
+  window.__warn = [];
+  for (const c of document.querySelectorAll('.cell')) if (wordsBreak(c)) {
+    if (c === S && P.in === '2') window.__warn.push(`their own 2rem inner space breaks a word: ${c.textContent.slice(0, 24)}`);
+    else ok('no word broken mid-word', false, c.textContent.slice(0, 24));
+  }
+
+  // placement (Q2): the slot (box + its margins) spans the lines asked for
+  const s = +S.dataset.s, e = +S.dataset.e, L = s < 0 ? 0 : line(s + 1), Rr = e > half ? line(half + 2) : line(e + 1);
+  const cs = getComputedStyle(S), ms = parseFloat(cs.marginInlineStart), me = parseFloat(cs.marginInlineEnd);
+  const b = toI(R(S)); const g2 = parseFloat(getComputedStyle(PT).marginInlineStart);
+  const rows = getComputedStyle(hero).gridTemplateRows.split(/\s+/).map(parseFloat), top = R(hero).top + parseFloat(getComputedStyle(hero).paddingTop), bot = top + rows[0];
+  const bb = R(S);
+  const fb = !!S.dataset.fallback, layer = fb ? 'flow' : P.layer;
+  if (layer === 'floatTR') {
+    ok('floating: held 1rem from the END and the top of its area', Math.abs(b.e - (Rr - rem)) <= T && Math.abs(bb.top - (top + rem)) <= T, `end ${b.e.toFixed(1)} want ${(Rr - rem).toFixed(1)}`);
+    ok('floating: stays inside its area', bb.bottom <= bot + T, `${(bb.bottom - bot).toFixed(1)} past`);
+  } else if (P.layer === 'cover') {
+    ok('cover: fills its area exactly', Math.abs(b.s - L) <= T && Math.abs(b.e - Rr) <= T && Math.abs(bb.top - top) <= T && Math.abs(bb.bottom - bot) <= T, `${b.s.toFixed(1)}–${b.e.toFixed(1)} want ${L.toFixed(1)}–${Rr.toFixed(1)}`);
+  } else {
+    const iS = L + (P.out === 'pushEnd' ? 0 : ms), iE = Rr - me, w = b.e - b.s;
+    ok('inside its lines', b.s >= L - T && b.e <= Rr + T, `${b.s.toFixed(1)}–${b.e.toFixed(1)} in ${L.toFixed(1)}–${Rr.toFixed(1)}`);
+    const capped = P.size === 'read' || P.size === 'max20', shaped = P.size === 'square' || P.size === '16x9';
+    const x = P.out === 'pushEnd' ? 'end' : shaped ? 'fill' : P.x;   // a shape always fills across (clash rule)
+    if (x === 'fill' && !capped) ok('across: fill', Math.abs(b.s - iS) <= T && Math.abs(b.e - iE) <= T, `${b.s.toFixed(1)}–${b.e.toFixed(1)} want ${iS.toFixed(1)}–${iE.toFixed(1)}`);
+    if (x === 'start' || (x === 'fill' && capped)) ok('across: start', Math.abs(b.s - iS) <= T, `${b.s.toFixed(1)} want ${iS.toFixed(1)}`);
+    if (x === 'end') ok('across: end', Math.abs(b.e - iE) <= T, `${b.e.toFixed(1)} want ${iE.toFixed(1)}`);
+    if (x === 'center') ok('across: middle', Math.abs((b.s + b.e) / 2 - (iS + iE) / 2) <= T, `${((b.s + b.e) / 2).toFixed(1)} want ${((iS + iE) / 2).toFixed(1)}`);
+    if (P.size === 'read') ok('readable width ≤ 65ch', w <= 65 * parseFloat(getComputedStyle(S).fontSize) * 0.62 + T || w <= iE - iS + T, `${w.toFixed(0)}px`);
+    if (P.size === 'max20') ok('largest width 20rem', w <= 20 * rem + T, `${w.toFixed(1)} > ${20 * rem}`);
+    // down (Q3) — in the first row, which is at least 16rem
+    const y = P.out === 'pushBottom' ? 'bottom' : shaped && P.y === 'fill' ? 'top' : P.y;   // a shape never fills down
+    if (y === 'top') ok('down: top', Math.abs(bb.top - top) <= T, `${(bb.top - top).toFixed(1)}`);
+    if (y === 'bottom') ok('down: bottom', Math.abs(bb.bottom - bot) <= T, `${(bot - bb.bottom).toFixed(1)}`);
+    if (y === 'center') ok('down: middle', Math.abs((bb.top + bb.bottom) / 2 - (top + bot) / 2) <= T, `${((bb.top + bb.bottom) / 2 - (top + bot) / 2).toFixed(1)}`);
+    if (y === 'fill' && !shaped) ok('down: fill', Math.abs(bb.top - top) <= T && Math.abs(bb.bottom - bot) <= T, `${bb.top.toFixed(0)}–${bb.bottom.toFixed(0)} want ${top.toFixed(0)}–${bot.toFixed(0)}`);
+    if (shaped && !capped) { const want = P.size === 'square' ? 1 : 16 / 9, got = w / bb.height; ok('shape holds (or the words made it taller)', Math.abs(got - want) / want <= 0.03 || bb.height > w / want, `${got.toFixed(2)} want ${want.toFixed(2)}`); }
+  }
+  // the partner is never covered unless the URL layered the subject over it
+  const pr = R(PT), ov = bb.right > pr.left + T && pr.right > bb.left + T && bb.bottom > pr.top + T && pr.bottom > bb.top + T;
+  if (layer === 'flow') ok('no overlap in the flow', !ov);
+  if (fb) ok('a floating block that fell back is in the flow', getComputedStyle(S).position !== 'absolute');
+  if (P.layer === 'over') ok('layered over: same lines, in front', ov && +getComputedStyle(S).zIndex > +(getComputedStyle(PT).zIndex === 'auto' ? 0 : getComputedStyle(PT).zIndex));
+
+  // header: links pushed to the END (mirrors in RTL)
+  const bar = document.querySelector('header .bar'), nav = document.querySelector('header nav'), br = R(bar), nr = R(nav);
+  if (nr.top - br.top < 4) ok('header links pushed to the end', rtl ? Math.abs(nr.left - br.left) <= T : Math.abs(nr.right - br.right) <= T, `${rtl ? nr.left - br.left : br.right - nr.right}`);
+  // fees: the three texts share a baseline when they sit on one line
+  const pb = [...document.querySelectorAll('.probe')].map((p) => R(p).top), pt = [...document.querySelectorAll('.fees > *')].map((x) => R(x).top);
+  if (Math.max(...pt) - Math.min(...pt) < 3 * rem) ok('fees: text lines up', Math.max(...pb) - Math.min(...pb) <= T, pb.map((v) => v.toFixed(1)).join(' '));
+
+  // the container section
+  const kids = [...H.children].map(R), hb = R(H), hp = parseFloat(getComputedStyle(H).paddingInlineStart), gap = parseFloat(getComputedStyle(H).columnGap) || 0;
+  const oneLine = kids.every((k) => Math.abs(k.top - kids[0].top) < 2);
+  const inner = { l: hb.left + hp + 1, r: hb.right - hp - 1 };
+  if (P.cont === 'stack') ok('stacked: one under another', kids.every((k, i) => !i || k.top >= kids[i - 1].bottom - T));
+  if (P.cont === 'spread' && oneLine) { const first = rtl ? kids[0].right : kids[0].left, last = rtl ? kids.at(-1).left : kids.at(-1).right;
+    ok('space between: first at the start, last at the end', Math.abs(first - (rtl ? inner.r : inner.l)) <= T && Math.abs(last - (rtl ? inner.l : inner.r)) <= T, `${first.toFixed(1)} ${last.toFixed(1)}`); }
+  if (P.cont === 'even' && oneLine) { const xs = kids.map((k) => [k.left, k.right]).sort((a, c) => a[0] - c[0]); const sp = [xs[0][0] - inner.l, ...xs.slice(1).map((k, i) => k[0] - xs[i][1] - gap), inner.r - xs.at(-1)[1]];
+    ok('even spacing: equal space at the edges and between', Math.max(...sp) - Math.min(...sp) <= 2 * T, sp.map((v) => v.toFixed(1)).join(' ')); }
+  if (P.cont === 'wrapmid') { const t = Math.min(...kids.map((k) => k.top)) - (hb.top + parseFloat(getComputedStyle(H).paddingTop) + 1), bo = (hb.bottom - parseFloat(getComputedStyle(H).paddingBottom) - 1) - Math.max(...kids.map((k) => k.bottom));
+    ok('wrapped lines in the middle', Math.abs(t - bo) <= 2 * T, `${t.toFixed(1)} / ${bo.toFixed(1)}`); }
+  const room = inner.r - inner.l, cw = 14 * rem;
+  if (P.cont === 'cardsfit' && room >= 2 * cw + gap) ok('cards fit: two cards stretch to the full width', Math.abs((kids[0].width + kids[1].width + gap) - room) <= 2 * T, `${(kids[0].width + kids[1].width + gap).toFixed(1)} of ${room.toFixed(1)}`);
+  if (P.cont === 'cardsfill' && room >= 3 * cw + 2 * gap) ok('cards fill: two cards keep their card size', kids[0].width + kids[1].width + gap < room - cw, `${(kids[0].width + kids[1].width).toFixed(1)} of ${room.toFixed(1)}`);
+  if ((P.cont === 'cardsfit' || P.cont === 'cardsfill') && room < cw) ok('cards: one per line on a narrow screen', kids[1].top >= kids[0].bottom - T);
+  if (P.cont === 'subgrid') { const btn = [...H.querySelectorAll('.btn')].map(R); const same = btn.filter((x) => Math.abs(R(x.parentElement ?? H).top) >= 0);
+    const lines = {}; for (const [i, k] of kids.entries()) (lines[Math.round(k.top)] ||= []).push(btn[i].top);
+    for (const t of Object.values(lines)) if (t.length > 1) ok('subgrid: buttons level across a line of cards', Math.max(...t) - Math.min(...t) <= T, t.map((v) => v.toFixed(1)).join(' ')); }
+  // reading order: Tab follows the DOM (nothing here reorders) — the focusable links in DOM order
+  return out;
+};
+</script>
+</body>
+</html>

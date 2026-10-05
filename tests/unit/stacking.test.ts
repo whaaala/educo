@@ -41,6 +41,8 @@ describe("the two ladders never meet", () => {
     // everything or the pointer flickers back to default whenever it crosses a handle.
     expect(CHROME_Z.itemBox).toBeLessThan(CHROME_Z.itemBar);
     expect(CHROME_Z.handle).toBeLessThan(CHROME_Z.toolbar);
+    // E1-8: the narrow-screen Inspector drawer covers the selection chrome and the blocks launcher, and stays under a menu / drag
+    expect(CHROME_Z.toolbar).toBeLessThan(CHROME_Z.drawer); expect(CHROME_Z.panel).toBeLessThan(CHROME_Z.drawer); expect(CHROME_Z.drawer).toBeLessThan(CHROME_Z.marquee);
     expect(CHROME_Z.marquee).toBeLessThan(CHROME_Z.snapGuide);
     expect(CHROME_Z.snapGuide).toBeLessThan(CHROME_Z.dropZone);
     expect(CHROME_Z.dropZone).toBeLessThan(CHROME_Z.dragGhost);
@@ -182,7 +184,9 @@ describe("no bare stacking number survives in the builder", () => {
 
   for (const file of sources) {
     it(`${file} takes its stacking order from the ladder`, () => {
-      const src = fs.readFileSync(path.join(process.cwd(), file), "utf8");
+      // Line endings normalised — see the note in immersive-layout.test.ts; a CRLF checkout otherwise
+      // fails an assertion that spans a line break, on a file nobody has touched.
+      const src = fs.readFileSync(path.join(process.cwd(), file), "utf8").replace(/\r\n/g, "\n");
       const offenders = [
         ...src.matchAll(/zIndex\s*:\s*(-?\d+)/g),
         ...src.matchAll(/z-index\s*:\s*(-?\d+)/g),

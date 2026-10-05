@@ -1,4 +1,5 @@
 import { describe, it, expect } from "vitest";
+import type { CSSProperties } from "react";
 import { createContainer, createElement, createComponent, makeRowBand, type BoxNode } from "@/lib/box-model";
 import { siteFromRoot, emptyPageRoot } from "@/lib/box-site";
 import { styleString, renderPageHTML, renderSiteFiles, renderSitePage, downloadSite } from "@/lib/box-export";
@@ -15,9 +16,41 @@ const pageDoc = (root: BoxNode, title = "Page") => {
 import { DEFAULT_THEME } from "@/lib/site-storage";
 
 describe("box-export — static HTML", () => {
+  /** R-23 (2026-10-02): the Divider publishes the element MDN says it is — `<hr>`, a thematic break with the separator
+   *  role (docs/web-anatomy/html-semantics.md) — never a `<div>` hidden from assistive technology. */
+  it("a Divider publishes <hr>, its UA margin and inset border reset so it draws one line", () => {
+    const html = pageDoc(createContainer("column", { id: "root", children: [createElement("divider", { id: "d" })] } as Partial<BoxNode>));
+    const hr = html.match(/<hr [^>]*>/)?.[0] ?? "";
+    expect(hr).toContain("border-top-style:solid");
+    expect(hr).toMatch(/margin:0/);
+    expect(hr).toMatch(/border:0[;"]/);
+    expect(html).not.toMatch(/<div aria-hidden="true" style="width:100%;border-top-width/);
+  });
+
   it("styleString serialises a style object (kebab props, px on bare numbers, unitless kept)", () => {
     expect(styleString({ backgroundColor: "#fff", minHeight: 40, opacity: 0.5, zIndex: 3 }))
       .toBe("background-color:#fff;min-height:40px;opacity:0.5;z-index:3");
+  });
+
+  /** Behaviours: box-builder-layout.feature — "A number in a style means the same on the canvas and on the published page". */
+  it("a bare number means what it means on the canvas — React's unitless rules, not a short list of our own", () => {
+    // Custom properties never gain a unit: the theme's heading weight became "600px" and the page dropped it.
+    expect(styleString({ "--bx-weight-heading": 600, "--bx-weight-body": 400 } as CSSProperties)).toBe("--bx-weight-heading:600;--bx-weight-body:400");
+    // Properties the canvas (React) treats as unitless stay unitless.
+    expect(styleString({ gridColumnStart: 2, gridRowEnd: 3, aspectRatio: 1.5, zoom: 2, scale: 1.1, columnCount: 3, lineClamp: 2, tabSize: 4, fontWeight: 700 } as CSSProperties))
+      .toBe("grid-column-start:2;grid-row-end:3;aspect-ratio:1.5;zoom:2;scale:1.1;column-count:3;line-clamp:2;tab-size:4;font-weight:700");
+    // …and a length still gains px — the one case that should.
+    expect(styleString({ width: 12, marginTop: 0 })).toBe("width:12px;margin-top:0px");
+  });
+
+  /** Behaviours: box-builder-layout.feature — "Preview uses the same fonts as the published site". */
+  it("Preview carries the SAME embedded fonts as the download, ahead of every other rule", () => {
+    const site = siteFromRoot(createContainer("column", { id: "root", children: [createElement("heading", { id: "h", text: "Hi" })] } as Partial<BoxNode>));
+    const face = "@font-face{font-family:'Poppins';src:url(data:font/woff2;base64,AAAA)}";
+    const withFonts = renderSitePage(site, DEFAULT_THEME, site.homeId, { inlineShared: true, fontCss: face });
+    expect(withFonts).toContain(face);
+    expect(withFonts.indexOf(face)).toBeLessThan(withFonts.indexOf("--eu-"));   // defined before any rule asks for it
+    expect(renderSitePage(site, DEFAULT_THEME, site.homeId, { inlineShared: true })).not.toContain("@font-face{font-family:'Poppins'");
   });
 
   it("renders elements to their tags with content", () => {
@@ -33,10 +66,10 @@ describe("box-export — static HTML", () => {
       } as Partial<BoxNode>)])],
     } as Partial<BoxNode>);
     const html = renderPageHTML(root, DEFAULT_THEME);
-    expect(html).toContain("<h2");
+    expect(html).toContain("<h1"); // the page's first heading is its title (semantics B1) — it used to be an <h2> always
     expect(html).toContain("Hello");
     expect(html).toContain("<ol");
-    expect(html).toContain("<li>a</li>");
+    expect(html).toMatch(/<ol[^>]*><li style="margin-bottom:[^"]+">a<\/li><li style="margin-bottom:[^"]+">b<\/li><\/ol>/); // each item carries the space the canvas draws under it (#135)
     expect(html).toContain('target="_blank"');
   });
 
@@ -287,6 +320,37 @@ describe("box-export — static HTML", () => {
     expect(html).not.toContain("@import");                        // at-rule stripped
   });
 
+  // R4-5 (BATCH P-0): read as "a floating block's min-height is emitted in px"; MEASURED NOT A BUG on the published page —
+  // the wrapper's `remLen` (box-export, after the floating style) already wins. This pins it: mutating that line fails here.
+  it("publishes a floating block's min-height in rem, never px (R4-5)", () => {
+    const f = createElement("text", { position: "absolute", left: 10, top: 10, minHeight: 120 } as Partial<BoxNode>);
+    const html = renderPageHTML(createContainer("column", { children: [f] } as Partial<BoxNode>), DEFAULT_THEME);
+    expect(html).toContain("min-height:7.5rem");
+    expect(html).not.toMatch(/min-height:120px/);
+  });
+
+  // R4-1 (BATCH P-0): Advanced CSS stored for ONE screen used to be read from the desktop value only, so a phone-only or
+  // wide-only declaration never reached the published page while the canvas showed it. Each screen's own value is now
+  // published, limited to that screen's range of widths.
+  it("publishes Advanced CSS set for one screen on that screen only (R4-1)", () => {
+    const at = (responsive: BoxNode["responsive"], advancedCss?: string) => {
+      const acc = createComponent("accordion", { advancedCss, responsive, items: [{ id: "i1", title: "T", body: "B" }] } as Partial<BoxNode>);
+      return { html: renderPageHTML(createContainer("column", { children: [makeRowBand([acc])] } as Partial<BoxNode>), DEFAULT_THEME), cls: `bx-${acc.id.replace(/[^A-Za-z0-9_-]/g, "-")}` };
+    };
+    const tp = BREAKPOINTS_EM.tabletPortrait;
+    // set at the PHONE only → one rule, limited to below the tablet rung
+    const phone = at({ phone: { advancedCss: "outline-offset: 3px" } });
+    expect(phone.html).toContain(`@media (max-width:${(tp - 0.001).toFixed(3)}em){.${phone.cls}{outline-offset: 3px;}}`);
+    // set at WIDE only → from the wide rung up, nowhere below
+    const wide = at({ wide: { advancedCss: "outline-offset: 5px" } });
+    expect(wide.html).toContain(`@media (min-width:${BREAKPOINTS_EM.wide}em){.${wide.cls}{outline-offset: 5px;}}`);
+    expect(wide.html.match(/outline-offset: 5px/g)).toHaveLength(1);
+    // set on the desktop and kept everywhere (no per-screen value) → one plain rule, as before
+    const all = at(undefined, "outline-offset: 7px");
+    expect(all.html).toContain(`.${all.cls}{outline-offset: 7px;}`);
+    expect(all.html).not.toMatch(/@media[^{]*\{\.bx-[^{]*\{outline-offset: 7px/);
+  });
+
   it("applies component typography (font family + size) to the wrapper so it cascades into items", () => {
     const acc = createComponent("accordion", {
       fontFamily: "Georgia, serif", fontSize: 20, fontWeight: 700, letterSpacing: 1,
@@ -366,8 +430,10 @@ describe("box-export — static HTML", () => {
     const acc = createComponent("accordion", { fontFamily: '"Playfair Display", serif', items: [{ id: "i", title: "T", body: "B" }] } as Partial<BoxNode>);
     const sec = createContainer("column", { bgImage: "data:image/png;base64,AAAA", children: [makeRowBand([acc])] } as Partial<BoxNode>);
     const html = renderPageHTML(sec, DEFAULT_THEME);
-    expect(html).toContain("&quot;Playfair Display&quot;");
-    expect(html).toContain("background-image:url(&quot;data:image/png;base64,AAAA&quot;)");
+    // In a style ATTRIBUTE the quotes are entities; in the STYLESHEET they are real quotes (entities are never decoded
+    // there — this line used to expect `url(&quot;…&quot;)` in the sheet, which is what dropped the picture, 2026-09-30)
+    expect(html).toMatch(/(&quot;|")Playfair Display(&quot;|")/);
+    expect(html).toContain('background-image:url("data:image/png;base64,AAAA")');
     // every style attribute is closed properly (no stray unescaped quote inside a style="…")
     for (const m of html.matchAll(/style="([^"]*)"/g)) expect(m[1]).not.toContain('"');
   });
@@ -377,13 +443,33 @@ describe("box-export — static HTML", () => {
     const root = createContainer("column", { children: [makeRowBand([acc])] } as Partial<BoxNode>);
     const html = renderPageHTML(root, DEFAULT_THEME);
     // styles are class rules (so media queries can override them); every base rule caps at its container
-    for (const m of html.matchAll(/\.bx-[A-Za-z0-9_-]+\{([^}]*)\}/g)) expect(m[1]).toContain("max-width:100%");
+    // …except a band with a gutter (S1-a), which reaches half a gap past each side ON PURPOSE so its outer columns meet
+    // the edge; the body's overflow-x:clip below keeps that from ever scrolling.
+    for (const m of html.matchAll(/\.bx-[A-Za-z0-9_-]+\{([^}]*)\}/g)) {
+      if (m[1].includes("max-width:none")) expect(m[1]).toMatch(/width:calc\(100% \+ /);
+      else expect(m[1]).toMatch(/max-width:(100%|calc\(100% - )/); // a column in that band: the line less one gap
+
+    }
     // No inline LAYOUT/paint styles a media query could never beat. CSS custom-property data vars (--eu-n ordinals) are exempt.
     for (const m of html.matchAll(/\sstyle="([^"]*)"/g))
       for (const decl of m[1].split(";").filter(Boolean)) expect(decl.trim().startsWith("--")).toBe(true);
     // the exported document body never scrolls horizontally
     const doc = pageDoc(createContainer("column", {} as Partial<BoxNode>), "P");
     expect(doc).toContain("html,body{max-width:100%;overflow-x:hidden}");
+  });
+
+  it("a quoted value in a STYLESHEET rule keeps its quotes — a picture background and a font stack reach the Preview", () => {
+    // Measured 2026-09-30 (S-1 re-run): `url(&quot;data:…&quot;)` in the <style> block, where entities are never decoded —
+    // invalid CSS, so every picture background (and every quoted font stack) was dropped from the published page.
+    const box = createContainer("column", { id: "pic", bgImage: 'data:image/svg+xml,%3Csvg%3E%3C/svg%3E', fontFamily: '"Playfair Display", serif', children: [makeRowBand([createElement("text", { text: "x" } as Partial<BoxNode>)])] } as Partial<BoxNode>);
+    const html = renderPageHTML(createContainer("column", { children: [makeRowBand([box])] } as Partial<BoxNode>), DEFAULT_THEME);
+    const sheet = [...html.matchAll(/<style[^>]*>([\s\S]*?)<\/style>/g)].map((m) => m[1]).join("\n");
+    expect(sheet).toContain('url("data:image/svg+xml');
+    expect(sheet).not.toContain("&quot;");
+    // …and a value can never close the <style> element: `<` is escaped the CSS way
+    expect(styleString({ backgroundImage: 'url("</style><script>")' } as CSSProperties, "sheet")).not.toContain("</style");
+    // In an ATTRIBUTE the quotes are still entity-escaped, so they cannot close style="…"
+    expect(styleString({ fontFamily: '"A", serif' })).toBe("font-family:&quot;A&quot;, serif");
   });
 
   it("RESPONSIVE EXPORT is MOBILE-FIRST: the phone layout is the base rule and wider screens add to it", () => {
@@ -440,12 +526,20 @@ describe("box-export — static HTML", () => {
 
   it("PREVIEW shows the real page — same links as the export, with the shared sheet inlined", () => {
     // The old preview put every page in one document and pinned <base> so `#home` stayed an in-page scroll.
-    // There are no hash links between pages any more: preview renders the REAL file, and the builder
-    // intercepts clicks on its nav. The one difference is that a srcdoc document has no styles.css to fetch,
-    // so the shared sheet is inlined instead of linked.
+    // There are no hash links between pages any more: preview renders the REAL file. The one difference is
+    // that a srcdoc document has no styles.css to fetch, so the shared sheet is inlined instead of linked.
+    //
+    // This used to assert `href="index.html"` in BOTH, which worked only because a nav was injected into
+    // every page. Nothing is injected any more, so an empty page has no links at all — and asserting on a
+    // link the builder puts there tests the builder, not the promise. The promise is that PREVIEW AND
+    // EXPORT AGREE, so it is now asserted on a link the USER built, which is the only kind there is.
     const site = siteFromRoot(emptyPageRoot(), "Home");
+    const homeId = site.homeId;
+    site.pages[0].root.children = [
+      { id: "cta", type: "button", text: "Home", href: `page:${homeId}` } as unknown as BoxNode,
+    ];
     const shipped = renderSiteFiles(site, DEFAULT_THEME)["index.html"];
-    const previewed = renderSitePage(site, DEFAULT_THEME, site.homeId, { inlineShared: true });
+    const previewed = renderSitePage(site, DEFAULT_THEME, homeId, { inlineShared: true });
 
     expect(previewed).toContain("--eu-color-primary-500:#");        // inlined, because nothing can be fetched
     expect(previewed).not.toContain('<link rel="stylesheet"');
@@ -455,8 +549,36 @@ describe("box-export — static HTML", () => {
     expect(shipped).toContain('href="index.html"');
   });
 
+  it("an empty page is EMPTY — the preview adds no navigation of its own", () => {
+    // The counterpart to the assertion above: what makes preview==export meaningful is that neither side
+    // invents markup. A lone bold "Home" above the canvas of a one-page site was exactly that invention.
+    const site = siteFromRoot(emptyPageRoot(), "Home");
+    const previewed = renderSitePage(site, DEFAULT_THEME, site.homeId, { inlineShared: true });
+    expect(previewed).not.toContain("eu-site-nav");
+    expect(previewed).not.toContain('href="index.html"');
+  });
+
   it("downloadSite is a safe no-op when the DOM/URL APIs are unavailable", () => {
     // It runs during SSR too, where there is no document to append a link to.
     expect(() => downloadSite({ "index.html": "<html></html>" })).not.toThrow();
+  });
+});
+
+describe("rows of four or more in the published page (#78)", () => {
+  const words = () => createElement("text", { text: "Words" } as Partial<BoxNode>);
+  const doc = () => pageDoc(createContainer("column", { id: "page", children: [makeRowBand(["c0", "c1", "c2", "c3", "c4"].map((id) =>
+    createContainer("column", { id, width: "20%", children: [words()] } as Partial<BoxNode>)), 0)] } as Partial<BoxNode>));
+  const ruleIn = (css: string, id: string) => (css.match(new RegExp(`\.bx-${id}\{([^}]*)\}`)) ?? [])[1] ?? "";
+  it("a tablet held upright gets 3 + 2 (each line full); a laptop takes the row back to five across on one line", () => {
+    const d = doc();
+    // the whole rung block: from its query to the next query (a block's own rules may end in "}}")
+    const block = (em: number) => { const at = d.indexOf(`@media (min-width:${em}em){`); return at < 0 ? "" : d.slice(at, d.indexOf("@media", at + 1)); };
+    const tablet = block(BREAKPOINTS_EM.tabletPortrait), laptop = block(BREAKPOINTS_EM.tabletLandscape);
+    expect(ruleIn(tablet, "c0")).toMatch(/flex:1 1 33\.333%/);
+    expect(ruleIn(tablet, "c4")).toMatch(/flex:1 1 50%/);
+    expect(ruleIn(laptop, "c0")).toMatch(/flex:1 1 20%/);
+    expect(ruleIn(laptop, "c4")).toMatch(/flex:1 1 20%/);
+    // one line on a laptop: the 3rem floor, not the 14rem that wrapped five into 4 + 1 at 1024px
+    expect(d).not.toMatch(/\.bx-c0\{[^}]*min-width:min\(100%, 14rem\)/);
   });
 });

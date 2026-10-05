@@ -9,14 +9,17 @@
 
 import { Minus, Plus, Copy, Trash2, Layers, Group as GroupIcon } from "lucide-react";
 import type { SiteTheme } from "@/lib/site-storage";
-import type { BoxNode, FlexAlign } from "@/lib/box-model";
+import type { BoxNode, FlexAlign, SectionFlag } from "@/lib/box-model";
+import { padSide } from "@/lib/box-model";
 import { ColorPickerPopover, colorToCSS } from "@/components/shared/ColorPalettePicker";
 import BackgroundPicker from "@/components/shared/BackgroundPicker";
 
 const label = "text-[0.6875rem] font-medium text-gray-500 dark:text-gray-400";
 const section = "text-[0.6875rem] font-semibold uppercase tracking-wide text-gray-400 pt-1";
 const inputCls = "w-full text-sm px-2.5 py-2 rounded-lg border border-gray-200 dark:border-white/10 bg-transparent text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-indigo-500 outline-none";
-const toRem = (px: number) => +(px / 10).toFixed(2);
+// A stored spacing number is in the builder's base-10 steps; `u()` turns 10 of them into ≈0.625rem at the normal text
+// size, so a REAL rem is the number ÷ 16 (S1-b, the user 2026-09-30: the controls said "3.2rem" for a ~2rem gutter).
+const toRem = (px: number) => +(px / 16).toFixed(2);
 
 /** A −/+ stepper row that repeatedly nudges a property on every selected box. */
 function Stepper({ title, onStep }: { title: string; onStep: (dir: -1 | 1) => void }) {
@@ -31,9 +34,10 @@ function Stepper({ title, onStep }: { title: string; onStep: (dir: -1 | 1) => vo
   );
 }
 
-export default function BulkInspector({ count, theme, sample, onStepWidth, onStepHeight, onPatch, onDuplicate, onDelete, onFloatAll, onGroup }: {
+export default function BulkInspector({ count, theme, sample, sampleSection = false, onStepWidth, onStepHeight, onPatch, onDuplicate, onDelete, onFloatAll, onGroup }: {
   count: number;
   theme: SiteTheme;
+  sampleSection?: SectionFlag;                      // that box is the content of a page section (its default is the gutter)
   sample?: BoxNode | null;                      // a representative selected box (first) — seeds the sliders' shown values
   onStepWidth: (dir: -1 | 1) => void;
   onStepHeight: (dir: -1 | 1) => void;
@@ -44,9 +48,12 @@ export default function BulkInspector({ count, theme, sample, onStepWidth, onSte
   onGroup?: () => void;                          // combine all selected into ONE movable, lockable group
 }) {
   const s = sample ?? undefined;
+  // What the first block ACTUALLY has, default included — never a size it does not have (c-24: this read 1.5rem
+  // for blocks created with none).
+  const pad = s ? (s.padding ?? padSide(s, "Top", sampleSection)) : 0;
   return (
     <div className="p-4 space-y-3">
-      <div className="flex items-center gap-1.5 text-[0.6875rem] font-semibold text-indigo-600 dark:text-indigo-300"><Layers className="w-3.5 h-3.5" /> {count} sections selected</div>
+      <div className="flex items-center gap-1.5 text-[0.6875rem] font-semibold text-indigo-600 dark:text-indigo-300 midnight:text-indigo-300 purple:text-purple-200"><Layers className="w-3.5 h-3.5" aria-hidden="true" /> {count} blocks selected</div>
       <p className="text-[0.625rem] text-gray-400">Every change below applies to all {count} at once.</p>
 
       {/* ── Quick steppers (their exact ask: grow/shrink width & height together) ── */}
@@ -59,8 +66,8 @@ export default function BulkInspector({ count, theme, sample, onStepWidth, onSte
       <label className="block"><span className={label}>Outer spacing: {toRem(s?.margin ?? 0)}rem</span>
         <input type="range" min={0} max={96} value={s?.margin ?? 0} onChange={(e) => onPatch({ margin: Number(e.target.value) })} aria-label="Outer spacing" className="w-full mt-1 accent-indigo-600" />
       </label>
-      <label className="block"><span className={label}>Inner spacing: {toRem(s?.padding ?? 24)}rem</span>
-        <input type="range" min={0} max={96} value={s?.padding ?? 24} onChange={(e) => onPatch({ padding: Number(e.target.value) })} aria-label="Inner spacing" className="w-full mt-1 accent-indigo-600" />
+      <label className="block"><span className={label}>Inner spacing: {toRem(pad)}rem</span>
+        <input type="range" min={0} max={96} value={pad} onChange={(e) => onPatch({ padding: Number(e.target.value) })} aria-label="Inner spacing" className="w-full mt-1 accent-indigo-600" />
       </label>
 
       {/* ── Shared look ── */}

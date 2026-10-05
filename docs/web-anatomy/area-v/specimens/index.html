@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AREA V specimens</title>
+<style>
+  :root { --bg: #f8fafc; --ink: #0f172a; --muted: #475569; --card: #fff; --line: #e2e8f0; --link: #1d4ed8; }
+  @media (prefers-color-scheme: dark) { :root { --bg: #0b1220; --ink: #e2e8f0; --muted: #94a3b8; --card: #111a2e; --line: #1e293b; --link: #93c5fd; } }
+  body { margin: 0; padding: 1.5rem 1rem; background: var(--bg); color: var(--ink); font: 16px/1.5 system-ui, sans-serif; }
+  main { max-width: 56rem; margin: 0 auto; }
+  h1 { font-size: 1.5rem; margin: 0 0 .25rem; } p { color: var(--muted); margin: 0 0 1.25rem; }
+  ul { list-style: none; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr)); gap: .75rem; }
+  li { background: var(--card); border: 1px solid var(--line); border-radius: .5rem; padding: .875rem 1rem; }
+  li strong { display: block; margin-bottom: .25rem; } a { color: var(--link); } span { color: var(--muted); font-size: .875rem; }
+</style>
+</head>
+<body>
+<main>
+  <h1>AREA V — specimen sheets</h1>
+  <p>Each family: <b>specimens</b> show one working example of every value of every axis (the caption names it); <b>combinations</b> show 60 random mixes of all the axes, each proven in a real browser. Made by <code>scripts/uat/r2-combos.js</code>.</p>
+  <ul>
+    <li><strong>Colour</strong><a href="colour.html">specimens</a> · <a href="colour.combos.html">combinations</a><br><span>notation · alpha · mixing · relative colour</span></li>
+    <li><strong>Gradients</strong><a href="gradient.html">specimens</a> · <a href="gradient.combos.html">combinations</a><br><span>type · repeating · direction · shape · position · stops · colour space · where it paints · motion</span></li>
+    <li><strong>Backgrounds</strong><a href="background.html">specimens</a> · <a href="background.combos.html">combinations</a><br><span>size · position · repeat · attachment · origin · base under a photo</span></li>
+    <li><strong>Overlays</strong><a href="overlay.html">specimens</a> · <a href="overlay.combos.html">combinations</a><br><span>layer · opacity · direction · blend · scope</span></li>
+    <li><strong>Shadows</strong><a href="shadow.html">specimens</a> · <a href="shadow.combos.html">combinations</a><br><span>kind · x · y · blur · spread · colour · inset · layers</span></li>
+    <li><strong>Glass · filters · blend</strong><a href="glass.html">specimens</a> · <a href="glass.combos.html">combinations</a><br><span>blur · saturate · fill · edge · grain · filter · blend</span></li>
+    <li><strong>Textures</strong><a href="texture.html">specimens</a> · <a href="texture.combos.html">combinations</a><br><span>source · noise type · grain · detail · strength · blend · tile · over · ink</span></li>
+    <li><strong>Across families</strong><a href="stack.html">40 stacked blocks + each one without each ingredient</a><br><span>the cross-family proof: base · photo · overlay · texture · edge · shadows · glass card · heading</span></li>
+    <li><strong>Every level, nested</strong><a href="nest.html">40 trees: section → card → button → text, each with each ingredient removed</a><br><span>looks at every level · cascade down · nothing swallowed going up</span></li>
+    <li><strong>States at every level</strong><a href="states.html">30 trees — hover the cards, buttons and words; Tab to the buttons</a><br><span>hover · press · focus ring · cascade down · own state wins · reduced motion</span></li>
+    <li><strong>Section shapes</strong><a href="shape.html">specimens</a> · <a href="shape.combos.html">combinations</a><br><span>shape · method · edge · depth · invert · layers · fill · overlap · motion</span></li>
+  </ul>
+</main>
+</body>
+</html>

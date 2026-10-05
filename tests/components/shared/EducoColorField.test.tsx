@@ -46,3 +46,30 @@ describe("EducoColorField — OKLCH palette colour control", () => {
     expect(onChange).toHaveBeenCalled();
   });
 });
+
+describe("a colour belongs to the block it was typed for (#89)", () => {
+  // Measured through the UI: a colour typed for a stack (Enter), then a click on a heading — the heading was painted too.
+  // The click moves the selection first, the Inspector re-renders for the heading, and only THEN does the hex box
+  // lose focus: its blur committed the stack's colour through the heading's onChange.
+  it("after Enter, a later blur commits nothing — not even to the next block the field is showing", () => {
+    const forStack = vi.fn(), forHeading = vi.fn();
+    const { rerender } = render(<EducoColorField ariaLabel="Background colour" value="" onChange={forStack} />);
+    const hex = screen.getByLabelText("Background colour hex value");
+    fireEvent.change(hex, { target: { value: "#1e3a8a" } });
+    fireEvent.keyDown(hex, { key: "Enter" });
+    expect(forStack).toHaveBeenCalledWith("#1e3a8a");
+    rerender(<EducoColorField ariaLabel="Background colour" value="" onChange={forHeading} />); // the heading is selected now
+    fireEvent.blur(hex);
+    expect(forHeading).not.toHaveBeenCalled();
+  });
+  it("typed but not yet committed, then another block selected: it goes to the block it was typed FOR", () => {
+    const forStack = vi.fn(), forHeading = vi.fn();
+    const { rerender } = render(<EducoColorField ariaLabel="Background colour" value="" onChange={forStack} />);
+    const hex = screen.getByLabelText("Background colour hex value");
+    fireEvent.change(hex, { target: { value: "#1e3a8a" } });
+    rerender(<EducoColorField ariaLabel="Background colour" value="" onChange={forHeading} />);
+    fireEvent.blur(hex);
+    expect(forHeading).not.toHaveBeenCalled();
+    expect(forStack).toHaveBeenCalledWith("#1e3a8a");
+  });
+});

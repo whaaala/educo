@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { tokensFromTheme, tokensToCss } from "@/lib/educo-ui/tokens";
+import { tokensFromTheme, tokensToCss, remLen } from "@/lib/educo-ui/tokens";
 import { contrastRatio, SHADES } from "@/lib/educo-ui/color";
 import { DEFAULT_THEME } from "@/lib/site-storage";
 
@@ -29,9 +29,19 @@ describe("Educo UI tokens — from theme", () => {
     expect(t.weight.bold).toBe("700");
     expect(t.space["4"]).toBe("1rem");
   });
-  it("scales radius from the theme radius", () => {
-    expect(t.radius.lg).toBe(`${DEFAULT_THEME.radius}px`);
-    expect(t.radius.full).toBe("9999px");
+  it("scales radius from the theme radius, in rem", () => {
+    /**
+     * The subject here is the SCALING — `lg` is the theme's radius, and the rest are derived from it. The
+     * unit is Core Rule 16's business, and pinning it as a px literal is what made this fail the day the
+     * radius tokens moved to rem: `--eu-radius-*` is read by every Card, Alert, Badge and Accordion, so a
+     * corner in pixels was a corner that ignored a reader who had enlarged their text.
+     *
+     * Asserting through `remLen` keeps the numbers pinned and still fails if a radius returns to pixels.
+     */
+    expect(t.radius.lg).toBe(remLen(DEFAULT_THEME.radius));
+    expect(t.radius.sm).toBe(remLen(Math.round(DEFAULT_THEME.radius * 0.375)));
+    expect(t.radius.full, "the pill — arbitrarily large, and in the same unit as everything else").toBe(remLen(9999));
+    for (const [k, v] of Object.entries(t.radius)) expect(v, `radius.${k} is ${v}`).toMatch(/rem$/);
   });
   it("default body text on background clears WCAG AA", () => {
     expect(contrastRatio(t.color.text, t.color.bg)).toBeGreaterThanOrEqual(4.5);

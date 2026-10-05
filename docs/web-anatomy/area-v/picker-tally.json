@@ -1,0 +1,585 @@
+{
+ "shots": 99,
+ "counts": {
+  "mobile / touch": 12,
+  "palette / harmony": 5,
+  "wheel": 4,
+  "contrast / accessibility": 4,
+  "gradient stops": 3,
+  "swatches / saved": 2,
+  "recent colours": 2,
+  "brand / design tokens": 2,
+  "spectrum square": 1,
+  "hsl / hsb": 1,
+  "oklch / lab": 1,
+  "alpha / opacity": 1,
+  "eyedropper": 1,
+  "hue strip / slider": 0,
+  "sliders (per channel)": 0,
+  "hex entry": 0,
+  "rgb entry": 0
+ },
+ "per": [
+  {
+   "url": "https://dribbble.com/shots/17400431-Border-control-for-the-no-code-visual-builder",
+   "title": "Border control for the no-code visual builder by Sergey Morozov on Dribbble",
+   "controls": []
+  },
+  {
+   "url": "https://dribbble.com/shots/27177745-Color-picker-detail-Dropshot",
+   "title": "Color picker detail - Dropshot by Antonin Kus on Dribbble",
+   "controls": []
+  },
+  {
+   "url": "https://dribbble.com/shots/21360901-Color-Picker",
+   "title": "Color Picker 🌈 by Dmitry Sergushkin on Dribbble",
+   "controls": []
+  },
+  {
+   "url": "https://dribbble.com/shots/21360869-Color-Picker-Low-code-platform",
+   "title": "Color Picker | Low code platform by Dmitry Sergushkin on Dribbble",
+   "controls": []
+  },
+  {
+   "url": "https://dribbble.com/shots/14373410-NEWTONE-io-Smart-Color-Scheme-Generator",
+   "title": "NEWTONE.io - Smart Color Scheme Generator by Halo Branding for HALO LAB on Dribbble",
+   "controls": [
+    "oklch / lab",
+    "palette / harmony",
+    "brand / design tokens"
+   ]
+  },
+  {
+   "url": "https://dribbble.com/shots/14519968-Toolbars",
+   "title": "Toolbars by Patrick Marx on Dribbble",
+   "controls": [
+    "mobile / touch"
+   ]
+  },
+  {
+   "url": "https://dribbble.com/shots/17417589-Colorpicker-for-a-background-control",
+   "title": "Colorpicker for a background control by Sergey Morozov on Dribbble",
+   "controls": [
+    "gradient stops"
+   ]
+  },
+  {
+   "url": "https://dribbble.com/shots/12996492-Kolor",
+   "title": "Kolor by Ashutosh Nirwan on Dribbble",
+   "controls": []
+  },
+  {
+   "url": "https://dribbble.com/shots/23556408-No-Code-Website-Builder",
+   "title": "No Code Website Builder by Asiq M. for Netro Systems on Dribbble",
+   "controls": []
+  },
+  {
+   "url": "https://dribbble.com/shots/12639939-Adobe-Illustrator-3D",
+   "title": "Adobe Illustrator 3D by Hesam Sanei ✦ on Dribbble",
+   "controls": []
+  },
+  {
+   "url": "https://dribbble.com/shots/18972655-Color-Picker-Concept-App",
+   "title": "Color Picker – Concept App by Victor Berbel on Dribbble",
+   "controls": [
+    "mobile / touch"
+   ]
+  },
+  {
+   "url": "https://dribbble.com/shots/19156843-Smart-Light-Concept-App",
+   "title": "Smart Light – Concept App by Victor Berbel on Dribbble",
+   "controls": [
+    "mobile / touch"
+   ]
+  },
+  {
+   "url": "https://dribbble.com/shots/11977287-Kinetic-Art-Sand-Table-Controller-App",
+   "title": "Kinetic Art Sand Table Controller App by Erdem on Dribbble",
+   "controls": [
+    "mobile / touch"
+   ]
+  },
+  {
+   "url": "https://dribbble.com/shots/14732187-smart-home",
+   "title": "smart home by Eleveian on Dribbble",
+   "controls": []
+  },
+  {
+   "url": "https://dribbble.com/shots/12721401-Daily-UI-060-Color-picker",
+   "title": "Daily UI #060 - Color picker by Vlad Grama on Dribbble",
+   "controls": []
+  },
+  {
+   "url": "https://dribbble.com/shots/19156855-Smart-Light-Concept-App",
+   "title": "Smart Light – Concept App by Victor Berbel on Dribbble",
+   "controls": [
+    "mobile / touch"
+   ]
+  },
+  {
+   "url": "https://dribbble.com/shots/5522503-UI-Styleguide",
+   "title": "UI Styleguide by Aaron Iker on Dribbble",
+   "controls": []
+  },
+  {
+   "url": "https://dribbble.com/shots/18972618-Color-Picker-Concept",
+   "title": "Color Picker – Concept by Victor Berbel on Dribbble",
+   "controls": []
+  },
+  {
+   "url": "https://dribbble.com/shots/6045735-magentaIntense-on-darkBlue",
+   "title": "magentaIntense on darkBlue by michael henning for Allthings on Dribbble",
+   "controls": [
+    "alpha / opacity"
+   ]
+  },
+  {
+   "url": "https://dribbble.com/shots/25006451-ColrPikr-A-color-picker-application",
+   "title": "ColrPikr: A color picker application by Aakash Raj Dahal on Dribbble",
+   "controls": []
+  },
+  {
+   "url": "https://dribbble.com/shots/14796159-Color-UI-macOS-app",
+   "title": "Color UI — macOS app by Martin Lexow on Dribbble",
+   "controls": [
+    "mobile / touch"
+   ]
+  },
+  {
+   "url": "https://dribbble.com/shots/6034850-First-Shot-Colorpicker-concept",
+   "title": "First Shot - Colorpicker concept by Mustafa Balci on Dribbble",
+   "controls": []
+  },
+  {
+   "url": "https://dribbble.com/shots/5522904-Daily-UI-060-Color-Picker",
+   "title": "Daily UI - #060 Color Picker by Payam Daliri on Dribbble",
+   "controls": []
+  },
+  {
+   "url": "https://dribbble.com/shots/5097347-Minimal-Colorpicker-CSS-JS",
+   "title": "Minimal Colorpicker CSS/JS by Aaron Iker on Dribbble",
+   "controls": [
+    "wheel"
+   ]
+  },
+  {
+   "url": "https://dribbble.com/shots/9172563-Colorizer",
+   "title": "Colorizer by Olga Toporkova on Dribbble",
+   "controls": []
+  },
+  {
+   "url": "https://dribbble.com/shots/19936162-Color-Picker-App-UI",
+   "title": "Color Picker App UI by Rohit Krishna on Dribbble",
+   "controls": [
+    "mobile / touch"
+   ]
+  },
+  {
+   "url": "https://dribbble.com/shots/15725979-Lightpack-app",
+   "title": "Human Verification",
+   "controls": []
+  },
+  {
+   "url": "https://dribbble.com/shots/14796145-Color-UI-macOS-app",
+   "title": "Human Verification",
+   "controls": []
+  },
+  {
+   "url": "https://dribbble.com/shots/10873662-UX-concept-Online-Card-Designer",
+   "title": "Human Verification",
+   "controls": []
+  },
+  {
+   "url": "https://dribbble.com/shots/4773634-UI-product",
+   "title": "Human Verification",
+   "controls": []
+  },
+  {
+   "url": "https://dribbble.com/shots/6344533-StyleGuide-NewVersion",
+   "title": "Human Verification",
+   "controls": []
+  },
+  {
+   "url": "https://dribbble.com/shots/5409341-Daily-UI-60-Color-Picker",
+   "title": "Human Verification",
+   "controls": []
+  },
+  {
+   "url": "https://dribbble.com/shots/5137037-Exploration-009-Colorpicker",
+   "title": "Exploration 009 - Colorpicker by Oliviu Stoian on Dribbble",
+   "controls": [
+    "recent colours",
+    "mobile / touch"
+   ]
+  },
+  {
+   "url": "https://dribbble.com/shots/4814768-minimal-color-picker",
+   "title": "minimal color picker by Christos on Dribbble",
+   "controls": []
+  },
+  {
+   "url": "https://dribbble.com/shots/10683857-Daily-UI-Day-060-Color-Picker",
+   "title": "Daily UI Day 060: Color Picker by Karla Silvas on Dribbble",
+   "controls": []
+  },
+  {
+   "url": "https://dribbble.com/shots/9530394-DAILY-UI-060-Color-Picker",
+   "title": "DAILY UI #060 | Color Picker by Angélique Ouellet on Dribbble",
+   "controls": []
+  },
+  {
+   "url": "https://dribbble.com/shots/5558382--Color-Picker",
+   "title": "🍭 Color Picker by Anna on Dribbble",
+   "controls": []
+  },
+  {
+   "url": "https://dribbble.com/shots/8617622-Liramail-Color-Picker-for-Email-Editor",
+   "title": "Liramail Color Picker for Email Editor by Lira Mail on Dribbble",
+   "controls": []
+  },
+  {
+   "url": "https://dribbble.com/shots/16938928-Daily-UI-060",
+   "title": "Daily UI 060 by Kevin Hall on Dribbble",
+   "controls": []
+  },
+  {
+   "url": "https://dribbble.com/shots/6547019-Editor-Icon-Pack",
+   "title": "Editor Icon Pack by Petr Bilek on Dribbble",
+   "controls": []
+  },
+  {
+   "url": "https://dribbble.com/shots/9053627-Daily-UI-060-Color-picker",
+   "title": "Daily UI 060 - Color picker by Hassan El Faijah on Dribbble",
+   "controls": []
+  },
+  {
+   "url": "https://dribbble.com/shots/8393671-Daily-UI-7-Setting",
+   "title": "Daily UI #7 - Setting by Christina Cook on Dribbble",
+   "controls": [
+    "wheel"
+   ]
+  },
+  {
+   "url": "https://dribbble.com/shots/5100260-Color-Gradient",
+   "title": "Color Gradient by Imran Rahman on Dribbble",
+   "controls": [
+    "wheel",
+    "palette / harmony",
+    "gradient stops",
+    "mobile / touch"
+   ]
+  },
+  {
+   "url": "https://dribbble.com/shots/3631152-You-asked-for-it-we-made-it-happen",
+   "title": "You asked for it, we made it happen. by Jurre Houtkamp for Framer on Dribbble",
+   "controls": [
+    "palette / harmony",
+    "gradient stops"
+   ]
+  },
+  {
+   "url": "https://dribbble.com/shots/4701648-Color-Picker-Daily-UI-challenge-060",
+   "title": "Color Picker - Daily UI challenge 060 by Anuj Bhavsar on Dribbble",
+   "controls": []
+  },
+  {
+   "url": "https://dribbble.com/shots/5677444-Pure-Javascript-Colorpicker-Plugin",
+   "title": "Pure Javascript Colorpicker Plugin by Elementar Labs on Dribbble",
+   "controls": []
+  },
+  {
+   "url": "https://dribbble.com/shots/4887497-Smart-House-Settings",
+   "title": "Smart House Settings by Clément Jacquelin on Dribbble",
+   "controls": []
+  },
+  {
+   "url": "https://dribbble.com/shots/21174104-Real-time-Colors-UI-Color-Picker-Variations",
+   "title": "Real-time Colors: UI Color Picker (Variations) by Juxtopposed on Dribbble",
+   "controls": []
+  },
+  {
+   "url": "https://dribbble.com/shots/8170807-Color-Picker",
+   "title": "Color Picker by Annie Wang on Dribbble",
+   "controls": []
+  },
+  {
+   "url": "https://dribbble.com/shots/12774079-dailyui60",
+   "title": "Human Verification",
+   "controls": []
+  },
+  {
+   "url": "https://dribbble.com/shots/6999345-Joker-UI-Kit-001-2",
+   "title": "Human Verification",
+   "controls": []
+  },
+  {
+   "url": "https://dribbble.com/shots/5150520-Daily-UI-060",
+   "title": "Human Verification",
+   "controls": []
+  },
+  {
+   "url": "https://dribbble.com/shots/6294619-UI-Challenge-060-Color-Picker",
+   "title": "Human Verification",
+   "controls": []
+  },
+  {
+   "url": "https://dribbble.com/shots/9525346-DailyUI-060-Color-Picker",
+   "title": "Human Verification",
+   "controls": []
+  },
+  {
+   "url": "https://dribbble.com/shots/5935627-Customized-Color-for-Tesla",
+   "title": "Human Verification",
+   "controls": []
+  },
+  {
+   "url": "https://dribbble.com/shots/3838716-Color-Picker-Daily-UI-060",
+   "title": "Human Verification",
+   "controls": []
+  },
+  {
+   "url": "https://dribbble.com/shots/4131789-Daily-UI-060-Color-Picker",
+   "title": "Daily UI #060 – Color Picker by Alexander M on Dribbble",
+   "controls": []
+  },
+  {
+   "url": "https://dribbble.com/shots/13789789-DailyUI060-Color-Picker",
+   "title": "DailyUI060 - Color Picker by Kiran Francis Sebastian on Dribbble",
+   "controls": []
+  },
+  {
+   "url": "https://dribbble.com/shots/3990735-Bicolor",
+   "title": "Bicolor by Lucian Marin on Dribbble",
+   "controls": [
+    "palette / harmony",
+    "contrast / accessibility"
+   ]
+  },
+  {
+   "url": "https://dribbble.com/shots/5918050-Color-Picker",
+   "title": "Color Picker by Cici Yang on Dribbble",
+   "controls": []
+  },
+  {
+   "url": "https://dribbble.com/shots/5571422-Daily-UI-060",
+   "title": "Daily UI #060 by Rodrigo Ramos on Dribbble",
+   "controls": []
+  },
+  {
+   "url": "https://dribbble.com/shots/3374982-God-of-Colors-Freebie",
+   "title": "God of Colors - Freebie by Gercek Armagan on Dribbble",
+   "controls": []
+  },
+  {
+   "url": "https://dribbble.com/shots/7083691-Wardrobe-App",
+   "title": "Wardrobe App by Gerald Canario on Dribbble",
+   "controls": [
+    "swatches / saved",
+    "brand / design tokens",
+    "mobile / touch"
+   ]
+  },
+  {
+   "url": "https://dribbble.com/shots/14465923-Paste-by-WeTransfer-Multi-edit-in-mobile-first-slide-app",
+   "title": "Paste by WeTransfer - Multi-edit in mobile first slide app by Michel van Heest on Dribbble",
+   "controls": [
+    "mobile / touch"
+   ]
+  },
+  {
+   "url": "https://dribbble.com/shots/4563964-Color-Picker",
+   "title": "Color Picker by Cristian Llanez on Dribbble",
+   "controls": []
+  },
+  {
+   "url": "https://dribbble.com/shots/14709917-ColorSlurp-Collection-Editor",
+   "title": "ColorSlurp Collection Editor by Jordan Ellis on Dribbble",
+   "controls": []
+  },
+  {
+   "url": "https://dribbble.com/shots/4892400-Colour-Picker",
+   "title": "Colour Picker by Mystery Wheel Design on Dribbble",
+   "controls": [
+    "wheel"
+   ]
+  },
+  {
+   "url": "https://dribbble.com/shots/14709914-ColorSlurp-Contrast-Checker",
+   "title": "ColorSlurp Contrast Checker by Jordan Ellis on Dribbble",
+   "controls": [
+    "contrast / accessibility"
+   ]
+  },
+  {
+   "url": "https://dribbble.com/shots/4243419-Color-Picker",
+   "title": "Color Picker by Zsófia Czémán on Dribbble",
+   "controls": []
+  },
+  {
+   "url": "https://dribbble.com/shots/13407234-Color-Picker",
+   "title": "Color Picker by Lena Emara on Dribbble",
+   "controls": []
+  },
+  {
+   "url": "https://dribbble.com/shots/14926425-Daily-Ui-Challenge-060-Color-picker",
+   "title": "Daily Ui Challenge #060 : Color picker. by Kaholiisii on Dribbble",
+   "controls": []
+  },
+  {
+   "url": "https://dribbble.com/shots/6467696-Colorpicker",
+   "title": "Colorpicker by Anastasia Kameneva on Dribbble",
+   "controls": []
+  },
+  {
+   "url": "https://dribbble.com/shots/21164161-Real-time-Colors-UI-Color-Picker",
+   "title": "Real-time Colors: UI Color Picker by Juxtopposed on Dribbble",
+   "controls": []
+  },
+  {
+   "url": "https://dribbble.com/shots/6325396-Color-Picker",
+   "title": "Human Verification",
+   "controls": []
+  },
+  {
+   "url": "https://dribbble.com/shots/3262481-Daily-UI-060-Color-Picker",
+   "title": "Human Verification",
+   "controls": []
+  },
+  {
+   "url": "https://dribbble.com/shots/14242564-Color-Picker-DailyUI-060",
+   "title": "Human Verification",
+   "controls": []
+  },
+  {
+   "url": "https://dribbble.com/shots/3233851-Color-picker",
+   "title": "Human Verification",
+   "controls": []
+  },
+  {
+   "url": "https://dribbble.com/shots/7116386-Daily-UI-Challenge-60-Color-Picker",
+   "title": "Human Verification",
+   "controls": []
+  },
+  {
+   "url": "https://dribbble.com/shots/2871590-Colorpicker",
+   "title": "Colorpicker by Kadir on Dribbble",
+   "controls": []
+  },
+  {
+   "url": "https://dribbble.com/shots/6381993-Color-Picker-060",
+   "title": "Color Picker 060 by Bill Weiler on Dribbble",
+   "controls": []
+  },
+  {
+   "url": "https://dribbble.com/shots/6850006-Colorpicker-UI-Design",
+   "title": "Colorpicker-UI Design by ram on Dribbble",
+   "controls": []
+  },
+  {
+   "url": "https://dribbble.com/shots/11183925-DailyUI-60-HIOM",
+   "title": "DailyUI#60 HIOMÉ by Maëva Zeline on Dribbble",
+   "controls": []
+  },
+  {
+   "url": "https://dribbble.com/shots/2854798-Colorpicker",
+   "title": "Colorpicker by Sam Potts on Dribbble",
+   "controls": [
+    "swatches / saved"
+   ]
+  },
+  {
+   "url": "https://dribbble.com/shots/3143833-Hsl-Color-Picker",
+   "title": "Hsl Color Picker by Ashung Hung on Dribbble",
+   "controls": [
+    "hsl / hsb"
+   ]
+  },
+  {
+   "url": "https://dribbble.com/shots/11679455-Daily-UI-Challenge-076-100-Color-Picker-Freebie",
+   "title": "Daily UI Challenge 076/100 - Color Picker - Freebie by Ankur Tripathi on Dribbble",
+   "controls": []
+  },
+  {
+   "url": "https://dribbble.com/shots/15699392-Color-Picker-App-Design",
+   "title": "Color Picker App Design by Oksana Yazieva on Dribbble",
+   "controls": [
+    "contrast / accessibility",
+    "mobile / touch"
+   ]
+  },
+  {
+   "url": "https://dribbble.com/shots/5024719-Dailyui-60-Colorpicker",
+   "title": "Dailyui 60 Colorpicker by Drágus Ádám on Dribbble",
+   "controls": []
+  },
+  {
+   "url": "https://dribbble.com/shots/3821877-Vahva-Color-Picker",
+   "title": "Vahva Color Picker by Veli-Johan Veromann on Dribbble",
+   "controls": []
+  },
+  {
+   "url": "https://dribbble.com/shots/10769162-Inline-editing",
+   "title": "Inline editing by Maxim Mart on Dribbble",
+   "controls": []
+  },
+  {
+   "url": "https://dribbble.com/shots/15005088-6K-Followers-on-Twitter",
+   "title": "6K Followers on Twitter by Laura Ungrad on Dribbble",
+   "controls": [
+    "recent colours"
+   ]
+  },
+  {
+   "url": "https://dribbble.com/shots/6987568-Joker-UI-Kit-001",
+   "title": "Joker UI Kit 001 by Berkay Sargın on Dribbble",
+   "controls": []
+  },
+  {
+   "url": "https://dribbble.com/shots/2487998-Color-Picker-Day-60-dailyui",
+   "title": "Color Picker - Day 60 #dailyui by Sergiu Radu on Dribbble",
+   "controls": []
+  },
+  {
+   "url": "https://dribbble.com/shots/7056434-Daily-UI-060-Color-Picker",
+   "title": "Daily UI #060 / Color Picker by Seiko Igi on Dribbble",
+   "controls": []
+  },
+  {
+   "url": "https://dribbble.com/shots/3997993-Multicolor",
+   "title": "Multicolor by Lucian Marin on Dribbble",
+   "controls": [
+    "palette / harmony",
+    "contrast / accessibility"
+   ]
+  },
+  {
+   "url": "https://dribbble.com/shots/2444526-Eye-Dropper",
+   "title": "Eye Dropper by Pyaasabandar on Dribbble",
+   "controls": [
+    "eyedropper"
+   ]
+  },
+  {
+   "url": "https://dribbble.com/shots/9171271-Colour-Picker-DailyUI-060",
+   "title": "Colour Picker_DailyUI 060 by Shirley Lu on Dribbble",
+   "controls": []
+  },
+  {
+   "url": "https://dribbble.com/shots/2013584-Material-Colorpicker",
+   "title": "Material Colorpicker by Sebastian Stapelfeldt on Dribbble",
+   "controls": []
+  },
+  {
+   "url": "https://dribbble.com/shots/1916901-Colorpicker-for-Codrops-Playground",
+   "title": "Colorpicker for Codrops Playground by Manoela Ilic on Dribbble",
+   "controls": [
+    "spectrum square"
+   ]
+  },
+  {
+   "url": "https://dribbble.com/shots/1933011-Color-Picker-with-Framer-js",
+   "title": "Color Picker with Framer.js by Min-Sang Choi on Dribbble",
+   "controls": []
+  }
+ ]
+}

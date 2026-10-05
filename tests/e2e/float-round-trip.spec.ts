@@ -1,4 +1,5 @@
 import { test, expect, type Page } from "@playwright/test";
+import { seedSite, sitePage } from "./helpers/seed-site";
 
 /**
  * FLOATING A PARENT — the children come with it, and un-floating puts everything back.
@@ -15,27 +16,18 @@ import { test, expect, type Page } from "@playwright/test";
  */
 
 async function seed(page: Page) {
-  await page.goto("/website/box-demo");
-  await page.evaluate(() => {
-    const cell = (id: string, bg: string, text: string) => ({
-      id, type: "container", layout: "flex", direction: "column", padding: 0, gap: 0, width: "100%",
-      colSpan: 6, background: bg, minHeight: 60, children: [{ id: `t${id}`, type: "text", text, width: "auto" }],
-    });
-    const site = { pages: [{ id: "p1", name: "Home", path: "/", root: {
-      id: "root", type: "container", direction: "column", padding: 0, gap: 0, children: [
-        { id: "band", type: "container", direction: "row", rowBand: true, width: "fill", gap: 0, padding: 0, children: [
-          // The section has a height the USER set. Nothing about floating may ever take it away.
-          { id: "sec", type: "container", direction: "column", padding: 0, gap: 0, width: "100%", minHeight: 400,
-            background: "#eef2ff", children: [
-              { id: "grid", type: "container", layout: "grid", columns: 12, gap: 0, padding: 0, width: "100%",
-                background: "#c7d2fe", children: [cell("c0", "#bbf7d0", "left"), cell("c1", "#fde68a", "right")] },
-            ] },
-        ] },
-      ] } }], homeId: "p1" };
-    localStorage.setItem("educo_box_site_v1", JSON.stringify(site));
-    localStorage.setItem("educo_box_site_cleaned_v1", "1");
+  const cell = (id: string, bg: string, text: string) => ({
+    id, type: "container", layout: "flex", direction: "column", padding: 0, gap: 0, width: "100%",
+    colSpan: 6, background: bg, minHeight: 60, children: [{ id: `t${id}`, type: "text", text, width: "auto" }],
   });
-  await page.reload();
+  await seedSite(page, sitePage([
+    // The section has a height the USER set. Nothing about floating may ever take it away.
+    { id: "sec", type: "container", direction: "column", padding: 0, gap: 0, width: "100%", minHeight: 400,
+      background: "#eef2ff", children: [
+        { id: "grid", type: "container", layout: "grid", columns: 12, gap: 0, padding: 0, width: "100%",
+          background: "#c7d2fe", children: [cell("c0", "#bbf7d0", "left"), cell("c1", "#fde68a", "right")] },
+      ] },
+  ]));
   await page.waitForSelector('[data-box-id="grid"]', { timeout: 15000 });
   await page.waitForTimeout(300);
 }
@@ -116,6 +108,49 @@ test.describe("floating a parent and putting it back", () => {
     await page.waitForTimeout(400);
     expect((await nodeOf(page, "sec"))!.minHeight, "nobody asked for this to be removed").toBe(400);
     expect((await geo(page, "sec")).h, "and the section is still that tall").toBeGreaterThanOrEqual(400);
+  });
+
+  /**
+   * THE BLOCK'S OWN SIZE, which is the same bug one level down and was found the same way — by a user.
+   *
+   * Floating turns a block into a card: it writes a definite height and drops the block's own `minHeight`.
+   * Putting it back deleted BOTH, so the size the user had set before they ever floated it was gone.
+   * Measured: a 120px stack came back 49px tall — the height of the text inside it — and floating it again
+   * started from 49. Two or three cycles and an empty box has nothing left to see or to click: "when I
+   * float it again, I don't see the stack any more".
+   */
+  test("the BLOCK's own height survives a round trip, and survives doing it twice", async ({ page }) => {
+    await seed(page);
+    await select(page, "sec", "sec");
+    for (const round of [1, 2]) {
+      await page.keyboard.press("Alt+f");
+      await page.waitForTimeout(450);
+      expect((await nodeOf(page, "sec"))!.position, `round ${round}: it never floated`).toBe("absolute");
+      await page.keyboard.press("Alt+f");
+      await page.waitForTimeout(450);
+      /**
+       * BOTH the stored floor and the rendered height. The first version of this asserted only the rendered
+       * height and PASSED with the fix switched off, while the section had already collapsed to 60px — a
+       * guard that cannot fail is the bug, not the proof.
+       */
+      expect((await nodeOf(page, "sec"))!.minHeight, `round ${round}: the height the user set is gone`).toBe(400);
+      expect((await geo(page, "sec")).h, `round ${round}: it came back short`).toBeGreaterThanOrEqual(396);
+    }
+  });
+
+  test("a size set WHILE it floats is kept when it goes back — that one is the user's own", async ({ page }) => {
+    await seed(page);
+    await select(page, "sec", "sec");
+    await page.keyboard.press("Alt+f");
+    await page.waitForTimeout(400);
+    const height = page.getByLabel("Height", { exact: true }).first();
+    await height.fill("260px");
+    await height.press("Enter");
+    await page.waitForTimeout(400);
+    await page.keyboard.press("Alt+f");
+    await page.waitForTimeout(450);
+    const after = (await geo(page, "sec")).h;
+    expect(after, `it came back ${after}px; 260 was asked for`).toBeGreaterThanOrEqual(250);
   });
 
   test("an individual child can float on its own, leaving its siblings alone", async ({ page }) => {

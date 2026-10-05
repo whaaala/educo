@@ -17,8 +17,8 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ImagePlus, Loader2, X } from "lucide-react";
-import { importPhoto } from "@/lib/box-model";
-import { PICKER_COLUMNS, type GalleryPhoto } from "@/lib/box-presets";
+import { importPhoto, SPACE_DEFAULT } from "@/lib/box-model";
+import { TWELFTHS_COLUMNS, type GalleryPhoto } from "@/lib/box-presets";
 import type { PagerNav } from "@/lib/box-model";
 import { PortalMenu } from "./ui";
 import Slider from "@/components/shared/Slider";
@@ -27,7 +27,7 @@ import type { MenuAnchor } from "./GridLayoutMenu";
 export const GALLERY_MENU_WIDTH = 300;
 
 /** The across-counts worth offering: the divisors of twelve, minus the ones nobody builds a gallery from. */
-const ACROSS = PICKER_COLUMNS.filter((c) => c >= 2 && c <= 6);
+const ACROSS = TWELFTHS_COLUMNS.filter((c) => c >= 2 && c <= 6);
 
 /** A file name, turned into the start of an alt text. Never a sentence — a hint the user can improve. */
 const altFromName = (name: string) =>
@@ -59,7 +59,7 @@ export default function GallerySetupMenu({ anchor, onClose, onPick, mode = "gall
   const [busy, setBusy] = useState(0);
   const [across, setAcross] = useState(3);
   const [stagger, setStagger] = useState(false);
-  const [gap, setGap] = useState(0); // spacing is a decision, never a default — it starts at nothing
+  const [gap, setGap] = useState<number>(SPACE_DEFAULT.columns); // rule 3: space by default, down to 0 if you want
   const [nav, setNav] = useState<PagerNav>("dots");
   const [auto, setAuto] = useState(0); // movement nobody asked for is what this most easily gets wrong
   const [headline, setHeadline] = useState("Welcome to our school");
@@ -130,7 +130,7 @@ export default function GallerySetupMenu({ anchor, onClose, onPick, mode = "gall
             <ul className="flex max-h-24 flex-wrap gap-1 overflow-y-auto">
               {photos.map((p, i) => (
                 <li key={`${i}-${p.src.slice(-16)}`} className="relative">
-                  {/* eslint-disable-next-line @next/next/no-img-element -- a data: URL the user just chose; the Image optimiser cannot fetch it */}
+                  
                   <img src={p.src} alt="" className="h-10 w-10 rounded object-cover" />
                   <button
                     type="button" onClick={() => remove(i)}
@@ -219,7 +219,7 @@ export default function GallerySetupMenu({ anchor, onClose, onPick, mode = "gall
 
         {/* ── 4 · spacing — shown here so whatever arrives is what was chosen ────────────────────── */}
         <div className="mt-3">
-          <Slider label="Space between" value={gap} min={0} max={48} onChange={setGap} formatValue={(x) => (x ? `${(x / 10).toFixed(1)}rem` : "none")} />
+          <Slider label="Space between" value={gap} min={0} max={48} onChange={setGap} formatValue={(x) => (x ? `${+(x / 16).toFixed(2)}rem` : "none")} />
         </div>
         </>)}
 

@@ -2,6 +2,7 @@ import { describe, it, expect } from "vitest";
 import { renderSiteFiles, SHARED_STYLESHEET } from "@/lib/box-export";
 import { COMPONENT_CSS } from "@/lib/educo-ui/components";
 import { BASE_CSS } from "@/lib/educo-ui/base";
+import { stripComments } from "@/lib/educo-ui/subset";
 import { DEFAULT_THEME } from "@/lib/site-storage";
 import type { BoxSite } from "@/lib/box-site";
 import type { BoxNode } from "@/lib/box-model";
@@ -74,8 +75,11 @@ const BUDGETS = {
   /** The component library as authored. Subsetting means a page never ships all of it, but it bounds the
    *  worst case and keeps the library from growing without anyone noticing. */
   componentLibrary: 80 * KB,
-  /** The element/base layer, which is NOT subsetted — it goes to every page whole. */
-  baseLayer: 12 * KB,
+  /** The element/base layer, which is NOT subsetted — it goes to every page whole. Measured AS SHIPPED, with its
+   *  comments stripped (the export strips them, box-export `sharedStylesheet`): 3.8 KB. It used to be measured as
+   *  authored against 12 KB, so a paragraph explaining a rule failed the budget while 8 KB of real rules would
+   *  have passed it — the number guarded the comments and not the download. */
+  baseLayer: 5 * KB,
 };
 
 /** Printed on every run: the point is to see the trend, not only the failure. */
@@ -95,7 +99,7 @@ describe("performance budgets", () => {
       ["a page of text", bytes(textFiles["index.html"]), BUDGETS.textPage],
       ["a busy page", bytes(richFiles["index.html"]), BUDGETS.richPage],
       ["component library", bytes(COMPONENT_CSS), BUDGETS.componentLibrary],
-      ["base layer", bytes(BASE_CSS), BUDGETS.baseLayer],
+      ["base layer", bytes(stripComments(BASE_CSS)), BUDGETS.baseLayer],
     ];
     report(measured);
 

@@ -61,7 +61,7 @@ export function getPresets(kind: string, theme: SiteTheme): Preset[] {
     case "image": return [
       { id: "square", label: "Square", patch: { radius: 0 } },
       { id: "rounded", label: "Rounded", patch: { radius: 16 } },
-      { id: "circle", label: "Circle", patch: { radius: 999, width: "160px", height: "160px" } },
+      { id: "circle", label: "Circle", patch: { radius: 999, width: "10rem", height: "10rem" } },
       { id: "shadow", label: "Shadow", patch: { radius: 12, shadow: "lg" } },
     ];
     case "video": return [
@@ -100,7 +100,7 @@ export function getPresets(kind: string, theme: SiteTheme): Preset[] {
  *
  * Every one is stated in twelfths and every one adds to twelve, so the row is a real twelve-column grid from
  * the moment it lands and the per-block controls all read the same units. The cells are empty containers —
- * the same block the "Section" tile adds — so a user fills them exactly as they fill anything else.
+ * the same block the "Stack" tile adds — so a user fills them exactly as they fill anything else.
  *
  * These are ADD-TIME only. Applying one to a row that already has content would replace that content, so they
  * are deliberately not in `getPresets`, which feeds the inspector's restyle gallery.
@@ -119,12 +119,11 @@ export const GRID_LAYOUTS: { id: string; label: string; spans: number[] }[] = [
 /**
  * One empty cell of a layout preset.
  *
- * Full width of its column and no inset, for the same reason the grid itself has none: spacing is a decision
- * the user makes in one control, not a default they have to discover and undo. A cell that arrived with 24px
- * of padding made every nested layout narrower than the one holding it, compounding at each level.
+ * Full width of its column, and its spacing left to the defaults (rule 3): a gap between the blocks it holds, and
+ * inner padding only once it has an edge you can see — so a plain cell still does not narrow a nested layout.
  */
 const gridCell = (colSpan: number): BoxNode =>
-  createContainer("column", { width: "100%", padding: 0, gap: 0, align: "stretch", colSpan });
+  createContainer("column", { width: "100%", align: "stretch", colSpan });
 
 /**
  * The LARGEST number of equal columns the twelve can express exactly, at or below `cols`.
@@ -140,8 +139,21 @@ export const fitColumns = (cols: number): number => {
   return 1;
 };
 
-/** The column counts a table picker can offer exactly: the divisors of twelve. */
-export const PICKER_COLUMNS = Array.from({ length: GRID_MAX }, (_, i) => i + 1).filter((c) => GRID_MAX % c === 0);
+/** The divisors of twelve: the counts a twelve-column grid holds as equal cells. */
+export const TWELFTHS_COLUMNS = Array.from({ length: GRID_MAX }, (_, i) => i + 1).filter((c) => GRID_MAX % c === 0);
+
+/** The column counts the layout picker offers: every one from 1 to 12 (decided by the user 2026-09-29, B). */
+export const PICKER_COLUMNS = Array.from({ length: GRID_MAX }, (_, i) => i + 1);
+
+/**
+ * HOW A GRID OF `across` EQUAL COLUMNS IS STORED. A count twelve divides stays a twelve-column grid — each cell spans
+ * 12/across, so every finer twelfth is still there to widen one cell later. Any other count (5, 7, 8, 9, 10, 11) is a
+ * grid of `across` columns with each cell spanning one: equal, as picked, never twelfths quietly made uneven.
+ */
+export function gridForAcross(across: number): { columns: number; span: number } {
+  const n = Math.min(GRID_MAX, Math.max(1, Math.round(across)));
+  return GRID_MAX % n === 0 ? { columns: GRID_MAX, span: GRID_MAX / n } : { columns: n, span: 1 };
+}
 
 /**
  * Build a layout the way a person inserts a TABLE: pick how many across and how many down.
@@ -155,10 +167,10 @@ export const PICKER_COLUMNS = Array.from({ length: GRID_MAX }, (_, i) => i + 1).
  * cell later made wider simply pushes the ones after it down, which is what a person expects from a table.
  */
 export function tableGrid(cols: number, rows: number): BoxNode {
-  const c = fitColumns(cols);
+  const { columns, span } = gridForAcross(cols);
+  const c = columns / span;
   const r = Math.max(1, Math.round(rows));
-  const span = GRID_MAX / c;
-  return createGrid(GRID_MAX, { children: Array.from({ length: c * r }, () => gridCell(span)) });
+  return createGrid(columns, { children: Array.from({ length: c * r }, () => gridCell(span)) });
 }
 
 /** One photograph, as chosen and already downscaled by `importPhoto`. */
@@ -197,10 +209,9 @@ export function photoGallery(photos: GalleryPhoto[], opts: { across: number; sta
   });
   return createGrid(GRID_MAX, {
     children: cells,
-    // Spacing is a decision, never a default (the standing rule) — so this is whatever the setup showed
-    // the user, and the setup starts at zero. It is passed through rather than invented here.
-    gap: Math.max(0, Math.round(opts.gap ?? 0)),
-    padding: 0,
+    // Whatever the setup showed the user, which starts at the default gap (rule 3: space by default); left
+    // unset when the setup did not say, so the grid reads the default rather than a zero nobody chose.
+    ...(opts.gap != null ? { gap: Math.max(0, Math.round(opts.gap)) } : {}),
     ...(opts.stagger ? { rowFlow: "masonry" as const } : {}),
   });
 }
@@ -352,10 +363,9 @@ export function blockForKind(kind: string, patch: Partial<BoxNode> = {}): BoxNod
     : kind === "slider" ? photoSlider([])
     : kind === "hero" ? heroSection(null, "Welcome to our school")
     : kind === "rotatingHero" ? rotatingHero([], "Welcome to our school")
-    // A Section starts flush too — space is added on the side you want it, not removed from a default. The
-    // Card and Outline STYLE presets still carry their own padding, because there it is part of the look
-    // somebody chose rather than something they have to discover and undo.
-    : kind === "container" ? createContainer("column", { width: "100%", padding: 0, gap: 0, align: "stretch" })
+    // A Stack reads the space defaults like every block (rule 3). The Card and Outline STYLE presets still carry
+    // their own padding, because there it is part of the look somebody chose.
+    : kind === "container" ? createContainer("column", { width: "100%", align: "stretch" })
     : createElement(kind as Exclude<BoxType, "container">));
   const node = Object.assign(base, patch);
   // Children that arrived in a PATCH are re-idded. A preset object is built once per render and can be
@@ -375,9 +385,36 @@ export function blockForKind(kind: string, patch: Partial<BoxNode> = {}): BoxNod
  * primitives keep their existing style presets. Before this, `getPresets` returned [] for every component, so
  * the one kind of block with the most looks to choose from was the only kind that never asked.
  */
+/**
+ * BLOCKS THAT ARE ADDED, NOT ASKED ABOUT.
+ *
+ * Asking at add-time earns its place when the answer is STRUCTURAL, SUPPLIES THE CONTENT, or names the
+ * block's ROLE — Grid's shape (changing three cells to four later means redoing the content), a
+ * gallery's photographs (without them it is an empty shell), an Alert's job (it sets the icon, the colour
+ * AND the screen-reader role), a heading's Display-vs-Eyebrow (its place in the document).
+ *
+ * It does NOT earn its place for a LOOK on an empty box. Adding a Section put a menu in the way of the
+ * commonest action in the palette, to ask which of four styles an empty, invisible container should wear —
+ * with nothing inside it to judge the answer against. And it was the WORSE copy of a control that already
+ * existed: the inspector shows the same four presets through `DesignGallery`, each tile rendering the
+ * block AS IT IS, with the user's own content wearing that style.
+ *
+ * The duplication had already produced a bug. At add-time "Default" and "Plain" were pixel-identical,
+ * because "Plain" exists to CLEAR a background, border and radius somebody applied — and on a box that
+ * has none, clearing nothing is doing nothing. In the inspector, where there is something to clear, it is
+ * a real and useful choice. The option was never wrong; its position was.
+ */
+const ADD_WITHOUT_ASKING = new Set([
+  "container", // Section / Stack — a look on an empty box
+  "row",       // the same box turned sideways, same reasoning
+  "image",     // Square / Rounded / Circle / Shadow, chosen before there is a picture
+  "icon",      // sizes and a colour; nothing structural
+]);
+
 export function getAddChoices(kind: string, theme: SiteTheme): Preset[] {
   // A ROW is the one kind whose add-time choice is a LAYOUT rather than a look — see GRID_LAYOUTS.
   if (kind === "grid") return gridLayoutChoices();
+  if (ADD_WITHOUT_ASKING.has(kind)) return [];
   const fromCatalogue = addChoices(kind);
   return fromCatalogue.length ? fromCatalogue : getPresets(kind, theme);
 }

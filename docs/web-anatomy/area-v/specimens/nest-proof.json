@@ -1,0 +1,13 @@
+{
+ "at": "2026-10-03T14:31:15.045Z",
+ "n": 40,
+ "seed": 1,
+ "ablations": 164,
+ "invalid": [],
+ "down": [],
+ "clashes": {
+  "expected no-op": [
+   "nest#1.2: a blue tint on a glass card over a blue section shows nothing (same colour as what shows through)"
+  ]
+ }
+}

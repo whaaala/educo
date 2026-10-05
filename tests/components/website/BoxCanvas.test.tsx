@@ -4,12 +4,14 @@ import { render, screen, fireEvent } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import BoxCanvas from "@/components/website/box/BoxCanvas";
 import { DEFAULT_THEME } from "@/lib/site-storage";
-import { createContainer, createGrid, createElement, findBox, makeRowBand, normalizeRowBands, type BoxNode } from "@/lib/box-model";
+import { createContainer, createGrid, createElement, findBox, makeRowBand, normalizeRowBands, remLen, u, LIST_ITEM_GAP, EMPTY_BOX_MIN, type BoxNode } from "@/lib/box-model";
+import { renderToStaticMarkup } from "react-dom/server";
+import { renderPageHTML } from "@/lib/box-export";
 
-function Harness({ initial, initialSel = null as string | null }: { initial: BoxNode; initialSel?: string | null }) {
+function Harness({ initial, initialSel = null as string | null, minHeight }: { initial: BoxNode; initialSel?: string | null; minHeight?: number }) {
   const [root, setRoot] = useState(initial);
   const [sel, setSel] = useState<string | null>(initialSel);
-  return <BoxCanvas root={root} theme={DEFAULT_THEME} selectedId={sel} onSelectId={setSel} onChange={setRoot} />;
+  return <BoxCanvas root={root} theme={DEFAULT_THEME} selectedId={sel} onSelectId={setSel} onChange={setRoot} minHeight={minHeight} />;
 }
 
 // Multi-select harness: exposes the selected ids for marquee tests.
@@ -75,7 +77,24 @@ describe("BoxCanvas (box-model editor)", () => {
     expect(added.width).toBe("40%"); // fills the row's leftover (100 − 60) → sits beside c1
   });
 
-  it("adding a section does NOT steal the selection (the parent stays selected)", async () => {
+  it("adding a block HANDS IT THE SELECTION, so you can see that it landed", async () => {
+    /**
+     * THIS ASSERTED THE OPPOSITE — "the selection never jumped to it" — and that rule produced two separate
+     * reports of the feature being broken when it was working perfectly.
+     *
+     * The intent was reasonable: leave the selection alone so you can add several things in a row. What it
+     * missed is that a newly added block is frequently INVISIBLE:
+     *
+     *   • into an EMPTY box it is transparent, has no content, and exactly fills its parent — nothing on
+     *     screen moves at all ("I always have to click this twice");
+     *   • into a GRID the grid does not grow, it shares its height out, so two transparent 50px cells look
+     *     exactly like one transparent 100px cell ("the highlighted ones are not working").
+     *
+     * In both, every menu item worked and every menu item looked broken. Selecting what just landed is the
+     * one signal that holds in every case — an outline round it, the inspector on it. Adding several in a
+     * row now costs one click back on the parent, which is a fair price for never wondering whether the
+     * last one happened.
+     */
     const user = userEvent.setup();
     const onSelectId = vi.fn();
     function AddHarness() {
@@ -85,9 +104,12 @@ describe("BoxCanvas (box-model editor)", () => {
     const { container } = render(<AddHarness />);
     const before = container.querySelectorAll("[data-box-id]").length;
     await user.click(screen.getByLabelText("Block actions"));
-    await user.click(screen.getByRole("menuitem", { name: "Section (stack)" }));
-    expect(container.querySelectorAll("[data-box-id]").length).toBeGreaterThan(before); // the new section was added…
-    expect(onSelectId).not.toHaveBeenCalled(); // …but the selection never jumped to it
+    await user.click(screen.getByRole("menuitem", { name: "Stack" }));
+    expect(container.querySelectorAll("[data-box-id]").length).toBeGreaterThan(before); // the block was added…
+    expect(onSelectId).toHaveBeenCalled();                                              // …and it is what is now selected
+    const picked = onSelectId.mock.calls.at(-1)![0];
+    expect(picked, "and it is not the parent that was selected before").not.toBe("root");
+    expect(picked, "…it is a real block").toBeTruthy();
   });
 
   it("adds a Grid container and renders it as CSS grid", async () => {
@@ -95,22 +117,62 @@ describe("BoxCanvas (box-model editor)", () => {
     const { container } = render(<Harness initial={tree()} initialSel="root" />);
     await user.click(screen.getByLabelText("Block actions"));
     await user.click(screen.getByRole("menuitem", { name: "Grid" }));
+    /**
+     * A GRID ASKS FOR ITS SHAPE FIRST, from this menu as from the palette.
+     *
+     * It used to be inserted outright as a fixed 1×1 here, while the palette opened a picker — so the same
+     * Grid arrived differently depending on which control you reached for, and "add a grid inside a stack
+     * with as many rows and columns as I want" was unreachable from the menu. The palette's own rule is
+     * that dragging a tile says WHERE a layout goes and not what it IS; the menu now says the same.
+     */
+    await user.click(screen.getByLabelText("2 across, 1 down"));
     // the new grid child is a container whose inline style uses display:grid
     const grids = Array.from(container.querySelectorAll<HTMLElement>("[data-box-id]")).filter((el) => el.style.display === "grid");
     expect(grids.length).toBe(1);
-    expect(grids[0].style.gridTemplateColumns).toContain("repeat(3");
+    /**
+     * TWELVE columns, not three — and it is the same grid the palette makes.
+     *
+     * This menu built its own with `createGrid(3)`: three columns and NOTHING IN THEM. `blockForKind`'s
+     * comment names why that is wrong — "an empty shell with no cell to click, nothing to resize and
+     * nowhere to put anything" — so the palette has never produced one, and a Grid added from the menu was
+     * unusable while a Grid added from the palette worked. Two routes to one block, one of them broken.
+     *
+     * Both now go through `blockForKind`, which is the project's twelve-column grid carrying exactly ONE
+     * cell: twelve because that is the track everything else is measured in, one cell because arriving
+     * already divided is a shape nobody chose.
+     */
+    expect(grids[0].style.gridTemplateColumns).toContain("repeat(12");
+    const cells = Array.from(grids[0].querySelectorAll<HTMLElement>(":scope > [data-box-id]"));
+    expect(cells.length, "and it has a cell to click, rather than being an empty shell").toBeGreaterThan(0);
   });
 
   it("the ROOT grows (min-height = floatingReserve) so a floated child is contained, not spilling below", () => {
     // A floated card sitting at top:40% with a 300px definite height needs the parent to be
     // at least 300 / (1 − 0.40) = 500px tall so its bottom stays inside. The root's own floor
-    // (PAGE_MIN_H) must NOT override that reserve.
+    // must NOT override that reserve.
+    //
+    // THIS TEST COULD NOT FAIL, twice over, and both faults hid each other. `top` was written as the STRING
+    // "40%", but the model stores `top` as a NUMBER of percent — so `Math.max("40%", 0)` is NaN,
+    // `floatingReserve` returned 0, and no reserve was ever computed. The assertion still passed, because
+    // `minHeight` defaults to 600 on BoxCanvas: it was measuring the page floor it claims the reserve beats.
+    //
+    // Fixed by giving the fixture the shape the product actually stores, and by passing a SMALL page floor
+    // so only the reserve can satisfy the assertion.
     const floated = createContainer("column", {
-      id: "f", position: "absolute", left: "10%", top: "40%", width: "50%", height: "300px",
-    } as unknown as Partial<BoxNode>);
-    render(<Harness initial={createContainer("column", { id: "root", children: [floated] } as Partial<BoxNode>)} />);
+      // No `as unknown as` cast here, deliberately: that cast is what let `top: "40%"` through in the first
+      // place. Typed properly, the compiler rejects the shape that made this test vacuous.
+      id: "f", position: "absolute", left: 10, top: 40, width: "50%", height: "300px",
+    });
+    render(
+      <Harness
+        initial={createContainer("column", { id: "root", children: [floated] } as Partial<BoxNode>)}
+        minHeight={120}
+      />,
+    );
     const rootEl = document.querySelector<HTMLElement>('[data-box-id="root"]')!;
-    expect(parseFloat(rootEl.style.minHeight)).toBeGreaterThanOrEqual(500); // reserve wins over the small page floor
+    const min = parseFloat(rootEl.style.minHeight);
+    expect(min, "300px at top:40% needs 500px of parent for its bottom to stay inside").toBeGreaterThanOrEqual(500);
+    expect(min, "…and that must come from the reserve, not from the page floor").toBeGreaterThan(120);
   });
 
   it("a SELECTED box shows overflow:visible so its (outside) toolbar + resize handles are never clipped", () => {
@@ -167,6 +229,18 @@ describe("BoxCanvas (box-model editor)", () => {
     const { container, getByTestId } = render(<H />);
     fireEvent.mouseDown(container.querySelector('[data-box-id="band"]')!);
     expect(getByTestId("sel").textContent).toBe(""); // deselected, not "band"
+  });
+
+  it("…but INSIDE a stack, the empty part of a line of several blocks selects that STACK — it is the stack's space (#88)", () => {
+    // A header (logo | menu | button) had every line holding several blocks, so its empty space cleared the selection and
+    // the header could not be selected by clicking in it at all. The line's space belongs to the box it sits in.
+    const band = makeRowBand([createElement("text", { id: "a" } as Partial<BoxNode>), createElement("text", { id: "b" } as Partial<BoxNode>)]); band.id = "band";
+    const stack = createContainer("column", { id: "hdr", children: [band] } as Partial<BoxNode>);
+    const root = createContainer("column", { id: "root", children: [stack] } as Partial<BoxNode>);
+    function H() { const [r, setR] = useState(root); const [sel, setSel] = useState<string | null>(null); return <><BoxCanvas root={r} theme={DEFAULT_THEME} selectedId={sel} onSelectId={setSel} onChange={setR} /><div data-testid="sel">{sel ?? ""}</div></>; }
+    const { container, getByTestId } = render(<H />);
+    fireEvent.mouseDown(container.querySelector('[data-box-id="band"]')!);
+    expect(getByTestId("sel").textContent).toBe("hdr"); // the stack — not nothing, and never the band
   });
 
   it("copy + paste a floating GROUP: a full OFFSET copy appears (floating, fresh ids), not hiding the original", () => {
@@ -501,10 +575,32 @@ describe("BoxCanvas (box-model editor)", () => {
     const n = findBox(onChange.mock.calls.at(-1)![0], "t1");
     expect(n?.width).toMatch(/%$/);            // the edge itself resized the WIDTH
     expect(n?.alignSelf).toBe("flex-start");   // top-left anchored (one consistent model)
-    expect(n?.marginLeft).toBeGreaterThan(0);  // box shifts right so the RIGHT edge stays fixed
+    /**
+     * THE GAP IS A SHARE OF THE LINE, NOT A LENGTH — `marginLeftPct`.
+     *
+     * This asserted `marginLeft > 0` and was right about the property and wrong about the unit. A length
+     * cannot sum with the percentage widths beside it: measured, a 140.15px margin next to widths of 35.83%
+     * and 50% came to 988.15px in a 988px row, and the block beside it wrapped onto a second line.
+     */
+    expect(n?.marginLeftPct, "the box shifts right so the RIGHT edge stays fixed").toBeGreaterThan(0);
+    expect(n?.marginLeft, "and the old length is cleared, so the two cannot disagree").toBeUndefined();
   });
 
-  it("resizing a ROW section is EDGE-ANCHORED — the grabbed edge moves, the opposite stays; the neighbour is a WALL (never moves)", () => {
+  it("resizing a ROW section is EDGE-ANCHORED, and the neighbour GIVES UP exactly what you take", () => {
+    /**
+     * THE NEIGHBOUR IS NO LONGER A WALL, and that was the point of changing it.
+     *
+     * This asserted `b` came out untouched at "50%" — the old rule, where a drag could only ever fill a GAP
+     * and the neighbour never moved. Two blocks sharing a full row are touching, so there is no gap: the
+     * right edge was clamped to exactly where it already was and a 200px drag stored "50.00%" where "50%"
+     * had been. Not stiff, not laggy — inert, in the ordinary case rather than a corner.
+     *
+     * The boundary between two blocks belongs to both of them, so dragging it spends the neighbour's space:
+     * you take width, it gives width, and the line stays exactly full. What is still true — and is the half
+     * this test has always been named for — is that the edge you GRAB is the only one that moves.
+     *
+     * Driven in a browser by `tests/e2e/side-by-side-resize.spec.ts`; this one holds the arithmetic.
+     */
     const initial = createContainer("row", {
       id: "root", direction: "row",
       children: [createContainer("column", { id: "a", width: "50%" } as Partial<BoxNode>), createContainer("column", { id: "b", width: "50%" } as Partial<BoxNode>)],
@@ -519,9 +615,106 @@ describe("BoxCanvas (box-model editor)", () => {
     fireEvent.mouseMove(document, { clientX: -60, clientY: 0 }); // shrink a from its RIGHT edge (right moves in)
     fireEvent.mouseUp(document);
     const last = onChange.mock.calls.at(-1)![0];
-    expect(parseFloat(findBox(last, "a")!.width!)).toBeLessThan(50);  // a shrank from the right (left edge stayed)
-    expect(findBox(last, "b")?.width).toBe("50%");                    // the neighbour did NOT move (wall)
-    expect(findBox(last, "a")?.marginLeft ?? 0).toBe(0);             // right edge → no margin touched
+    const aw = parseFloat(findBox(last, "a")!.width!);
+    const bw = parseFloat(findBox(last, "b")!.width!);
+    expect(aw, "a shrank from the right — its left edge stayed put").toBeLessThan(50);
+    expect(bw, "and the neighbour took back exactly what a gave up").toBeGreaterThan(50);
+    expect(aw + bw, "so the line is still exactly full").toBeGreaterThan(99);
+    expect(aw + bw).toBeLessThan(101);
+    expect(findBox(last, "a")?.marginLeft ?? 0, "a right-edge drag never touches the margin").toBe(0);
+  });
+
+  it("a drag that ends where it began leaves every STORED width exactly as it was — even blocks drawn at their 14rem floor (#61)", () => {
+    // Five 20% stacks on a 1000px row are DRAWN at the 224px floor (20% = 200px). The resize works in drawn widths
+    // (#58); writing them back would store 22.4% — and on a wider screen five that fitted would become four plus one.
+    const ids = ["a", "b", "c", "d", "e"];
+    const initial = createContainer("row", {
+      id: "root", direction: "row",
+      children: ids.map((id) => createContainer("column", { id, width: "20%" } as Partial<BoxNode>)),
+    } as Partial<BoxNode>);
+    const onChange = vi.fn();
+    const { container } = render(<BoxCanvas root={initial} theme={DEFAULT_THEME} selectedId="a" onChange={onChange} />);
+    const rootEl = container.querySelector<HTMLElement>('[data-box-id="root"]')!;
+    stubRect(rootEl, { top: 0, left: 0, width: 1000, height: 200 }); stubClientWidth(rootEl, 1000);
+    ids.forEach((id, i) => stubRect(container.querySelector<HTMLElement>(`[data-box-id="${id}"]`)!, i < 4 ? { top: 0, left: i * 224, width: 224, height: 100 } : { top: 100, left: 0, width: 224, height: 100 }));
+    fireEvent.mouseDown(screen.getByLabelText("Resize right edge"), { clientX: 0, clientY: 0 });
+    fireEvent.mouseMove(document, { clientX: 40, clientY: 0 });
+    fireEvent.mouseMove(document, { clientX: 0, clientY: 0 }); // …and back to where it began
+    fireEvent.mouseUp(document);
+    const last = onChange.mock.calls.at(-1)?.[0] ?? initial;
+    ids.forEach((id) => expect(findBox(last, id)!.width, id).toBe("20%"));
+  });
+
+  it("a round trip made of SEPARATE drags comes home to the widths it STORED, even below the floor (#65)", () => {
+    const ids = ["a", "b", "c", "d", "e"];
+    const start = createContainer("row", {
+      id: "root", direction: "row",
+      children: ids.map((id) => createContainer("column", { id, width: "20%" } as Partial<BoxNode>)),
+    } as Partial<BoxNode>);
+    // One drag on a freshly rendered canvas whose blocks are drawn at `drawn` (px) — what the app does between drags.
+    const drag = (root: BoxNode, drawn: number[], dx: number): BoxNode => {
+      const onChange = vi.fn();
+      const { container, unmount } = render(<BoxCanvas root={root} theme={DEFAULT_THEME} selectedId="a" onChange={onChange} />);
+      const rootEl = container.querySelector<HTMLElement>('[data-box-id="root"]')!;
+      stubRect(rootEl, { top: 0, left: 0, width: 1000, height: 200 }); stubClientWidth(rootEl, 1000);
+      let x = 0;
+      ids.forEach((id, i) => {
+        const wrapped = i === 4;
+        stubRect(container.querySelector<HTMLElement>(`[data-box-id="${id}"]`)!, wrapped ? { top: 100, left: 0, width: drawn[i], height: 100 } : { top: 0, left: x, width: drawn[i], height: 100 });
+        if (!wrapped) x += drawn[i];
+      });
+      fireEvent.mouseDown(screen.getByLabelText("Resize right edge"), { clientX: 0, clientY: 0 });
+      fireEvent.mouseMove(document, { clientX: dx, clientY: 0 });
+      fireEvent.mouseUp(document);
+      const out = onChange.mock.calls.at(-1)?.[0] ?? root;
+      unmount();
+      return out;
+    };
+    const out = drag(start, [224, 224, 224, 224, 224], 80);
+    expect(findBox(out, "a")!.width).not.toBe("20%");                 // it really moved
+    const back = drag(out, [304, 224, 224, 224, 224], -80);
+    ids.forEach((id) => expect(findBox(back, id)!.width, id).toBe("20%"));
+  });
+
+  it("a column is never STORED narrower than the floor it is drawn at — 3rem once sized by hand (#67, #75)", () => {
+    const ids = ["a", "b", "c", "d"];
+    const initial = createContainer("row", {
+      id: "root", direction: "row",
+      children: ids.map((id) => createContainer("column", { id, width: "25%" } as Partial<BoxNode>)),
+    } as Partial<BoxNode>);
+    const onChange = vi.fn();
+    const { container } = render(<BoxCanvas root={initial} theme={DEFAULT_THEME} selectedId="c" onChange={onChange} />);
+    const rootEl = container.querySelector<HTMLElement>('[data-box-id="root"]')!;
+    stubRect(rootEl, { top: 0, left: 0, width: 900, height: 200 }); stubClientWidth(rootEl, 900);
+    ids.forEach((id, i) => stubRect(container.querySelector<HTMLElement>(`[data-box-id="${id}"]`)!, { top: 0, left: i * 225, width: 225, height: 100 }));
+    fireEvent.mouseDown(screen.getByLabelText("Resize right edge"), { clientX: 0, clientY: 0 });
+    fireEvent.mouseMove(document, { clientX: -200, clientY: 0 }); // far past the floor
+    fireEvent.mouseUp(document);
+    const last = onChange.mock.calls.at(-1)?.[0] ?? initial;
+    // Dragged, it is sized by hand: its floor is 3rem (48px here), not the 14rem an untouched column keeps (#75).
+    expect(parseFloat(findBox(last, "c")!.width!)).toBeGreaterThanOrEqual((48 / 900) * 100 - 0.01);
+  });
+
+  it("after any drag, the stored widths of a line never add up to MORE than 100% — a browser wraps on anything over (#66)", () => {
+    const ids = ["a", "b", "c", "d"];
+    const initial = createContainer("row", {
+      id: "root", direction: "row",
+      children: ids.map((id, i) => createContainer("column", { id, width: ["24.99%", "24.99%", "25%", "25.02%"][i] } as Partial<BoxNode>)),
+    } as Partial<BoxNode>);
+    for (const dx of [20, 40, 80, 96, 97, 120, 150]) { // 96 and 97 leave a hundredth over — the browser case
+      const onChange = vi.fn();
+      const { container, unmount } = render(<BoxCanvas root={initial} theme={DEFAULT_THEME} selectedId="a" onChange={onChange} />);
+      const rootEl = container.querySelector<HTMLElement>('[data-box-id="root"]')!;
+      stubRect(rootEl, { top: 0, left: 0, width: 1280, height: 200 }); stubClientWidth(rootEl, 1280);
+      ids.forEach((id, i) => stubRect(container.querySelector<HTMLElement>(`[data-box-id="${id}"]`)!, { top: 0, left: i * 320, width: 320, height: 100 }));
+      fireEvent.mouseDown(screen.getByLabelText("Resize right edge"), { clientX: 0, clientY: 0 });
+      fireEvent.mouseMove(document, { clientX: dx, clientY: 0 });
+      fireEvent.mouseUp(document);
+      const last = onChange.mock.calls.at(-1)![0];
+      const sum = ids.reduce((s, id) => s + parseFloat(findBox(last, id)!.width!), 0);
+      expect(sum, `+${dx}px`).toBeLessThanOrEqual(100.001);
+      unmount();
+    }
   });
 
   it("dragging the TOP edge sets a MIN-HEIGHT (floor), keeping the box a hug-content box (no fixed height)", () => {
@@ -559,7 +752,33 @@ describe("BoxCanvas (box-model editor)", () => {
     const last = onChange.mock.calls.at(-1)![0];
     expect(parseFloat(findBox(last, "a")!.width!)).toBeGreaterThan(30); // a grew into the gap
     expect(findBox(last, "b")?.width).toBe("40%");                      // the neighbour's WIDTH is untouched
-    expect(findBox(last, "b")?.marginLeft).toBe(0);                     // its margin absorbed the fill → it stayed put, gap closed
+    // Its margin absorbed the fill → it stayed put, gap closed. The gap is a SHARE of the line now
+    // (`marginLeftPct`) and the old length is cleared, so "no gap" is asserted on both fields.
+    expect(findBox(last, "b")?.marginLeft ?? 0).toBe(0);
+    expect(findBox(last, "b")?.marginLeftPct ?? 0).toBe(0);
+  });
+
+  it("a PARTIAL fill leaves the rest of the gap as a share of the line, never as a length", () => {
+    const initial = createContainer("row", {
+      id: "root", direction: "row",
+      children: [
+        createContainer("column", { id: "a", width: "30%" } as Partial<BoxNode>),
+        createContainer("column", { id: "b", width: "40%", marginLeft: 300 } as Partial<BoxNode>),
+      ],
+    } as Partial<BoxNode>);
+    const onChange = vi.fn();
+    const { container } = render(<BoxCanvas root={initial} theme={DEFAULT_THEME} selectedId="a" onChange={onChange} />);
+    const rootEl = container.querySelector<HTMLElement>('[data-box-id="root"]')!;
+    stubRect(rootEl, { top: 0, left: 0, width: 600, height: 100 }); stubClientWidth(rootEl, 600);
+    stubRect(container.querySelector<HTMLElement>('[data-box-id="a"]')!, { top: 0, left: 0, width: 180, height: 100 });
+    stubRect(container.querySelector<HTMLElement>('[data-box-id="b"]')!, { top: 0, left: 360, width: 240, height: 100 });
+    fireEvent.mouseDown(screen.getByLabelText("Resize right edge"), { clientX: 0, clientY: 0 });
+    fireEvent.mouseMove(document, { clientX: 60, clientY: 0 }); // a grows 60 of the 180 gap
+    fireEvent.mouseUp(document);
+    const b = findBox(onChange.mock.calls.at(-1)![0], "b")!;
+    expect(b.marginLeft).toBeUndefined();              // not a length…
+    expect(b.marginLeftPct).toBeCloseTo(20, 0);         // …but 120px of a 600px line = 20%
+    expect(b.width).toBe("40%");
   });
 
   it("resizing a ROW section's LEFT edge moves the left edge and HOLDS the right edge (margin-left); neighbour untouched", () => {
@@ -578,7 +797,8 @@ describe("BoxCanvas (box-model editor)", () => {
     fireEvent.mouseUp(document);
     const last = onChange.mock.calls.at(-1)![0];
     expect(findBox(last, "a")?.width).toMatch(/%$/);
-    expect(findBox(last, "a")?.marginLeft).toBeGreaterThan(0); // shifted right so the RIGHT edge stays put
+    // A SHARE OF THE LINE, not a length — see `marginLeftPct`. Shifted right so the RIGHT edge stays put.
+    expect(findBox(last, "a")?.marginLeftPct).toBeGreaterThan(0);
     expect(findBox(last, "b")?.width).toBe("40%");             // the neighbour is untouched
   });
 
@@ -605,8 +825,25 @@ describe("BoxCanvas (box-model editor)", () => {
     const t = createContainer("column", { id: "root", baseFont: 10, children: [] } as Partial<BoxNode>);
     const { container } = render(<BoxCanvas root={t} theme={DEFAULT_THEME} onChange={() => {}} />);
     const el = container.querySelector<HTMLElement>('[data-box-id="root"]')!;
-    // clamp(minRem, cqw, maxRem): rem bounds keep it browser-relative; cqw scales with the container width
-    expect(el.style.getPropertyValue("--box-u")).toBe("clamp(0.4375rem, 1cqw, 0.875rem)");
+    const u = el.style.getPropertyValue("--box-u");
+    /**
+     * ASSERTED AS THE PROPERTY, because this test named the right thing and pinned the wrong value.
+     *
+     * It said "scales with the canvas width + browser (WCAG)" and then required
+     * `clamp(0.4375rem, 1cqw, 0.875rem)` — whose middle term is a bare `1cqw` and therefore does NOT scale
+     * with the browser at all. Between the bounds, which is nearly always, a reader who enlarged their text
+     * got no change: measured on the exported page at 1280px, setting the browser to 24px moved the page's
+     * spacing by 0px. A literal is a weak assertion; it pinned the bug in place and read as if it forbade it.
+     *
+     * The three halves of the real rule, each checked on its own:
+     */
+    expect(u, "the unit must be a clamp — a floor, an ideal and a ceiling").toMatch(/^clamp\(/);
+    expect(u, "the BOUNDS are rem, so the extremes follow the reader").toMatch(/clamp\(\s*[\d.]+rem\s*,.*,\s*[\d.]+rem\s*\)$/);
+    expect(u, "the CONTAINER term — it still tracks the box it is in").toMatch(/cqw/);
+    expect(u, "and the IDEAL term carries a rem, or the reader's text size changes nothing between the bounds")
+      // No `\b` around rem: in `0.3125rem` the digit and the `r` are both word characters, so there is no
+      // boundary between them and `\brem\b` never matches a real length. It cost one run to notice.
+      .toMatch(/clamp\([^,]+,[^,]*rem[^,]*cqw/);
   });
 
   // ── Floating layers (free overlap) ───────────────────────────────────────────────────────────────
@@ -767,7 +1004,7 @@ describe("BoxCanvas (box-model editor)", () => {
     expect(el.style.border).toContain("3px");
     expect(el.style.border).toContain("dashed");
     expect(el.style.boxShadow).not.toBe("");
-    expect(el.style.borderRadius).toBe("0px 10px 10px 10px"); // TL overridden to 0
+    expect(el.style.borderRadius).toBe([0, 10, 10, 10].map((n) => remLen(n)).join(" ")); // rem, never px — Core Rule 16 // TL overridden to 0
     expect(el.style.transform).toBe("rotate(15deg)");
   });
 
@@ -793,6 +1030,50 @@ describe("BoxCanvas (box-model editor)", () => {
     expect(container.querySelector('#cta')).toBeTruthy(); // anchor id rendered on the box
   });
 
+  // #143 — THE BOX AROUND A BLOCK IS THE SAME IN BOTH ENGINES, FOR EVERY KIND OF BLOCK. Measured by the tier-99 sweep and
+  // probe-t7: an Icon was 22px on the canvas and 40px published on a phone, because `isEmptyBox` counted a block that
+  // draws its own content as empty (floor: 2.5rem each way) and the canvas then threw the floor's height away while the
+  // export kept it. The record below is keyed by the TYPE, so a block type added later fails to compile until it is listed.
+  const EVERY_ELEMENT: Record<Exclude<BoxNode["type"], "container" | "component">, true> = { text: true, heading: true, button: true, link: true, image: true, video: true, icon: true, divider: true, list: true, embed: true, spacer: true };
+  const boxOf = (css: string) => Object.fromEntries(["min-width", "min-height", "width", "height"].map((k) => [k, (new RegExp(`(?:^|;)\\s*${k}:([^;}]*)`).exec(css)?.[1] ?? "").trim().replace(/^0px$/, "0")]));
+  const bothBoxes = (type: keyof typeof EVERY_ELEMENT, patch: Partial<BoxNode> = {}) => {
+    const t = normalizeRowBands(createContainer("column", { id: "root", width: "fill", children: [createElement(type, { id: "el", ...patch } as Partial<BoxNode>)] } as Partial<BoxNode>));
+    const drawn = renderToStaticMarkup(<BoxCanvas root={t} theme={DEFAULT_THEME} editable={false} onChange={() => {}} />);
+    return { canvas: boxOf(/<[a-z0-9]+[^>]*data-box-id="el"[^>]*style="([^"]*)"/.exec(drawn)?.[1] ?? "missing"), page: boxOf(/\.bx-el\{([^}]*)\}/.exec(renderPageHTML(t, DEFAULT_THEME))?.[1] ?? "absent") };
+  };
+  it.each(Object.keys(EVERY_ELEMENT) as (keyof typeof EVERY_ELEMENT)[])("a %s has the same box on the canvas and on the published page", (type) => {
+    const { canvas, page } = bothBoxes(type);
+    expect(page).toEqual(canvas);
+    const sized = bothBoxes(type, { minHeight: 120 });
+    expect(sized.page).toEqual(sized.canvas);
+    expect(sized.page["min-height"]).toBe(remLen(120)); // a height somebody set is kept, in both
+  });
+  it.each(["icon", "list", "divider"] as const)("a %s draws its own content, so it never gets the empty-box floor", (type) => {
+    const { canvas, page } = bothBoxes(type);
+    for (const box of [canvas, page]) { expect(box["min-height"]).not.toBe(EMPTY_BOX_MIN); expect(box["min-width"]).not.toBe(EMPTY_BOX_MIN); }
+  });
+  it("an EMPTY box still gets the floor, in both — it is what lets a person see and grab it", () => {
+    const t = normalizeRowBands(createContainer("column", { id: "root", width: "fill", children: [createContainer("column", { id: "el" } as Partial<BoxNode>)] } as Partial<BoxNode>));
+    expect(renderPageHTML(t, DEFAULT_THEME)).toMatch(new RegExp(`\\.bx-el\\{[^}]*min-height:${EMPTY_BOX_MIN.replace(".", "\\.")}`));
+  });
+
+  // #135 — measured by the tier-99 dressed sweep on 145 pages: a List was 8–17px SHORTER on the published page than on
+  // the canvas at every screen size, because the canvas spaced its items and the export did not.
+  it.each(["bullet", "number"] as const)("a %s List publishes the box the canvas draws — the same space under every item, the same indent", (listStyle) => {
+    const t = createContainer("column", { id: "root", children: [createElement("list", { id: "ls", listStyle, listItems: ["one", "two", "three"] } as Partial<BoxNode>)] } as Partial<BoxNode>);
+    // Read as MARKUP, both of them: jsdom's style object drops any value it cannot parse — `calc(var(--box-u) * 0.4)` is
+    // one — so `li.style.marginBottom` reads "" on a canvas that has the space, and the comparison passes on two blanks.
+    const drawn = renderToStaticMarkup(<BoxCanvas root={t} theme={DEFAULT_THEME} editable={false} onChange={() => {}} />);
+    const sent = renderPageHTML(t, DEFAULT_THEME);
+    const tag = listStyle === "number" ? "ol" : "ul";
+    const declared = (html: string, el: string, prop: string) => Array.from(html.matchAll(new RegExp(`<${el}\\b[^>]*style="([^"]*)"`, "g")))
+      .map((m) => new RegExp(`(?:^|;)\\s*${prop}:([^;]*)`).exec(m[1])?.[1].trim() ?? "");
+    expect(declared(drawn, "li", "margin-bottom")).toEqual(Array(3).fill(u(LIST_ITEM_GAP)));
+    expect(declared(sent, "li", "margin-bottom")).toEqual(declared(drawn, "li", "margin-bottom"));
+    expect(declared(drawn, tag, "padding-left")).toEqual([u(22)]);
+    expect(declared(sent, tag, "padding-left")).toEqual(declared(drawn, tag, "padding-left"));
+  });
+
   // ── Responsive per-breakpoint overrides ──────────────────────────────────────────────────────────
   it("renders the breakpoint-resolved style (mobile override wins over the base)", () => {
     const t = createContainer("column", {
@@ -806,7 +1087,9 @@ describe("BoxCanvas (box-model editor)", () => {
     expect(mob.container.querySelector<HTMLElement>('[data-box-id="s"]')!.style.backgroundColor).toBe("rgb(255, 0, 0)");
   });
 
-  it("a box hidden on a breakpoint is dropped on the live site but kept (faint) in the editor", () => {
+  it("a box hidden on a breakpoint is gone on the live site AND on the canvas — faint only when hidden blocks are asked for", () => {
+    // Decided with the user 2026-09-28 (#132): drawn faintly by default, the hidden phone menu wrapped the header onto
+    // two lines on the canvas and one in the Preview. It takes no space now; "Show hidden blocks" brings it back faintly.
     const t = createContainer("column", {
       id: "root",
       children: [createContainer("column", { id: "h", responsive: { mobile: { hidden: true } } } as Partial<BoxNode>)],
@@ -815,9 +1098,15 @@ describe("BoxCanvas (box-model editor)", () => {
     expect(live.container.querySelector('[data-box-id="h"]')).toBeNull(); // not rendered live
     live.unmount();
     const edit = render(<BoxCanvas root={t} theme={DEFAULT_THEME} breakpoint="phone" editable onChange={() => {}} />);
-    const el = edit.container.querySelector<HTMLElement>('[data-box-id="h"]')!;
+    expect(edit.container.querySelector('[data-box-id="h"]')).toBeNull(); // …nor on the canvas at that device
+    edit.unmount();
+    const shown = render(<BoxCanvas root={t} theme={DEFAULT_THEME} breakpoint="phone" editable showHidden onChange={() => {}} />);
+    const el = shown.container.querySelector<HTMLElement>('[data-box-id="h"]')!;
     expect(el).toBeTruthy();
-    expect(el.style.opacity).toBe("0.35"); // faint in the editor so you can still select + un-hide it
+    expect(el.style.opacity).toBe("0.35"); // faint, so it can be selected and un-hidden
+    shown.unmount();
+    const desktop = render(<BoxCanvas root={t} theme={DEFAULT_THEME} breakpoint="base" editable onChange={() => {}} />);
+    expect(desktop.container.querySelector<HTMLElement>('[data-box-id="h"]')!.style.opacity).not.toBe("0.35"); // not hidden there
   });
 
   it("resizing at a breakpoint writes an OVERRIDE, leaving the base width untouched", () => {
@@ -844,14 +1133,22 @@ describe("BoxCanvas (box-model editor)", () => {
       children: [createElement("heading", { id: "h", text: "Hi", fontFamily: "Georgia, serif", fontWeight: 300, lineHeight: 1.8, letterSpacing: 2, italic: true, underline: true, textTransform: "uppercase" } as Partial<BoxNode>)],
     } as Partial<BoxNode>);
     const { container } = render(<BoxCanvas root={t} theme={DEFAULT_THEME} onChange={() => {}} />);
-    const h = container.querySelector<HTMLElement>('[data-box-id="h"] h2')!;
+    const h = container.querySelector<HTMLElement>('[data-box-id="h"] :is(h1,h2,h3,h4,h5,h6)')!; // its LEVEL follows the page (semantics B1)
     expect(h.style.fontFamily).toContain("Georgia");
     expect(h.style.fontWeight).toBe("300");
     expect(h.style.lineHeight).toBe("1.8");
-    expect(h.style.letterSpacing).toBe("2px");
+    expect(h.style.letterSpacing).toBe("0.125rem"); // rem, not px — rule 16 (2px at the 16px base)
     expect(h.style.fontStyle).toBe("italic");
     expect(h.style.textDecoration).toBe("underline");
     expect(h.style.textTransform).toBe("uppercase");
+  });
+
+  it("the page starts from the PUBLISHED page's letter spacing, not the editor's", () => {
+    // The editor tracks its own text (`body { letter-spacing: 0.02em }`); the canvas page inherited it, so every word
+    // was wider than on the published page, whose root sets nothing. Found by the Preview check, 2026-09-27.
+    const t = createContainer("column", { id: "root", children: [createElement("text", { id: "p", text: "Hello" })] } as Partial<BoxNode>);
+    const { container } = render(<BoxCanvas root={t} theme={DEFAULT_THEME} onChange={() => {}} />);
+    expect(container.querySelector<HTMLElement>('[data-box-id="root"]')!.style.letterSpacing).toBe("normal");
   });
 
   it("a divider honours its line style (dashed) and a leaf element can float over others", () => {
@@ -863,7 +1160,7 @@ describe("BoxCanvas (box-model editor)", () => {
       ],
     } as Partial<BoxNode>);
     const { container } = render(<BoxCanvas root={t} theme={DEFAULT_THEME} editable={false} onChange={() => {}} />);
-    const line = container.querySelector<HTMLElement>('[data-box-id="dv"] div')!;
+    const line = container.querySelector<HTMLElement>('[data-box-id="dv"] hr')!;
     expect(line.style.borderTopStyle).toBe("dashed");
     const overlay = container.querySelector<HTMLElement>('[data-box-id="hd"]')!;
     expect(overlay.style.position).toBe("absolute"); // a heading can be floated as an overlay
@@ -893,5 +1190,111 @@ describe("BoxCanvas (box-model editor)", () => {
     // jsdom has no elementsFromPoint, so it appends to the page — a heading node now exists in the tree.
     const found = (function walk(n: BoxNode): boolean { return n.type === "heading" || (n.children ?? []).some(walk); })(tree);
     expect(found).toBe(true);
+  });
+});
+
+describe("the canvas and the published page share one paragraph measure (#74)", () => {
+  it("both cap a paragraph at the same measure — the canvas does not load BASE_CSS, so it carries the rule itself", async () => {
+    const { BASE_CSS, measureCss } = await import("@/lib/educo-ui/base");
+    const root = createContainer("column", { id: "root", children: [] } as Partial<BoxNode>);
+    const { container } = render(<BoxCanvas root={root} theme={DEFAULT_THEME} onChange={() => {}} />);
+    const css = Array.from(container.querySelectorAll("style")).map((s) => s.textContent).join("\n");
+    expect(css).toContain(measureCss(".eu-tokens"));
+    expect(BASE_CSS).toContain(measureCss(".eu-root"));
+  });
+});
+
+describe("narrow columns and no fill jump (decided with the user 2026-09-27, #75)", () => {
+  // The row sits INSIDE a page, as in the app — a row that is the page itself has nowhere to wrap to, and its edge rightly stops.
+  const pair = (w1: string, w2: string) => createContainer("column", { id: "page", children: [createContainer("row", { id: "root", direction: "row",
+    children: [createContainer("column", { id: "a", width: w1 } as Partial<BoxNode>), createContainer("column", { id: "b", width: w2 } as Partial<BoxNode>)] } as Partial<BoxNode>)] } as Partial<BoxNode>);
+  const dragA = (root: BoxNode, wa: number, wb: number, dx: number) => {
+    const onChange = vi.fn();
+    const { container, unmount } = render(<BoxCanvas root={root} theme={DEFAULT_THEME} selectedId="a" onChange={onChange} />);
+    const rootEl = container.querySelector<HTMLElement>('[data-box-id="root"]')!;
+    stubRect(rootEl, { top: 0, left: 0, width: 1000, height: 200 }); stubClientWidth(rootEl, 1000);
+    stubRect(container.querySelector<HTMLElement>('[data-box-id="a"]')!, { top: 0, left: 0, width: wa, height: 100 });
+    stubRect(container.querySelector<HTMLElement>('[data-box-id="b"]')!, { top: 0, left: wa, width: wb, height: 100 });
+    fireEvent.mouseDown(screen.getByLabelText("Resize right edge"), { clientX: 0, clientY: 0 });
+    fireEvent.mouseMove(document, { clientX: dx, clientY: 0 });
+    fireEvent.mouseUp(document);
+    const out = onChange.mock.calls.at(-1)![0]; unmount(); return out;
+  };
+  it("a 10/90 row can be built by dragging — the column you size is no longer held at 14rem", () => {
+    const out = dragA(pair("50%", "50%"), 500, 500, -400);
+    expect(parseFloat(findBox(out, "a")!.width!)).toBeCloseTo(10, 0);
+    expect(parseFloat(findBox(out, "b")!.width!)).toBeCloseTo(90, 0);
+  });
+  it("a 90/10 row can be built — the NEIGHBOUR squeezed across the shared edge counts as sized by hand (#76)", () => {
+    const out = dragA(pair("50%", "50%"), 500, 500, 400);
+    expect(parseFloat(findBox(out, "a")!.width!)).toBeCloseTo(90, 0);
+    expect(parseFloat(findBox(out, "b")!.width!)).toBeCloseTo(10, 0);
+    expect(findBox(out, "b")!.widthByHand).toBe(true);
+  });
+  it("widening until the neighbour wraps does NOT fill the line — the block stops where it was dragged", () => {
+    const out = dragA(pair("50%", "50%"), 500, 500, 340); // b (floor 224px) no longer fits beside 840px
+    expect(parseFloat(findBox(out, "a")!.width!)).toBeCloseTo(84, 0);
+    expect(parseFloat(findBox(out, "a")!.width!)).toBeLessThan(99);
+  });
+});
+
+describe("rows of four or more on a tablet (decided with the user 2026-09-27, #78)", () => {
+  const words = () => createElement("text", { text: "Words" } as Partial<BoxNode>);
+  const fourRow = () => createContainer("column", { id: "page", children: [makeRowBand(["c0", "c1", "c2", "c3"].map((id) =>
+    createContainer("column", { id, width: "25%", children: [words()] } as Partial<BoxNode>)), 0)] } as Partial<BoxNode>);
+  const basis = (el: HTMLElement) => el.style.flex.split(" ").slice(2).join(" ");
+
+  it("the canvas draws each column at its share of its tablet line (2 + 2), and at its own 25% on a laptop", () => {
+    const t = render(<BoxCanvas root={fourRow()} theme={DEFAULT_THEME} breakpoint="tabletPortrait" onChange={() => {}} />);
+    for (const id of ["c0", "c1", "c2", "c3"]) expect(basis(t.container.querySelector<HTMLElement>(`[data-box-id="${id}"]`)!)).toBe("50%");
+    t.unmount();
+    const l = render(<BoxCanvas root={fourRow()} theme={DEFAULT_THEME} breakpoint="tabletLandscape" onChange={() => {}} />);
+    const c0 = l.container.querySelector<HTMLElement>('[data-box-id="c0"]')!;
+    expect(basis(c0)).toBe("25%");
+    expect(c0.style.minWidth).toBe("min-content"); // one line on a laptop, never 4 + wrapped
+  });
+
+  it("a drag on the tablet works from the DRAWN shares: the neighbour on its tablet line gives, the base is untouched", () => {
+    const onChange = vi.fn();
+    const root = fourRow();
+    const { container } = render(<BoxCanvas root={root} theme={DEFAULT_THEME} selectedId="c0" breakpoint="tabletPortrait" onChange={onChange} />);
+    const band = container.querySelector<HTMLElement>(`[data-box-id="${root.children![0].id}"]`)!;
+    stubRect(band, { top: 0, left: 0, width: 1000, height: 200 }); stubClientWidth(band, 1000);
+    [["c0", 0, 0], ["c1", 500, 0], ["c2", 0, 100], ["c3", 500, 100]].forEach(([id, left, top]) =>
+      stubRect(container.querySelector<HTMLElement>(`[data-box-id="${id}"]`)!, { top: top as number, left: left as number, width: 500, height: 100 }));
+    fireEvent.mouseDown(screen.getByLabelText("Resize right edge"), { clientX: 0, clientY: 0 });
+    fireEvent.mouseMove(document, { clientX: -100, clientY: 0 });
+    fireEvent.mouseUp(document);
+    const out = onChange.mock.calls.at(-1)![0] as BoxNode;
+    const w = (id: string) => parseFloat(findBox(out, id)!.responsive?.tabletPortrait?.width ?? "NaN");
+    expect(w("c0")).toBeCloseTo(40, 0);
+    expect(w("c1")).toBeCloseTo(60, 0);
+    expect(findBox(out, "c0")!.width).toBe("25%"); // the desktop keeps its four across
+    expect(findBox(out, "c2")!.responsive?.tabletPortrait?.width).toBeUndefined(); // the second line is not touched
+  });
+});
+
+describe("the remembered original width follows the floor a column is DRAWN at (#82)", () => {
+  it("a four-column row: nudging the first edge home never writes a stale 16% back into the second column", () => {
+    const words = () => createElement("text", { text: "Words" } as Partial<BoxNode>);
+    const band = makeRowBand([
+      createContainer("column", { id: "c0", width: "27.8%", widthByHand: true, children: [words()] } as Partial<BoxNode>),
+      createContainer("column", { id: "c1", width: "22.2%", widthByHand: true, origWidth: "16.07%", restWidth: "22.4%", restBy: "c0", children: [words()] } as Partial<BoxNode>),
+      createContainer("column", { id: "c2", width: "25%", widthByHand: true, children: [words()] } as Partial<BoxNode>),
+      createContainer("column", { id: "c3", width: "25%", widthByHand: true, children: [words()] } as Partial<BoxNode>),
+    ], 0);
+    const root = createContainer("column", { id: "page", children: [band] } as Partial<BoxNode>);
+    const onChange = vi.fn();
+    const { container } = render(<BoxCanvas root={root} theme={DEFAULT_THEME} selectedId="c0" onChange={onChange} />);
+    const bandEl = container.querySelector<HTMLElement>(`[data-box-id="${band.id}"]`)!;
+    stubRect(bandEl, { top: 0, left: 0, width: 1000, height: 100 }); stubClientWidth(bandEl, 1000);
+    [["c0", 0, 278], ["c1", 278, 222], ["c2", 500, 250], ["c3", 750, 250]].forEach(([id, left, width]) =>
+      stubRect(container.querySelector<HTMLElement>(`[data-box-id="${id}"]`)!, { top: 0, left: left as number, width: width as number, height: 100 }));
+    // c1 comes home at 22.4% — exactly where a 14rem floor sits in a 1000px row, the coincidence the 1366 window hit
+    fireEvent.mouseDown(screen.getByLabelText("Resize right edge"), { clientX: 0, clientY: 0 });
+    fireEvent.mouseMove(document, { clientX: -2, clientY: 0 });
+    fireEvent.mouseUp(document);
+    const out = onChange.mock.calls.at(-1)![0] as BoxNode;
+    expect(parseFloat(findBox(out, "c1")!.width!)).toBeCloseTo(22.4, 0); // was written back as 16.07% — an 81px hole
   });
 });

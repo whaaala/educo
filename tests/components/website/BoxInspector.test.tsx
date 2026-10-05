@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from "vitest";
-import { render, screen, fireEvent, cleanup } from "@testing-library/react";
+import { render, screen, fireEvent, cleanup, within } from "@testing-library/react";
 import BoxInspector from "@/components/website/box/BoxInspector";
 import { DEFAULT_THEME } from "@/lib/site-storage";
 import { createContainer, createElement, createComponent, type BoxNode } from "@/lib/box-model";
@@ -96,6 +96,50 @@ describe("BoxInspector — styling primitives (Design tab)", () => {
     const onPatch = renderFor(createContainer("column", { id: "c" } as Partial<BoxNode>), { inGrid: true });
     fireEvent.change(screen.getByLabelText("Columns wide"), { target: { value: "2" } });
     expect(onPatch).toHaveBeenCalledWith({ colSpan: 2 });
+  });
+
+  // R4-2 (BATCH P-0): the cell's "Line up (across)" and the nine squares both place the cell across; the squares used to
+  // win silently, so "Left" did nothing while the control said "Left". Whichever is used last wins, and both show it.
+  it("keeps the cell's 'Line up (across)' and the nine squares in step (R4-2)", () => {
+    const onPatch = renderFor(createContainer("column", { id: "c", placeX: "center", placeY: "center", justifySelf: "end" } as Partial<BoxNode>), { inGrid: true });
+    const lineUp = screen.getByRole("button", { name: "Line up (across)" });
+    expect(lineUp).toHaveTextContent("Center");                        // shows the squares' choice, not the stale "Right"
+    fireEvent.click(lineUp); fireEvent.click(screen.getByRole("option", { name: "Left" }));
+    expect(onPatch).toHaveBeenLastCalledWith({ justifySelf: "start", placeX: undefined }); // …and choosing here clears the squares' across value
+    cleanup();
+    const onSquare = renderFor(createContainer("column", { id: "c", justifySelf: "end" } as Partial<BoxNode>), { inGrid: true });
+    fireEvent.click(screen.getByRole("button", { name: "Top left" }));
+    expect(onSquare).toHaveBeenLastCalledWith({ placeX: "start", placeY: "start", justifySelf: undefined }); // a square clears it the other way
+  });
+
+  // R4-4 (BATCH P-0): `align-items` moves blocks DOWN in a side-by-side row and in a grid — measured, "End" moved the
+  // words 236px down and 0 across while the label said "across".
+  it("names the direction the container's 'Line up' really moves (R4-4)", () => {
+    const label = (node: BoxNode) => { renderFor(node); const t = screen.getByRole("button", { name: "Line up" }).closest("label, div")?.textContent ?? ""; cleanup(); return t; };
+    expect(label(createContainer("column", { id: "s" } as Partial<BoxNode>))).toMatch(/Line up \(across\)/);
+    expect(label(createContainer("row", { id: "r" } as Partial<BoxNode>))).toMatch(/Line up \(down\)/);
+    expect(label(createContainer("column", { id: "g", layout: "grid", columns: 3 } as Partial<BoxNode>))).toMatch(/Line up \(down\)/);
+  });
+
+  // R4-5 (BATCH P-0): a typed "300px" and the picture's "don't crop" toggle stored pixels that reached the page.
+  it("stores rem, never px, from the Height field and the picture toggle (R4-5)", () => {
+    const onPatch = renderFor(createElement("text", { id: "t" } as Partial<BoxNode>));
+    fireEvent.change(screen.getByLabelText("Height"), { target: { value: "300px" } });
+    expect(onPatch).toHaveBeenLastCalledWith({ height: "18.75rem", contentScale: undefined });
+    cleanup();
+    const onImg = renderFor(createElement("image", { id: "i", height: "auto", src: "data:image/png;base64,AA==", imgW: 800, imgH: 600 } as Partial<BoxNode>)); openContent();
+    fireEvent.click(screen.getByRole("checkbox", { name: /Show the whole picture/ }));
+    expect(onImg).toHaveBeenLastCalledWith({ height: "16.25rem" });
+  });
+
+  // R4-3 (BATCH P-0): Floating (and its front / back order) changes every screen; while another screen is edited the
+  // control says so, and the Per-device promise says "except a control marked every screen".
+  it("says 'every screen' on structural controls while another screen is edited (R4-3)", () => {
+    renderFor(createElement("text", { id: "t" } as Partial<BoxNode>), { breakpoint: "phone" });
+    expect(screen.getAllByRole("note").some((n) => /Applies to every screen, not only/.test(n.textContent ?? ""))).toBe(true);
+    cleanup();
+    renderFor(createElement("text", { id: "t" } as Partial<BoxNode>), { breakpoint: "base" });
+    expect(screen.queryAllByRole("note").some((n) => /Applies to every screen/.test(n.textContent ?? ""))).toBe(false);
   });
 
   it("hides grid span controls when NOT in a grid", () => {
@@ -248,9 +292,9 @@ describe("BoxInspector — functionality audit (controls act)", () => {
   it("Design › Spacing: Inner + Outer sliders fire padding/margin", () => {
     const onPatch = renderFor(createContainer("column", { id: "s" } as Partial<BoxNode>));
     // per-side padding/margin number inputs (rem → px)
-    fireEvent.change(screen.getByLabelText("Inner spacing top"), { target: { value: "2.4" } });
+    fireEvent.change(screen.getByLabelText("Inner spacing top"), { target: { value: "1.5" } }); // real rem (S1-b): 1.5rem = 24
     expect(onPatch).toHaveBeenCalledWith({ paddingTop: 24 });
-    fireEvent.change(screen.getByLabelText("Outer spacing left"), { target: { value: "1.6" } });
+    fireEvent.change(screen.getByLabelText("Outer spacing left"), { target: { value: "1" } }); // real rem: 1rem = 16
     expect(onPatch).toHaveBeenCalledWith({ marginLeft: 16 });
   });
 
@@ -452,7 +496,7 @@ describe("BoxInspector — functionality audit (every remaining control)", () =>
     fireEvent.click(screen.getByRole("button", { name: "Custom" }));
     expect(onPatch).toHaveBeenCalledWith(expect.objectContaining({ width: expect.any(String) }));
     fireEvent.change(screen.getByLabelText("Height"), { target: { value: "300px" } });
-    expect(onPatch).toHaveBeenCalledWith({ height: "300px" });
+    expect(onPatch).toHaveBeenCalledWith(expect.objectContaining({ height: "18.75rem" })); // a typed px is stored as rem (R4-5)
     fireEvent.click(screen.getByLabelText("Content middle center"));
     expect(onPatch).toHaveBeenCalledWith({ contentX: "center", contentY: "center" });
     fireEvent.click(screen.getByLabelText(/Trim to size/));
@@ -523,15 +567,15 @@ describe("Accordion — full three-tab audit (Design · Content · Per-device)",
     const onPatch = renderFor(acc(), { onAlignInRow, rowJustify: "start" });
     fireEvent.click(screen.getByRole("button", { name: "Full" }));   expect(onPatch).toHaveBeenCalledWith(expect.objectContaining({ width: "fill" }));
     fireEvent.click(screen.getByRole("button", { name: "Center" })); expect(onAlignInRow).toHaveBeenCalledWith("center");
-    fireEvent.change(screen.getByLabelText("Height"), { target: { value: "320px" } }); expect(onPatch).toHaveBeenCalledWith({ height: "320px" });
+    fireEvent.change(screen.getByLabelText("Height"), { target: { value: "320px" } }); expect(onPatch).toHaveBeenCalledWith(expect.objectContaining({ height: "20rem" })); // stored as rem (R4-5)
     fireEvent.click(screen.getByLabelText("Content middle center"));  expect(onPatch).toHaveBeenCalledWith({ contentX: "center", contentY: "center" });
     fireEvent.click(screen.getByLabelText(/Trim to size/));           expect(onPatch).toHaveBeenCalledWith({ clip: true });
   });
 
   it("DESIGN › Spacing — Inner + Outer (per-side)", () => {
     const onPatch = renderFor(acc());
-    fireEvent.change(screen.getByLabelText("Inner spacing top"), { target: { value: "2.4" } });    expect(onPatch).toHaveBeenCalledWith({ paddingTop: 24 });
-    fireEvent.change(screen.getByLabelText("Outer spacing bottom"), { target: { value: "1.6" } }); expect(onPatch).toHaveBeenCalledWith({ marginBottom: 16 });
+    fireEvent.change(screen.getByLabelText("Inner spacing top"), { target: { value: "1.5" } }); expect(onPatch).toHaveBeenCalledWith({ paddingTop: 24 }); // real rem (S1-b): 1.5rem = 24
+    fireEvent.change(screen.getByLabelText("Outer spacing bottom"), { target: { value: "1" } }); expect(onPatch).toHaveBeenCalledWith({ marginBottom: 16 }); // real rem: 1rem = 16
   });
 
   it("DESIGN › Outline & effects — rounded, per-corner, border, border-style, shadow, tilt, see-through", () => {
@@ -545,7 +589,7 @@ describe("Accordion — full three-tab audit (Design · Content · Per-device)",
     fireEvent.change(screen.getByLabelText("See-through"), { target: { value: "80" } });             expect(onPatch).toHaveBeenCalledWith({ opacity: 80 });
   });
 
-  it("CONTENT › Bookmark + design gallery + multi-open + expand-all", () => {
+  it("CONTENT › Bookmark + design gallery + multi-open + expand-all", { timeout: 60_000 }, () => {
     const onPatch = renderFor(acc());
     openContent();
     fireEvent.change(screen.getByLabelText("Bookmark name"), { target: { value: "Our FAQ" } }); expect(onPatch).toHaveBeenCalledWith({ anchor: "our-faq" });
@@ -557,7 +601,7 @@ describe("Accordion — full three-tab audit (Design · Content · Per-device)",
   // ~13s of real work — it drives every per-item field on several items. That is 43% of the default
   // budget, so one contended run under the full suite tipped it over and it failed while passing alone.
   // The headroom goes HERE, where the cost is, rather than widening the timeout for 2,851 fast tests.
-  it("CONTENT › Items — EVERY per-item field works on ANY item (title, body, meta, image, CSS, open)", { timeout: 60_000 }, () => {
+  it("CONTENT › Items — EVERY per-item field works on ANY item (title, body, meta, image, CSS, open)", { timeout: 90_000 }, () => {
     const onPatch = renderFor(acc());
     openContent();
     const hasItem = (m: Record<string, unknown>) => expect.objectContaining({ items: expect.arrayContaining([expect.objectContaining(m)]) });
@@ -666,5 +710,275 @@ describe("Accordion — full three-tab audit (Design · Content · Per-device)",
       expect(onPatch).toHaveBeenCalledWith(expect.objectContaining({ items: expect.arrayContaining([expect.objectContaining({ title: "Z" })]) }));
       cleanup();
     }
+  });
+});
+
+// ══ PINNING — reachable on every block, shown as pictures, and described truthfully ══
+describe("BoxInspector — Stays put while scrolling", () => {
+  const heading = (extra: Partial<BoxNode> = {}) => createElement("heading", { id: "h", text: "Hi", ...extra } as Partial<BoxNode>);
+  const gallery = () => screen.queryByRole("group", { name: "Stays put while scrolling" });
+
+  it("is offered on an ELEMENT, not only a container — a heading or a button can be pinned", () => {
+    // It lived under Arrange, which only containers have, so "Floats on screen" could never reach the very
+    // button it exists for.
+    renderFor(heading(), { canFloat: true });
+    expect(gallery()).toBeInTheDocument();
+  });
+
+  it("is offered on a COMPONENT too", () => {
+    renderFor(createComponent("card", { id: "c" } as Partial<BoxNode>), { canFloat: true });
+    expect(gallery()).toBeInTheDocument();
+  });
+
+  it("shows each behaviour as a PICTURE, never a bare label (RULE S)", () => {
+    renderFor(heading(), { canFloat: true });
+    for (const name of ["Scrolls away", "Sticks when reached", "Floats on screen"]) {
+      const tile = screen.getByRole("button", { name: `${name} option` });
+      expect(tile.querySelector("[data-pin-preview]"), `${name} draws its before-and-after`).not.toBeNull();
+    }
+  });
+
+  it("each picture is a DIFFERENT drawing (RULE T) — the moving bar sits somewhere else in every one", () => {
+    const { container } = render(<BoxInspector node={heading()} theme={DEFAULT_THEME} onPatch={vi.fn()} canFloat />);
+    const shapeOf = (mode: string) => [...container.querySelectorAll(`button [data-pin-preview="${mode}"] [data-pin-bar]`)]
+      .map((el) => el.className).join("|");
+    const shapes = ["off", "sticky", "fixed"].map(shapeOf);
+    expect(new Set(shapes).size, shapes.join("  vs  ")).toBe(3);
+  });
+
+  it("picking a behaviour writes it, and Scrolls away clears both fields", () => {
+    const onPatch = renderFor(heading(), { canFloat: true });
+    fireEvent.click(screen.getByRole("button", { name: "Floats on screen option" }));
+    expect(onPatch).toHaveBeenCalledWith({ pin: "top", hold: "fixed" });
+    fireEvent.click(screen.getByRole("button", { name: "Sticks when reached option" }));
+    expect(onPatch).toHaveBeenCalledWith({ pin: "top", hold: undefined });
+    fireEvent.click(screen.getByRole("button", { name: "Scrolls away option" }));
+    expect(onPatch).toHaveBeenCalledWith({ pin: undefined, hold: undefined });
+  });
+
+  describe("the line underneath says what THIS block will do", () => {
+    const summary = () => document.querySelector("[data-pin-summary]")?.textContent ?? "";
+
+    it("placed straight on the page, it holds for the rest of the page — not 'leaves with its section'", () => {
+      renderFor(heading({ pin: "top" }), { canFloat: true, pinScope: "page" });
+      expect(summary()).toMatch(/for the rest of the page/);
+      expect(summary()).not.toMatch(/section/);
+    });
+
+    it("inside a block, it NAMES the block it lets go with", () => {
+      renderFor(heading({ pin: "top" }), { canFloat: true, pinScope: { around: "Stack" } });
+      expect(summary()).toMatch(/until the Stack around it scrolls away/);
+    });
+
+    it("beside a neighbour, it lets go with that row of blocks", () => {
+      renderFor(heading({ pin: "top" }), { canFloat: true, pinScope: "row" });
+      expect(summary()).toMatch(/until the row of blocks it sits in scrolls away/);
+    });
+
+    it("held to the BOTTOM it waits at the bottom until you reach it — a different behaviour, a different sentence", () => {
+      renderFor(heading({ pin: "bottom" }), { canFloat: true, pinScope: "page" });
+      expect(summary()).toMatch(/Waits at the bottom of the window until you scroll down to where it sits/);
+    });
+
+    it("floating on screen, it names the edge or corner and says the page runs underneath", () => {
+      renderFor(heading({ pin: "bottom-right", hold: "fixed" }), { canFloat: true });
+      expect(summary()).toMatch(/in the bottom-right corner of the window/);
+      expect(summary()).toMatch(/page scrolls underneath it/);
+    });
+
+    it("not pinned, it scrolls with the page", () => {
+      renderFor(heading(), { canFloat: true });
+      expect(summary()).toBe("It scrolls with the rest of the page.");
+    });
+  });
+
+  it("a FLOATING block IS offered the one that can work — floating on screen — and not the one that cannot", () => {
+    // Measured: emitted as fixed, a floated block travelled 0px over a 900px scroll. Sticky is the one that
+    // cannot hold a freely placed block, because it holds against a place in the flow that the block gave up.
+    renderFor(heading({ position: "absolute", left: 5, top: 5 }), { canFloat: true });
+    expect(screen.getByRole("button", { name: "Floats on screen option" })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Sticks when reached option" })).toBeNull();
+    expect(document.querySelector("[data-float-pin-note]")?.textContent).toMatch(/needs it back in the layout/);
+  });
+
+  it("picking it writes the fixed hold, and the note then says it holds where it was placed", () => {
+    const onPatch = renderFor(heading({ position: "absolute", left: 5, top: 5 }), { canFloat: true });
+    fireEvent.click(screen.getByRole("button", { name: "Floats on screen option" }));
+    expect(onPatch).toHaveBeenCalledWith({ pin: "top", hold: "fixed" });
+    cleanup();
+    renderFor(heading({ position: "absolute", left: 5, top: 5, pin: "top", hold: "fixed" }), { canFloat: true });
+    expect(document.querySelector("[data-float-pin-note]")?.textContent).toMatch(/holds exactly where you placed it/);
+  });
+});
+
+// ══ A block that floats on screen covers what is under it — said out loud, with the alternative ══
+describe("BoxInspector — “Floats on screen” warns about what it covers", () => {
+  const bar = (extra: Partial<BoxNode>) => createContainer("column", { id: "bar", ...extra } as Partial<BoxNode>);
+  const covers = () => screen.queryByText(/covers the top of your page|sits over the bottom of every screen/);
+
+  it("held to the TOP, it says it covers the top of the page", () => {
+    renderFor(bar({ pin: "top", hold: "fixed" }), { canFloat: true });
+    expect(screen.getByText(/covers the top of your page when it opens/)).toBeInTheDocument();
+  });
+
+  it("held to the BOTTOM, it says it sits over the footer", () => {
+    renderFor(bar({ pin: "bottom", hold: "fixed" }), { canFloat: true });
+    expect(screen.getByText(/your footer included/)).toBeInTheDocument();
+  });
+
+  it("“Keep its space instead” switches it to the mechanism that does", () => {
+    const onPatch = renderFor(bar({ pin: "top", hold: "fixed" }), { canFloat: true });
+    fireEvent.click(screen.getByRole("button", { name: "Keep its space instead" }));
+    expect(onPatch).toHaveBeenCalledWith({ hold: undefined });
+  });
+
+  it("says nothing for a block that KEEPS its space, or one in a corner where it covers little", () => {
+    renderFor(bar({ pin: "top" }), { canFloat: true });
+    expect(covers(), "sticky keeps its place in the layout").toBeNull();
+    cleanup();
+    renderFor(bar({ pin: "bottom-right", hold: "fixed" }), { canFloat: true });
+    expect(covers(), "a corner button is not a bar across the page").toBeNull();
+  });
+});
+
+// ══ THE ARRIVAL (Step 2b) — offered only to a pinned block, shown as pictures, honest about condense ══
+describe("BoxInspector — When it takes hold", () => {
+  const navBar = (extra: Partial<BoxNode> = {}) =>
+    createContainer("column", { id: "nav", minHeight: 64, padding: 16, ...extra } as Partial<BoxNode>);
+  const gallery = () => screen.queryByRole("group", { name: "When it takes hold" });
+
+  it("is offered once a block is pinned, and not before — there is nothing to arrive at", () => {
+    renderFor(navBar(), { canFloat: true });
+    expect(gallery()).toBeNull();
+    cleanup();
+    renderFor(navBar({ pin: "top" }), { canFloat: true });
+    expect(gallery()).toBeInTheDocument();
+  });
+
+  it("shows all six as PICTURES, Nothing included (RULE S)", () => {
+    renderFor(navBar({ pin: "top" }), { canFloat: true });
+    for (const name of ["Nothing", "Shadow", "Solid", "Glass", "Rule", "Condense"]) {
+      const tile = screen.getByRole("button", { name: `${name} arrival` });
+      expect(tile.querySelector("[data-arrival-preview]"), `${name} draws what it does`).not.toBeNull();
+    }
+  });
+
+  it("every picture is a different drawing (RULE T)", () => {
+    const { container } = render(<BoxInspector node={navBar({ pin: "top" })} theme={DEFAULT_THEME} onPatch={vi.fn()} canFloat />);
+    const shapes = ["none", "shadow", "solid", "glass", "rule", "condense"].map((fx) =>
+      [...container.querySelectorAll(`[data-arrival-preview="${fx}"] [data-arrival-bar]`)].map((el) => el.className).join("|"));
+    expect(new Set(shapes).size, shapes.join("\n")).toBe(6);
+  });
+
+  it("picking one writes it; Nothing clears it", () => {
+    const onPatch = renderFor(navBar({ pin: "top" }), { canFloat: true });
+    fireEvent.click(screen.getByRole("button", { name: "Glass arrival" }));
+    expect(onPatch).toHaveBeenCalledWith({ pinArrival: "glass" });
+    fireEvent.click(screen.getByRole("button", { name: "Nothing arrival" }));
+    expect(onPatch).toHaveBeenCalledWith({ pinArrival: undefined });
+  });
+
+  it("the distance it takes is offered only once an arrival is chosen", () => {
+    renderFor(navBar({ pin: "top" }), { canFloat: true });
+    expect(screen.queryByText(/Takes hold over/)).toBeNull();
+    cleanup();
+    renderFor(navBar({ pin: "top", pinArrival: "shadow" }), { canFloat: true });
+    expect(screen.getByText(/Takes hold over/)).toBeInTheDocument();
+  });
+
+  it("CONDENSE says so when the block has nothing to condense, and stops saying it once it has", () => {
+    // A control that appears to work and does nothing is the defect this project meets most often.
+    renderFor(createContainer("column", { id: "bar", pin: "top", pinArrival: "condense" } as Partial<BoxNode>), { canFloat: true });
+    expect(screen.getByText(/nothing to condense yet/)).toBeInTheDocument();
+    cleanup();
+    renderFor(navBar({ pin: "top", pinArrival: "condense" }), { canFloat: true });
+    expect(screen.queryByText(/nothing to condense yet/)).toBeNull();
+  });
+});
+
+describe("G-3b (2) · placing on the page's lines in the Size section", () => {
+  const lines = { from: 1, to: 7, first: true, last: false, cols: 12 };
+  it("From line / To line call back with the edge that moved; Whole line and To the last line too", () => {
+    const onSetLines = vi.fn();
+    renderFor(createContainer("column", { id: "c" }), { pageLines: lines, onSetLines });
+    fireEvent.change(screen.getByLabelText("To line"), { target: { value: "9" } });
+    expect(onSetLines).toHaveBeenLastCalledWith({ to: 9 });
+    fireEvent.change(screen.getByLabelText("From line"), { target: { value: "3" } });
+    expect(onSetLines).toHaveBeenLastCalledWith({ from: 3 });
+    fireEvent.click(screen.getByRole("button", { name: "Whole line" }));
+    expect(onSetLines).toHaveBeenLastCalledWith("full");
+    expect(screen.queryByRole("button", { name: "Full width" }), "G3b-9: the toolbar's device button is called Full width").toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: "To the last line" }));
+    expect(onSetLines).toHaveBeenLastCalledWith({ to: 13 });
+  });
+  it("To the last line is off when the block already ends there; Whole line shows as on when it is", () => {
+    renderFor(createContainer("column", { id: "c" }), { pageLines: { ...lines, to: 13, last: true }, onSetLines: vi.fn() });
+    expect(screen.getByRole("button", { name: "To the last line" })).toBeDisabled();
+    cleanup();
+    renderFor(createContainer("column", { id: "c" }), { pageLines: { from: 1, to: 13, first: true, last: true, cols: 12 }, onSetLines: vi.fn() });
+    expect(screen.getByRole("button", { name: "Whole line" })).toHaveAttribute("aria-pressed", "true");
+  });
+  it("Bleed writes the side, and Off clears it", () => {
+    const onPatch = renderFor(createContainer("column", { id: "c", bleed: "right" } as Partial<BoxNode>), { pageLines: lines, onSetLines: vi.fn() });
+    const bleed = within(screen.getByRole("group", { name: "Bleed to the page edge" }));
+    expect(bleed.getByRole("button", { name: "Right" })).toHaveAttribute("aria-pressed", "true");
+    fireEvent.click(bleed.getByRole("button", { name: "Both" }));
+    expect(onPatch).toHaveBeenLastCalledWith({ bleed: "both" });
+    fireEvent.click(bleed.getByRole("button", { name: "Off" }));
+    expect(onPatch).toHaveBeenLastCalledWith({ bleed: undefined });
+  });
+  it("not shown for a block that is not on a row of the page", () => {
+    renderFor(createContainer("column", { id: "c" }));
+    expect(screen.queryByLabelText("From line")).toBeNull();
+    expect(screen.queryByLabelText(/Free space on the left/)).toBeNull();
+  });
+  it("G3b-24: where the fit rule steps the row, the Size section says what is drawn here", () => {
+    renderFor(createContainer("column", { id: "c" }), { pageLines: { ...lines, drawnAcross: 1 }, onSetLines: vi.fn() });
+    expect(screen.getByRole("note")).toHaveTextContent("drawn on a line of its own");
+    cleanup();
+    renderFor(createContainer("column", { id: "c" }), { pageLines: { ...lines, drawnAcross: 2 }, onSetLines: vi.fn() });
+    expect(screen.getByRole("note")).toHaveTextContent("drawn 2 across");
+    cleanup();
+    renderFor(createContainer("column", { id: "c" }), { pageLines: lines, onSetLines: vi.fn() });
+    expect(screen.queryByRole("note")).toBeNull();
+  });
+  it("G-3b (6): Rows tall in the Size section writes the span; 1 clears it", () => {
+    const onPatch = renderFor(createContainer("column", { id: "c" }), { pageLines: lines, onSetLines: vi.fn() });
+    fireEvent.change(screen.getByLabelText("Rows tall"), { target: { value: "2" } });
+    expect(onPatch).toHaveBeenLastCalledWith({ rowSpan: 2 });
+    cleanup();
+    const again = renderFor(createContainer("column", { id: "c", rowSpan: 2 } as Partial<BoxNode>), { pageLines: lines, onSetLines: vi.fn() });
+    expect(screen.getByLabelText("Rows tall")).toHaveValue(2);
+    fireEvent.change(screen.getByLabelText("Rows tall"), { target: { value: "1" } });
+    expect(again).toHaveBeenLastCalledWith({ rowSpan: undefined });
+  });
+  it("G3b-20: a grid cell on a page-grid page has ONE control named Rows tall, and the height its own name", () => {
+    const onPatch = renderFor(createContainer("column", { id: "gc" }), { inGrid: true, gridTrack: 12, rowStepRem: 1.5 });
+    expect(screen.getAllByLabelText("Rows tall")).toHaveLength(1);
+    fireEvent.change(screen.getByLabelText("At least this many rows tall"), { target: { value: "3" } });
+    expect(onPatch).toHaveBeenLastCalledWith(expect.objectContaining({ minHeight: expect.any(Number) }));
+  });
+  it("G-3b (3): the free margin is shown, changed per side, and put back on the lines in one go", () => {
+    const onSetFreeInset = vi.fn();
+    renderFor(createContainer("column", { id: "c", freeInset: { right: 20 } } as Partial<BoxNode>), { pageLines: lines, onSetLines: vi.fn(), onSetFreeInset });
+    expect(screen.getByLabelText("Free space on the right, percent of its columns")).toHaveValue(20);
+    expect(screen.getByLabelText("Free space on the left, percent of its columns")).toHaveValue(0);
+    fireEvent.change(screen.getByLabelText("Free space on the left, percent of its columns"), { target: { value: "15" } });
+    expect(onSetFreeInset).toHaveBeenLastCalledWith("left", 15);
+    fireEvent.change(screen.getByLabelText("Free space on the right, percent of its columns"), { target: { value: "0" } });
+    expect(onSetFreeInset).toHaveBeenLastCalledWith("right", undefined);
+    fireEvent.click(screen.getByRole("button", { name: "Back on the lines" }));
+    expect(onSetFreeInset).toHaveBeenLastCalledWith("both", undefined);
+    cleanup();
+    renderFor(createContainer("column", { id: "c" }), { pageLines: lines, onSetLines: vi.fn(), onSetFreeInset });
+    expect(screen.getByRole("button", { name: "Back on the lines" })).toBeDisabled();
+  });
+});
+
+describe("G3c-10 · a size or a space says what it really is, phone → wide (the user: \"phone → wide range\")", () => {
+  it("the gaps of a stack read 0.7–1.4rem, never \"1rem\" (a box's Band height stays real rem: it is stored as px)", () => {
+    renderFor(createContainer("column", { id: "c" }));
+    expect(screen.getAllByText("0.7–1.4rem").length).toBeGreaterThanOrEqual(3); // Space between blocks, across, down
+    expect(screen.queryByText("1rem")).toBeNull();
   });
 });

@@ -48,7 +48,7 @@ test.describe("fonts in the exported site", () => {
       return {
         loadedFamilies: [...new Set(faces.map((f) => f.family.replace(/['"]/g, "")))],
         anyLoaded: faces.some((f) => f.status === "loaded"),
-        headingFamily: getComputedStyle(document.querySelector("h2")!).fontFamily,
+        headingFamily: getComputedStyle(document.querySelector("h1, h2, h3, h4, h5, h6")!).fontFamily, // its level follows the page (semantics B1)
       };
     });
 

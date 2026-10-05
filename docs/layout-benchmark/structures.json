@@ -1,0 +1,2794 @@
+[
+ {
+  "structure": "stack with several rows inside",
+  "sections": 4693,
+  "examples": [
+   "197historiasilustradas.com (awwwards)",
+   "abundant-usability-498895.framer.app (framer)",
+   "aerosound.framer.website (framer)",
+   "aeye.framer.ai (awwwards)"
+  ]
+ },
+ {
+  "structure": "stack with a row inside",
+  "sections": 4284,
+  "examples": [
+   "11moissanstoit.com (awwwards)",
+   "abundant-usability-498895.framer.app (framer)",
+   "aeye.framer.ai (awwwards)",
+   "agnos-wbs.framer.website (framer)"
+  ]
+ },
+ {
+  "structure": "plain stack (text, image, heading…)",
+  "sections": 3767,
+  "examples": [
+   "11moissanstoit.com (awwwards)",
+   "197historiasilustradas.com (awwwards)",
+   "abundant-usability-498895.framer.app (framer)",
+   "aerosound.framer.website (framer)"
+  ]
+ },
+ {
+  "structure": "single block",
+  "sections": 2853,
+  "examples": [
+   "11moissanstoit.com (awwwards)",
+   "197historiasilustradas.com (awwwards)",
+   "abundant-usability-498895.framer.app (framer)",
+   "aerosound.framer.website (framer)"
+  ]
+ },
+ {
+  "structure": "row of 2 (equal)",
+  "sections": 733,
+  "examples": [
+   "aerosound.framer.website (framer)",
+   "aeye.framer.ai (awwwards)",
+   "agnos-wbs.framer.website (framer)",
+   "agrovas.framer.website (framer)"
+  ]
+ },
+ {
+  "structure": "grid of 2 (equal)",
+  "sections": 434,
+  "examples": [
+   "11moissanstoit.com (awwwards)",
+   "aerosound.framer.website (framer)",
+   "agnos-wbs.framer.website (framer)",
+   "altamedfoundation.org (awwwards)"
+  ]
+ },
+ {
+  "structure": "row of 2 (equal) +nested columns +stacked parts",
+  "sections": 334,
+  "examples": [
+   "agnos-wbs.framer.website (framer)",
+   "aoiofficial.com (awwwards)",
+   "artivo-collection.webflow.io (webflow)",
+   "aurelia-template.framer.website (framer)"
+  ]
+ },
+ {
+  "structure": "row of 2 (40/60)",
+  "sections": 294,
+  "examples": [
+   "abundant-usability-498895.framer.app (framer)",
+   "agrovas.framer.website (framer)",
+   "aiwork.framer.website (framer)",
+   "ancestra-128.webflow.io (webflow)"
+  ]
+ },
+ {
+  "structure": "row of 2 (30/70)",
+  "sections": 206,
+  "examples": [
+   "aeye.framer.ai (awwwards)",
+   "agrovas.framer.website (framer)",
+   "almaheartwell.framer.website (framer)",
+   "ancestra-128.webflow.io (webflow)"
+  ]
+ },
+ {
+  "structure": "grid of 3 (equal) repeated",
+  "sections": 190,
+  "examples": [
+   "abundant-usability-498895.framer.app (framer)",
+   "aeye.framer.ai (awwwards)",
+   "agrovas.framer.website (framer)",
+   "aoiofficial.com (awwwards)"
+  ]
+ },
+ {
+  "structure": "row of 2 (equal) +nested columns",
+  "sections": 165,
+  "examples": [
+   "aerosound.framer.website (framer)",
+   "aeye.framer.ai (awwwards)",
+   "ancestra-128.webflow.io (webflow)",
+   "aoiofficial.com (awwwards)"
+  ]
+ },
+ {
+  "structure": "row of 2 (equal) +stacked parts",
+  "sections": 162,
+  "examples": [
+   "agnos-wbs.framer.website (framer)",
+   "almaheartwell.framer.website (framer)",
+   "archscale.webflow.io (webflow)",
+   "art.appstate.edu (awwwards)"
+  ]
+ },
+ {
+  "structure": "row of 2 (60/40)",
+  "sections": 157,
+  "examples": [
+   "agrovas.framer.website (framer)",
+   "almaheartwell.framer.website (framer)",
+   "ancestra-128.webflow.io (webflow)",
+   "appe-io.webflow.io (webflow)"
+  ]
+ },
+ {
+  "structure": "grid of 2 (40/60)",
+  "sections": 153,
+  "examples": [
+   "archscale.webflow.io (webflow)",
+   "art.appstate.edu (awwwards)",
+   "athelas-template.webflow.io (webflow)",
+   "auria-template.webflow.io (webflow)"
+  ]
+ },
+ {
+  "structure": "grid of 3 (equal)",
+  "sections": 142,
+  "examples": [
+   "197historiasilustradas.com (awwwards)",
+   "altamedfoundation.org (awwwards)",
+   "art.appstate.edu (awwwards)",
+   "artivo-collection.webflow.io (webflow)"
+  ]
+ },
+ {
+  "structure": "row of 2 (70/30)",
+  "sections": 131,
+  "examples": [
+   "almaheartwell.framer.website (framer)",
+   "ancestra-128.webflow.io (webflow)",
+   "averint.webflow.io (webflow)",
+   "axm.framer.website (framer)"
+  ]
+ },
+ {
+  "structure": "grid of 2 (equal) repeated",
+  "sections": 128,
+  "examples": [
+   "aerosound.framer.website (framer)",
+   "ancestra-128.webflow.io (webflow)",
+   "archscale.webflow.io (webflow)",
+   "asterre.framer.website (framer)"
+  ]
+ },
+ {
+  "structure": "row of 3 (equal)",
+  "sections": 128,
+  "examples": [
+   "agrovas.framer.website (framer)",
+   "ancestra-128.webflow.io (webflow)",
+   "blocstudio.framer.website (framer)",
+   "bobolobo.webflow.io (webflow)"
+  ]
+ },
+ {
+  "structure": "grid of 2 (30/70)",
+  "sections": 113,
+  "examples": [
+   "agnos-wbs.framer.website (framer)",
+   "altamedfoundation.org (awwwards)",
+   "artikle.framer.website (framer)",
+   "asterre.framer.website (framer)"
+  ]
+ },
+ {
+  "structure": "row of 6+ (many)",
+  "sections": 106,
+  "examples": [
+   "aoiofficial.com (awwwards)",
+   "appe-io.webflow.io (webflow)",
+   "aptransit.co (awwwards)",
+   "archscale.webflow.io (webflow)"
+  ]
+ },
+ {
+  "structure": "grid of 2 (60/40)",
+  "sections": 95,
+  "examples": [
+   "aerosound.framer.website (framer)",
+   "art.appstate.edu (awwwards)",
+   "asterre.framer.website (framer)",
+   "athelas-template.webflow.io (webflow)"
+  ]
+ },
+ {
+  "structure": "row of 2 (40/60) +nested columns",
+  "sections": 94,
+  "examples": [
+   "aeye.framer.ai (awwwards)",
+   "almaheartwell.framer.website (framer)",
+   "altamedfoundation.org (awwwards)",
+   "ancestra-128.webflow.io (webflow)"
+  ]
+ },
+ {
+  "structure": "grid of 4 (equal)",
+  "sections": 78,
+  "examples": [
+   "agnos-wbs.framer.website (framer)",
+   "aoiofficial.com (awwwards)",
+   "archscale.webflow.io (webflow)",
+   "averint.webflow.io (webflow)"
+  ]
+ },
+ {
+  "structure": "row of 2 (20/80)",
+  "sections": 77,
+  "examples": [
+   "aeye.framer.ai (awwwards)",
+   "ancestra-128.webflow.io (webflow)",
+   "bobolobo.webflow.io (webflow)",
+   "boolka.framer.website (framer)"
+  ]
+ },
+ {
+  "structure": "grid of 2 (70/30)",
+  "sections": 76,
+  "examples": [
+   "aerosound.framer.website (framer)",
+   "altamedfoundation.org (awwwards)",
+   "archscale.webflow.io (webflow)",
+   "arresteddevelopmentmusic.com (awwwards)"
+  ]
+ },
+ {
+  "structure": "row of 2 (30/70) +nested columns",
+  "sections": 75,
+  "examples": [
+   "agrovas.framer.website (framer)",
+   "arewno.framer.website (framer)",
+   "athelas-template.webflow.io (webflow)",
+   "cue-onebranding.webflow.io (webflow)"
+  ]
+ },
+ {
+  "structure": "row of 2 (20/80) +nested columns",
+  "sections": 74,
+  "examples": [
+   "artivo-collection.webflow.io (webflow)",
+   "aurelia-template.framer.website (framer)",
+   "bildora.framer.website (framer)",
+   "confiig.framer.website (framer)"
+  ]
+ },
+ {
+  "structure": "row of 2 (10/90)",
+  "sections": 71,
+  "examples": [
+   "averint.webflow.io (webflow)",
+   "boldcraft.framer.website (framer)",
+   "clause-preview.framer.website (framer)",
+   "dermato-wbs.webflow.io (webflow)"
+  ]
+ },
+ {
+  "structure": "grid of 2 (equal) +nested columns",
+  "sections": 59,
+  "examples": [
+   "aerosound.framer.website (framer)",
+   "aoiofficial.com (awwwards)",
+   "deepbook.tech (awwwards)",
+   "e-lab-courses.webflow.io (webflow)"
+  ]
+ },
+ {
+  "structure": "row of 2 (60/40) +nested columns",
+  "sections": 55,
+  "examples": [
+   "agnos-wbs.framer.website (framer)",
+   "agrovas.framer.website (framer)",
+   "ancestra-128.webflow.io (webflow)",
+   "axm.framer.website (framer)"
+  ]
+ },
+ {
+  "structure": "grid of 3 (equal) repeated +stacked parts",
+  "sections": 52,
+  "examples": [
+   "aurelle-template.framer.website (framer)",
+   "bb-b.net (awwwards)",
+   "blocstudio.framer.website (framer)",
+   "cinemaflowtemplate.webflow.io (webflow)"
+  ]
+ },
+ {
+  "structure": "row of 4 (equal)",
+  "sections": 51,
+  "examples": [
+   "aeye.framer.ai (awwwards)",
+   "arunnm.com (awwwards)",
+   "athana.framer.website (framer)",
+   "aurelle-template.framer.website (framer)"
+  ]
+ },
+ {
+  "structure": "row of 3 (equal) +nested columns",
+  "sections": 47,
+  "examples": [
+   "athelas-template.webflow.io (webflow)",
+   "aveluna.framer.website (framer)",
+   "averint.webflow.io (webflow)",
+   "bright-avenue.jp (awwwards)"
+  ]
+ },
+ {
+  "structure": "grid of 2 (equal) +stacked parts",
+  "sections": 43,
+  "examples": [
+   "ancestra-128.webflow.io (webflow)",
+   "archscale.webflow.io (webflow)",
+   "auria-template.webflow.io (webflow)",
+   "bulbs.simondupety.com (awwwards)"
+  ]
+ },
+ {
+  "structure": "grid of 2 (20/80)",
+  "sections": 43,
+  "examples": [
+   "ascension.pegassi.be (awwwards)",
+   "bright-avenue.jp (awwwards)",
+   "chapter.framer.ai (awwwards)",
+   "dkton.at (awwwards)"
+  ]
+ },
+ {
+  "structure": "row of 2 (10/90) +nested columns",
+  "sections": 40,
+  "examples": [
+   "deepbook.tech (awwwards)",
+   "dvo.it (awwwards)",
+   "ethan-d.webflow.io (webflow)",
+   "framehaus.webflow.io (webflow)"
+  ]
+ },
+ {
+  "structure": "grid of 2 (equal) repeated +stacked parts",
+  "sections": 38,
+  "examples": [
+   "agnos-wbs.framer.website (framer)",
+   "archscale.webflow.io (webflow)",
+   "arresteddevelopmentmusic.com (awwwards)",
+   "art.appstate.edu (awwwards)"
+  ]
+ },
+ {
+  "structure": "row of 6+ (many) repeated",
+  "sections": 37,
+  "examples": [
+   "avelune-template.framer.website (framer)",
+   "bobolobo.webflow.io (webflow)",
+   "clause-preview.framer.website (framer)",
+   "cyrclo.webflow.io (webflow)"
+  ]
+ },
+ {
+  "structure": "row of 3 (20/60/20) +nested columns",
+  "sections": 37,
+  "examples": [
+   "miurani.webflow.io (webflow)",
+   "serenique-template.webflow.io (webflow)",
+   "stodio.webflow.io (webflow)",
+   "wanderway-template.framer.website (framer)"
+  ]
+ },
+ {
+  "structure": "grid of 4 (equal) repeated",
+  "sections": 29,
+  "examples": [
+   "athelas-template.webflow.io (webflow)",
+   "blocstudio.framer.website (framer)",
+   "bureau27.framer.website (framer)",
+   "coutumes.com (awwwards)"
+  ]
+ },
+ {
+  "structure": "row of 2 (80/20) +nested columns",
+  "sections": 29,
+  "examples": [
+   "designbomb.it (awwwards)",
+   "explorajourneys.com (awwwards)",
+   "healen.webflow.io (webflow)",
+   "humace.webflow.io (webflow)"
+  ]
+ },
+ {
+  "structure": "row of 2 (90/10) +nested columns",
+  "sections": 29,
+  "examples": [
+   "dkton.at (awwwards)",
+   "faithibiza.com (awwwards)",
+   "fleet-template.webflow.io (webflow)",
+   "foodnia.co.jp (awwwards)"
+  ]
+ },
+ {
+  "structure": "row of 6+ (many) +nested columns",
+  "sections": 26,
+  "examples": [
+   "arunnm.com (awwwards)",
+   "avecanni.studio (awwwards)",
+   "bellussi.com (awwwards)",
+   "everlune.framer.ai (awwwards)"
+  ]
+ },
+ {
+  "structure": "row of 2 (80/20)",
+  "sections": 24,
+  "examples": [
+   "appe-io.webflow.io (webflow)",
+   "archscale.webflow.io (webflow)",
+   "designbomb.it (awwwards)",
+   "digitaldarts.com.au (awwwards)"
+  ]
+ },
+ {
+  "structure": "row of 2 (50/50)",
+  "sections": 23,
+  "examples": [
+   "agrovas.framer.website (framer)",
+   "clubcharlestown.com.au (awwwards)",
+   "consultaro.framer.website (framer)",
+   "designers-portfolio-template.framer.website (framer)"
+  ]
+ },
+ {
+  "structure": "grid of 2 (40/60) +nested columns",
+  "sections": 23,
+  "examples": [
+   "alejandroha.com (awwwards)",
+   "austensor.com (awwwards)",
+   "flowitall.webflow.io (webflow)",
+   "gmxdigital.com (awwwards)"
+  ]
+ },
+ {
+  "structure": "row of 3 (30/50/30)",
+  "sections": 23,
+  "examples": [
+   "blocstudio.framer.website (framer)",
+   "elytetemplate.framer.website (framer)",
+   "fitflow-template.framer.website (framer)",
+   "himon.framer.website (framer)"
+  ]
+ },
+ {
+  "structure": "row of 3 (20/60/30) +nested columns",
+  "sections": 23,
+  "examples": [
+   "havenrow.framer.website (framer)",
+   "saleunion.webflow.io (webflow)",
+   "serenique-template.webflow.io (webflow)"
+  ]
+ },
+ {
+  "structure": "grid of 2 (40/60) +stacked parts",
+  "sections": 21,
+  "examples": [
+   "archscale.webflow.io (webflow)",
+   "asterre.framer.website (framer)",
+   "carent-wbs.webflow.io (webflow)",
+   "fleet-template.webflow.io (webflow)"
+  ]
+ },
+ {
+  "structure": "grid of 2 (20/80) +nested columns",
+  "sections": 21,
+  "examples": [
+   "arunnm.com (awwwards)",
+   "bright-avenue.jp (awwwards)",
+   "gilhuybrecht.com (awwwards)",
+   "soul-trane.webflow.io (webflow)"
+  ]
+ },
+ {
+  "structure": "row of 2 (70/30) +nested columns",
+  "sections": 20,
+  "examples": [
+   "altamedfoundation.org (awwwards)",
+   "aurelle-template.framer.website (framer)",
+   "bellussi.com (awwwards)",
+   "carvix-woodwork.framer.website (framer)"
+  ]
+ },
+ {
+  "structure": "row of 5 (equal)",
+  "sections": 20,
+  "examples": [
+   "ancestra-128.webflow.io (webflow)",
+   "brutusmagazine.framer.website (framer)",
+   "flowrixa.webflow.io (webflow)",
+   "guillaumezhu.com (awwwards)"
+  ]
+ },
+ {
+  "structure": "grid of 3 (40/20/40) +nested columns",
+  "sections": 19,
+  "examples": [
+   "altamedfoundation.org (awwwards)",
+   "ascension.pegassi.be (awwwards)",
+   "nursing-care-wbs.webflow.io (webflow)"
+  ]
+ },
+ {
+  "structure": "row of 2 (70/30) +stacked parts",
+  "sections": 19,
+  "examples": [
+   "driessenarchitectuur.nl (awwwards)",
+   "foodnia.co.jp (awwwards)",
+   "fragment-marketing-landing-pages.webflow.io (webflow)",
+   "gaffcharters.framer.website (framer)"
+  ]
+ },
+ {
+  "structure": "grid of 2 (30/70) +stacked parts",
+  "sections": 18,
+  "examples": [
+   "archscale.webflow.io (webflow)",
+   "bright-avenue.jp (awwwards)",
+   "fleet-template.webflow.io (webflow)",
+   "gmxdigital.com (awwwards)"
+  ]
+ },
+ {
+  "structure": "grid of 2 (40/60) +nested columns +stacked parts",
+  "sections": 18,
+  "examples": [
+   "archscale.webflow.io (webflow)",
+   "cinemaflowtemplate.webflow.io (webflow)",
+   "flowitall.webflow.io (webflow)",
+   "quantumlabtemplate.webflow.io (webflow)"
+  ]
+ },
+ {
+  "structure": "grid of 3 (equal) +stacked parts",
+  "sections": 17,
+  "examples": [
+   "archscale.webflow.io (webflow)",
+   "bellussi.com (awwwards)",
+   "flowrixa.webflow.io (webflow)",
+   "fyrre.webflow.io (webflow)"
+  ]
+ },
+ {
+  "structure": "row of 2 (equal) repeated",
+  "sections": 17,
+  "examples": [
+   "artivo-collection.webflow.io (webflow)",
+   "designers-portfolio-template.framer.website (framer)",
+   "greenlly.framer.website (framer)",
+   "hotelaurelia.online (awwwards)"
+  ]
+ },
+ {
+  "structure": "grid of 2 (equal) +nested columns repeated",
+  "sections": 16,
+  "examples": [
+   "agrovas.framer.website (framer)",
+   "archscale.webflow.io (webflow)",
+   "clubcharlestown.com.au (awwwards)",
+   "framehaus.webflow.io (webflow)"
+  ]
+ },
+ {
+  "structure": "grid of 3 (30/50/30)",
+  "sections": 16,
+  "examples": [
+   "aspensearch.com (awwwards)",
+   "measure.framer.ai (awwwards)",
+   "monodrift.framer.website (framer)",
+   "northbureau.framer.website (framer)"
+  ]
+ },
+ {
+  "structure": "grid of 3 (equal) +nested columns",
+  "sections": 16,
+  "examples": [
+   "dermato-wbs.framer.website (framer)",
+   "gmxdigital.com (awwwards)",
+   "panels-template.webflow.io (webflow)",
+   "rozaliabomawrites.com (awwwards)"
+  ]
+ },
+ {
+  "structure": "grid of 2 (equal) +nested columns +stacked parts",
+  "sections": 15,
+  "examples": [
+   "aerosound.framer.website (framer)",
+   "stremax-saas.webflow.io (webflow)"
+  ]
+ },
+ {
+  "structure": "grid of 2 (30/70) +nested columns",
+  "sections": 15,
+  "examples": [
+   "altamedfoundation.org (awwwards)",
+   "bright-avenue.jp (awwwards)",
+   "brutusmagazine.framer.website (framer)",
+   "chapter.framer.ai (awwwards)"
+  ]
+ },
+ {
+  "structure": "row of 2 (50/50) +stacked parts",
+  "sections": 15,
+  "examples": [
+   "austensor.com (awwwards)",
+   "flexfollio.framer.website (framer)",
+   "linoxa.webflow.io (webflow)",
+   "pensatori-irrazionali.com (awwwards)"
+  ]
+ },
+ {
+  "structure": "row of 3 (equal) repeated +stacked parts",
+  "sections": 14,
+  "examples": [
+   "aicreatorawards.com (awwwards)",
+   "art.appstate.edu (awwwards)",
+   "driessenarchitectuur.nl (awwwards)",
+   "fragment-marketing-landing-pages.webflow.io (webflow)"
+  ]
+ },
+ {
+  "structure": "row of 2 (10/90) +stacked parts",
+  "sections": 14,
+  "examples": [
+   "arunnm.com (awwwards)",
+   "drool.community (awwwards)",
+   "multiple-influence-475025.framer.app (framer)",
+   "pody-wcopilot.webflow.io (webflow)"
+  ]
+ },
+ {
+  "structure": "row of 3 (10/70/30) +nested columns",
+  "sections": 14,
+  "examples": [
+   "ollie-template.webflow.io (webflow)"
+  ]
+ },
+ {
+  "structure": "row of 3 (20/70/20) +nested columns",
+  "sections": 13,
+  "examples": [
+   "abundant-usability-498895.framer.app (framer)",
+   "aoiofficial.com (awwwards)",
+   "proteinbolaget.se (awwwards)"
+  ]
+ },
+ {
+  "structure": "row of 3 (30/30/40)",
+  "sections": 13,
+  "examples": [
+   "bureau27.framer.website (framer)",
+   "groovory.framer.website (framer)",
+   "rewordsai.app (awwwards)",
+   "serenique-template.webflow.io (webflow)"
+  ]
+ },
+ {
+  "structure": "row of 3 (90/0/0) +nested columns",
+  "sections": 13,
+  "examples": [
+   "cue-onebranding.webflow.io (webflow)",
+   "dermato-wbs.webflow.io (webflow)"
+  ]
+ },
+ {
+  "structure": "row of 3 (10/70/20) +nested columns",
+  "sections": 13,
+  "examples": [
+   "ethan-d.webflow.io (webflow)"
+  ]
+ },
+ {
+  "structure": "grid of 2 (10/90)",
+  "sections": 12,
+  "examples": [
+   "ascension.pegassi.be (awwwards)",
+   "asterre.framer.website (framer)",
+   "bright-avenue.jp (awwwards)",
+   "cyrclo.webflow.io (webflow)"
+  ]
+ },
+ {
+  "structure": "row of 2 (20/80) +stacked parts",
+  "sections": 12,
+  "examples": [
+   "bright-avenue.jp (awwwards)",
+   "fe-skiniora.framer.website (framer)",
+   "nodenza.com (awwwards)",
+   "partnershipbrand.com (awwwards)"
+  ]
+ },
+ {
+  "structure": "grid of 3 (30/40/40)",
+  "sections": 12,
+  "examples": [
+   "performeurope.eu (awwwards)"
+  ]
+ },
+ {
+  "structure": "row of 3 (10/30/70)",
+  "sections": 12,
+  "examples": [
+   "public-speaker-template.webflow.io (webflow)"
+  ]
+ },
+ {
+  "structure": "grid of 4 (30/40/30/10)",
+  "sections": 12,
+  "examples": [
+   "readz-wbs.webflow.io (webflow)"
+  ]
+ },
+ {
+  "structure": "row of 2 (0/100) +nested columns",
+  "sections": 11,
+  "examples": [
+   "aoiofficial.com (awwwards)"
+  ]
+ },
+ {
+  "structure": "grid of 2 (50/50)",
+  "sections": 10,
+  "examples": [
+   "cinemaflowtemplate.webflow.io (webflow)",
+   "forgeautomotive.co.uk (awwwards)",
+   "katietong.studio (awwwards)",
+   "leadclass.webflow.io (webflow)"
+  ]
+ },
+ {
+  "structure": "row of 2 (90/10)",
+  "sections": 10,
+  "examples": [
+   "civitas-wcopilot.webflow.io (webflow)",
+   "eduon.framer.website (framer)",
+   "fragment-marketing-landing-pages.webflow.io (webflow)",
+   "northbureau.framer.website (framer)"
+  ]
+ },
+ {
+  "structure": "row of 2 (80/20) +nested columns +stacked parts",
+  "sections": 10,
+  "examples": [
+   "fereacafe.framer.website (framer)",
+   "weddingstoryday.framer.website (framer)"
+  ]
+ },
+ {
+  "structure": "row of 3 (10/30/70) +nested columns",
+  "sections": 10,
+  "examples": [
+   "flowitall.webflow.io (webflow)"
+  ]
+ },
+ {
+  "structure": "row of 2 (50/50) +nested columns",
+  "sections": 10,
+  "examples": [
+   "heltro.webflow.io (webflow)",
+   "luxo-128.webflow.io (webflow)",
+   "meeko-template.framer.website (framer)",
+   "sara-alderson.webflow.io (webflow)"
+  ]
+ },
+ {
+  "structure": "row of 3 (30/50/30) +nested columns",
+  "sections": 10,
+  "examples": [
+   "sereenity.framer.website (framer)"
+  ]
+ },
+ {
+  "structure": "grid of 5 (equal)",
+  "sections": 9,
+  "examples": [
+   "aoiofficial.com (awwwards)",
+   "bellussi.com (awwwards)",
+   "clubcharlestown.com.au (awwwards)",
+   "monocromo.framer.website (framer)"
+  ]
+ },
+ {
+  "structure": "grid of 2 (80/20) +stacked parts",
+  "sections": 9,
+  "examples": [
+   "art.appstate.edu (awwwards)",
+   "femme-128.webflow.io (webflow)",
+   "monocromo.framer.website (framer)",
+   "nodenza.com (awwwards)"
+  ]
+ },
+ {
+  "structure": "grid of 3 (equal) +nested columns repeated",
+  "sections": 9,
+  "examples": [
+   "axm.framer.website (framer)",
+   "disko.media (awwwards)",
+   "landscapers.framer.website (framer)",
+   "monocromo.framer.website (framer)"
+  ]
+ },
+ {
+  "structure": "row of 2 (40/60) +stacked parts",
+  "sections": 9,
+  "examples": [
+   "bureau27.framer.website (framer)",
+   "caladan-template.webflow.io (webflow)",
+   "faithibiza.com (awwwards)",
+   "hotelaurelia.online (awwwards)"
+  ]
+ },
+ {
+  "structure": "grid of 3 (10/90/10) +nested columns",
+  "sections": 9,
+  "examples": [
+   "e-lab-courses.webflow.io (webflow)"
+  ]
+ },
+ {
+  "structure": "row of 3 (20/50/30) +nested columns",
+  "sections": 9,
+  "examples": [
+   "juno-ferreira.framer.website (framer)"
+  ]
+ },
+ {
+  "structure": "row of 3 (20/40/30) +nested columns",
+  "sections": 9,
+  "examples": [
+   "longevitytemplate.webflow.io (webflow)"
+  ]
+ },
+ {
+  "structure": "grid of 2 (70/30) repeated",
+  "sections": 8,
+  "examples": [
+   "ancestra-128.webflow.io (webflow)",
+   "ascension.pegassi.be (awwwards)",
+   "aubade.framer.website (framer)",
+   "camino-template.framer.website (framer)"
+  ]
+ },
+ {
+  "structure": "grid of 2 (80/20)",
+  "sections": 8,
+  "examples": [
+   "artikle.framer.website (framer)",
+   "esrbespoke.au (awwwards)",
+   "monocromo.framer.website (framer)"
+  ]
+ },
+ {
+  "structure": "grid of 2 (60/40) +stacked parts",
+  "sections": 8,
+  "examples": [
+   "bleibtgleich.dev (awwwards)",
+   "delice.ca (awwwards)",
+   "neuralflowtemplate.webflow.io (webflow)",
+   "proteinbolaget.se (awwwards)"
+  ]
+ },
+ {
+  "structure": "grid of 3 (50/40/10)",
+  "sections": 8,
+  "examples": [
+   "femme-128.webflow.io (webflow)"
+  ]
+ },
+ {
+  "structure": "grid of 3 (50/30/30)",
+  "sections": 8,
+  "examples": [
+   "northbureau.framer.website (framer)"
+  ]
+ },
+ {
+  "structure": "row of 3 (20/50/20) +nested columns",
+  "sections": 8,
+  "examples": [
+   "plumbex.framer.ai (awwwards)"
+  ]
+ },
+ {
+  "structure": "grid of 3 (40/10/50)",
+  "sections": 8,
+  "examples": [
+   "revix.framer.website (framer)"
+  ]
+ },
+ {
+  "structure": "grid of 6+ (many) repeated",
+  "sections": 7,
+  "examples": [
+   "art.appstate.edu (awwwards)",
+   "cue-onebranding.webflow.io (webflow)",
+   "gilhuybrecht.com (awwwards)",
+   "kotr.framer.website (framer)"
+  ]
+ },
+ {
+  "structure": "row of 3 (40/30/30)",
+  "sections": 7,
+  "examples": [
+   "avenora.webflow.io (webflow)",
+   "designbomb.it (awwwards)",
+   "performeurope.eu (awwwards)"
+  ]
+ },
+ {
+  "structure": "row of 4 (equal) +nested columns",
+  "sections": 7,
+  "examples": [
+   "bluncy.framer.website (framer)",
+   "humace.webflow.io (webflow)",
+   "linoxa.webflow.io (webflow)",
+   "palmo.co.in (awwwards)"
+  ]
+ },
+ {
+  "structure": "row of 5 (30/20/20/20/20)",
+  "sections": 7,
+  "examples": [
+   "compose-template.framer.website (framer)",
+   "joinswsh.com (awwwards)"
+  ]
+ },
+ {
+  "structure": "row of 6+ (many) +nested columns repeated",
+  "sections": 7,
+  "examples": [
+   "distillatigroup.com (awwwards)",
+   "esrbespoke.au (awwwards)",
+   "muebles.framer.website (framer)",
+   "pamidordesign.co (awwwards)"
+  ]
+ },
+ {
+  "structure": "row of 3 (60/20/30)",
+  "sections": 7,
+  "examples": [
+   "fitflow-template.framer.website (framer)"
+  ]
+ },
+ {
+  "structure": "grid of 6+ (many)",
+  "sections": 7,
+  "examples": [
+   "hollow-template.webflow.io (webflow)",
+   "linkrow-128.webflow.io (webflow)",
+   "locallistingtemplate.webflow.io (webflow)",
+   "lovio.webflow.io (webflow)"
+  ]
+ },
+ {
+  "structure": "row of 2 (90/10) +stacked parts",
+  "sections": 7,
+  "examples": [
+   "maroon-follow-959705.framer.app (framer)",
+   "meelo-template.framer.website (framer)",
+   "noten.framer.website (framer)",
+   "trainix-coach.framer.website (framer)"
+  ]
+ },
+ {
+  "structure": "grid of 2 (90/10) +nested columns +stacked parts",
+  "sections": 7,
+  "examples": [
+   "spark-template.webflow.io (webflow)",
+   "thestudiobyjuliegranger.com (awwwards)"
+  ]
+ },
+ {
+  "structure": "row of 3 (10/80/10)",
+  "sections": 6,
+  "examples": [
+   "appe-io.webflow.io (webflow)",
+   "fitflow-template.framer.website (framer)",
+   "groovory.framer.website (framer)",
+   "politico.eu (awwwards)"
+  ]
+ },
+ {
+  "structure": "grid of 2 (80/20) +nested columns",
+  "sections": 6,
+  "examples": [
+   "artikle.framer.website (framer)",
+   "monocromo.framer.website (framer)",
+   "politico.eu (awwwards)"
+  ]
+ },
+ {
+  "structure": "row of 3 (equal) repeated",
+  "sections": 6,
+  "examples": [
+   "bright-avenue.jp (awwwards)",
+   "careaba.framer.ai (awwwards)",
+   "dvo.it (awwwards)",
+   "foodnia.co.jp (awwwards)"
+  ]
+ },
+ {
+  "structure": "row of 3 (equal) +stacked parts",
+  "sections": 6,
+  "examples": [
+   "fleet-template.webflow.io (webflow)",
+   "fragment-marketing-landing-pages.webflow.io (webflow)",
+   "meermohsin.me (awwwards)",
+   "offform.net (awwwards)"
+  ]
+ },
+ {
+  "structure": "grid of 3 (60/30/10) +nested columns +stacked parts",
+  "sections": 6,
+  "examples": [
+   "fyrre.webflow.io (webflow)"
+  ]
+ },
+ {
+  "structure": "grid of 3 (30/30/40)",
+  "sections": 6,
+  "examples": [
+   "guillaumezhu.com (awwwards)"
+  ]
+ },
+ {
+  "structure": "row of 4 (40/40/10/10) +nested columns",
+  "sections": 6,
+  "examples": [
+   "stremax-saas.webflow.io (webflow)"
+  ]
+ },
+ {
+  "structure": "grid of 2 (70/30) +nested columns",
+  "sections": 5,
+  "examples": [
+   "altamedfoundation.org (awwwards)",
+   "arunnm.com (awwwards)",
+   "coutumes.com (awwwards)",
+   "fragment-marketing-landing-pages.webflow.io (webflow)"
+  ]
+ },
+ {
+  "structure": "grid of 2 (50/50) +nested columns",
+  "sections": 5,
+  "examples": [
+   "aptransit.co (awwwards)",
+   "luxo-128.webflow.io (webflow)",
+   "neuralflowtemplate.webflow.io (webflow)"
+  ]
+ },
+ {
+  "structure": "row of 4 (0/0/50/50) +nested columns",
+  "sections": 5,
+  "examples": [
+   "archscale.webflow.io (webflow)"
+  ]
+ },
+ {
+  "structure": "grid of 2 (60/40) +nested columns",
+  "sections": 5,
+  "examples": [
+   "auria-template.webflow.io (webflow)",
+   "municipal-128.webflow.io (webflow)",
+   "novapersona.webflow.io (webflow)",
+   "spragadheeshraj.com (awwwards)"
+  ]
+ },
+ {
+  "structure": "grid of 5 (20/30/30/10/20) repeated +stacked parts",
+  "sections": 5,
+  "examples": [
+   "chapter.framer.ai (awwwards)"
+  ]
+ },
+ {
+  "structure": "grid of 4 (equal) repeated +stacked parts",
+  "sections": 5,
+  "examples": [
+   "civitas-wcopilot.webflow.io (webflow)",
+   "fe-skiniora.framer.website (framer)",
+   "signalhouse.framer.website (framer)",
+   "tarot.meetyourpsychic.com (awwwards)"
+  ]
+ },
+ {
+  "structure": "row of 3 (10/20/70) +nested columns",
+  "sections": 5,
+  "examples": [
+   "coska.framer.website (framer)"
+  ]
+ },
+ {
+  "structure": "row of 4 (equal) repeated",
+  "sections": 5,
+  "examples": [
+   "cyrclo.webflow.io (webflow)",
+   "fragment-marketing-landing-pages.webflow.io (webflow)",
+   "luxo-128.webflow.io (webflow)"
+  ]
+ },
+ {
+  "structure": "row of 2 (30/70) +nested columns +stacked parts",
+  "sections": 5,
+  "examples": [
+   "dermato-wbs.webflow.io (webflow)",
+   "palmo.co.in (awwwards)",
+   "precept.framer.website (framer)",
+   "thirdway.com (awwwards)"
+  ]
+ },
+ {
+  "structure": "grid of 3 (70/20/20) +stacked parts",
+  "sections": 5,
+  "examples": [
+   "realevate.agency (awwwards)"
+  ]
+ },
+ {
+  "structure": "row of 3 (10/90/10)",
+  "sections": 5,
+  "examples": [
+   "strand.framer.website (framer)"
+  ]
+ },
+ {
+  "structure": "grid of 2 (10/90) +stacked parts",
+  "sections": 5,
+  "examples": [
+   "studiors.be (awwwards)"
+  ]
+ },
+ {
+  "structure": "grid of 2 (30/70) +nested columns +stacked parts",
+  "sections": 5,
+  "examples": [
+   "thestudiobyjuliegranger.com (awwwards)",
+   "tillysveaas.co.uk (awwwards)"
+  ]
+ },
+ {
+  "structure": "row of 3 (50/10/50)",
+  "sections": 5,
+  "examples": [
+   "veltom.webflow.io (webflow)",
+   "weddingstoryday.framer.website (framer)"
+  ]
+ },
+ {
+  "structure": "row of 3 (0/90/10) +nested columns",
+  "sections": 5,
+  "examples": [
+   "vendotemplate.framer.website (framer)"
+  ]
+ },
+ {
+  "structure": "row of 2 (100/0)",
+  "sections": 4,
+  "examples": [
+   "agnos-wbs.framer.website (framer)",
+   "guillaumezhu.com (awwwards)",
+   "signalhouse.framer.website (framer)"
+  ]
+ },
+ {
+  "structure": "grid of 2 (20/80) +stacked parts",
+  "sections": 4,
+  "examples": [
+   "altamedfoundation.org (awwwards)",
+   "joinswsh.com (awwwards)",
+   "realevate.agency (awwwards)",
+   "sofiasound.webflow.io (webflow)"
+  ]
+ },
+ {
+  "structure": "row of 3 (50/30/30)",
+  "sections": 4,
+  "examples": [
+   "bellussi.com (awwwards)",
+   "careaba.framer.ai (awwwards)",
+   "titarvl.framer.website (framer)"
+  ]
+ },
+ {
+  "structure": "row of 2 (30/70) +stacked parts",
+  "sections": 4,
+  "examples": [
+   "biggest-tetragon-956710.framer.app (framer)",
+   "driessenarchitectuur.nl (awwwards)",
+   "shapeofintelligence.com (awwwards)",
+   "velaaprivateisland.com (awwwards)"
+  ]
+ },
+ {
+  "structure": "row of 6+ (many) repeated +stacked parts",
+  "sections": 4,
+  "examples": [
+   "chapter.framer.ai (awwwards)",
+   "harpine.framer.website (framer)",
+   "meermohsin.me (awwwards)"
+  ]
+ },
+ {
+  "structure": "row of 3 (10/60/30) +nested columns",
+  "sections": 4,
+  "examples": [
+   "crav-burger.framer.website (framer)"
+  ]
+ },
+ {
+  "structure": "row of 2 (equal) repeated +stacked parts",
+  "sections": 4,
+  "examples": [
+   "cue-onebranding.webflow.io (webflow)",
+   "e-lab-courses.webflow.io (webflow)",
+   "linoxa.webflow.io (webflow)",
+   "toastedbuns.framer.website (framer)"
+  ]
+ },
+ {
+  "structure": "row of 3 (10/80/10) +nested columns",
+  "sections": 4,
+  "examples": [
+   "dvo.it (awwwards)",
+   "fitflow-template.framer.website (framer)"
+  ]
+ },
+ {
+  "structure": "row of 3 (0/90/0)",
+  "sections": 4,
+  "examples": [
+   "elowenchetan.framer.website (framer)",
+   "louperez.framer.website (framer)"
+  ]
+ },
+ {
+  "structure": "row of 4 (equal) +stacked parts",
+  "sections": 4,
+  "examples": [
+   "elowra.framer.website (framer)",
+   "everlune.framer.ai (awwwards)",
+   "manufactt-wbs.webflow.io (webflow)"
+  ]
+ },
+ {
+  "structure": "grid of 2 (70/30) repeated +stacked parts",
+  "sections": 4,
+  "examples": [
+   "filmax.webflow.io (webflow)",
+   "monocromo.framer.website (framer)",
+   "municipal-128.webflow.io (webflow)",
+   "velaaprivateisland.com (awwwards)"
+  ]
+ },
+ {
+  "structure": "grid of 3 (10/80/10) +nested columns +stacked parts",
+  "sections": 4,
+  "examples": [
+   "fyrre.webflow.io (webflow)"
+  ]
+ },
+ {
+  "structure": "grid of 4 (equal) +stacked parts",
+  "sections": 4,
+  "examples": [
+   "katietong.studio (awwwards)",
+   "soul-trane.webflow.io (webflow)",
+   "vanmotion.es (awwwards)"
+  ]
+ },
+ {
+  "structure": "grid of 4 (equal) +nested columns",
+  "sections": 4,
+  "examples": [
+   "luma-dental.framer.website (framer)",
+   "monodrift.framer.website (framer)",
+   "reels-wbs.webflow.io (webflow)",
+   "ritovex.webflow.io (webflow)"
+  ]
+ },
+ {
+  "structure": "row of 2 (0/100) +stacked parts",
+  "sections": 4,
+  "examples": [
+   "monodrift.framer.website (framer)",
+   "riwadesign.framer.website (framer)",
+   "vanderhotel.com (awwwards)"
+  ]
+ },
+ {
+  "structure": "row of 4 (30/30/30/10)",
+  "sections": 4,
+  "examples": [
+   "neuejournal.framer.website (framer)"
+  ]
+ },
+ {
+  "structure": "row of 2 (80/20) +stacked parts",
+  "sections": 4,
+  "examples": [
+   "rapideyachtgroup.com (awwwards)",
+   "thirdway.com (awwwards)",
+   "vanderhotel.com (awwwards)"
+  ]
+ },
+ {
+  "structure": "row of 3 (50/10/50) +nested columns",
+  "sections": 4,
+  "examples": [
+   "realisting.framer.website (framer)"
+  ]
+ },
+ {
+  "structure": "grid of 3 (40/20/40)",
+  "sections": 4,
+  "examples": [
+   "revix.framer.website (framer)",
+   "spark-template.webflow.io (webflow)"
+  ]
+ },
+ {
+  "structure": "grid of 3 (70/20/20)",
+  "sections": 4,
+  "examples": [
+   "tabfoliopro.framer.ai (awwwards)"
+  ]
+ },
+ {
+  "structure": "grid of 3 (30/50/30) +stacked parts",
+  "sections": 4,
+  "examples": [
+   "vanderhotel.com (awwwards)"
+  ]
+ },
+ {
+  "structure": "row of 3 (40/40/20) +nested columns",
+  "sections": 3,
+  "examples": [
+   "ancestra-128.webflow.io (webflow)",
+   "avenora.webflow.io (webflow)",
+   "shane-resort.framer.website (framer)"
+  ]
+ },
+ {
+  "structure": "grid of 3 (40/30/30) repeated",
+  "sections": 3,
+  "examples": [
+   "archscale.webflow.io (webflow)",
+   "gilhuybrecht.com (awwwards)"
+  ]
+ },
+ {
+  "structure": "grid of 2 (70/30) +stacked parts",
+  "sections": 3,
+  "examples": [
+   "aspensearch.com (awwwards)",
+   "monocromo.framer.website (framer)",
+   "municipal-128.webflow.io (webflow)"
+  ]
+ },
+ {
+  "structure": "row of 3 (40/20/50) +nested columns",
+  "sections": 3,
+  "examples": [
+   "avenora.webflow.io (webflow)",
+   "hydra-template.framer.website (framer)"
+  ]
+ },
+ {
+  "structure": "row of 4 (10/50/20/20) +nested columns",
+  "sections": 3,
+  "examples": [
+   "disko.media (awwwards)"
+  ]
+ },
+ {
+  "structure": "row of 3 (30/30/50)",
+  "sections": 3,
+  "examples": [
+   "driessenarchitectuur.nl (awwwards)",
+   "greenspire-template.webflow.io (webflow)"
+  ]
+ },
+ {
+  "structure": "row of 3 (30/20/50) +nested columns",
+  "sections": 3,
+  "examples": [
+   "everlune.framer.ai (awwwards)",
+   "fitflow-template.framer.website (framer)",
+   "thirdway.com (awwwards)"
+  ]
+ },
+ {
+  "structure": "row of 3 (60/20/20) +nested columns",
+  "sections": 3,
+  "examples": [
+   "femme-128.webflow.io (webflow)"
+  ]
+ },
+ {
+  "structure": "grid of 2 (60/40) repeated",
+  "sections": 3,
+  "examples": [
+   "fragment-marketing-landing-pages.webflow.io (webflow)",
+   "qissa.co.uk (awwwards)"
+  ]
+ },
+ {
+  "structure": "grid of 2 (equal) +nested columns repeated +stacked parts",
+  "sections": 3,
+  "examples": [
+   "framehaus.webflow.io (webflow)",
+   "narrate-template.framer.website (framer)",
+   "patina.framer.website (framer)"
+  ]
+ },
+ {
+  "structure": "grid of 2 (30/70) repeated",
+  "sections": 3,
+  "examples": [
+   "gravity-design.de (awwwards)",
+   "shapeofintelligence.com (awwwards)",
+   "skillfunnel.webflow.io (webflow)"
+  ]
+ },
+ {
+  "structure": "grid of 2 (60/40) repeated +stacked parts",
+  "sections": 3,
+  "examples": [
+   "gray-cogwheel-875365.framer.app (framer)",
+   "jcubhow.com (awwwards)",
+   "street-care-wcopilot.webflow.io (webflow)"
+  ]
+ },
+ {
+  "structure": "row of 2 (70/30) +nested columns +stacked parts",
+  "sections": 3,
+  "examples": [
+   "landscapers.framer.website (framer)",
+   "measure.framer.ai (awwwards)",
+   "vendotemplate.framer.website (framer)"
+  ]
+ },
+ {
+  "structure": "grid of 3 (30/30/50) repeated",
+  "sections": 3,
+  "examples": [
+   "linkrow-128.webflow.io (webflow)",
+   "quorum.framer.website (framer)"
+  ]
+ },
+ {
+  "structure": "grid of 2 (90/10)",
+  "sections": 3,
+  "examples": [
+   "louperez.framer.website (framer)",
+   "neuralflowtemplate.webflow.io (webflow)"
+  ]
+ },
+ {
+  "structure": "grid of 3 (50/20/30)",
+  "sections": 3,
+  "examples": [
+   "monocromo.framer.website (framer)",
+   "readz-wbs.webflow.io (webflow)"
+  ]
+ },
+ {
+  "structure": "grid of 4 (20/30/20/30)",
+  "sections": 3,
+  "examples": [
+   "monocromo.framer.website (framer)"
+  ]
+ },
+ {
+  "structure": "grid of 3 (30/60/10) +nested columns",
+  "sections": 3,
+  "examples": [
+   "nodenza.com (awwwards)"
+  ]
+ },
+ {
+  "structure": "grid of 3 (30/50/30) +nested columns +stacked parts",
+  "sections": 3,
+  "examples": [
+   "nodenza.com (awwwards)"
+  ]
+ },
+ {
+  "structure": "row of 3 (20/60/20)",
+  "sections": 3,
+  "examples": [
+   "politico.eu (awwwards)",
+   "strand.framer.website (framer)"
+  ]
+ },
+ {
+  "structure": "grid of 4 (10/40/20/40)",
+  "sections": 3,
+  "examples": [
+   "revix.framer.website (framer)"
+  ]
+ },
+ {
+  "structure": "row of 3 (70/0/20) +stacked parts",
+  "sections": 3,
+  "examples": [
+   "riwadesign.framer.website (framer)"
+  ]
+ },
+ {
+  "structure": "row of 2 (60/40) +nested columns +stacked parts",
+  "sections": 3,
+  "examples": [
+   "seewhateyesee.org (awwwards)",
+   "studiothink.framer.website (framer)"
+  ]
+ },
+ {
+  "structure": "row of 2 (100/0) +nested columns",
+  "sections": 3,
+  "examples": [
+   "studiors.be (awwwards)",
+   "thirdway.com (awwwards)"
+  ]
+ },
+ {
+  "structure": "grid of 2 (70/30) +nested columns repeated",
+  "sections": 3,
+  "examples": [
+   "thirdway.com (awwwards)"
+  ]
+ },
+ {
+  "structure": "row of 5 (equal) repeated +stacked parts",
+  "sections": 2,
+  "examples": [
+   "art.appstate.edu (awwwards)"
+  ]
+ },
+ {
+  "structure": "grid of 3 (20/40/40)",
+  "sections": 2,
+  "examples": [
+   "asterre.framer.website (framer)",
+   "monodrift.framer.website (framer)"
+  ]
+ },
+ {
+  "structure": "grid of 3 (50/10/40)",
+  "sections": 2,
+  "examples": [
+   "asterre.framer.website (framer)",
+   "avelune-template.framer.website (framer)"
+  ]
+ },
+ {
+  "structure": "grid of 3 (50/30/30) repeated +stacked parts",
+  "sections": 2,
+  "examples": [
+   "aurelia-template.framer.website (framer)",
+   "jcubhow.com (awwwards)"
+  ]
+ },
+ {
+  "structure": "row of 3 (20/10/80)",
+  "sections": 2,
+  "examples": [
+   "avelune-template.framer.website (framer)"
+  ]
+ },
+ {
+  "structure": "row of 4 (20/20/40/20)",
+  "sections": 2,
+  "examples": [
+   "blocstudio.framer.website (framer)"
+  ]
+ },
+ {
+  "structure": "grid of 3 (40/30/40) +nested columns",
+  "sections": 2,
+  "examples": [
+   "clause-preview.framer.website (framer)",
+   "peryton-film.com (awwwards)"
+  ]
+ },
+ {
+  "structure": "row of 3 (20/30/50)",
+  "sections": 2,
+  "examples": [
+   "clean-porcupine-229272.framer.app (framer)",
+   "harpine.framer.website (framer)"
+  ]
+ },
+ {
+  "structure": "row of 3 (equal) +nested columns +stacked parts",
+  "sections": 2,
+  "examples": [
+   "consult-pro.framer.website (framer)"
+  ]
+ },
+ {
+  "structure": "row of 3 (20/40/40) repeated",
+  "sections": 2,
+  "examples": [
+   "driessenarchitectuur.nl (awwwards)"
+  ]
+ },
+ {
+  "structure": "row of 2 (30/70) repeated",
+  "sections": 2,
+  "examples": [
+   "driessenarchitectuur.nl (awwwards)",
+   "miralife.app (awwwards)"
+  ]
+ },
+ {
+  "structure": "row of 4 (30/20/20/30)",
+  "sections": 2,
+  "examples": [
+   "dvo.it (awwwards)",
+   "momentumfit.framer.website (framer)"
+  ]
+ },
+ {
+  "structure": "row of 5 (equal) +nested columns",
+  "sections": 2,
+  "examples": [
+   "everlune.framer.ai (awwwards)",
+   "tarot.meetyourpsychic.com (awwwards)"
+  ]
+ },
+ {
+  "structure": "grid of 4 (30/30/30/10)",
+  "sections": 2,
+  "examples": [
+   "ezio.framer.ai (awwwards)"
+  ]
+ },
+ {
+  "structure": "row of 3 (20/70/20)",
+  "sections": 2,
+  "examples": [
+   "fe-skiniora.framer.website (framer)",
+   "strand.framer.website (framer)"
+  ]
+ },
+ {
+  "structure": "row of 3 (50/20/30)",
+  "sections": 2,
+  "examples": [
+   "friendly-pizza-355708.framer.app (framer)",
+   "joinswsh.com (awwwards)"
+  ]
+ },
+ {
+  "structure": "row of 3 (20/20/60)",
+  "sections": 2,
+  "examples": [
+   "greenspire-template.webflow.io (webflow)"
+  ]
+ },
+ {
+  "structure": "row of 2 (20/80) +nested columns +stacked parts",
+  "sections": 2,
+  "examples": [
+   "leadclass.webflow.io (webflow)",
+   "tripvanta.framer.ai (awwwards)"
+  ]
+ },
+ {
+  "structure": "row of 3 (40/30/40)",
+  "sections": 2,
+  "examples": [
+   "meridian-wf-template.webflow.io (webflow)",
+   "qissa.co.uk (awwwards)"
+  ]
+ },
+ {
+  "structure": "grid of 3 (40/30/30) +nested columns",
+  "sections": 2,
+  "examples": [
+   "mnc-tnc.webflow.io (webflow)"
+  ]
+ },
+ {
+  "structure": "grid of 2 (70/30) +nested columns +stacked parts",
+  "sections": 2,
+  "examples": [
+   "neonikala.com (awwwards)",
+   "verdentix.webflow.io (webflow)"
+  ]
+ },
+ {
+  "structure": "grid of 3 (30/40/30)",
+  "sections": 2,
+  "examples": [
+   "offform.net (awwwards)"
+  ]
+ },
+ {
+  "structure": "row of 2 (60/40) +stacked parts",
+  "sections": 2,
+  "examples": [
+   "portvio.framer.website (framer)",
+   "titarvl.framer.website (framer)"
+  ]
+ },
+ {
+  "structure": "grid of 5 (equal) repeated",
+  "sections": 2,
+  "examples": [
+   "proteinbolaget.se (awwwards)"
+  ]
+ },
+ {
+  "structure": "row of 6+ (many) +stacked parts",
+  "sections": 2,
+  "examples": [
+   "qissa.co.uk (awwwards)",
+   "studiors.be (awwwards)"
+  ]
+ },
+ {
+  "structure": "row of 4 (20/30/30/30)",
+  "sections": 2,
+  "examples": [
+   "renovatehub.framer.website (framer)",
+   "serenique-template.webflow.io (webflow)"
+  ]
+ },
+ {
+  "structure": "row of 2 (0/100) +nested columns +stacked parts",
+  "sections": 2,
+  "examples": [
+   "riwadesign.framer.website (framer)"
+  ]
+ },
+ {
+  "structure": "row of 3 (10/70/20)",
+  "sections": 2,
+  "examples": [
+   "seewhateyesee.org (awwwards)"
+  ]
+ },
+ {
+  "structure": "row of 4 (10/40/30/30)",
+  "sections": 2,
+  "examples": [
+   "serenique-template.webflow.io (webflow)"
+  ]
+ },
+ {
+  "structure": "row of 3 (10/90/10) +nested columns",
+  "sections": 2,
+  "examples": [
+   "strand.framer.website (framer)"
+  ]
+ },
+ {
+  "structure": "grid of 3 (60/20/20)",
+  "sections": 2,
+  "examples": [
+   "tabfoliopro.framer.ai (awwwards)"
+  ]
+ },
+ {
+  "structure": "grid of 2 (10/90) +nested columns",
+  "sections": 2,
+  "examples": [
+   "tanigro.webflow.io (webflow)"
+  ]
+ },
+ {
+  "structure": "grid of 3 (30/50/20) +nested columns",
+  "sections": 2,
+  "examples": [
+   "unimaticwatches.com (awwwards)"
+  ]
+ },
+ {
+  "structure": "grid of 2 (20/80) repeated",
+  "sections": 2,
+  "examples": [
+   "vanderhotel.com (awwwards)"
+  ]
+ },
+ {
+  "structure": "row of 5 (50/10/10/10/10)",
+  "sections": 2,
+  "examples": [
+   "white-desert.com (awwwards)"
+  ]
+ },
+ {
+  "structure": "grid of 3 (10/50/50)",
+  "sections": 1,
+  "examples": [
+   "aoiofficial.com (awwwards)"
+  ]
+ },
+ {
+  "structure": "grid of 3 (10/40/40)",
+  "sections": 1,
+  "examples": [
+   "aoiofficial.com (awwwards)"
+  ]
+ },
+ {
+  "structure": "grid of 3 (40/40/30) +nested columns +stacked parts",
+  "sections": 1,
+  "examples": [
+   "archscale.webflow.io (webflow)"
+  ]
+ },
+ {
+  "structure": "grid of 3 (10/10/80) +stacked parts",
+  "sections": 1,
+  "examples": [
+   "ascension.pegassi.be (awwwards)"
+  ]
+ },
+ {
+  "structure": "grid of 2 (10/90) repeated +stacked parts",
+  "sections": 1,
+  "examples": [
+   "ascension.pegassi.be (awwwards)"
+  ]
+ },
+ {
+  "structure": "row of 3 (20/80/10)",
+  "sections": 1,
+  "examples": [
+   "aspensearch.com (awwwards)"
+  ]
+ },
+ {
+  "structure": "grid of 2 (0/100)",
+  "sections": 1,
+  "examples": [
+   "auria-template.webflow.io (webflow)"
+  ]
+ },
+ {
+  "structure": "row of 3 (80/10/10) +nested columns",
+  "sections": 1,
+  "examples": [
+   "avoora.webflow.io (webflow)"
+  ]
+ },
+ {
+  "structure": "row of 5 (10/10/30/10/30)",
+  "sections": 1,
+  "examples": [
+   "bb-b.net (awwwards)"
+  ]
+ },
+ {
+  "structure": "row of 3 (30/30/50) repeated",
+  "sections": 1,
+  "examples": [
+   "bellussi.com (awwwards)"
+  ]
+ },
+ {
+  "structure": "row of 4 (20/20/20/30)",
+  "sections": 1,
+  "examples": [
+   "bellussi.com (awwwards)"
+  ]
+ },
+ {
+  "structure": "row of 5 (10/20/30/20/20)",
+  "sections": 1,
+  "examples": [
+   "bluncy.framer.website (framer)"
+  ]
+ },
+ {
+  "structure": "row of 2 (60/40) repeated",
+  "sections": 1,
+  "examples": [
+   "boldcraft.framer.website (framer)"
+  ]
+ },
+ {
+  "structure": "grid of 4 (40/10/30/30) +nested columns",
+  "sections": 1,
+  "examples": [
+   "brandonyasin.com (awwwards)"
+  ]
+ },
+ {
+  "structure": "grid of 3 (10/80/20)",
+  "sections": 1,
+  "examples": [
+   "bright-avenue.jp (awwwards)"
+  ]
+ },
+ {
+  "structure": "grid of 3 (50/30/30) +stacked parts",
+  "sections": 1,
+  "examples": [
+   "bright-avenue.jp (awwwards)"
+  ]
+ },
+ {
+  "structure": "grid of 3 (50/30/30) +nested columns",
+  "sections": 1,
+  "examples": [
+   "brutusmagazine.framer.website (framer)"
+  ]
+ },
+ {
+  "structure": "row of 2 (30/70) repeated +stacked parts",
+  "sections": 1,
+  "examples": [
+   "careaba.framer.ai (awwwards)"
+  ]
+ },
+ {
+  "structure": "grid of 3 (equal) +nested columns repeated +stacked parts",
+  "sections": 1,
+  "examples": [
+   "clause-preview.framer.website (framer)"
+  ]
+ },
+ {
+  "structure": "row of 4 (10/30/30/30) repeated",
+  "sections": 1,
+  "examples": [
+   "clean-porcupine-229272.framer.app (framer)"
+  ]
+ },
+ {
+  "structure": "row of 2 (70/30) +nested columns repeated",
+  "sections": 1,
+  "examples": [
+   "confiig.framer.website (framer)"
+  ]
+ },
+ {
+  "structure": "row of 4 (10/30/10/50) +nested columns",
+  "sections": 1,
+  "examples": [
+   "confiig.framer.website (framer)"
+  ]
+ },
+ {
+  "structure": "row of 4 (30/40/10/20) +nested columns repeated",
+  "sections": 1,
+  "examples": [
+   "confiig.framer.website (framer)"
+  ]
+ },
+ {
+  "structure": "row of 4 (20/30/20/30) +nested columns",
+  "sections": 1,
+  "examples": [
+   "confiig.framer.website (framer)"
+  ]
+ },
+ {
+  "structure": "row of 4 (30/50/10/10) +nested columns repeated",
+  "sections": 1,
+  "examples": [
+   "confiig.framer.website (framer)"
+  ]
+ },
+ {
+  "structure": "row of 4 (30/20/20/30) +nested columns",
+  "sections": 1,
+  "examples": [
+   "confiig.framer.website (framer)"
+  ]
+ },
+ {
+  "structure": "row of 2 (70/30) repeated +stacked parts",
+  "sections": 1,
+  "examples": [
+   "confiig.framer.website (framer)"
+  ]
+ },
+ {
+  "structure": "row of 5 (10/30/10/20/20) repeated",
+  "sections": 1,
+  "examples": [
+   "cue-onebranding.webflow.io (webflow)"
+  ]
+ },
+ {
+  "structure": "row of 2 (40/60) +nested columns repeated +stacked parts",
+  "sections": 1,
+  "examples": [
+   "cue-onebranding.webflow.io (webflow)"
+  ]
+ },
+ {
+  "structure": "row of 2 (equal) +nested columns repeated +stacked parts",
+  "sections": 1,
+  "examples": [
+   "cue-onebranding.webflow.io (webflow)"
+  ]
+ },
+ {
+  "structure": "row of 4 (30/30/10/40) +nested columns repeated",
+  "sections": 1,
+  "examples": [
+   "dentelio.framer.website (framer)"
+  ]
+ },
+ {
+  "structure": "grid of 2 (30/70) repeated +stacked parts",
+  "sections": 1,
+  "examples": [
+   "dentelio.framer.website (framer)"
+  ]
+ },
+ {
+  "structure": "row of 3 (10/30/60)",
+  "sections": 1,
+  "examples": [
+   "driessenarchitectuur.nl (awwwards)"
+  ]
+ },
+ {
+  "structure": "row of 2 (70/30) repeated",
+  "sections": 1,
+  "examples": [
+   "driessenarchitectuur.nl (awwwards)"
+  ]
+ },
+ {
+  "structure": "row of 4 (10/50/30/30) +nested columns",
+  "sections": 1,
+  "examples": [
+   "driessenarchitectuur.nl (awwwards)"
+  ]
+ },
+ {
+  "structure": "row of 4 (20/40/30/20) +stacked parts",
+  "sections": 1,
+  "examples": [
+   "e-lab-courses.webflow.io (webflow)"
+  ]
+ },
+ {
+  "structure": "row of 5 (20/20/30/20/20)",
+  "sections": 1,
+  "examples": [
+   "e-lab-courses.webflow.io (webflow)"
+  ]
+ },
+ {
+  "structure": "row of 4 (20/20/40/20) +stacked parts",
+  "sections": 1,
+  "examples": [
+   "e-lab-courses.webflow.io (webflow)"
+  ]
+ },
+ {
+  "structure": "row of 4 (40/20/20/20) repeated +stacked parts",
+  "sections": 1,
+  "examples": [
+   "electronicmaterialsoffice.com (awwwards)"
+  ]
+ },
+ {
+  "structure": "row of 2 (40/60) +nested columns repeated",
+  "sections": 1,
+  "examples": [
+   "elowenchetan.framer.website (framer)"
+  ]
+ },
+ {
+  "structure": "grid of 3 (20/30/50) +nested columns",
+  "sections": 1,
+  "examples": [
+   "esrbespoke.au (awwwards)"
+  ]
+ },
+ {
+  "structure": "row of 5 (20/20/10/20/30) +nested columns repeated",
+  "sections": 1,
+  "examples": [
+   "everlune.framer.ai (awwwards)"
+  ]
+ },
+ {
+  "structure": "row of 4 (30/30/20/30) +nested columns repeated",
+  "sections": 1,
+  "examples": [
+   "everlune.framer.ai (awwwards)"
+  ]
+ },
+ {
+  "structure": "row of 5 (10/30/30/20/10) +nested columns +stacked parts",
+  "sections": 1,
+  "examples": [
+   "everlune.framer.ai (awwwards)"
+  ]
+ },
+ {
+  "structure": "row of 4 (40/30/20/10) +nested columns",
+  "sections": 1,
+  "examples": [
+   "everlune.framer.ai (awwwards)"
+  ]
+ },
+ {
+  "structure": "row of 3 (40/10/40) +nested columns",
+  "sections": 1,
+  "examples": [
+   "everlune.framer.ai (awwwards)"
+  ]
+ },
+ {
+  "structure": "row of 3 (40/10/50) +nested columns",
+  "sections": 1,
+  "examples": [
+   "everlune.framer.ai (awwwards)"
+  ]
+ },
+ {
+  "structure": "grid of 3 (10/60/30) +nested columns",
+  "sections": 1,
+  "examples": [
+   "explorajourneys.com (awwwards)"
+  ]
+ },
+ {
+  "structure": "row of 3 (50/10/40)",
+  "sections": 1,
+  "examples": [
+   "filmax.webflow.io (webflow)"
+  ]
+ },
+ {
+  "structure": "row of 3 (20/40/40)",
+  "sections": 1,
+  "examples": [
+   "foodnia.co.jp (awwwards)"
+  ]
+ },
+ {
+  "structure": "row of 4 (40/10/20/30) repeated +stacked parts",
+  "sections": 1,
+  "examples": [
+   "fragment-marketing-landing-pages.webflow.io (webflow)"
+  ]
+ },
+ {
+  "structure": "row of 5 (20/10/30/10/20)",
+  "sections": 1,
+  "examples": [
+   "fragment-marketing-landing-pages.webflow.io (webflow)"
+  ]
+ },
+ {
+  "structure": "grid of 4 (10/40/50/10) +nested columns +stacked parts",
+  "sections": 1,
+  "examples": [
+   "fyrre.webflow.io (webflow)"
+  ]
+ },
+ {
+  "structure": "row of 2 (0/100)",
+  "sections": 1,
+  "examples": [
+   "gilhuybrecht.com (awwwards)"
+  ]
+ },
+ {
+  "structure": "grid of 2 (20/80) +nested columns +stacked parts",
+  "sections": 1,
+  "examples": [
+   "gilhuybrecht.com (awwwards)"
+  ]
+ },
+ {
+  "structure": "row of 3 (60/30/20) +stacked parts",
+  "sections": 1,
+  "examples": [
+   "governorsmansion.org (awwwards)"
+  ]
+ },
+ {
+  "structure": "row of 3 (10/50/50) +stacked parts",
+  "sections": 1,
+  "examples": [
+   "grail-app.com (awwwards)"
+  ]
+ },
+ {
+  "structure": "row of 3 (30/50/20) +nested columns repeated",
+  "sections": 1,
+  "examples": [
+   "gray-cogwheel-875365.framer.app (framer)"
+  ]
+ },
+ {
+  "structure": "row of 4 (20/20/30/30) +nested columns repeated +stacked parts",
+  "sections": 1,
+  "examples": [
+   "gray-cogwheel-875365.framer.app (framer)"
+  ]
+ },
+ {
+  "structure": "row of 3 (50/40/20)",
+  "sections": 1,
+  "examples": [
+   "gray-cogwheel-875365.framer.app (framer)"
+  ]
+ },
+ {
+  "structure": "row of 4 (20/30/30/40)",
+  "sections": 1,
+  "examples": [
+   "gray-cogwheel-875365.framer.app (framer)"
+  ]
+ },
+ {
+  "structure": "row of 4 (40/10/30/10) repeated",
+  "sections": 1,
+  "examples": [
+   "hauntedbouldercity.com (awwwards)"
+  ]
+ },
+ {
+  "structure": "row of 5 (10/10/40/20/20) +nested columns repeated",
+  "sections": 1,
+  "examples": [
+   "himon.framer.website (framer)"
+  ]
+ },
+ {
+  "structure": "row of 4 (40/20/20/10) +nested columns repeated",
+  "sections": 1,
+  "examples": [
+   "himon.framer.website (framer)"
+  ]
+ },
+ {
+  "structure": "row of 3 (30/30/50) +nested columns",
+  "sections": 1,
+  "examples": [
+   "himon.framer.website (framer)"
+  ]
+ },
+ {
+  "structure": "row of 3 (30/10/50) +nested columns +stacked parts",
+  "sections": 1,
+  "examples": [
+   "himon.framer.website (framer)"
+  ]
+ },
+ {
+  "structure": "row of 3 (40/50/20) +nested columns repeated",
+  "sections": 1,
+  "examples": [
+   "himon.framer.website (framer)"
+  ]
+ },
+ {
+  "structure": "row of 4 (40/20/30/10) +nested columns repeated",
+  "sections": 1,
+  "examples": [
+   "hydra-template.framer.website (framer)"
+  ]
+ },
+ {
+  "structure": "row of 3 (50/30/30) +nested columns",
+  "sections": 1,
+  "examples": [
+   "indevelopment.studio (awwwards)"
+  ]
+ },
+ {
+  "structure": "row of 5 (30/20/10/20/20) +stacked parts",
+  "sections": 1,
+  "examples": [
+   "indevelopment.studio (awwwards)"
+  ]
+ },
+ {
+  "structure": "row of 5 (10/10/30/10/50) repeated +stacked parts",
+  "sections": 1,
+  "examples": [
+   "innovative-sphinx-487895.framer.app (framer)"
+  ]
+ },
+ {
+  "structure": "row of 3 (40/20/40)",
+  "sections": 1,
+  "examples": [
+   "joinswsh.com (awwwards)"
+  ]
+ },
+ {
+  "structure": "row of 4 (20/30/20/40) repeated +stacked parts",
+  "sections": 1,
+  "examples": [
+   "landscapers.framer.website (framer)"
+  ]
+ },
+ {
+  "structure": "row of 3 (30/50/30) +stacked parts",
+  "sections": 1,
+  "examples": [
+   "lifecycle-consulting-webflow-template.webflow.io (webflow)"
+  ]
+ },
+ {
+  "structure": "row of 5 (10/30/10/30/30)",
+  "sections": 1,
+  "examples": [
+   "lingers.it (awwwards)"
+  ]
+ },
+ {
+  "structure": "row of 5 (10/30/30/10/10)",
+  "sections": 1,
+  "examples": [
+   "luneo.framer.website (framer)"
+  ]
+ },
+ {
+  "structure": "grid of 4 (30/20/30/30)",
+  "sections": 1,
+  "examples": [
+   "luxo-128.webflow.io (webflow)"
+  ]
+ },
+ {
+  "structure": "grid of 3 (10/30/60) +nested columns",
+  "sections": 1,
+  "examples": [
+   "measure.framer.ai (awwwards)"
+  ]
+ },
+ {
+  "structure": "grid of 5 (10/30/10/60/10)",
+  "sections": 1,
+  "examples": [
+   "measure.framer.ai (awwwards)"
+  ]
+ },
+ {
+  "structure": "grid of 4 (30/10/20/40)",
+  "sections": 1,
+  "examples": [
+   "measure.framer.ai (awwwards)"
+  ]
+ },
+ {
+  "structure": "grid of 4 (60/10/30/10)",
+  "sections": 1,
+  "examples": [
+   "measure.framer.ai (awwwards)"
+  ]
+ },
+ {
+  "structure": "row of 4 (40/30/20/10) +nested columns repeated +stacked parts",
+  "sections": 1,
+  "examples": [
+   "monocromo.framer.website (framer)"
+  ]
+ },
+ {
+  "structure": "grid of 3 (50/20/30) +stacked parts",
+  "sections": 1,
+  "examples": [
+   "monocromo.framer.website (framer)"
+  ]
+ },
+ {
+  "structure": "grid of 2 (60/40) +nested columns +stacked parts",
+  "sections": 1,
+  "examples": [
+   "neuralflowtemplate.webflow.io (webflow)"
+  ]
+ },
+ {
+  "structure": "row of 2 (20/80) repeated",
+  "sections": 1,
+  "examples": [
+   "nocturneclub.framer.website (framer)"
+  ]
+ },
+ {
+  "structure": "grid of 5 (equal) repeated +stacked parts",
+  "sections": 1,
+  "examples": [
+   "noktis.framer.website (framer)"
+  ]
+ },
+ {
+  "structure": "row of 3 (equal) +nested columns repeated",
+  "sections": 1,
+  "examples": [
+   "noktis.framer.website (framer)"
+  ]
+ },
+ {
+  "structure": "row of 4 (10/30/30/30)",
+  "sections": 1,
+  "examples": [
+   "onearth-conservation.webflow.io (webflow)"
+  ]
+ },
+ {
+  "structure": "row of 2 (90/10) +nested columns +stacked parts",
+  "sections": 1,
+  "examples": [
+   "pensatori-irrazionali.com (awwwards)"
+  ]
+ },
+ {
+  "structure": "row of 5 (20/30/20/20/30)",
+  "sections": 1,
+  "examples": [
+   "people-work-webflow-108-template.webflow.io (webflow)"
+  ]
+ },
+ {
+  "structure": "row of 3 (30/10/60)",
+  "sections": 1,
+  "examples": [
+   "performeurope.eu (awwwards)"
+  ]
+ },
+ {
+  "structure": "row of 5 (10/30/20/20/20)",
+  "sections": 1,
+  "examples": [
+   "performeurope.eu (awwwards)"
+  ]
+ },
+ {
+  "structure": "row of 3 (10/20/70)",
+  "sections": 1,
+  "examples": [
+   "politico.eu (awwwards)"
+  ]
+ },
+ {
+  "structure": "row of 3 (20/70/10)",
+  "sections": 1,
+  "examples": [
+   "portvio.framer.website (framer)"
+  ]
+ },
+ {
+  "structure": "row of 3 (10/60/40)",
+  "sections": 1,
+  "examples": [
+   "precept.framer.website (framer)"
+  ]
+ },
+ {
+  "structure": "row of 3 (10/60/30)",
+  "sections": 1,
+  "examples": [
+   "precept.framer.website (framer)"
+  ]
+ },
+ {
+  "structure": "row of 3 (0/50/50)",
+  "sections": 1,
+  "examples": [
+   "public-speaker-template.webflow.io (webflow)"
+  ]
+ },
+ {
+  "structure": "grid of 2 (50/50) +stacked parts",
+  "sections": 1,
+  "examples": [
+   "rapideyachtgroup.com (awwwards)"
+  ]
+ },
+ {
+  "structure": "grid of 3 (50/30/30) repeated",
+  "sections": 1,
+  "examples": [
+   "rapideyachtgroup.com (awwwards)"
+  ]
+ },
+ {
+  "structure": "row of 3 (10/70/10) +nested columns",
+  "sections": 1,
+  "examples": [
+   "renovatehub.framer.website (framer)"
+  ]
+ },
+ {
+  "structure": "grid of 3 (50/10/50)",
+  "sections": 1,
+  "examples": [
+   "revix.framer.website (framer)"
+  ]
+ },
+ {
+  "structure": "grid of 4 (10/40/10/50)",
+  "sections": 1,
+  "examples": [
+   "revix.framer.website (framer)"
+  ]
+ },
+ {
+  "structure": "grid of 3 (40/10/60)",
+  "sections": 1,
+  "examples": [
+   "revix.framer.website (framer)"
+  ]
+ },
+ {
+  "structure": "row of 3 (40/30/40) +stacked parts",
+  "sections": 1,
+  "examples": [
+   "rozaliabomawrites.com (awwwards)"
+  ]
+ },
+ {
+  "structure": "grid of 2 (40/60) repeated +stacked parts",
+  "sections": 1,
+  "examples": [
+   "see-for-yourself.com (awwwards)"
+  ]
+ },
+ {
+  "structure": "row of 2 (10/90) repeated",
+  "sections": 1,
+  "examples": [
+   "see-for-yourself.com (awwwards)"
+  ]
+ },
+ {
+  "structure": "row of 3 (10/80/10) +nested columns +stacked parts",
+  "sections": 1,
+  "examples": [
+   "shane-resort.framer.website (framer)"
+  ]
+ },
+ {
+  "structure": "row of 3 (30/40/30)",
+  "sections": 1,
+  "examples": [
+   "shane-resort.framer.website (framer)"
+  ]
+ },
+ {
+  "structure": "row of 2 (100/0) +stacked parts",
+  "sections": 1,
+  "examples": [
+   "sobha-privy-collection.com (awwwards)"
+  ]
+ },
+ {
+  "structure": "grid of 2 (90/10) +stacked parts",
+  "sections": 1,
+  "examples": [
+   "sonicdrive-music.webflow.io (webflow)"
+  ]
+ },
+ {
+  "structure": "row of 3 (50/30/30) +stacked parts",
+  "sections": 1,
+  "examples": [
+   "souffletmalt.com (awwwards)"
+  ]
+ },
+ {
+  "structure": "row of 3 (50/30/30) repeated +stacked parts",
+  "sections": 1,
+  "examples": [
+   "souffletmalt.com (awwwards)"
+  ]
+ },
+ {
+  "structure": "row of 5 (10/30/20/10/30)",
+  "sections": 1,
+  "examples": [
+   "spark-template.webflow.io (webflow)"
+  ]
+ },
+ {
+  "structure": "row of 3 (40/40/20)",
+  "sections": 1,
+  "examples": [
+   "spykercars.com (awwwards)"
+  ]
+ },
+ {
+  "structure": "row of 4 (20/30/30/20)",
+  "sections": 1,
+  "examples": [
+   "studiors.be (awwwards)"
+  ]
+ },
+ {
+  "structure": "row of 3 (80/10/10) +stacked parts",
+  "sections": 1,
+  "examples": [
+   "swissstyle.framer.website (framer)"
+  ]
+ },
+ {
+  "structure": "row of 2 (40/60) repeated",
+  "sections": 1,
+  "examples": [
+   "tej.as (awwwards)"
+  ]
+ },
+ {
+  "structure": "row of 3 (10/20/70) +stacked parts",
+  "sections": 1,
+  "examples": [
+   "tej.as (awwwards)"
+  ]
+ },
+ {
+  "structure": "row of 5 (10/30/20/10/30) +nested columns",
+  "sections": 1,
+  "examples": [
+   "thirdway.com (awwwards)"
+  ]
+ },
+ {
+  "structure": "row of 3 (30/40/40)",
+  "sections": 1,
+  "examples": [
+   "thirdway.com (awwwards)"
+  ]
+ },
+ {
+  "structure": "row of 3 (20/50/40) +nested columns",
+  "sections": 1,
+  "examples": [
+   "thirdway.com (awwwards)"
+  ]
+ },
+ {
+  "structure": "row of 4 (40/30/30/10)",
+  "sections": 1,
+  "examples": [
+   "touroperator.framer.website (framer)"
+  ]
+ },
+ {
+  "structure": "row of 3 (0/10/80)",
+  "sections": 1,
+  "examples": [
+   "vanderhotel.com (awwwards)"
+  ]
+ },
+ {
+  "structure": "row of 5 (20/30/10/40/10) repeated",
+  "sections": 1,
+  "examples": [
+   "velaaprivateisland.com (awwwards)"
+  ]
+ },
+ {
+  "structure": "grid of 3 (30/20/50)",
+  "sections": 1,
+  "examples": [
+   "velaaprivateisland.com (awwwards)"
+  ]
+ },
+ {
+  "structure": "row of 3 (50/20/30) repeated",
+  "sections": 1,
+  "examples": [
+   "velaaprivateisland.com (awwwards)"
+  ]
+ },
+ {
+  "structure": "row of 4 (30/10/30/40)",
+  "sections": 1,
+  "examples": [
+   "velaaprivateisland.com (awwwards)"
+  ]
+ },
+ {
+  "structure": "row of 3 (50/20/20)",
+  "sections": 1,
+  "examples": [
+   "velaaprivateisland.com (awwwards)"
+  ]
+ },
+ {
+  "structure": "row of 4 (20/10/30/30) +nested columns repeated",
+  "sections": 1,
+  "examples": [
+   "velaaprivateisland.com (awwwards)"
+  ]
+ },
+ {
+  "structure": "grid of 4 (equal) +nested columns repeated +stacked parts",
+  "sections": 1,
+  "examples": [
+   "vendotemplate.framer.website (framer)"
+  ]
+ },
+ {
+  "structure": "grid of 3 (30/30/50)",
+  "sections": 1,
+  "examples": [
+   "waveyu.webflow.io (webflow)"
+  ]
+ },
+ {
+  "structure": "grid of 4 (40/20/20/20) repeated",
+  "sections": 1,
+  "examples": [
+   "waveyu.webflow.io (webflow)"
+  ]
+ },
+ {
+  "structure": "grid of 3 (20/50/30)",
+  "sections": 1,
+  "examples": [
+   "wearefred.co.uk (awwwards)"
+  ]
+ },
+ {
+  "structure": "grid of 3 (40/40/20)",
+  "sections": 1,
+  "examples": [
+   "westones.webflow.io (webflow)"
+  ]
+ },
+ {
+  "structure": "row of 3 (30/40/30) +nested columns +stacked parts",
+  "sections": 1,
+  "examples": [
+   "wisprflow.ai (awwwards)"
+  ]
+ },
+ {
+  "structure": "row of 3 (30/30/40) +nested columns +stacked parts",
+  "sections": 1,
+  "examples": [
+   "wisprflow.ai (awwwards)"
+  ]
+ },
+ {
+  "structure": "row of 4 (20/20/30/30) +nested columns +stacked parts",
+  "sections": 1,
+  "examples": [
+   "wisprflow.ai (awwwards)"
+  ]
+ },
+ {
+  "structure": "row of 3 (20/40/40) +nested columns +stacked parts",
+  "sections": 1,
+  "examples": [
+   "wisprflow.ai (awwwards)"
+  ]
+ },
+ {
+  "structure": "row of 3 (50/20/20) +nested columns",
+  "sections": 1,
+  "examples": [
+   "zesty-template.webflow.io (webflow)"
+  ]
+ }
+]

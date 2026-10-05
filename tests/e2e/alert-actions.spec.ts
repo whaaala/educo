@@ -1,4 +1,5 @@
 import { test, expect, type Page } from "@playwright/test";
+import { seedSite, sitePage } from "./helpers/seed-site";
 import type { BoxNode } from "@/lib/box-model";
 import { siteFromRoot } from "@/lib/box-site";
 import { renderSitePage } from "@/lib/box-export";
@@ -254,16 +255,7 @@ test.describe("Alert actions", () => {
     });
 
     // CANVAS
-    await page.goto("/website/box-demo");
-    await page.evaluate((n) => {
-      const rid = () => "b" + Math.random().toString(36).slice(2, 9);
-      const site = { pages: [{ id: "p1", name: "Home", path: "/", root: { id: "root", type: "container", direction: "column", children: [
-        { id: rid(), type: "container", direction: "row", rowBand: true, width: "fill", children: [n] },
-      ] } }], homeId: "p1" };
-      localStorage.setItem("educo_box_site_v1", JSON.stringify(site));
-      localStorage.setItem("educo_box_site_cleaned_v1", "1");
-    }, node);
-    await page.reload();
+    await seedSite(page, sitePage([node]));
     // Wait for the BUILDER first, then for the alert inside it. A single wait on the alert conflates two very
     // different things — "the dev server has not finished serving the page yet" and "the alert rendered but
     // without its axis classes" — and it made this test time out once in a full invariants run, where it sits
@@ -292,16 +284,7 @@ test.describe("Alert actions", () => {
   });
 
   test("the CANVAS shows the same actions as the export — canvas = export", async ({ page }) => {
-    await page.goto("/website/box-demo");
-    await page.evaluate((n) => {
-      const rid = () => "b" + Math.random().toString(36).slice(2, 9);
-      const site = { pages: [{ id: "p1", name: "Home", path: "/", root: { id: "root", type: "container", direction: "column", children: [
-        { id: rid(), type: "container", direction: "row", rowBand: true, width: "fill", children: [n] },
-      ] } }], homeId: "p1" };
-      localStorage.setItem("educo_box_site_v1", JSON.stringify(site));
-      localStorage.setItem("educo_box_site_cleaned_v1", "1");
-    }, alertWith({}, [{ id: "a1", label: "Read the letter", href: "#letter" }, { id: "a2", label: "Dismiss" }]));
-    await page.reload();
+    await seedSite(page, sitePage([alertWith({}, [{ id: "a1", label: "Read the letter", href: "#letter" }, { id: "a2", label: "Dismiss" }])]));
     await page.waitForSelector('[data-box-id="tgt"] .eu-alert__action', { timeout: 20000 });
     const onCanvas = await page.locator('[data-box-id="tgt"] .eu-alert__action').allTextContents();
     expect(onCanvas).toEqual(["Read the letter", "Dismiss"]);

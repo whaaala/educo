@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState, type RefObject } from "react";
 import { ArrowUp, ArrowDown, Plus, Copy, Trash2, GripVertical, X } from "lucide-react";
 import { CHROME_Z } from "@/lib/educo-ui/stacking";
+import { zoomOf } from "@/lib/canvas-zoom";
 
 /**
  * ON-CANVAS ITEM CRUD (RULE I) — shared by EVERY component, the ones we have and every future one.
@@ -18,7 +19,23 @@ import { CHROME_Z } from "@/lib/educo-ui/stacking";
 export type SelectedItem = { id: string; parentId?: string };
 
 type Box = { top: number; left: number; width: number; height: number };
-type Placement = Box & { barTop: number; barLeft: number; side: "right" | "above" | "below" };
+export type Placement = Box & { barTop: number; barLeft: number; side: "right" | "above" | "below"; /** the canvas zoom; the bar is drawn at 1 / z */ z?: number };
+
+/**
+ * The SAME object when nothing moved by half a pixel or more — which is what makes the measuring effect below safe
+ * to run after every render. Return a fresh object each time and every render schedules another: "Maximum update
+ * depth exceeded", a frozen editor. Named and exported so that property is unit-tested directly — a render test
+ * of the loop HANGS rather than failing, which is no guard at all (measured 2026-09-26).
+ */
+export function keepPlacementIfUnmoved(prev: Placement | null, next: Placement | null): Placement | null {
+  if (prev === next) return prev;
+  if (!prev || !next) return next;
+  const near = (a: number, b: number) => Math.abs(a - b) < 0.5;
+  const same = near(prev.top, next.top) && near(prev.left, next.left) && near(prev.width, next.width)
+    && near(prev.height, next.height) && near(prev.barTop, next.barTop) && near(prev.barLeft, next.barLeft)
+    && Math.abs((prev.z ?? 1) - (next.z ?? 1)) < 0.001;
+  return same ? prev : next;
+}
 
 const BAR_W = 168; // the toolbar's widest form — used to decide whether it fits beside the item
 const BAR_H = 34;
@@ -74,26 +91,26 @@ export default function ItemCrudLayer({
     let next: Placement | null = null;
     if (host && el) {
       const hr = host.getBoundingClientRect(), r = el.getBoundingClientRect();
-      const box: Box = { top: r.top - hr.top, left: r.left - hr.left, width: r.width, height: r.height };
+      // SCREEN PIXELS IN, LAYOUT PIXELS OUT (Z1-b): the ring and toolbar are positioned INSIDE the zoomed canvas, so
+      // rects measured on screen are divided by its zoom — undivided, at Wide fitted to 55% the ring was drawn 142px
+      // narrower and 26px higher than its item, and the toolbar sat on the item.
+      const z = zoomOf(host);
+      const s = { top: r.top - hr.top, left: r.left - hr.left, width: r.width, height: r.height }; // screen px
+      const box: Box = { top: s.top / z, left: s.left / z, width: s.width / z, height: s.height / z };
       // Prefer sitting just OUTSIDE the item's right edge, vertically centred — that never covers the item's own
       // text nor the item below it, which is what made the first version unreadable. When the viewport has no
       // room to the right, fall back to above the item, and only below it when the item is at the very top.
+      // THE BAR IS ITS OWN SIZE ON SCREEN AT EVERY ZOOM (Z1-d): it is drawn with the inverse zoom, so it is placed in
+      // SCREEN px from the host — at 55% its buttons had shrunk to 15px, under the 24px target of WCAG 2.5.8.
       const spaceRight = window.innerWidth - r.right;
       const side: Placement["side"] = spaceRight >= BAR_W + GAP ? "right" : r.top >= BAR_H + GAP ? "above" : "below";
-      const barTop = side === "right" ? box.top + box.height / 2 - BAR_H / 2
-        : side === "above" ? box.top - BAR_H - GAP / 2
-        : box.top + box.height + GAP / 2;
-      const barLeft = side === "right" ? box.left + box.width + GAP : box.left;
-      next = { ...box, barTop, barLeft, side };
+      const barTop = side === "right" ? s.top + s.height / 2 - BAR_H / 2
+        : side === "above" ? s.top - BAR_H - GAP / 2
+        : s.top + s.height + GAP / 2;
+      const barLeft = side === "right" ? s.left + s.width + GAP : s.left;
+      next = { ...box, barTop, barLeft, side, z };
     }
-    setPlace((prev) => {
-      if (prev === next) return prev;
-      if (!prev || !next) return next;
-      const near = (a: number, b: number) => Math.abs(a - b) < 0.5;
-      const same = near(prev.top, next.top) && near(prev.left, next.left) && near(prev.width, next.width)
-        && near(prev.height, next.height) && near(prev.barTop, next.barTop) && near(prev.barLeft, next.barLeft);
-      return same ? prev : next; // keep the identity when nothing moved → no re-render, no loop
-    });
+    setPlace((prev) => keepPlacementIfUnmoved(prev, next));
   });
 
   // Escape clears the item selection — the same key that closes every other editor surface.
@@ -127,7 +144,7 @@ export default function ItemCrudLayer({
         role="toolbar"
         aria-label="Edit this item"
         className="absolute flex items-center gap-0.5 rounded-full p-1 bg-slate-900/85 dark:bg-slate-800/85 midnight:bg-slate-900/85 purple:bg-purple-950/85 backdrop-blur-md shadow-xl shadow-black/25 ring-1 ring-white/15"
-        style={{ top: place.barTop + nudge.dy, left: place.barLeft + nudge.dx, zIndex: CHROME_Z.itemBar }}
+        style={{ top: place.barTop + nudge.dy, left: place.barLeft + nudge.dx, zIndex: CHROME_Z.itemBar, zoom: place.z && place.z !== 1 ? 1 / place.z : undefined }}
         onMouseDown={(e) => e.stopPropagation()}
         onClick={(e) => e.stopPropagation()}
       >

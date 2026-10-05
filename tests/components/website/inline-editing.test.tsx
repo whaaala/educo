@@ -25,6 +25,7 @@ describe("Inline section editing (WordPress-style on-canvas)", () => {
     expect(heading).toBeTruthy();
     heading.textContent = "Our new headline";
     fireEvent.input(heading);
+    fireEvent.blur(heading); // c-12b: the edit reaches the site when the words are left (or typing pauses)
     expect(onChange).toHaveBeenCalledWith(expect.objectContaining({ heading: "Our new headline" }));
   });
 
@@ -37,6 +38,7 @@ describe("Inline section editing (WordPress-style on-canvas)", () => {
     const title = editables.find((el) => el.textContent === firstTitle)!;
     title.textContent = "Renamed program";
     fireEvent.input(title);
+    fireEvent.blur(title); // c-12b: one step per burst — it arrives on leaving the words
     const patch = onChange.mock.calls.at(-1)![0];
     expect(patch.items[0].title).toBe("Renamed program");
     expect(patch.items.length).toBe(section.content.items!.length); // no items lost

@@ -2,9 +2,9 @@
   "mcpServers": {
     "playwright": {
       "type": "stdio",
-      "command": "npx",
+      "command": "node",
       "args": [
-        "@playwright/mcp",
+        "./node_modules/@playwright/mcp/cli.js",
         "--ignore-https-errors"
       ],
       "env": {}

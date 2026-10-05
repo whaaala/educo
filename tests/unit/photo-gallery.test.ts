@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { photoGallery, blockForKind, type GalleryPhoto } from "@/lib/box-presets";
-import { GRID_MAX, isContainer } from "@/lib/box-model";
+import { GRID_MAX, isContainer, gapOf, SPACE_DEFAULT } from "@/lib/box-model";
 
 /**
  * THE PHOTO GALLERY IS A GRID, NOT A COMPONENT.
@@ -50,13 +50,14 @@ describe("photoGallery", () => {
     expect((g.children ?? [])[0].children?.[0]?.height, "height auto — the photo keeps its own proportions").toBe("auto");
   });
 
-  it("has NO spacing and NO rounding unless the setup asked for them", () => {
-    // The standing rule: a box is square, flush and unspaced until somebody says otherwise. A gallery is
-    // not an exception — the setup screen shows a spacing slider that starts at nothing, so whatever
-    // arrives is what the user watched themselves choose.
+  it("reads the DEFAULT spacing and NO rounding unless the setup asked for them", () => {
+    // Rule 3 (2026-09-29): space by default, rounding only when asked. A gallery nobody set a gap for stores
+    // NONE, so it reads the default gap (1.5rem across, 1rem down); a zero chosen in the setup stays zero.
     const bare = photoGallery(photos(4), { across: 4 });
-    expect(bare.gap, "no gap invented").toBe(0);
-    expect(bare.padding, "no padding invented").toBe(0);
+    expect(bare.gap, "no gap stored — the default is read").toBeUndefined();
+    expect(bare.padding, "no padding stored").toBeUndefined();
+    expect(gapOf(bare)).toEqual({ x: SPACE_DEFAULT.columns, y: SPACE_DEFAULT.stack });
+    expect(photoGallery(photos(4), { across: 4, gap: 0 }).gap, "the user's zero").toBe(0);
     expect(bare.rowFlow, "and no masonry unless asked").toBeUndefined();
     for (const cell of bare.children ?? []) {
       expect(cell.radius, "no radius on a cell").toBeUndefined();

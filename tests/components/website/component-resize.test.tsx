@@ -4,6 +4,7 @@ import BoxCanvas from "@/components/website/box/BoxCanvas";
 import { DEFAULT_THEME } from "@/lib/site-storage";
 import { createContainer, createComponent, componentBoxCss, resizeTopEdge, hugsContent, blockContainmentCss, clampFloatGeom, floatBox, findBox, widthPct, isFloating, isClipped, clampContentScale, MIN_CONTENT_SCALE, comfortableWidth, COMFORTABLE_LINES, PLACEMENT_INSET_PCT, type BoxNode } from "@/lib/box-model";
 import { renderSitePage } from "@/lib/box-export";
+import { HUGS_BY_NATURE } from "@/lib/educo-ui/registry";
 import { siteFromRoot } from "@/lib/box-site";
 
 /** One page through the SHIPPING export path — the app no longer emits the single-document shape. */
@@ -111,18 +112,33 @@ describe("Top-edge resize is edge-anchored and never leaves the page (RULE H)", 
     }
   });
 
-  it("keeps growing at the page top instead of going dead — the overshoot extends the BOTTOM", () => {
-    // Dragging 120 up from y=100 asks for a top of -20, which is 40 past the page top (y=20).
+  it("AT THE PAGE TOP THE EDGE STOPS — the bottom does not move to make up for it", () => {
+    /**
+     * Dragging 120 up from y=100 asks for a top of -20, which is 40 past the page top (y=20). The top goes
+     * as far as it can and stops there; the bottom stays exactly where it was.
+     *
+     * THIS REVERSES A DELIBERATE DECISION, so the reason is worth keeping. The overshoot used to be added
+     * to the HEIGHT, on the reading that a handle doing nothing feels broken and a block flush against the
+     * page top is the common case for a first block. Driven in a browser on exactly that block, it looked
+     * like this: dragging the top edge UP 80px moved the top edge 0px and the BOTTOM edge 80px DOWN — the
+     * user holding one edge, watching the opposite one run away in the opposite direction. Reported.
+     *
+     * Rule 19 is unambiguous and decides it: "the edge you grab is the ONLY one that moves… where the
+     * partner cannot give, the edge stops; it does not grow out of the far side."
+     */
     const { top, height } = resizeTopEdge(START_TOP, START_BOT, -120, MIN_H, PAGE_TOP);
-    expect(top).toBe(PAGE_TOP);              // pinned at the page top
-    expect(height).toBe(200);                // still grew by the full 120 dragged
-    expect(top + height).toBe(START_BOT + 40); // the overshoot went to the bottom
+    expect(top).toBe(PAGE_TOP);                       // pinned at the page top
+    expect(height).toBe(START_BOT - PAGE_TOP);        // exactly as tall as the room it had
+    expect(top + height).toBe(START_BOT);             // …and the bottom NEVER moved
   });
 
-  it("a block already flush against the page top still grows (the reported dead-handle case)", () => {
+  it("a block already flush against the page top does not move at all", () => {
+    // The dead handle, and it is the honest answer: there is nowhere above the page for the edge to go,
+    // and growing the other end is a different gesture from the one being made.
     const { top, height } = resizeTopEdge(PAGE_TOP, PAGE_TOP + 80, -100, MIN_H, PAGE_TOP);
     expect(top).toBe(PAGE_TOP);
-    expect(height).toBe(180); // 80 + the 100 dragged
+    expect(height).toBe(80);                          // unchanged — not 180
+    expect(top + height).toBe(PAGE_TOP + 80);         // the bottom stayed put
   });
 });
 
@@ -250,17 +266,16 @@ describe("A newly placed block keeps a gap from the parent's top-left (RULE M)",
   }
 });
 
-describe("A newly added component sizes to its content (RULE L)", () => {
-  // The full-width default is what made a component read as "a wrapper taking the whole width of the parent".
-  // Content sizing is now the default for EVERY component; Full / Custom are opt-in from the inspector.
-  // Existing saved documents are deliberately NOT migrated — they keep the widths they were built with.
+describe("A newly added component fills its line unless it hugs by nature (BATCH F-1)", () => {
+  // REVERSED by the user, 2026-10-01 (F-1: "the component needs to be used width and height everywhere… unless it's the space
+  // a user wanted"): the old default — every component hugs — left an Accordion on ~545px of a 1280 line. A number, a pill
+  // and a row of stars still hug (`HUGS_BY_NATURE`); Hug / Custom stay opt-in. Saved documents keep the widths they were built with.
   for (const component of COMPONENTS) {
-    it(`${component}: is content-sized when added, and therefore hugs`, () => {
+    const hugs = HUGS_BY_NATURE.has(component);
+    it(`${component}: ${hugs ? "hugs its content by nature" : "fills its line"} when added`, () => {
       const node = createComponent(component, { id: "tgt" });
-      expect(node.width).toBe("auto");
-      expect(hugsContent(node)).toBe(true);
-      // …so it does not force a fill onto its own element
-      expect(componentBoxCss(node)).not.toContain("width:100%");
+      expect(node.width).toBe(hugs ? "auto" : "100%");
+      expect(hugsContent(node)).toBe(hugs);
     });
   }
 

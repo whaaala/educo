@@ -1,0 +1,201 @@
+{
+ "pages": [
+  {
+   "id": "box-mup7o0b2-2",
+   "name": "Home",
+   "path": "home",
+   "root": {
+    "id": "box-mup7o0b2-1",
+    "type": "container",
+    "layout": "flex",
+    "direction": "column",
+    "spaced": true,
+    "align": "stretch",
+    "justify": "start",
+    "wrap": false,
+    "width": "fill",
+    "children": [
+     {
+      "id": "box-mup7o1vd-4",
+      "type": "container",
+      "layout": "flex",
+      "direction": "row",
+      "spaced": true,
+      "align": "stretch",
+      "justify": "start",
+      "wrap": false,
+      "width": "fill",
+      "children": [
+       {
+        "id": "box-mup7o1vc-3",
+        "type": "container",
+        "layout": "flex",
+        "direction": "column",
+        "spaced": true,
+        "align": "stretch",
+        "justify": "start",
+        "wrap": false,
+        "width": "100%",
+        "children": [
+         {
+          "id": "box-mup7o35d-6",
+          "type": "container",
+          "layout": "flex",
+          "direction": "row",
+          "spaced": true,
+          "align": "stretch",
+          "justify": "start",
+          "wrap": false,
+          "width": "fill",
+          "children": [
+           {
+            "id": "box-mup7o35d-5",
+            "type": "heading",
+            "width": "auto",
+            "spaced": true,
+            "text": "Hillside School",
+            "fontSize": 32,
+            "bold": true
+           },
+           {
+            "id": "box-mup7o80d-9",
+            "type": "container",
+            "layout": "flex",
+            "direction": "column",
+            "spaced": true,
+            "align": "stretch",
+            "justify": "start",
+            "wrap": false,
+            "width": "auto",
+            "children": [
+             {
+              "id": "box-mup7o9cu-b",
+              "type": "container",
+              "layout": "flex",
+              "direction": "row",
+              "spaced": true,
+              "align": "stretch",
+              "justify": "start",
+              "wrap": false,
+              "width": "fill",
+              "children": [
+               {
+                "id": "box-mup7o9cu-a",
+                "type": "container",
+                "layout": "flex",
+                "direction": "column",
+                "spaced": true,
+                "align": "stretch",
+                "justify": "start",
+                "wrap": false,
+                "width": "100%",
+                "children": [
+                 {
+                  "id": "box-mup7oaqc-d",
+                  "type": "container",
+                  "layout": "flex",
+                  "direction": "row",
+                  "spaced": true,
+                  "align": "stretch",
+                  "justify": "start",
+                  "wrap": false,
+                  "width": "fill",
+                  "children": [
+                   {
+                    "id": "box-mup7oaqc-c",
+                    "type": "link",
+                    "width": "auto",
+                    "spaced": true,
+                    "text": "About",
+                    "href": "#",
+                    "underline": false
+                   },
+                   {
+                    "id": "box-mup7oc17-e",
+                    "type": "link",
+                    "width": "auto",
+                    "spaced": true,
+                    "text": "Admissions",
+                    "href": "#",
+                    "underline": false
+                   },
+                   {
+                    "id": "box-mup7oddn-f",
+                    "type": "link",
+                    "width": "auto",
+                    "spaced": true,
+                    "text": "News",
+                    "href": "#",
+                    "underline": false
+                   },
+                   {
+                    "id": "box-mup7oepx-g",
+                    "type": "link",
+                    "width": "auto",
+                    "spaced": true,
+                    "text": "Contact",
+                    "href": "#",
+                    "underline": false
+                   }
+                  ],
+                  "rowBand": true,
+                  "padding": 0
+                 }
+                ],
+                "tag": "ul"
+               }
+              ],
+              "rowBand": true,
+              "padding": 0
+             }
+            ],
+            "tag": "nav",
+            "responsive": {
+             "phone": {
+              "hidden": true
+             }
+            }
+           },
+           {
+            "id": "box-mup7o69h-8",
+            "type": "button",
+            "width": "auto",
+            "spaced": true,
+            "text": "☰ Menu",
+            "href": "#",
+            "hidden": true,
+            "responsive": {
+             "phone": {
+              "hidden": null
+             }
+            }
+           },
+           {
+            "id": "box-mup7o4jh-7",
+            "type": "button",
+            "width": "auto",
+            "spaced": true,
+            "text": "Apply now",
+            "href": "#"
+           }
+          ],
+          "rowBand": true,
+          "padding": 0
+         }
+        ],
+        "tag": "header",
+        "pin": "top"
+       }
+      ],
+      "rowBand": true,
+      "padding": 0
+     }
+    ],
+    "padding": 0,
+    "gap": 0,
+    "baseFont": 10
+   }
+  }
+ ],
+ "homeId": "box-mup7o0b2-2"
+}

@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { getPresets, blockForKind, presetKindFor, gridLayoutPatch, GRID_LAYOUTS } from "@/lib/box-presets";
-import { createContainer, createGrid, createElement, type BoxNode } from "@/lib/box-model";
+import { createContainer, createGrid, createElement, type BoxNode, remLen } from "@/lib/box-model";
 import { DEFAULT_THEME } from "@/lib/site-storage";
 
 describe("box-presets", () => {
@@ -33,7 +33,7 @@ describe("box-presets", () => {
     const section = blockForKind("container"); expect(section.type).toBe("container"); expect(section.direction).toBe("column");
     const btn = blockForKind("button", { radius: 8, background: "#123456" } as Partial<BoxNode>);
     expect(btn.type).toBe("button"); expect(btn.radius).toBe(8); expect(btn.background).toBe("#123456");
-    const spacer = blockForKind("spacer"); expect(spacer.type).toBe("spacer"); expect(spacer.height).toBe("48px");
+    const spacer = blockForKind("spacer"); expect(spacer.type).toBe("spacer"); expect(spacer.height).toBe(remLen(48)); // rem, never px — Core Rule 16
   });
 
   it("blockForKind builds Card/Quote/Stat/Rating as EDITABLE TREES — every inner piece is a real, editable BoxNode", () => {

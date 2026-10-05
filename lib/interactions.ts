@@ -202,6 +202,17 @@ export function itemEffectsCss(scope: string, it: ItemEffects): string {
  * nothing. STAGGER applies the effect to the container's direct CHILDREN, each a beat later, which is what
  * people actually mean by it: a row of cards arriving one after another.
  */
+/**
+ * The entrance's timing, named once because a SECOND emitter needs it: a block can carry an entrance AND a
+ * pinned arrival, and the two write the same animation properties on the same element — so whichever rule
+ * the sheet wrote last silently took the block over. Measured in a browser: with both chosen, the only
+ * animation running was the arrival. `pinArrivalCss` now declares both in one rule, reading these rather
+ * than keeping a second copy that could drift out of step with the entrance it is naming.
+ */
+export const REVEAL_DUR = "var(--eu-dur-slow, .55s)";
+export const REVEAL_EASE = "var(--eu-ease-standard, cubic-bezier(.2,0,0,1))";
+export const REVEAL_VIEW_RANGE = "entry 0% cover 28%";
+
 export function revealCss(scope: string, node: RevealNode, opts: RevealOpts = {}): string {
   const fx = revealEffect(node.revealEffect);
   if (!fx || !fx.from) return "";
@@ -216,8 +227,8 @@ export function revealCss(scope: string, node: RevealNode, opts: RevealOpts = {}
   // So a component passes its own item selector and the delays land on the items.
   const staggerScope = opts.staggerSelector ? `${scope} ${opts.staggerSelector}` : `${scope} > *`;
   const target = node.revealStagger ? staggerScope : scope;
-  const dur = "var(--eu-dur-slow, .55s)";
-  const ease = "var(--eu-ease-standard, cubic-bezier(.2,0,0,1))";
+  const dur = REVEAL_DUR;
+  const ease = REVEAL_EASE;
   let css = `${target}{animation:eu-reveal-${fx.id} ${dur} ${ease} both}`;
 
   if (node.revealStagger) {
@@ -228,7 +239,7 @@ export function revealCss(scope: string, node: RevealNode, opts: RevealOpts = {}
   }
 
   if (node.revealScroll) {
-    css += `@supports (animation-timeline: view()){${target}{animation-timeline:view();animation-range:entry 0% cover 28%}}`;
+    css += `@supports (animation-timeline: view()){${target}{animation-timeline:view();animation-range:${REVEAL_VIEW_RANGE}}}`;
   }
 
   // Reduced motion: no entrance at all. The block is simply present — which is the resting style anyway.

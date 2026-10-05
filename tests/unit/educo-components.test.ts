@@ -58,7 +58,10 @@ describe("Educo UI component styles", () => {
     // no hardcoded hex anywhere in the variants — all token-driven
     expect(COMPONENT_CSS).not.toMatch(/#[0-9a-fA-F]{3,8}\b/);
     // theme-safe indicators: chevron/currentColor, deterministic numbering, gradients from tokens
-    expect(COMPONENT_CSS).toContain("border-right: 2px solid currentColor");
+    // `currentColor` is the point of this line — the chevron takes the theme's text colour rather than a
+    // hardcoded one. The width is not its subject, so it is matched loosely: pinning `2px` here is what made
+    // this fail when the component sheet moved to rem for Core Rule 16.
+    expect(COMPONENT_CSS).toMatch(/border-right: [\d.]+(?:px|rem) solid currentColor/);
     // numbered designs read the item's ordinal from a per-item CSS var (deterministic in editor + export),
     // never a CSS counter (which fails to accumulate in the editor's DOM)
     expect(COMPONENT_CSS).toContain("content: var(--eu-n0");

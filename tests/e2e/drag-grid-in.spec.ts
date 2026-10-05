@@ -1,4 +1,5 @@
 import { test, expect, type Page } from "@playwright/test";
+import { seedSite, sitePage } from "./helpers/seed-site";
 
 /**
  * DRAGGING a Columns block onto the page — the other half of adding one.
@@ -13,22 +14,9 @@ import { test, expect, type Page } from "@playwright/test";
  */
 
 async function seedSection(page: Page) {
-  await page.goto("/website/box-demo");
-  await page.evaluate(() => {
-    const site = {
-      pages: [{ id: "p1", name: "Home", path: "/", root: {
-        id: "root", type: "container", direction: "column", padding: 0, gap: 0, children: [
-          { id: "band", type: "container", direction: "row", rowBand: true, width: "fill", gap: 0, padding: 0, children: [
-            { id: "sec", type: "container", direction: "column", padding: 0, gap: 0, width: "100%", minHeight: 400, background: "#eef2ff", children: [] },
-          ] },
-        ],
-      } }],
-      homeId: "p1",
-    };
-    localStorage.setItem("educo_box_site_v1", JSON.stringify(site));
-    localStorage.setItem("educo_box_site_cleaned_v1", "1");
-  });
-  await page.reload();
+  await seedSite(page, sitePage([
+    { id: "sec", type: "container", direction: "column", padding: 0, gap: 0, width: "100%", minHeight: 400, background: "#eef2ff", children: [] },
+  ]));
   await page.waitForSelector('[data-box-id="sec"]', { timeout: 15000 });
   await page.waitForTimeout(300);
 }

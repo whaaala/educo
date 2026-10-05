@@ -4,7 +4,7 @@
  * A page and the editor that draws it are two different worlds sharing one screen, and until this module they
  * shared one range of z-index numbers as well. The audit that opened Phase 2 found the editor's own furniture
  * at `z-20` … `z-50` — resize handles at 30, the block toolbar at 40, the blocks panel at 50 — sitting in
- * exactly the range a page uses: the site nav at 30, a toast at 60, and a floating section at whatever number
+ * exactly the range a page uses: a sticky header at 30, a toast at 60, and a floating section at whatever number
  * the user's last "Bring to front" produced, which was unbounded.
  *
  * So this was not a tidiness problem. **A float brought to front enough times rendered ON TOP of the handles
@@ -53,7 +53,7 @@ export const PAGE_Z = {
    * be a second ladder wearing this one's clothes.
    */
   raised: 1,
-  /** Anything pinned while the page scrolls: the site nav, a sticky sidebar. */
+  /** Anything pinned while the page scrolls: a sticky header or sidebar the user has built. */
   sticky: 30,
   /** A menu or panel the page itself opens, which must clear pinned furniture. */
   overlay: 100,
@@ -74,6 +74,8 @@ export const PAGE_Z_CEILING = 998;
  * clear everything, or the pointer changes back the moment it crosses a handle.
  */
 export const CHROME_Z = {
+  /** The layout guides (G-2): the page grid drawn over the page, under every piece of selection chrome. */
+  guides: 9050,
   /** The outline drawn around a component's items while its CRUD layer is open. */
   itemBox: 9100,
   /** That layer's own little toolbar, which must clear the outline. */
@@ -84,6 +86,9 @@ export const CHROME_Z = {
   toolbar: 9300,
   /** The blocks palette and any docked editing panel. */
   panel: 9400,
+  /** The Inspector drawn OVER the canvas on a narrow screen (E1-8): above the selection chrome and the blocks launcher, which
+   *  were drawn across it on a phone — handles over "Editing: Stack", the toolbar over "Styles". Docked, it is static and has none. */
+  drawer: 9450,
   /** The marquee rectangle drawn while selecting several blocks. */
   marquee: 9600,
   /** Snap guides shown while free-dragging, above the marquee that may have started the selection. */

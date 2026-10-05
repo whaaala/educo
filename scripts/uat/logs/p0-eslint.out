@@ -1,0 +1,226 @@
+
+C:\Users\eyite\educo\app\admin\parents\[id]\page.tsx
+   271:6  warning  React Hook useMemo has an unnecessary dependency: 'contextMeetings'. Either exclude it or remove the dependency array  react-hooks/exhaustive-deps
+  5979:6  warning  React Hook useCallback has a missing dependency: 'formatCurrency'. Either include it or remove the dependency array    react-hooks/exhaustive-deps
+
+C:\Users\eyite\educo\app\admin\parents\add\page.tsx
+  97:6  warning  React Hook useEffect has a missing dependency: 'formData.relationship'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Users\eyite\educo\app\admin\parents\fees\page.tsx
+  1297:5  warning  React Hook useMemo has missing dependencies: 'handleDeleteRecord', 'handleDownloadStatement', 'handleEditRecord', 'handlePrintStatement', and 'handleSendMessage'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+  1332:6  warning  React Hook useMemo has missing dependencies: 'handleDeleteRecord', 'handleDownloadStatement', 'handleEditRecord', 'handlePrintStatement', and 'handleSendMessage'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Users\eyite\educo\app\admin\settings\communication\page.tsx
+  469:6  warning  React Hook useEffect has missing dependencies: 'getTenantSettings' and 'loadTenantSettings'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Users\eyite\educo\app\drive\page.tsx
+  347:6  warning  React Hook useMemo has an unnecessary dependency: 'items'. Either exclude it or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Users\eyite\educo\app\parents\children\[id]\page.tsx
+  283:9  warning  The 'paymentHistoryRaw' logical expression could make the dependencies of useMemo Hook (at line 293) change on every render. To fix this, wrap the initialization of 'paymentHistoryRaw' in its own useMemo() Hook  react-hooks/exhaustive-deps
+  283:9  warning  The 'paymentHistoryRaw' logical expression could make the dependencies of useMemo Hook (at line 299) change on every render. To fix this, wrap the initialization of 'paymentHistoryRaw' in its own useMemo() Hook  react-hooks/exhaustive-deps
+
+C:\Users\eyite\educo\app\parents\meetings\page.tsx
+  255:6  warning  React Hook useMemo has an unnecessary dependency: 'contextMeetings'. Either exclude it or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Users\eyite\educo\app\staff\leave-requests\page.tsx
+  125:6  warning  React Hook useEffect has a missing dependency: 'selectedRequest'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Users\eyite\educo\app\students\attendance\page.tsx
+  264:9  warning  The 'userAssignedClasses' logical expression could make the dependencies of useEffect Hook (at line 416) change on every render. To fix this, wrap the initialization of 'userAssignedClasses' in its own useMemo() Hook  react-hooks/exhaustive-deps
+
+C:\Users\eyite\educo\app\students\transfers\page.tsx
+  155:6  warning  React Hook useEffect has a missing dependency: 'selectedRequest'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Users\eyite\educo\app\teachers\portal\dashboard\page.tsx
+  116:6  warning  React Hook useMemo has an unnecessary dependency: 'contextMeetings'. Either exclude it or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Users\eyite\educo\app\teachers\portal\meetings\page.tsx
+  280:6  warning  React Hook useMemo has an unnecessary dependency: 'contextMeetings'. Either exclude it or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Users\eyite\educo\app\website\box-demo\page.tsx
+  356:9  warning  The 'switchPage' function makes the dependencies of useCallback Hook (at line 429) change on every render. To fix this, wrap the definition of 'switchPage' in its own useCallback() Hook  react-hooks/exhaustive-deps
+
+C:\Users\eyite\educo\apps\mobile\components\modals\ContactBursaryModal.tsx
+  236:5  warning  React Hook useMemo has missing dependencies: 'copyToClipboard', 'handleCall', 'handleEmail', and 'handleWhatsApp'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Users\eyite\educo\apps\mobile\components\modals\FormModal.tsx
+  153:9  warning  The 'allFields' conditional could make the dependencies of useCallback Hook (at line 169) change on every render. Move it inside the useCallback callback. Alternatively, wrap the initialization of 'allFields' in its own useMemo() Hook  react-hooks/exhaustive-deps
+
+C:\Users\eyite\educo\apps\mobile\components\modals\ViewResultsModal.tsx
+  160:6  warning  React Hook useEffect has missing dependencies: 'results' and 'selectedResult'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Users\eyite\educo\apps\mobile\components\ui\BottomTabBar.tsx
+  234:6  warning  React Hook useEffect has missing dependencies: 'scaleAnims' and 'translateYAnims'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Users\eyite\educo\apps\mobile\components\ui\TimePicker.tsx
+  76:6  warning  React Hook useEffect has a missing dependency: 'parseValue'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Users\eyite\educo\components\admin\parents\form-sections\LinkStudentsSection.tsx
+  131:9  warning  The 'linkedStudentIds' logical expression could make the dependencies of useMemo Hook (at line 170) change on every render. To fix this, wrap the initialization of 'linkedStudentIds' in its own useMemo() Hook  react-hooks/exhaustive-deps
+
+C:\Users\eyite\educo\components\communication\CallSettings.tsx
+  300:6  warning  React Hook useEffect has missing dependencies: 'selectedCamera', 'selectedMicrophone', and 'selectedSpeaker'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Users\eyite\educo\components\communication\ChatRoom.tsx
+  104:6  warning  React Hook useEffect has a missing dependency: 'manager'. Either include it or remove the dependency array    react-hooks/exhaustive-deps
+  137:6  warning  React Hook useCallback has a missing dependency: 'manager'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Users\eyite\educo\components\communication\VideoCallRoom.tsx
+  267:6  warning  React Hook useEffect has a missing dependency: 'manager'. Either include it or remove the dependency array    react-hooks/exhaustive-deps
+  347:6  warning  React Hook useCallback has a missing dependency: 'manager'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  355:6  warning  React Hook useCallback has a missing dependency: 'manager'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  420:6  warning  React Hook useCallback has a missing dependency: 'manager'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  472:5  warning  React Hook useCallback has a missing dependency: 'manager'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Users\eyite\educo\components\communication\VoiceCallRoom.tsx
+  139:69  warning  The ref value 'animationRef.current' will likely have changed by the time this effect cleanup function runs. If this ref points to a node rendered by React, copy 'animationRef.current' to a variable inside the effect, and use that variable in the cleanup function  react-hooks/exhaustive-deps
+  238:6   warning  React Hook useEffect has a missing dependency: 'manager'. Either include it or remove the dependency array                                                                                                                                                               react-hooks/exhaustive-deps
+  247:6   warning  React Hook useCallback has a missing dependency: 'manager'. Either include it or remove the dependency array                                                                                                                                                             react-hooks/exhaustive-deps
+  269:6   warning  React Hook useCallback has a missing dependency: 'manager'. Either include it or remove the dependency array                                                                                                                                                             react-hooks/exhaustive-deps
+  287:6   warning  React Hook useCallback has a missing dependency: 'manager'. Either include it or remove the dependency array                                                                                                                                                             react-hooks/exhaustive-deps
+
+C:\Users\eyite\educo\components\communication\call-ui\EmojiReactionBar.tsx
+  300:6  warning  React Hook useEffect has missing dependencies: 'fetchTrendingGifs' and 'trendingGifs.length'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Users\eyite\educo\components\discipline\DisciplineRecordsTable.tsx
+  41:6  warning  React Hook useEffect has a missing dependency: 'prevFilterKey'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Users\eyite\educo\components\layout\Header.tsx
+  90:6  warning  React Hook useEffect has a missing dependency: 'languageIcons'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Users\eyite\educo\components\layout\Sidebar.tsx
+  422:6  warning  React Hook useEffect has a missing dependency: 'setIsMobileSidebarOpen'. Either include it or remove the dependency array. If 'setIsMobileSidebarOpen' changes too often, find the parent component that defines it and wrap that definition in useCallback  react-hooks/exhaustive-deps
+
+C:\Users\eyite\educo\components\leave\LeaveRequestsTable.tsx
+  38:6  warning  React Hook useEffect has a missing dependency: 'prevFilterKey'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Users\eyite\educo\components\library\RenewLoanModal.tsx
+  54:6  warning  React Hook React.useEffect has missing dependencies: 'getDefaultNewDueDate' and 'loan'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Users\eyite\educo\components\parents\MessageTeacherModal.tsx
+  149:6  warning  React Hook useEffect has a missing dependency: 'handleClose'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Users\eyite\educo\components\parents\dashboard\use-dashboard-layout.ts
+  69:58  warning  React Hook useMemo has a missing dependency: 'availableIds'. Either include it or remove the dependency array                           react-hooks/exhaustive-deps
+  69:59  warning  React Hook useMemo has a complex expression in the dependency array. Extract it to a separate variable so it can be statically checked  react-hooks/exhaustive-deps
+  70:58  warning  React Hook useMemo has a missing dependency: 'defaultOrder'. Either include it or remove the dependency array                           react-hooks/exhaustive-deps
+  70:59  warning  React Hook useMemo has a complex expression in the dependency array. Extract it to a separate variable so it can be statically checked  react-hooks/exhaustive-deps
+
+C:\Users\eyite\educo\components\performance\CompletePerformanceReviewModal.tsx
+  59:6  warning  React Hook useEffect has a missing dependency: 'formData'. Either include it or remove the dependency array. You can also do a functional update 'setFormData(f => ...)' if you only need 'formData' in the 'setFormData' call  react-hooks/exhaustive-deps
+
+C:\Users\eyite\educo\components\shared\AutoReminderScheduleModal.tsx
+  212:6  warning  React Hook useEffect has a missing dependency: 'reminders'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Users\eyite\educo\components\shared\BulkDeleteModal.tsx
+  121:6  warning  React Hook useEffect has a missing dependency: 'items.length'. Either include it or remove the dependency array. If 'setInitialItemCount' needs the current value of 'items.length', you can also switch to useReducer instead of useState and read 'items.length' in the reducer  react-hooks/exhaustive-deps
+
+C:\Users\eyite\educo\components\shared\DateRangePicker.tsx
+   94:6  warning  React Hook useEffect has missing dependencies: 'quickOptions' and 'value'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+  109:6  warning  React Hook useEffect has a missing dependency: 'quickOptions'. Either include it or remove the dependency array                react-hooks/exhaustive-deps
+
+C:\Users\eyite\educo\components\shared\DocEditor\DocEditor.tsx
+   1505:6   warning  React Hook useCallback has a missing dependency: 'activeTabId'. Either include it or remove the dependency array                                                                                                                                                 react-hooks/exhaustive-deps
+   2943:6   warning  React Hook useCallback has a missing dependency: 'showToast'. Either include it or remove the dependency array                                                                                                                                                   react-hooks/exhaustive-deps
+   2975:6   warning  React Hook useCallback has a missing dependency: 'showToast'. Either include it or remove the dependency array                                                                                                                                                   react-hooks/exhaustive-deps
+   2989:6   warning  React Hook useCallback has a missing dependency: 'showToast'. Either include it or remove the dependency array                                                                                                                                                   react-hooks/exhaustive-deps
+   3002:6   warning  React Hook useCallback has a missing dependency: 'focusEditor'. Either include it or remove the dependency array                                                                                                                                                 react-hooks/exhaustive-deps
+   3019:6   warning  React Hook useCallback has a missing dependency: 'showToast'. Either include it or remove the dependency array                                                                                                                                                   react-hooks/exhaustive-deps
+   3075:6   warning  React Hook useCallback has a missing dependency: 'focusEditor'. Either include it or remove the dependency array                                                                                                                                                 react-hooks/exhaustive-deps
+   3922:5   warning  React Hook useCallback has a missing dependency: 'tenantId'. Either include it or remove the dependency array                                                                                                                                                    react-hooks/exhaustive-deps
+   4222:6   warning  React Hook useEffect has missing dependencies: 'clearFindHighlights' and 'findNextAndHighlight'. Either include them or remove the dependency array                                                                                                              react-hooks/exhaustive-deps
+   4670:9   warning  The 'handleInsertImageFromFile' function makes the dependencies of useCallback Hook (at line 4981) change on every render. To fix this, wrap the definition of 'handleInsertImageFromFile' in its own useCallback() Hook                                         react-hooks/exhaustive-deps
+  10551:53  warning  The ref value 'panelRef.current' will likely have changed by the time this effect cleanup function runs. If this ref points to a node rendered by React, copy 'panelRef.current' to a variable inside the effect, and use that variable in the cleanup function  react-hooks/exhaustive-deps
+
+C:\Users\eyite\educo\components\shared\EditorMenus.tsx
+  91:53  warning  The ref value 'panelRef.current' will likely have changed by the time this effect cleanup function runs. If this ref points to a node rendered by React, copy 'panelRef.current' to a variable inside the effect, and use that variable in the cleanup function  react-hooks/exhaustive-deps
+
+C:\Users\eyite\educo\components\shared\EditorViewMenus.tsx
+  68:53  warning  The ref value 'panelRef.current' will likely have changed by the time this effect cleanup function runs. If this ref points to a node rendered by React, copy 'panelRef.current' to a variable inside the effect, and use that variable in the cleanup function  react-hooks/exhaustive-deps
+
+C:\Users\eyite\educo\components\shared\FilterButton.tsx
+  48:6  warning  React Hook useEffect has a missing dependency: 'fields'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Users\eyite\educo\components\shared\FormModal.tsx
+  195:9  warning  The 'allFields' conditional could make the dependencies of useCallback Hook (at line 218) change on every render. Move it inside the useCallback callback. Alternatively, wrap the initialization of 'allFields' in its own useMemo() Hook  react-hooks/exhaustive-deps
+
+C:\Users\eyite\educo\components\shared\PresenterView.tsx
+  40:79  warning  React Hook React.useCallback has a missing dependency: 'clamp'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  41:79  warning  React Hook React.useCallback has a missing dependency: 'clamp'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Users\eyite\educo\components\shared\SiteBuilder\SiteBuilder.tsx
+  307:9  warning  The 'headerLayout' logical expression could make the dependencies of useCallback Hook (at line 314) change on every render. To fix this, wrap the initialization of 'headerLayout' in its own useMemo() Hook  react-hooks/exhaustive-deps
+  307:9  warning  The 'headerLayout' logical expression could make the dependencies of useCallback Hook (at line 319) change on every render. To fix this, wrap the initialization of 'headerLayout' in its own useMemo() Hook  react-hooks/exhaustive-deps
+
+C:\Users\eyite\educo\components\shared\SlideEditor\SlideCanvas.tsx
+   512:6  warning  React Hook useCallback has a missing dependency: 'getTopGroupId'. Either include it or remove the dependency array                                 react-hooks/exhaustive-deps
+   544:6  warning  React Hook useEffect has missing dependencies: 'applyCrop', 'croppingId', and 'getTopGroupId'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+   617:6  warning  React Hook useCallback has a missing dependency: 'getTopGroupId'. Either include it or remove the dependency array                                 react-hooks/exhaustive-deps
+  2055:6  warning  React Hook useCallback has missing dependencies: 'obj.cols' and 'obj.rows'. Either include them or remove the dependency array                     react-hooks/exhaustive-deps
+
+C:\Users\eyite\educo\components\shared\SlideEditor\SlideEditor.tsx
+  1025:9  warning  The 'currentObjects' logical expression could make the dependencies of useCallback Hook (at line 1070) change on every render. To fix this, wrap the initialization of 'currentObjects' in its own useMemo() Hook  react-hooks/exhaustive-deps
+  1025:9  warning  The 'currentObjects' logical expression could make the dependencies of useCallback Hook (at line 1085) change on every render. To fix this, wrap the initialization of 'currentObjects' in its own useMemo() Hook  react-hooks/exhaustive-deps
+  1025:9  warning  The 'currentObjects' logical expression could make the dependencies of useCallback Hook (at line 1098) change on every render. To fix this, wrap the initialization of 'currentObjects' in its own useMemo() Hook  react-hooks/exhaustive-deps
+  1025:9  warning  The 'currentObjects' logical expression could make the dependencies of useCallback Hook (at line 1170) change on every render. To fix this, wrap the initialization of 'currentObjects' in its own useMemo() Hook  react-hooks/exhaustive-deps
+  1025:9  warning  The 'currentObjects' logical expression could make the dependencies of useCallback Hook (at line 1216) change on every render. To fix this, wrap the initialization of 'currentObjects' in its own useMemo() Hook  react-hooks/exhaustive-deps
+  1025:9  warning  The 'currentObjects' logical expression could make the dependencies of useCallback Hook (at line 1238) change on every render. To fix this, wrap the initialization of 'currentObjects' in its own useMemo() Hook  react-hooks/exhaustive-deps
+  1025:9  warning  The 'currentObjects' logical expression could make the dependencies of useCallback Hook (at line 1253) change on every render. To fix this, wrap the initialization of 'currentObjects' in its own useMemo() Hook  react-hooks/exhaustive-deps
+  1153:6  warning  React Hook useCallback has unnecessary dependencies: 'activeSlideIdx', 'slides', and 'updateSlides'. Either exclude them or remove the dependency array                                                            react-hooks/exhaustive-deps
+  1451:6  warning  React Hook useCallback has an unnecessary dependency: 'theme'. Either exclude it or remove the dependency array                                                                                                    react-hooks/exhaustive-deps
+  1473:6  warning  React Hook useCallback has a missing dependency: 'activeSlideIdx'. Either include it or remove the dependency array                                                                                                react-hooks/exhaustive-deps
+
+C:\Users\eyite\educo\components\shared\SortButton.tsx
+  36:6  warning  React Hook useEffect has a missing dependency: 'defaultOption'. Either include it or remove the dependency array. If 'setSelectedOption' needs the current value of 'defaultOption', you can also switch to useReducer instead of useState and read 'defaultOption' in the reducer  react-hooks/exhaustive-deps
+
+C:\Users\eyite\educo\components\shared\Whiteboard\WhiteboardCanvas.tsx
+  510:5  warning  React Hook useCallback has a missing dependency: 'drawActivePreview'. Either include it or remove the dependency array                                                                                                                                         react-hooks/exhaustive-deps
+  951:5  warning  React Hook useCallback has missing dependencies: 'clearActive' and 'onAddElement'. Either include them or remove the dependency array. If 'onAddElement' changes too often, find the parent component that defines it and wrap that definition in useCallback  react-hooks/exhaustive-deps
+
+C:\Users\eyite\educo\components\shared\Whiteboard\WhiteboardContextMenu.tsx
+  78:6  warning  React Hook useEffect has missing dependencies: 'adjustedPos.x' and 'adjustedPos.y'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Users\eyite\educo\components\shared\Whiteboard\WhiteboardToolbar.tsx
+  339:65  warning  The ref value 'hoverTimeoutRef.current' will likely have changed by the time this effect cleanup function runs. If this ref points to a node rendered by React, copy 'hoverTimeoutRef.current' to a variable inside the effect, and use that variable in the cleanup function              react-hooks/exhaustive-deps
+  340:77  warning  The ref value 'colorPickerTimeoutRef.current' will likely have changed by the time this effect cleanup function runs. If this ref points to a node rendered by React, copy 'colorPickerTimeoutRef.current' to a variable inside the effect, and use that variable in the cleanup function  react-hooks/exhaustive-deps
+
+C:\Users\eyite\educo\components\staff\transfers\EditableTerminationLetterModal.tsx
+  125:6  warning  React Hook useEffect has missing dependencies: 'letterData.letterDate' and 'letterData.schoolName'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Users\eyite\educo\components\staff\transfers\StaffTransferTable.tsx
+  46:6  warning  React Hook useEffect has a missing dependency: 'prevFilterKey'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Users\eyite\educo\components\student\TransferRequestModal.tsx
+  74:6  warning  React Hook useEffect has a missing dependency: 'effectiveDate'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Users\eyite\educo\components\students\AttendanceByClass.tsx
+  404:6  warning  React Hook useMemo has a missing dependency: 'isBlockedDay'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Users\eyite\educo\components\students\form-sections\PersonalInformationSection.tsx
+  51:6  warning  React Hook useEffect has missing dependencies: 'formData.institutionType' and 'onChange'. Either include them or remove the dependency array. If 'onChange' changes too often, find the parent component that defines it and wrap that definition in useCallback  react-hooks/exhaustive-deps
+  72:6  warning  React Hook useEffect has missing dependencies: 'formData.educationLevel' and 'onChange'. Either include them or remove the dependency array. If 'onChange' changes too often, find the parent component that defines it and wrap that definition in useCallback   react-hooks/exhaustive-deps
+
+C:\Users\eyite\educo\components\students\form-sections\SiblingsSection.tsx
+  56:9  warning  The 'excludeIds' array makes the dependencies of useCallback Hook (at line 114) change on every render. To fix this, wrap the initialization of 'excludeIds' in its own useMemo() Hook  react-hooks/exhaustive-deps
+
+C:\Users\eyite\educo\components\teachers\form-sections\PersonalInformationSection.tsx
+  47:6  warning  React Hook useEffect has missing dependencies: 'formData.institutionType' and 'onChange'. Either include them or remove the dependency array. If 'onChange' changes too often, find the parent component that defines it and wrap that definition in useCallback  react-hooks/exhaustive-deps
+  54:6  warning  React Hook useEffect has missing dependencies: 'formData.educationLevel' and 'onChange'. Either include them or remove the dependency array. If 'onChange' changes too often, find the parent component that defines it and wrap that definition in useCallback   react-hooks/exhaustive-deps
+
+C:\Users\eyite\educo\components\transfers\TransferRequestsTable.tsx
+  41:6  warning  React Hook useEffect has a missing dependency: 'prevFilterKey'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Users\eyite\educo\components\website\box\BlocksPanel.tsx
+  130:46  warning  React Hook useEffect has a missing dependency: 'onOpenChange'. Either include it or remove the dependency array. If 'onOpenChange' changes too often, find the parent component that defines it and wrap that definition in useCallback  react-hooks/exhaustive-deps
+
+C:\Users\eyite\educo\components\website\box\BoxCanvas.tsx
+   796:6  warning  React Hook useEffect has a missing dependency: 'onChange'. Either include it or remove the dependency array. If 'onChange' changes too often, find the parent component that defines it and wrap that definition in useCallback  react-hooks/exhaustive-deps
+   840:6  warning  React Hook useEffect has missing dependencies: 'editable' and 'marqueeRoom'. Either include them or remove the dependency array                                                                                                  react-hooks/exhaustive-deps
+  3931:6  warning  React Hook useEffect has a missing dependency: 'setSelected'. Either include it or remove the dependency array                                                                                                                   react-hooks/exhaustive-deps
+
+C:\Users\eyite\educo\components\website\box\ItemCrudLayer.tsx
+  88:3  warning  React Hook useEffect contains a call to 'setPlace'. Without a list of dependencies, this can lead to an infinite chain of updates. To fix this, pass [containerRef, selected] as a second argument to the useEffect Hook  react-hooks/exhaustive-deps
+
+✖ 105 problems (0 errors, 105 warnings)
+

@@ -1,0 +1,626 @@
+[
+ {
+  "label": "#0",
+  "shadow": "rgba(149, 157, 165, 0.2) 0px 8px 24px 0px",
+  "radius": "6px",
+  "bg": "rgb(255, 255, 255)"
+ },
+ {
+  "label": "#1",
+  "shadow": "rgba(100, 100, 111, 0.2) 0px 7px 29px 0px",
+  "radius": "6px",
+  "bg": "rgb(255, 255, 255)"
+ },
+ {
+  "label": "#2",
+  "shadow": "rgba(0, 0, 0, 0.15) 1.95px 1.95px 2.6px 0px",
+  "radius": "6px",
+  "bg": "rgb(255, 255, 255)"
+ },
+ {
+  "label": "#3",
+  "shadow": "rgba(0, 0, 0, 0.35) 0px 5px 15px 0px",
+  "radius": "6px",
+  "bg": "rgb(255, 255, 255)"
+ },
+ {
+  "label": "#4\nby 3drops",
+  "shadow": "rgba(0, 0, 0, 0.16) 0px 1px 4px 0px",
+  "radius": "6px",
+  "bg": "rgb(255, 255, 255)"
+ },
+ {
+  "label": "#5",
+  "shadow": "rgba(0, 0, 0, 0.24) 0px 3px 8px 0px",
+  "radius": "6px",
+  "bg": "rgb(255, 255, 255)"
+ },
+ {
+  "label": "#6",
+  "shadow": "rgba(99, 99, 99, 0.2) 0px 2px 8px 0px",
+  "radius": "6px",
+  "bg": "rgb(255, 255, 255)"
+ },
+ {
+  "label": "#7",
+  "shadow": "rgba(0, 0, 0, 0.16) 0px 1px 4px 0px, rgb(51, 51, 51) 0px 0px 0px 3px",
+  "radius": "6px",
+  "bg": "rgb(255, 255, 255)"
+ },
+ {
+  "label": "#8",
+  "shadow": "rgba(0, 0, 0, 0.02) 0px 1px 3px 0px, rgba(27, 31, 35, 0.15) 0px 0px 0px 1px",
+  "radius": "6px",
+  "bg": "rgb(255, 255, 255)"
+ },
+ {
+  "label": "#9\nby Sketch",
+  "shadow": "rgba(0, 0, 0, 0.1) 0px 4px 12px 0px",
+  "radius": "6px",
+  "bg": "rgb(255, 255, 255)"
+ },
+ {
+  "label": "#10",
+  "shadow": "rgba(0, 0, 0, 0.25) 0px 54px 55px 0px, rgba(0, 0, 0, 0.12) 0px -12px 30px 0px, rgba(0, 0, 0, 0.12) 0px 4px 6px 0px, rgba(0, 0, 0, 0.17) 0px 12px 13px 0px, rgba(0, 0, 0, 0.09) 0px -3px 5px 0px",
+  "radius": "6px",
+  "bg": "rgb(255, 255, 255)"
+ },
+ {
+  "label": "#11\nby Sketch",
+  "shadow": "rgba(0, 0, 0, 0.05) 0px 6px 24px 0px, rgba(0, 0, 0, 0.08) 0px 0px 0px 1px",
+  "radius": "6px",
+  "bg": "rgb(255, 255, 255)"
+ },
+ {
+  "label": "#12\nby Sketch",
+  "shadow": "rgba(0, 0, 0, 0.16) 0px 10px 36px 0px, rgba(0, 0, 0, 0.06) 0px 0px 0px 1px",
+  "radius": "6px",
+  "bg": "rgb(255, 255, 255)"
+ },
+ {
+  "label": "#13",
+  "shadow": "rgba(17, 12, 46, 0.15) 0px 48px 100px 0px",
+  "radius": "6px",
+  "bg": "rgb(255, 255, 255)"
+ },
+ {
+  "label": "#14\nby Stripe",
+  "shadow": "rgba(50, 50, 93, 0.25) 0px 50px 100px -20px, rgba(0, 0, 0, 0.3) 0px 30px 60px -30px, rgba(10, 37, 64, 0.35) 0px -2px 6px 0px inset",
+  "radius": "6px",
+  "bg": "rgb(255, 255, 255)"
+ },
+ {
+  "label": "#15\nby Stripe",
+  "shadow": "rgba(255, 255, 255, 0.1) 0px 1px 1px 0px inset, rgba(50, 50, 93, 0.25) 0px 50px 100px -20px, rgba(0, 0, 0, 0.3) 0px 30px 60px -30px",
+  "radius": "6px",
+  "bg": "rgb(255, 255, 255)"
+ },
+ {
+  "label": "#16\nby Stripe",
+  "shadow": "rgba(50, 50, 93, 0.25) 0px 50px 100px -20px, rgba(0, 0, 0, 0.3) 0px 30px 60px -30px",
+  "radius": "6px",
+  "bg": "rgb(255, 255, 255)"
+ },
+ {
+  "label": "#17\nby Stripe",
+  "shadow": "rgba(50, 50, 93, 0.25) 0px 50px 100px -20px, rgba(0, 0, 0, 0.3) 0px 30px 60px -30px",
+  "radius": "6px",
+  "bg": "rgb(255, 255, 255)"
+ },
+ {
+  "label": "#18\nby Stripe",
+  "shadow": "rgba(50, 50, 93, 0.25) 0px 13px 27px -5px, rgba(0, 0, 0, 0.3) 0px 8px 16px -8px",
+  "radius": "6px",
+  "bg": "rgb(255, 255, 255)"
+ },
+ {
+  "label": "#19\nby Stripe",
+  "shadow": "rgba(50, 50, 93, 0.25) 0px 2px 5px -1px, rgba(0, 0, 0, 0.3) 0px 1px 3px -1px",
+  "radius": "6px",
+  "bg": "rgb(255, 255, 255)"
+ },
+ {
+  "label": "#20\nby Stripe",
+  "shadow": "rgb(38, 57, 77) 0px 20px 30px -10px",
+  "radius": "6px",
+  "bg": "rgb(255, 255, 255)"
+ },
+ {
+  "label": "#21\nby Stripe",
+  "shadow": "rgba(6, 24, 44, 0.4) 0px 0px 0px 2px, rgba(6, 24, 44, 0.65) 0px 4px 6px -1px, rgba(255, 255, 255, 0.08) 0px 1px 0px 0px inset",
+  "radius": "6px",
+  "bg": "rgb(255, 255, 255)"
+ },
+ {
+  "label": "#22",
+  "shadow": "rgba(50, 50, 93, 0.25) 0px 6px 12px -2px, rgba(0, 0, 0, 0.3) 0px 3px 7px -3px",
+  "radius": "6px",
+  "bg": "rgb(255, 255, 255)"
+ },
+ {
+  "label": "#23",
+  "shadow": "rgba(50, 50, 93, 0.25) 0px 13px 27px -5px, rgba(0, 0, 0, 0.3) 0px 8px 16px -8px",
+  "radius": "6px",
+  "bg": "rgb(255, 255, 255)"
+ },
+ {
+  "label": "#24",
+  "shadow": "rgba(50, 50, 93, 0.25) 0px 30px 60px -12px, rgba(0, 0, 0, 0.3) 0px 18px 36px -18px",
+  "radius": "6px",
+  "bg": "rgb(255, 255, 255)"
+ },
+ {
+  "label": "#25",
+  "shadow": "rgba(50, 50, 93, 0.25) 0px 30px 60px -12px inset, rgba(0, 0, 0, 0.3) 0px 18px 36px -18px inset",
+  "radius": "6px",
+  "bg": "rgb(255, 255, 255)"
+ },
+ {
+  "label": "#26",
+  "shadow": "rgba(50, 50, 93, 0.25) 0px 50px 100px -20px, rgba(0, 0, 0, 0.3) 0px 30px 60px -30px",
+  "radius": "6px",
+  "bg": "rgb(255, 255, 255)"
+ },
+ {
+  "label": "#27\nby Material",
+  "shadow": "rgba(0, 0, 0, 0.12) 0px 1px 3px 0px, rgba(0, 0, 0, 0.24) 0px 1px 2px 0px",
+  "radius": "6px",
+  "bg": "rgb(255, 255, 255)"
+ },
+ {
+  "label": "#28\nby Material",
+  "shadow": "rgba(0, 0, 0, 0.16) 0px 3px 6px 0px, rgba(0, 0, 0, 0.23) 0px 3px 6px 0px",
+  "radius": "6px",
+  "bg": "rgb(255, 255, 255)"
+ },
+ {
+  "label": "#29\nby Material",
+  "shadow": "rgba(0, 0, 0, 0.19) 0px 10px 20px 0px, rgba(0, 0, 0, 0.23) 0px 6px 6px 0px",
+  "radius": "6px",
+  "bg": "rgb(255, 255, 255)"
+ },
+ {
+  "label": "#30\nby Material",
+  "shadow": "rgba(0, 0, 0, 0.25) 0px 14px 28px 0px, rgba(0, 0, 0, 0.22) 0px 10px 10px 0px",
+  "radius": "6px",
+  "bg": "rgb(255, 255, 255)"
+ },
+ {
+  "label": "#31\nby Material",
+  "shadow": "rgba(0, 0, 0, 0.3) 0px 19px 38px 0px, rgba(0, 0, 0, 0.22) 0px 15px 12px 0px",
+  "radius": "6px",
+  "bg": "rgb(255, 255, 255)"
+ },
+ {
+  "label": "#32\nby Material",
+  "shadow": "rgba(60, 64, 67, 0.3) 0px 1px 2px 0px, rgba(60, 64, 67, 0.15) 0px 2px 6px 2px",
+  "radius": "6px",
+  "bg": "rgb(255, 255, 255)"
+ },
+ {
+  "label": "#33\nby Material",
+  "shadow": "rgba(60, 64, 67, 0.3) 0px 1px 2px 0px, rgba(60, 64, 67, 0.15) 0px 1px 3px 1px",
+  "radius": "6px",
+  "bg": "rgb(255, 255, 255)"
+ },
+ {
+  "label": "#34\nby Tailwind CSS",
+  "shadow": "rgba(0, 0, 0, 0.05) 0px 0px 0px 1px",
+  "radius": "6px",
+  "bg": "rgb(255, 255, 255)"
+ },
+ {
+  "label": "#35\nby Tailwind CSS",
+  "shadow": "rgba(0, 0, 0, 0.05) 0px 1px 2px 0px",
+  "radius": "6px",
+  "bg": "rgb(255, 255, 255)"
+ },
+ {
+  "label": "#36\nby Tailwind CSS",
+  "shadow": "rgba(0, 0, 0, 0.1) 0px 1px 3px 0px, rgba(0, 0, 0, 0.06) 0px 1px 2px 0px",
+  "radius": "6px",
+  "bg": "rgb(255, 255, 255)"
+ },
+ {
+  "label": "#37\nby Tailwind CSS",
+  "shadow": "rgba(0, 0, 0, 0.1) 0px 4px 6px -1px, rgba(0, 0, 0, 0.06) 0px 2px 4px -1px",
+  "radius": "6px",
+  "bg": "rgb(255, 255, 255)"
+ },
+ {
+  "label": "#38\nby Tailwind CSS",
+  "shadow": "rgba(0, 0, 0, 0.1) 0px 10px 15px -3px, rgba(0, 0, 0, 0.05) 0px 4px 6px -2px",
+  "radius": "6px",
+  "bg": "rgb(255, 255, 255)"
+ },
+ {
+  "label": "#39\nby Tailwind CSS",
+  "shadow": "rgba(0, 0, 0, 0.1) 0px 20px 25px -5px, rgba(0, 0, 0, 0.04) 0px 10px 10px -5px",
+  "radius": "6px",
+  "bg": "rgb(255, 255, 255)"
+ },
+ {
+  "label": "#40\nby Tailwind CSS",
+  "shadow": "rgba(0, 0, 0, 0.25) 0px 25px 50px -12px",
+  "radius": "6px",
+  "bg": "rgb(255, 255, 255)"
+ },
+ {
+  "label": "#41\nby Tailwind CSS",
+  "shadow": "rgba(0, 0, 0, 0.06) 0px 2px 4px 0px inset",
+  "radius": "6px",
+  "bg": "rgb(255, 255, 255)"
+ },
+ {
+  "label": "#42",
+  "shadow": "rgba(0, 0, 0, 0.1) 0px 0px 5px 0px, rgba(0, 0, 0, 0.1) 0px 0px 1px 0px",
+  "radius": "6px",
+  "bg": "rgb(255, 255, 255)"
+ },
+ {
+  "label": "#43\nby Tobias Ahlin",
+  "shadow": "rgba(0, 0, 0, 0.07) 0px 1px 2px 0px, rgba(0, 0, 0, 0.07) 0px 2px 4px 0px, rgba(0, 0, 0, 0.07) 0px 4px 8px 0px, rgba(0, 0, 0, 0.07) 0px 8px 16px 0px, rgba(0, 0, 0, 0.07) 0px 16px 32px 0px, rgba(0, 0, 0, 0.07) 0px 32px 64px 0px",
+  "radius": "6px",
+  "bg": "rgb(255, 255, 255)"
+ },
+ {
+  "label": "#44\nby Tobias Ahlin",
+  "shadow": "rgba(0, 0, 0, 0.09) 0px 2px 1px 0px, rgba(0, 0, 0, 0.09) 0px 4px 2px 0px, rgba(0, 0, 0, 0.09) 0px 8px 4px 0px, rgba(0, 0, 0, 0.09) 0px 16px 8px 0px, rgba(0, 0, 0, 0.09) 0px 32px 16px 0px",
+  "radius": "6px",
+  "bg": "rgb(255, 255, 255)"
+ },
+ {
+  "label": "#45\nby feedback.fish",
+  "shadow": "rgba(0, 0, 0, 0.2) 0px 18px 50px -10px",
+  "radius": "6px",
+  "bg": "rgb(255, 255, 255)"
+ },
+ {
+  "label": "#46",
+  "shadow": "rgba(0, 0, 0, 0.1) 0px 10px 50px 0px",
+  "radius": "6px",
+  "bg": "rgb(255, 255, 255)"
+ },
+ {
+  "label": "#47",
+  "shadow": "rgba(0, 0, 0, 0.04) 0px 3px 5px 0px",
+  "radius": "6px",
+  "bg": "rgb(255, 255, 255)"
+ },
+ {
+  "label": "#48\nby Alligator",
+  "shadow": "rgba(240, 46, 170, 0.4) -5px 5px 0px 0px, rgba(240, 46, 170, 0.3) -10px 10px 0px 0px, rgba(240, 46, 170, 0.2) -15px 15px 0px 0px, rgba(240, 46, 170, 0.1) -20px 20px 0px 0px, rgba(240, 46, 170, 0.05) -25px 25px 0px 0px",
+  "radius": "6px",
+  "bg": "rgb(255, 255, 255)"
+ },
+ {
+  "label": "#49\nby Alligator",
+  "shadow": "rgba(240, 46, 170, 0.4) 0px 5px 0px 0px, rgba(240, 46, 170, 0.3) 0px 10px 0px 0px, rgba(240, 46, 170, 0.2) 0px 15px 0px 0px, rgba(240, 46, 170, 0.1) 0px 20px 0px 0px, rgba(240, 46, 170, 0.05) 0px 25px 0px 0px",
+  "radius": "6px",
+  "bg": "rgb(255, 255, 255)"
+ },
+ {
+  "label": "#50\nby Alligator",
+  "shadow": "rgba(240, 46, 170, 0.4) 5px 5px 0px 0px, rgba(240, 46, 170, 0.3) 10px 10px 0px 0px, rgba(240, 46, 170, 0.2) 15px 15px 0px 0px, rgba(240, 46, 170, 0.1) 20px 20px 0px 0px, rgba(240, 46, 170, 0.05) 25px 25px 0px 0px",
+  "radius": "6px",
+  "bg": "rgb(255, 255, 255)"
+ },
+ {
+  "label": "#51",
+  "shadow": "rgba(0, 0, 0, 0.07) 0px 1px 1px 0px, rgba(0, 0, 0, 0.07) 0px 2px 2px 0px, rgba(0, 0, 0, 0.07) 0px 4px 4px 0px, rgba(0, 0, 0, 0.07) 0px 8px 8px 0px, rgba(0, 0, 0, 0.07) 0px 16px 16px 0px",
+  "radius": "6px",
+  "bg": "rgb(255, 255, 255)"
+ },
+ {
+  "label": "#52\nby pqina.nl/doka",
+  "shadow": "rgba(67, 71, 85, 0.27) 0px 0px 4px 0px, rgba(90, 125, 188, 0.05) 0px 4px 16px 0px",
+  "radius": "6px",
+  "bg": "rgb(255, 255, 255)"
+ },
+ {
+  "label": "#53",
+  "shadow": "rgba(0, 0, 0, 0.1) 0px 1px 2px 0px",
+  "radius": "6px",
+  "bg": "rgb(255, 255, 255)"
+ },
+ {
+  "label": "#54\nby Github",
+  "shadow": "rgba(27, 31, 35, 0.04) 0px 1px 0px 0px, rgba(255, 255, 255, 0.25) 0px 1px 0px 0px inset",
+  "radius": "6px",
+  "bg": "rgb(255, 255, 255)"
+ },
+ {
+  "label": "#55\nby Github",
+  "shadow": "rgba(3, 102, 214, 0.3) 0px 0px 0px 3px",
+  "radius": "6px",
+  "bg": "rgb(255, 255, 255)"
+ },
+ {
+  "label": "#56",
+  "shadow": "rgba(14, 30, 37, 0.12) 0px 2px 4px 0px, rgba(14, 30, 37, 0.32) 0px 2px 16px 0px",
+  "radius": "6px",
+  "bg": "rgb(255, 255, 255)"
+ },
+ {
+  "label": "#57\nby Facebook",
+  "shadow": "rgba(0, 0, 0, 0.2) 0px 12px 28px 0px, rgba(0, 0, 0, 0.1) 0px 2px 4px 0px, rgba(255, 255, 255, 0.05) 0px 0px 0px 1px inset",
+  "radius": "6px",
+  "bg": "rgb(255, 255, 255)"
+ },
+ {
+  "label": "#58\nby Shopify",
+  "shadow": "rgba(0, 0, 0, 0.15) 0px 5px 15px 0px",
+  "radius": "6px",
+  "bg": "rgb(255, 255, 255)"
+ },
+ {
+  "label": "#59\nby Shopify",
+  "shadow": "rgba(33, 35, 38, 0.1) 0px 10px 10px -10px",
+  "radius": "6px",
+  "bg": "rgb(255, 255, 255)"
+ },
+ {
+  "label": "#60\nby Fossheim",
+  "shadow": "rgb(0, 0, 255) 0px 0px 0px 2px inset, rgb(255, 255, 255) 10px -10px 0px -3px, rgb(31, 193, 27) 10px -10px 0px 0px, rgb(255, 255, 255) 20px -20px 0px -3px, rgb(255, 217, 19) 20px -20px 0px 0px, rgb(255, 255, 255) 30px -30px 0px -3px, rgb(255, 156, 85) 30px -30px 0px 0px, rgb(255, 255, 255) 40px -40px 0px -3px, rgb(255, 85, 85) 40px -40px 0px 0px",
+  "radius": "0px",
+  "bg": "rgb(255, 255, 255)"
+ },
+ {
+  "label": "#61\nby Fossheim",
+  "shadow": "rgb(85, 91, 255) 0px 0px 0px 3px, rgb(31, 193, 27) 0px 0px 0px 6px, rgb(255, 217, 19) 0px 0px 0px 9px, rgb(255, 156, 85) 0px 0px 0px 12px, rgb(255, 85, 85) 0px 0px 0px 15px",
+  "radius": "0px",
+  "bg": "rgb(255, 255, 255)"
+ },
+ {
+  "label": "#62\nby boxshadows.co",
+  "shadow": "rgb(204, 219, 232) 3px 3px 6px 0px inset, rgba(255, 255, 255, 0.5) -3px -3px 6px 1px inset",
+  "radius": "6px",
+  "bg": "rgb(255, 255, 255)"
+ },
+ {
+  "label": "#63\nby boxshadows.co",
+  "shadow": "rgba(136, 165, 191, 0.48) 6px 2px 16px 0px, rgba(255, 255, 255, 0.8) -6px -2px 16px 0px",
+  "radius": "6px",
+  "bg": "rgb(255, 255, 255)"
+ },
+ {
+  "label": "#64\nby box-shadows.c",
+  "shadow": "rgba(17, 17, 26, 0.1) 0px 1px 0px 0px",
+  "radius": "6px",
+  "bg": "rgb(255, 255, 255)"
+ },
+ {
+  "label": "#65\nby box-shadows.c",
+  "shadow": "rgba(17, 17, 26, 0.05) 0px 1px 0px 0px, rgba(17, 17, 26, 0.1) 0px 0px 8px 0px",
+  "radius": "6px",
+  "bg": "rgb(255, 255, 255)"
+ },
+ {
+  "label": "#66\nby box-shadows.c",
+  "shadow": "rgba(17, 17, 26, 0.1) 0px 0px 16px 0px",
+  "radius": "6px",
+  "bg": "rgb(255, 255, 255)"
+ },
+ {
+  "label": "#67\nby box-shadows.c",
+  "shadow": "rgba(17, 17, 26, 0.05) 0px 4px 16px 0px, rgba(17, 17, 26, 0.05) 0px 8px 32px 0px",
+  "radius": "6px",
+  "bg": "rgb(255, 255, 255)"
+ },
+ {
+  "label": "#68\nby box-shadows.c",
+  "shadow": "rgba(17, 17, 26, 0.1) 0px 4px 16px 0px, rgba(17, 17, 26, 0.05) 0px 8px 32px 0px",
+  "radius": "6px",
+  "bg": "rgb(255, 255, 255)"
+ },
+ {
+  "label": "#69\nby box-shadows.c",
+  "shadow": "rgba(17, 17, 26, 0.1) 0px 1px 0px 0px, rgba(17, 17, 26, 0.1) 0px 8px 24px 0px, rgba(17, 17, 26, 0.1) 0px 16px 48px 0px",
+  "radius": "6px",
+  "bg": "rgb(255, 255, 255)"
+ },
+ {
+  "label": "#70\nby box-shadows.c",
+  "shadow": "rgba(17, 17, 26, 0.1) 0px 4px 16px 0px, rgba(17, 17, 26, 0.1) 0px 8px 24px 0px, rgba(17, 17, 26, 0.1) 0px 16px 56px 0px",
+  "radius": "6px",
+  "bg": "rgb(255, 255, 255)"
+ },
+ {
+  "label": "#71\nby box-shadows.c",
+  "shadow": "rgba(17, 17, 26, 0.1) 0px 8px 24px 0px, rgba(17, 17, 26, 0.1) 0px 16px 56px 0px, rgba(17, 17, 26, 0.1) 0px 24px 80px 0px",
+  "radius": "6px",
+  "bg": "rgb(255, 255, 255)"
+ },
+ {
+  "label": "#72\nby 10er.app",
+  "shadow": "rgba(50, 50, 105, 0.15) 0px 2px 5px 0px, rgba(0, 0, 0, 0.05) 0px 1px 1px 0px",
+  "radius": "6px",
+  "bg": "rgb(255, 255, 255)"
+ },
+ {
+  "label": "#73\nby wip.chat",
+  "shadow": "rgba(0, 0, 0, 0.15) 0px 15px 25px 0px, rgba(0, 0, 0, 0.05) 0px 5px 10px 0px",
+  "radius": "6px",
+  "bg": "rgb(255, 255, 255)"
+ },
+ {
+  "label": "#74",
+  "shadow": "rgba(0, 0, 0, 0.15) 2.4px 2.4px 3.2px 0px",
+  "radius": "6px",
+  "bg": "rgb(255, 255, 255)"
+ },
+ {
+  "label": "#75\nby Airbnb",
+  "shadow": "rgba(0, 0, 0, 0.15) 0px 3px 3px 0px",
+  "radius": "6px",
+  "bg": "rgb(255, 255, 255)"
+ },
+ {
+  "label": "#76\nby Airbnb",
+  "shadow": "rgba(0, 0, 0, 0.08) 0px 4px 12px 0px",
+  "radius": "6px",
+  "bg": "rgb(255, 255, 255)"
+ },
+ {
+  "label": "#77\nby Airbnb",
+  "shadow": "rgba(0, 0, 0, 0.15) 0px 2px 8px 0px",
+  "radius": "6px",
+  "bg": "rgb(255, 255, 255)"
+ },
+ {
+  "label": "#78\nby Airbnb",
+  "shadow": "rgba(0, 0, 0, 0.18) 0px 2px 4px 0px",
+  "radius": "6px",
+  "bg": "rgb(255, 255, 255)"
+ },
+ {
+  "label": "#79\nby ls.graphics",
+  "shadow": "rgba(0, 0, 0, 0.1) -4px 9px 25px -6px",
+  "radius": "6px",
+  "bg": "rgb(255, 255, 255)"
+ },
+ {
+  "label": "#80\nby ls.graphics",
+  "shadow": "rgba(0, 0, 0, 0.2) 0px 60px 40px -7px",
+  "radius": "6px",
+  "bg": "rgb(255, 255, 255)"
+ },
+ {
+  "label": "#81\nby Lonely Planet",
+  "shadow": "rgba(0, 0, 0, 0.4) 0px 30px 90px 0px",
+  "radius": "6px",
+  "bg": "rgb(255, 255, 255)"
+ },
+ {
+  "label": "#82\nby Mac",
+  "shadow": "rgba(0, 0, 0, 0.56) 0px 22px 70px 4px",
+  "radius": "6px",
+  "bg": "rgb(255, 255, 255)"
+ },
+ {
+  "label": "#83\nby Mac",
+  "shadow": "rgba(0, 0, 0, 0.2) 0px 20px 30px 0px",
+  "radius": "6px",
+  "bg": "rgb(255, 255, 255)"
+ },
+ {
+  "label": "#84\nby Mac",
+  "shadow": "rgba(255, 255, 255, 0.2) 0px 0px 0px 1px inset, rgba(0, 0, 0, 0.9) 0px 0px 0px 1px",
+  "radius": "6px",
+  "bg": "rgb(255, 255, 255)"
+ },
+ {
+  "label": "#85\nby pqina.nl/doka",
+  "shadow": "rgba(0, 0, 0, 0.25) 0px 1px 1px 0px, rgba(0, 0, 0, 0.25) 0px 2px 8px 0px, rgba(255, 255, 255, 0.1) 0px 0px 0px 1px inset",
+  "radius": "6px",
+  "bg": "rgb(255, 255, 255)"
+ },
+ {
+  "label": "#86\nby Typedream",
+  "shadow": "rgba(0, 0, 0, 0.09) 0px 3px 12px 0px",
+  "radius": "6px",
+  "bg": "rgb(255, 255, 255)"
+ },
+ {
+  "label": "#87",
+  "shadow": "rgba(0, 0, 0, 0.17) 0px -23px 25px 0px inset, rgba(0, 0, 0, 0.15) 0px -36px 30px 0px inset, rgba(0, 0, 0, 0.1) 0px -79px 40px 0px inset, rgba(0, 0, 0, 0.06) 0px 2px 1px 0px, rgba(0, 0, 0, 0.09) 0px 4px 2px 0px, rgba(0, 0, 0, 0.09) 0px 8px 4px 0px, rgba(0, 0, 0, 0.09) 0px 16px 8px 0px, rgba(0, 0, 0, 0.09) 0px 32px 16px 0px",
+  "radius": "35px",
+  "bg": "rgb(255, 255, 255)"
+ },
+ {
+  "label": "#88",
+  "shadow": "rgba(0, 0, 0, 0.45) 0px 25px 20px -20px",
+  "radius": "6px",
+  "bg": "rgb(255, 255, 255)"
+ },
+ {
+  "label": "#89",
+  "shadow": "rgba(0, 0, 0, 0.4) 0px 2px 4px 0px, rgba(0, 0, 0, 0.3) 0px 7px 13px -3px, rgba(0, 0, 0, 0.2) 0px -3px 0px 0px inset",
+  "radius": "6px",
+  "bg": "rgb(255, 255, 255)"
+ },
+ {
+  "label": "#90",
+  "shadow": "rgba(0, 0, 0, 0.05) 0px 0px 0px 1px, rgb(209, 213, 219) 0px 0px 0px 1px inset",
+  "radius": "6px",
+  "bg": "rgb(255, 255, 255)"
+ },
+ {
+  "label": "#91",
+  "shadow": "rgba(0, 0, 0, 0.35) 0px -50px 36px -28px inset",
+  "radius": "6px",
+  "bg": "rgb(255, 255, 255)"
+ },
+ {
+  "label": "#92\nby Trello",
+  "shadow": "rgba(9, 30, 66, 0.25) 0px 1px 1px 0px, rgba(9, 30, 66, 0.13) 0px 0px 1px 1px",
+  "radius": "6px",
+  "bg": "rgb(255, 255, 255)"
+ },
+ {
+  "label": "#93\nby Trello",
+  "shadow": "rgba(9, 30, 66, 0.25) 0px 4px 8px -2px, rgba(9, 30, 66, 0.08) 0px 0px 0px 1px",
+  "radius": "6px",
+  "bg": "rgb(255, 255, 255)"
+ },
+ {
+  "label": "#94\nby Antimetal",
+  "shadow": "rgba(14, 63, 126, 0.04) 0px 0px 0px 1px, rgba(42, 51, 69, 0.04) 0px 1px 1px -0.5px, rgba(42, 51, 70, 0.04) 0px 3px 3px -1.5px, rgba(42, 51, 70, 0.04) 0px 6px 6px -3px, rgba(14, 63, 126, 0.04) 0px 12px 12px -6px, rgba(14, 63, 126, 0.04) 0px 24px 24px -12px",
+  "radius": "6px",
+  "bg": "rgb(255, 255, 255)"
+ },
+ {
+  "label": "#95\nby Antimetal",
+  "shadow": "rgba(14, 63, 126, 0.06) 0px 0px 0px 1px, rgba(42, 51, 70, 0.03) 0px 1px 1px -0.5px, rgba(42, 51, 70, 0.04) 0px 2px 2px -1px, rgba(42, 51, 70, 0.04) 0px 3px 3px -1.5px, rgba(42, 51, 70, 0.03) 0px 5px 5px -2.5px, rgba(42, 51, 70, 0.03) 0px 10px 10px -5px, rgba(42, 51, 70, 0.03) 0px 24px 24px -8px",
+  "radius": "6px",
+  "bg": "rgb(255, 255, 255)"
+ },
+ {
+  "label": "\"This was an easy bu",
+  "shadow": "rgba(0, 12, 32, 0.04) 0px 0px 1px 0px, rgba(10, 31, 68, 0.06) 0px 10px 16px 0px",
+  "radius": "5px",
+  "bg": "rgb(51, 51, 51)"
+ },
+ {
+  "label": "\"It's a very useful ",
+  "shadow": "rgba(0, 12, 32, 0.04) 0px 0px 1px 0px, rgba(10, 31, 68, 0.06) 0px 10px 16px 0px",
+  "radius": "5px",
+  "bg": "rgb(51, 51, 51)"
+ },
+ {
+  "label": "\"Very useful! I do n",
+  "shadow": "rgba(0, 12, 32, 0.04) 0px 0px 1px 0px, rgba(10, 31, 68, 0.06) 0px 10px 16px 0px",
+  "radius": "5px",
+  "bg": "rgb(51, 51, 51)"
+ },
+ {
+  "label": "\"After seeing the be",
+  "shadow": "rgba(0, 12, 32, 0.04) 0px 0px 1px 0px, rgba(10, 31, 68, 0.06) 0px 10px 16px 0px",
+  "radius": "5px",
+  "bg": "rgb(51, 51, 51)"
+ },
+ {
+  "label": "\"The best developer-",
+  "shadow": "rgba(0, 12, 32, 0.04) 0px 0px 1px 0px, rgba(10, 31, 68, 0.06) 0px 10px 16px 0px",
+  "radius": "5px",
+  "bg": "rgb(51, 51, 51)"
+ },
+ {
+  "label": "\"CSS Scan by @gvrizz",
+  "shadow": "rgba(0, 12, 32, 0.04) 0px 0px 1px 0px, rgba(10, 31, 68, 0.06) 0px 10px 16px 0px",
+  "radius": "5px",
+  "bg": "rgb(51, 51, 51)"
+ },
+ {
+  "label": "\"This tool is insane",
+  "shadow": "rgba(0, 12, 32, 0.04) 0px 0px 1px 0px, rgba(10, 31, 68, 0.06) 0px 10px 16px 0px",
+  "radius": "5px",
+  "bg": "rgb(51, 51, 51)"
+ },
+ {
+  "label": "\"I was told \"but the",
+  "shadow": "rgba(0, 12, 32, 0.04) 0px 0px 1px 0px, rgba(10, 31, 68, 0.06) 0px 10px 16px 0px",
+  "radius": "5px",
+  "bg": "rgb(51, 51, 51)"
+ }
+]

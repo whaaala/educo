@@ -24,11 +24,33 @@ import { LAYOUT_CSS, RUNG_PX, RUNG_EM } from "./layout";
  */
 export { RUNG_PX as BREAKPOINTS, RUNG_EM as BREAKPOINTS_EM };
 
+/**
+ * A COMFORTABLE MEASURE — paragraphs under 75 characters a line (design foundation, Web Design Rule #1, p. 102). ONE rule,
+ * used by the published page (BASE_CSS) and by the canvas, which does not load BASE_CSS: without it a long paragraph ran
+ * the full width of its block in the editor and stopped at the measure on the page — canvas ≠ published (#74).
+ *
+ * THE NUMBER IS MEASURED, NOT ASSUMED (#86). It was `68ch`, which reads as "68 characters" and is not: `ch` is the width of
+ * the digit 0, which in most faces is far wider than an average letter (DM Sans: 12.5px against ~9px at body size).
+ * Counted in a browser across all 27 body fonts of the library, 68ch set 76–99 characters a line — every one of them
+ * over the rule. `em` alone fails the other way on narrow faces (EB Garamond: 86 at 34em). The smaller of the two holds
+ * for every font: `min(56ch, 32em)` gives 62–70 characters on average and never more than 75 on any line.
+ * Guarded in a real browser by tests/e2e/paragraph-measure.spec.ts, which counts the lines font by font.
+ */
+export const PARAGRAPH_MEASURE = "min(56ch, 32em)";
+export const measureCss = (scope: string) => `${scope} p { max-width: ${PARAGRAPH_MEASURE}; }`;
+
 export const BASE_CSS = `
 /* ── Reset ─────────────────────────────────────────────────────────────────── */
 .eu-root *, .eu-root *::before, .eu-root *::after { box-sizing: border-box; }
 .eu-root * { margin: 0; }
 .eu-root { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+/* THE PAGE IS A SIZE CONTAINER (#137, 2026-09-28): every container-relative unit on the page (the type unit --box-t, the
+   spacing unit --box-u on top-level bands, the page gutter) reads the page's CONTENT width here, not the window's — the
+   window includes the scrollbar, so a 1024px page read 1041 and set its type 1.7% larger than the editor's 1024px frame,
+   and headings wrapped in the Preview that did not on the canvas. Measured in this Chromium (probe-t6): a size container
+   does NOT capture a fixed descendant (container-type applies no layout containment since the 2023 spec change), so
+   "Floats on screen" bars still hold against the window. */
+.eu-root { container-type: inline-size; }
 
 /* ── Responsive units: respect the user's browser font size (percentage, never fixed px) ── */
 :root { font-size: 100%; } /* 1rem = the user's base (16px default); scales with their preference */
@@ -55,7 +77,7 @@ export const BASE_CSS = `
 .eu-root h1 { font-size: clamp(var(--eu-text-3xl), 4vw + 1rem, var(--eu-text-6xl)); }
 .eu-root h2 { font-size: clamp(var(--eu-text-2xl), 3vw + 1rem, var(--eu-text-4xl)); }
 .eu-root h3 { font-size: clamp(var(--eu-text-xl), 2vw + 1rem, var(--eu-text-3xl)); }
-.eu-root p  { max-width: 68ch; } /* comfortable measure */
+${measureCss(".eu-root")} /* comfortable measure */
 .eu-root a  { color: var(--eu-color-brand); }
 .eu-root code, .eu-root pre { font-family: var(--eu-font-mono); }
 
@@ -79,7 +101,10 @@ ${LAYOUT_CSS}
  */
 
 /* ── Basic user interface + accessibility ──────────────────────────────────── */
-.eu-root :focus-visible { outline: 2px solid var(--eu-color-brand); outline-offset: 2px; border-radius: 3px; }
+/* The focus ring is in rem, and that is an accessibility decision rather than a tidy-up: a reader who has
+   enlarged their browser text gets larger type AND a proportionally larger ring, instead of a 2px hairline
+   around 32px words that is harder to see than the one around 16px words. Identical at the default size. */
+.eu-root :focus-visible { outline: 0.125rem solid var(--bx-focus, var(--eu-color-brand)); outline-offset: 0.125rem; border-radius: 0.1875rem; }
 .eu-root :focus:not(:focus-visible) { outline: none; }
 .eu-root ::selection { background: var(--eu-color-primary-200); color: var(--eu-color-text); }
 .eu-root ::placeholder { color: var(--eu-color-muted); opacity: 1; }

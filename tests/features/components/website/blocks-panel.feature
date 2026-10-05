@@ -62,8 +62,105 @@ Feature: A floating Blocks panel — modern, spacious, out of the way
     Given the Blocks panel is open
     Then each tile is draggable and sets the palette block type on drag start
 
+  # ── Naming: the three layout blocks are ONE object in three arrangements ──
+  # They were Section / Columns / Row, and UAT found four problems with that in one sitting:
+  # "Section" also named the top bar's tinted band (a different thing); this tile's hint described that
+  # band rather than the tile; "Columns" named a picker that sweeps across AND down; and the three names
+  # gave a reader no way to tell them apart. They are the same node — Arrange as switches between them in
+  # one click — so each is named for the arrangement it produces.
+  Scenario: The layout blocks are named for what they do, and ordered the same way
+    Given the Blocks panel is open
+    Then the Layout group offers "Stack", then "Side by side", then "Grid"
+    And "Stack" is described as "Blocks one under the other"
+    And "Side by side" is described as "Blocks in a row, across the page"
+    And "Grid" is described as "Sweep across and down. Widths line up across the whole page."
+    And no tile is called "Section", because the top bar already uses that idea for something else
+
+  Scenario: The top bar adds a BAND, and says so
+    Then the top bar's primary button reads "Add a band"
+    And it creates a tinted, full-width, padded strip
+    And that is a different result from the "Stack" tile, which adds a plain transparent box
+
+  Scenario Outline: A container is called the same thing everywhere it is named
+    # The inspector, the drag preview and the palette each used to compute this themselves, which is how
+    # they drifted. One resolver now answers for all three.
+    Given a container arranged "<arrangement>"
+    Then the inspector titles it "<name>"
+    And dragging it shows "<name>" on the preview
+
+    Examples:
+      | arrangement   | name         |
+      | column        | Stack        |
+      | row           | Side by side |
+      | grid          | Grid         |
+
+  # ── Adding a block never moves your insertion point ──
+  # Reported: "i can no longer add stack one after the other." Two deliberate behaviours were colliding. A
+  # block is inserted into the SELECTED container — which is what makes "select a cell, add a Grid inside
+  # it" work, and was itself the fix for an earlier report. And a freshly added block is SELECTED, so you
+  # can see and style what landed. Together, every click went one level deeper: three Stack clicks gave
+  # three boxes nested inside one another, with no way to stop it short of clicking elsewhere between adds.
+  Scenario: Clicking the same tile repeatedly adds blocks side by side down the page
+    Given the Box Builder is open on an empty page
+    When I click "Stack" three times
+    Then there are three blocks at page level
+    And none of them is inside another
+
+  Scenario: A container I selected myself still receives the block inside it
+    Given the Box Builder is open on an empty page
+    And I have added a "Stack"
+    When I click that Stack on the canvas to select it
+    And I click "Stack" in the panel
+    Then the new block lands INSIDE the one I selected
+    # The distinction that makes both true: a selection the BUILDER made for you on add is not a place to
+    # insert into — only one YOU made is. Repeating a click repeats the result.
+
+  # ── The page is exactly as tall as what is on it ──
+  # Reported from the canvas: adding a Stack left a strip of dead space underneath it. The page root carried
+  # a 160px minimum unconditionally while an empty Stack is 128px, so 32px sat below the block — on the root,
+  # where there is no control to remove it. It was also a canvas ≠ export break: the exporter writes no page
+  # minimum, so the editor drew a taller page than the published one for anything shorter than 160px.
+  Scenario: Adding a block leaves no space below it
+    Given the Box Builder is open on an empty page
+    When I add a "Stack"
+    Then the page ends where its content ends
+    And no strip of empty space appears beneath the block
+
+  Scenario: An empty page still has a floor to drop into
+    Given the Box Builder is open on an empty page
+    Then the page is still a visible box I can aim a block at
+    # The floor is an OFFER for an empty page, exactly like the empty box's own courtesy height —
+    # never a size imposed on a page that has content.
+
+  Scenario: The page grows past that floor with real content
+    Given the Box Builder is open on an empty page
+    When I add three bands from the top bar
+    Then the page is taller than the empty-page floor
+
   # ── Design ──
   Scenario: The panel has a modern, spacious look
     Given the Blocks panel is open
     Then it is a rounded, shadowed, translucent card with generous spacing
     And each tile shows the icon in a tinted rounded square, the name, and a one-line hint
+
+  # ── Docked beside the page (#55) ───────────────────────────────────────────
+  # tests/components/website/BlocksPanel.test.tsx · scripts/uat/uat55.js (headed, real window sizes)
+  Scenario: On a laptop screen and up, the open panel sits beside the page, not over it
+    Given my screen is 1536 by 864
+    When I open the blocks panel
+    Then the page moves over to make room, and no block is hidden under the panel
+    And I can drop a block into every stack of a row, including the first
+    And a device canvas that no longer fits is shrunk to fit, with the percentage stated
+    Because floating over the page it hid the left third: the first stack of a row showed
+      4px and another none, so nothing could be dropped into them
+
+  Scenario: The docked panel stays open while I work on the page
+    Given the blocks panel is open beside the page
+    When I click a block on the page to select or edit it
+    Then the panel stays open and the page does not move under my pointer
+    And the ✕ button, Escape or B still close it, and the page slides back
+
+  Scenario: On a phone the panel still floats over the page
+    Given a phone-sized window
+    When I open the blocks panel
+    Then it floats over the page, and a click outside closes it, as before

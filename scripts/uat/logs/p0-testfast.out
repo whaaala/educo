@@ -1,0 +1,1179 @@
+
+> educo@0.1.0 test:fast
+> node scripts/test-fast.js
+
+
+=== building (next build) ===
+   ▲ Next.js 15.1.3
+
+   Creating an optimized production build ...
+ ✓ Compiled successfully
+   Linting and checking validity of types ...
+
+./app/admin/parents/add/page.tsx
+97:6  Warning: React Hook useEffect has a missing dependency: 'formData.relationship'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./app/admin/parents/fees/page.tsx
+1297:5  Warning: React Hook useMemo has missing dependencies: 'handleDeleteRecord', 'handleDownloadStatement', 'handleEditRecord', 'handlePrintStatement', and 'handleSendMessage'. Either include them or remove the dependency array.  react-hooks/exhaustive-deps
+1332:6  Warning: React Hook useMemo has missing dependencies: 'handleDeleteRecord', 'handleDownloadStatement', 'handleEditRecord', 'handlePrintStatement', and 'handleSendMessage'. Either include them or remove the dependency array.  react-hooks/exhaustive-deps
+
+./app/admin/parents/[id]/page.tsx
+271:6  Warning: React Hook useMemo has an unnecessary dependency: 'contextMeetings'. Either exclude it or remove the dependency array.  react-hooks/exhaustive-deps
+5979:6  Warning: React Hook useCallback has a missing dependency: 'formatCurrency'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./app/admin/settings/communication/page.tsx
+469:6  Warning: React Hook useEffect has missing dependencies: 'getTenantSettings' and 'loadTenantSettings'. Either include them or remove the dependency array.  react-hooks/exhaustive-deps
+
+./app/drive/page.tsx
+347:6  Warning: React Hook useMemo has an unnecessary dependency: 'items'. Either exclude it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./app/parents/children/[id]/page.tsx
+283:9  Warning: The 'paymentHistoryRaw' logical expression could make the dependencies of useMemo Hook (at line 293) change on every render. To fix this, wrap the initialization of 'paymentHistoryRaw' in its own useMemo() Hook.  react-hooks/exhaustive-deps
+283:9  Warning: The 'paymentHistoryRaw' logical expression could make the dependencies of useMemo Hook (at line 299) change on every render. To fix this, wrap the initialization of 'paymentHistoryRaw' in its own useMemo() Hook.  react-hooks/exhaustive-deps
+
+./app/parents/meetings/page.tsx
+255:6  Warning: React Hook useMemo has an unnecessary dependency: 'contextMeetings'. Either exclude it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./app/staff/leave-requests/page.tsx
+125:6  Warning: React Hook useEffect has a missing dependency: 'selectedRequest'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./app/students/attendance/page.tsx
+264:9  Warning: The 'userAssignedClasses' logical expression could make the dependencies of useEffect Hook (at line 416) change on every render. To fix this, wrap the initialization of 'userAssignedClasses' in its own useMemo() Hook.  react-hooks/exhaustive-deps
+
+./app/students/transfers/page.tsx
+155:6  Warning: React Hook useEffect has a missing dependency: 'selectedRequest'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./app/teachers/portal/dashboard/page.tsx
+116:6  Warning: React Hook useMemo has an unnecessary dependency: 'contextMeetings'. Either exclude it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./app/teachers/portal/meetings/page.tsx
+280:6  Warning: React Hook useMemo has an unnecessary dependency: 'contextMeetings'. Either exclude it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./app/website/box-demo/page.tsx
+356:9  Warning: The 'switchPage' function makes the dependencies of useCallback Hook (at line 429) change on every render. To fix this, wrap the definition of 'switchPage' in its own useCallback() Hook.  react-hooks/exhaustive-deps
+
+./components/admin/parents/form-sections/LinkStudentsSection.tsx
+131:9  Warning: The 'linkedStudentIds' logical expression could make the dependencies of useMemo Hook (at line 170) change on every render. To fix this, wrap the initialization of 'linkedStudentIds' in its own useMemo() Hook.  react-hooks/exhaustive-deps
+
+./components/communication/call-ui/EmojiReactionBar.tsx
+300:6  Warning: React Hook useEffect has missing dependencies: 'fetchTrendingGifs' and 'trendingGifs.length'. Either include them or remove the dependency array.  react-hooks/exhaustive-deps
+
+./components/communication/CallSettings.tsx
+300:6  Warning: React Hook useEffect has missing dependencies: 'selectedCamera', 'selectedMicrophone', and 'selectedSpeaker'. Either include them or remove the dependency array.  react-hooks/exhaustive-deps
+
+./components/communication/ChatRoom.tsx
+104:6  Warning: React Hook useEffect has a missing dependency: 'manager'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+137:6  Warning: React Hook useCallback has a missing dependency: 'manager'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./components/communication/VideoCallRoom.tsx
+267:6  Warning: React Hook useEffect has a missing dependency: 'manager'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+347:6  Warning: React Hook useCallback has a missing dependency: 'manager'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+355:6  Warning: React Hook useCallback has a missing dependency: 'manager'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+420:6  Warning: React Hook useCallback has a missing dependency: 'manager'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+472:5  Warning: React Hook useCallback has a missing dependency: 'manager'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./components/communication/VoiceCallRoom.tsx
+139:69  Warning: The ref value 'animationRef.current' will likely have changed by the time this effect cleanup function runs. If this ref points to a node rendered by React, copy 'animationRef.current' to a variable inside the effect, and use that variable in the cleanup function.  react-hooks/exhaustive-deps
+238:6  Warning: React Hook useEffect has a missing dependency: 'manager'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+247:6  Warning: React Hook useCallback has a missing dependency: 'manager'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+269:6  Warning: React Hook useCallback has a missing dependency: 'manager'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+287:6  Warning: React Hook useCallback has a missing dependency: 'manager'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./components/discipline/DisciplineRecordsTable.tsx
+41:6  Warning: React Hook useEffect has a missing dependency: 'prevFilterKey'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./components/layout/Header.tsx
+90:6  Warning: React Hook useEffect has a missing dependency: 'languageIcons'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./components/layout/Sidebar.tsx
+422:6  Warning: React Hook useEffect has a missing dependency: 'setIsMobileSidebarOpen'. Either include it or remove the dependency array. If 'setIsMobileSidebarOpen' changes too often, find the parent component that defines it and wrap that definition in useCallback.  react-hooks/exhaustive-deps
+
+./components/leave/LeaveRequestsTable.tsx
+38:6  Warning: React Hook useEffect has a missing dependency: 'prevFilterKey'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./components/library/RenewLoanModal.tsx
+54:6  Warning: React Hook React.useEffect has missing dependencies: 'getDefaultNewDueDate' and 'loan'. Either include them or remove the dependency array.  react-hooks/exhaustive-deps
+
+./components/parents/dashboard/use-dashboard-layout.ts
+69:58  Warning: React Hook useMemo has a missing dependency: 'availableIds'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+69:59  Warning: React Hook useMemo has a complex expression in the dependency array. Extract it to a separate variable so it can be statically checked.  react-hooks/exhaustive-deps
+70:58  Warning: React Hook useMemo has a missing dependency: 'defaultOrder'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+70:59  Warning: React Hook useMemo has a complex expression in the dependency array. Extract it to a separate variable so it can be statically checked.  react-hooks/exhaustive-deps
+
+./components/parents/MessageTeacherModal.tsx
+149:6  Warning: React Hook useEffect has a missing dependency: 'handleClose'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./components/performance/CompletePerformanceReviewModal.tsx
+59:6  Warning: React Hook useEffect has a missing dependency: 'formData'. Either include it or remove the dependency array. You can also do a functional update 'setFormData(f => ...)' if you only need 'formData' in the 'setFormData' call.  react-hooks/exhaustive-deps
+
+./components/shared/AutoReminderScheduleModal.tsx
+212:6  Warning: React Hook useEffect has a missing dependency: 'reminders'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./components/shared/BulkDeleteModal.tsx
+121:6  Warning: React Hook useEffect has a missing dependency: 'items.length'. Either include it or remove the dependency array. If 'setInitialItemCount' needs the current value of 'items.length', you can also switch to useReducer instead of useState and read 'items.length' in the reducer.  react-hooks/exhaustive-deps
+
+./components/shared/DateRangePicker.tsx
+94:6  Warning: React Hook useEffect has missing dependencies: 'quickOptions' and 'value'. Either include them or remove the dependency array.  react-hooks/exhaustive-deps
+109:6  Warning: React Hook useEffect has a missing dependency: 'quickOptions'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./components/shared/DocEditor/DocEditor.tsx
+1505:6  Warning: React Hook useCallback has a missing dependency: 'activeTabId'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+2943:6  Warning: React Hook useCallback has a missing dependency: 'showToast'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+2975:6  Warning: React Hook useCallback has a missing dependency: 'showToast'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+2989:6  Warning: React Hook useCallback has a missing dependency: 'showToast'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+3002:6  Warning: React Hook useCallback has a missing dependency: 'focusEditor'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+3019:6  Warning: React Hook useCallback has a missing dependency: 'showToast'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+3075:6  Warning: React Hook useCallback has a missing dependency: 'focusEditor'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+3922:5  Warning: React Hook useCallback has a missing dependency: 'tenantId'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+4222:6  Warning: React Hook useEffect has missing dependencies: 'clearFindHighlights' and 'findNextAndHighlight'. Either include them or remove the dependency array.  react-hooks/exhaustive-deps
+4670:9  Warning: The 'handleInsertImageFromFile' function makes the dependencies of useCallback Hook (at line 4981) change on every render. To fix this, wrap the definition of 'handleInsertImageFromFile' in its own useCallback() Hook.  react-hooks/exhaustive-deps
+10551:53  Warning: The ref value 'panelRef.current' will likely have changed by the time this effect cleanup function runs. If this ref points to a node rendered by React, copy 'panelRef.current' to a variable inside the effect, and use that variable in the cleanup function.  react-hooks/exhaustive-deps
+
+./components/shared/EditorMenus.tsx
+91:53  Warning: The ref value 'panelRef.current' will likely have changed by the time this effect cleanup function runs. If this ref points to a node rendered by React, copy 'panelRef.current' to a variable inside the effect, and use that variable in the cleanup function.  react-hooks/exhaustive-deps
+
+./components/shared/EditorViewMenus.tsx
+68:53  Warning: The ref value 'panelRef.current' will likely have changed by the time this effect cleanup function runs. If this ref points to a node rendered by React, copy 'panelRef.current' to a variable inside the effect, and use that variable in the cleanup function.  react-hooks/exhaustive-deps
+
+./components/shared/FilterButton.tsx
+48:6  Warning: React Hook useEffect has a missing dependency: 'fields'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./components/shared/FormModal.tsx
+195:9  Warning: The 'allFields' conditional could make the dependencies of useCallback Hook (at line 218) change on every render. Move it inside the useCallback callback. Alternatively, wrap the initialization of 'allFields' in its own useMemo() Hook.  react-hooks/exhaustive-deps
+
+./components/shared/PresenterView.tsx
+40:79  Warning: React Hook React.useCallback has a missing dependency: 'clamp'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+41:79  Warning: React Hook React.useCallback has a missing dependency: 'clamp'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./components/shared/SiteBuilder/SiteBuilder.tsx
+307:9  Warning: The 'headerLayout' logical expression could make the dependencies of useCallback Hook (at line 314) change on every render. To fix this, wrap the initialization of 'headerLayout' in its own useMemo() Hook.  react-hooks/exhaustive-deps
+307:9  Warning: The 'headerLayout' logical expression could make the dependencies of useCallback Hook (at line 319) change on every render. To fix this, wrap the initialization of 'headerLayout' in its own useMemo() Hook.  react-hooks/exhaustive-deps
+
+./components/shared/SlideEditor/SlideCanvas.tsx
+512:6  Warning: React Hook useCallback has a missing dependency: 'getTopGroupId'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+544:6  Warning: React Hook useEffect has missing dependencies: 'applyCrop', 'croppingId', and 'getTopGroupId'. Either include them or remove the dependency array.  react-hooks/exhaustive-deps
+617:6  Warning: React Hook useCallback has a missing dependency: 'getTopGroupId'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+2055:6  Warning: React Hook useCallback has missing dependencies: 'obj.cols' and 'obj.rows'. Either include them or remove the dependency array.  react-hooks/exhaustive-deps
+
+./components/shared/SlideEditor/SlideEditor.tsx
+1025:9  Warning: The 'currentObjects' logical expression could make the dependencies of useCallback Hook (at line 1070) change on every render. To fix this, wrap the initialization of 'currentObjects' in its own useMemo() Hook.  react-hooks/exhaustive-deps
+1025:9  Warning: The 'currentObjects' logical expression could make the dependencies of useCallback Hook (at line 1085) change on every render. To fix this, wrap the initialization of 'currentObjects' in its own useMemo() Hook.  react-hooks/exhaustive-deps
+1025:9  Warning: The 'currentObjects' logical expression could make the dependencies of useCallback Hook (at line 1098) change on every render. To fix this, wrap the initialization of 'currentObjects' in its own useMemo() Hook.  react-hooks/exhaustive-deps
+1025:9  Warning: The 'currentObjects' logical expression could make the dependencies of useCallback Hook (at line 1170) change on every render. To fix this, wrap the initialization of 'currentObjects' in its own useMemo() Hook.  react-hooks/exhaustive-deps
+1025:9  Warning: The 'currentObjects' logical expression could make the dependencies of useCallback Hook (at line 1216) change on every render. To fix this, wrap the initialization of 'currentObjects' in its own useMemo() Hook.  react-hooks/exhaustive-deps
+1025:9  Warning: The 'currentObjects' logical expression could make the dependencies of useCallback Hook (at line 1238) change on every render. To fix this, wrap the initialization of 'currentObjects' in its own useMemo() Hook.  react-hooks/exhaustive-deps
+1025:9  Warning: The 'currentObjects' logical expression could make the dependencies of useCallback Hook (at line 1253) change on every render. To fix this, wrap the initialization of 'currentObjects' in its own useMemo() Hook.  react-hooks/exhaustive-deps
+1153:6  Warning: React Hook useCallback has unnecessary dependencies: 'activeSlideIdx', 'slides', and 'updateSlides'. Either exclude them or remove the dependency array.  react-hooks/exhaustive-deps
+1451:6  Warning: React Hook useCallback has an unnecessary dependency: 'theme'. Either exclude it or remove the dependency array.  react-hooks/exhaustive-deps
+1473:6  Warning: React Hook useCallback has a missing dependency: 'activeSlideIdx'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./components/shared/SortButton.tsx
+36:6  Warning: React Hook useEffect has a missing dependency: 'defaultOption'. Either include it or remove the dependency array. If 'setSelectedOption' needs the current value of 'defaultOption', you can also switch to useReducer instead of useState and read 'defaultOption' in the reducer.  react-hooks/exhaustive-deps
+
+./components/shared/Whiteboard/WhiteboardCanvas.tsx
+510:5  Warning: React Hook useCallback has a missing dependency: 'drawActivePreview'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+951:5  Warning: React Hook useCallback has missing dependencies: 'clearActive' and 'onAddElement'. Either include them or remove the dependency array. If 'onAddElement' changes too often, find the parent component that defines it and wrap that definition in useCallback.  react-hooks/exhaustive-deps
+
+./components/shared/Whiteboard/WhiteboardContextMenu.tsx
+78:6  Warning: React Hook useEffect has missing dependencies: 'adjustedPos.x' and 'adjustedPos.y'. Either include them or remove the dependency array.  react-hooks/exhaustive-deps
+
+./components/shared/Whiteboard/WhiteboardToolbar.tsx
+339:65  Warning: The ref value 'hoverTimeoutRef.current' will likely have changed by the time this effect cleanup function runs. If this ref points to a node rendered by React, copy 'hoverTimeoutRef.current' to a variable inside the effect, and use that variable in the cleanup function.  react-hooks/exhaustive-deps
+340:77  Warning: The ref value 'colorPickerTimeoutRef.current' will likely have changed by the time this effect cleanup function runs. If this ref points to a node rendered by React, copy 'colorPickerTimeoutRef.current' to a variable inside the effect, and use that variable in the cleanup function.  react-hooks/exhaustive-deps
+
+./components/staff/transfers/EditableTerminationLetterModal.tsx
+125:6  Warning: React Hook useEffect has missing dependencies: 'letterData.letterDate' and 'letterData.schoolName'. Either include them or remove the dependency array.  react-hooks/exhaustive-deps
+
+./components/staff/transfers/StaffTransferTable.tsx
+46:6  Warning: React Hook useEffect has a missing dependency: 'prevFilterKey'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./components/student/TransferRequestModal.tsx
+74:6  Warning: React Hook useEffect has a missing dependency: 'effectiveDate'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./components/students/AttendanceByClass.tsx
+404:6  Warning: React Hook useMemo has a missing dependency: 'isBlockedDay'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./components/students/form-sections/PersonalInformationSection.tsx
+51:6  Warning: React Hook useEffect has missing dependencies: 'formData.institutionType' and 'onChange'. Either include them or remove the dependency array. If 'onChange' changes too often, find the parent component that defines it and wrap that definition in useCallback.  react-hooks/exhaustive-deps
+72:6  Warning: React Hook useEffect has missing dependencies: 'formData.educationLevel' and 'onChange'. Either include them or remove the dependency array. If 'onChange' changes too often, find the parent component that defines it and wrap that definition in useCallback.  react-hooks/exhaustive-deps
+
+./components/students/form-sections/SiblingsSection.tsx
+56:9  Warning: The 'excludeIds' array makes the dependencies of useCallback Hook (at line 114) change on every render. To fix this, wrap the initialization of 'excludeIds' in its own useMemo() Hook.  react-hooks/exhaustive-deps
+
+./components/teachers/form-sections/PersonalInformationSection.tsx
+47:6  Warning: React Hook useEffect has missing dependencies: 'formData.institutionType' and 'onChange'. Either include them or remove the dependency array. If 'onChange' changes too often, find the parent component that defines it and wrap that definition in useCallback.  react-hooks/exhaustive-deps
+54:6  Warning: React Hook useEffect has missing dependencies: 'formData.educationLevel' and 'onChange'. Either include them or remove the dependency array. If 'onChange' changes too often, find the parent component that defines it and wrap that definition in useCallback.  react-hooks/exhaustive-deps
+
+./components/transfers/TransferRequestsTable.tsx
+41:6  Warning: React Hook useEffect has a missing dependency: 'prevFilterKey'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./components/website/box/BlocksPanel.tsx
+130:46  Warning: React Hook useEffect has a missing dependency: 'onOpenChange'. Either include it or remove the dependency array. If 'onOpenChange' changes too often, find the parent component that defines it and wrap that definition in useCallback.  react-hooks/exhaustive-deps
+
+./components/website/box/BoxCanvas.tsx
+796:6  Warning: React Hook useEffect has a missing dependency: 'onChange'. Either include it or remove the dependency array. If 'onChange' changes too often, find the parent component that defines it and wrap that definition in useCallback.  react-hooks/exhaustive-deps
+840:6  Warning: React Hook useEffect has missing dependencies: 'editable' and 'marqueeRoom'. Either include them or remove the dependency array.  react-hooks/exhaustive-deps
+3931:6  Warning: React Hook useEffect has a missing dependency: 'setSelected'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./components/website/box/ItemCrudLayer.tsx
+88:3  Warning: React Hook useEffect contains a call to 'setPlace'. Without a list of dependencies, this can lead to an infinite chain of updates. To fix this, pass [containerRef, selected] as a second argument to the useEffect Hook.  react-hooks/exhaustive-deps
+
+info  - Need to disable some ESLint rules? Learn more here: https://nextjs.org/docs/app/api-reference/config/eslint#disabling-rules
+   Collecting page data ...
+   Generating static pages (0/94) ...
+   Generating static pages (23/94) 
+   Generating static pages (46/94) 
+   Generating static pages (70/94) 
+ ✓ Generating static pages (94/94)
+   Finalizing page optimization ...
+   Collecting build traces ...
+
+Route (app)                               Size     First Load JS
+┌ ○ /                                     3.81 kB         181 kB
+├ ○ /_not-found                           990 B           108 kB
+├ ○ /admin/feature-flags                  4.73 kB         191 kB
+├ ○ /admin/parents                        25.9 kB         535 kB
+├ ƒ /admin/parents/[id]                   49.1 kB         403 kB
+├ ○ /admin/parents/add                    10.5 kB         205 kB
+├ ○ /admin/parents/calls                  10.6 kB         208 kB
+├ ○ /admin/parents/chat                   8.68 kB         202 kB
+├ ƒ /admin/parents/chat/[id]              5.64 kB         181 kB
+├ ○ /admin/parents/chat/compose           5.72 kB         177 kB
+├ ○ /admin/parents/dashboard              8.33 kB         196 kB
+├ ○ /admin/parents/events                 7.43 kB         208 kB
+├ ○ /admin/parents/fees                   41.3 kB         528 kB
+├ ƒ /admin/parents/fees/[id]/edit         3.74 kB         210 kB
+├ ○ /admin/parents/fees/add               3.39 kB         209 kB
+├ ○ /admin/parents/messages               11 kB           212 kB
+├ ○ /admin/parents/messages/compose       6.33 kB         178 kB
+├ ○ /admin/settings/communication         11.9 kB         204 kB
+├ ○ /admin/tenants                        3.73 kB         193 kB
+├ ƒ /admin/tenants/[id]                   6.62 kB         196 kB
+├ ○ /admin/tenants/create                 7.83 kB         199 kB
+├ ƒ /api/agora/token                      166 B           107 kB
+├ ƒ /api/storage/callback                 166 B           107 kB
+├ ƒ /api/storage/supabase/setup           166 B           107 kB
+├ ƒ /api/storage/token                    166 B           107 kB
+├ ƒ /api/students/search                  166 B           107 kB
+├ ƒ /api/tenants/[id]/storage             166 B           107 kB
+├ ƒ /api/tenants/[id]/translation         166 B           107 kB
+├ ƒ /api/translate                        166 B           107 kB
+├ ƒ /api/webhooks/whatsapp                166 B           107 kB
+├ ○ /chart-gallery                        17.9 kB         132 kB
+├ ○ /classes                              13.8 kB         210 kB
+├ ƒ /classes/[id]                         5.57 kB         192 kB
+├ ƒ /classes/[id]/subjects                5.21 kB         191 kB
+├ ○ /classes/add                          10.6 kB         202 kB
+├ ○ /demo-grading                         3.02 kB         202 kB
+├ ○ /doc-editor-test                      3.15 kB         163 kB
+├ ○ /docs                                 6.55 kB         193 kB
+├ ○ /documents                            4.4 kB          178 kB
+├ ○ /documents/print-preview              1.06 kB         167 kB
+├ ○ /documents/shared                     3.88 kB         190 kB
+├ ○ /documents/templates                  2.41 kB         176 kB
+├ ○ /drive                                41.6 kB         211 kB
+├ ○ /finance/fee-structure                11 kB           356 kB
+├ ○ /finance/installments                 22.3 kB         498 kB
+├ ○ /finance/receipts                     23.3 kB         500 kB
+├ ○ /lecturers/portal/dashboard           2.79 kB         167 kB
+├ ○ /library                              19.2 kB         364 kB
+├ ○ /library/borrowing                    25.2 kB         370 kB
+├ ○ /library/fines                        13.2 kB         358 kB
+├ ○ /library/members                      15.8 kB         361 kB
+├ ○ /notifications                        5.35 kB         195 kB
+├ ○ /parents                              19.2 kB         204 kB
+├ ○ /parents/chat                         9.19 kB         173 kB
+├ ○ /parents/chat/compose                 6.53 kB         170 kB
+├ ○ /parents/children                     8.71 kB         173 kB
+├ ƒ /parents/children/[id]                29.4 kB         345 kB
+├ ƒ /parents/children/[id]/report-card    7.64 kB         339 kB
+├ ƒ /parents/children/[id]/term-progress  5.19 kB         191 kB
+├ ○ /parents/events                       6.79 kB         193 kB
+├ ƒ /parents/events/[id]                  16.4 kB         208 kB
+├ ○ /parents/fees                         21.7 kB         344 kB
+├ ○ /parents/homework                     5.18 kB         191 kB
+├ ƒ /parents/homework/[id]                11.8 kB         198 kB
+├ ○ /parents/leaves                       10 kB           206 kB
+├ ○ /parents/meetings                     10.5 kB         203 kB
+├ ƒ /parents/meetings/[id]                14.8 kB         204 kB
+├ ○ /parents/messages                     13.1 kB         177 kB
+├ ○ /parents/messages/compose             9.4 kB          173 kB
+├ ○ /parents/results                      6.97 kB         324 kB
+├ ○ /parents/support                      11.4 kB         203 kB
+├ ○ /presentations                        8.71 kB         172 kB
+├ ○ /presentations/editor                 1.96 kB         165 kB
+├ ○ /presentations/print-preview          638 B           170 kB
+├ ○ /settings                             17.4 kB         268 kB
+├ ○ /settings/communication               7.87 kB         194 kB
+├ ○ /settings/general                     3.99 kB         190 kB
+├ ○ /settings/grading                     7 kB            193 kB
+├ ○ /staff                                13.4 kB         508 kB
+├ ƒ /staff/[id]                           27.4 kB         239 kB
+├ ƒ /staff/[id]/edit                      4.43 kB         213 kB
+├ ○ /staff/add                            2.48 kB         220 kB
+├ ○ /staff/attendance                     6.95 kB         188 kB
+├ ○ /staff/discipline                     22.5 kB         213 kB
+├ ƒ /staff/edit/[id]                      2.86 kB         221 kB
+├ ○ /staff/leave-requests                 11.2 kB         340 kB
+├ ○ /staff/payroll                        7.95 kB         189 kB
+├ ○ /staff/performance-reviews            19.4 kB         210 kB
+├ ○ /staff/transfers                      24.5 kB         492 kB
+├ ○ /students                             24.2 kB         520 kB
+├ ƒ /students/[id]                        63.7 kB         594 kB
+├ ○ /students/add                         2.51 kB         224 kB
+├ ○ /students/attendance                  20.1 kB         215 kB
+├ ○ /students/bulk-import                 6.47 kB         332 kB
+├ ○ /students/cumulative-report           12.8 kB         212 kB
+├ ○ /students/discipline                  8.51 kB         504 kB
+├ ƒ /students/edit/[id]                   2.67 kB         230 kB
+├ ○ /students/grading                     8.63 kB         207 kB
+├ ○ /students/promotion                   5.67 kB         198 kB
+├ ○ /students/report-cards                6.69 kB         393 kB
+├ ○ /students/transcripts                 29.8 kB         543 kB
+├ ○ /students/transfers                   12.9 kB         342 kB
+├ ○ /teachers                             1.65 kB         188 kB
+├ ƒ /teachers/[id]                        6.5 kB          199 kB
+├ ƒ /teachers/[id]/edit                   4.49 kB         216 kB
+├ ○ /teachers/add                         5.39 kB         223 kB
+├ ○ /teachers/portal/dashboard            5.26 kB         169 kB
+├ ○ /teachers/portal/mark-attendance      4.17 kB         190 kB
+├ ○ /teachers/portal/meetings             9.11 kB         223 kB
+├ ○ /teachers/portal/my-classes           3.47 kB         190 kB
+├ ○ /test-call                            4.62 kB         191 kB
+├ ○ /test/communication                   107 kB          301 kB
+├ ○ /website                              15.8 kB         149 kB
+├ ○ /website/box-demo                     493 kB          653 kB
+├ ○ /website/builder                      1.84 kB         113 kB
+├ ○ /website/educo-blocks                 4.3 kB          135 kB
+└ ○ /website/educo-tokens                 13.4 kB         136 kB
++ First Load JS shared by all             107 kB
+  ├ chunks/1517-5110b07e417f7908.js       50.7 kB
+  ├ chunks/4bd1b696-a0f6cf3aa7b3d51a.js   53 kB
+  └ other shared chunks (total)           3.11 kB
+
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+
+
+=== serving the build on http://localhost:3100 ===
+[server]    ▲ Next.js 15.1.3
+[server]    - Local:        http://localhost:3100
+   - Network:      http://192.168.0.212:3100
+
+ ✓ Starting...
+[server]  ✓ Ready in 685ms
+
+=== running the browser suites ===
+
+Running 806 tests using 3 workers
+
+  ok   2 [desktop-chrome] › tests\e2e\add-grid-in-grid.spec.ts:75:7 › adding a grid inside a grid › a Columns block lands inside the selected GRID itself, as a new cell (4.7s)
+  ok   1 [desktop-chrome] › tests\e2e\add-grid-in-grid.spec.ts:67:7 › adding a grid inside a grid › a Columns block lands INSIDE the selected grid cell (4.9s)
+  ok   4 [desktop-chrome] › tests\e2e\add-inside-empty-box.spec.ts:42:7 › the + inside an empty box › is a real button, not a picture of one (813ms)
+  ok   5 [desktop-chrome] › tests\e2e\add-inside-empty-box.spec.ts:51:7 › the + inside an empty box › opens a menu of things that can go inside (1.2s)
+  ok   3 [desktop-chrome] › tests\e2e\add-grid-in-grid.spec.ts:83:7 › adding a grid inside a grid › and it can be nested again — a grid inside a grid inside a grid (6.7s)
+  ok   6 [desktop-chrome] › tests\e2e\add-inside-empty-box.spec.ts:60:7 › the + inside an empty box › picking one actually puts a block INSIDE the box (2.0s)
+  ok   8 [desktop-chrome] › tests\e2e\add-inside-empty-box.spec.ts:117:7 › the + inside an empty box › a Grid added inside arrives with a CELL in it, not as an empty shell (2.4s)
+  ok   9 [desktop-chrome] › tests\e2e\add-inside-empty-box.spec.ts:151:7 › the + inside an empty box › a box that ALREADY has content also hands the selection to what just landed (2.1s)
+  ok  10 [desktop-chrome] › tests\e2e\add-inside-empty-box.spec.ts:184:7 › the + inside an empty box › a box that already HAS content can still be added into, from the canvas (2.2s)
+  ok  12 [desktop-chrome] › tests\e2e\add-inside-empty-box.spec.ts:294:7 › the + inside an empty box › a Grid added inside ASKS how many across and down, like the palette does (2.5s)
+  ok   7 [desktop-chrome] › tests\e2e\add-inside-empty-box.spec.ts:88:7 › the + inside an empty box › EVERY item in the menu adds, and the arrival is visible (8.2s)
+  ok  13 [desktop-chrome] › tests\e2e\add-inside-empty-box.spec.ts:334:7 › the + inside an empty box › a stack holding only a DIVIDER is still big enough to grab (804ms)
+  ok  14 [desktop-chrome] › tests\e2e\add-inside-empty-box.spec.ts:361:7 › the + inside an empty box › a Grid inside a CHILD stack does not collapse the stack — the reported case (865ms)
+  ok  15 [desktop-chrome] › tests\e2e\add-inside-empty-box.spec.ts:402:7 › the + inside an empty box › clicking the BOX itself still just selects it (1.2s)
+  ok  11 [desktop-chrome] › tests\e2e\add-inside-empty-box.spec.ts:219:7 › the + inside an empty box › adding inside a GRID gives a cell you can actually see (7.4s)
+  ok  16 [desktop-chrome] › tests\e2e\add-without-asking.spec.ts:33:9 › a look on an empty box is not worth a question › Stack lands on one click, with nothing in the way (2.6s)
+  ok  17 [desktop-chrome] › tests\e2e\add-without-asking.spec.ts:33:9 › a look on an empty box is not worth a question › Side by side lands on one click, with nothing in the way (2.6s)
+  ok  18 [desktop-chrome] › tests\e2e\add-without-asking.spec.ts:33:9 › a look on an empty box is not worth a question › Image lands on one click, with nothing in the way (2.6s)
+  ok  19 [desktop-chrome] › tests\e2e\add-without-asking.spec.ts:33:9 › a look on an empty box is not worth a question › Icon lands on one click, with nothing in the way (2.6s)
+  ok  20 [desktop-chrome] › tests\e2e\add-without-asking.spec.ts:51:9 › a structural choice, or the block's role, still asks › Heading asks first — Display or Eyebrow is its place in the document (2.5s)
+  ok  21 [desktop-chrome] › tests\e2e\add-without-asking.spec.ts:51:9 › a structural choice, or the block's role, still asks › Grid asks first — the shape is structural — changing it later means redoing the content (2.5s)
+  ok  22 [desktop-chrome] › tests\e2e\add-without-asking.spec.ts:51:9 › a structural choice, or the block's role, still asks › Photo gallery asks first — the photographs ARE the content (2.5s)
+  ok  23 [desktop-chrome] › tests\e2e\add-without-asking.spec.ts:67:7 › the looks did not disappear — they moved to where they can be judged › a Stack still offers all four styles, as previews of the real block (3.8s)
+  ok  25 [desktop-chrome] › tests\e2e\add-without-asking.spec.ts:122:7 › a height you set beats the courtesy height › …and an empty section nobody sized still gets its courtesy height (2.5s)
+  ok  24 [desktop-chrome] › tests\e2e\add-without-asking.spec.ts:96:7 › a height you set beats the courtesy height › Full screen works on an EMPTY section, which is when it is set (3.9s)
+  ok  28 [desktop-chrome] › tests\e2e\add-without-asking.spec.ts:248:7 › the page is exactly as tall as what is on it › adding a block leaves NO space below it (2.5s)
+  ok  26 [desktop-chrome] › tests\e2e\add-without-asking.spec.ts:161:7 › adding a block never moves your insertion point › three Stacks in a row become three blocks DOWN THE PAGE, not three nested (4.5s)
+  ok  29 [desktop-chrome] › tests\e2e\add-without-asking.spec.ts:259:7 › the page is exactly as tall as what is on it › an EMPTY page still has a floor, so there is somewhere to drop the first block (1.5s)
+  ok  31 [desktop-chrome] › tests\e2e\advanced-css.spec.ts:25:7 › Advanced CSS on a plain block › the EXPORT applies it (133ms)
+  ok  32 [desktop-chrome] › tests\e2e\advanced-css.spec.ts:41:7 › Advanced CSS on a plain block › the CANVAS applies it too, and to the same value (343ms)
+  ok  33 [desktop-chrome] › tests\e2e\alert-actions.spec.ts:46:7 › Alert actions › an action with a destination is a LINK; one without is a BUTTON (142ms)
+  ok  34 [desktop-chrome] › tests\e2e\alert-actions.spec.ts:61:7 › Alert actions › opening in a new tab carries the security attributes with it (115ms)
+  ok  35 [desktop-chrome] › tests\e2e\alert-actions.spec.ts:69:7 › Alert actions › EVERY style renders differently — filled, outlined and text link (155ms)
+  ok  36 [desktop-chrome] › tests\e2e\alert-actions.spec.ts:91:7 › Alert actions › an action stays legible on a SOLID alert, where the surface is already the severity colour (121ms)
+  ok  37 [desktop-chrome] › tests\e2e\alert-actions.spec.ts:103:7 › Alert actions › KEYBOARD: every action is reachable and shows a visible focus ring (127ms)
+  ok  38 [desktop-chrome] › tests\e2e\alert-actions.spec.ts:129:7 › Alert actions › a TOAST gets ONE action, however many are configured (126ms)
+  ok  39 [desktop-chrome] › tests\e2e\alert-actions.spec.ts:143:7 › Alert actions › an action with no label is not rendered at all (126ms)
+  ok  40 [desktop-chrome] › tests\e2e\alert-actions.spec.ts:150:7 › Alert actions › PLACEMENT: on the right beside the text, and stacked underneath on a phone (130ms)
+  ok  27 [desktop-chrome] › tests\e2e\add-without-asking.spec.ts:175:7 › adding a block never moves your insertion point › a container YOU selected gets the block AFTER it — and 'Add a block inside' still nests (6.6s)
+  ok  41 [desktop-chrome] › tests\e2e\alert-actions.spec.ts:172:7 › Alert actions › actions never push the page sideways, at any width (159ms)
+  ok  42 [desktop-chrome] › tests\e2e\alert-actions.spec.ts:217:7 › Alert actions › an action's Advanced CSS is applied, and cannot break out of the button (123ms)
+  ok  43 [desktop-chrome] › tests\e2e\alert-actions.spec.ts:183:7 › Alert actions › an action can be styled COMPLETELY — text, colour, font, shape, spacing and position (159ms)
+  ok  44 [desktop-chrome] › tests\e2e\alert-actions.spec.ts:232:7 › Alert actions › the CANVAS applies every LOOK AXIS, exactly as the export does (395ms)
+  ok  45 [desktop-chrome] › tests\e2e\alert-actions.spec.ts:286:7 › Alert actions › the CANVAS shows the same actions as the export — canvas = export (338ms)
+  ok  30 [desktop-chrome] › tests\e2e\add-without-asking.spec.ts:266:7 › the page is exactly as tall as what is on it › and it still grows past the floor with real content (4.5s)
+  ok  46 [desktop-chrome] › tests\e2e\build-from-blank.spec.ts:62:7 › building a page from blank, by dragging › a second block dropped at the first one's EDGE lands BESIDE it, sharing the line (2.0s)
+  ok  47 [desktop-chrome] › tests\e2e\build-from-blank.spec.ts:84:7 › building a page from blank, by dragging › …and the line is shared out between them, not left overflowing (2.0s)
+  ok  48 [desktop-chrome] › tests\e2e\build-from-blank.spec.ts:101:7 › building a page from blank, by dragging › aiming at the MIDDLE of a block still means below it (1.9s)
+  ok  50 [desktop-chrome] › tests\e2e\canvas-scale-parity.spec.ts:42:9 › the canvas lays the page out as the Preview does › the burger header's four links share one line at Wide (1920px), Fit (1.0s)
+  ok  49 [desktop-chrome] › tests\e2e\builder-chrome-fits.spec.ts:34:7 › the builder's toolbar fits the screen it is on › every control is on screen from 375px to 1536px, and the page never scrolls sideways (2.5s)
+  ok  51 [desktop-chrome] › tests\e2e\canvas-scale-parity.spec.ts:42:9 › the canvas lays the page out as the Preview does › the burger header's four links share one line at Wide (1920px), 50% (1.6s)
+  ok  52 [desktop-chrome] › tests\e2e\canvas-scale-parity.spec.ts:42:9 › the canvas lays the page out as the Preview does › the burger header's four links share one line at Wide (1920px), 75% (1.6s)
+  ok  53 [desktop-chrome] › tests\e2e\canvas-scale-parity.spec.ts:42:9 › the canvas lays the page out as the Preview does › the burger header's four links share one line at Desktop (1280px), 50% (1.6s)
+  ok  54 [desktop-chrome] › tests\e2e\canvas-scale-parity.spec.ts:42:9 › the canvas lays the page out as the Preview does › the burger header's four links share one line at Desktop (1280px), 75% (1.6s)
+  ok  55 [desktop-chrome] › tests\e2e\canvas-scale-parity.spec.ts:58:9 › the canvas lays the page out as the Preview does › an FAQ's open answer is as tall and as wide on the canvas as in the Preview at Tablet (768px) (2.5s)
+  ok  56 [desktop-chrome] › tests\e2e\canvas-scale-parity.spec.ts:58:9 › the canvas lays the page out as the Preview does › an FAQ's open answer is as tall and as wide on the canvas as in the Preview at Desktop (1280px) (2.4s)
+  ok  57 [desktop-chrome] › tests\e2e\canvas-scale-parity.spec.ts:88:7 › the canvas lays the page out as the Preview does › a word longer than its column breaks the same way on the canvas and in the Preview (2.4s)
+  ok  58 [desktop-chrome] › tests\e2e\canvas-scale-parity.spec.ts:111:7 › the canvas lays the page out as the Preview does › at Wide, Fit: the menu line is as tall on the canvas as in the Preview (2.5s)
+  ok  59 [desktop-chrome] › tests\e2e\canvas-zoom.spec.ts:29:7 › canvas zoom › − / + step along the ladder from Fit, and stop at 25% and 400% (1.7s)
+  ok  61 [desktop-chrome] › tests\e2e\canvas-zoom.spec.ts:72:7 › canvas zoom › Ctrl + scroll zooms round the pointer; the plain wheel scrolls (1.6s)
+  ok  60 [desktop-chrome] › tests\e2e\canvas-zoom.spec.ts:41:7 › canvas zoom › the shortcuts act on the canvas only while the pointer is on it (3.4s)
+  ok  63 [desktop-chrome] › tests\e2e\canvas-zoom.spec.ts:127:7 › canvas zoom › the zoom is kept per device in this browser, never in the site (2.2s)
+  ok  62 [desktop-chrome] › tests\e2e\canvas-zoom.spec.ts:90:7 › canvas zoom › an edge dragged at 200% stores the size it would at 100% (4.0s)
+  ok  64 [desktop-chrome] › tests\e2e\canvas-zoom.spec.ts:141:7 › canvas zoom › with a block selected, a focused toolbar control keeps its own keys (Z1-j) (2.7s)
+  ok  65 [desktop-chrome] › tests\e2e\canvas-zoom.spec.ts:161:7 › canvas zoom › Space + drag pans the zoomed page (1.4s)
+  ok  66 [desktop-chrome] › tests\e2e\chrome-follows-resize.spec.ts:97:7 › the selection chrome follows the block it is drawn on › the right-edge handle stays ON the edge through a long drag, and after it (2.7s)
+  ok  67 [desktop-chrome] › tests\e2e\chrome-follows-resize.spec.ts:117:7 › the selection chrome follows the block it is drawn on › the bottom-edge handle follows a height drag too — the rule is not per-edge (2.5s)
+  ok  68 [desktop-chrome] › tests\e2e\chrome-follows-resize.spec.ts:132:7 › the selection chrome follows the block it is drawn on › driven FLAT OUT, the gap stays a frame — it does not grow, and it clears on release (2.5s)
+  ok  71 [desktop-chrome] › tests\e2e\component-breathing.spec.ts:33:11 › components breathe › accordion · Default @ 375 (143ms)
+  ok  72 [desktop-chrome] › tests\e2e\component-breathing.spec.ts:33:11 › components breathe › accordion · Default @ 1280 (145ms)
+  ok  73 [desktop-chrome] › tests\e2e\component-breathing.spec.ts:33:11 › components breathe › accordion · Q & A @ 375 (123ms)
+  ok  74 [desktop-chrome] › tests\e2e\component-breathing.spec.ts:33:11 › components breathe › accordion · Q & A @ 1280 (125ms)
+  ok  75 [desktop-chrome] › tests\e2e\component-breathing.spec.ts:33:11 › components breathe › accordion · Solid panel @ 375 (121ms)
+  ok  76 [desktop-chrome] › tests\e2e\component-breathing.spec.ts:33:11 › components breathe › accordion · Solid panel @ 1280 (127ms)
+  ok  77 [desktop-chrome] › tests\e2e\component-breathing.spec.ts:33:11 › components breathe › accordion · Split (media) @ 375 (122ms)
+  ok  78 [desktop-chrome] › tests\e2e\component-breathing.spec.ts:33:11 › components breathe › accordion · Split (media) @ 1280 (125ms)
+  ok  79 [desktop-chrome] › tests\e2e\component-breathing.spec.ts:33:11 › components breathe › accordion · Timeline @ 375 (124ms)
+  ok  80 [desktop-chrome] › tests\e2e\component-breathing.spec.ts:33:11 › components breathe › accordion · Timeline @ 1280 (124ms)
+  ok  81 [desktop-chrome] › tests\e2e\component-breathing.spec.ts:33:11 › components breathe › accordion · Enclosed card @ 375 (110ms)
+  ok  82 [desktop-chrome] › tests\e2e\component-breathing.spec.ts:33:11 › components breathe › accordion · Enclosed card @ 1280 (140ms)
+  ok  83 [desktop-chrome] › tests\e2e\component-breathing.spec.ts:33:11 › components breathe › alert · Default @ 375 (120ms)
+  ok  84 [desktop-chrome] › tests\e2e\component-breathing.spec.ts:33:11 › components breathe › alert · Default @ 1280 (138ms)
+  ok  85 [desktop-chrome] › tests\e2e\component-breathing.spec.ts:33:11 › components breathe › alert · Information @ 375 (109ms)
+  ok  86 [desktop-chrome] › tests\e2e\component-breathing.spec.ts:33:11 › components breathe › alert · Information @ 1280 (126ms)
+  ok  87 [desktop-chrome] › tests\e2e\component-breathing.spec.ts:33:11 › components breathe › alert · Success @ 375 (109ms)
+  ok  69 [desktop-chrome] › tests\e2e\chrome-follows-resize.spec.ts:160:7 › the selection chrome follows the block it is drawn on › the toolbar rides with the chrome, so it never floats over empty canvas (2.6s)
+  ok  88 [desktop-chrome] › tests\e2e\component-breathing.spec.ts:33:11 › components breathe › alert · Success @ 1280 (129ms)
+  ok  89 [desktop-chrome] › tests\e2e\component-breathing.spec.ts:33:11 › components breathe › alert · Warning @ 375 (110ms)
+  ok  91 [desktop-chrome] › tests\e2e\component-breathing.spec.ts:33:11 › components breathe › alert · Error @ 375 (112ms)
+  ok  90 [desktop-chrome] › tests\e2e\component-breathing.spec.ts:33:11 › components breathe › alert · Warning @ 1280 (142ms)
+  ok  93 [desktop-chrome] › tests\e2e\component-breathing.spec.ts:33:11 › components breathe › alert · Announcement bar @ 375 (105ms)
+  ok  92 [desktop-chrome] › tests\e2e\component-breathing.spec.ts:33:11 › components breathe › alert · Error @ 1280 (138ms)
+  ok  95 [desktop-chrome] › tests\e2e\component-breathing.spec.ts:33:11 › components breathe › alert · Docs callout @ 375 (121ms)
+  ok  94 [desktop-chrome] › tests\e2e\component-breathing.spec.ts:33:11 › components breathe › alert · Announcement bar @ 1280 (146ms)
+  ok  97 [desktop-chrome] › tests\e2e\component-breathing.spec.ts:33:11 › components breathe › card · Default @ 375 (119ms)
+  ok  96 [desktop-chrome] › tests\e2e\component-breathing.spec.ts:33:11 › components breathe › alert · Docs callout @ 1280 (123ms)
+  ok  98 [desktop-chrome] › tests\e2e\component-breathing.spec.ts:33:11 › components breathe › card · Default @ 1280 (127ms)
+  ok  99 [desktop-chrome] › tests\e2e\component-breathing.spec.ts:33:11 › components breathe › card · Raised @ 375 (127ms)
+  ok 101 [desktop-chrome] › tests\e2e\component-breathing.spec.ts:33:11 › components breathe › card · Flat @ 375 (105ms)
+  ok 100 [desktop-chrome] › tests\e2e\component-breathing.spec.ts:33:11 › components breathe › card · Raised @ 1280 (126ms)
+  ok 102 [desktop-chrome] › tests\e2e\component-breathing.spec.ts:33:11 › components breathe › card · Flat @ 1280 (125ms)
+  ok 103 [desktop-chrome] › tests\e2e\component-breathing.spec.ts:33:11 › components breathe › card · Tinted @ 375 (122ms)
+  ok 105 [desktop-chrome] › tests\e2e\component-breathing.spec.ts:33:11 › components breathe › card · Side by side @ 375 (105ms)
+  ok 104 [desktop-chrome] › tests\e2e\component-breathing.spec.ts:33:11 › components breathe › card · Tinted @ 1280 (130ms)
+  ok 107 [desktop-chrome] › tests\e2e\component-breathing.spec.ts:33:11 › components breathe › quote · Default @ 375 (121ms)
+  ok 106 [desktop-chrome] › tests\e2e\component-breathing.spec.ts:33:11 › components breathe › card · Side by side @ 1280 (129ms)
+  ok 109 [desktop-chrome] › tests\e2e\component-breathing.spec.ts:33:11 › components breathe › quote · Boxed @ 375 (106ms)
+  ok 108 [desktop-chrome] › tests\e2e\component-breathing.spec.ts:33:11 › components breathe › quote · Default @ 1280 (121ms)
+  ok 111 [desktop-chrome] › tests\e2e\component-breathing.spec.ts:33:11 › components breathe › quote · Tinted @ 375 (111ms)
+  ok 110 [desktop-chrome] › tests\e2e\component-breathing.spec.ts:33:11 › components breathe › quote · Boxed @ 1280 (127ms)
+  ok 113 [desktop-chrome] › tests\e2e\component-breathing.spec.ts:33:11 › components breathe › quote · Large @ 375 (109ms)
+  ok 112 [desktop-chrome] › tests\e2e\component-breathing.spec.ts:33:11 › components breathe › quote · Tinted @ 1280 (128ms)
+  ok 115 [desktop-chrome] › tests\e2e\component-breathing.spec.ts:33:11 › components breathe › stat · Default @ 375 (122ms)
+  ok 114 [desktop-chrome] › tests\e2e\component-breathing.spec.ts:33:11 › components breathe › quote · Large @ 1280 (143ms)
+  ok 117 [desktop-chrome] › tests\e2e\component-breathing.spec.ts:33:11 › components breathe › stat · Left @ 375 (119ms)
+  ok 116 [desktop-chrome] › tests\e2e\component-breathing.spec.ts:33:11 › components breathe › stat · Default @ 1280 (125ms)
+  ok 119 [desktop-chrome] › tests\e2e\component-breathing.spec.ts:33:11 › components breathe › stat · Tinted @ 375 (107ms)
+  ok 118 [desktop-chrome] › tests\e2e\component-breathing.spec.ts:33:11 › components breathe › stat · Left @ 1280 (125ms)
+  ok 121 [desktop-chrome] › tests\e2e\component-breathing.spec.ts:33:11 › components breathe › stat · Boxed @ 375 (110ms)
+  ok 120 [desktop-chrome] › tests\e2e\component-breathing.spec.ts:33:11 › components breathe › stat · Tinted @ 1280 (125ms)
+  ok 123 [desktop-chrome] › tests\e2e\component-breathing.spec.ts:33:11 › components breathe › badge · Default @ 375 (105ms)
+  ok 122 [desktop-chrome] › tests\e2e\component-breathing.spec.ts:33:11 › components breathe › stat · Boxed @ 1280 (127ms)
+  ok 124 [desktop-chrome] › tests\e2e\component-breathing.spec.ts:33:11 › components breathe › badge · Default @ 1280 (128ms)
+  ok 125 [desktop-chrome] › tests\e2e\component-breathing.spec.ts:33:11 › components breathe › badge · Solid @ 375 (106ms)
+  ok 126 [desktop-chrome] › tests\e2e\component-breathing.spec.ts:33:11 › components breathe › badge · Solid @ 1280 (126ms)
+  ok 127 [desktop-chrome] › tests\e2e\component-breathing.spec.ts:33:11 › components breathe › badge · Outline @ 375 (126ms)
+  ok 128 [desktop-chrome] › tests\e2e\component-breathing.spec.ts:33:11 › components breathe › badge · Neutral @ 375 (106ms)
+  ok 129 [desktop-chrome] › tests\e2e\component-breathing.spec.ts:33:11 › components breathe › badge · Outline @ 1280 (124ms)
+  ok 130 [desktop-chrome] › tests\e2e\component-breathing.spec.ts:33:11 › components breathe › badge · Neutral @ 1280 (124ms)
+  ok 131 [desktop-chrome] › tests\e2e\component-breathing.spec.ts:33:11 › components breathe › rating · Default @ 375 (107ms)
+  ok 133 [desktop-chrome] › tests\e2e\component-breathing.spec.ts:33:11 › components breathe › rating · Brand @ 375 (107ms)
+  ok 132 [desktop-chrome] › tests\e2e\component-breathing.spec.ts:33:11 › components breathe › rating · Default @ 1280 (123ms)
+  ok 134 [desktop-chrome] › tests\e2e\component-breathing.spec.ts:33:11 › components breathe › rating · Brand @ 1280 (126ms)
+  ok 135 [desktop-chrome] › tests\e2e\component-breathing.spec.ts:33:11 › components breathe › rating · Muted @ 375 (111ms)
+  ok 137 [desktop-chrome] › tests\e2e\component-breathing.spec.ts:33:11 › components breathe › rating · Large @ 375 (106ms)
+  ok 136 [desktop-chrome] › tests\e2e\component-breathing.spec.ts:33:11 › components breathe › rating · Muted @ 1280 (126ms)
+  ok 138 [desktop-chrome] › tests\e2e\component-breathing.spec.ts:33:11 › components breathe › rating · Large @ 1280 (136ms)
+  ok 139 [desktop-chrome] › tests\e2e\component-layout-invariants.spec.ts:145:11 › Component layout invariants › accordion: natural (623ms)
+  ok 140 [desktop-chrome] › tests\e2e\component-layout-invariants.spec.ts:145:11 › Component layout invariants › accordion: full width (599ms)
+  ok 141 [desktop-chrome] › tests\e2e\component-layout-invariants.spec.ts:145:11 › Component layout invariants › accordion: fit width (618ms)
+  ok 142 [desktop-chrome] › tests\e2e\component-layout-invariants.spec.ts:145:11 › Component layout invariants › accordion: tall (610ms)
+  ok  70 [desktop-chrome] › tests\e2e\chrome-follows-resize.spec.ts:192:7 › the selection chrome follows the block it is drawn on › the handles and toolbar come to rest ON the block after every change of screen size (7.3s)
+  ok 143 [desktop-chrome] › tests\e2e\component-layout-invariants.spec.ts:145:11 › Component layout invariants › accordion: shorter than content (583ms)
+  ok 144 [desktop-chrome] › tests\e2e\component-layout-invariants.spec.ts:145:11 › Component layout invariants › accordion: narrow (583ms)
+  ok 145 [desktop-chrome] › tests\e2e\component-layout-invariants.spec.ts:145:11 › Component layout invariants › accordion: narrow + short (604ms)
+  ok 147 [desktop-chrome] › tests\e2e\component-layout-invariants.spec.ts:145:11 › Component layout invariants › alert: natural (595ms)
+  ok 146 [desktop-chrome] › tests\e2e\component-layout-invariants.spec.ts:153:9 › Component layout invariants › accordion: height set, then width narrowed (the regression pair) (984ms)
+  ok 148 [desktop-chrome] › tests\e2e\component-layout-invariants.spec.ts:145:11 › Component layout invariants › alert: full width (600ms)
+  ok 149 [desktop-chrome] › tests\e2e\component-layout-invariants.spec.ts:145:11 › Component layout invariants › alert: fit width (569ms)
+  ok 150 [desktop-chrome] › tests\e2e\component-layout-invariants.spec.ts:145:11 › Component layout invariants › alert: tall (588ms)
+  ok 151 [desktop-chrome] › tests\e2e\component-layout-invariants.spec.ts:145:11 › Component layout invariants › alert: shorter than content (584ms)
+  ok 152 [desktop-chrome] › tests\e2e\component-layout-invariants.spec.ts:145:11 › Component layout invariants › alert: narrow (583ms)
+  ok 153 [desktop-chrome] › tests\e2e\component-layout-invariants.spec.ts:145:11 › Component layout invariants › alert: narrow + short (594ms)
+  ok 155 [desktop-chrome] › tests\e2e\component-layout-invariants.spec.ts:145:11 › Component layout invariants › card: natural (599ms)
+  ok 154 [desktop-chrome] › tests\e2e\component-layout-invariants.spec.ts:153:9 › Component layout invariants › alert: height set, then width narrowed (the regression pair) (942ms)
+  ok 156 [desktop-chrome] › tests\e2e\component-layout-invariants.spec.ts:145:11 › Component layout invariants › card: full width (615ms)
+  ok 157 [desktop-chrome] › tests\e2e\component-layout-invariants.spec.ts:145:11 › Component layout invariants › card: fit width (583ms)
+  ok 158 [desktop-chrome] › tests\e2e\component-layout-invariants.spec.ts:145:11 › Component layout invariants › card: tall (618ms)
+  ok 159 [desktop-chrome] › tests\e2e\component-layout-invariants.spec.ts:145:11 › Component layout invariants › card: shorter than content (590ms)
+  ok 160 [desktop-chrome] › tests\e2e\component-layout-invariants.spec.ts:145:11 › Component layout invariants › card: narrow (582ms)
+  ok 161 [desktop-chrome] › tests\e2e\component-layout-invariants.spec.ts:145:11 › Component layout invariants › card: narrow + short (599ms)
+  ok 163 [desktop-chrome] › tests\e2e\component-layout-invariants.spec.ts:145:11 › Component layout invariants › quote: natural (573ms)
+  ok 162 [desktop-chrome] › tests\e2e\component-layout-invariants.spec.ts:153:9 › Component layout invariants › card: height set, then width narrowed (the regression pair) (974ms)
+  ok 164 [desktop-chrome] › tests\e2e\component-layout-invariants.spec.ts:145:11 › Component layout invariants › quote: full width (602ms)
+  ok 165 [desktop-chrome] › tests\e2e\component-layout-invariants.spec.ts:145:11 › Component layout invariants › quote: fit width (594ms)
+  ok 166 [desktop-chrome] › tests\e2e\component-layout-invariants.spec.ts:145:11 › Component layout invariants › quote: tall (593ms)
+  ok 167 [desktop-chrome] › tests\e2e\component-layout-invariants.spec.ts:145:11 › Component layout invariants › quote: shorter than content (598ms)
+  ok 168 [desktop-chrome] › tests\e2e\component-layout-invariants.spec.ts:145:11 › Component layout invariants › quote: narrow (594ms)
+  ok 169 [desktop-chrome] › tests\e2e\component-layout-invariants.spec.ts:145:11 › Component layout invariants › quote: narrow + short (604ms)
+  ok 171 [desktop-chrome] › tests\e2e\component-layout-invariants.spec.ts:145:11 › Component layout invariants › stat: natural (592ms)
+  ok 170 [desktop-chrome] › tests\e2e\component-layout-invariants.spec.ts:153:9 › Component layout invariants › quote: height set, then width narrowed (the regression pair) (960ms)
+  ok 172 [desktop-chrome] › tests\e2e\component-layout-invariants.spec.ts:145:11 › Component layout invariants › stat: full width (592ms)
+  ok 173 [desktop-chrome] › tests\e2e\component-layout-invariants.spec.ts:145:11 › Component layout invariants › stat: fit width (650ms)
+  ok 174 [desktop-chrome] › tests\e2e\component-layout-invariants.spec.ts:145:11 › Component layout invariants › stat: tall (651ms)
+  ok 175 [desktop-chrome] › tests\e2e\component-layout-invariants.spec.ts:145:11 › Component layout invariants › stat: shorter than content (625ms)
+  ok 176 [desktop-chrome] › tests\e2e\component-layout-invariants.spec.ts:145:11 › Component layout invariants › stat: narrow (629ms)
+  ok 177 [desktop-chrome] › tests\e2e\component-layout-invariants.spec.ts:145:11 › Component layout invariants › stat: narrow + short (641ms)
+  ok 178 [desktop-chrome] › tests\e2e\component-layout-invariants.spec.ts:153:9 › Component layout invariants › stat: height set, then width narrowed (the regression pair) (1.1s)
+  ok 179 [desktop-chrome] › tests\e2e\component-layout-invariants.spec.ts:145:11 › Component layout invariants › badge: natural (696ms)
+  ok 180 [desktop-chrome] › tests\e2e\component-layout-invariants.spec.ts:145:11 › Component layout invariants › badge: full width (688ms)
+  ok 181 [desktop-chrome] › tests\e2e\component-layout-invariants.spec.ts:145:11 › Component layout invariants › badge: fit width (699ms)
+  ok 182 [desktop-chrome] › tests\e2e\component-layout-invariants.spec.ts:145:11 › Component layout invariants › badge: tall (657ms)
+  ok 183 [desktop-chrome] › tests\e2e\component-layout-invariants.spec.ts:145:11 › Component layout invariants › badge: shorter than content (634ms)
+  ok 184 [desktop-chrome] › tests\e2e\component-layout-invariants.spec.ts:145:11 › Component layout invariants › badge: narrow (613ms)
+  ok 185 [desktop-chrome] › tests\e2e\component-layout-invariants.spec.ts:145:11 › Component layout invariants › badge: narrow + short (624ms)
+  ok 186 [desktop-chrome] › tests\e2e\component-layout-invariants.spec.ts:153:9 › Component layout invariants › badge: height set, then width narrowed (the regression pair) (967ms)
+  ok 187 [desktop-chrome] › tests\e2e\component-layout-invariants.spec.ts:145:11 › Component layout invariants › rating: natural (606ms)
+  ok 188 [desktop-chrome] › tests\e2e\component-layout-invariants.spec.ts:145:11 › Component layout invariants › rating: full width (589ms)
+  ok 189 [desktop-chrome] › tests\e2e\component-layout-invariants.spec.ts:145:11 › Component layout invariants › rating: fit width (622ms)
+  ok 190 [desktop-chrome] › tests\e2e\component-layout-invariants.spec.ts:145:11 › Component layout invariants › rating: tall (610ms)
+  ok 191 [desktop-chrome] › tests\e2e\component-layout-invariants.spec.ts:145:11 › Component layout invariants › rating: shorter than content (600ms)
+  ok 192 [desktop-chrome] › tests\e2e\component-layout-invariants.spec.ts:145:11 › Component layout invariants › rating: narrow (625ms)
+  ok 193 [desktop-chrome] › tests\e2e\component-layout-invariants.spec.ts:145:11 › Component layout invariants › rating: narrow + short (624ms)
+  ok 194 [desktop-chrome] › tests\e2e\component-layout-invariants.spec.ts:153:9 › Component layout invariants › rating: height set, then width narrowed (the regression pair) (986ms)
+  ok 195 [desktop-chrome] › tests\e2e\component-layout-invariants.spec.ts:176:11 › Component layout invariants › alert: floated item — near (621ms)
+  ok 196 [desktop-chrome] › tests\e2e\component-layout-invariants.spec.ts:176:11 › Component layout invariants › alert: floated item — far (588ms)
+  ok 197 [desktop-chrome] › tests\e2e\component-layout-invariants.spec.ts:176:11 › Component layout invariants › alert: floated item — absurd (625ms)
+  ok 198 [desktop-chrome] › tests\e2e\component-layout-invariants.spec.ts:176:11 › Component layout invariants › accordion: floated item — near (620ms)
+  ok 199 [desktop-chrome] › tests\e2e\component-layout-invariants.spec.ts:176:11 › Component layout invariants › accordion: floated item — far (626ms)
+  ok 200 [desktop-chrome] › tests\e2e\component-layout-invariants.spec.ts:176:11 › Component layout invariants › accordion: floated item — absurd (624ms)
+  ok 201 [desktop-chrome] › tests\e2e\component-layout-invariants.spec.ts:209:7 › Component layout invariants › a ramp token painted on a design-system tree actually resolves on the canvas (612ms)
+  ok 204 [desktop-chrome] › tests\e2e\design-distinctness.spec.ts:89:7 › RULE T — variations must be visibly different › every ALERT design renders differently from every other (145ms)
+  ok 205 [desktop-chrome] › tests\e2e\design-distinctness.spec.ts:99:7 › RULE T — variations must be visibly different › every option WITHIN each Alert axis renders differently (139ms)
+  ok 202 [desktop-chrome] › tests\e2e\component-layout-invariants.spec.ts:233:7 › Component layout invariants › a narrow component responds to ITS OWN width, not the page's (973ms)
+  ok 206 [desktop-chrome] › tests\e2e\design-distinctness.spec.ts:110:7 › RULE T — variations must be visibly different › the axes actually COMBINE — a modifier changes a design without replacing it (108ms)
+  ok 203 [desktop-chrome] › tests\e2e\component-layout-invariants.spec.ts:260:7 › Component layout invariants › a hug-to-content component still sizes to its text (containment must stay off there) (584ms)
+  ok 208 [desktop-chrome] › tests\e2e\design-distinctness.spec.ts:151:7 › RULE T — variations must be visibly different › Accordion axes COMBINE — a design keeps its character while a modifier applies (108ms)
+  ok 207 [desktop-chrome] › tests\e2e\design-distinctness.spec.ts:133:7 › RULE T — variations must be visibly different › every option WITHIN each Accordion axis renders differently (165ms)
+  ok 209 [desktop-chrome] › tests\e2e\design-distinctness.spec.ts:175:7 › RULE T — variations must be visibly different › an axis is never defeated by the DESIGN or by the FORM FACTOR (110ms)
+  ok 210 [desktop-chrome] › tests\e2e\design-distinctness.spec.ts:207:7 › RULE T — variations must be visibly different › every ACCORDION design renders differently from every other (137ms)
+  ok 212 [desktop-chrome] › tests\e2e\drag-grid-in.spec.ts:93:7 › dragging a Columns block onto a section › the drop asks for a shape, and inserts NOTHING until one is chosen (1.1s)
+  ok 213 [desktop-chrome] › tests\e2e\drag-grid-in.spec.ts:102:7 › dragging a Columns block onto a section › dismissing the picker leaves the page exactly as it was (1.4s)
+  ok 214 [desktop-chrome] › tests\e2e\drag-grid-in.spec.ts:111:7 › dragging a Columns block onto a section › it arrives in the shape the user picked — no more, no fewer (1.5s)
+  ok 211 [desktop-chrome] › tests\e2e\drag-grid-in.spec.ts:67:7 › dragging a Columns block onto a section › selecting a block near the canvas top raises no console error (2.8s)
+  ok 215 [desktop-chrome] › tests\e2e\drag-grid-in.spec.ts:120:7 › dragging a Columns block onto a section › one column across is ONE undivided cell (1.5s)
+  ok 217 [desktop-chrome] › tests\e2e\drag-grid-in.spec.ts:149:7 › dragging a Columns block onto a section › it follows the height of the section it was dropped into (1.5s)
+  ok 216 [desktop-chrome] › tests\e2e\drag-grid-in.spec.ts:130:7 › dragging a Columns block onto a section › the dropped grid is selectable and has resize handles on every edge (1.9s)
+  ok 218 [desktop-chrome] › tests\e2e\drag-keeps-flex.spec.ts:108:9 › a drag leaves every column drawn as a reload draws it › the first column dragged by its right edge +120px (11.5s)
+  ok 219 [desktop-chrome] › tests\e2e\drag-keeps-flex.spec.ts:108:9 › a drag leaves every column drawn as a reload draws it › the first column dragged by its right edge -120px (11.5s)
+  ok 220 [desktop-chrome] › tests\e2e\drag-keeps-flex.spec.ts:108:9 › a drag leaves every column drawn as a reload draws it › the first column dragged by its bottom edge +60px (11.5s)
+  ok 221 [desktop-chrome] › tests\e2e\drag-keeps-flex.spec.ts:108:9 › a drag leaves every column drawn as a reload draws it › the block under the row dragged by its top edge -40px (12.0s)
+  ok 222 [desktop-chrome] › tests\e2e\drag-keeps-flex.spec.ts:108:9 › a drag leaves every column drawn as a reload draws it › the block under the row dragged by its top edge +40px (12.0s)
+  ok 223 [desktop-chrome] › tests\e2e\drag-keeps-flex.spec.ts:108:9 › a drag leaves every column drawn as a reload draws it › the block under the row dragged by its bottom edge +60px (12.0s)
+  ok 224 [desktop-chrome] › tests\e2e\drop-into-empty.spec.ts:26:5 › carrying a block over an empty box's "+", the pointer is on the box, never on the hint — and the drop lands (2.5s)
+  ok 225 [desktop-chrome] › tests\e2e\drop-placement.spec.ts:63:7 › the edges place around a block, the middle places inside it › the GAP beside it means beside (1.2s)
+  ok 226 [desktop-chrome] › tests\e2e\drop-placement.spec.ts:70:7 › the edges place around a block, the middle places inside it › its RIGHT edge means beside, even with no gap to aim at (1.1s)
+  ok 227 [desktop-chrome] › tests\e2e\drop-placement.spec.ts:77:7 › the edges place around a block, the middle places inside it › its MIDDLE means inside (1.2s)
+  ok 228 [desktop-chrome] › tests\e2e\drop-placement.spec.ts:84:7 › the edges place around a block, the middle places inside it › its BOTTOM edge means below — on a line of its own (1.2s)
+  ok 229 [desktop-chrome] › tests\e2e\drop-placement.spec.ts:92:7 › the edges place around a block, the middle places inside it › BELOW the band means below — the canvas has somewhere to aim (1.1s)
+  ok 230 [desktop-chrome] › tests\e2e\drop-placement.spec.ts:103:7 › the edges place around a block, the middle places inside it › the page the editor DRAWS is exactly as tall as the page (672ms)
+  ok 231 [desktop-chrome] › tests\e2e\drop-placement.spec.ts:130:7 › the edges place around a block, the middle places inside it › nothing spills sideways whichever way it lands (1.2s)
+  ok 233 [desktop-chrome] › tests\e2e\drop-placement.spec.ts:201:7 › a block let go over the selected block's toolbar lands on the page beneath it › the toolbar takes the side that has room when the page is refitted — it never sticks out over the top of the page (4.2s)
+  ok 234 [desktop-chrome] › tests\e2e\drop-placement.spec.ts:220:7 › a block let go over the selected block's toolbar lands on the page beneath it › and the toolbar is a toolbar again the moment the drag is over (4.1s)
+  ok 236 [desktop-chrome] › tests\e2e\dropped-block-fills-space.spec.ts:62:7 › a dropped block fills the space it lands in › dropped into a section 400px tall, it is 400px tall — not 40 (1.1s)
+  ok 235 [desktop-chrome] › tests\e2e\drop-under-icon.spec.ts:30:5 › a Text dragged from the palette to just under an icon lands under it, in its cell, one gap below (2.5s)
+  ok 237 [desktop-chrome] › tests\e2e\dropped-block-fills-space.spec.ts:78:7 › a dropped block fills the space it lands in › dropped into a grid cell, it fills the cell the row gave it (1.1s)
+  ok 239 [desktop-chrome] › tests\e2e\dropped-block-fills-space.spec.ts:118:7 › a dropped block fills the space it lands in › a block you have sized keeps the size you gave it (616ms)
+  ok 232 [desktop-chrome] › tests\e2e\drop-placement.spec.ts:184:7 › a block let go over the selected block's toolbar lands on the page beneath it › every control of the toolbar, one after another: the block is added each time (8.1s)
+  ok 238 [desktop-chrome] › tests\e2e\dropped-block-fills-space.spec.ts:95:7 › a dropped block fills the space it lands in › …but in a grid NOBODY has sized, the floor still holds the cells open (1.1s)
+  ok 240 [desktop-chrome] › tests\e2e\empty-band-shows.spec.ts:66:9 › an empty coloured band is not lost on the way to the page › a coloured band holding nothing at all is the size the builder showed (1.6s)
+  ok 241 [desktop-chrome] › tests\e2e\empty-band-shows.spec.ts:66:9 › an empty coloured band is not lost on the way to the page › a coloured band holding an empty box is the size the builder showed (1.7s)
+  ok 242 [desktop-chrome] › tests\e2e\empty-band-shows.spec.ts:66:9 › an empty coloured band is not lost on the way to the page › a coloured band holding an empty grid is the size the builder showed (1.7s)
+  ok 243 [desktop-chrome] › tests\e2e\empty-band-shows.spec.ts:66:9 › an empty coloured band is not lost on the way to the page › a coloured band holding an empty box inside an empty box is the size the builder showed (1.7s)
+  ok 244 [desktop-chrome] › tests\e2e\empty-band-shows.spec.ts:73:7 › an empty coloured band is not lost on the way to the page › a height you set yourself still wins — the floor never overrides you (1.7s)
+  ok 245 [desktop-chrome] › tests\e2e\empty-band-shows.spec.ts:80:7 › an empty coloured band is not lost on the way to the page › a band with real content in it takes its height from the content, not the floor (1.7s)
+  ok 247 [desktop-chrome] › tests\e2e\empty-block-floor.spec.ts:78:7 › a block added into a stack stays visible › …and the parent grows to hold them rather than squeezing them (693ms)
+  ok 248 [desktop-chrome] › tests\e2e\empty-block-floor.spec.ts:92:7 › a block added into a stack stays visible › a size the user SET still wins, however small (708ms)
+  ok 249 [desktop-chrome] › tests\e2e\empty-block-floor.spec.ts:114:7 › a block added into a stack stays visible › an UNSIZED parent still grows, exactly as before (678ms)
+  ok 250 [desktop-chrome] › tests\e2e\empty-block-floor.spec.ts:122:7 › a block added into a stack stays visible › nothing is left invisible — a block with NO stored width still has one (692ms)
+  ok 251 [desktop-chrome] › tests\e2e\empty-box-height.spec.ts:86:7 › how small a box can be made › an EMPTY box that nobody has sized still shows itself (620ms)
+  ok 246 [desktop-chrome] › tests\e2e\empty-block-floor.spec.ts:66:7 › a block added into a stack stays visible › six blocks into a SIZED stack — none collapses below the floor (2.9s)
+  ok 252 [desktop-chrome] › tests\e2e\empty-box-height.spec.ts:95:7 › how small a box can be made › an EMPTY box shrinks to almost nothing — the hint inside is not content (1.6s)
+  ok 253 [desktop-chrome] › tests\e2e\empty-box-height.spec.ts:102:7 › how small a box can be made › a box with REAL content stops at the height its content needs (1.6s)
+  ok 254 [desktop-chrome] › tests\e2e\empty-box-height.spec.ts:115:7 › how small a box can be made › a box holding an EMPTY GRID shrinks too — its cells' hints do not hold it open (1.7s)
+  ok 255 [desktop-chrome] › tests\e2e\empty-box-height.spec.ts:125:7 › how small a box can be made › a grid CELL's row shrinks to the row minimum (1.6s)
+  ok 256 [desktop-chrome] › tests\e2e\empty-box-height.spec.ts:132:7 › how small a box can be made › what you dragged is what gets PUBLISHED (1.6s)
+  ok 259 [desktop-chrome] › tests\e2e\every-component-fills-the-row.spec.ts:162:7 › every block the palette can add fills the row it is in › the catalogue is really being walked — this cannot pass by testing nothing (4ms)
+  ok 258 [desktop-chrome] › tests\e2e\every-component-fills-the-row.spec.ts:124:7 › every block the palette can add fills the row it is in › a layout the person made themselves is left alone (431ms)
+  ok 261 [desktop-chrome] › tests\e2e\every-screen-size.spec.ts:211:7 › the page holds up on every screen in the catalogue › the list itself is real — every entry has a name and a believable size (84ms)
+  ok 262 [desktop-chrome] › tests\e2e\export-fonts.spec.ts:27:7 › fonts in the exported site › the chosen typeface is embedded and actually loads — with no external request (332ms)
+  ok 257 [desktop-chrome] › tests\e2e\every-component-fills-the-row.spec.ts:72:7 › every block the palette can add fills the row it is in › no rung leaves a hole beside the last row, for any kind in the catalogue (1.8s)
+  ok 264 [desktop-chrome] › tests\e2e\export-layout-invariants.spec.ts:154:13 › Export layout invariants › accordion: natural @ phone 375 (100ms)
+  ok 265 [desktop-chrome] › tests\e2e\export-layout-invariants.spec.ts:154:13 › Export layout invariants › accordion: natural @ tablet 768 (119ms)
+  ok 263 [desktop-chrome] › tests\e2e\export-fonts.spec.ts:60:7 › fonts in the exported site › no request leaves the page — the export stays self-contained (684ms)
+  ok 266 [desktop-chrome] › tests\e2e\export-layout-invariants.spec.ts:154:13 › Export layout invariants › accordion: natural @ desktop 1280 (132ms)
+  ok 267 [desktop-chrome] › tests\e2e\export-layout-invariants.spec.ts:154:13 › Export layout invariants › accordion: full width @ phone 375 (116ms)
+  ok 268 [desktop-chrome] › tests\e2e\export-layout-invariants.spec.ts:154:13 › Export layout invariants › accordion: full width @ tablet 768 (121ms)
+  ok 269 [desktop-chrome] › tests\e2e\export-layout-invariants.spec.ts:154:13 › Export layout invariants › accordion: full width @ desktop 1280 (127ms)
+  ok 270 [desktop-chrome] › tests\e2e\export-layout-invariants.spec.ts:154:13 › Export layout invariants › accordion: fit width @ phone 375 (112ms)
+  ok 271 [desktop-chrome] › tests\e2e\export-layout-invariants.spec.ts:154:13 › Export layout invariants › accordion: fit width @ tablet 768 (133ms)
+  ok 272 [desktop-chrome] › tests\e2e\export-layout-invariants.spec.ts:154:13 › Export layout invariants › accordion: fit width @ desktop 1280 (128ms)
+  ok 273 [desktop-chrome] › tests\e2e\export-layout-invariants.spec.ts:154:13 › Export layout invariants › accordion: tall @ phone 375 (115ms)
+  ok 274 [desktop-chrome] › tests\e2e\export-layout-invariants.spec.ts:154:13 › Export layout invariants › accordion: tall @ tablet 768 (119ms)
+  ok 275 [desktop-chrome] › tests\e2e\export-layout-invariants.spec.ts:154:13 › Export layout invariants › accordion: tall @ desktop 1280 (125ms)
+  ok 276 [desktop-chrome] › tests\e2e\export-layout-invariants.spec.ts:154:13 › Export layout invariants › accordion: narrow @ phone 375 (130ms)
+  ok 277 [desktop-chrome] › tests\e2e\export-layout-invariants.spec.ts:154:13 › Export layout invariants › accordion: narrow @ tablet 768 (137ms)
+  ok 278 [desktop-chrome] › tests\e2e\export-layout-invariants.spec.ts:154:13 › Export layout invariants › accordion: narrow @ desktop 1280 (125ms)
+  ok 279 [desktop-chrome] › tests\e2e\export-layout-invariants.spec.ts:154:13 › Export layout invariants › alert: natural @ phone 375 (114ms)
+  ok 280 [desktop-chrome] › tests\e2e\export-layout-invariants.spec.ts:154:13 › Export layout invariants › alert: natural @ tablet 768 (119ms)
+  ok 281 [desktop-chrome] › tests\e2e\export-layout-invariants.spec.ts:154:13 › Export layout invariants › alert: natural @ desktop 1280 (125ms)
+  ok 282 [desktop-chrome] › tests\e2e\export-layout-invariants.spec.ts:154:13 › Export layout invariants › alert: full width @ phone 375 (116ms)
+  ok 283 [desktop-chrome] › tests\e2e\export-layout-invariants.spec.ts:154:13 › Export layout invariants › alert: full width @ tablet 768 (120ms)
+  ok 284 [desktop-chrome] › tests\e2e\export-layout-invariants.spec.ts:154:13 › Export layout invariants › alert: full width @ desktop 1280 (126ms)
+  ok 285 [desktop-chrome] › tests\e2e\export-layout-invariants.spec.ts:154:13 › Export layout invariants › alert: fit width @ phone 375 (115ms)
+  ok 286 [desktop-chrome] › tests\e2e\export-layout-invariants.spec.ts:154:13 › Export layout invariants › alert: fit width @ tablet 768 (136ms)
+  ok 287 [desktop-chrome] › tests\e2e\export-layout-invariants.spec.ts:154:13 › Export layout invariants › alert: fit width @ desktop 1280 (140ms)
+  ok 288 [desktop-chrome] › tests\e2e\export-layout-invariants.spec.ts:154:13 › Export layout invariants › alert: tall @ phone 375 (109ms)
+  ok 289 [desktop-chrome] › tests\e2e\export-layout-invariants.spec.ts:154:13 › Export layout invariants › alert: tall @ tablet 768 (137ms)
+  ok 290 [desktop-chrome] › tests\e2e\export-layout-invariants.spec.ts:154:13 › Export layout invariants › alert: tall @ desktop 1280 (145ms)
+  ok 291 [desktop-chrome] › tests\e2e\export-layout-invariants.spec.ts:154:13 › Export layout invariants › alert: narrow @ phone 375 (116ms)
+  ok 292 [desktop-chrome] › tests\e2e\export-layout-invariants.spec.ts:154:13 › Export layout invariants › alert: narrow @ tablet 768 (116ms)
+  ok 293 [desktop-chrome] › tests\e2e\export-layout-invariants.spec.ts:154:13 › Export layout invariants › alert: narrow @ desktop 1280 (124ms)
+  ok 294 [desktop-chrome] › tests\e2e\export-layout-invariants.spec.ts:154:13 › Export layout invariants › card: natural @ phone 375 (115ms)
+  ok 295 [desktop-chrome] › tests\e2e\export-layout-invariants.spec.ts:154:13 › Export layout invariants › card: natural @ tablet 768 (138ms)
+  ok 296 [desktop-chrome] › tests\e2e\export-layout-invariants.spec.ts:154:13 › Export layout invariants › card: natural @ desktop 1280 (125ms)
+  ok 297 [desktop-chrome] › tests\e2e\export-layout-invariants.spec.ts:154:13 › Export layout invariants › card: full width @ phone 375 (115ms)
+  ok 298 [desktop-chrome] › tests\e2e\export-layout-invariants.spec.ts:154:13 › Export layout invariants › card: full width @ tablet 768 (119ms)
+  ok 300 [desktop-chrome] › tests\e2e\export-layout-invariants.spec.ts:154:13 › Export layout invariants › card: fit width @ phone 375 (115ms)
+  ok 299 [desktop-chrome] › tests\e2e\export-layout-invariants.spec.ts:154:13 › Export layout invariants › card: full width @ desktop 1280 (140ms)
+  ok 301 [desktop-chrome] › tests\e2e\export-layout-invariants.spec.ts:154:13 › Export layout invariants › card: fit width @ tablet 768 (120ms)
+  ok 302 [desktop-chrome] › tests\e2e\export-layout-invariants.spec.ts:154:13 › Export layout invariants › card: fit width @ desktop 1280 (126ms)
+  ok 303 [desktop-chrome] › tests\e2e\export-layout-invariants.spec.ts:154:13 › Export layout invariants › card: tall @ phone 375 (113ms)
+  ok 304 [desktop-chrome] › tests\e2e\export-layout-invariants.spec.ts:154:13 › Export layout invariants › card: tall @ tablet 768 (119ms)
+  ok 305 [desktop-chrome] › tests\e2e\export-layout-invariants.spec.ts:154:13 › Export layout invariants › card: tall @ desktop 1280 (129ms)
+  ok 306 [desktop-chrome] › tests\e2e\export-layout-invariants.spec.ts:154:13 › Export layout invariants › card: narrow @ phone 375 (114ms)
+  ok 307 [desktop-chrome] › tests\e2e\export-layout-invariants.spec.ts:154:13 › Export layout invariants › card: narrow @ tablet 768 (117ms)
+  ok 308 [desktop-chrome] › tests\e2e\export-layout-invariants.spec.ts:154:13 › Export layout invariants › card: narrow @ desktop 1280 (129ms)
+  ok 309 [desktop-chrome] › tests\e2e\export-layout-invariants.spec.ts:154:13 › Export layout invariants › quote: natural @ phone 375 (117ms)
+  ok 310 [desktop-chrome] › tests\e2e\export-layout-invariants.spec.ts:154:13 › Export layout invariants › quote: natural @ tablet 768 (120ms)
+  ok 311 [desktop-chrome] › tests\e2e\export-layout-invariants.spec.ts:154:13 › Export layout invariants › quote: natural @ desktop 1280 (124ms)
+  ok 312 [desktop-chrome] › tests\e2e\export-layout-invariants.spec.ts:154:13 › Export layout invariants › quote: full width @ phone 375 (114ms)
+  ok 313 [desktop-chrome] › tests\e2e\export-layout-invariants.spec.ts:154:13 › Export layout invariants › quote: full width @ tablet 768 (122ms)
+  ok 314 [desktop-chrome] › tests\e2e\export-layout-invariants.spec.ts:154:13 › Export layout invariants › quote: full width @ desktop 1280 (125ms)
+  ok 315 [desktop-chrome] › tests\e2e\export-layout-invariants.spec.ts:154:13 › Export layout invariants › quote: fit width @ phone 375 (115ms)
+  ok 316 [desktop-chrome] › tests\e2e\export-layout-invariants.spec.ts:154:13 › Export layout invariants › quote: fit width @ tablet 768 (120ms)
+  ok 317 [desktop-chrome] › tests\e2e\export-layout-invariants.spec.ts:154:13 › Export layout invariants › quote: fit width @ desktop 1280 (144ms)
+  ok 318 [desktop-chrome] › tests\e2e\export-layout-invariants.spec.ts:154:13 › Export layout invariants › quote: tall @ phone 375 (116ms)
+  ok 319 [desktop-chrome] › tests\e2e\export-layout-invariants.spec.ts:154:13 › Export layout invariants › quote: tall @ tablet 768 (117ms)
+  ok 320 [desktop-chrome] › tests\e2e\export-layout-invariants.spec.ts:154:13 › Export layout invariants › quote: tall @ desktop 1280 (125ms)
+  ok 321 [desktop-chrome] › tests\e2e\export-layout-invariants.spec.ts:154:13 › Export layout invariants › quote: narrow @ phone 375 (113ms)
+  ok 322 [desktop-chrome] › tests\e2e\export-layout-invariants.spec.ts:154:13 › Export layout invariants › quote: narrow @ tablet 768 (117ms)
+  ok 324 [desktop-chrome] › tests\e2e\export-layout-invariants.spec.ts:154:13 › Export layout invariants › stat: natural @ phone 375 (114ms)
+  ok 323 [desktop-chrome] › tests\e2e\export-layout-invariants.spec.ts:154:13 › Export layout invariants › quote: narrow @ desktop 1280 (128ms)
+  ok 325 [desktop-chrome] › tests\e2e\export-layout-invariants.spec.ts:154:13 › Export layout invariants › stat: natural @ tablet 768 (118ms)
+  ok 326 [desktop-chrome] › tests\e2e\export-layout-invariants.spec.ts:154:13 › Export layout invariants › stat: natural @ desktop 1280 (122ms)
+  ok 327 [desktop-chrome] › tests\e2e\export-layout-invariants.spec.ts:154:13 › Export layout invariants › stat: full width @ phone 375 (115ms)
+  ok 328 [desktop-chrome] › tests\e2e\export-layout-invariants.spec.ts:154:13 › Export layout invariants › stat: full width @ tablet 768 (123ms)
+  ok 330 [desktop-chrome] › tests\e2e\export-layout-invariants.spec.ts:154:13 › Export layout invariants › stat: fit width @ phone 375 (113ms)
+  ok 329 [desktop-chrome] › tests\e2e\export-layout-invariants.spec.ts:154:13 › Export layout invariants › stat: full width @ desktop 1280 (127ms)
+  ok 331 [desktop-chrome] › tests\e2e\export-layout-invariants.spec.ts:154:13 › Export layout invariants › stat: fit width @ tablet 768 (131ms)
+  ok 332 [desktop-chrome] › tests\e2e\export-layout-invariants.spec.ts:154:13 › Export layout invariants › stat: fit width @ desktop 1280 (130ms)
+  ok 333 [desktop-chrome] › tests\e2e\export-layout-invariants.spec.ts:154:13 › Export layout invariants › stat: tall @ phone 375 (133ms)
+  ok 334 [desktop-chrome] › tests\e2e\export-layout-invariants.spec.ts:154:13 › Export layout invariants › stat: tall @ tablet 768 (147ms)
+  ok 260 [desktop-chrome] › tests\e2e\every-screen-size.spec.ts:92:7 › the page holds up on every screen in the catalogue › no screen makes the page scroll sideways, and nothing spills past the edge (5.8s)
+  ok 335 [desktop-chrome] › tests\e2e\export-layout-invariants.spec.ts:154:13 › Export layout invariants › stat: tall @ desktop 1280 (163ms)
+  ok 336 [desktop-chrome] › tests\e2e\export-layout-invariants.spec.ts:154:13 › Export layout invariants › stat: narrow @ phone 375 (135ms)
+  ok 337 [desktop-chrome] › tests\e2e\export-layout-invariants.spec.ts:154:13 › Export layout invariants › stat: narrow @ tablet 768 (162ms)
+  ok 339 [desktop-chrome] › tests\e2e\export-layout-invariants.spec.ts:154:13 › Export layout invariants › badge: natural @ phone 375 (118ms)
+  ok 338 [desktop-chrome] › tests\e2e\export-layout-invariants.spec.ts:154:13 › Export layout invariants › stat: narrow @ desktop 1280 (138ms)
+  ok 340 [desktop-chrome] › tests\e2e\export-layout-invariants.spec.ts:154:13 › Export layout invariants › badge: natural @ tablet 768 (140ms)
+  ok 342 [desktop-chrome] › tests\e2e\export-layout-invariants.spec.ts:154:13 › Export layout invariants › badge: full width @ phone 375 (121ms)
+  ok 341 [desktop-chrome] › tests\e2e\export-layout-invariants.spec.ts:154:13 › Export layout invariants › badge: natural @ desktop 1280 (142ms)
+  ok 343 [desktop-chrome] › tests\e2e\export-layout-invariants.spec.ts:154:13 › Export layout invariants › badge: full width @ tablet 768 (139ms)
+  ok 345 [desktop-chrome] › tests\e2e\export-layout-invariants.spec.ts:154:13 › Export layout invariants › badge: fit width @ phone 375 (122ms)
+  ok 344 [desktop-chrome] › tests\e2e\export-layout-invariants.spec.ts:154:13 › Export layout invariants › badge: full width @ desktop 1280 (140ms)
+  ok 346 [desktop-chrome] › tests\e2e\export-layout-invariants.spec.ts:154:13 › Export layout invariants › badge: fit width @ tablet 768 (133ms)
+  ok 347 [desktop-chrome] › tests\e2e\export-layout-invariants.spec.ts:154:13 › Export layout invariants › badge: fit width @ desktop 1280 (145ms)
+  ok 348 [desktop-chrome] › tests\e2e\export-layout-invariants.spec.ts:154:13 › Export layout invariants › badge: tall @ phone 375 (143ms)
+  ok 350 [desktop-chrome] › tests\e2e\export-layout-invariants.spec.ts:154:13 › Export layout invariants › badge: tall @ desktop 1280 (145ms)
+  ok 349 [desktop-chrome] › tests\e2e\export-layout-invariants.spec.ts:154:13 › Export layout invariants › badge: tall @ tablet 768 (171ms)
+  ok 351 [desktop-chrome] › tests\e2e\export-layout-invariants.spec.ts:154:13 › Export layout invariants › badge: narrow @ phone 375 (155ms)
+  ok 352 [desktop-chrome] › tests\e2e\export-layout-invariants.spec.ts:154:13 › Export layout invariants › badge: narrow @ tablet 768 (148ms)
+  ok 354 [desktop-chrome] › tests\e2e\export-layout-invariants.spec.ts:154:13 › Export layout invariants › rating: natural @ phone 375 (122ms)
+  ok 353 [desktop-chrome] › tests\e2e\export-layout-invariants.spec.ts:154:13 › Export layout invariants › badge: narrow @ desktop 1280 (143ms)
+  ok 357 [desktop-chrome] › tests\e2e\export-layout-invariants.spec.ts:154:13 › Export layout invariants › rating: full width @ phone 375 (138ms)
+  ok 355 [desktop-chrome] › tests\e2e\export-layout-invariants.spec.ts:154:13 › Export layout invariants › rating: natural @ tablet 768 (148ms)
+  ok 356 [desktop-chrome] › tests\e2e\export-layout-invariants.spec.ts:154:13 › Export layout invariants › rating: natural @ desktop 1280 (151ms)
+  ok 360 [desktop-chrome] › tests\e2e\export-layout-invariants.spec.ts:154:13 › Export layout invariants › rating: fit width @ phone 375 (128ms)
+  ok 358 [desktop-chrome] › tests\e2e\export-layout-invariants.spec.ts:154:13 › Export layout invariants › rating: full width @ tablet 768 (147ms)
+  ok 359 [desktop-chrome] › tests\e2e\export-layout-invariants.spec.ts:154:13 › Export layout invariants › rating: full width @ desktop 1280 (146ms)
+  ok 361 [desktop-chrome] › tests\e2e\export-layout-invariants.spec.ts:154:13 › Export layout invariants › rating: fit width @ tablet 768 (152ms)
+  ok 363 [desktop-chrome] › tests\e2e\export-layout-invariants.spec.ts:154:13 › Export layout invariants › rating: tall @ phone 375 (141ms)
+  ok 362 [desktop-chrome] › tests\e2e\export-layout-invariants.spec.ts:154:13 › Export layout invariants › rating: fit width @ desktop 1280 (167ms)
+  ok 366 [desktop-chrome] › tests\e2e\export-layout-invariants.spec.ts:154:13 › Export layout invariants › rating: narrow @ phone 375 (140ms)
+  ok 364 [desktop-chrome] › tests\e2e\export-layout-invariants.spec.ts:154:13 › Export layout invariants › rating: tall @ tablet 768 (156ms)
+  ok 365 [desktop-chrome] › tests\e2e\export-layout-invariants.spec.ts:154:13 › Export layout invariants › rating: tall @ desktop 1280 (157ms)
+  ok 368 [desktop-chrome] › tests\e2e\export-layout-invariants.spec.ts:154:13 › Export layout invariants › rating: narrow @ tablet 768 (165ms)
+  ok 367 [desktop-chrome] › tests\e2e\export-layout-invariants.spec.ts:154:13 › Export layout invariants › rating: narrow @ desktop 1280 (175ms)
+  ok 369 [desktop-chrome] › tests\e2e\export-layout-invariants.spec.ts:168:7 › Export layout invariants › a floated item is in the normal stack on a phone and placed from the sm rung up (202ms)
+  ok 370 [desktop-chrome] › tests\e2e\export-layout-invariants.spec.ts:210:7 › Export layout invariants › per-device overrides land at the width they were made for (200ms)
+  ok 371 [desktop-chrome] › tests\e2e\exported-site.spec.ts:78:7 › the exported site, opened from a folder › the shared stylesheet is FOUND and applied, not merely linked (182ms)
+  ok 372 [desktop-chrome] › tests\e2e\exported-site.spec.ts:117:7 › the exported site, opened from a folder › the alert page KEEPS the rules it needs after subsetting (200ms)
+  ok 373 [desktop-chrome] › tests\e2e\exported-site.spec.ts:140:7 › the exported site, opened from a folder › text is legible and the page does not scroll sideways, on a phone (169ms)
+  ok 375 [desktop-chrome] › tests\e2e\exported-site.spec.ts:130:7 › the exported site, opened from a folder › a page WITHOUT a component does not download that component's CSS (143ms)
+  ok 374 [desktop-chrome] › tests\e2e\exported-site.spec.ts:88:7 › the exported site, opened from a folder › every internal link resolves from every page (302ms)
+  ok 376 [desktop-chrome] › tests\e2e\float-pin.spec.ts:99:7 › a freely placed block that holds on screen › EXPORT · it stays put however far the page scrolls (832ms)
+  ok 377 [desktop-chrome] › tests\e2e\float-pin.spec.ts:105:7 › a freely placed block that holds on screen › EXPORT · …at the place it was measured sitting, not at a percentage of the window (838ms)
+  ok 378 [desktop-chrome] › tests\e2e\float-pin.spec.ts:117:7 › a freely placed block that holds on screen › EXPORT · a floated block NOBODY pinned still scrolls away — so the others prove something (817ms)
+  ok 379 [desktop-chrome] › tests\e2e\float-pin.spec.ts:123:7 › a freely placed block that holds on screen › EXPORT · STICKY on a floated block is not applied — it would jump back into the flow (846ms)
+  ok 381 [desktop-chrome] › tests\e2e\float-pin.spec.ts:147:7 › a freely placed block that holds on screen › BUILDER · it HOLDS ON SCREEN while the canvas scrolls — what a user checks first (1.8s)
+  ok 382 [desktop-chrome] › tests\e2e\float-pin.spec.ts:182:7 › a freely placed block that holds on screen › BUILDER · it HOLDS while the canvas is FITTED below 100% — a device wider than the window (Z1-a) (1.8s)
+  ok 380 [desktop-chrome] › tests\e2e\float-pin.spec.ts:128:7 › a freely placed block that holds on screen › BUILDER · picking “Floats on screen” does not move it — it holds where it was dragged (2.9s)
+  ok 383 [desktop-chrome] › tests\e2e\float-pin.spec.ts:209:7 › a freely placed block that holds on screen › BUILDER · a bar held FLUSH at the top stays flush — no gap opens above it (1.5s)
+  ok 385 [desktop-chrome] › tests\e2e\float-pin.spec.ts:268:7 › a freely placed block that holds on screen › BUILDER · a held block LOWER DOWN the page holds at the top of the view, not at its own band (1.5s)
+  ok 386 [desktop-chrome] › tests\e2e\float-pin.spec.ts:296:7 › a freely placed block that holds on screen › BUILDER · a floated block is offered the one that can work, and told about the one that cannot (2.3s)
+  ok 387 [desktop-chrome] › tests\e2e\float-round-trip.spec.ts:69:7 › floating a parent and putting it back › the children float WITH the parent, in the arrangement they already had (1.5s)
+  ok 384 [desktop-chrome] › tests\e2e\float-pin.spec.ts:236:7 › a freely placed block that holds on screen › BUILDER · put back in the layout it keeps the pin, drops the free placement, and is still there (3.4s)
+  ok 388 [desktop-chrome] › tests\e2e\float-round-trip.spec.ts:86:7 › floating a parent and putting it back › un-floating puts everything back exactly where it was (2.0s)
+  ok 389 [desktop-chrome] › tests\e2e\float-round-trip.spec.ts:101:7 › floating a parent and putting it back › the section's OWN height survives a float round trip (2.0s)
+  ok 390 [desktop-chrome] › tests\e2e\float-round-trip.spec.ts:122:7 › floating a parent and putting it back › the BLOCK's own height survives a round trip, and survives doing it twice (2.8s)
+  ok 392 [desktop-chrome] › tests\e2e\float-round-trip.spec.ts:156:7 › floating a parent and putting it back › an individual child can float on its own, leaving its siblings alone (1.7s)
+  ok 391 [desktop-chrome] › tests\e2e\float-round-trip.spec.ts:141:7 › floating a parent and putting it back › a size set WHILE it floats is kept when it goes back — that one is the user's own (2.3s)
+  ok 395 [desktop-chrome] › tests\e2e\grid-cell-resize.spec.ts:103:7 › resizing a grid cell's height › the BOTTOM edge makes the row taller, and the top edge stays put (1.4s)
+  ok 393 [desktop-chrome] › tests\e2e\frame-observer-stays.spec.ts:26:5 › typing 40 characters creates no new observer on the canvas frame (2.5s)
+  ok 394 [desktop-chrome] › tests\e2e\grid-cell-resize.spec.ts:77:7 › resizing a grid cell's height › a long drag never spins the render loop (2.1s)
+  ok 396 [desktop-chrome] › tests\e2e\grid-cell-resize.spec.ts:113:7 › resizing a grid cell's height › the TOP edge grows THIS row upward, and its bottom stays put (1.4s)
+  ok 397 [desktop-chrome] › tests\e2e\grid-cell-resize.spec.ts:130:7 › resizing a grid cell's height › both cells in the row grow together, so the row stays a row (1.4s)
+  ok 398 [desktop-chrome] › tests\e2e\grid-cell-resize.spec.ts:138:7 › resizing a grid cell's height › a cell pushed onto the next row COMES BACK when the dragged cell shrinks (1.7s)
+  ok 399 [desktop-chrome] › tests\e2e\grid-cell-resize.spec.ts:159:7 › resizing a grid cell's height › a 90/10 grid can be dragged into shape from the WIDE cell — the neighbour narrows to one track, as a row's does (#85) (1.7s)
+  ok 400 [desktop-chrome] › tests\e2e\grid-cell-resize.spec.ts:175:7 › resizing a grid cell's height › out and back in ONE drag leaves the row exactly as it was (1.6s)
+  ok 401 [desktop-chrome] › tests\e2e\grid-cell-resize.spec.ts:192:7 › resizing a grid cell's height › the OTHER rows share what is left, evenly (1.5s)
+  ok 402 [desktop-chrome] › tests\e2e\grid-cell-resize.spec.ts:234:7 › the grabbed edge is the only one that moves › the LEFT edge grows the cell leftward — the right edge never moves (1.4s)
+  ok 403 [desktop-chrome] › tests\e2e\grid-cell-resize.spec.ts:248:7 › the grabbed edge is the only one that moves › dragging the LEFT edge past what the row can give still never moves the right edge (1.4s)
+  ok 404 [desktop-chrome] › tests\e2e\grid-cell-resize.spec.ts:261:7 › the grabbed edge is the only one that moves › the TOP edge moves the BOUNDARY — the row above gives back exactly what this row takes (1.4s)
+  ok 405 [desktop-chrome] › tests\e2e\grid-cell-resize.spec.ts:277:7 › the grabbed edge is the only one that moves › the TOP edge dragged past the room above still never pushes the bottom down (1.3s)
+  ok 406 [desktop-chrome] › tests\e2e\grid-cell-resize.spec.ts:298:7 › a drag is one gesture › what the drag SHOWS is what the release COMMITS (1.7s)
+  ok 407 [desktop-chrome] › tests\e2e\grid-cell-resize.spec.ts:318:7 › a drag is one gesture › ONE undo puts back the whole drag (1.8s)
+  ok 408 [desktop-chrome] › tests\e2e\grid-cell-resize.spec.ts:330:7 › a drag is one gesture › the page is written to storage ONCE for a whole drag (2.0s)
+  ok 409 [desktop-chrome] › tests\e2e\grid-cells-never-overlap.spec.ts:111:7 › 2 cells placed by hand (start + row) never cover each other, at any width (2.2s)
+  ok 410 [desktop-chrome] › tests\e2e\grid-cells-never-overlap.spec.ts:116:7 › 2 cells placed by the grid itself never cover each other, at any width (2.2s)
+  ok 411 [desktop-chrome] › tests\e2e\grid-cells-never-overlap.spec.ts:111:7 › 3 cells placed by hand (start + row) never cover each other, at any width (2.2s)
+  ok 412 [desktop-chrome] › tests\e2e\grid-cells-never-overlap.spec.ts:116:7 › 3 cells placed by the grid itself never cover each other, at any width (2.2s)
+  ok 413 [desktop-chrome] › tests\e2e\grid-cells-never-overlap.spec.ts:111:7 › 4 cells placed by hand (start + row) never cover each other, at any width (2.2s)
+  ok 414 [desktop-chrome] › tests\e2e\grid-cells-never-overlap.spec.ts:116:7 › 4 cells placed by the grid itself never cover each other, at any width (2.2s)
+  ok 415 [desktop-chrome] › tests\e2e\grid-cells-never-overlap.spec.ts:111:7 › 6 cells placed by hand (start + row) never cover each other, at any width (2.2s)
+  ok 416 [desktop-chrome] › tests\e2e\grid-cells-never-overlap.spec.ts:116:7 › 6 cells placed by the grid itself never cover each other, at any width (2.2s)
+  ok 417 [desktop-chrome] › tests\e2e\grid-cells-never-overlap.spec.ts:138:7 › 2 cells never cover each other when the column count is set per device (2.2s)
+  ok 418 [desktop-chrome] › tests\e2e\grid-cells-never-overlap.spec.ts:138:7 › 3 cells never cover each other when the column count is set per device (2.2s)
+  ok 419 [desktop-chrome] › tests\e2e\grid-cells-never-overlap.spec.ts:138:7 › 4 cells never cover each other when the column count is set per device (2.2s)
+  ok 420 [desktop-chrome] › tests\e2e\grid-cells-never-overlap.spec.ts:138:7 › 6 cells never cover each other when the column count is set per device (2.2s)
+  ok 422 [desktop-chrome] › tests\e2e\grid-own-box.spec.ts:53:7 › a grid narrows by its own box (#111) › canvas, Tablet preset: the outer grid keeps three across, the inner goes to one, and no word breaks (1.4s)
+  ok 421 [desktop-chrome] › tests\e2e\grid-cells-never-overlap.spec.ts:153:5 › dragging the preview narrower never empties the top of the page (2.7s)
+  ok 423 [desktop-chrome] › tests\e2e\grid-own-box.spec.ts:63:7 › a grid narrows by its own box (#111) › canvas, Desktop preset: the inner grid is two across (a 427px cell is under 3 × 12rem), still whole words (1.4s)
+  ok 424 [desktop-chrome] › tests\e2e\grid-own-box.spec.ts:71:7 › a grid narrows by its own box (#111) › Preview at 768 and 1280 agrees with the canvas; at 375 everything is one column (3.0s)
+  ok 425 [desktop-chrome] › tests\e2e\grid-own-box.spec.ts:119:9 › a narrowed grid has the same rows in the editor as on the page › 1 · 3 · 8 at Tablet (768px): the same rows and the same cell heights in both, and no editor cell in the grid's flow (2.9s)
+  ok 426 [desktop-chrome] › tests\e2e\grid-own-box.spec.ts:119:9 › a narrowed grid has the same rows in the editor as on the page › 1 · 3 · 8 at Laptop (1024px): the same rows and the same cell heights in both, and no editor cell in the grid's flow (3.0s)
+  ok 427 [desktop-chrome] › tests\e2e\grid-own-box.spec.ts:119:9 › a narrowed grid has the same rows in the editor as on the page › 1 · 3 · 8 at Desktop (1280px): the same rows and the same cell heights in both, and no editor cell in the grid's flow (3.0s)
+  ok 428 [desktop-chrome] › tests\e2e\grid-own-box.spec.ts:119:9 › a narrowed grid has the same rows in the editor as on the page › 1 · 3 · 8 at Mobile (375px): the same rows and the same cell heights in both, and no editor cell in the grid's flow (3.0s)
+  ok 429 [desktop-chrome] › tests\e2e\grid-own-box.spec.ts:119:9 › a narrowed grid has the same rows in the editor as on the page › 1 · 11 at Tablet (768px): the same rows and the same cell heights in both, and no editor cell in the grid's flow (2.9s)
+  ok 430 [desktop-chrome] › tests\e2e\grid-own-box.spec.ts:119:9 › a narrowed grid has the same rows in the editor as on the page › 1 · 11 at Laptop (1024px): the same rows and the same cell heights in both, and no editor cell in the grid's flow (2.9s)
+  ok 431 [desktop-chrome] › tests\e2e\grid-own-box.spec.ts:119:9 › a narrowed grid has the same rows in the editor as on the page › 1 · 11 at Desktop (1280px): the same rows and the same cell heights in both, and no editor cell in the grid's flow (2.9s)
+  ok 432 [desktop-chrome] › tests\e2e\grid-own-box.spec.ts:119:9 › a narrowed grid has the same rows in the editor as on the page › 1 · 11 at Mobile (375px): the same rows and the same cell heights in both, and no editor cell in the grid's flow (2.9s)
+  ok 433 [desktop-chrome] › tests\e2e\grid-own-box.spec.ts:119:9 › a narrowed grid has the same rows in the editor as on the page › 11 · 1 at Tablet (768px): the same rows and the same cell heights in both, and no editor cell in the grid's flow (2.9s)
+  ok 434 [desktop-chrome] › tests\e2e\grid-own-box.spec.ts:119:9 › a narrowed grid has the same rows in the editor as on the page › 11 · 1 at Laptop (1024px): the same rows and the same cell heights in both, and no editor cell in the grid's flow (2.9s)
+  ok 435 [desktop-chrome] › tests\e2e\grid-own-box.spec.ts:119:9 › a narrowed grid has the same rows in the editor as on the page › 11 · 1 at Desktop (1280px): the same rows and the same cell heights in both, and no editor cell in the grid's flow (3.0s)
+  ok 438 [desktop-chrome] › tests\e2e\hidden-blocks-leave-the-canvas.spec.ts:41:7 › hidden on a device → gone from the canvas at that device › at the Desktop preset the same block is simply there (1.4s)
+  ok 437 [desktop-chrome] › tests\e2e\hidden-blocks-leave-the-canvas.spec.ts:28:7 › hidden on a device → gone from the canvas at that device › at the Mobile preset the hidden menu has no box, the header keeps one line, and the toggle brings it back faintly (2.1s)
+  ok 436 [desktop-chrome] › tests\e2e\grid-own-box.spec.ts:119:9 › a narrowed grid has the same rows in the editor as on the page › 11 · 1 at Mobile (375px): the same rows and the same cell heights in both, and no editor cell in the grid's flow (2.9s)
+  ok 441 [desktop-chrome] › tests\e2e\image-intrinsic.spec.ts:58:7 › an image that knows its own shape › the EXPORT gives the picture its natural shape when it is not cropped (143ms)
+  ok 442 [desktop-chrome] › tests\e2e\image-intrinsic.spec.ts:73:7 › an image that knows its own shape › the CANVAS gives it the same shape, to the same pixel (325ms)
+  ok 443 [desktop-chrome] › tests\e2e\image-intrinsic.spec.ts:81:7 › an image that knows its own shape › a height set by hand still crops — in BOTH places (325ms)
+  ok 444 [desktop-chrome] › tests\e2e\image-intrinsic.spec.ts:96:7 › an image that knows its own shape › an unmeasured picture keeps the old letterbox rather than collapsing to nothing (125ms)
+  ok 445 [desktop-chrome] › tests\e2e\image-intrinsic.spec.ts:109:7 › an image that knows its own shape › the box exists BEFORE the picture does — nothing below it moves as it loads (141ms)
+  ok 446 [desktop-chrome] › tests\e2e\image-intrinsic.spec.ts:134:7 › an image that knows its own shape › a picture added the way a person adds one — from the menu, then uploaded — keeps its own shape (500ms)
+  ok 447 [desktop-chrome] › tests\e2e\image-intrinsic.spec.ts:170:7 › an image that knows its own shape › uploading a photograph measures it, for real, through the real control (337ms)
+  ok 439 [desktop-chrome] › tests\e2e\hug-round-trip.spec.ts:44:9 › a block dragged back to its words' width hugs them again (L4-f) › the right edge in -40px and back (6.5s)
+  ok 440 [desktop-chrome] › tests\e2e\hug-round-trip.spec.ts:44:9 › a block dragged back to its words' width hugs them again (L4-f) › the left edge in +40px and back (6.6s)
+  ok 450 [desktop-chrome] › tests\e2e\interactions.spec.ts:153:7 › Interactions — hover, focus and entrance (Rounds 1a + 1b) › a page with no effects ships no interaction CSS at all (112ms)
+  ok 451 [desktop-chrome] › tests\e2e\interactions.spec.ts:163:7 › Interactions — hover, focus and entrance (Rounds 1a + 1b) › KEYBOARD parity: focusing a control inside the block triggers the same effect (455ms)
+  ok 452 [desktop-chrome] › tests\e2e\interactions.spec.ts:184:7 › Interactions — hover, focus and entrance (Rounds 1a + 1b) › REDUCED MOTION removes the movement but keeps the feedback (499ms)
+  ok 453 [desktop-chrome] › tests\e2e\interactions.spec.ts:199:7 › Interactions — hover, focus and entrance (Rounds 1a + 1b) › hover never breaks the page's geometry (475ms)
+  ok 448 [desktop-chrome] › tests\e2e\interactions.spec.ts:89:7 › Interactions — hover, focus and entrance (Rounds 1a + 1b) › EVERY named effect actually changes the block on the canvas (6.2s)
+  ok 454 [desktop-chrome] › tests\e2e\interactions.spec.ts:209:7 › Interactions — hover, focus and entrance (Rounds 1a + 1b) › TOAST floats in the corner it was told to — in the export AND on the canvas (787ms)
+  ok 449 [desktop-chrome] › tests\e2e\interactions.spec.ts:142:7 › Interactions — hover, focus and entrance (Rounds 1a + 1b) › the EXPORT hovers identically — canvas = export (3.2s)
+  ok 457 [desktop-chrome] › tests\e2e\interactions.spec.ts:313:7 › Interactions — hover, focus and entrance (Rounds 1a + 1b) › ZERO-JS stays the default — nothing opted into means no script at all (114ms)
+  ok 456 [desktop-chrome] › tests\e2e\interactions.spec.ts:289:7 › Interactions — hover, focus and entrance (Rounds 1a + 1b) › PERSISTENCE remembers a dismissal, and only when asked (1.1s)
+  ok 459 [desktop-chrome] › tests\e2e\interactions.spec.ts:348:7 › Interactions — hover, focus and entrance (Rounds 1a + 1b) › ENTRANCE actually plays — the block starts hidden and becomes visible (1.0s)
+  ok 460 [desktop-chrome] › tests\e2e\interactions.spec.ts:360:7 › Interactions — hover, focus and entrance (Rounds 1a + 1b) › REDUCED MOTION shows the content immediately, with no entrance at all (114ms)
+  ok 461 [desktop-chrome] › tests\e2e\interactions.spec.ts:374:7 › Interactions — hover, focus and entrance (Rounds 1a + 1b) › STAGGER brings a container's children in one after another (1.3s)
+  ok 455 [desktop-chrome] › tests\e2e\interactions.spec.ts:264:7 › Interactions — hover, focus and entrance (Rounds 1a + 1b) › AUTO-DISMISS hides the message, and PAUSES while the reader is engaging with it (6.2s)
+  ok 458 [desktop-chrome] › tests\e2e\interactions.spec.ts:326:7 › Interactions — hover, focus and entrance (Rounds 1a + 1b) › ENTRANCE: every effect ends with the block fully VISIBLE — never stuck hidden (6.5s)
+  ok 464 [desktop-chrome] › tests\e2e\item-effects.spec.ts:56:7 › one item's own hover › the EXPORT moves the hovered row and leaves its neighbour alone (427ms)
+  ok 465 [desktop-chrome] › tests\e2e\item-effects.spec.ts:71:7 › one item's own hover › the CANVAS does the same, which is the promise the builder makes (646ms)
+  ok 463 [desktop-chrome] › tests\e2e\interactions.spec.ts:410:7 › Interactions — hover, focus and entrance (Rounds 1a + 1b) › EVERY component can carry a hover effect — existing and future (2.6s)
+  ok 466 [desktop-chrome] › tests\e2e\item-effects.spec.ts:82:7 › one item's own hover › a row with NO effect does not move when hovered (418ms)
+  ok 468 [desktop-chrome] › tests\e2e\item-effects.spec.ts:106:7 › stagger reaches the rows › each row starts a beat after the one before it (130ms)
+  ok 469 [desktop-chrome] › tests\e2e\item-effects.spec.ts:115:7 › stagger reaches the rows › the component itself is NOT what animates (123ms)
+  ok 467 [desktop-chrome] › tests\e2e\item-effects.spec.ts:92:7 › one item's own entrance › it settles at its natural place — a reveal must never leave content hidden (1.0s)
+  ok 462 [desktop-chrome] › tests\e2e\interactions.spec.ts:394:7 › Interactions — hover, focus and entrance (Rounds 1a + 1b) › EVERY component can carry an entrance — existing and future (5.8s)
+  ok 471 [desktop-chrome] › tests\e2e\keyboard-survives-selection.spec.ts:74:7 › the keyboard still works after a click selects a container › the caret does not stay behind in a block you did not select (989ms)
+  ok 470 [desktop-chrome] › tests\e2e\item-ring-zoom.spec.ts:13:5 › at Wide, fitted below 100%, an Accordion item's ring is the item's own box and its toolbar sits beside it (2.6s)
+  ok 472 [desktop-chrome] › tests\e2e\keyboard-survives-selection.spec.ts:81:7 › the keyboard still works after a click selects a container › Alt+F floats it, and floats it back (2.0s)
+  ok 473 [desktop-chrome] › tests\e2e\keyboard-survives-selection.spec.ts:91:7 › the keyboard still works after a click selects a container › Ctrl+D duplicates it (1.5s)
+  ok 475 [desktop-chrome] › tests\e2e\keyboard-survives-selection.spec.ts:100:7 › the keyboard still works after a click selects a container › Delete removes it (1.5s)
+  ok 476 [desktop-chrome] › tests\e2e\keyboard-survives-selection.spec.ts:137:7 › the keyboard still works after a click selects a container › ONE click into a text block, a pause, then typing — and the text lands (1.9s)
+  ok 474 [desktop-chrome] › tests\e2e\keyboard-survives-selection.spec.ts:107:7 › the keyboard still works after a click selects a container › clicking around the page never sends React into a loop (3.3s)
+  ok 479 [desktop-chrome] › tests\e2e\layout-bands.spec.ts:43:7 › bands › an edge-to-edge band spans the page, and so does its content (127ms)
+  ok 480 [desktop-chrome] › tests\e2e\layout-bands.spec.ts:52:7 › bands › a CONTAINED band keeps its background full-bleed but insets its content (130ms)
+  ok 481 [desktop-chrome] › tests\e2e\layout-bands.spec.ts:73:7 › bands › the measure steps up one rung at a time (157ms)
+  ok 477 [desktop-chrome] › tests\e2e\keyboard-survives-selection.spec.ts:164:7 › the keyboard still works after a click selects a container › clicking the empty part of a box does not hand the caret to the text inside it (2.3s)
+  ok 482 [desktop-chrome] › tests\e2e\layout-bands.spec.ts:87:7 › bands › on a phone the content keeps the page gutter and never touches the edge (123ms)
+  ok 484 [desktop-chrome] › tests\e2e\layout-bands.spec.ts:148:7 › bands › REGRESSION: a component's internal wrappers are not page sections (119ms)
+  ok 483 [desktop-chrome] › tests\e2e\layout-bands.spec.ts:98:7 › bands › the CANVAS contains the band exactly as the export does — canvas = export (346ms)
+  ok 478 [desktop-chrome] › tests\e2e\keyboard-survives-selection.spec.ts:191:7 › the keyboard still works after a click selects a container › …and typing in a text block is still typing (1.9s)
+  ok 485 [desktop-chrome] › tests\e2e\layout-bands.spec.ts:174:7 › bands › no band, contained or not, makes the page scroll sideways (264ms)
+  ok 486 [desktop-chrome] › tests\e2e\masonry-builder.spec.ts:108:7 › masonry in the builder › the control is in Arrange, and a grid nobody has touched is already on Even (1.2s)
+  ok 487 [desktop-chrome] › tests\e2e\masonry-builder.spec.ts:118:7 › masonry in the builder › pressing Follow the picture staggers the CANVAS (1.8s)
+  ok 488 [desktop-chrome] › tests\e2e\masonry-builder.spec.ts:136:7 › masonry in the builder › the editor's gaps are the visitor's gaps at a real screen width (1.8s)
+  ok 491 [desktop-chrome] › tests\e2e\masonry-builder.spec.ts:181:7 › what masonry uncovered on the way › the page column in the EDITOR is the one the device chip asks for (822ms)
+  ok 492 [desktop-chrome] › tests\e2e\masonry-builder.spec.ts:195:7 › what masonry uncovered on the way › an icon-only toolbar button says what it is (328ms)
+  ok 493 [desktop-chrome] › tests\e2e\masonry.spec.ts:82:7 › masonry › a cell begins where the one above it ended — that IS the stagger (180ms)
+  ok 494 [desktop-chrome] › tests\e2e\masonry.spec.ts:105:7 › masonry › nothing overlaps and nothing is cropped, even where the span can only be an estimate (173ms)
+  ok 489 [desktop-chrome] › tests\e2e\masonry-builder.spec.ts:149:7 › masonry in the builder › Rows tall and Start at row are gone inside a masonry row (2.4s)
+  ok 495 [desktop-chrome] › tests\e2e\masonry.spec.ts:131:7 › masonry › the blocks still read in the order they were put in (177ms)
+  ok 496 [desktop-chrome] › tests\e2e\masonry.spec.ts:146:7 › masonry › the space the user asked for is the space between the pictures (168ms)
+  ok 497 [desktop-chrome] › tests\e2e\masonry.spec.ts:160:7 › masonry › on a phone it is a plain stack — no ruler, no rounding (132ms)
+  ok 498 [desktop-chrome] › tests\e2e\masonry.spec.ts:171:7 › masonry › `Even` is byte-for-byte the layout every saved page already has (179ms)
+  ok 499 [desktop-chrome] › tests\e2e\masonry.spec.ts:181:7 › masonry › measuring on the page fixes what the model could only guess at (171ms)
+  ok 490 [desktop-chrome] › tests\e2e\masonry-builder.spec.ts:161:7 › masonry in the builder › choosing Even again puts every pixel back (2.2s)
+  ok 500 [desktop-chrome] › tests\e2e\masonry.spec.ts:196:7 › masonry › the script hands the spans back when the window becomes a phone (184ms)
+  ok 501 [desktop-chrome] › tests\e2e\multipage-preview.spec.ts:45:7 › Multi-page preview › preview shows ONE real page, not every page stacked together (2.0s)
+  ok 502 [desktop-chrome] › tests\e2e\multipage-preview.spec.ts:52:7 › Multi-page preview › NOTHING is injected above the page — it is what the user designed (2.0s)
+  ok 505 [desktop-chrome] › tests\e2e\multipage-preview.spec.ts:115:7 › Multi-page preview › the page renders styled — the shared stylesheet reaches the iframe (1.9s)
+  ok 506 [desktop-chrome] › tests\e2e\page-audit-spill.spec.ts:27:9 › at 375 › a row of three coloured columns (a band with a gutter) inside a section: no spill (104ms)
+  ok 507 [desktop-chrome] › tests\e2e\page-audit-spill.spec.ts:35:9 › at 375 › a row of columns inside a NARROW column: the columns stay inside it (93ms)
+  ok 508 [desktop-chrome] › tests\e2e\page-audit-spill.spec.ts:44:9 › at 375 › a block that really is wider than its box: still a spill (96ms)
+  ok 509 [desktop-chrome] › tests\e2e\page-audit-spill.spec.ts:27:9 › at 768 › a row of three coloured columns (a band with a gutter) inside a section: no spill (99ms)
+  ok 510 [desktop-chrome] › tests\e2e\page-audit-spill.spec.ts:35:9 › at 768 › a row of columns inside a NARROW column: the columns stay inside it (95ms)
+  ok 511 [desktop-chrome] › tests\e2e\page-audit-spill.spec.ts:44:9 › at 768 › a block that really is wider than its box: still a spill (93ms)
+  ok 512 [desktop-chrome] › tests\e2e\page-audit-spill.spec.ts:27:9 › at 1280 › a row of three coloured columns (a band with a gutter) inside a section: no spill (102ms)
+  ok 513 [desktop-chrome] › tests\e2e\page-audit-spill.spec.ts:35:9 › at 1280 › a row of columns inside a NARROW column: the columns stay inside it (108ms)
+  ok 514 [desktop-chrome] › tests\e2e\page-audit-spill.spec.ts:44:9 › at 1280 › a block that really is wider than its box: still a spill (109ms)
+  ok 515 [desktop-chrome] › tests\e2e\page-audit-spill.spec.ts:27:9 › at 1920 › a row of three coloured columns (a band with a gutter) inside a section: no spill (122ms)
+  ok 516 [desktop-chrome] › tests\e2e\page-audit-spill.spec.ts:35:9 › at 1920 › a row of columns inside a NARROW column: the columns stay inside it (123ms)
+  ok 517 [desktop-chrome] › tests\e2e\page-audit-spill.spec.ts:44:9 › at 1920 › a block that really is wider than its box: still a spill (115ms)
+  ok 518 [desktop-chrome] › tests\e2e\page-audit-unused-space.spec.ts:38:9 › at 768 › an Accordion saved hugging its words: a line packed to one side (W19a) (103ms)
+  ok 519 [desktop-chrome] › tests\e2e\page-audit-unused-space.spec.ts:41:9 › at 768 › an Accordion dropped on the page now fills its line: nothing to report (F-1 A) (102ms)
+  ok 520 [desktop-chrome] › tests\e2e\page-audit-unused-space.spec.ts:44:9 › at 768 › the same Accordion with its width dragged by hand: nothing to report (113ms)
+  ok 521 [desktop-chrome] › tests\e2e\page-audit-unused-space.spec.ts:47:9 › at 768 › a line that wrapped and left a block waiting with room beside it (W19a, wrapped) (101ms)
+  ok 522 [desktop-chrome] › tests\e2e\page-audit-unused-space.spec.ts:54:9 › at 768 › a CENTRED line of blocks of different heights is ONE line, not three wrapped ones (F1-h) (92ms)
+  ok 523 [desktop-chrome] › tests\e2e\page-audit-unused-space.spec.ts:61:9 › at 768 › the same line through the engine, nobody sized it: the columns take what their lines leave (F-1 B) (100ms)
+  ok 504 [desktop-chrome] › tests\e2e\multipage-preview.spec.ts:97:7 › Multi-page preview › the preview's OWN toolbar walks the pages too, without touching the design (4.1s)
+  ok 503 [desktop-chrome] › tests\e2e\multipage-preview.spec.ts:63:7 › Multi-page preview › a header the USER built walks through every page (5.9s)
+  ok 524 [desktop-chrome] › tests\e2e\page-audit-unused-space.spec.ts:64:9 › at 768 › the same line with its columns sized by hand: nothing to report (126ms)
+  ok 525 [desktop-chrome] › tests\e2e\page-audit-unused-space.spec.ts:38:9 › at 1280 › an Accordion saved hugging its words: a line packed to one side (W19a) (129ms)
+  ok 526 [desktop-chrome] › tests\e2e\page-audit-unused-space.spec.ts:41:9 › at 1280 › an Accordion dropped on the page now fills its line: nothing to report (F-1 A) (136ms)
+  ok 527 [desktop-chrome] › tests\e2e\page-audit-unused-space.spec.ts:44:9 › at 1280 › the same Accordion with its width dragged by hand: nothing to report (138ms)
+  ok 528 [desktop-chrome] › tests\e2e\page-audit-unused-space.spec.ts:47:9 › at 1280 › a line that wrapped and left a block waiting with room beside it (W19a, wrapped) (120ms)
+  ok 529 [desktop-chrome] › tests\e2e\page-audit-unused-space.spec.ts:54:9 › at 1280 › a CENTRED line of blocks of different heights is ONE line, not three wrapped ones (F1-h) (118ms)
+  ok 530 [desktop-chrome] › tests\e2e\page-audit-unused-space.spec.ts:61:9 › at 1280 › the same line through the engine, nobody sized it: the columns take what their lines leave (F-1 B) (144ms)
+  ok 531 [desktop-chrome] › tests\e2e\page-audit-unused-space.spec.ts:64:9 › at 1280 › the same line with its columns sized by hand: nothing to report (133ms)
+  ok 532 [desktop-chrome] › tests\e2e\page-audit-unused-space.spec.ts:38:9 › at 1920 › an Accordion saved hugging its words: a line packed to one side (W19a) (158ms)
+  ok 533 [desktop-chrome] › tests\e2e\page-audit-unused-space.spec.ts:41:9 › at 1920 › an Accordion dropped on the page now fills its line: nothing to report (F-1 A) (150ms)
+  ok 534 [desktop-chrome] › tests\e2e\page-audit-unused-space.spec.ts:44:9 › at 1920 › the same Accordion with its width dragged by hand: nothing to report (151ms)
+  ok 535 [desktop-chrome] › tests\e2e\page-audit-unused-space.spec.ts:47:9 › at 1920 › a line that wrapped and left a block waiting with room beside it (W19a, wrapped) (132ms)
+  ok 536 [desktop-chrome] › tests\e2e\page-audit-unused-space.spec.ts:54:9 › at 1920 › a CENTRED line of blocks of different heights is ONE line, not three wrapped ones (F1-h) (118ms)
+  ok 537 [desktop-chrome] › tests\e2e\page-audit-unused-space.spec.ts:61:9 › at 1920 › the same line through the engine, nobody sized it: the columns take what their lines leave (F-1 B) (142ms)
+  ok 539 [desktop-chrome] › tests\e2e\page-audit-unused-space.spec.ts:70:5 › a short page: the window empty under its last block (W19d) (125ms)
+  ok 538 [desktop-chrome] › tests\e2e\page-audit-unused-space.spec.ts:64:9 › at 1920 › the same line with its columns sized by hand: nothing to report (152ms)
+  ok 540 [desktop-chrome] › tests\e2e\page-audit-unused-space.spec.ts:73:5 › a page taller than its window: no W19d (111ms)
+  ok 542 [desktop-chrome] › tests\e2e\page-audit-whitespace.spec.ts:34:9 › at 375 › a section with its gutter set to 0: words closer than 1rem to the page edge (W7a) (95ms)
+  ok 541 [desktop-chrome] › tests\e2e\page-audit-whitespace.spec.ts:26:9 › at 375 › a page at its defaults: nothing to report (106ms)
+  ok 543 [desktop-chrome] › tests\e2e\page-audit-whitespace.spec.ts:39:9 › at 375 › a coloured box with its inner spacing set to 0: words touching its edge (W7a) (92ms)
+  ok 544 [desktop-chrome] › tests\e2e\page-audit-whitespace.spec.ts:44:9 › at 375 › a pager's slides waiting off screen are not words near the page edge (L3-c) (92ms)
+  ok 545 [desktop-chrome] › tests\e2e\page-audit-whitespace.spec.ts:49:9 › at 375 › two sections with their space set to 0: words closer than 1rem (W7b) (91ms)
+  ok 546 [desktop-chrome] › tests\e2e\page-audit-whitespace.spec.ts:26:9 › at 768 › a page at its defaults: nothing to report (118ms)
+  ok 547 [desktop-chrome] › tests\e2e\page-audit-whitespace.spec.ts:34:9 › at 768 › a section with its gutter set to 0: words closer than 1rem to the page edge (W7a) (100ms)
+  ok 548 [desktop-chrome] › tests\e2e\page-audit-whitespace.spec.ts:39:9 › at 768 › a coloured box with its inner spacing set to 0: words touching its edge (W7a) (100ms)
+  ok 549 [desktop-chrome] › tests\e2e\page-audit-whitespace.spec.ts:44:9 › at 768 › a pager's slides waiting off screen are not words near the page edge (L3-c) (107ms)
+  ok 550 [desktop-chrome] › tests\e2e\page-audit-whitespace.spec.ts:49:9 › at 768 › two sections with their space set to 0: words closer than 1rem (W7b) (110ms)
+  ok 551 [desktop-chrome] › tests\e2e\page-audit-whitespace.spec.ts:26:9 › at 1280 › a page at its defaults: nothing to report (120ms)
+  ok 552 [desktop-chrome] › tests\e2e\page-audit-whitespace.spec.ts:34:9 › at 1280 › a section with its gutter set to 0: words closer than 1rem to the page edge (W7a) (136ms)
+  ok 553 [desktop-chrome] › tests\e2e\page-audit-whitespace.spec.ts:39:9 › at 1280 › a coloured box with its inner spacing set to 0: words touching its edge (W7a) (114ms)
+  ok 554 [desktop-chrome] › tests\e2e\page-audit-whitespace.spec.ts:44:9 › at 1280 › a pager's slides waiting off screen are not words near the page edge (L3-c) (118ms)
+  ok 555 [desktop-chrome] › tests\e2e\page-audit-whitespace.spec.ts:49:9 › at 1280 › two sections with their space set to 0: words closer than 1rem (W7b) (109ms)
+  ok 557 [desktop-chrome] › tests\e2e\page-audit-whitespace.spec.ts:34:9 › at 1920 › a section with its gutter set to 0: words closer than 1rem to the page edge (W7a) (119ms)
+  ok 556 [desktop-chrome] › tests\e2e\page-audit-whitespace.spec.ts:26:9 › at 1920 › a page at its defaults: nothing to report (141ms)
+  ok 558 [desktop-chrome] › tests\e2e\page-audit-whitespace.spec.ts:39:9 › at 1920 › a coloured box with its inner spacing set to 0: words touching its edge (W7a) (117ms)
+  ok 560 [desktop-chrome] › tests\e2e\page-audit-whitespace.spec.ts:49:9 › at 1920 › two sections with their space set to 0: words closer than 1rem (W7b) (122ms)
+  ok 559 [desktop-chrome] › tests\e2e\page-audit-whitespace.spec.ts:44:9 › at 1920 › a pager's slides waiting off screen are not words near the page edge (L3-c) (128ms)
+  ok 561 [desktop-chrome] › tests\e2e\page-height-is-content.spec.ts:74:7 › a page is as tall as its content › a short page does not stretch to the screen, at any screen height (1.4s)
+  ok 562 [desktop-chrome] › tests\e2e\page-height-is-content.spec.ts:90:7 › a page is as tall as its content › no block changes height because the window did (1.5s)
+  ok 563 [desktop-chrome] › tests\e2e\page-height-is-content.spec.ts:117:7 › a page is as tall as its content › the canvas and the published page agree about every block (3.4s)
+  ok 564 [desktop-chrome] › tests\e2e\pager-hero.spec.ts:57:7 › the pager on the published page › every page is real, in reading order, and exactly the width of the box (3.4s)
+  ok 565 [desktop-chrome] › tests\e2e\pager-hero.spec.ts:83:7 › the pager on the published page › a dot moves the strip and does NOT nudge the page — even below the fold (4.3s)
+  ok 566 [desktop-chrome] › tests\e2e\pager-hero.spec.ts:99:7 › the pager on the published page › the arrows are revealed by the script, and move one page at a time (4.3s)
+  ok 567 [desktop-chrome] › tests\e2e\pager-hero.spec.ts:113:7 › the pager on the published page › with arrows only, a page that runs no script still has dots to use (3.4s)
+  ok 568 [desktop-chrome] › tests\e2e\pager-hero.spec.ts:123:7 › the pager on the published page › which page you are on is announced, not only coloured (5.3s)
+  ok 569 [desktop-chrome] › tests\e2e\pager-hero.spec.ts:137:7 › the pager on the published page › a pager with no navigation and no auto-advance ships NO script at all (3.4s)
+  ok 571 [desktop-chrome] › tests\e2e\pager-hero.spec.ts:174:7 › auto-advance › stops for a keyboard too, not only for a mouse (7.9s)
+  ok 572 [desktop-chrome] › tests\e2e\pager-hero.spec.ts:187:7 › auto-advance › never moves at all for a reader who asked for less motion (7.9s)
+  ok 573 [desktop-chrome] › tests\e2e\pager-hero.spec.ts:228:7 › the hero › is exactly one screen tall (1.2s)
+  ok 574 [desktop-chrome] › tests\e2e\pager-hero.spec.ts:237:7 › the hero › white words over a WHITE photograph still reach WCAG AA (1.2s)
+  ok 570 [desktop-chrome] › tests\e2e\pager-hero.spec.ts:150:7 › auto-advance › moves on its own, and HOLDS STILL while somebody is reading it (12.4s)
+  ok 575 [desktop-chrome] › tests\e2e\pager-hero.spec.ts:269:7 › the hero › a rotating hero is full-screen on every page, and pages like any other pager (1.1s)
+  ok 577 [desktop-chrome] › tests\e2e\pager-hero.spec.ts:331:7 › the navigation is reachable › the nav lets clicks through to the page underneath it (944ms)
+  ok 578 [desktop-chrome] › tests\e2e\palette-adds-after.spec.ts:78:7 › clicking a block in the palette › adds it AFTER the selected block, not inside it (2.2s)
+  ok 579 [desktop-chrome] › tests\e2e\palette-adds-after.spec.ts:89:7 › clicking a block in the palette › ONE click produces ONE visible block, somewhere new (2.2s)
+  ok 576 [desktop-chrome] › tests\e2e\pager-hero.spec.ts:290:7 › the navigation is reachable › the dots are ON the box, so a full-screen hero does not put them below the fold (3.8s)
+  ok 580 [desktop-chrome] › tests\e2e\palette-adds-after.spec.ts:105:7 › clicking a block in the palette › it lands on a line of its own, below — not beside the selection (2.2s)
+  ok 582 [desktop-chrome] › tests\e2e\palette-adds-after.spec.ts:131:7 › clicking a block in the palette › but a GRID CELL still receives the block inside it (2.4s)
+  ok 581 [desktop-chrome] › tests\e2e\palette-adds-after.spec.ts:116:7 › clicking a block in the palette › clicking twice gives TWO siblings, never two nested (2.9s)
+  ok 584 [desktop-chrome] › tests\e2e\paragraph-measure.spec.ts:17:5 › every body font of the library sets 45–75 characters a line under the published measure (#86) (856ms)
+  ok 583 [desktop-chrome] › tests\e2e\palette-adds-after.spec.ts:168:7 › clicking a block in the palette › with NOTHING selected it still lands on the page (1.9s)
+  ok 585 [desktop-chrome] › tests\e2e\parity-every-arrangement.spec.ts:69:9 › every arrangement obeys the same rules › Stack in a stack · the anchored edge never moves (8.6s)
+  ok 586 [desktop-chrome] › tests\e2e\parity-every-arrangement.spec.ts:69:9 › every arrangement obeys the same rules › Side by side in a stack · the anchored edge never moves (8.5s)
+  ok 587 [desktop-chrome] › tests\e2e\parity-every-arrangement.spec.ts:69:9 › every arrangement obeys the same rules › Grid in a stack · the anchored edge never moves (8.6s)
+  ok 589 [desktop-chrome] › tests\e2e\photo-gallery.spec.ts:80:7 › adding a photo gallery › the palette has a tile that says gallery, and it asks before it adds (1.8s)
+  ok 590 [desktop-chrome] › tests\e2e\photo-gallery.spec.ts:94:7 › adding a photo gallery › many photographs are chosen in ONE dialog and become one real grid (4.5s)
+  ok 591 [desktop-chrome] › tests\e2e\photo-gallery.spec.ts:114:7 › adding a photo gallery › a photograph is stored downscaled, so a gallery fits in the browser at all (4.4s)
+  ok 592 [desktop-chrome] › tests\e2e\photo-gallery.spec.ts:136:7 › adding a photo gallery › a failed save is SAID, never swallowed (2.3s)
+  ok 593 [desktop-chrome] › tests\e2e\photo-gallery.spec.ts:199:7 › a photograph is not rounded unless someone asked › with no radius set, the picture is square — on the canvas AND published (4.5s)
+  ok 594 [desktop-chrome] › tests\e2e\photo-gallery.spec.ts:207:7 › a photograph is not rounded unless someone asked › with a radius set, the canvas shows exactly what gets published (4.5s)
+  ok 595 [desktop-chrome] › tests\e2e\photo-gallery.spec.ts:250:7 › photographs dragged in from the desktop › one photograph becomes an Image block, downscaled like any other upload (1.3s)
+  ok 596 [desktop-chrome] › tests\e2e\photo-gallery.spec.ts:259:7 › photographs dragged in from the desktop › several become a gallery, because that is plainly what was meant (1.4s)
+  ok 597 [desktop-chrome] › tests\e2e\photo-gallery.spec.ts:268:7 › photographs dragged in from the desktop › the canvas ACCEPTS the drag, which is what makes a real drop happen at all (1.1s)
+  ok 598 [desktop-chrome] › tests\e2e\photo-gallery.spec.ts:286:7 › photographs dragged in from the desktop › a drag of something that is not a picture is left alone (2.3s)
+  ok 600 [desktop-chrome] › tests\e2e\pin-arrival.spec.ts:114:7 › an arrival changes the bar, and only once the page has moved › NOTHING is the default — a pinned bar with no arrival looks the same after scrolling (1.1s)
+  ok 601 [desktop-chrome] › tests\e2e\pin-arrival.spec.ts:122:7 › an arrival changes the bar, and only once the page has moved › SHADOW lifts it off the page (1.1s)
+  ok 599 [desktop-chrome] › tests\e2e\photo-gallery.spec.ts:303:7 › the editor's chrome belongs to the block you are working on › the Replace button is on the SELECTED picture only, not on all of them (4.7s)
+  ok 602 [desktop-chrome] › tests\e2e\pin-arrival.spec.ts:128:7 › an arrival changes the bar, and only once the page has moved › SOLID fills in behind it (1.1s)
+  ok 603 [desktop-chrome] › tests\e2e\pin-arrival.spec.ts:134:7 › an arrival changes the bar, and only once the page has moved › GLASS frosts it, with the page showing through (1.1s)
+  ok 604 [desktop-chrome] › tests\e2e\pin-arrival.spec.ts:141:7 › an arrival changes the bar, and only once the page has moved › RULE puts a hairline underneath — and it is not the Shadow (2.1s)
+  ok 605 [desktop-chrome] › tests\e2e\pin-arrival.spec.ts:149:7 › an arrival changes the bar, and only once the page has moved › CONDENSE makes it shorter, and the page does not jump while it does (2.1s)
+  ok 607 [desktop-chrome] › tests\e2e\pin-arrival.spec.ts:173:7 › an arrival changes the bar, and only once the page has moved › CANVAS and EXPORT agree — the editor cannot show an arrival the page will not play (2.7s)
+  ok 588 [desktop-chrome] › tests\e2e\parity-every-arrangement.spec.ts:148:7 › resizing over and over changes nothing › six round trips of the same edge return the page to exactly where it started (25.4s)
+  ok 608 [desktop-chrome] › tests\e2e\pin-arrival.spec.ts:181:7 › an arrival changes the bar, and only once the page has moved › it COMBINES with the other axes — a bar that floats on screen, held to the bottom, still arrives (1.1s)
+  ok 606 [desktop-chrome] › tests\e2e\pin-arrival.spec.ts:164:7 › an arrival changes the bar, and only once the page has moved › every arrival is visibly DIFFERENT from every other one (RULE T, measured) (5.1s)
+  ok 610 [desktop-chrome] › tests\e2e\pin-arrival.spec.ts:194:7 › an arrival changes the bar, and only once the page has moved › an ENTRANCE and an ARRIVAL are both kept — they are different decisions (1.1s)
+  ok 609 [desktop-chrome] › tests\e2e\pin-arrival.spec.ts:187:7 › an arrival changes the bar, and only once the page has moved › the distance it takes is the user's — a short one has finished where a long one has not (2.1s)
+  ok 611 [desktop-chrome] › tests\e2e\pin-arrival.spec.ts:205:7 › an arrival changes the bar, and only once the page has moved › REDUCED MOTION silences it, and the bar still holds (1.1s)
+  ok 612 [desktop-chrome] › tests\e2e\pinned-bar-anchors.spec.ts:96:7 › an in-page link clears the bar that is held over the page › with ONE held bar, the target lands below it rather than underneath it (1.1s)
+  ok 615 [desktop-chrome] › tests\e2e\pinned-bar-anchors.spec.ts:135:7 › an in-page link clears the bar that is held over the page › the padding tracks the bar, not a number typed into it (531ms)
+  ok 613 [desktop-chrome] › tests\e2e\pinned-bar-anchors.spec.ts:112:7 › an in-page link clears the bar that is held over the page › with TWO stacked bars, the landing clears BOTH of them (1.1s)
+  ok 614 [desktop-chrome] › tests\e2e\pinned-bar-anchors.spec.ts:124:7 › an in-page link clears the bar that is held over the page › a page with nothing pinned is left completely alone (1.1s)
+  ok 617 [desktop-chrome] › tests\e2e\pinning-explained.spec.ts:141:7 › the words under “Stays put while scrolling” are what the block does › straight on the page · says “for the rest of the page”, and holds to the very end — canvas AND export (2.4s)
+  ok 618 [desktop-chrome] › tests\e2e\pinning-explained.spec.ts:155:7 › the words under “Stays put while scrolling” are what the block does › inside a Stack · NAMES the Stack, holds while it shows, and leaves with it (2.4s)
+  ok 616 [desktop-chrome] › tests\e2e\pinned-bar-anchors.spec.ts:165:7 › an in-page link works in the Preview, not just on the published page › clicking it scrolls, and the target lands at the usable top under the bar (4.0s)
+  ok 620 [desktop-chrome] › tests\e2e\pinning-explained.spec.ts:176:7 › the words under “Stays put while scrolling” are what the block does › beside a neighbour · lets go with that row of blocks (2.1s)
+  ok 619 [desktop-chrome] › tests\e2e\pinning-explained.spec.ts:165:7 › the words under “Stays put while scrolling” are what the block does › a grid cell · NAMES the Grid, and holds through EVERY row until the grid ends — not just its own row (2.4s)
+  ok 622 [desktop-chrome] › tests\e2e\pinning-explained.spec.ts:210:7 › every block can be pinned, and the choice is shown as pictures › the three pictures are visibly DIFFERENT in a real browser (RULE T) (1.6s)
+  ok 621 [desktop-chrome] › tests\e2e\pinning-explained.spec.ts:190:7 › every block can be pinned, and the choice is shown as pictures › a HEADING can be pinned from the Inspector — it could not, the control lived under Arrange (2.8s)
+  ok 623 [desktop-chrome] › tests\e2e\pinning-explained.spec.ts:224:7 › every block can be pinned, and the choice is shown as pictures › “Floats on screen” says what it covers, and “Keep its space instead” actually uncovers it (2.1s)
+  ok 624 [desktop-chrome] › tests\e2e\pinning-explained.spec.ts:249:7 › every block can be pinned, and the choice is shown as pictures › a bar that floats on screen is actually VISIBLE — full width on the canvas and on the page (1.4s)
+  ok 626 [desktop-chrome] › tests\e2e\pinning-explained.spec.ts:312:7 › pinning per device › set ONLY on phones · holds on a phone — the band carries it at that rung — and not on a desktop (1.2s)
+  ok 627 [desktop-chrome] › tests\e2e\pinning-holds.spec.ts:128:7 › a pinned block holds while the page scrolls › EXPORT · a pinned header stays on screen (869ms)
+  ok 629 [desktop-chrome] › tests\e2e\pinning-holds.spec.ts:142:7 › a pinned block holds while the page scrolls › EXPORT · a header ALONE IN ITS BAND holds — the shape the builder makes (872ms)
+  ok 628 [desktop-chrome] › tests\e2e\pinning-holds.spec.ts:135:7 › a pinned block holds while the page scrolls › CANVAS · the same header holds in the editor (1.4s)
+  ok 625 [desktop-chrome] › tests\e2e\pinning-explained.spec.ts:287:7 › pinning per device › turned OFF on phones in the builder · survives a reload, scrolls away on a phone, still holds on a desktop (3.5s)
+  ok 631 [desktop-chrome] › tests\e2e\pinning-holds.spec.ts:154:7 › a pinned block holds while the page scrolls › EXPORT · a pinned side rail is NOT stretched, and holds (873ms)
+  ok 630 [desktop-chrome] › tests\e2e\pinning-holds.spec.ts:148:7 › a pinned block holds while the page scrolls › CANVAS · a header alone in its band holds in the editor too (1.4s)
+  ok 633 [desktop-chrome] › tests\e2e\pinning-holds.spec.ts:176:7 › a pinned block holds while the page scrolls › EXPORT · a FIXED bar holds however far you scroll (863ms)
+  ok 632 [desktop-chrome] › tests\e2e\pinning-holds.spec.ts:165:7 › a pinned block holds while the page scrolls › CANVAS · the side rail behaves the same in the editor (1.4s)
+  ok 634 [desktop-chrome] › tests\e2e\pinning-holds.spec.ts:191:7 › a pinned block holds while the page scrolls › EXPORT · a FIXED block can take a corner, which sticky cannot (863ms)
+  ok 637 [desktop-chrome] › tests\e2e\pinning-holds.spec.ts:314:7 › a pinned block holds while the page scrolls › a block NOBODY pinned still scrolls away (857ms)
+  ok 635 [desktop-chrome] › tests\e2e\pinning-holds.spec.ts:228:7 › a pinned block holds while the page scrolls › CANVAS · a FIXED bar HOLDS ON SCREEN while the canvas scrolls, and stays inside the page (1.7s)
+  ok 638 [desktop-chrome] › tests\e2e\pinning-holds.spec.ts:367:7 › a rail held against a vertical edge fills the screen › held LEFT, it spans the whole viewport height rather than hugging its contents (507ms)
+  ok 636 [desktop-chrome] › tests\e2e\pinning-holds.spec.ts:280:7 › a pinned block holds while the page scrolls › CANVAS · a bar a TILT captures does not hold — the editor shows what the page will do (1.7s)
+  ok 639 [desktop-chrome] › tests\e2e\pinning-holds.spec.ts:377:7 › a rail held against a vertical edge fills the screen › held RIGHT, the same (504ms)
+  ok 640 [desktop-chrome] › tests\e2e\pinning-holds.spec.ts:383:7 › a rail held against a vertical edge fills the screen › a CORNER still hugs — a chat bubble is not a sidebar (511ms)
+  ok 641 [desktop-chrome] › tests\e2e\pinning-holds.spec.ts:389:7 › a rail held against a vertical edge fills the screen › a height the user set themselves still wins (502ms)
+  ok 642 [desktop-chrome] › tests\e2e\pinning-holds.spec.ts:405:7 › a sticky sidebar fills the screen and keeps its travel › it is the height of the window, not of its contents (514ms)
+  ok 644 [desktop-chrome] › tests\e2e\pinning-holds.spec.ts:424:7 › a sticky sidebar fills the screen and keeps its travel › a sidebar whose content is taller than the screen holds all of it, and the next section starts below (512ms)
+  ok 645 [desktop-chrome] › tests\e2e\pinning-holds.spec.ts:447:7 › a sticky sidebar fills the screen and keeps its travel › a sticky BUTTON in a row is NOT stretched — a button is not a sidebar (503ms)
+  ok 643 [desktop-chrome] › tests\e2e\pinning-holds.spec.ts:412:7 › a sticky sidebar fills the screen and keeps its travel › …and it STILL HOLDS when the page scrolls — a full-height rail with no travel would be inert (859ms)
+  ok 646 [desktop-chrome] › tests\e2e\pinning-warnings.spec.ts:57:7 › the pinning warnings › a clipping ancestor is NAMED for a sticky block (1.5s)
+  ok 647 [desktop-chrome] › tests\e2e\pinning-warnings.spec.ts:67:7 › the pinning warnings › a clear chain shows NO warning — it can fail as well as pass (1.5s)
+  ok 648 [desktop-chrome] › tests\e2e\pinning-warnings.spec.ts:75:7 › the pinning warnings › a capturing ancestor is NAMED for a fixed block (1.5s)
+  ok 650 [desktop-chrome] › tests\e2e\pins-stack.spec.ts:86:7 › pinned bars stack instead of covering each other › three bars held at the top sit one under the next, and none is hidden (517ms)
+  ok 651 [desktop-chrome] › tests\e2e\pins-stack.spec.ts:107:7 › pinned bars stack instead of covering each other › they stay stacked after the page has been scrolled (785ms)
+  ok 652 [desktop-chrome] › tests\e2e\pins-stack.spec.ts:123:7 › pinned bars stack instead of covering each other › a bar at the top and a bar at the bottom are two stacks, and neither is offset (507ms)
+  ok 653 [desktop-chrome] › tests\e2e\pins-stack.spec.ts:137:7 › pinned bars stack instead of covering each other › a bottom stack builds UPWARDS — the last bar sits on the edge, the one before it rests on top (511ms)
+  ok 655 [desktop-chrome] › tests\e2e\pins-stack.spec.ts:189:7 › pinned bars stack instead of covering each other › a page with ONE pinned bar ships no stacking script at all (103ms)
+  ok 649 [desktop-chrome] › tests\e2e\pinning-warnings.spec.ts:83:7 › the pinning warnings › the mechanism control offers both, and the anchor follows it (2.0s)
+  ok 654 [desktop-chrome] › tests\e2e\pins-stack.spec.ts:154:7 › pinned bars stack instead of covering each other › the CANVAS stacks them too — same offsets as the published page (1.0s)
+  ok 656 [desktop-chrome] › tests\e2e\pins-stack.spec.ts:276:47 › sticky bars stack against the bars they can actually meet › a sticky sidebar in a section sits UNDER a sticky header held by the page (F1-b) (1.5s)
+  ok 658 [desktop-chrome] › tests\e2e\pins-stack.spec.ts:300:7 › sticky bars stack against the bars they can actually meet › two sticky bars in ONE Stack sit under one another once both are held (823ms)
+  ok 657 [desktop-chrome] › tests\e2e\pins-stack.spec.ts:276:47 › sticky bars stack against the bars they can actually meet › a sticky sidebar in a section sits UNDER a sticky header held by the page (F1-b) — a header with no colour of its own (1.4s)
+  ok 661 [desktop-chrome] › tests\e2e\pins-stack.spec.ts:354:7 › sticky bars stack against the bars they can actually meet › a page with one sticky bar per section ships NO stacking script — nothing can collide (502ms)
+  ok 659 [desktop-chrome] › tests\e2e\pins-stack.spec.ts:315:7 › sticky bars stack against the bars they can actually meet › two sticky bars placed straight on the PAGE do the same — the commonest shape (827ms)
+  ok 660 [desktop-chrome] › tests\e2e\pins-stack.spec.ts:333:7 › sticky bars stack against the bars they can actually meet › a sticky bar in its OWN section is never pushed down for one in another section (1.1s)
+  ok 662 [desktop-chrome] › tests\e2e\pins-stack.spec.ts:368:7 › sticky bars stack against the bars they can actually meet › the CANVAS stacks STICKY bars too, not only the fixed ones (1.1s)
+  ok 664 [desktop-chrome] › tests\e2e\preview-fills-the-screen.spec.ts:58:7 › the preview shows the screen the person is actually on › the page inside gets that width too — the point of the whole thing (2.3s)
+  ok 665 [desktop-chrome] › tests\e2e\preview-fills-the-screen.spec.ts:73:7 › the preview shows the screen the person is actually on › a DEVICE preset still looks like a device — framed, centred, its own size (2.6s)
+  ok 663 [desktop-chrome] › tests\e2e\preview-fills-the-screen.spec.ts:46:7 › the preview shows the screen the person is actually on › Responsive fills the whole window — width AND height, with nothing around it (4.5s)
+  ok 666 [desktop-chrome] › tests\e2e\preview-fills-the-screen.spec.ts:85:7 › the preview shows the screen the person is actually on › dragging an edge sweeps the width from BOTH sides, and names the rung it lands on (2.9s)
+  ok 668 [desktop-chrome] › tests\e2e\preview-viewport.spec.ts:120:9 › the preview's screen sizes › "Mobile — 375 × 812" lays the page out at 375 x 812 (2.1s)
+  ok 667 [desktop-chrome] › tests\e2e\preview-fills-the-screen.spec.ts:106:7 › the preview shows the screen the person is actually on › double-clicking an edge gives the whole window back (3.2s)
+  ok 669 [desktop-chrome] › tests\e2e\preview-viewport.spec.ts:120:9 › the preview's screen sizes › "Tablet — 768 × 1024" lays the page out at 768 x 1024 (2.0s)
+  ok 670 [desktop-chrome] › tests\e2e\preview-viewport.spec.ts:120:9 › the preview's screen sizes › "Desktop — 1280 × 800" lays the page out at 1280 x 800 (2.1s)
+  ok 671 [desktop-chrome] › tests\e2e\preview-viewport.spec.ts:120:9 › the preview's screen sizes › "Wide — 1920 × 1080" lays the page out at 1920 x 1080 (2.1s)
+  ok 672 [desktop-chrome] › tests\e2e\preview-viewport.spec.ts:120:9 › the preview's screen sizes › "iPhone SE (3rd gen) — 375 × 667" lays the page out at 375 x 667 (2.1s)
+  ok 673 [desktop-chrome] › tests\e2e\preview-viewport.spec.ts:120:9 › the preview's screen sizes › "iPad mini (2019) · iPad 6 — 768 × 1024" lays the page out at 768 x 1024 (2.1s)
+  ok 674 [desktop-chrome] › tests\e2e\preview-viewport.spec.ts:132:7 › the preview's screen sizes › a screen too big for my own is SCALED, and says so (2.1s)
+  ok 675 [desktop-chrome] › tests\e2e\preview-viewport.spec.ts:146:7 › the preview's screen sizes › a screen that fits is shown at 1:1, with no zoom claimed (2.1s)
+  ok 677 [desktop-chrome] › tests\e2e\preview-viewport.spec.ts:175:7 › the preview's screen sizes › typing a width gives the page exactly that, and the menu says Custom (3.0s)
+  ok 676 [desktop-chrome] › tests\e2e\preview-viewport.spec.ts:155:7 › the preview's screen sizes › ROTATING swaps the screen over, and rotating back lands exactly where it started (3.2s)
+  ok 678 [desktop-chrome] › tests\e2e\preview-viewport.spec.ts:203:7 › the preview's screen sizes › an explicit zoom is obeyed, rather than quietly refitted (2.7s)
+  ok 679 [desktop-chrome] › tests\e2e\preview-viewport.spec.ts:214:7 › the preview's screen sizes › zoomed PAST the window, every part can still be scrolled to (2.7s)
+  ok 680 [desktop-chrome] › tests\e2e\preview-viewport.spec.ts:243:7 › the preview's screen sizes › Responsive uses the WHOLE screen, and the size controls stand down (2.7s)
+  ok 681 [desktop-chrome] › tests\e2e\preview-viewport.spec.ts:274:7 › the preview's screen sizes › switching to Responsive drops a zoom it is no longer applying (3.3s)
+  ok 683 [desktop-chrome] › tests\e2e\preview-viewport.spec.ts:335:7 › the preview controls do not run away › choosing a screen does not take them away — the next control is still clickable (2.1s)
+  ok 684 [desktop-chrome] › tests\e2e\preview-viewport.spec.ts:345:7 › the preview controls do not run away › they hide only when asked, and there is always a way back (2.0s)
+  ok 685 [desktop-chrome] › tests\e2e\preview-viewport.spec.ts:360:7 › the preview controls do not run away › the keyboard toggles them both ways, as every feature here must (2.0s)
+  ok 686 [desktop-chrome] › tests\e2e\preview-viewport.spec.ts:368:7 › the preview controls do not run away › the shortcut still works once you have clicked the page you are previewing (2.0s)
+  ok 682 [desktop-chrome] › tests\e2e\preview-viewport.spec.ts:328:7 › the preview controls do not run away › they are still there after sitting untouched (5.5s)
+  ok 687 [desktop-chrome] › tests\e2e\preview-viewport.spec.ts:383:7 › the preview controls do not run away › typing a width is not a keyboard shortcut — H in a number box is just text (2.5s)
+  ok 688 [desktop-chrome] › tests\e2e\resize-leaves-no-gap.spec.ts:137:7 › a shared edge that meets several stacks › closing it moves every stack, and opens no hole inside a column (2.4s)
+  ok 689 [desktop-chrome] › tests\e2e\resize-leaves-no-gap.spec.ts:164:7 › a shared edge that meets several stacks › dragging that edge the other way stops dead when the stacks above have nothing to give (2.4s)
+  ok 691 [desktop-chrome] › tests\e2e\resize-leaves-no-gap.spec.ts:245:7 › a stack with a neighbour beside it › cannot be dragged up out of its own band and over what is above it (2.4s)
+  ok 692 [desktop-chrome] › tests\e2e\resize-leaves-no-gap.spec.ts:281:9 › resizing a stack never strands its neighbour › V1 · bottom edge, a stack below it (2.6s)
+  ok 690 [desktop-chrome] › tests\e2e\resize-leaves-no-gap.spec.ts:185:7 › a shared edge that meets several stacks › the top edge of the first stack stops at the page top rather than running away (4.9s)
+  ok 693 [desktop-chrome] › tests\e2e\resize-leaves-no-gap.spec.ts:281:9 › resizing a stack never strands its neighbour › V2 · top edge, nothing above it (2.5s)
+  ok 694 [desktop-chrome] › tests\e2e\resize-leaves-no-gap.spec.ts:281:9 › resizing a stack never strands its neighbour › V3 · top edge, a stack above it (2.6s)
+  ok 695 [desktop-chrome] › tests\e2e\resize-leaves-no-gap.spec.ts:281:9 › resizing a stack never strands its neighbour › V4 · bottom edge, nothing below it (2.6s)
+  ok 696 [desktop-chrome] › tests\e2e\resize-leaves-no-gap.spec.ts:281:9 › resizing a stack never strands its neighbour › H1 · right edge, a stack to its right (2.3s)
+  ok 697 [desktop-chrome] › tests\e2e\resize-leaves-no-gap.spec.ts:281:9 › resizing a stack never strands its neighbour › H2 · left edge, nothing to its left (2.3s)
+  ok 698 [desktop-chrome] › tests\e2e\resize-leaves-no-gap.spec.ts:281:9 › resizing a stack never strands its neighbour › H3 · left edge, a stack to its left (2.4s)
+  ok 699 [desktop-chrome] › tests\e2e\resize-leaves-no-gap.spec.ts:281:9 › resizing a stack never strands its neighbour › H4 · right edge, nothing to its right (2.3s)
+  ok 700 [desktop-chrome] › tests\e2e\resize-leaves-no-gap.spec.ts:403:7 › dropping a block into a space you opened › the blocks already on the page do not move at all (3.3s)
+  ok 701 [desktop-chrome] › tests\e2e\resize-leaves-no-gap.spec.ts:494:9 › growing a block inside a band that has its own height › zv-6 · its top edge stays put and the block above keeps its height (2.8s)
+  ok 702 [desktop-chrome] › tests\e2e\resize-leaves-no-gap.spec.ts:494:9 › growing a block inside a band that has its own height › o2-f · its top edge stays put and the block above keeps its height (3.1s)
+  ok 703 [desktop-chrome] › tests\e2e\row-never-stores-over-100.spec.ts:72:9 › a line the drag hands back stores 100%, never more › the third column narrowed -40px brings the fourth back at 100% or less (5.7s)
+  ok 704 [desktop-chrome] › tests\e2e\row-never-stores-over-100.spec.ts:72:9 › a line the drag hands back stores 100%, never more › the third column narrowed -51px brings the fourth back at 100% or less (5.5s)
+  ok 707 [desktop-chrome] › tests\e2e\see-through.spec.ts:41:7 › a see-through box fades, its contents do not › the faded grid is see-through and NOTHING inside it is (645ms)
+  ok 705 [desktop-chrome] › tests\e2e\row-never-stores-over-100.spec.ts:72:9 › a line the drag hands back stores 100%, never more › the third column narrowed -60px brings the fourth back at 100% or less (5.6s)
+  ok 708 [desktop-chrome] › tests\e2e\see-through.spec.ts:53:7 › a see-through box fades, its contents do not › an individual child can be see-through on its own, and protects ITS content (618ms)
+  ok 710 [desktop-chrome] › tests\e2e\see-through.spec.ts:117:7 › a see-through background IMAGE › the image fades on a layer of its own, and the card on top stays solid (724ms)
+  ok 709 [desktop-chrome] › tests\e2e\see-through.spec.ts:60:7 › a see-through box fades, its contents do not › the PUBLISHED page fades exactly the same way (1.5s)
+  ok 711 [desktop-chrome] › tests\e2e\see-through.spec.ts:132:7 › a see-through background IMAGE › the box is a stacking context, so the layer cannot slide behind an ancestor (706ms)
+  ok 712 [desktop-chrome] › tests\e2e\see-through.spec.ts:143:7 › a see-through background IMAGE › the element itself carries no background — or the image would paint twice (696ms)
+  ok 713 [desktop-chrome] › tests\e2e\see-through.spec.ts:149:7 › a see-through background IMAGE › no fade means no layer at all — nothing is added to a box that did not ask (704ms)
+  ok 714 [desktop-chrome] › tests\e2e\see-through.spec.ts:156:7 › a see-through background IMAGE › 'fade what's inside too' goes back to fading the whole box (710ms)
+  ok 716 [desktop-chrome] › tests\e2e\select-takes-keys.spec.ts:18:7 › after clicking "Desktop (1280px)", a block clicked on the canvas is deleted by Delete (1.0s)
+  ok 715 [desktop-chrome] › tests\e2e\see-through.spec.ts:162:7 › a see-through background IMAGE › the PUBLISHED page carries the same layer rule (1.7s)
+  ok 706 [desktop-chrome] › tests\e2e\row-never-stores-over-100.spec.ts:72:9 › a line the drag hands back stores 100%, never more › the third column narrowed -90px brings the fourth back at 100% or less (5.7s)
+  ok 717 [desktop-chrome] › tests\e2e\select-takes-keys.spec.ts:18:7 › after clicking "Tablet (768px)", a block clicked on the canvas is deleted by Delete (1.0s)
+  ok 718 [desktop-chrome] › tests\e2e\select-takes-keys.spec.ts:18:7 › after clicking "Mobile (375px)", a block clicked on the canvas is deleted by Delete (1.1s)
+  ok 721 [desktop-chrome] › tests\e2e\side-by-side-drop.spec.ts:123:7 › dropping a Stack into the empty space beside another › the MIDDLE of the opening offers a side-by-side drop, not a stacked one (760ms)
+  ok 719 [desktop-chrome] › tests\e2e\selection-drills-inward.spec.ts:41:7 › clicking into nested blocks › goes outermost → deeper → deeper, and STAYS at the innermost (2.5s)
+  ok 722 [desktop-chrome] › tests\e2e\side-by-side-drop.spec.ts:142:7 › dropping a Stack into the empty space beside another › and the block actually lands beside it, sharing the row (1.2s)
+  ok 720 [desktop-chrome] › tests\e2e\selection-drills-inward.spec.ts:54:7 › clicking into nested blocks › clicking empty canvas clears it, so the next click starts from the outermost again (2.3s)
+  ok 723 [desktop-chrome] › tests\e2e\side-by-side-drop.spec.ts:176:7 › dropping a Stack into the empty space beside another › the newcomer takes the leftover width rather than overflowing the band (1.2s)
+  ok 724 [desktop-chrome] › tests\e2e\side-by-side-drop.spec.ts:203:7 › dropping a Stack into the empty space beside another › dropping BELOW the stack still stacks it — the two readings stay distinct (1.2s)
+  ok 725 [desktop-chrome] › tests\e2e\side-by-side-drop.spec.ts:252:7 › a page-grid row's own side space › a drop just past the last column lands BESIDE it, in the same row — never a new row below (1.2s)
+  ok 726 [desktop-chrome] › tests\e2e\side-by-side-resize.spec.ts:70:7 › two blocks sharing a line › dragging the boundary moves it — the neighbour gives up exactly what you take (1.7s)
+  ok 727 [desktop-chrome] › tests\e2e\side-by-side-resize.spec.ts:84:7 › two blocks sharing a line › the edge you grab is the only one that moves (1.7s)
+  ok 728 [desktop-chrome] › tests\e2e\side-by-side-resize.spec.ts:102:7 › two blocks sharing a line › dragging the RIGHT block's left edge does the same, mirrored (1.7s)
+  ok 731 [desktop-chrome] › tests\e2e\side-by-side-resize.spec.ts:196:7 › two blocks sharing a line › a block alone on its line fills that line (1.7s)
+  ok 729 [desktop-chrome] › tests\e2e\side-by-side-resize.spec.ts:114:7 › two blocks sharing a line › narrowing it again brings the neighbour back to the line, at the width it had (3.2s)
+  ok 732 [desktop-chrome] › tests\e2e\side-by-side-resize.spec.ts:208:7 › two blocks sharing a line › keep pulling and the neighbour moves to the next line, KEEPING its width (1.7s)
+  ok 733 [desktop-chrome] › tests\e2e\side-by-side-resize.spec.ts:232:7 › two blocks sharing a line › a block whose line has room to spare can still be made NARROWER (1.7s)
+  ok 730 [desktop-chrome] › tests\e2e\side-by-side-resize.spec.ts:159:7 › two blocks sharing a line › after the neighbour wraps, the block can still be narrowed — step by step (5.4s)
+  ok 735 [desktop-chrome] › tests\e2e\spacing-gestures.spec.ts:54:7 › spacing is adjusted, not typed › across and down are sliders, like the spacing control above them (1.0s)
+  ok 734 [desktop-chrome] › tests\e2e\side-by-side-resize.spec.ts:260:7 › two blocks sharing a line › a resize raises no console error (2.8s)
+  ok 737 [desktop-chrome] › tests\e2e\spacing-gestures.spec.ts:83:7 › spacing is adjusted, not typed › the canvas shows the spacing as it is adjusted (1.6s)
+  ok 736 [desktop-chrome] › tests\e2e\spacing-gestures.spec.ts:63:7 › spacing is adjusted, not typed › an axis follows the shared spacing until it is given one of its own, and can be handed back (1.7s)
+  ok 738 [desktop-chrome] › tests\e2e\spacing-gestures.spec.ts:99:7 › an adjustment is one act › ONE undo puts back a whole sweep of the spacing slider (2.1s)
+  ok 739 [desktop-chrome] › tests\e2e\spacing-gestures.spec.ts:112:7 › an adjustment is one act › Ctrl+Z works while the slider still has focus (2.0s)
+  ok 740 [desktop-chrome] › tests\e2e\spacing-gestures.spec.ts:129:7 › an adjustment is one act › two DIFFERENT controls are two acts, however fast they follow each other (2.0s)
+  ok 741 [desktop-chrome] › tests\e2e\stack-under-column.spec.ts:77:7 › a block dropped under one column › the indicator is as wide as THAT column, not the whole band (858ms)
+  ok 742 [desktop-chrome] › tests\e2e\stack-under-column.spec.ts:92:7 › a block dropped under one column › the right column becomes a Stack holding both, and the left is untouched (1.4s)
+  ok 743 [desktop-chrome] › tests\e2e\stack-under-column.spec.ts:117:7 › a block dropped under one column › the new block sits BELOW the original, sharing its column (1.4s)
+  ok 744 [desktop-chrome] › tests\e2e\stack-under-column.spec.ts:135:7 › a block dropped under one column › the newcomer FILLS the empty space it was dropped into (1.3s)
+  ok 745 [desktop-chrome] › tests\e2e\stack-under-column.spec.ts:165:7 › a block dropped under one column › dropping BESIDE a column still adds a column — the readings stay distinct (1.3s)
+  ok 746 [desktop-chrome] › tests\e2e\stack-under-column.spec.ts:211:7 › a block dropped into the hole above a column › the newcomer fills the hole and the block below it does NOT move (1.3s)
+  ok 748 [desktop-chrome] › tests\e2e\stacking.spec.ts:62:7 › a page can never cover the editor › a float with an absurd stacking order is still selectable, and its toolbar stays on top (423ms)
+  ok 749 [desktop-chrome] › tests\e2e\stacking.spec.ts:80:7 › a page can never cover the editor › the resize handles of a raised float are reachable (443ms)
+  ok 750 [desktop-chrome] › tests\e2e\stacking.spec.ts:93:7 › a page can never cover the editor › the blocks panel opens over a raised float (420ms)
+  ok 751 [desktop-chrome] › tests\e2e\stacking.spec.ts:134:7 › a neighbouring block cannot bury the controls of the one being edited › selecting a covered float still gives reachable controls (430ms)
+  ok 753 [desktop-chrome] › tests\e2e\stacking.spec.ts:164:7 › the stored value itself is brought into the ladder › canvas = export: the published page clamps it to the same value (136ms)
+  ok 752 [desktop-chrome] › tests\e2e\stacking.spec.ts:156:7 › the stored value itself is brought into the ladder › the canvas renders a clamped order, not the number it was given (382ms)
+  ok 754 [desktop-chrome] › tests\e2e\stacking.spec.ts:175:7 › the stored value itself is brought into the ladder › a modest order is left exactly alone — the clamp is a ceiling, not a rewrite (366ms)
+  ok 747 [desktop-chrome] › tests\e2e\stack-under-column.spec.ts:316:7 › shrinking a dropped block lets the next one follow › the block below rides up, and the leftover pools at the END of the column (3.1s)
+  ok 756 [desktop-chrome] › tests\e2e\text-is-reachable.spec.ts:147:7 › the words of a selected block can always be clicked › typing lands after clicking the very start of the line (1.8s)
+  ok 758 [desktop-chrome] › tests\e2e\text-is-reachable.spec.ts:186:9 › the blocks launcher never covers the page › at 1152px the launcher sits beside the page, not on it (714ms)
+  ok 757 [desktop-chrome] › tests\e2e\text-is-reachable.spec.ts:160:7 › the words of a selected block can always be clicked › a real DRAG on the same handle still resizes, and the far edge stays put (2.2s)
+  ok 759 [desktop-chrome] › tests\e2e\text-is-reachable.spec.ts:186:9 › the blocks launcher never covers the page › at 1280px the launcher sits beside the page, not on it (738ms)
+  ok 760 [desktop-chrome] › tests\e2e\text-is-reachable.spec.ts:186:9 › the blocks launcher never covers the page › at 1440px the launcher sits beside the page, not on it (734ms)
+  ok 761 [desktop-chrome] › tests\e2e\text-is-reachable.spec.ts:244:9 › text can be reached without a mouse › Enter on a selected block begins editing, and typing lands (2.4s)
+  ok 762 [desktop-chrome] › tests\e2e\text-is-reachable.spec.ts:244:9 › text can be reached without a mouse › F2 on a selected block begins editing, and typing lands (2.4s)
+  ok 764 [desktop-chrome] › tests\e2e\twelve-columns.spec.ts:57:7 › twelve columns › a block given half a row is half as wide as the row (158ms)
+  ok 765 [desktop-chrome] › tests\e2e\twelve-columns.spec.ts:67:7 › twelve columns › mixed spans in one row — the magazine layout, which equal columns could not express (142ms)
+  ok 766 [desktop-chrome] › tests\e2e\twelve-columns.spec.ts:77:7 › twelve columns › an offset leaves real empty columns before a block (155ms)
+  ok 767 [desktop-chrome] › tests\e2e\twelve-columns.spec.ts:86:7 › twelve columns › a start past the end of the row is clamped, so the page never scrolls sideways (126ms)
+  ok 768 [desktop-chrome] › tests\e2e\twelve-columns.spec.ts:95:7 › twelve columns › the rows share the grid's height evenly, and give it back when it shrinks (166ms)
+  ok 769 [desktop-chrome] › tests\e2e\twelve-columns.spec.ts:145:7 › twelve columns › empty coloured cells are VISIBLE on the published page — parent, child and grandchild alike (187ms)
+  ok 770 [desktop-chrome] › tests\e2e\twelve-columns.spec.ts:187:7 › twelve columns › a grid inside a grid takes the height of the cell it is in (144ms)
+  ok 771 [desktop-chrome] › tests\e2e\twelve-columns.spec.ts:224:7 › twelve columns › a cell's typography cascades into everything inside it, and a block can still differ (159ms)
+  ok 772 [desktop-chrome] › tests\e2e\twelve-columns.spec.ts:271:7 › twelve columns › start and span on BOTH axes — the magazine layout, measured (135ms)
+  ok 773 [desktop-chrome] › tests\e2e\twelve-columns.spec.ts:293:7 › twelve columns › order puts the photo above the words on a phone and beside them on a desktop (130ms)
+  ok 774 [desktop-chrome] › tests\e2e\twelve-columns.spec.ts:311:7 › twelve columns › the nine-point position puts a block where it says, in a grid AND in a section (145ms)
+  ok 755 [desktop-chrome] › tests\e2e\text-is-reachable.spec.ts:121:7 › the words of a selected block can always be clicked › every plausible aim point across the words takes the caret (7.8s)
+  ok 776 [desktop-chrome] › tests\e2e\twelve-columns.spec.ts:390:7 › twelve columns › a shaped band edge is actually cut, and the band keeps its full height (149ms)
+  ok 775 [desktop-chrome] › tests\e2e\twelve-columns.spec.ts:351:7 › twelve columns › a full-screen section is exactly one screen tall, on a desktop and on a phone (200ms)
+  ok 777 [desktop-chrome] › tests\e2e\twelve-columns.spec.ts:421:7 › twelve columns › push moves one block and leaves its neighbours alone (143ms)
+  ok 778 [desktop-chrome] › tests\e2e\twelve-columns.spec.ts:450:7 › twelve columns › a twelve-column row collapses to one on a phone, and nothing spills off the screen (132ms)
+  ok 780 [desktop-chrome] › tests\e2e\twelve-columns.spec.ts:503:7 › twelve columns › saying what a phone should do turns the stacking off (161ms)
+  ok 779 [desktop-chrome] › tests\e2e\twelve-columns.spec.ts:462:7 › twelve columns › a tablet held upright sheds a column only when a cell would be too NARROW to read (252ms)
+  ok 763 [desktop-chrome] › tests\e2e\text-is-reachable.spec.ts:257:7 › text can be reached without a mouse › the caret arrives at the END, so typing adds rather than overwrites (2.4s)
+  ok 783 [desktop-chrome] › tests\e2e\typing-is-one-step.spec.ts:57:5 › words typed just before the page closes are not lost (642ms)
+  ok 782 [desktop-chrome] › tests\e2e\typing-is-one-step.spec.ts:48:5 › one Undo takes back the whole burst (1.1s)
+  ok 784 [desktop-chrome] › tests\e2e\vertical-edges-anchored.spec.ts:85:7 › dragging a block's top or bottom edge › a block at the PAGE TOP: the top edge stops, and the bottom never moves (1.8s)
+  ok 781 [desktop-chrome] › tests\e2e\typing-is-one-step.spec.ts:37:5 › typing 40 characters saves the site at most twice, not once per key (3.0s)
+  ok 785 [desktop-chrome] › tests\e2e\vertical-edges-anchored.spec.ts:101:7 › dragging a block's top or bottom edge › the bottom edge moves the bottom, and leaves the top alone (1.9s)
+  ok 786 [desktop-chrome] › tests\e2e\vertical-edges-anchored.spec.ts:117:7 › dragging a block's top or bottom edge › a GRID CELL in the second row: the top edge moves, the bottom is anchored (2.0s)
+  ok 788 [desktop-chrome] › tests\e2e\vertical-edges-anchored.spec.ts:162:7 › dragging a block's top or bottom edge › the edge stops where the row above runs out, rather than growing out of the far side (2.0s)
+  ok 787 [desktop-chrome] › tests\e2e\vertical-edges-anchored.spec.ts:132:7 › dragging a block's top or bottom edge › the top edge still works after something has been DROPPED in the row above (2.4s)
+  ok 789 [desktop-chrome] › tests\e2e\vertical-edges-anchored.spec.ts:203:9 › two stacks that touch › one band: the stack above gives back precisely what the top edge takes (1.8s)
+  ok 790 [desktop-chrome] › tests\e2e\vertical-edges-anchored.spec.ts:220:9 › two stacks that touch › one band: reducing the last stack from its BOTTOM leaves no hole above it (1.9s)
+  ok 791 [desktop-chrome] › tests\e2e\vertical-edges-anchored.spec.ts:237:9 › two stacks that touch › one band: dragging the top edge UP takes height from the stack above (1.7s)
+  ok 792 [desktop-chrome] › tests\e2e\vertical-edges-anchored.spec.ts:253:9 › two stacks that touch › one band: the edge stops where the stack above runs out (1.8s)
+  ok 793 [desktop-chrome] › tests\e2e\vertical-edges-anchored.spec.ts:203:9 › two stacks that touch › two bands: the stack above gives back precisely what the top edge takes (1.8s)
+  ok 794 [desktop-chrome] › tests\e2e\vertical-edges-anchored.spec.ts:220:9 › two stacks that touch › two bands: reducing the last stack from its BOTTOM leaves no hole above it (1.9s)
+  ok 795 [desktop-chrome] › tests\e2e\vertical-edges-anchored.spec.ts:237:9 › two stacks that touch › two bands: dragging the top edge UP takes height from the stack above (1.8s)
+  ok 796 [desktop-chrome] › tests\e2e\vertical-edges-anchored.spec.ts:253:9 › two stacks that touch › two bands: the edge stops where the stack above runs out (1.8s)
+  ok 797 [desktop-chrome] › tests\e2e\vertical-edges-anchored.spec.ts:289:9 › two stacks that touch › with deliberate space above it › dragging the top edge DOWN moves it down, and keeps the space (1.8s)
+  ok 798 [desktop-chrome] › tests\e2e\vertical-edges-anchored.spec.ts:308:9 › two stacks that touch › with deliberate space above it › dragging the top edge UP closes the space first, before touching the block above (1.9s)
+  ok 799 [desktop-chrome] › tests\e2e\vertical-edges-anchored.spec.ts:326:7 › two stacks that touch › a block BESIDE another keeps the old behaviour — it never steals from its neighbour (1.9s)
+  ok 800 [desktop-chrome] › tests\e2e\width-round-trip.spec.ts:138:7 › width round trips come back, and nothing leaves a hole › widen until the neighbour wraps, drag back — the same page, three times running (12.9s)
+  ok 802 [desktop-chrome] › tests\e2e\width-round-trip.spec.ts:175:7 › width round trips come back, and nothing leaves a hole › four widen-and-narrow steps of 200px leave both blocks on one full line, touching (11.6s)
+  ok 801 [desktop-chrome] › tests\e2e\width-round-trip.spec.ts:163:7 › width round trips come back, and nothing leaves a hole › narrowing beside a wrapped neighbour never opens a hole — every step of the way back (14.0s)
+  ok 804 [desktop-chrome] › tests\e2e\width-round-trip.spec.ts:220:9 › width round trips come back, and nothing leaves a hole › 3 stacks dropped one beside another share the line equally, with no wrap and no hole (4.0s)
+  ok 803 [desktop-chrome] › tests\e2e\width-round-trip.spec.ts:196:7 › width round trips come back, and nothing leaves a hole › the first block's LEFT edge opens a space and closes it again — its right edge never moves (5.3s)
+  ok 805 [desktop-chrome] › tests\e2e\width-round-trip.spec.ts:220:9 › width round trips come back, and nothing leaves a hole › 4 stacks dropped one beside another share the line equally, with no wrap and no hole (4.8s)
+  ok 806 [desktop-chrome] › tests\e2e\width-round-trip.spec.ts:220:9 › width round trips come back, and nothing leaves a hole › 5 stacks dropped one beside another share the line equally, with no wrap and no hole (5.7s)
+
+  806 passed (6.7m)
+exit 0

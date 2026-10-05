@@ -1,11 +1,22 @@
 import { describe, it, expect } from "vitest";
-import { radiusCSS, isClipped, type BoxNode } from "@/lib/box-model";
+import { radiusCSS, isClipped, remLen, type BoxNode } from "@/lib/box-model";
 import { blockForKind, tableGrid } from "@/lib/box-presets";
 import { COMPONENT_CATALOGUE } from "@/lib/component-catalogue";
 import { renderPageHTML } from "@/lib/box-export";
 import { siteFromRoot } from "@/lib/box-site";
 import { renderSitePage } from "@/lib/box-export";
 import { DEFAULT_THEME } from "@/lib/site-storage";
+
+/**
+ * The expected values are written through `remLen`, never as px literals.
+ *
+ * This guard's subject is the CORNERS — that nothing is rounded until asked, that all five controls work, and
+ * that one resolver serves the canvas and the export. Which UNIT that resolver emits was never its subject,
+ * and the px literals it used to carry made it fail the day radii moved to rem for Core Rule 16 (no stored
+ * pixel reaches the page). Asserting the relationship keeps every number pinned while leaving the unit to the
+ * rule that owns it — and it still fails if a radius comes back in pixels, because `remLen(5)` is not "5px".
+ */
+const r = (px: number) => remLen(px);
 
 /**
  * CORNER RADIUS IS A RULE, NOT A FEATURE — and this is what holds every block to it.
@@ -54,11 +65,11 @@ describe("nothing is rounded until someone asks", () => {
     // Stated rather than assumed: a Card is round because a Card is round. What matters for the rule is that
     // the user can take it back — all four corners at once, or one of them.
     const card = blockForKind("card");
-    expect(radiusCSS(card), "a Card looks like a Card").toBe("16px 16px 16px 16px");
+    expect(radiusCSS(card), "a Card looks like a Card").toBe(`${r(16)} ${r(16)} ${r(16)} ${r(16)}`);
     // Squaring it off writes a real 0 rather than removing the property — which is the point, because the
     // component's own stylesheet would otherwise put its rounding straight back.
-    expect(radiusCSS(blockForKind("card", { radius: 0 })), "and can be squared off").toBe("0px 0px 0px 0px");
-    expect(radiusCSS(blockForKind("card", { radiusTopLeft: 0 }))).toBe("0px 16px 16px 16px");
+    expect(radiusCSS(blockForKind("card", { radius: 0 })), "and can be squared off").toBe(`${r(0)} ${r(0)} ${r(0)} ${r(0)}`);
+    expect(radiusCSS(blockForKind("card", { radiusTopLeft: 0 }))).toBe(`${r(0)} ${r(16)} ${r(16)} ${r(16)}`);
   });
 
   it("the rounding that DOES appear is a look somebody chose, never a default", () => {
@@ -66,7 +77,7 @@ describe("nothing is rounded until someone asks", () => {
     // user picked from the gallery, which is the opposite of a value hiding inside a new block.
     const plain = blockForKind("container");
     expect(radiusCSS(plain)).toBeUndefined();
-    expect(radiusCSS(blockForKind("container", { radius: 16 }))).toBe("16px 16px 16px 16px");
+    expect(radiusCSS(blockForKind("container", { radius: 16 }))).toBe(`${r(16)} ${r(16)} ${r(16)} ${r(16)}`);
   });
 });
 
@@ -74,17 +85,17 @@ describe("every block takes a radius on all four corners, and on each corner alo
   it("all at once", () => {
     for (const kind of ALL_KINDS) {
       const node = blockForKind(kind, { radius: 14 });
-      expect(radiusCSS(node), `${kind} must accept one radius for every corner`).toBe("14px 14px 14px 14px");
+      expect(radiusCSS(node), `${kind} must accept one radius for every corner`).toBe(`${r(14)} ${r(14)} ${r(14)} ${r(14)}`);
     }
   });
 
   it("each corner on its own, overriding the all-corners value", () => {
     for (const kind of ALL_KINDS) {
       const node = blockForKind(kind, { radius: 10, radiusTopLeft: 0, radiusTopRight: 30, radiusBottomRight: 4, radiusBottomLeft: 22 });
-      expect(radiusCSS(node), `${kind} must accept a value per corner`).toBe("0px 30px 4px 22px");
+      expect(radiusCSS(node), `${kind} must accept a value per corner`).toBe(`${r(0)} ${r(30)} ${r(4)} ${r(22)}`);
     }
     // A single corner with no all-corners value leaves the other three square, rather than rounding them.
-    expect(radiusCSS(blockForKind("container", { radiusTopLeft: 18 }))).toBe("18px 0px 0px 0px");
+    expect(radiusCSS(blockForKind("container", { radiusTopLeft: 18 }))).toBe(`${r(18)} ${r(0)} ${r(0)} ${r(0)}`);
   });
 
   it("reaches the PUBLISHED page for every kind, not only the stored data", () => {
@@ -94,7 +105,7 @@ describe("every block takes a radius on all four corners, and on each corner alo
     // panel said otherwise, which is the "control that appears to work" defect this project keeps meeting.
     for (const kind of ALL_KINDS) {
       const html = cssFor(blockForKind(kind, { radius: 10, radiusTopLeft: 0, radiusTopRight: 30, radiusBottomRight: 4, radiusBottomLeft: 22 }));
-      expect(html, `${kind} must publish its corner radius`).toContain("border-radius:0px 30px 4px 22px");
+      expect(html, `${kind} must publish its corner radius`).toContain(`border-radius:${r(0)} ${r(30)} ${r(4)} ${r(22)}`);
     }
   });
 
@@ -113,7 +124,7 @@ describe("the emitter is shared, so the canvas and the export cannot disagree", 
     // here without a second assertion per block type.
     const node = blockForKind("card", { radius: 5, radiusTopRight: 25 });
     const value = radiusCSS(node)!;
-    expect(value).toBe("5px 25px 5px 5px");
+    expect(value).toBe(`${r(5)} ${r(25)} ${r(5)} ${r(5)}`);
     expect(renderPageHTML({ id: "r", type: "container", direction: "column", children: [node] } as unknown as BoxNode, DEFAULT_THEME))
       .toContain(`border-radius:${value}`);
   });

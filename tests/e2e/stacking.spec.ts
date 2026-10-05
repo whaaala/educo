@@ -1,4 +1,5 @@
 import { test, expect } from "@playwright/test";
+import { seedSite } from "./helpers/seed-site";
 import type { BoxNode } from "@/lib/box-model";
 import { siteFromRoot } from "@/lib/box-site";
 import { renderSitePage } from "@/lib/box-export";
@@ -39,14 +40,7 @@ const floatedTree = (zIndex: number): BoxNode => ({
 // share one reason — see the note there.
 async function openCanvas(page: import("@playwright/test").Page, root: BoxNode) {
   await page.setViewportSize({ width: 1280, height: 900 });
-  await page.goto("/website/box-demo");
-  await page.evaluate((tree) => {
-    localStorage.setItem("educo_box_site_v1", JSON.stringify({
-      homeId: "p1", pages: [{ id: "p1", name: "Home", path: "/", root: tree }],
-    }));
-    localStorage.setItem("educo_box_site_cleaned_v1", "1");
-  }, root as unknown as Record<string, unknown>);
-  await page.reload();
+  await seedSite(page, { homeId: "p1", pages: [{ id: "p1", name: "Home", path: "/", root }] });
   await page.waitForSelector('[data-box-id="root"]', { timeout: 30000 });
   await page.waitForSelector('[data-box-id="float"]', { timeout: 20000 });
 }
@@ -139,14 +133,7 @@ const twoFloats = (overZ: number): BoxNode => ({
 test.describe("a neighbouring block cannot bury the controls of the one being edited", () => {
   test("selecting a covered float still gives reachable controls", async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 900 });
-    await page.goto("/website/box-demo");
-    await page.evaluate((tree) => {
-      localStorage.setItem("educo_box_site_v1", JSON.stringify({
-        homeId: "p1", pages: [{ id: "p1", name: "Home", path: "/", root: tree }],
-      }));
-      localStorage.setItem("educo_box_site_cleaned_v1", "1");
-    }, twoFloats(500_000) as unknown as Record<string, unknown>);
-    await page.reload();
+    await seedSite(page, { homeId: "p1", pages: [{ id: "p1", name: "Home", path: "/", root: twoFloats(500_000) }] });
     await page.waitForSelector('[data-box-id="under"]', { timeout: 30000 });
 
     // Select the buried block through the layers panel path — clicking it is exactly what the covering float

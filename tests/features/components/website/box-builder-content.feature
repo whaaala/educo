@@ -50,5 +50,62 @@ Feature: Box Builder — content types & links
     Then the button links there, opening a new tab when chosen
     And any box can be given an Anchor name (slugified) so a "#anchor" link scrolls to it
 
+  # ── A LINK is words that go somewhere (user, 2026-09-27: "buttons are buttons, menus are menus") ──
+  # tests/unit/link-block.test.ts · tests/components/website/BoxCanvas.test.tsx · scripts/uat (headed)
+  Scenario: A Link block is words that go somewhere
+    Given I add a Link from the Text group of the blocks panel
+    When I type its words and give it a web address, a #bookmark or another page
+    Then the published page has a real <a href> — styled as words, underlined, in the brand colour, never as a button
+    And it opens in a new tab only when I ask, with rel="noopener"
+    And it can be reached with Tab and shows a focus ring
+    And clicking it in the editor edits it, it does not navigate away
+
+  Scenario: A menu is a list of links
+    Given a row of Links side by side, in a block I marked "Menu", inside a block I marked "List"
+    When the page is published
+    Then it is <nav><ul><li><a>…</a></li>…</ul></nav> — one list item per link, no bullets, laid out in a row
+    And a screen reader announces "navigation, list, 4 items"
+
+  # user, 2026-09-27: "make sure that there's always spaces between the links … the user can select what kind of space
+  # they want, both … horizontally" and down. tests/unit/link-spacing.test.ts · scripts/uat/uat-link.js (headed)
+  Scenario: Links side by side are always spaced, and I choose how much
+    Given a menu of links side by side, or a footer list of links one under another
+    Then they are spaced from the start — 2rem between links across, 0.75rem between lines down
+    When I select the menu (or the list) and move "Space across" or "Space down"
+    Then the space between the links follows it, across and down separately, on the canvas and the published page
+    And rows of columns are not affected — only rows of links and buttons
+
+  Scenario: A link reads on every website theme
+    Given a menu of links on a page with no band colour, in the Midnight, Dark or Purple theme
+    Then each link reads at least 4.5:1 against the page background, and against a card's surface
+    And on the Light theme the brand colour is used as it is, because it already reads
+    Because the brand is chosen for white words on a button (7:1), not for words on a
+      dark page: measured on every dressed page, the indigo read 3.02:1 on Midnight and
+      2.9:1 on Dark. The link now has its own token — the brand moved in lightness until
+      it reads — and both engines fall back to it before the brand.
+
+  Scenario: An Icon publishes the box it is drawn in
+    Given an Icon block left at its default size
+    Then the published icon is exactly the size the canvas draws it — 32 in the spacing unit, 1em square, in the brand colour
+    And it adds no leading of its own above or below
+    Because the inline SVG used to sit in a normal line box on the published page and came out 40px tall for a 32px icon
+      (measured by the dressed sweep, canvas ≠ export in the block itself)
+
+  Scenario: A block that draws something is never treated as an empty box
+    Given an Icon, a List or a Divider — blocks that draw their own content and hold no words or picture
+    Then none of them is given the empty-box floor, in the editor or on the published page
+    And every kind of block has the same minimum width, minimum height, width and height in both
+    And at 150% browser text an Icon still fits a narrow column instead of spilling out of it
+    Because the floor exists so an EMPTY box can be seen and grabbed, and these were counted as empty: a 22px icon
+      published in a 40px box on a phone (185 pages of the tier-99 sweep), and its 2.5rem minimum width became
+      60px at 150% text and spilled out of a 55px column (9 pages)
+
+  Scenario: A List publishes the box it is drawn in
+    Given a List block with three items, bulleted or numbered
+    Then every item on the published page has the same space under it as on the canvas, and the same indent
+    And the list is the same height in the editor and in the Preview at every screen size
+    Because the canvas spaced its items and the published page did not, so a List came out 8–17px shorter than it was
+      drawn on 145 pages of the tier-99 dressed sweep (canvas ≠ export in the block itself)
+
   Scenario: New content types work across themes, screen sizes and are accessible
     Then each renders correctly in light/dark/midnight/purple, reflows responsively, and exposes aria labels

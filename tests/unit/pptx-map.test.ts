@@ -82,7 +82,9 @@ describe("pptx-map — shapes & geometry", () => {
 });
 
 describe("pptx export — wired to a REAL .pptx (not the PDF-print fallback)", () => {
-  const read = (p: string) => fs.readFileSync(path.resolve(__dirname, p), "utf-8");
+  /** Line endings normalised at the point of READING — a CRLF checkout otherwise fails an assertion that
+   *  spans a line break, on a file nobody has touched. Guarded by `source-reading-tests.test.ts`. */
+  const read = (p: string) => fs.readFileSync(path.resolve(__dirname, p), "utf-8").replace(/\r\n/g, "\n");
   const dialog = read("../../components/shared/DownloadDialog.tsx");
   const editor = read("../../components/shared/SlideEditor/SlideEditor.tsx");
 

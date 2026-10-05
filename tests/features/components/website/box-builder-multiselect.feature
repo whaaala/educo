@@ -32,7 +32,8 @@ Feature: Box Builder — marquee multi-select + bulk edits
   # ── Editing many at once ────────────────────────────────────────────────────
   Scenario: The bulk panel reports the selection and applies to all
     Given three sections selected
-    Then the inspector shows "3 sections selected"
+    Then the inspector shows "3 blocks selected"
+    Because a Heading and a Text are blocks, not sections (the S-1 pass, 2026-09-30)
     And any change I make there is applied to all three at once
 
   Scenario Outline: Quick steppers grow/shrink the whole group

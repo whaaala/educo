@@ -1,4 +1,5 @@
 import { test, expect, type Page } from "@playwright/test";
+import { seedSite } from "./helpers/seed-site";
 
 /**
  * HOW SMALL A BOX CAN BE MADE — and what is allowed to stop it.
@@ -23,21 +24,16 @@ import { test, expect, type Page } from "@playwright/test";
 type Kid = Record<string, unknown>;
 
 async function seed(page: Page, target: Kid) {
-  await page.goto("/website/box-demo");
-  await page.evaluate((target) => {
-    const site = { pages: [{ id: "p1", name: "Home", path: "/", root: {
-      id: "root", type: "container", direction: "column", padding: 0, gap: 0, children: [
-        { id: "band", type: "container", direction: "row", rowBand: true, width: "fill", gap: 0, padding: 0, children: [target] },
-        // The rest of the page, so the page's own minimum height is not what we end up measuring.
-        { id: "band2", type: "container", direction: "row", rowBand: true, width: "fill", gap: 0, padding: 0, children: [
-          { id: "filler", type: "container", direction: "column", padding: 0, gap: 0, width: "100%", minHeight: 500,
-            background: "#fee2e2", children: [{ id: "ft", type: "text", text: "the rest of the page", width: "auto" }] },
-        ] },
-      ] } }], homeId: "p1" };
-    localStorage.setItem("educo_box_site_v1", JSON.stringify(site));
-    localStorage.setItem("educo_box_site_cleaned_v1", "1");
-  }, target);
-  await page.reload();
+  // Two bands, so `sitePage` (which builds one) is not what this needs.
+  await seedSite(page, { pages: [{ id: "p1", name: "Home", path: "/", root: {
+    id: "root", type: "container", direction: "column", padding: 0, gap: 0, children: [
+      { id: "band", type: "container", direction: "row", rowBand: true, width: "fill", gap: 0, padding: 0, children: [target] },
+      // The rest of the page, so the page's own minimum height is not what we end up measuring.
+      { id: "band2", type: "container", direction: "row", rowBand: true, width: "fill", gap: 0, padding: 0, children: [
+        { id: "filler", type: "container", direction: "column", padding: 0, gap: 0, width: "100%", minHeight: 500,
+          background: "#fee2e2", children: [{ id: "ft", type: "text", text: "the rest of the page", width: "auto" }] },
+      ] },
+    ] } }], homeId: "p1" });
   await page.waitForSelector('[data-box-id="tgt"]', { timeout: 15000 });
   await page.waitForTimeout(300);
 }
