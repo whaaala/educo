@@ -1052,3 +1052,14 @@ describe("G3b-24 · the panel says what the fit rule draws on this screen (fitSt
     expect(fitStepAt(band, band.children![0].id, 375 / 16, "phone")).toBeNull();
   });
 });
+
+describe("G3b-27 · on a stepped line a block's readable floor uses the margins it is drawn with there", () => {
+  it("every stepped rule's min-width subtracts exactly that rule's own margins (no box wider than its line at 200 % text)", () => {
+    const cols = ["50%", "50%"].map((w) => createContainer("column", { width: w, children: [blockForKind("text")] } as Partial<BoxNode>));
+    const r = markPageGrid(normalizeRowBands({ ...emptyPageRoot(), children: [makeRowBand(cols)] } as BoxNode)); const site = siteFromRoot(r);
+    const html = renderSitePage(site, DEFAULT_THEME, site.homeId, { inlineShared: true });
+    const rules = [...html.matchAll(/grid-column:span \d+ !important;(?:grid-row:auto !important;)?margin-left:(.+?) !important;margin-right:(.+?) !important;min-width:min\(calc\(100% - (.+?) - (.+?)\), [\d.]+rem\) !important/g)];
+    expect(rules.length).toBeGreaterThan(0);
+    for (const [, ml, mr, fl, fr] of rules) expect([fl, fr]).toEqual([ml, mr]);
+  });
+});

@@ -3563,6 +3563,13 @@ export function rowNarrowsAt(band: BoxNode, onPage = false): { ids: string[]; st
 }
 /** Does a block span rows on any screen (G-3b (6))? */
 const hasRowSpan = (k: BoxNode) => [k, ...Object.values(k.responsive ?? {})].some((r) => ((r as Partial<BoxNode> | null)?.rowSpan ?? 1) > 1);
+/** G3b-27 — a block's readable floor with the margins it is DRAWN with on a stepped line: the floor of `pageRowCSS` subtracts the
+ *  margins of its desktop line, so where the fit rule gives it the frame on both sides it held the box 27px past the row's edge at
+ *  200 % text on a phone. Empty when the block has no such floor. */
+function floorWith(band: BoxNode, k: BoxNode, ml: string, mr: string): string {
+  const f = /, ([\d.]+rem)\)$/.exec(String(childStyle(k, band).minWidth ?? ""))?.[1];
+  return f ? `;min-width:min(calc(100% - ${ml} - ${mr}), ${f}) !important` : "";
+}
 /** The same row with no block spanning rows on any screen — where each block sits once the spans are stepped away. */
 const withoutRowSpans = (band: BoxNode): BoxNode => ({
   ...band,
@@ -3584,7 +3591,8 @@ export function rowQueryCss(band: BoxNode, cellScope: (id: string) => string, ab
         ids.slice(i, i + across).forEach((id, j) => {
           const k = byId.get(id)!;
           // …and a block spanning rows (G-3b (6)) spans one again: on a stepped line it has no neighbours beside it to span
-          rules += `${cellScope(id)}{grid-column:span ${T / across} !important;${hasRowSpan(k) ? "grid-row:auto !important;" : ""}margin-left:${pageRowMargin(band, k, "left", j, across)} !important;margin-right:${pageRowMargin(band, k, "right", j, across)} !important${st.lines.length < ids.length ? ";min-width:min-content !important" : ""}}`;
+          const ml = pageRowMargin(band, k, "left", j, across), mr = pageRowMargin(band, k, "right", j, across);
+          rules += `${cellScope(id)}{grid-column:span ${T / across} !important;${hasRowSpan(k) ? "grid-row:auto !important;" : ""}margin-left:${ml} !important;margin-right:${mr} !important${st.lines.length < ids.length ? ";min-width:min-content !important" : floorWith(band, k, ml, mr)}}`;
         });
         i += across;
       }
@@ -3594,7 +3602,8 @@ export function rowQueryCss(band: BoxNode, cellScope: (id: string) => string, ab
         const flat = pageRowCells(withoutRowSpans(band), "base");
         for (const k of band.children ?? []) {
           const c = !ids.includes(k.id) && flat.get(k.id); if (!c) continue;
-          rules += `${cellScope(k.id)}{grid-row:auto !important;margin-left:${pageRowMargin(band, k, "left", c.at, c.of, +(c.gapPct + c.insetL).toFixed(4))} !important;margin-right:${pageRowMargin(band, k, "right", c.at, c.of, c.insetR)} !important}`;
+          const ml = pageRowMargin(band, k, "left", c.at, c.of, +(c.gapPct + c.insetL).toFixed(4)), mr = pageRowMargin(band, k, "right", c.at, c.of, c.insetR);
+          rules += `${cellScope(k.id)}{grid-row:auto !important;margin-left:${ml} !important;margin-right:${mr} !important${floorWith(band, k, ml, mr)}}`;
         }
       }
       css += `@container (max-width:${st.below - 0.01}rem){${rules}}`;

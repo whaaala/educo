@@ -114,6 +114,9 @@ const SLICES = {
         if (onLine !== null) ok(`U2 ${dev} · ${name}: the gap lands centred ON the ${name === 'Shift' ? 'half-' : ''}line (G3-8)`, Math.abs(mid - (name === 'Shift' ? (ls[k] + ls[k + 1]) / 2 : ls[k])) <= 0.6, `${(mid - (name === 'Shift' ? (ls[k] + ls[k + 1]) / 2 : ls[k])).toFixed(2)}px`);
         else ok(`U2 ${dev} · Alt: kept where it was dragged, between lines`, near(mid, ls) > 2, `${near(mid, ls).toFixed(1)}px from a line`);
         await page.screenshot({ path: path.join(OUT, `B-${dev}-${name}.png`) });
+        // G3b-29: the next screen's steps aim from the lines (half the gap between the boxes) — undo the free margin the Alt step left;
+        // a drag that STARTS from a free margin is slice J's (step 1b)
+        if (name === 'Alt') { await page.keyboard.press('Control+z'); await page.waitForTimeout(500); }
       }
     }
   },
@@ -336,6 +339,11 @@ const sliceJ = (dev) => async (page, ok) => {
   else { await size(a); ok('U5 ' + dev + ' · "Back on the lines": no free margin, still to line ' + (k + 2), (await val(RIGHT)) === 0 && (await val('To line')) === k + 2, (await val(RIGHT)) + ' % · To line ' + (await val('To line'))); }
   await page.keyboard.press('Control+z'); await page.waitForTimeout(600);
   ok('U5 ' + dev + ' · one Undo puts the free margin back', Math.abs((await rectOf(page, a)).r - r1.r) < 0.6, ((await rectOf(page, a)).r - r1.r).toFixed(2));
+  // (1b) G3b-28: a SECOND Alt drag, starting from a free margin, still stops where it is let go (the hand is on the box)
+  { await H.select(page, a); const h1 = await H.handleOf(page, 'right'); const q0 = await rectOf(page, a); const x0 = h1.x + h1.width / 2;
+    await drag(x0, h1.y + h1.height / 2, x0 + 0.25 * colW, ['Alt']); const q1 = await rectOf(page, a);
+    ok('U5 ' + dev + ' · G3b-28: a second Alt drag from a free margin stops where it is let go', Math.abs((q1.r - q0.r) - 0.25 * colW) < 1.5 && Math.abs(q1.l - q0.l) < 0.6, 'moved ' + (q1.r - q0.r).toFixed(1) + ' of ' + (0.25 * colW).toFixed(1));
+    await page.keyboard.press('Control+z'); await page.waitForTimeout(500); }
   // (3) the panel: change the right margin by number
   await size(a); await field(RIGHT, 50);
   const r3 = await rectOf(page, a);
@@ -433,7 +441,72 @@ const sliceK = (dev) => async (page, ok) => {
 };
 for (const [key, dev] of [['K1', 'Desktop'], ['K2', 'Laptop'], ['K3', 'Wide'], ['K4', 'Tablet'], ['K5', 'Full'], ['K6', 'Mobile']]) SLICES[key] = sliceK(dev);
 
-const WINDOWS = [['A', 'Light'], ['B', 'Light'], ['C', 'Midnight'], ['D', 'Purple Dream'], ['E', 'Dark'], ['F', 'Light'], ['G', 'Midnight'], ['H', 'Purple Dream'], ['I', 'Dark'], ['J1', 'Light'], ['J2', 'Midnight'], ['J3', 'Purple Dream'], ['J4', 'Dark'], ['J5', 'Light'], ['J6', 'Midnight'], ['K1', 'Purple Dream'], ['K2', 'Dark'], ['K3', 'Light'], ['K4', 'Midnight'], ['K5', 'Purple Dream'], ['K6', 'Dark']];
+// U8 · NESTED, G-3b's features together, built through the UI: a picture two rows tall beside a card with a button (its right edge
+// placed free with Alt) and words; under it a Grid block whose cells hold cards with buttons — Preview at all 70 screens × 100/150/200 %
+SLICES.L = async (page, ok) => {
+  const I = require('./inspector.js');
+  await H.panel(page, true);
+  const ph = await P.first(page, 'Stack'); await P.into(page, ph, 'Image');
+  const c = await P.beside(page, ph, 'Stack'); const card = await P.into(page, c, 'Card'); await P.under(page, card, 'Button').catch(() => null);
+  const w = await P.beside(page, c, 'Stack'); await P.into(page, w, 'Text');
+  const g = await P.grid(page, 3, 1);
+  const cells = await page.evaluate((gid) => { const e = document.querySelector('[data-box-id="' + gid + '"]'); const grid = e.closest('[data-box-id]'); return [...grid.querySelectorAll('[data-box-id]')].map((x) => x.getAttribute('data-box-id')).filter((x) => x !== gid); }, g);
+  for (const cell of cells.slice(0, 2)) { const cc = await P.into(page, cell, 'Card').catch(() => null); if (cc) await P.under(page, cc, 'Button').catch(() => null); }
+  await H.panel(page, false); await guidesOn(page); await chip(page, DEV.Desktop);
+  const size = async (id) => { await H.select(page, id); await I.tab(page, 'Design'); await I.section(page, 'Size'); };
+  for (const id of [ph, c, w]) { await size(id); await page.getByRole('group', { name: 'Width' }).getByRole('button', { name: 'Custom' }).click(); await page.waitForTimeout(300); const cw = page.getByLabel('Custom width', { exact: true }).first(); await cw.fill('50%'); await cw.blur(); await page.waitForTimeout(500); }
+  await size(ph); const f = page.getByLabel('Rows tall', { exact: true }).first(); await f.fill('2'); await f.blur(); await page.waitForTimeout(600);
+  await H.select(page, c); const h = await H.handleOf(page, 'right'); const colW = (await lines(page))[1] - (await lines(page))[0];
+  await page.keyboard.down('Alt'); await page.mouse.move(h.x + h.width / 2, h.y + h.height / 2); await page.mouse.down();
+  for (let i = 1; i <= 12; i++) { await page.mouse.move(h.x + h.width / 2 - (0.6 * colW * i) / 12, h.y + h.height / 2); await page.waitForTimeout(15); }
+  await page.mouse.up(); await page.keyboard.up('Alt'); await page.waitForTimeout(600);
+  const [rp, rc, rw] = await Promise.all([ph, c, w].map((x) => rectOf(page, x)));
+  ok('U8 the picture spans two rows; the card and the words sit beside it, one above the other', Math.abs(rc.l - rw.l) < 1 && rw.t > rc.t && rc.l > rp.r, 'card ' + rc.l.toFixed(0) + ',' + rc.t.toFixed(0) + ' · words ' + rw.l.toFixed(0) + ',' + rw.t.toFixed(0));
+  await page.screenshot({ path: path.join(OUT, 'L-canvas.png'), fullPage: true });
+  for (const scale of [1, 1.5, 2]) {
+    const bad = [];
+    await preview(page, SCREENS, async (fr, wd) => {
+      if (await sideways(fr) > 1) bad.push(wd + ': sideways');
+      for (const x of await pageFaults(fr)) bad.push(wd + ': ' + x);
+      const W = await fr.evaluate(() => document.documentElement.clientWidth);
+      for (const [n, id] of [['picture', ph], ['card', c], ['words', w]]) { const r = await pubRect(fr, id); if (r && (r.l < 8 || r.r > W - 8)) bad.push(wd + ': the ' + n + ' at ' + r.l.toFixed(1) + '…' + r.r.toFixed(1) + ' of ' + W); }
+    }, scale);
+    ok('U8 nested at ' + scale * 100 + ' % text, all ' + SCREENS.length + ' screens: no sideways scroll, overlap, broken word, staircase, nothing on the page edge', !bad.length, bad.slice(0, 6).join(' · '));
+  }
+};
+
+// U9 · the editor's four themes: every new control of G-3b labelled, keyboard reachable, 4.5:1 — one window per theme
+SLICES.M = async (page, ok, theme) => {
+  const I = require('./inspector.js');
+  await H.panel(page, true);
+  const a = await P.first(page, 'Stack'); await P.into(page, a, 'Text'); const b = await P.beside(page, a, 'Stack'); await P.into(page, b, 'Image');
+  await H.panel(page, false); await chip(page, DEV.Mobile); // on a phone the fit rule steps, so the note shows too
+  await H.select(page, a); await I.tab(page, 'Design'); await I.section(page, 'Size');
+  const names = ['From line', 'To line', 'Rows tall', 'Free space on the left, percent of its columns', 'Free space on the right, percent of its columns', 'At least this many rows tall'];
+  for (const n of names) ok('U9 ' + theme + ' · "' + n + '" is one labelled control', (await page.getByLabel(n, { exact: true }).count()) === 1);
+  // keyboard: from "From line", Tab reaches every new control in order
+  await page.getByLabel('From line', { exact: true }).first().focus(); const reached = new Set();
+  for (let i = 0; i < 25; i++) { await page.keyboard.press('Tab'); const l = await page.evaluate(() => document.activeElement?.getAttribute('aria-label') || document.activeElement?.textContent?.trim() || ''); reached.add(l); }
+  for (const n of ['Rows tall', 'Free space on the left, percent of its columns', 'Free space on the right, percent of its columns']) ok('U9 ' + theme + ' · Tab reaches "' + n + '"', reached.has(n));
+  // contrast: the words of the new labels and the note against what they are drawn on
+  const cr = await page.evaluate(() => {
+    // G3b-25: the editor's colours are oklch(), so the BROWSER converts them — painted on white and on black, opaque when both agree
+    const paint = (c, under) => { const cv = document.createElement('canvas'); cv.width = cv.height = 1; const x = cv.getContext('2d'); x.fillStyle = under; x.fillRect(0, 0, 1, 1); x.fillStyle = c; x.fillRect(0, 0, 1, 1); return [...x.getImageData(0, 0, 1, 1).data].slice(0, 3); };
+    const rgb = (c) => { const w = paint(c, '#fff'), k = paint(c, '#000'); return w.every((v, i) => Math.abs(v - k[i]) < 3) ? w : [...w, 0]; };
+    const lum = ([r, g, b]) => { const f = (v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); }; return 0.2126 * f(r) + 0.7152 * f(g) + 0.0722 * f(b); };
+    const bg = (e) => { for (let n = e; n; n = n.parentElement) { const v = rgb(getComputedStyle(n).backgroundColor); if (v.length === 3) return v; } return [255, 255, 255]; };
+    const out = {};
+    const pick = { 'Rows tall': [...document.querySelectorAll('label, span')].find((e) => e.textContent.trim() === 'Rows tall'), 'Free inside its columns': [...document.querySelectorAll('span')].find((e) => e.textContent.trim().startsWith('Free inside its columns')), note: [...document.querySelectorAll('[role="note"]')].find((e) => e.textContent.includes('steps down to fit')) };
+    for (const [k, e] of Object.entries(pick)) { if (!e) { out[k] = 0; continue; } const L1 = lum(rgb(getComputedStyle(e).color)), L2 = lum(bg(e)); out[k] = +((Math.max(L1, L2) + 0.05) / (Math.min(L1, L2) + 0.05)).toFixed(2); }
+    return out;
+  });
+  for (const [k, v] of Object.entries(cr)) ok('U9 ' + theme + ' · "' + k + '" reads at ' + v + ':1 (≥ 4.5)', v >= 4.5);
+  await page.getByRole('note').filter({ hasText: 'steps down to fit' }).first().scrollIntoViewIfNeeded().catch(() => {});
+  await page.screenshot({ path: path.join(OUT, 'M-' + theme.replace(/\s/g, '') + '.png') });
+};
+for (const t of ['Light', 'Dark', 'Midnight', 'Purple Dream']) SLICES['M-' + t.replace(/\s/g, '')] = (page, ok) => SLICES.M(page, ok, t);
+
+const WINDOWS = [['A', 'Light'], ['B', 'Light'], ['C', 'Midnight'], ['D', 'Purple Dream'], ['E', 'Dark'], ['F', 'Light'], ['G', 'Midnight'], ['H', 'Purple Dream'], ['I', 'Dark'], ['J1', 'Light'], ['J2', 'Midnight'], ['J3', 'Purple Dream'], ['J4', 'Dark'], ['J5', 'Light'], ['J6', 'Midnight'], ['K1', 'Purple Dream'], ['K2', 'Dark'], ['K3', 'Light'], ['K4', 'Midnight'], ['K5', 'Purple Dream'], ['K6', 'Dark'], ['L', 'Light'], ['M-Light', 'Light'], ['M-Dark', 'Dark'], ['M-Midnight', 'Midnight'], ['M-PurpleDream', 'Purple Dream']];
 (async () => {
   const runs = WINDOWS.filter(([k]) => !ONLY.length || ONLY.includes(k)); const out = [];
   await Promise.all(runs.map(async ([k, th], i) => {

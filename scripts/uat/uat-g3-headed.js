@@ -1,7 +1,7 @@
 // HEADED UAT — BATCH G-3 · placing on columns and rows (RULE X / Y / Z). Six windows, every page BUILT THROUGH THE UI,
 // the real Preview read at EVERY screen of scripts/uat/screens.js. Checklist: docs/TASK_TREE.md BATCH G-3.
 //   A  U1 + U2  edge-to-edge guides at every device; the first card's left outer spacing 0 → the page edge; back to default
-//   B  U3       a dragged edge snaps (whole · Shift half · Alt free), the far edge fixed, the live label; far past the partner
+//   B  U3       a dragged edge snaps (whole · Shift half · Alt free = whole columns + a free margin, G-3b (3)), the far edge fixed, the live label; far past the partner
 //   C  U4       "Columns" at Desktop, Alt ← at Mobile (the phone only, said aloud), Undo, reload        (editor Midnight)
 //   D  U5       "Rows: 3" — at least 3 row steps, still growing; 150 % / 200 % text at every screen   (editor Purple)
 //   E  U6       "Line up with the grid": a typed width moves to a line, the count is said, an Alt-free row stays, Undo (Dark)
@@ -139,12 +139,14 @@ const SLICES = {
     for (const [mods, name, target, want, free] of [[[], 'nothing', aim, 41.67, false], [['Shift'], 'Shift', aimHalf, 37.5, false], [['Alt'], 'Alt', aim, null, true]]) {
       await H.select(page, id.a); const r0 = await rectOf(page, id.a);
       const label = await dragRightTo(page, target, mods);
-      const w = parseFloat((await stored(page, id.a)).width), r1 = await rectOf(page, id.a), fw = !!(await stored(page, id.a)).freeWidth;
-      ok(`U3 drag past the middle of columns 4–5 holding ${name} → ${want ?? 'as dragged'} %${free ? ', free' : ''}`, (want === null ? Math.abs(((w / 100) * 24) - Math.round((w / 100) * 24)) > 0.05 : Math.abs(w - want) < 0.05) && fw === free, `${w}% · free ${fw}`);
+      // SUPERSEDED BY G-3b (3) (map §1, signed): Alt no longer stores a share between the lines — the columns run to the next line
+      // and the rest is a free margin inside them (`freeInset`), so the share is whole columns and the margin is set
+      const w = parseFloat((await stored(page, id.a)).width), r1 = await rectOf(page, id.a), fw = !!(await stored(page, id.a)).freeInset;
+      ok(`U3 drag past the middle of columns 4–5 holding ${name} → ${want ?? 'whole columns + a free margin'}${want ? ' %' : ''}`, (want === null ? Math.abs(((w / 100) * 12) - Math.round((w / 100) * 12)) < 0.01 : Math.abs(w - want) < 0.05) && fw === free, `${w}% · free margin ${fw}`);
       if (!free) { const gx = want === 41.67 ? l5 : l4 + 0.5 * (l5 - l4); const rb = await rectOf(page, id.b); const slotR = Math.abs(rb.t - r1.t) < 2 ? (r1.r + rb.l) / 2 : r1.r; /* the boundary: the middle of their gap */
         ok(`U3 (${name}) MEASURE: the snapped boundary sits ${(slotR - gx).toFixed(1)}px from the drawn line`, true); }
       ok(`U3 (${name}) the far (left) edge did not move`, Math.abs(r1.l - r0.l) < 1, `${(r1.l - r0.l).toFixed(1)}`);
-      ok(`U3 (${name}) the live label said ${free ? '"% · free"' : '"N of 12 · phone M of 6"'}`, free ? /% · free/.test(label || '') : /of 12 · phone .* of 6/.test(label || ''), label);
+      ok(`U3 (${name}) the live label said ${free ? '"N of 12 · phone M of 6 · free"' : '"N of 12 · phone M of 6"'}`, free ? /of 12 · phone .* of 6 · free$/.test(label || '') : /of 12 · phone .* of 6$/.test(label || ''), label);
       await page.keyboard.press('Control+z'); await page.waitForTimeout(400);
     }
     // G3-11: the FIRST block's LEFT edge opens a space and closes it again (it had stopped opening at all)

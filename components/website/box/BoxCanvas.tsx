@@ -2671,13 +2671,16 @@ export default function BoxCanvas({
       let freeOff = 0; // ALT FREE (G-3b (3), map §1): px from where the edge was let go to the line its columns run to
       if (snapCols && (hasE || hasW)) {
         const from = hasE ? startRightPx : startLeftPx;
+        // THE HAND IS ON THE BOX, not on its columns (G3b-28): with a free margin on the dragged side the box edge sits that far inside
+        // the line, and measuring the drag from the line snapped a column past where the person let go (slice B: 65px at Full width)
+        const hand = from + (hasE ? -1 : 1) * (((inset0[hasE ? "right" : "left"] ?? 0) / 100) * (share0 / 100) * maxW);
         if (ev.altKey) {
           // the columns run OUT to the nearest line beyond the edge, and the box stops where it was let go: the rest is a margin inside
           // …and past the page's edge it stops AT the edge: the overshoot is not a margin (G3b-19, width-round-trip — 35px left behind)
-          const step = maxW / snapCols, at = Math.min(maxW, Math.max(0, from + dx));
+          const step = maxW / snapCols, at = Math.min(maxW, Math.max(0, hand + dx));
           const line = Math.min(maxW, Math.max(0, (hasE ? Math.ceil(at / step - 1e-6) : Math.floor(at / step + 1e-6)) * step));
           freeOff = Math.abs(line - at); dx = line - from;
-        } else dx = snapEdgePx(from + dx, maxW, snapCols, ev.shiftKey) - from;
+        } else dx = snapEdgePx(hand + dx, maxW, snapCols, ev.shiftKey) - from;
         const share = ((hasE ? startRightPx + dx : startRightPx) - (hasW ? startLeftPx + dx : startLeftPx)) / maxW;
         setSpanLive({ x: ev.clientX, y: ev.clientY, text: `${spanLabel(share, pageGrid!, breakpoint, ev.shiftKey && !ev.altKey)}${ev.altKey ? " · free" : ""}` });
       }
