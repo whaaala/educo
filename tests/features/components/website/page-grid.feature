@@ -305,3 +305,26 @@ Feature: The page grid (AC-37b)
     When I look at it at Tablet, Mobile and in the Preview at every screen
     Then it sits inside the same columns, by the same share of them
     And where the row steps down to fewer blocks a line, the free margin is dropped and the blocks are equal
+
+  # ── G-3b (6) · a block of a page row spans rows (the user: a gallery photo two rows tall) ──────────
+
+  Scenario: A photo two rows tall beside two short blocks
+    Given a photo and two short blocks of words on a row of a page-grid page, each half the page wide
+    When I set the photo's "Rows tall" to 2 in its Size section
+    Then the photo covers two rows, and the two blocks of words sit one above the other beside it
+    And every block keeps the page grid's side space and one gap between neighbours
+    And the photo still grows when the words beside it need more room
+    And the Preview shows the same at every screen where the row is side by side
+
+  Scenario: Where the row steps down to fewer blocks a line, a block spans one row again
+    Given a photo two rows tall beside two short blocks
+    When the screen is too narrow for them side by side (a phone)
+    Then the blocks stack one a line, the photo no taller than its own content
+    And nothing overlaps and nothing scrolls sideways
+
+  Scenario: Rows tall is per screen, can be undone, and is named once
+    Given a photo two rows tall
+    When I set "Rows tall" back to 1 at Tablet only
+    Then at Tablet it spans one row, and at Desktop still two
+    And one Undo puts it back
+    And a screen reader hears "Rows tall" for the span and "At least this many rows tall" for the height, never two controls with one name

@@ -73,8 +73,17 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
     lines now follow it too (16 on a saved page either way). MEASURED: 61 saved sites byte for byte against `ea68dcf`; four
     mutations red; HEADED slice G 5 / 5 (across 11.8 → 27.8px with the stack unmoved, rows 0 → touching, Preview at all 70 screens,
     back to default, Undo) and G-2 slice D 10 / 10 with the new controls
-  - `[ ]` (6) ROWS AS GRID ROWS: "span N rows" (the user's: a gallery photo 2 rows tall, height still grows with its words) —
-    plus the nested-tree check G-3's slice F started
+  - `[x]` (6) ROWS AS GRID ROWS: "span N rows" (the user's: a gallery photo 2 rows tall, height still grows with its words) —
+    plus the nested-tree check G-3's slice F started (the nested trees: in the final pass, U8) — DONE 2026-10-05: a block of a
+    page row reuses the Grid block's `rowSpan` (rule A, one field), emitted `grid-row: span N`; `rowLinesAt` places a row that
+    spans as the browser's grid auto-placement does (sparse), each line listing what occupies it (`cont`: spanning down into it),
+    so the blocks beside a photo get the side space and gaps of the line they are drawn on; a row that spans nothing packs exactly
+    as before. "From line" / "To line" / the Alt slide treat a block spanning beside them as a wall. Where the fit rule steps the
+    row, the span goes (`grid-row:auto`) and the blocks that sat beside it go back to their own place (G3b-23). RULE UI: "Rows
+    tall" in the Size section, per screen. HEADED slice K1–K6 (six windows, six devices × the four themes): 49 checks 0 failed,
+    Preview at all 70 screens; gate: vitest 4,355 · test:fast 806 · eslint 0 errors. QUESTION FOR THE USER (not a defect, the
+    behaviour before (6) too): on a phone, a block set to half the page that is alone on its line stays half the page — should
+    the fit rule widen a lone block there as well?
   HEADED UAT CHECKLIST (written before the pass; six windows; fresh production build; built through the UI; Preview at all 70
   screens of `screens.js` at 100 / 150 / 200 % text; the editor's four themes; each state on / off; every entry point):
   - `[ ]` U1 (pass 1 SEEN after (1)+(4): slices A, C, F; re-run in the final pass) a half / third / quarter / 5 + 7 row on a page-grid page: every block edge ON a drawn line (≤ 0.5px) at every device,
@@ -87,7 +96,7 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
     survives a column-count change in the panel; Undo; reload
   - `[ ]` U5 (SEEN after (3): slice J1–J6, 108 / 0; re-run in the final pass) Alt-drop a block: it lands on lines + a margin; at every other screen it stays on its lines (no overlap, no scroll)
   - `[ ]` U6 "Space between columns" 0 / default / 4 rem: guides and blocks move together, canvas == Preview; Reset
-  - `[ ]` U7 "span 2 rows" on a gallery photo beside two short blocks: covers two rows, still grows with words; phone falls back
+  - `[ ]` U7 (SEEN after (6): slice K1–K6, 49 / 0; re-run in the final pass) "span 2 rows" on a gallery photo beside two short blocks: covers two rows, still grows with words; phone falls back
   - `[ ]` U8 a page saved before the page grid: Preview HTML byte-identical to before the batch; nested trees (section → Grid
     block → card → button, random values, built through the UI) at all 70 screens
   - `[ ]` U9 the four editor themes: every new control labelled, ≥ 4.5:1, keyboard reachable, announced
@@ -105,6 +114,22 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
   (`pageRowSlot`). MEASURED: the 61 saved sites of the dressed sweeps publish byte
   for byte as before (old vs new engine, every page).
   LEDGER G-3b:
+  - `[x]` G3b-20 · REAL, FOUND BY READING THE CODE FOR (6), PRESENT SINCE G-3 (4): a Grid cell on a page-grid page showed TWO
+    controls named "Rows tall" (its row span, and the page grid's minimum height) — one name, two meanings for a screen reader.
+    → the height is "At least this many rows tall". Guard: exactly one "Rows tall", red when the name is put back
+  - `[x]` G3b-21 · TEST (mine): the "never writes the photo's gap" guard slid the block all the way to the photo, where the leftover
+    gap is 0 either way — it passed with the guard removed. → a shorter slide that leaves a column; red under the mutation
+  - `[x]` G3b-22 · TEST (mine): slice K expected "Rows tall 1" at Full width to leave the Desktop alone — Full width edits the desktop
+    layer by design (page.tsx `DEVICE_RUNG`). → Full width skips the per-screen step, like Desktop
+  - `[x]` G3b-23 · REAL, MINE, SEEN IN THE HEADED SCREENSHOT (K-Mobile) — the measurements had passed: where the fit rule stacked the
+    photo's line, the block that had sat beside it kept the side space of "beside the photo", its words 10px INSIDE the frame on
+    the canvas and 5.9px from the page edge in the Preview at 320–599. → in the same container query, the other blocks of the row go
+    back to where they are without the span. Guard red without it; slice K's new checks were RED on the old build (all six
+    windows' Previews) and green after: every stacked block starts on the frame (16.0px)
+  - `[x]` G3b-24 · REAL, SEEN IN THE SAME SCREENSHOT, PRESENT SINCE G-3b (4): on a screen where the fit rule steps a row, the Size
+    section said "Columns 3 of 6 · lines 1–4" beside a block drawn 6 of 6 — the panel disagreed with the canvas. → `fitStepAt`:
+    the section says "On this screen the row steps down to fit: this block is drawn on a line of its own / N across. Set its lines
+    here and your setting wins." 3 mutations red; HEADED: the note on Mobile, none on the five wider devices
   - `[x]` G3b-16 · REAL, MINE, FOUND BY THE HEADED PASS (slice J6, Mobile): an Alt SLIDE of a block that ends its line freed the rest
     of that line, and the next line's picture came up beside it (moved 177px) — a slide re-packed the row; the mirror case (a later
     line's first block slid left could fit on the line above) the same. → when the lines would change, its columns keep covering
@@ -2526,7 +2551,7 @@ sent), and my research. Nothing on the layout is done until every line here is c
     falls back into the flow unless placed at that rung; the page audit and Page check warn when it covers words;
     shown as drag on the canvas with the half-lines drawn, a Position panel (start / end, column / row, spill above /
     below) and a gallery of ready-made placements (RULE S / UI). Joins AC-10, ST-5, AC-35 — one build
-    - `[>]` AC-37b ← YOU ARE HERE (BATCH G-3b — (3) Alt free DONE, next leaf (6) rows, then its final pass, then BATCH E-1; handover of session 3da81fad in the SESSION LOG; earlier: handover of session 5da86722 in the SESSION LOG — G-3 CLOSED 2026-10-04 (63 headed checks, G3-8 carried to G-3b by the user); earlier: BATCH G-3 · placing on columns AND rows — G-2 CLOSED 2026-10-04 (134 headed checks); P-0 CLOSED 2026-10-04 (R4-1 … R4-5 fixed, 30 headed checks); R-4 SIGNED with D1–D5 (session 9fa0fee9); then G-3, P-1, P-2, G-4, P-3, G-5, G-6. G-1 CLOSED 2026-10-04 (see BATCHES). Plan APPROVED 2026-10-04 with the user's decisions below. Earlier: research R-3 DONE and SIGNED 2026-10-04
+    - `[>]` AC-37b ← YOU ARE HERE (BATCH G-3b — (3) and (6) DONE, next leaf G-3b's FINAL headed pass, then its final pass, then BATCH E-1; handover of session 3da81fad in the SESSION LOG; earlier: handover of session 5da86722 in the SESSION LOG — G-3 CLOSED 2026-10-04 (63 headed checks, G3-8 carried to G-3b by the user); earlier: BATCH G-3 · placing on columns AND rows — G-2 CLOSED 2026-10-04 (134 headed checks); P-0 CLOSED 2026-10-04 (R4-1 … R4-5 fixed, 30 headed checks); R-4 SIGNED with D1–D5 (session 9fa0fee9); then G-3, P-1, P-2, G-4, P-3, G-5, G-6. G-1 CLOSED 2026-10-04 (see BATCHES). Plan APPROVED 2026-10-04 with the user's decisions below. Earlier: research R-3 DONE and SIGNED 2026-10-04
       (`ff5c53a`, `4418202`); build to every decision recorded under R-3 below; the mockups settle the open three (row
       snap · the phone gap 11 vs 16 px · panel per site or per page) → the user's approval → build) · **THE PAGE GRID — DECIDED by the user 2026-10-03: done RIGHT AFTER L-4 closes, BEFORE L-5, L-6 and the
       frozen list's placement items** (they are built on it). NAMES (decided): "page grid" in code and docs; the lines a

@@ -376,7 +376,64 @@ const sliceJ = (dev) => async (page, ok) => {
 };
 for (const [key, dev] of [['J1', 'Desktop'], ['J2', 'Laptop'], ['J3', 'Wide'], ['J4', 'Tablet'], ['J5', 'Full'], ['J6', 'Mobile']]) SLICES[key] = sliceJ(dev);
 
-const WINDOWS = [['A', 'Light'], ['B', 'Light'], ['C', 'Midnight'], ['D', 'Purple Dream'], ['E', 'Dark'], ['F', 'Light'], ['G', 'Midnight'], ['H', 'Purple Dream'], ['I', 'Dark'], ['J1', 'Light'], ['J2', 'Midnight'], ['J3', 'Purple Dream'], ['J4', 'Dark'], ['J5', 'Light'], ['J6', 'Midnight']];
+// U7 · G-3b (6) "Rows tall": a photo two rows tall beside two short blocks — built through the UI, one device per window
+const sliceK = (dev) => async (page, ok) => {
+  const I = require('./inspector.js');
+  await H.panel(page, true);
+  const ph = await P.first(page, 'Stack'); await P.into(page, ph, 'Image');
+  const a = await P.beside(page, ph, 'Stack'); const ta = await P.into(page, a, 'Text');
+  const b = await P.beside(page, a, 'Stack'); await P.into(page, b, 'Text');
+  await H.panel(page, false); await guidesOn(page);
+  const size = async (id) => { await H.select(page, id); await I.tab(page, 'Design'); await I.section(page, 'Size'); };
+  const field = async (name, v) => { const f = page.getByLabel(name, { exact: true }).first(); await f.scrollIntoViewIfNeeded(); await f.fill(String(v)); await f.blur(); await page.waitForTimeout(600); };
+  const R = async () => { const [p0, a0, b0] = await Promise.all([ph, a, b].map((x) => rectOf(page, x))); return { p: p0, a: a0, b: b0 }; };
+  // every block half the page, at Desktop (it cascades), then the photo two rows tall
+  await chip(page, DEV.Desktop);
+  for (const id of [ph, a, b]) { await size(id); await page.getByRole('group', { name: 'Width' }).getByRole('button', { name: 'Custom' }).click(); await page.waitForTimeout(300); await field('Custom width', '50%'); }
+  await size(ph);
+  ok('U9 ' + dev + ' · one control is named "Rows tall" in the panel, and the height its own', (await page.getByLabel('Rows tall', { exact: true }).count()) === 1 && (await page.getByLabel('At least this many rows tall', { exact: true }).count()) === 1);
+  await field('Rows tall', 2);
+  await chip(page, DEV[dev]);
+  let r = await R();
+  const besideNow = Math.abs(r.a.l - r.b.l) < 1 && r.b.t > r.a.t + 1 && r.a.l > r.p.r;
+  if (dev === 'Mobile') {
+    ok('U7 Mobile · the row steps to one a line: no overlap, the photo spans one row', r.a.t >= r.p.t + r.p.h - 0.5 && r.b.t >= r.a.t + r.a.h - 0.5, 'photo ' + r.p.t.toFixed(0) + '+' + r.p.h.toFixed(0) + ' · words ' + r.a.t.toFixed(0) + ' · ' + r.b.t.toFixed(0));
+    ok('U7 Mobile · G3b-23: all three start on the frame (none inside the side space); the third falls back to its own share', Math.max(r.p.l, r.a.l, r.b.l) - Math.min(r.p.l, r.a.l, r.b.l) < 0.6 && r.b.r <= r.a.r + 0.6, 'lefts ' + [r.p.l, r.a.l, r.b.l].map((v) => v.toFixed(1)).join(' / ') + ' · rights ' + [r.p.r, r.a.r, r.b.r].map((v) => v.toFixed(1)).join(' / '));
+  } else {
+    ok('U7 ' + dev + ' · the third block sits BESIDE the photo, under the second', besideNow, 'a ' + r.a.l.toFixed(0) + ',' + r.a.t.toFixed(0) + ' · b ' + r.b.l.toFixed(0) + ',' + r.b.t.toFixed(0) + ' · photo right ' + r.p.r.toFixed(0));
+    ok('U7 ' + dev + ' · the photo covers both rows: its top is the first block\'s, its bottom the second\'s', Math.abs(r.p.t - r.a.t) < 1 && Math.abs((r.p.t + r.p.h) - (r.b.t + r.b.h)) < 1, 'top ' + (r.p.t - r.a.t).toFixed(1) + ' · bottom ' + ((r.p.t + r.p.h) - (r.b.t + r.b.h)).toFixed(1));
+    ok('U7 ' + dev + ' · the two blocks beside it are equal and one gap from the photo', Math.abs(r.a.w - r.b.w) < 0.6 && Math.abs((r.a.l - r.p.r) - (r.b.l - r.p.r)) < 0.6, (r.a.w - r.b.w).toFixed(2));
+    // words grow: the photo still covers both rows
+    await I.text(page, ta, 'Open day is on Saturday the twelfth. Parents and pupils are welcome to tour the classrooms, meet the teachers and see the new library, the science rooms and the sports hall. Refreshments will be served in the hall from ten until two.');
+    await chip(page, DEV[dev]); r = await R();
+    ok('U7 ' + dev + ' · with many words beside it, the photo still covers both rows (it grows)', Math.abs((r.p.t + r.p.h) - (r.b.t + r.b.h)) < 1 && r.b.t >= r.a.t + r.a.h - 0.5, 'bottom ' + ((r.p.t + r.p.h) - (r.b.t + r.b.h)).toFixed(1));
+  }
+  // G3b-24: the Size section says what the fit rule draws on this screen — and says nothing where it does not act
+  await size(ph); const note = await page.getByRole('note').filter({ hasText: 'steps down to fit' }).count();
+  ok('U7 ' + dev + ' · G3b-24: the panel ' + (dev === 'Mobile' ? 'says the row steps down here' : 'says nothing about stepping'), dev === 'Mobile' ? note === 1 : note === 0, note + ' note(s)');
+  await page.screenshot({ path: path.join(OUT, 'K-' + dev + '.png') });
+  // per screen + Undo: at this screen one row only, the Desktop keeps two
+  if (dev !== 'Desktop' && dev !== 'Full' && dev !== 'Mobile') { // Full width edits the desktop layer (page.tsx DEVICE_RUNG) — G3b-22
+    await size(ph); await field('Rows tall', 1); r = await R();
+    ok('U7 ' + dev + ' · "Rows tall" 1 here: the third block goes under, beside nothing', r.b.t >= Math.max(r.p.t + r.p.h, r.a.t + r.a.h) - 0.5, 'b top ' + r.b.t.toFixed(0));
+    await chip(page, DEV.Desktop); const d = await R();
+    ok('U7 ' + dev + ' · …and at Desktop it still spans two', Math.abs(d.a.l - d.b.l) < 1 && d.b.t > d.a.t + 1);
+    await chip(page, DEV[dev]); await page.keyboard.press('Control+z'); await page.waitForTimeout(600); r = await R();
+    ok('U7 ' + dev + ' · one Undo puts two rows back here', Math.abs(r.a.l - r.b.l) < 1 && r.b.t > r.a.t + 1);
+  }
+  const bad = [];
+  await preview(page, SCREENS, async (f, w) => {
+    if (await sideways(f) > 1) bad.push(w + ': sideways');
+    for (const x of await pageFaults(f)) bad.push(w + ': ' + x);
+    const [pp, pa, pb] = await Promise.all([ph, a, b].map((x) => pubRect(f, x)));
+    if (w >= 1200 && pp && pa && pb && !(Math.abs(pa.l - pb.l) < 1 && pb.t > pa.t + 1 && pa.l > pp.r)) bad.push(w + ': not beside the photo');
+    if (pp && pa && pb && pa.t >= pp.t + 1 && pb.t >= pa.t + 1 && pa.l <= pp.l + 1 && Math.max(pp.l, pa.l, pb.l) - Math.min(pp.l, pa.l, pb.l) > 0.6) bad.push(w + ': stacked but not on the same left frame (G3b-23) ' + [pp.l, pa.l, pb.l].map((v) => v.toFixed(1)).join('/'));
+  });
+  ok('U7 ' + dev + ' · Preview at all ' + SCREENS.length + ' screens: beside the photo from 1200 up; no overlap, sideways scroll, broken word or staircase', !bad.length, bad.slice(0, 6).join(' · '));
+};
+for (const [key, dev] of [['K1', 'Desktop'], ['K2', 'Laptop'], ['K3', 'Wide'], ['K4', 'Tablet'], ['K5', 'Full'], ['K6', 'Mobile']]) SLICES[key] = sliceK(dev);
+
+const WINDOWS = [['A', 'Light'], ['B', 'Light'], ['C', 'Midnight'], ['D', 'Purple Dream'], ['E', 'Dark'], ['F', 'Light'], ['G', 'Midnight'], ['H', 'Purple Dream'], ['I', 'Dark'], ['J1', 'Light'], ['J2', 'Midnight'], ['J3', 'Purple Dream'], ['J4', 'Dark'], ['J5', 'Light'], ['J6', 'Midnight'], ['K1', 'Purple Dream'], ['K2', 'Dark'], ['K3', 'Light'], ['K4', 'Midnight'], ['K5', 'Purple Dream'], ['K6', 'Dark']];
 (async () => {
   const runs = WINDOWS.filter(([k]) => !ONLY.length || ONLY.includes(k)); const out = [];
   await Promise.all(runs.map(async ([k, th], i) => {

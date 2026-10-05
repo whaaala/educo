@@ -932,6 +932,32 @@ describe("G-3b (2) · placing on the page's lines in the Size section", () => {
     expect(screen.queryByLabelText("From line")).toBeNull();
     expect(screen.queryByLabelText(/Free space on the left/)).toBeNull();
   });
+  it("G3b-24: where the fit rule steps the row, the Size section says what is drawn here", () => {
+    renderFor(createContainer("column", { id: "c" }), { pageLines: { ...lines, drawnAcross: 1 }, onSetLines: vi.fn() });
+    expect(screen.getByRole("note")).toHaveTextContent("drawn on a line of its own");
+    cleanup();
+    renderFor(createContainer("column", { id: "c" }), { pageLines: { ...lines, drawnAcross: 2 }, onSetLines: vi.fn() });
+    expect(screen.getByRole("note")).toHaveTextContent("drawn 2 across");
+    cleanup();
+    renderFor(createContainer("column", { id: "c" }), { pageLines: lines, onSetLines: vi.fn() });
+    expect(screen.queryByRole("note")).toBeNull();
+  });
+  it("G-3b (6): Rows tall in the Size section writes the span; 1 clears it", () => {
+    const onPatch = renderFor(createContainer("column", { id: "c" }), { pageLines: lines, onSetLines: vi.fn() });
+    fireEvent.change(screen.getByLabelText("Rows tall"), { target: { value: "2" } });
+    expect(onPatch).toHaveBeenLastCalledWith({ rowSpan: 2 });
+    cleanup();
+    const again = renderFor(createContainer("column", { id: "c", rowSpan: 2 } as Partial<BoxNode>), { pageLines: lines, onSetLines: vi.fn() });
+    expect(screen.getByLabelText("Rows tall")).toHaveValue(2);
+    fireEvent.change(screen.getByLabelText("Rows tall"), { target: { value: "1" } });
+    expect(again).toHaveBeenLastCalledWith({ rowSpan: undefined });
+  });
+  it("G3b-20: a grid cell on a page-grid page has ONE control named Rows tall, and the height its own name", () => {
+    const onPatch = renderFor(createContainer("column", { id: "gc" }), { inGrid: true, gridTrack: 12, rowStepRem: 1.5 });
+    expect(screen.getAllByLabelText("Rows tall")).toHaveLength(1);
+    fireEvent.change(screen.getByLabelText("At least this many rows tall"), { target: { value: "3" } });
+    expect(onPatch).toHaveBeenLastCalledWith(expect.objectContaining({ minHeight: expect.any(Number) }));
+  });
   it("G-3b (3): the free margin is shown, changed per side, and put back on the lines in one go", () => {
     const onSetFreeInset = vi.fn();
     renderFor(createContainer("column", { id: "c", freeInset: { right: 20 } } as Partial<BoxNode>), { pageLines: lines, onSetLines: vi.fn(), onSetFreeInset });

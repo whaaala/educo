@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { type BoxNode, type Breakpoint, SPACE_DEFAULT, SPACE_GRID, spaceDefaults, outerDefaults, gapOf, insertBox, normalizeRowBands, markPageGrid, u, createContainer, makeRowBand, sectionContent, gridBandOwnsGutter, pageBandInset, rowNarrowsAt, rowQueryCss, childStyle, tabletPlaces, rowSide, outerSpaceDefaults, spanAt, setSpan, resolveResponsive, lineUpWithGrid, isPageRow, containerStyle, pageRowCells, pageRowTracks, pageRowSlot, linesAt, setLinesAt, fullWidthAt, updateBoxResponsive, setFreeInset, slideFreeAt, FRAME_CSS, frameRemAt, frameCss, pageFrameEnds, outerSpaceCSS, paddingCSS, rowSideRemAt } from "@/lib/box-model";
+import { type BoxNode, type Breakpoint, SPACE_DEFAULT, SPACE_GRID, spaceDefaults, outerDefaults, gapOf, insertBox, normalizeRowBands, markPageGrid, u, createContainer, makeRowBand, sectionContent, gridBandOwnsGutter, pageBandInset, rowNarrowsAt, rowQueryCss, childStyle, tabletPlaces, rowSide, outerSpaceDefaults, spanAt, setSpan, resolveResponsive, lineUpWithGrid, isPageRow, containerStyle, pageRowCells, pageRowTracks, pageRowSlot, linesAt, setLinesAt, fullWidthAt, updateBoxResponsive, setFreeInset, slideFreeAt, fitStepAt, FRAME_CSS, frameRemAt, frameCss, pageFrameEnds, outerSpaceCSS, paddingCSS, rowSideRemAt } from "@/lib/box-model";
 import { blockForKind } from "@/lib/box-presets";
 import { COMPONENT_CATALOGUE } from "@/lib/component-catalogue";
 import { emptyPageRoot, siteFromRoot, setPageGrid, applyPageGrid, addPage } from "@/lib/box-site";
@@ -933,6 +933,12 @@ describe("G-3b (3) · free placement: the nearest lines + a margin inside them, 
     }
   });
 
+  it("a slide stops at a block spanning down beside it (G-3b (6)): it never slides under it", () => {
+    const r = pageOf(["50%", "50%", "25%"], (c) => { c[0].rowSpan = 2; }); const last = kid(r, 2).id;
+    expect(linesAt(r, last, 12)).toMatchObject({ from: 7, to: 10 });
+    expect(linesAt(slideFreeAt(r, last, -5, 12), last, 12)!.from).toBe(7);
+  });
+
   it("a slide is per screen: the others keep their lines", () => {
     const root = pageOf(["25%", "50%"], (c) => { c[1].marginLeftPct = 25; }); const a = kid(root, 0).id;
     const r = slideFreeAt(root, a, 1.5, 6, "phone");
@@ -947,5 +953,102 @@ describe("G-3b (3) · free placement: the nearest lines + a margin inside them, 
     expect(steps.length).toBeGreaterThan(0);
     expect(steps.filter((d) => d.includes("40%"))).toEqual([]);
     expect(html).toMatch(/margin-left:calc\(40% \+ /); // …while the line is not stepped, it is there
+  });
+});
+
+describe("G-3b (6) · a block of a row of the page spans rows (the user: a gallery photo two rows tall)", () => {
+  const pageOf = (widths: string[], edit?: (cols: BoxNode[]) => void) => {
+    const cols = widths.map((w) => createContainer("column", { width: w, children: [blockForKind("text")] } as Partial<BoxNode>));
+    edit?.(cols);
+    return markPageGrid(normalizeRowBands({ ...emptyPageRoot(), children: [makeRowBand(cols)] } as BoxNode));
+  };
+  const kid = (root: BoxNode, i: number) => root.children![0].children![i];
+  const css = (root: BoxNode, i: number, bp: Breakpoint = "base") => childStyle(kid(root, i), root.children![0], bp);
+  const bento = () => pageOf(["50%", "50%", "50%"], (c) => { c[0].rowSpan = 2; });
+
+  it("a photo two rows tall: it spans 2 rows, and the third block sits BESIDE it on the second row, not under it", () => {
+    const r = bento(); const [p, a, b] = [0, 1, 2].map((i) => kid(r, i).id);
+    expect(String(css(r, 0).gridRow)).toBe("span 2");
+    expect(css(r, 1).gridRow).toBeUndefined();
+    expect(linesAt(r, p, 12)).toMatchObject({ from: 1, to: 7, first: true });
+    expect(linesAt(r, a, 12)).toMatchObject({ from: 7, to: 13, last: true });
+    expect(linesAt(r, b, 12)).toMatchObject({ from: 7, to: 13, first: false, last: true }); // beside the photo, its right-hand block
+  });
+
+  it("the block beside it on the second row is spaced like the one above it (equal cards, one gap)", () => {
+    const r = bento();
+    expect([css(r, 2).marginLeft, css(r, 2).marginRight]).toEqual([css(r, 1).marginLeft, css(r, 1).marginRight]);
+    const cells = pageRowCells(r.children![0], "base");
+    expect([cells.get(kid(r, 1).id)!.at, cells.get(kid(r, 2).id)!.at, cells.get(kid(r, 2).id)!.of]).toEqual([1, 1, 2]);
+  });
+
+  it("a row that spans nothing is placed exactly as before (the same cells)", () => {
+    const flat = pageOf(["50%", "50%", "50%"]); const cells = pageRowCells(flat.children![0], "base");
+    expect([...cells.values()].map((c) => [c.span, c.at, c.of, c.rows])).toEqual([[6, 0, 2, 1], [6, 1, 2, 1], [6, 0, 1, 1]]);
+  });
+
+  it("where the fit rule steps the row, the photo spans one row again (the phone falls back)", () => {
+    const r = bento(); const site = siteFromRoot(r);
+    const html = renderSitePage(site, DEFAULT_THEME, site.homeId, { inlineShared: true });
+    const steps = html.match(/grid-column:span \d+ !important;[^}]*/g) ?? [];
+    expect(steps.length).toBeGreaterThan(0);
+    expect(steps.filter((d) => d.includes("grid-row:auto !important")).length).toBeGreaterThan(0);
+  });
+
+  it("G3b-23 · where the photo is stepped to one row, the block that sat beside it goes back to its own place (not 'beside')", () => {
+    const r = bento(), flat = pageOf(["50%", "50%", "50%"]); const site = siteFromRoot(r);
+    const html = renderSitePage(site, DEFAULT_THEME, site.homeId, { inlineShared: true });
+    const own = String(childStyle(kid(flat, 2), flat.children![0]).marginLeft), beside = String(css(r, 2).marginLeft);
+    expect(own).not.toBe(beside); // the precondition: beside the photo it has other margins
+    const id = kid(r, 2).id.replace(/[^A-Za-z0-9_-]/g, "-"), esc = (t: string) => t.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    expect(html).toMatch(new RegExp(`@container[^@]*${esc(id)}[^{]*\\{grid-row:auto !important;margin-left:${esc(own)} !important`));
+  });
+
+  it("per screen: one row at Tablet, two at Desktop", () => {
+    const r = bento(); const p = kid(r, 0).id;
+    const t = updateBoxResponsive(r, p, { rowSpan: undefined }, "tabletLandscape" as Breakpoint);
+    expect(String(css(t, 0, "base").gridRow)).toBe("span 2");
+    expect(css(t, 0, "tabletLandscape" as Breakpoint).gridRow).toBeUndefined();
+  });
+
+  it("a block sliding toward a photo spanning down beside it stops at it, and never writes the photo's own gap", () => {
+    // A (6) + photo (6, 2 rows) on row 1; X (3) on row 2, left of the photo
+    const r = pageOf(["50%", "50%", "25%"], (c) => { c[1].rowSpan = 2; }); const x = kid(r, 2).id;
+    expect(linesAt(r, x, 12)).toMatchObject({ from: 1, to: 4 });
+    const slid = slideFreeAt(r, x, 9, 12);
+    expect(linesAt(slid, x, 12)!.to).toBe(7);
+    expect(kid(slid, 1).marginLeftPct).toBeUndefined();
+    const short = slideFreeAt(r, x, 1.5, 12); // a column of room is left before the photo: it is nobody's, never the photo's gap
+    expect(linesAt(short, x, 12)!.to).toBe(6);
+    expect(kid(short, 1).marginLeftPct).toBeUndefined();
+  });
+
+  it("'From line' cannot push a block under the photo spanning beside it; 'To line' on the photo still works", () => {
+    const r = bento(); const b = kid(r, 2).id;
+    expect(setLinesAt(r, b, { from: 5 }, 12)).toBe(r);
+    const wider = setLinesAt(r, kid(r, 0).id, { to: 9 }, 12);
+    expect(linesAt(wider, kid(wider, 0).id, 12)).toMatchObject({ from: 1, to: 9 });
+  });
+});
+
+describe("G3b-24 · the panel says what the fit rule draws on this screen (fitStepAt)", () => {
+  const pageOf = (widths: string[], edit?: (cols: BoxNode[]) => void) => {
+    const cols = widths.map((w) => createContainer("column", { width: w, children: [blockForKind("text")] } as Partial<BoxNode>));
+    edit?.(cols);
+    return markPageGrid(normalizeRowBands({ ...emptyPageRoot(), children: [makeRowBand(cols)] } as BoxNode));
+  };
+  it("a phone stacks two halves: drawn one a line; a desktop: the fit rule does not act", () => {
+    const r = pageOf(["50%", "50%"]); const band = r.children![0], id = band.children![0].id;
+    expect(fitStepAt(band, id, 375 / 16, "phone")).toBe(1);
+    expect(fitStepAt(band, id, 1280 / 16, "base")).toBeNull();
+  });
+  it("a width set for the phone wins there: the fit rule stands aside, so nothing is said", () => {
+    const r = pageOf(["50%", "50%"], (c) => { c[0].responsive = { phone: { width: "33.33%" } }; c[1].responsive = { phone: { width: "66.67%" } }; });
+    const band = r.children![0];
+    expect(fitStepAt(band, band.children![0].id, 375 / 16, "phone")).toBeNull();
+  });
+  it("a row that is not a row of the page has no fit rule to report", () => {
+    const r = pageOf(["50%", "50%"]); const band = { ...r.children![0], pageRow: false };
+    expect(fitStepAt(band, band.children![0].id, 375 / 16, "phone")).toBeNull();
   });
 });

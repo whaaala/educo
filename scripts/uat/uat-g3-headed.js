@@ -186,13 +186,13 @@ const SLICES = {
   async D(page, ok) {
     const id = await build(page); await chip(page, DEV.Desktop);
     await H.select(page, id.s); await I.tab(page, 'Design'); await I.section(page, 'Size');
-    const rows = page.getByLabel('Rows tall', { exact: true }).first(); await rows.scrollIntoViewIfNeeded();
+    const rows = page.getByLabel('At least this many rows tall', { exact: true }).first(); await rows.scrollIntoViewIfNeeded();
     const help = await page.getByText('At least this many row lines tall').first().evaluate(contrastOf); ok('U8 Purple: the Rows help reads (≥ 4.5:1)', help >= 4.5, `${help}`);
     const h0 = await layoutH(page, id.s); await rows.fill('6'); await rows.blur(); await page.waitForTimeout(500);
     const h1 = await layoutH(page, id.s);
     ok('U5 Rows 6 → at least 6 row steps (9rem = 144px) tall', h1 >= 143.5 && h1 > h0, `${h0} → ${h1}px`);
     const c0 = await layoutH(page, id.c1); await H.select(page, id.c1); await I.tab(page, 'Design'); await I.section(page, 'Size');
-    await page.getByLabel('Rows tall', { exact: true }).first().fill('2'); await page.getByLabel('Rows tall', { exact: true }).first().blur(); await page.waitForTimeout(500);
+    await page.getByLabel('At least this many rows tall', { exact: true }).first().fill('2'); await page.getByLabel('At least this many rows tall', { exact: true }).first().blur(); await page.waitForTimeout(500);
     ok('U5 Rows 2 on a card taller than that: it keeps its height (still grows with its words)', Math.abs((await layoutH(page, id.c1)) - c0) < 1, `${c0} → ${await layoutH(page, id.c1)}`);
     for (const scale of [1, 1.5, 2]) {
       const bad = [];

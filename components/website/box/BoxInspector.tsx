@@ -514,7 +514,7 @@ export default function BoxInspector({ section = false, sectionPlace, outerDefau
   gridTrack?: number;
   /** A column of a page row on the page grid (G-3 (3)): how many of the page's columns it covers on this screen, and its setter. */
   pageSpan?: { value: number; cols: number }; onSetSpan?: (span: number) => void;
-  pageLines?: { from: number; to: number; first: boolean; last: boolean; cols: number }; onSetLines?: (want: { from?: number; to?: number } | "full") => void;
+  pageLines?: { from: number; to: number; first: boolean; last: boolean; cols: number; drawnAcross?: number }; onSetLines?: (want: { from?: number; to?: number } | "full") => void;
   /** G-3b (3): the block's free margin inside its columns, per side ("both" with undefined puts it back on its lines) */
   onSetFreeInset?: (side: "left" | "right" | "both", pct: number | undefined) => void;
   /** The page grid's row step (rem) on a page-grid page — "Rows: N" sets the block at least N rows tall (G-3 (4)). */
@@ -1135,6 +1135,11 @@ export default function BoxInspector({ section = false, sectionPlace, outerDefau
             )}
             {pageLines && onSetLines && (
               <div className="space-y-1">
+                {pageLines.drawnAcross && (
+                  <p role="note" className="text-[0.625rem] text-amber-700 dark:text-amber-300 midnight:text-amber-300 purple:text-amber-200">
+                    On this screen the row steps down to fit: this block is drawn {pageLines.drawnAcross === 1 ? "on a line of its own" : `${pageLines.drawnAcross} across`}. Set its lines here and your setting wins.
+                  </p>
+                )}
                 <div className="grid grid-cols-2 gap-2">
                   <CompactField label="From line" ariaLabel="From line" type="number" min={1} max={pageLines.cols} step={0.5} value={pageLines.from}
                     onChange={(v) => { const n = Number(v); if (Number.isFinite(n) && n >= 1) onSetLines({ from: n }); }} />
@@ -1145,6 +1150,8 @@ export default function BoxInspector({ section = false, sectionPlace, outerDefau
                   <ToolBtn onClick={() => onSetLines("full")} active={pageLines.from === 1 && pageLines.to === pageLines.cols + 1 && pageLines.first && pageLines.last}>Whole line</ToolBtn>
                   <ToolBtn onClick={() => onSetLines({ to: pageLines.cols + 1 })} disabled={pageLines.to === pageLines.cols + 1}>To the last line</ToolBtn>
                 </div>
+                <CompactField label="Rows tall" ariaLabel="Rows tall" type="number" min={1} max={6} step={1} value={node.rowSpan ?? 1}
+                  onChange={(v) => { const n = Math.round(Number(v)); if (Number.isFinite(n) && n >= 1) onPatch({ rowSpan: n > 1 ? n : undefined }); }} />
                 <span className={label}>Bleed to the page edge</span>
                 <Segmented full ariaLabel="Bleed to the page edge" value={node.bleed ?? "off"} onChange={(v) => onPatch({ bleed: v === "off" ? undefined : (v as "left" | "right" | "both") })}
                   options={[{ value: "off", label: "Off" }, { value: "left", label: "Left" }, { value: "right", label: "Right" }, { value: "both", label: "Both" }]} />
@@ -1160,12 +1167,12 @@ export default function BoxInspector({ section = false, sectionPlace, outerDefau
                     <ToolBtn onClick={() => onSetFreeInset("both", undefined)} disabled={!node.freeInset?.left && !node.freeInset?.right}>Back on the lines</ToolBtn>
                   </>
                 )}
-                <p className="text-[0.625rem] text-gray-500 dark:text-gray-400 midnight:text-slate-400 purple:text-purple-300">On this screen. Lines run from 1 (the page&apos;s left edge) to {pageLines.cols + 1}. Bleed takes away the side space where this block starts or ends a line, so it reaches the page edge; nothing else moves. Hold Alt while dragging an edge or the block to place it free: it keeps to the nearest lines, with the rest as free space inside them.</p>
+                <p className="text-[0.625rem] text-gray-500 dark:text-gray-400 midnight:text-slate-400 purple:text-purple-300">On this screen. Lines run from 1 (the page&apos;s left edge) to {pageLines.cols + 1}. Bleed takes away the side space where this block starts or ends a line, so it reaches the page edge; nothing else moves. Hold Alt while dragging an edge or the block to place it free: it keeps to the nearest lines, with the rest as free space inside them. Rows tall: it covers that many rows of the blocks beside it, and still grows with its words; where the row stacks, it spans one.</p>
               </div>
             )}
             {rowStepRem && (
               <div className="space-y-0.5">
-                <CompactField label="Rows" ariaLabel="Rows tall" type="number" min={0} max={40} step={1} value={rowsOf(node.minHeight, rowStepRem) || ""} placeholder="auto"
+                <CompactField label="At least rows tall" ariaLabel="At least this many rows tall" type="number" min={0} max={40} step={1} value={rowsOf(node.minHeight, rowStepRem) || ""} placeholder="auto"
                   onChange={(v) => onPatch({ minHeight: rowsToMinHeight(Number(v) || 0, rowStepRem) })} />
                 <p className="text-[0.625rem] text-gray-500 dark:text-gray-400 midnight:text-slate-400 purple:text-purple-300">At least this many row lines tall; it still grows with its words. Empty: as tall as its content.</p>
               </div>
