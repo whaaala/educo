@@ -337,6 +337,14 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
   - `[x]` E1-6 · REAL, MINE, FOUND WHILE EDITING THE TREE: adding E-1's checklist dropped BATCH G-3's header line (my edit's text ended
     on it and did not put it back), so G-3's closed record ran on after E1-5 — committed in e69d4e3 and missed by the tree's guard. →
     the header restored; the guard now also fails when a batch the tree names has no header of its own (red on e69d4e3's tree)
+- `[ ]` **BATCH D-2 · The page grid's documentation catches up** — QUEUED 2026-10-05 by the user ("yes, fix it first next": merge
+  `builder/layout-uat` now with the gap stated in the pull request, and this is the FIRST batch on `builder/page-grid`, before G-3d)
+  (area: documentation · 4 changes — RULE L, rule 14, RULE DOC):
+  - `[ ]` (1) the layout story (`docs/guide/layout-story.md`): the page grid told as scenarios — columns per screen and the guides,
+    snapping and Alt free, lines / whole line / to the last line / bleed, "Rows tall", the page's frame, how a row steps on a phone
+  - `[ ]` (2) the Website Builder Guide (`docs/guide/`) and its published Artifact: every new control by its name in the panel
+  - `[ ]` (3) the page-grid plan artifact (https://claude.ai/artifact/Q5rAsZNSJJBXrnBTJf9zBN) corrected to what was built (G-1 … G-3c)
+  - `[ ]` (4) Builder Hub · Layout System · Builder Parity Audit artifacts: the page grid, the editor on tablets and phones
 - `[ ]` **BATCH G-3d · Two decisions from G-3b** — QUEUED 2026-10-05 by the user ("yes to both") (area: page grid · 2 changes):
   - `[ ]` (1) ON A PHONE A LONE HALF-WIDTH BLOCK TAKES THE WHOLE LINE: where the fit rule stacks a row, a block alone on its line
     whose width came from a WIDER screen takes the line (~165px of words beside a hole on a 360px phone otherwise); a width set on the
@@ -2637,7 +2645,7 @@ sent), and my research. Nothing on the layout is done until every line here is c
     falls back into the flow unless placed at that rung; the page audit and Page check warn when it covers words;
     shown as drag on the canvas with the half-lines drawn, a Position panel (start / end, column / row, spill above /
     below) and a gallery of ready-made placements (RULE S / UI). Joins AC-10, ST-5, AC-35 — one build
-    - `[>]` AC-37b ← YOU ARE HERE (handover of session 22981e0a in the SESSION LOG; BATCH G-3b and BATCH E-1 CLOSED 2026-10-05; next: BATCH G-3d (the user's two decisions), then BATCH E-2 (resizing and dropping on tablets and phones); before the PR: the artifacts and the layout story for the page grid; then its final pass, then BATCH E-1; handover of session 3da81fad in the SESSION LOG; earlier: handover of session 5da86722 in the SESSION LOG — G-3 CLOSED 2026-10-04 (63 headed checks, G3-8 carried to G-3b by the user); earlier: BATCH G-3 · placing on columns AND rows — G-2 CLOSED 2026-10-04 (134 headed checks); P-0 CLOSED 2026-10-04 (R4-1 … R4-5 fixed, 30 headed checks); R-4 SIGNED with D1–D5 (session 9fa0fee9); then G-3, P-1, P-2, G-4, P-3, G-5, G-6. G-1 CLOSED 2026-10-04 (see BATCHES). Plan APPROVED 2026-10-04 with the user's decisions below. Earlier: research R-3 DONE and SIGNED 2026-10-04
+    - `[>]` AC-37b ← YOU ARE HERE (handover of session 22981e0a in the SESSION LOG; BATCH G-3b and BATCH E-1 CLOSED 2026-10-05; MERGE DECIDED by the user 2026-10-05: `builder/layout-uat` pushed, the user opens and merges the pull request, then the branch is deleted and `builder/page-grid` cut from master; next there: BATCH D-2 (docs catch up), then BATCH G-3d (the user's two decisions), then BATCH E-2 (resizing and dropping on tablets and phones); before the PR: the artifacts and the layout story for the page grid; then its final pass, then BATCH E-1; handover of session 3da81fad in the SESSION LOG; earlier: handover of session 5da86722 in the SESSION LOG — G-3 CLOSED 2026-10-04 (63 headed checks, G3-8 carried to G-3b by the user); earlier: BATCH G-3 · placing on columns AND rows — G-2 CLOSED 2026-10-04 (134 headed checks); P-0 CLOSED 2026-10-04 (R4-1 … R4-5 fixed, 30 headed checks); R-4 SIGNED with D1–D5 (session 9fa0fee9); then G-3, P-1, P-2, G-4, P-3, G-5, G-6. G-1 CLOSED 2026-10-04 (see BATCHES). Plan APPROVED 2026-10-04 with the user's decisions below. Earlier: research R-3 DONE and SIGNED 2026-10-04
       (`ff5c53a`, `4418202`); build to every decision recorded under R-3 below; the mockups settle the open three (row
       snap · the phone gap 11 vs 16 px · panel per site or per page) → the user's approval → build) · **THE PAGE GRID — DECIDED by the user 2026-10-03: done RIGHT AFTER L-4 closes, BEFORE L-5, L-6 and the
       frozen list's placement items** (they are built on it). NAMES (decided): "page grid" in code and docs; the lines a
@@ -3467,15 +3475,25 @@ out) — where the session STARTED FROM, where it GOT TO, and where the next one
   controls on a narrow screen, 26) · E-4 (Preview and components, 7; E-1's (2) — the gate runs tablet + phone — switches on when E-4
   closes); "yes to both" → QUEUED BATCH G-3d (a lone half-width block takes the phone's whole line unless its width was set on the
   phone · a picture fills a block that spans rows, cover, with a switch).
-- **Continue from:** **BATCH G-3d (YOU ARE HERE)**, then E-2 → E-3 → E-4, then the rest of the page-grid plan P-1 · P-2 · G-4 · P-3 ·
+- **MERGE (the user, 2026-10-05):** "push; I open the PR" — `builder/layout-uat` pushed with this handover; the user opens and
+  merges the pull request on GitHub (`gh` is not installed here); the documentation gap is stated in it and fixed FIRST on the new
+  branch (BATCH D-2).
+- **Continue from:** **check the pull request is merged**, delete `builder/layout-uat` (local + remote) and cut `builder/page-grid`
+  from the fresh master (rule 9), then **BATCH D-2 (docs)**, then **BATCH G-3d (YOU ARE HERE)**, then — on its own short branch
+  `builder/editor-small-screens` — E-2 → E-3 → E-4, then the rest of the page-grid plan P-1 · P-2 · G-4 · P-3 ·
   G-5 · G-6 (see AC-37b), then L-5 · L-6 · S-3 · D-1, the frozen list 1.1.5, Tasks 2–4 (L-7 · L-8 · L-9), the re-sweep + the layout
   story → pull request.
-- **Next prompt (paste to start):** "Branch `builder/layout-uat` (last commit: this handover). Read CLAUDE.md, then `docs/TASK_TREE.md`:
-  this SESSION LOG entry, then YOU ARE HERE (AC-37b → BATCH G-3d), then in BATCHES: G-3d (two changes, the user's decisions), G-3b
+- **Next prompt (paste to start):** "FIRST: check that the pull request of `builder/layout-uat` into `master` is merged (git fetch; `git log
+  origin/master` holds this handover). If it is: `git switch master && git pull`, delete `builder/layout-uat` locally and on origin, and
+  `git switch -c builder/page-grid` (rule 9). If it is not, stop and ask me. Then read CLAUDE.md, then `docs/TASK_TREE.md`: this SESSION
+  LOG entry, then YOU ARE HERE (AC-37b → BATCH D-2, then G-3d), then in BATCHES: D-2 (the documentation catches up — FIRST), G-3d
+  (two changes, the user's decisions), G-3b
   (closed — its DESIGN paragraph and ledger G3b-15 … G3b-29), E-1 (closed — E1-5's measured 70 small-screen failures and E1-8/E1-9),
   and the queued E-2 / E-3 / E-4. Then read, in `lib/box-model.ts`: `rowLinesAt` (x / rows / cont), `pageRowCells`, `pageRowCSS`,
   `rowQueryCss` (the fit rule's steps, `floorWith`, `withoutRowSpans`), `fitScreens` / `fitStepAt`, `slideFreeAt`, `setFreeInset`;
-  and the Image block's sizing (`imageSizing`). DO, IN ORDER: (1) RULE K — nothing on 3100 / 3200; (2) BATCH G-3d — write its HEADED
+  and the Image block's sizing (`imageSizing`). DO, IN ORDER: (1) RULE K — nothing on 3100 / 3200; (1b) BATCH D-2 — the layout story chapter, the guide + its Artifact, the plan
+  artifact and the Hub / Layout System / Parity Audit artifacts, each read first (Artifact read) and updated in place; (2) BATCH G-3d —
+  write its HEADED
   checklist first; (1) a lone half-width block on a stepped phone line takes the whole line unless its width was set on the phone;
   (2) a picture alone in a block that spans 2+ rows fills its height (cover, focal point) with a "Fill the block's height" switch
   (RULE UI) — BDD first, unit guards mutation-proven, then a six-window headed pass (`scripts/uat/uat-g3b-headed.js` slices K and
@@ -3485,8 +3503,7 @@ out) — where the session STARTED FROM, where it GOT TO, and where the next one
   scaled when the blocks panel docks at 1024) or a real bug — fix either way, headed pass, gate. STANDING DECISIONS: the AC-37b plan,
   R-4's D1–D5, every decision in G-3b / G-3c / E-1's ledgers. NOT DONE: G-3d, E-2 … E-4, P-1 … G-6, the artifacts (plan
   https://claude.ai/artifact/Q5rAsZNSJJBXrnBTJf9zBN out of date · Builder Hub · Layout System · Parity Audit · Website Builder Guide)
-  and the layout story for the page grid (RULE L) — before the PR; the branch is 131 commits ahead of master (rule 9: keep it short —
-  ask the user about merging what is closed). TRAPS: NEVER `git checkout <file>` to undo — write the saved string back; write edit
+  and the layout story for the page grid (RULE L) — now BATCH D-2, first on the new branch (the user's decision). TRAPS: NEVER `git checkout <file>` to undo — write the saved string back; write edit
   scripts with the Write tool or a quoted heredoc with no backslashes (sed and node -e mangle them; JS `replace` eats `### 2026-10-05 · session 3da81fad · branch `builder/layout-uat` — HANDOVER`); a JSX
   comment beside a single child breaks the parse; a "killed" serve notice is not the server dying — check the port; never vitest and
   Playwright at once; a headed UAT's test aim can be wrong (G3b-26 / 29 / 22) — read the screenshot before blaming the product."
