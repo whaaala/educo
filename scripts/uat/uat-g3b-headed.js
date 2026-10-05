@@ -19,7 +19,7 @@ const chip = async (page, name) => { page.__step = `chip ${name}`; await page.ge
 const DEV = { Mobile: 'Mobile (375px)', Tablet: 'Tablet (768px)', Laptop: 'Laptop (1024px)', Desktop: 'Desktop (1280px)', Wide: 'Wide (1920px)', Full: 'Full width' };
 const DEVICES = Object.keys(DEV);
 const guidesOn = async (page) => { await page.getByRole('button', { name: 'Layout guides', exact: true }).first().click(); await page.keyboard.press('Escape'); await page.waitForTimeout(300); };
-const rectOf = (page, id) => page.evaluate((id) => { const r = document.querySelector(`[data-box-id="${id}"]`).getBoundingClientRect(); return { l: r.left, r: r.right, w: r.width, t: r.top }; }, id);
+const rectOf = (page, id) => page.evaluate((id) => { const r = document.querySelector(`[data-box-id="${id}"]`).getBoundingClientRect(); return { l: r.left, r: r.right, w: r.width, t: r.top, h: r.height }; }, id);
 const lines = (page) => page.evaluate(() => { const c = [...document.querySelectorAll('[data-guide-col]')].map((x) => x.getBoundingClientRect()); return [...c.map((q) => q.left), c[c.length - 1].right]; });
 const sideways = (f) => f.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
 async function editorTheme(page, name) { if (name === 'Light') return; await page.getByRole('button', { name: 'Change theme' }).first().click(); await page.waitForTimeout(300); await page.getByRole('menuitemradio', { name: new RegExp(name) }).first().click(); await page.waitForTimeout(500); }
@@ -288,7 +288,95 @@ SLICES.I = async (page, ok) => {
   await page.screenshot({ path: path.join(OUT, 'I-canvas.png'), fullPage: true });
 };
 
-const WINDOWS = [['A', 'Light'], ['B', 'Light'], ['C', 'Midnight'], ['D', 'Purple Dream'], ['E', 'Dark'], ['F', 'Light'], ['G', 'Midnight'], ['H', 'Purple Dream'], ['I', 'Dark']];
+// U5 · G-3b (3) ALT FREE: the nearest lines + a margin inside them, never page x / y — built through the UI, one device per window
+const sliceJ = (dev) => async (page, ok) => {
+  const I = require('./inspector.js');
+  await H.panel(page, true);
+  const a = await P.first(page, 'Stack'); const words = await P.into(page, a, 'Text'); const b = await P.beside(page, a, 'Stack'); await P.into(page, b, 'Image');
+  await H.panel(page, false); await guidesOn(page); await chip(page, DEV[dev]);
+  const steady = async () => { let last = ''; for (let i = 0; i < 40; i++) { const now = JSON.stringify(await Promise.all([a, b].map((x) => rectOf(page, x)))); if (now === last) return; last = now; await page.waitForTimeout(250); } };
+  const size = async (id) => { await H.select(page, id); await I.tab(page, 'Design'); await I.section(page, 'Size'); };
+  const val = async (name) => Number(await page.getByLabel(name, { exact: true }).first().inputValue());
+  const field = async (name, v) => { const f = page.getByLabel(name, { exact: true }).first(); await f.scrollIntoViewIfNeeded(); await f.fill(String(v)); await f.blur(); await page.waitForTimeout(500); };
+  const drag = async (x0, y0, x1, mods, during) => { for (const m of mods) await page.keyboard.down(m); await page.mouse.move(x0, y0); await page.mouse.down(); for (let i = 1; i <= 14; i++) { await page.mouse.move(x0 + ((x1 - x0) * i) / 14, y0); await page.waitForTimeout(15); } if (during) await during(); await page.mouse.up(); for (const m of mods) await page.keyboard.up(m); await page.waitForTimeout(600); };
+  const RIGHT = 'Free space on the right, percent of its columns', LEFT = 'Free space on the left, percent of its columns';
+  const pubCheck = async (label) => {
+    const bad = [];
+    await preview(page, SCREENS, async (f, w) => {
+      if (await sideways(f) > 1) bad.push(w + ': sideways');
+      for (const x of await pageFaults(f)) bad.push(w + ': ' + x);
+      const pa = await pubRect(f, a), pb = await pubRect(f, b);
+      if (pa && pb && Math.abs(pa.t - pb.t) < 2 && pa.r > pb.l + 0.5) bad.push(w + ': the two overlap by ' + (pa.r - pb.l).toFixed(1) + 'px');
+    });
+    ok('U5 ' + dev + ' · Preview at all ' + SCREENS.length + ' screens ' + label + ': no overlap, no sideways scroll, no broken word or staircase', !bad.length, bad.slice(0, 6).join(' · '));
+  };
+  await steady();
+  // (1) Alt-drag the first block's right edge to 40 % into a column
+  let ls = await lines(page); const n = ls.length - 1, k = Math.max(1, Math.floor(n * 0.4)), colW = ls[1] - ls[0];
+  await H.select(page, a); const r0 = await rectOf(page, a), b0 = await rectOf(page, b);
+  const beside = Math.abs(b0.t - r0.t) < 2;
+  const h = await H.handleOf(page, 'right'); const cx = h.x + h.width / 2, cy = h.y + h.height / 2, to = ls[k] + 0.4 * colW + (beside ? (b0.l - r0.r) / 2 : 0);
+  let label = '';
+  await drag(cx, cy, to, ['Alt'], async () => { label = await page.evaluate(() => document.querySelector('[data-span-live]')?.textContent || ''); });
+  ok('U5 ' + dev + ' · the live label says the columns and "free"', / of \d+.*· free$/.test(label), label);
+  const r1 = await rectOf(page, a), b1 = await rectOf(page, b);
+  ok('U5 ' + dev + ' · Alt edge: the left edge stays (rule 19)', Math.abs(r1.l - r0.l) < 0.6, (r1.l - r0.l).toFixed(2));
+  ok('U5 ' + dev + ' · Alt edge: the box edge stops where it was let go', Math.abs((r1.r - r0.r) - (to - cx)) < 1.5, 'moved ' + (r1.r - r0.r).toFixed(1) + ' of ' + (to - cx).toFixed(1) + 'px');
+  if (beside) ok('U5 ' + dev + ' · Alt edge: no overlap, and more than a gap between them (the free margin)', b1.l - r1.r > (b0.l - r0.r) + 2, (b1.l - r1.r).toFixed(1) + 'px vs gap ' + (b0.l - r0.r).toFixed(1));
+  else ok('U5 ' + dev + ' · Alt edge on a stacked row: the block below does not overlap it', b1.t >= r1.t + r1.h - 0.5 || b1.l >= r1.r - 0.5, 'below at ' + (b1.t - r1.t).toFixed(1));
+  await size(a);
+  const toLine = await val('To line'), free = await val(RIGHT);
+  ok('U5 ' + dev + ' · its columns run to the next line (To line ' + (k + 2) + '), the rest a free margin on the right', toLine === k + 2 && free > 0 && free < 100, 'To line ' + toLine + ' · right ' + free + ' %');
+  await page.screenshot({ path: path.join(OUT, 'J-' + dev + '-alt-edge.png') });
+  await pubCheck('after an Alt edge');
+  // (2) Back on the lines, then Undo
+  await size(a); await page.getByRole('button', { name: 'Back on the lines' }).first().click(); await page.waitForTimeout(600);
+  ls = await lines(page); const r2 = await rectOf(page, a), b2 = await rectOf(page, b);
+  if (Math.abs(b2.t - r2.t) < 2) ok('U5 ' + dev + ' · "Back on the lines": the gap lands centred on line ' + (k + 2), Math.abs((r2.r + b2.l) / 2 - ls[k + 1]) <= 0.6, ((r2.r + b2.l) / 2 - ls[k + 1]).toFixed(2) + 'px');
+  else { await size(a); ok('U5 ' + dev + ' · "Back on the lines": no free margin, still to line ' + (k + 2), (await val(RIGHT)) === 0 && (await val('To line')) === k + 2, (await val(RIGHT)) + ' % · To line ' + (await val('To line'))); }
+  await page.keyboard.press('Control+z'); await page.waitForTimeout(600);
+  ok('U5 ' + dev + ' · one Undo puts the free margin back', Math.abs((await rectOf(page, a)).r - r1.r) < 0.6, ((await rectOf(page, a)).r - r1.r).toFixed(2));
+  // (3) the panel: change the right margin by number
+  await size(a); await field(RIGHT, 50);
+  const r3 = await rectOf(page, a);
+  ok('U5 ' + dev + ' · typing 50 % on the right: the box shrinks, its left edge stays', Math.abs(r3.l - r1.l) < 0.6 && r3.r < r1.r - 2, (r3.r - r3.l).toFixed(1) + 'px');
+  // (4) a snapped drag (no Alt) puts the right side back on its line
+  await H.select(page, a); const h2 = await H.handleOf(page, 'right');
+  await drag(h2.x + h2.width / 2, h2.y + h2.height / 2, h2.x + h2.width / 2 + colW * 0.6, []);
+  await size(a);
+  ok('U5 ' + dev + ' · a drag without Alt clears the right free margin', (await val(RIGHT)) === 0, (await val(RIGHT)) + ' %');
+  // (4b) G3b-19: an Alt-dragged LEFT edge taken past the page's edge stops AT the edge — the overshoot is not a margin
+  await field('From line', 2); await H.select(page, a); const hl = await H.handleOf(page, 'left');
+  await drag(hl.x + hl.width / 2, hl.y + hl.height / 2, ls[0] - 40, ['Alt']);
+  await size(a);
+  ok('U5 ' + dev + ' · G3b-19: Alt past the page edge stops at line 1, no free margin left behind', (await val('From line')) === 1 && (await val(LEFT)) === 0, 'From line ' + (await val('From line')) + ' · left ' + (await val(LEFT)) + ' %');
+  // (5) the Alt SLIDE: room before it (From line 3), then Alt-drag its grip 1.3 columns to the left
+  await field('From line', 3); await page.waitForTimeout(300);
+  const s0 = await rectOf(page, a), sb0 = await rectOf(page, b);
+  await H.select(page, a); const grip = page.locator('[aria-label="Drag to move"]').first();
+  const tip = await grip.getAttribute('title');
+  ok('U5 ' + dev + ' · the grip says what Alt does here', /place it free on its line/.test(tip || ''), tip);
+  const g = await grip.boundingBox();
+  await drag(g.x + g.width / 2, g.y + g.height / 2, g.x + g.width / 2 - 1.3 * colW, ['Alt']);
+  const s1 = await rectOf(page, a), sb1 = await rectOf(page, b);
+  const pos = await page.evaluate((id) => getComputedStyle(document.querySelector('[data-box-id="' + id + '"]')).position, a);
+  ok('U5 ' + dev + ' · Alt slide: it stays in the flow (not lifted to a floating layer)', pos !== 'absolute' && pos !== 'fixed', pos);
+  ok('U5 ' + dev + ' · Alt slide: the box moved with the pointer and kept its width', Math.abs((s1.l - s0.l) + 1.3 * colW) < 1.5 && Math.abs(s1.w - s0.w) < 1, 'moved ' + (s1.l - s0.l).toFixed(1) + ' of ' + (-1.3 * colW).toFixed(1) + ' · width ' + (s1.w - s0.w).toFixed(2));
+  ok('U5 ' + dev + ' · Alt slide: the block beside it did not move', Math.abs(sb1.l - sb0.l) < 0.6 && Math.abs(sb1.r - sb0.r) < 0.6, (sb1.l - sb0.l).toFixed(2) + ' / ' + (sb1.r - sb0.r).toFixed(2));
+  await size(a);
+  ok('U5 ' + dev + ' · Alt slide: on whole lines, a free margin left and right', Number.isInteger(await val('From line')) && (await val(LEFT)) > 0 && (await val(RIGHT)) > 0, 'lines ' + (await val('From line')) + '…' + (await val('To line')) + ' · left ' + (await val(LEFT)) + ' % · right ' + (await val(RIGHT)) + ' %');
+  await page.screenshot({ path: path.join(OUT, 'J-' + dev + '-alt-slide.png') });
+  await pubCheck('after an Alt slide');
+  // (6) Alt on a block NOT on a page row still floats it — the words inside the first stack
+  await H.select(page, words); const wg = await page.locator('[aria-label="Drag to move"]').first().boundingBox();
+  await drag(wg.x + wg.width / 2, wg.y + wg.height / 2, wg.x + wg.width / 2 + 40, ['Alt']);
+  const wpos = await page.evaluate((id) => getComputedStyle(document.querySelector('[data-box-id="' + id + '"]')).position, words);
+  ok('U5 ' + dev + ' · Alt on words inside a block still floats them (Q6)', wpos === 'absolute', wpos);
+  await page.keyboard.press('Control+z'); await page.waitForTimeout(500);
+};
+for (const [key, dev] of [['J1', 'Desktop'], ['J2', 'Laptop'], ['J3', 'Wide'], ['J4', 'Tablet'], ['J5', 'Full'], ['J6', 'Mobile']]) SLICES[key] = sliceJ(dev);
+
+const WINDOWS = [['A', 'Light'], ['B', 'Light'], ['C', 'Midnight'], ['D', 'Purple Dream'], ['E', 'Dark'], ['F', 'Light'], ['G', 'Midnight'], ['H', 'Purple Dream'], ['I', 'Dark'], ['J1', 'Light'], ['J2', 'Midnight'], ['J3', 'Purple Dream'], ['J4', 'Dark'], ['J5', 'Light'], ['J6', 'Midnight']];
 (async () => {
   const runs = WINDOWS.filter(([k]) => !ONLY.length || ONLY.includes(k)); const out = [];
   await Promise.all(runs.map(async ([k, th], i) => {

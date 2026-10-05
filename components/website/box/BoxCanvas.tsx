@@ -9,7 +9,7 @@
  */
 
 import { measureCss } from "@/lib/educo-ui/base";
-import { columnFloorRem, dividerThickness, gridLeftoverAt,HAND_FLOOR_REM, isPageRow, LIST_ITEM_GAP, pageRowSlot, restForDrag, tabletPlaces }from "@/lib/box-model";
+import { columnFloorRem, dividerThickness, gridLeftoverAt,HAND_FLOOR_REM, isPageRow, LIST_ITEM_GAP, linesAt, pageRowSlot, restForDrag, setFreeInset, slideFreeAt, tabletPlaces }from "@/lib/box-model";
 import { resolvePage } from "@/lib/semantics";
 import { Fragment, useEffect, useLayoutEffect, useMemo, useReducer, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import { createPortal } from "react-dom";
@@ -1553,9 +1553,42 @@ export default function BoxCanvas({
     document.addEventListener("mousemove", onMove); document.addEventListener("mouseup", onUp);
   };
 
+  /**
+   * ALT-DRAG ON A BLOCK OF A ROW OF THE PAGE (G-3b (3), map §1): it SLIDES along its line — never lifted to page x / y, which breaks
+   * at the first other width. Its columns become the nearest lines around it and the rest a margin inside them (`slideFreeAt`);
+   * the blocks beside it never move. False when the block is not on a page row (the caller floats it, as before).
+   */
+  const startSlideFree = (e: React.MouseEvent, node: BoxNode): boolean => {
+    const cols = pageGrid ? columnsAt(pageGrid, breakpoint) : 0;
+    const p = cols && rootRef.current.pageGrid ? findParent(rootRef.current, node.id) : null;
+    if (!p || !isPageRow(p.parent)) return false;
+    const rowEl = document.querySelector<HTMLElement>(`[data-box-id="${p.parent.id}"]`);
+    if (!rowEl) return false;
+    e.preventDefault(); e.stopPropagation();
+    const gk = `gesture:${Date.now()}`, base = rootRef.current, startX = e.clientX, colPx = rowEl.getBoundingClientRect().width / cols;
+    setResizing(true); setResizeCursor("grabbing"); document.body.style.userSelect = "none";
+    let raf = 0, pending: BoxNode | null = null;
+    const flush = () => { raf = 0; if (pending) { onChange(pending, gk); pending = null; } };
+    const onMove = (ev: MouseEvent) => {
+      pending = slideFreeAt(base, node.id, (ev.clientX - startX) / colPx, cols, breakpoint);
+      const l = linesAt(pending, node.id, cols, breakpoint);
+      if (l) setSpanLive({ x: ev.clientX, y: ev.clientY, text: `lines ${spanText(l.from)} to ${spanText(l.to)} · free` });
+      if (!raf) raf = requestAnimationFrame(flush);
+    };
+    const onUp = () => {
+      if (raf) { cancelAnimationFrame(raf); flush(); }
+      setResizing(false); setResizeCursor(null); setSpanLive(null); document.body.style.userSelect = "";
+      document.removeEventListener("mousemove", onMove); document.removeEventListener("mouseup", onUp);
+    };
+    document.addEventListener("mousemove", onMove); document.addEventListener("mouseup", onUp);
+    return true;
+  };
+
   const startDrag = (e: React.MouseEvent, node: BoxNode) => {
     if (!editable || node.locked) return; // locked: position is frozen — no drag
-    // A floating box (or an Alt-drag on a flow box) moves FREELY on its own layer; a plain drag arranges in the flow.
+    // Alt on a block of a page row slides it along its line (G-3b (3)); a floating box (or an Alt-drag on any other flow box)
+    // moves FREELY on its own layer; a plain drag arranges in the flow.
+    if (e.altKey && !isFloating(node) && startSlideFree(e, node)) return;
     if (isFloating(node) || e.altKey) { startFreeDrag(e, node, !isFloating(node)); return; }
     e.preventDefault(); e.stopPropagation();
     const el = document.querySelector<HTMLElement>(`[data-box-id="${node.id}"]`);
@@ -2617,17 +2650,38 @@ export default function BoxCanvas({
     setResizing(true);
     let raf = 0; let pending: BoxNode | null = null;
     const flush = () => { raf = 0; if (pending) { onChange(pending, gk); pending = null; } };
+    /**
+     * The dragged side's FREE margin (G-3b (3)): `off` px inside its new columns — 0 on a snapped drag, which puts that side back on
+     * its line. The far side's margin is a % of the columns, so it is rescaled to the same px: only the edge you grab moves (rule 19).
+     * The box always keeps half a column.
+     */
+    const share0 = bn.width?.trim().endsWith("%") ? widthPct(bn.width) : 0, inset0 = bn.freeInset ?? {};
+    const freeEdge = (tree: BoxNode, side: "left" | "right", off: number): BoxNode => {
+      const w = resolveResponsive(findByIdLocal(tree, id) ?? bn, breakpoint).width;
+      const share = w?.trim().endsWith("%") ? widthPct(w) : 0, sharePx = (share / 100) * maxW;
+      const far = side === "left" ? "right" : "left", far0 = inset0[far];
+      const keep = (p: number) => (share > 0 ? (p * share0) / share : undefined);
+      const o = Math.min(off, Math.max(0, sharePx - maxW / snapCols / 2));
+      let next = setFreeInset(tree, id, side, sharePx > 0 && o > 0.5 ? (o / sharePx) * 100 : undefined, breakpoint);
+      if (far0 && share !== share0) next = setFreeInset(next, id, far, keep(far0), breakpoint);
+      return next;
+    };
     const onMove = (ev: MouseEvent) => {
       let dx = ev.clientX - startX; const dy = ev.clientY - startY;
+      let freeOff = 0; // ALT FREE (G-3b (3), map §1): px from where the edge was let go to the line its columns run to
       if (snapCols && (hasE || hasW)) {
         const from = hasE ? startRightPx : startLeftPx;
-        if (!ev.altKey) dx = snapEdgePx(from + dx, maxW, snapCols, ev.shiftKey) - from;
+        if (ev.altKey) {
+          // the columns run OUT to the nearest line beyond the edge, and the box stops where it was let go: the rest is a margin inside
+          // …and past the page's edge it stops AT the edge: the overshoot is not a margin (G3b-19, width-round-trip — 35px left behind)
+          const step = maxW / snapCols, at = Math.min(maxW, Math.max(0, from + dx));
+          const line = Math.min(maxW, Math.max(0, (hasE ? Math.ceil(at / step - 1e-6) : Math.floor(at / step + 1e-6)) * step));
+          freeOff = Math.abs(line - at); dx = line - from;
+        } else dx = snapEdgePx(from + dx, maxW, snapCols, ev.shiftKey) - from;
         const share = ((hasE ? startRightPx + dx : startRightPx) - (hasW ? startLeftPx + dx : startLeftPx)) / maxW;
-        setSpanLive({ x: ev.clientX, y: ev.clientY, text: ev.altKey ? `${(share * 100).toFixed(1)}% · free` : spanLabel(share, pageGrid!, breakpoint, ev.shiftKey) });
+        setSpanLive({ x: ev.clientX, y: ev.clientY, text: `${spanLabel(share, pageGrid!, breakpoint, ev.shiftKey && !ev.altKey)}${ev.altKey ? " · free" : ""}` });
       }
       let tree = base;
-      // an Alt-drag places it FREE on purpose ("Line up with the grid" leaves it alone); a snapped drag puts it back on the grid
-      if (snapCols && (hasE || hasW) && !!ev.altKey !== !!findByIdLocal(tree, id)?.freeWidth) tree = writeBox(tree, id, { freeWidth: ev.altKey || undefined });
       // ── WIDTH (EDGE-ANCHORED) ── the grabbed edge moves; the OPPOSITE edge of THIS section stays put.
       // RIGHT edge: grows/shrinks up to the next section's left; the NEXT section stays exactly where it is
       // (its margin-left absorbs the gap) — so you fill the gap and the neighbour never moves. LEFT edge:
@@ -3031,6 +3085,7 @@ export default function BoxCanvas({
         const scN = fitScale(hN, naturalH);
         tree = writeBox(tree, id, isComp ? { height: remLen(hN, rootPx), minHeight: undefined, clip: undefined, marginTop: mt, contentScale: scN < 1 ? scN : undefined } : { minHeight: Math.round((hN / Z) * 1000) / 1000, height: undefined, marginTop: mt });
       }
+      if (snapCols && (hasE || hasW)) tree = freeEdge(tree, hasE ? "right" : "left", freeOff);
       pending = tree;
       if (!raf) raf = requestAnimationFrame(flush);
     };
@@ -3614,7 +3669,7 @@ export default function BoxCanvas({
         {!isRoot && !node.locked && (
           <span
             onMouseDown={(e) => startDrag(e, node)}
-            title={isFloating(node) ? "Drag to move this floating block freely" : "Drag to move (hold Alt to float it on top)"}
+            title={isFloating(node) ? "Drag to move this floating block freely" : pageGrid && isPageRow(findParent(root, node.id)?.parent) ? "Drag to move (hold Alt to place it free on its line)" : "Drag to move (hold Alt to float it on top)"}
             aria-label="Drag to move"
             className="cursor-grab active:cursor-grabbing text-white/80 hover:text-white px-0.5"
           ><GripVertical className="w-3.5 h-3.5" /></span>

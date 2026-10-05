@@ -489,7 +489,7 @@ function AccPreview({ id, size, axes = [] }: { id: string; size: ThumbSize; axes
   );
 }
 
-export default function BoxInspector({ section = false, sectionPlace, outerDefault, pageSpan, onSetSpan, pageLines, onSetLines, rowStepRem, node, theme, onPatch, onAddChild, onFloat, onUnfloat, onLayer, onAlignInRow, rowJustify, onSectionWidth, sectionWidth, canFloat = true, inGrid = false, inMasonry = false, gridTrack, onSetFraction, onRetrack, breakpoint = "base", overridden = false, onResetOverride, pages, currentPageId, pinBlockedBy = null, fixedBlockedBy = null, pinScope = null }: {
+export default function BoxInspector({ section = false, sectionPlace, outerDefault, pageSpan, onSetSpan, pageLines, onSetLines, onSetFreeInset, rowStepRem, node, theme, onPatch, onAddChild, onFloat, onUnfloat, onLayer, onAlignInRow, rowJustify, onSectionWidth, sectionWidth, canFloat = true, inGrid = false, inMasonry = false, gridTrack, onSetFraction, onRetrack, breakpoint = "base", overridden = false, onResetOverride, pages, currentPageId, pinBlockedBy = null, fixedBlockedBy = null, pinScope = null }: {
   section?: SectionFlag; // the block is the content of a page section, so its default inner spacing is the gutter and the section space
   outerDefault?: [number, number, number, number]; // the outer space it really has by default (`outerSpaceDefaults`, G-3 (1)); else `outerDefaults`
   sectionPlace?: SectionPlace; // …and where: straight on the page or a column of a band — the default space OUTSIDE a self-painted block (S-2 (5))
@@ -515,6 +515,8 @@ export default function BoxInspector({ section = false, sectionPlace, outerDefau
   /** A column of a page row on the page grid (G-3 (3)): how many of the page's columns it covers on this screen, and its setter. */
   pageSpan?: { value: number; cols: number }; onSetSpan?: (span: number) => void;
   pageLines?: { from: number; to: number; first: boolean; last: boolean; cols: number }; onSetLines?: (want: { from?: number; to?: number } | "full") => void;
+  /** G-3b (3): the block's free margin inside its columns, per side ("both" with undefined puts it back on its lines) */
+  onSetFreeInset?: (side: "left" | "right" | "both", pct: number | undefined) => void;
   /** The page grid's row step (rem) on a page-grid page — "Rows: N" sets the block at least N rows tall (G-3 (4)). */
   rowStepRem?: number;
   /** Set this block to a named fraction of its row. Refines the row to twelve first when it has to (base only,
@@ -1146,7 +1148,19 @@ export default function BoxInspector({ section = false, sectionPlace, outerDefau
                 <span className={label}>Bleed to the page edge</span>
                 <Segmented full ariaLabel="Bleed to the page edge" value={node.bleed ?? "off"} onChange={(v) => onPatch({ bleed: v === "off" ? undefined : (v as "left" | "right" | "both") })}
                   options={[{ value: "off", label: "Off" }, { value: "left", label: "Left" }, { value: "right", label: "Right" }, { value: "both", label: "Both" }]} />
-                <p className="text-[0.625rem] text-gray-500 dark:text-gray-400 midnight:text-slate-400 purple:text-purple-300">On this screen. Lines run from 1 (the page&apos;s left edge) to {pageLines.cols + 1}. Bleed takes away the side space where this block starts or ends a line, so it reaches the page edge; nothing else moves.</p>
+                {onSetFreeInset && (
+                  <>
+                    <span className={label}>Free inside its columns (% of them)</span>
+                    <div className="grid grid-cols-2 gap-2">
+                      <CompactField label="Left" ariaLabel="Free space on the left, percent of its columns" type="number" min={0} max={90} step={1} value={node.freeInset?.left ?? 0}
+                        onChange={(v) => { const n = Number(v); if (Number.isFinite(n) && n >= 0) onSetFreeInset("left", n || undefined); }} />
+                      <CompactField label="Right" ariaLabel="Free space on the right, percent of its columns" type="number" min={0} max={90} step={1} value={node.freeInset?.right ?? 0}
+                        onChange={(v) => { const n = Number(v); if (Number.isFinite(n) && n >= 0) onSetFreeInset("right", n || undefined); }} />
+                    </div>
+                    <ToolBtn onClick={() => onSetFreeInset("both", undefined)} disabled={!node.freeInset?.left && !node.freeInset?.right}>Back on the lines</ToolBtn>
+                  </>
+                )}
+                <p className="text-[0.625rem] text-gray-500 dark:text-gray-400 midnight:text-slate-400 purple:text-purple-300">On this screen. Lines run from 1 (the page&apos;s left edge) to {pageLines.cols + 1}. Bleed takes away the side space where this block starts or ends a line, so it reaches the page edge; nothing else moves. Hold Alt while dragging an edge or the block to place it free: it keeps to the nearest lines, with the rest as free space inside them.</p>
               </div>
             )}
             {rowStepRem && (

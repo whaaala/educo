@@ -365,7 +365,7 @@ export interface BoxNode {
   onPageGrid?: boolean;     // a block of a page-grid page (`markPageGrid`): its unset spacing reads `SPACE_GRID`
   pageRow?: boolean;        // a row band straight on a page-grid page (`markPageGrid`): drawn as a CSS grid on the page's lines (G-3b, `isPageRow`)
   bleed?: "left" | "right" | "both"; // on a row of the page: where it starts / ends a line, that side reaches the page edge (G-3b (2), per screen)
-  freeWidth?: boolean;      // its width was set FREE (Alt-drag, G-3 (2)): "Line up with the grid" leaves it alone
+  freeInset?: { left?: number; right?: number }; // placed FREE with Alt (G-3b (3), map §1): its columns stay on the lines and its box sits this % of them in from each side, per screen; "Line up with the grid" leaves its row alone
   gridSpace?: GridSpace;    // the site's / page's own side space and gap (G-2), on the page root and every block `markPageGrid` marks
   rowBand?: boolean;        // structural ROW band: a direct child of the page root that lays its sections out side-by-side (the page is a vertical stack of these)
   // Does this band run edge to edge, or sit its content on the page's measure? "band" (the default) is what
@@ -5272,14 +5272,14 @@ export function isPageRow(band: BoxNode | null | undefined): boolean {
 const pageRowCols = (band: BoxNode, bp: Breakpoint) => band.gridSpace?.cols?.[bp] ?? columnsAt(PAGE_GRID_DEFAULT, bp);
 
 /** The row's blocks on `bp`, line by line as the stored shares pack them (`packRowLines`) — a gap before a block included. */
-type RowLineItem = { id: string; gapPct: number; sharePct: number; shared: boolean; bleed?: BoxNode["bleed"] };
+type RowLineItem = { id: string; gapPct: number; sharePct: number; shared: boolean; bleed?: BoxNode["bleed"]; inset?: BoxNode["freeInset"] };
 function rowLinesAt(band: BoxNode, bp: Breakpoint): RowLineItem[][] {
   const kids = rowColumnsAt(band, bp).map((k) => resolveResponsive(k, bp));
   const shared = (k: BoxNode) => !k.width?.trim().endsWith("%");
   // a block with no share (fill / auto) takes an equal part of what the shares leave on its line, so it packs as nothing
   const lines = packRowLines(kids.map((k) => (shared(k) ? { ...k, width: "0.001%" } : k)));
   const out: RowLineItem[][] = [];
-  kids.forEach((k, i) => (out[lines[i]] ??= []).push({ id: k.id, gapPct: k.marginLeftPct ?? 0, sharePct: shared(k) ? 0 : widthPct(k.width), shared: shared(k), bleed: k.bleed }));
+  kids.forEach((k, i) => (out[lines[i]] ??= []).push({ id: k.id, gapPct: k.marginLeftPct ?? 0, sharePct: shared(k) ? 0 : widthPct(k.width), shared: shared(k), bleed: k.bleed, inset: k.freeInset ?? undefined }));
   for (const line of out) {
     const free = line.filter((c) => c.shared); if (!free.length) continue;
     const left = Math.max(0, 100 - line.reduce((n, c) => n + c.gapPct + c.sharePct, 0));
@@ -5303,7 +5303,7 @@ export function pageRowTracks(band: BoxNode): number {
 
 /** Where a block of a row of the page sits on `bp`: the tracks of its area (its gap before it included), that gap as a share
  *  of the area (a `%` margin on a grid item is of its area), and its place `at` on a line `of` blocks. */
-export type PageRowCell = { span: number; gapPct: number; at: number; of: number; bleed?: BoxNode["bleed"] };
+export type PageRowCell = { span: number; gapPct: number; at: number; of: number; bleed?: BoxNode["bleed"]; insetL: number; insetR: number };
 export function pageRowCells(band: BoxNode, bp: Breakpoint, T = pageRowTracks(band)): Map<string, PageRowCell> {
   const out = new Map<string, PageRowCell>();
   for (const line of rowLinesAt(band, bp)) {
@@ -5313,7 +5313,9 @@ export function pageRowCells(band: BoxNode, bp: Breakpoint, T = pageRowTracks(ba
       const boxAt = Math.min(T - 1, Math.max(from, Math.round((at / 100) * T))); at += c.sharePct;
       end = Math.min(T, Math.max(boxAt + 1, Math.round((at / 100) * T)));
       const span = end - from;
-      out.set(c.id, { span, gapPct: +(((boxAt - from) / span) * 100).toFixed(4), at: i, of: line.length, bleed: c.bleed });
+      // a FREE placement (G-3b (3)): a share of its own columns, as a share of its area (a `%` margin on a grid item is of its area)
+      const ofArea = (p?: number) => +(((p ?? 0) * (end - boxAt)) / span).toFixed(4);
+      out.set(c.id, { span, gapPct: +(((boxAt - from) / span) * 100).toFixed(4), at: i, of: line.length, bleed: c.bleed, insetL: ofArea(c.inset?.left), insetR: ofArea(c.inset?.right) });
     });
   }
   return out;
@@ -5370,21 +5372,28 @@ function pageRowCSS(s: CSSProperties, child: BoxNode, band: BoxNode, bp: Breakpo
   delete s.flex;
   if (!cell) return; // floating or hidden here: not on the grid
   s.gridColumn = `span ${cell.span}`;
-  if (s.marginLeft !== "auto") s.marginLeft = pageRowMargin(band, child, "left", cell.at, cell.of, cell.gapPct, cell.bleed);
-  if (s.marginRight !== "auto") s.marginRight = pageRowMargin(band, child, "right", cell.at, cell.of, 0, cell.bleed);
+  if (s.marginLeft !== "auto") s.marginLeft = pageRowMargin(band, child, "left", cell.at, cell.of, +(cell.gapPct + cell.insetL).toFixed(4), cell.bleed);
+  if (s.marginRight !== "auto") s.marginRight = pageRowMargin(band, child, "right", cell.at, cell.of, cell.insetR, cell.bleed);
+  // THE READABLE FLOOR IS OF ITS OWN SPACE (G3b-18): on a grid item `100%` is the whole grid AREA, margins included, so
+  // `min(100%, 14rem)` held words at 2 of 6 on a phone 22px past their columns, over the picture beside them. Never more than
+  // the area less its margins; a line too tight for the words is the Page check's warning ("words-too-tight"), not an overlap.
+  const ml = s.marginLeft === "auto" ? "0px" : String(s.marginLeft ?? "0px"), mr = s.marginRight === "auto" ? "0px" : String(s.marginRight ?? "0px");
+  if (typeof s.minWidth === "string" && s.minWidth.startsWith("min(100%,")) s.minWidth = s.minWidth.replace("min(100%,", `min(calc(100% - ${ml} - ${mr}),`);
 }
 
 /** The canvas's slot of a block of a row of the page: the space on each side of its box that belongs to its grid area, in stored
  *  units (`pageRowSides`, without its own margin or a gap dragged open — those the resize reads on their own). */
 export function pageRowSlot(band: BoxNode, id: string, bp: Breakpoint, w?: number): { left: number; right: number } | null {
-  const cell = pageRowCells(band, bp).get(id);
+  const T = pageRowTracks(band), cell = pageRowCells(band, bp, T).get(id);
   if (!cell) return null;
   // with a page width (rem): the same shares in rem, the frame as drawn there (G-3c) — the canvas's slots; without: stored units
   const sides = w === undefined ? pageRowSides(band, cell.at, cell.of) : (() => {
     const L = rowSideRemAt(band, "left", w), R = rowSideRemAt(band, "right", w), G = (bandGutter(band) / 10) * unitRemAt(w), d = (G - L - R) / cell.of;
     return { left: L + cell.at * d, right: G - L - (cell.at + 1) * d };
   })();
-  return { left: bleeds(cell.bleed, "left", cell.at, cell.of) ? 0 : sides.left, right: bleeds(cell.bleed, "right", cell.at, cell.of) ? 0 : sides.right };
+  // …and with a page width, a free placement's margin too (G-3b (3)): the slot is its columns, the box sits inside them
+  const free = (p: number) => (w === undefined ? 0 : (p / 100) * (cell.span / T) * w);
+  return { left: (bleeds(cell.bleed, "left", cell.at, cell.of) ? 0 : sides.left) + free(cell.insetL), right: (bleeds(cell.bleed, "right", cell.at, cell.of) ? 0 : sides.right) + free(cell.insetR) };
 }
 
 /** Does a block bleed on `side` here — it asked to, and that side starts / ends its line (only there is there a page edge to reach)? */
@@ -5443,6 +5452,58 @@ export function setLinesAt(root: BoxNode, id: string, want: { from?: number; to?
   return root;
 }
 
+/**
+ * FREE PLACEMENT (G-3b (3), map §1): never page x / y — the nearest lines around the box, and the rest as a margin INSIDE those
+ * columns (`freeInset`, a % of them, so it keeps its place at every screen). `setFreeInset` sets one side (from the panel or an
+ * Alt-dragged edge); the box always keeps a tenth of its columns. `undefined` puts that side back on its line.
+ */
+const insetPct = (v: number | undefined) => (v !== undefined && v >= 0.01 ? +v.toFixed(2) : undefined);
+export function setFreeInset(root: BoxNode, id: string, side: "left" | "right", pct: number | undefined, bp: Breakpoint = "base"): BoxNode {
+  const node = findBox(root, id); if (!node) return root;
+  const now = resolveResponsive(node, bp).freeInset ?? {}, other = (side === "left" ? now.right : now.left) ?? 0;
+  const v = insetPct(pct === undefined ? undefined : Math.min(Math.max(0, pct), 90 - other));
+  const next = { ...now, [side]: v };
+  return updateBoxResponsive(root, id, { freeInset: next.left === undefined && next.right === undefined ? undefined : { left: next.left, right: next.right } }, bp);
+}
+
+/**
+ * An Alt-drag of a block of a row of the page (G-3b (3)): it SLIDES along its line, its box `left` columns from the page's left
+ * edge, keeping its width — between the block before it and the block after it, which never move (decision 5: free placement
+ * never overlaps; the person who wants overlap chooses to float it). Its columns become the nearest lines around the box, the
+ * gap before it and the one after it what is left over, the rest of its columns its free margin. `by`: how many columns to move
+ * its box (the drag's distance), from where it sits now.
+ */
+export function slideFreeAt(root: BoxNode, id: string, by: number, cols: number, bp: Breakpoint = "base"): BoxNode {
+  const p = findParent(root, id);
+  if (!p || !linesAt(root, id, cols, bp)) return root;
+  const line = rowLinesAt(p.parent, bp).find((l) => l.some((c) => c.id === id))!; const i = line.findIndex((c) => c.id === id);
+  const C = (pct: number) => (pct / 100) * cols, pct = (c: number) => `${((c / cols) * 100).toFixed(2)}%`, gapPct = (c: number) => (c > 0.001 ? +((c / cols) * 100).toFixed(2) : undefined);
+  const prevEnd = line.slice(0, i).reduce((n, c) => n + C(c.gapPct + c.sharePct), 0);
+  const c = line[i], s = C(c.sharePct), after = line[i + 1];
+  const bw = s * (1 - ((c.inset?.left ?? 0) + (c.inset?.right ?? 0)) / 100), left = prevEnd + C(c.gapPct) + (s * (c.inset?.left ?? 0)) / 100 + by;
+  const limit = after ? prevEnd + C(c.gapPct) + s + C(after.gapPct) : cols;
+  // within a hundredth of a column is ON the line: shares are stored to 0.01 %, so a box read back sits a hair off it (G3b-15)
+  const x = Math.min(Math.max(prevEnd, left), limit - bw), e = 0.01;
+  const place = (start: number, end: number) => {
+    const share = end - start;
+    let next = updateBoxResponsive(root, id, { width: pct(share), marginLeftPct: gapPct(start - prevEnd), widthByHand: true }, bp);
+    next = updateBoxResponsive(next, id, { freeInset: undefined }, bp);
+    const off = (c: number) => (c < e ? undefined : (c / share) * 100);
+    next = setFreeInset(setFreeInset(next, id, "left", off(x - start), bp), id, "right", off(end - x - bw), bp);
+    if (after) next = updateBoxResponsive(next, after.id, { marginLeftPct: gapPct(limit - end) }, bp);
+    return next;
+  };
+  const start = Math.max(prevEnd, Math.floor(x + e)), end = Math.min(limit, Math.max(start + e, Math.ceil(x + bw - e)));
+  const next = place(start, end);
+  // A SLIDE NEVER RE-PACKS THE ROW (G3b-16): a block that ends its line, slid left, left room for the next line's first block, which
+  // came up beside it; one starting a later line, slid left, could fit on the line above. When the lines would change, its columns
+  // keep covering their old place too — the box still goes where it was let go, inside them — so the row frees and takes nothing.
+  const packing = (t: BoxNode) => rowLinesAt(findParent(t, id)!.parent, bp).map((l) => l.map((k) => k.id).join()).join("|");
+  if (packing(next) === packing(root)) return next;
+  const s0 = prevEnd + C(c.gapPct);
+  return place(Math.min(start, s0), Math.max(end, Math.min(limit, s0 + s)));
+}
+
 /** "Full width" (map A4): the block takes its whole line on `bp`; the blocks beside it go to lines of their own. */
 export const fullWidthAt = (root: BoxNode, id: string, bp: Breakpoint = "base"): BoxNode => updateBoxResponsive(root, id, { width: "100%", marginLeftPct: undefined }, bp);
 
@@ -5478,13 +5539,13 @@ export function setSpan(root: BoxNode, id: string, span: number, cols: number, b
 /**
  * "LINE UP WITH THE GRID" (G-3 (5)): every column of every row of the page to the nearest whole column of `cols`, on `bp`.
  * The row's EDGES are snapped (a gap before a block included), never each width alone, so a row still adds up to its line;
- * every block keeps at least one column. A row holding a block placed free on purpose (`freeWidth`) is left alone.
+ * every block keeps at least one column. A row holding a block placed free on purpose (`freeInset`) is left alone.
  */
 export function lineUpWithGrid(root: BoxNode, cols: number, bp: Breakpoint = "base"): { root: BoxNode; moved: number } {
   let next = root, moved = 0;
   for (const band of root.children ?? []) {
     const kids = band.children ?? [];
-    if (!band.rowBand || kids.length < 2 || kids.some((k) => resolveResponsive(k, bp).freeWidth)) continue;
+    if (!band.rowBand || kids.length < 2 || kids.some((k) => resolveResponsive(k, bp).freeInset)) continue;
     const rk = kids.map((k) => resolveResponsive(k, bp));
     if (rk.some((k) => !k.width?.trim().endsWith("%"))) continue;
     let at = 0, line = 0; const out: { id: string; gap: number; width: number; was: BoxNode }[] = [];

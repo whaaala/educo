@@ -53,7 +53,17 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
     gives up its side space; nothing else moves), all per screen. Unit: 9 engine + 4 Inspector tests, 9 mutations red. HEADED
     slice H 9 / 9 (To line 0.00px, From line 0.01px, bleed −0.01px from the edge, Preview at all 70 screens, Undo, per screen,
     to the last line after 12 → 16)
-  - `[ ]` (3) ALT FREE → lines + margin, never page x / y (the drop point to the nearest lines, the rest as margin inside)
+  - `[x]` (3) ALT FREE → lines + margin, never page x / y (the drop point to the nearest lines, the rest as margin inside) — DONE
+    2026-10-05 (session after 3da81fad; HEADED slice J1–J6, six windows, Desktop · Laptop · Wide · Tablet · Full · Mobile × the four
+    editor themes: 108 checks 0 failed, Preview at all 70 screens after an Alt edge and after an Alt slide; gate: vitest 4,340,
+    test:fast 806, eslint 0 errors): `freeInset` {left, right} (% of the block's OWN columns, per
+    screen) replaces `freeWidth`; emitted as a `%` margin of its grid area beside the gap (`pageRowCells` insetL / insetR), so the
+    columns stay ON the lines and the box keeps its share of them at every screen; the fit rule's stepped lines drop it (equal
+    blocks). An Alt-dragged EDGE runs its columns out to the nearest line beyond it, the rest the free margin (the far side's margin
+    rescaled so only the grabbed edge moves, rule 19; a snapped drag clears that side). An Alt-drag of a block of a page row
+    SLIDES it along its line (`slideFreeAt`: between its neighbours, which never move — decision 5) instead of lifting it to page
+    x / y; Alt on any other flow block still floats it. RULE UI: Size section "Free inside its columns (% of them)" Left / Right +
+    "Back on the lines" (one undo). BDD: 5 scenarios in page-grid.feature. Unit: 6 engine + 1 Inspector; 7 mutations red
   - `[x]` (4) THE FIT RULE for every block on the grid (DONE with (1): every line of a page row steps, by span; HEADED: slice D,
     an icon beside words + four cards at all 70 screens × 100 / 150 / 200 % text — 0 sideways, overlap, broken word, staircase) (proof rule 4: whole words, no sideways scroll at 150 / 200 % text)
   - `[x]` (5) "SPACE BETWEEN COLUMNS" — DECIDED BY THE USER 2026-10-04 ("split across / down", over an extra gutter drawn between
@@ -75,7 +85,7 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
     no sideways scroll, no overlap, no word broken
   - `[ ]` U4 start line / to the last line / full / bleed / half-bleed: each per screen, each visibly different (RULE T), each
     survives a column-count change in the panel; Undo; reload
-  - `[ ]` U5 Alt-drop a block: it lands on lines + a margin; at every other screen it stays on its lines (no overlap, no scroll)
+  - `[ ]` U5 (SEEN after (3): slice J1–J6, 108 / 0; re-run in the final pass) Alt-drop a block: it lands on lines + a margin; at every other screen it stays on its lines (no overlap, no scroll)
   - `[ ]` U6 "Space between columns" 0 / default / 4 rem: guides and blocks move together, canvas == Preview; Reset
   - `[ ]` U7 "span 2 rows" on a gallery photo beside two short blocks: covers two rows, still grows with words; phone falls back
   - `[ ]` U8 a page saved before the page grid: Preview HTML byte-identical to before the batch; nested trees (section → Grid
@@ -95,6 +105,26 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
   (`pageRowSlot`). MEASURED: the 61 saved sites of the dressed sweeps publish byte
   for byte as before (old vs new engine, every page).
   LEDGER G-3b:
+  - `[x]` G3b-16 · REAL, MINE, FOUND BY THE HEADED PASS (slice J6, Mobile): an Alt SLIDE of a block that ends its line freed the rest
+    of that line, and the next line's picture came up beside it (moved 177px) — a slide re-packed the row; the mirror case (a later
+    line's first block slid left could fit on the line above) the same. → when the lines would change, its columns keep covering
+    their old place too, the box still where it was let go (`slideFreeAt`). Unit guard both ways, red without the fix; HEADED J6
+    0.00 / 0.00 after
+  - `[x]` G3b-17 · SEEN IN THE HEADED PASS (J6 screenshot): a picture beside the slid block ran ~5px past the page's right frame on the
+    canvas. MEASURED (probe-g3b-17b.js, through the UI): the same root cause as G3b-18 — a 3-of-6 area on a phone (187px) under a
+    224px floor. After the fix, words 3 + picture / card / text 3 of 6 on Mobile and 6 + 6 on Tablet sit inside the frame by
+    exactly the frame (16.0px), one gap apart
+  - `[x]` G3b-18 · REAL, FOUND BY MY PROBE, PRESENT SINCE G-3b (1)/(2): words set to 2 of 6 on a phone ran 22px past their columns,
+    10px OVER the picture beside them — the readable floor `min(100%, 14rem)` on a grid item is of the whole grid AREA, margins
+    included. → `min(calc(100% - margins), 14rem)` on a block of a page row (a line too tight for words stays the Page check's
+    warning). Unit guard red without it; HEADED: words end 393.6, picture starts 405.4 (one gap)
+  - `[x]` G3b-19 · REAL, MINE, CAUGHT BY THE GATE (width-round-trip, the first block's left edge round trip): an Alt edge dragged past
+    the page's edge left the overshoot (35px) as a free margin. → the pointer is held to the row before the margin is measured.
+    Spec 7 / 7 and test:fast 806 / 806; HEADED slice J step (4b) at all six devices: From line 1 · left 0 %
+  - `[x]` G3b-15 · REAL, MINE, FOUND BY ITS OWN UNIT GUARD: a second Alt slide read its box at 1.99955 columns (shares are stored to
+    0.01 %) and floored it to the line BEFORE — the block jumped a column, and a 0.03 % margin was left where it landed on a line.
+    → within a hundredth of a column is ON the line (`slideFreeAt` e = 0.01). Guard: "a second slide starts from where the first
+    left it", red with e = 1e-6
   - `[x]` G3b-9 · REAL, FOUND BY THE HEADED PASS: the new "Full width" button had the same name as the toolbar's "Full width"
     device button — two different buttons, one name for a screen reader → "Whole line"; guarded (no Inspector button is named
     "Full width")
@@ -2496,7 +2526,7 @@ sent), and my research. Nothing on the layout is done until every line here is c
     falls back into the flow unless placed at that rung; the page audit and Page check warn when it covers words;
     shown as drag on the canvas with the half-lines drawn, a Position panel (start / end, column / row, spill above /
     below) and a gallery of ready-made placements (RULE S / UI). Joins AC-10, ST-5, AC-35 — one build
-    - `[>]` AC-37b ← YOU ARE HERE (BATCH G-3b — next leaf (3) Alt free → lines + margin, then (6) rows, then its final pass, then BATCH E-1; handover of session 3da81fad in the SESSION LOG; earlier: handover of session 5da86722 in the SESSION LOG — G-3 CLOSED 2026-10-04 (63 headed checks, G3-8 carried to G-3b by the user); earlier: BATCH G-3 · placing on columns AND rows — G-2 CLOSED 2026-10-04 (134 headed checks); P-0 CLOSED 2026-10-04 (R4-1 … R4-5 fixed, 30 headed checks); R-4 SIGNED with D1–D5 (session 9fa0fee9); then G-3, P-1, P-2, G-4, P-3, G-5, G-6. G-1 CLOSED 2026-10-04 (see BATCHES). Plan APPROVED 2026-10-04 with the user's decisions below. Earlier: research R-3 DONE and SIGNED 2026-10-04
+    - `[>]` AC-37b ← YOU ARE HERE (BATCH G-3b — (3) Alt free DONE, next leaf (6) rows, then its final pass, then BATCH E-1; handover of session 3da81fad in the SESSION LOG; earlier: handover of session 5da86722 in the SESSION LOG — G-3 CLOSED 2026-10-04 (63 headed checks, G3-8 carried to G-3b by the user); earlier: BATCH G-3 · placing on columns AND rows — G-2 CLOSED 2026-10-04 (134 headed checks); P-0 CLOSED 2026-10-04 (R4-1 … R4-5 fixed, 30 headed checks); R-4 SIGNED with D1–D5 (session 9fa0fee9); then G-3, P-1, P-2, G-4, P-3, G-5, G-6. G-1 CLOSED 2026-10-04 (see BATCHES). Plan APPROVED 2026-10-04 with the user's decisions below. Earlier: research R-3 DONE and SIGNED 2026-10-04
       (`ff5c53a`, `4418202`); build to every decision recorded under R-3 below; the mockups settle the open three (row
       snap · the phone gap 11 vs 16 px · panel per site or per page) → the user's approval → build) · **THE PAGE GRID — DECIDED by the user 2026-10-03: done RIGHT AFTER L-4 closes, BEFORE L-5, L-6 and the
       frozen list's placement items** (they are built on it). NAMES (decided): "page grid" in code and docs; the lines a

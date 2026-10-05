@@ -170,7 +170,7 @@ Feature: The page grid (AC-37b)
       | holding       | result          |
       | nothing       | 5 of 12         |
       | Shift         | 4½ of 12        |
-      | Alt           | 41 %, free      |
+      | Alt           | 5 of 12, free   |
 
   Scenario: Columns by number and by keyboard, per screen
     Given a block half the width of its row is selected
@@ -189,7 +189,7 @@ Feature: The page grid (AC-37b)
     Given a page whose blocks were dragged to widths between the lines
     When I choose "Line up with the grid" in Page settings
     Then every block moves to the nearest whole column and I am told how many moved
-    And a block I placed free with Alt stays where it is
+    And a block I placed free with Alt keeps its place inside its columns
     And one Undo puts them all back
 
   # ── G-3b · the page as a real CSS grid ────────────────────────────────────────────────────────────
@@ -265,3 +265,43 @@ Feature: The page grid (AC-37b)
       | Bleed right   | the picture reaches the page's right edge and the words do not move              |
       | Bleed both    | with Whole line, the picture runs from one page edge to the other                 |
       | Bleed left    | nothing changes while the picture does not start its line                        |
+
+  # ── G-3b (3) · free placement is lines plus a margin, never page x / y ──────────────────────────
+
+  Scenario Outline: An Alt-dragged edge lands free, inside the nearest lines
+    Given two blocks side by side on a page-grid page at Desktop
+    When I hold Alt and drag the first block's <edge> edge to between two lines
+    Then its box edge stops where I let go
+    And its columns run to the nearest line <beyond> it, and the rest is a margin inside those columns
+    And the label says how many columns it takes, "free"
+    And the block beside it is not overlapped at any screen, and nothing scrolls sideways
+
+    Examples:
+      | edge  | beyond          |
+      | right | to the right of |
+      | left  | to the left of  |
+
+  Scenario: A snapped drag puts a free edge back on its line
+    Given a block whose right edge was placed free with Alt
+    When I drag that edge without Alt
+    Then the edge lands on a line and its free margin on that side is gone
+
+  Scenario: Alt-dragging a block of a page row slides it along its line
+    Given a narrow block with room beside it on its line of a page-grid page
+    When I hold Alt and drag the block sideways
+    Then it stays in the flow, on its line, and is not lifted into a floating layer
+    And it covers the nearest lines around where I let go, the rest a margin inside them
+    And it never goes past the block beside it, which does not move
+    And Alt-dragging a block that is not on a page row still lifts it into a floating layer
+
+  Scenario: A free placement is shown and can be changed in the panel
+    Given a block placed free with Alt
+    Then its Size section says how far it sits inside its columns on the left and on the right
+    When I change one of those numbers, or choose "Back on the lines"
+    Then the block moves to match, on this screen only, and one Undo puts it back
+
+  Scenario: A free placement keeps to its columns on every screen
+    Given a block placed free with Alt at Desktop
+    When I look at it at Tablet, Mobile and in the Preview at every screen
+    Then it sits inside the same columns, by the same share of them
+    And where the row steps down to fewer blocks a line, the free margin is dropped and the blocks are equal

@@ -930,6 +930,22 @@ describe("G-3b (2) · placing on the page's lines in the Size section", () => {
   it("not shown for a block that is not on a row of the page", () => {
     renderFor(createContainer("column", { id: "c" }));
     expect(screen.queryByLabelText("From line")).toBeNull();
+    expect(screen.queryByLabelText(/Free space on the left/)).toBeNull();
+  });
+  it("G-3b (3): the free margin is shown, changed per side, and put back on the lines in one go", () => {
+    const onSetFreeInset = vi.fn();
+    renderFor(createContainer("column", { id: "c", freeInset: { right: 20 } } as Partial<BoxNode>), { pageLines: lines, onSetLines: vi.fn(), onSetFreeInset });
+    expect(screen.getByLabelText("Free space on the right, percent of its columns")).toHaveValue(20);
+    expect(screen.getByLabelText("Free space on the left, percent of its columns")).toHaveValue(0);
+    fireEvent.change(screen.getByLabelText("Free space on the left, percent of its columns"), { target: { value: "15" } });
+    expect(onSetFreeInset).toHaveBeenLastCalledWith("left", 15);
+    fireEvent.change(screen.getByLabelText("Free space on the right, percent of its columns"), { target: { value: "0" } });
+    expect(onSetFreeInset).toHaveBeenLastCalledWith("right", undefined);
+    fireEvent.click(screen.getByRole("button", { name: "Back on the lines" }));
+    expect(onSetFreeInset).toHaveBeenLastCalledWith("both", undefined);
+    cleanup();
+    renderFor(createContainer("column", { id: "c" }), { pageLines: lines, onSetLines: vi.fn(), onSetFreeInset });
+    expect(screen.getByRole("button", { name: "Back on the lines" })).toBeDisabled();
   });
 });
 

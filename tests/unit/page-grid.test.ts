@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { type BoxNode, type Breakpoint, SPACE_DEFAULT, SPACE_GRID, spaceDefaults, outerDefaults, gapOf, insertBox, normalizeRowBands, markPageGrid, u, createContainer, makeRowBand, sectionContent, gridBandOwnsGutter, pageBandInset, rowNarrowsAt, rowQueryCss, childStyle, tabletPlaces, rowSide, outerSpaceDefaults, spanAt, setSpan, resolveResponsive, lineUpWithGrid, isPageRow, containerStyle, pageRowCells, pageRowTracks, pageRowSlot, linesAt, setLinesAt, fullWidthAt, updateBoxResponsive, FRAME_CSS, frameRemAt, frameCss, pageFrameEnds, outerSpaceCSS, paddingCSS, rowSideRemAt } from "@/lib/box-model";
+import { type BoxNode, type Breakpoint, SPACE_DEFAULT, SPACE_GRID, spaceDefaults, outerDefaults, gapOf, insertBox, normalizeRowBands, markPageGrid, u, createContainer, makeRowBand, sectionContent, gridBandOwnsGutter, pageBandInset, rowNarrowsAt, rowQueryCss, childStyle, tabletPlaces, rowSide, outerSpaceDefaults, spanAt, setSpan, resolveResponsive, lineUpWithGrid, isPageRow, containerStyle, pageRowCells, pageRowTracks, pageRowSlot, linesAt, setLinesAt, fullWidthAt, updateBoxResponsive, setFreeInset, slideFreeAt, FRAME_CSS, frameRemAt, frameCss, pageFrameEnds, outerSpaceCSS, paddingCSS, rowSideRemAt } from "@/lib/box-model";
 import { blockForKind } from "@/lib/box-presets";
 import { COMPONENT_CATALOGUE } from "@/lib/component-catalogue";
 import { emptyPageRoot, siteFromRoot, setPageGrid, applyPageGrid, addPage } from "@/lib/box-site";
@@ -497,7 +497,7 @@ describe("G-3 (5) · Line up with the grid", () => {
     expect(ws(root)).toEqual(["8.33%", "91.67%"]);
   });
   it("a row with a block placed FREE on purpose is left alone", () => {
-    const r = rowOf(["41.3%", "58.7%"], { freeWidth: true }); expect(lineUpWithGrid(r, 12).moved).toBe(0);
+    const r = rowOf(["41.3%", "58.7%"], { freeInset: { right: 10 } }); expect(lineUpWithGrid(r, 12).moved).toBe(0);
   });
   it("on the phone it writes the phone's own widths; the desktop is untouched", () => {
     const { root } = lineUpWithGrid(rowOf(["41.3%", "58.7%"]), 6, "phone");
@@ -843,5 +843,109 @@ describe("G-3c · the page's frame on all four sides, from one emitter (the user
     expect(rowSideRemAt(band, "right", 120)).toBe(1.25);
     const slot = pageRowSlot(band, band.children![0].id, "base", 80)!;
     expect(slot.left).toBeCloseTo(frameRemAt(band, 80), 9);
+  });
+});
+
+describe("G-3b (3) · free placement: the nearest lines + a margin inside them, never page x / y (map §1)", () => {
+  const pageOf = (widths: string[], edit?: (cols: BoxNode[]) => void) => {
+    const cols = widths.map((w) => createContainer("column", { width: w, children: [blockForKind("text")] } as Partial<BoxNode>));
+    edit?.(cols);
+    return markPageGrid(normalizeRowBands({ ...emptyPageRoot(), children: [makeRowBand(cols)] } as BoxNode));
+  };
+  const kid = (root: BoxNode, i: number) => root.children![0].children![i];
+  const css = (root: BoxNode, i: number) => childStyle(kid(root, i), root.children![0]);
+
+  it("a free margin is a % of its OWN columns, written as a share of its grid area — its columns stay on the lines", () => {
+    // 5 + 7 of 12; the first block sits 20% of its 5 columns in from the right (one column)
+    const p0 = pageOf(["41.67%", "58.33%"]); const r = setFreeInset(p0, kid(p0, 0).id, "right", 20);
+    const band = r.children![0];
+    expect(String(css(r, 0).gridColumn)).toBe("span 5");
+    expect(String(css(r, 0).marginRight)).toMatch(/^calc\(20% \+ /);
+    expect(String(css(r, 1).gridColumn)).toBe("span 7");
+    // a dragged gap before it AND a free margin: the margin is of its columns, the area holds both
+    const g = pageOf(["40%", "50%"], (c) => { c[0].marginLeftPct = 10; c[0].freeInset = { left: 50 }; }); // area 5 of 10 tracks, columns 4 of them
+    const cell = pageRowCells(g.children![0], "base").get(kid(g, 0).id)!;
+    expect([cell.gapPct, cell.insetL]).toEqual([20, 40]);
+    expect(String(css(g, 0).marginLeft)).toMatch(/^calc\(60% \+ /);
+    expect(band.children!.length).toBe(2);
+  });
+
+  it("the canvas's slot includes the free margin, so the next drag starts from the lines", () => {
+    const root = pageOf(["50%", "50%"]); const a = kid(root, 0).id;
+    const before = pageRowSlot(root.children![0], a, "base", 80)!;
+    const after = pageRowSlot(setFreeInset(root, a, "right", 25).children![0], a, "base", 80)!;
+    expect(after.left).toBeCloseTo(before.left, 6);
+    expect(after.right - before.right).toBeCloseTo(0.25 * 40, 6); // a quarter of a half of an 80 rem page
+  });
+
+  it("setFreeInset: per side, per screen, the box keeps a tenth of its columns, undefined puts it back on the line", () => {
+    const root = pageOf(["50%", "50%"]); const a = kid(root, 0).id;
+    const r = setFreeInset(setFreeInset(root, a, "left", 70), a, "right", 70);
+    expect(kid(r, 0).freeInset).toEqual({ left: 70, right: 20 });
+    const back = setFreeInset(setFreeInset(r, a, "left", undefined), a, "right", undefined);
+    expect(kid(back, 0).freeInset).toBeUndefined();
+    const phone = setFreeInset(root, a, "left", 30, "phone");
+    expect([kid(phone, 0).freeInset, resolveResponsive(kid(phone, 0), "phone").freeInset]).toEqual([undefined, { left: 30, right: undefined }]);
+  });
+
+  it("an Alt slide: the box keeps its width, its columns are the lines around it, the block after never moves", () => {
+    // 3 of 12 then 6 of 12 with three columns of room after the first (a gap before the second)
+    const root = pageOf(["25%", "50%"], (c) => { c[1].marginLeftPct = 25; }); const a = kid(root, 0).id;
+    const bStart = linesAt(root, kid(root, 1).id, 12)!.from;
+    const r = slideFreeAt(root, a, 1.5, 12); // its box moved 1.5 columns: from 1.5 to 4.5
+    expect(linesAt(r, a, 12)).toMatchObject({ from: 2, to: 6 });               // lines 2 … 6 (columns 1 … 5)
+    expect(kid(r, 0).freeInset).toEqual({ left: 12.5, right: 12.5 });           // half a column of four, each side
+    expect(linesAt(r, kid(r, 1).id, 12)!.from).toBe(bStart);                     // the next block did not move
+    // never past the block after it, nor before the line's start
+    expect(linesAt(slideFreeAt(root, a, 99, 12), a, 12)).toMatchObject({ from: 4, to: 7 });
+    expect(slideFreeAt(root, a, -5, 12)).toEqual(slideFreeAt(root, a, 0, 12));
+    // landing ON lines leaves no free margin; a second slide starts from where the first left it
+    expect(kid(slideFreeAt(root, a, 2, 12), 0).freeInset).toBeUndefined();
+    const twice = slideFreeAt(r, a, 0.5, 12), once = slideFreeAt(root, a, 2, 12);
+    expect([linesAt(twice, a, 12), kid(twice, 0).freeInset, linesAt(twice, kid(twice, 1).id, 12)]).toEqual([linesAt(once, a, 12), kid(once, 0).freeInset, linesAt(once, kid(once, 1).id, 12)]);
+    // packed tight: there is nowhere to go, nothing changes
+    const tight = pageOf(["50%", "50%"]);
+    expect(linesAt(slideFreeAt(tight, kid(tight, 0).id, 3, 12), kid(tight, 0).id, 12)).toMatchObject({ from: 1, to: 7 });
+  });
+
+  it("G3b-16 · a slide never re-packs the row: nothing comes up from the line below, nothing jumps to the line above", () => {
+    // line 1: a 4-column gap + A (4); line 2: B (6), which does not fit beside A
+    const down = pageOf(["33.33%", "50%"], (c) => { c[0].marginLeftPct = 33.33; }); const a = kid(down, 0).id, b = kid(down, 1).id;
+    expect(linesAt(down, b, 12)!.first).toBe(true);
+    const r = slideFreeAt(down, a, -4, 12);
+    expect(linesAt(r, b, 12)!.first).toBe(true);                       // B is still the first on ITS line: it did not come up
+    expect(linesAt(r, a, 12)!.from).toBe(1);                            // A went where it was let go…
+    expect(kid(r, 0).freeInset?.right).toBeGreaterThan(0);              // …its columns still covering where it was, the rest free
+    // line 1: A (6); line 2: a 4-column gap + B (6) — sliding B left must not lift it onto line 1
+    const up = pageOf(["50%", "50%"], (c) => { c[1].marginLeftPct = 33.33; });
+    const r2 = slideFreeAt(up, kid(up, 1).id, -4, 12);
+    expect(linesAt(r2, kid(r2, 1).id, 12)).toMatchObject({ first: true, from: 1 });
+    expect(linesAt(r2, kid(r2, 0).id, 12)).toMatchObject({ first: true, last: true });
+  });
+
+  it("G3b-18 · a block's readable floor never asks for more than its area less its margins (no overlap at 2 of 6)", () => {
+    const r = pageOf(["50%", "50%"], (c) => { c[0].responsive = { phone: { width: "33.33%" } }; });
+    const band = r.children![0];
+    for (const bp of ["phone", "base"] as Breakpoint[]) {
+      const s = childStyle(kid(r, 0), band, bp);
+      expect(String(s.minWidth), bp).toMatch(/^min\(calc\(100% - .+ - .+\), [\d.]+rem\)$/);
+      expect(String(s.minWidth)).toContain(String(s.marginLeft)); // the very margins it is drawn with
+    }
+  });
+
+  it("a slide is per screen: the others keep their lines", () => {
+    const root = pageOf(["25%", "50%"], (c) => { c[1].marginLeftPct = 25; }); const a = kid(root, 0).id;
+    const r = slideFreeAt(root, a, 1.5, 6, "phone");
+    expect(linesAt(r, a, 12, "base")).toMatchObject({ from: 1, to: 4 });
+    expect(kid(r, 0).freeInset).toBeUndefined();
+  });
+
+  it("the fit rule drops the free margin where it steps a line (equal blocks)", () => {
+    const r = pageOf(["25%", "25%", "25%", "25%"], (c) => { c[0].freeInset = { left: 40 }; });
+    const site = siteFromRoot(r); const html = renderSitePage(site, DEFAULT_THEME, site.homeId, { inlineShared: true });
+    const steps = html.match(/grid-column:span \d+ !important;[^}]*/g) ?? [];
+    expect(steps.length).toBeGreaterThan(0);
+    expect(steps.filter((d) => d.includes("40%"))).toEqual([]);
+    expect(html).toMatch(/margin-left:calc\(40% \+ /); // …while the line is not stepped, it is there
   });
 });
