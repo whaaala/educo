@@ -2496,7 +2496,7 @@ sent), and my research. Nothing on the layout is done until every line here is c
     falls back into the flow unless placed at that rung; the page audit and Page check warn when it covers words;
     shown as drag on the canvas with the half-lines drawn, a Position panel (start / end, column / row, spill above /
     below) and a gallery of ready-made placements (RULE S / UI). Joins AC-10, ST-5, AC-35 — one build
-    - `[>]` AC-37b ← YOU ARE HERE (BATCH G-3c CLOSED 2026-10-05; BATCH G-3b REOPENED — (1), (2), (4), (5) done; next leaf: (3) Alt free → lines + margin, then (6) rows as grid rows ("span N rows"), then G-3b's final HEADED pass, the artifacts and the layout story before the PR; earlier: handover of session 5da86722 in the SESSION LOG — G-3 CLOSED 2026-10-04 (63 headed checks, G3-8 carried to G-3b by the user); earlier: BATCH G-3 · placing on columns AND rows — G-2 CLOSED 2026-10-04 (134 headed checks); P-0 CLOSED 2026-10-04 (R4-1 … R4-5 fixed, 30 headed checks); R-4 SIGNED with D1–D5 (session 9fa0fee9); then G-3, P-1, P-2, G-4, P-3, G-5, G-6. G-1 CLOSED 2026-10-04 (see BATCHES). Plan APPROVED 2026-10-04 with the user's decisions below. Earlier: research R-3 DONE and SIGNED 2026-10-04
+    - `[>]` AC-37b ← YOU ARE HERE (BATCH G-3b — next leaf (3) Alt free → lines + margin, then (6) rows, then its final pass, then BATCH E-1; handover of session 3da81fad in the SESSION LOG; earlier: handover of session 5da86722 in the SESSION LOG — G-3 CLOSED 2026-10-04 (63 headed checks, G3-8 carried to G-3b by the user); earlier: BATCH G-3 · placing on columns AND rows — G-2 CLOSED 2026-10-04 (134 headed checks); P-0 CLOSED 2026-10-04 (R4-1 … R4-5 fixed, 30 headed checks); R-4 SIGNED with D1–D5 (session 9fa0fee9); then G-3, P-1, P-2, G-4, P-3, G-5, G-6. G-1 CLOSED 2026-10-04 (see BATCHES). Plan APPROVED 2026-10-04 with the user's decisions below. Earlier: research R-3 DONE and SIGNED 2026-10-04
       (`ff5c53a`, `4418202`); build to every decision recorded under R-3 below; the mockups settle the open three (row
       snap · the phone gap 11 vs 16 px · panel per site or per page) → the user's approval → build) · **THE PAGE GRID — DECIDED by the user 2026-10-03: done RIGHT AFTER L-4 closes, BEFORE L-5, L-6 and the
       frozen list's placement items** (they are built on it). NAMES (decided): "page grid" in code and docs; the lines a
@@ -3310,6 +3310,44 @@ sent), and my research. Nothing on the layout is done until every line here is c
 One entry per session, newest first. Written the moment the user says "new session" (or the context is about to run
 out) — where the session STARTED FROM, where it GOT TO, and where the next one CONTINUES FROM.
 
+### 2026-10-05 · session 3da81fad · branch `builder/layout-uat` — HANDOVER (recommended once both held: the context is genuinely long — G-3b's four changes and all of G-3c, about fifteen six-window headed passes, five full gates and twelve decisions of the user — and the boundary is clean: everything committed at `5274e18`, nothing running; the user agreed: "Yes. Let's move on to a new session")
+- **Started from:** session 5da86722's handover — BATCH G-3b (the page as a real CSS grid) next.
+- **Got to:** (1) **G-3b (1), (2), (4), (5) DONE** (`e70850a`, `e8d0d55`, `f4bacbc`): a row of the page is a CSS grid on the page's own
+  lines (`isPageRow`, `pageRowTracks` — the same track count on every screen, `rowTrackCount`), G3-8 closed at 0.00px; the fit rule
+  steps every line by span; "Space between columns" / "…rows"; From line · To line · Whole line · To the last line · Bleed in the
+  Size section (`linesAt`, `setLinesAt`, `fullWidthAt`, `bleed`). (2) **BATCH G-3c CLOSED** (`825e102` + `5274e18`): the page's frame
+  on all four sides from ONE emitter (`FRAME_CSS` / `frameCss`, `pageFrameEnds`, `frameRemAt`, `rowSideRemAt`). (3) Found and fixed:
+  empty pictures published nothing (G3b-12, found by the user), the fit rule overrode a width set for a screen (G3b-11), every fluid
+  label said "value ÷ 16 rem" (G3c-1, G3c-10), the panel stuck open after "Back to default" (G3c-11), two flaky Preview specs
+  (G3b-7a/b), and a new headed slice I proves every palette block is SHOWN in the Preview. (4) THE USER'S DECISIONS: equal cards over
+  exact lines (G3b-3) · split column / row gaps · the frame all round, 1 → 1.25 rem, adjustable to 0 · empty picture = the same box, a
+  soft placeholder · a width set for a screen wins over the fit rule · fluid sliders say phone → wide · the frame before G-3b's end ·
+  the 7 tablet / phone editor failures (G3c-13, present before G-3c) → BATCH E-1 after G-3b.
+- **Continue from:** **BATCH G-3b (YOU ARE HERE) → change (3) Alt free → lines + margin**, then (6), then G-3b's final pass, then E-1.
+- **Next prompt (paste to start):** "Branch `builder/layout-uat` (last commit: this handover). Read CLAUDE.md, then `docs/TASK_TREE.md`:
+  this SESSION LOG entry, then YOU ARE HERE (AC-37b → BATCH G-3b), then in BATCHES: G-3b (its changes, its HEADED UAT CHECKLIST U1–U9,
+  its DESIGN paragraph and LEDGER G3b-1 … G3b-14), G-3c (closed — what the frame is and the ledger G3c-1 … G3c-13) and the queued E-1.
+  Then read: `docs/web-anatomy/css-layout/07-map.md` §1 ("Free placement (Alt)": the drop point → the nearest lines + an offset as
+  MARGIN inside the slot, never page x / y) and §2.A rows A6 / A7, `lib/page-grid.ts`, and in `lib/box-model.ts`: `isPageRow`,
+  `rowLinesAt`, `pageRowCells`, `pageRowSides` / `pageRowMargin` (the equal shares as CSS of the frame), `linesAt` / `setLinesAt`,
+  `frameCss`, `pageFrameEnds`; in `components/website/box/BoxCanvas.tsx`: `startResize` (`snapCols`, `snapEdgePx`, `slotSide` →
+  `pageRowSlot(band, id, bp, pageRem)`, `freeWidth` written on an Alt drag). DO, IN ORDER: (1) RULE K — nothing on 3100 / 3200; (2) G-3b
+  (3) ALT FREE: today an Alt drag writes a free share (`freeWidth`) that lands between lines; make it the nearest line PLUS a margin
+  inside the slot (map §1), on every screen, so 'Line up with the grid' and the fit rule still work — BDD first, unit guards
+  mutation-proven; (3) G-3b (6) ROWS: 'span N rows' for a block of a page row (the user: a gallery photo 2 rows tall, height still grows
+  with its words) — grid rows on the page row, a control in the Size section beside 'Rows' (RULE UI), the phone falls back; (4) G-3b's
+  FINAL headed pass: `scripts/uat/uat-g3b-headed.js` (slices A–I, nine windows) + new slices for (3) and (6), Preview at all 70
+  screens at 100 / 150 / 200 %, regression G-3c / G-3 / G-2; (5) full gate (typecheck · eslint · vitest · test:fast); close G-3b; then
+  (6) BATCH E-1. STANDING DECISIONS: the AC-37b plan, R-4's D1–D5, session 5da86722's six, and this session's (above). NOT DONE: G-3b
+  (3), (6), final pass; E-1; the artifacts (the plan https://claude.ai/artifact/Q5rAsZNSJJBXrnBTJf9zBN — out of date, Builder Hub,
+  Layout System, Parity Audit, Website Builder Guide) and the layout story (RULE L) for the page grid — before the PR. TRAPS: NEVER
+  `git checkout <file>` to undo a mutation — it discarded ~150 lines of work once this session; write the saved string back (the
+  `mutate*.js` pattern); write every edit script with the Write tool (heredocs and `node -e` mangle backslashes and turn `/c/…` paths
+  into `C:\\c\\…`); in a headed script divide only RECTS by the canvas zoom, never computed styles (it bit G3c-5 twice); the
+  Preview's `<main>` is `display: contents`; the page fills the window, so 'below the last block' is the page's bottom padding, not
+  the white space; a Card / Button is never a 'bleeding section'; test:fast runs desktop-chrome only (E-1 changes that); a
+  `NEXT_DIST_DIR=.next-b` build rewrites `tsconfig.json` (restore it), or build an old commit in a `git worktree` with a
+  `node_modules` junction (remove the junction before the worktree)."
 ### 2026-10-04 · session 5da86722 · branch `builder/layout-uat` — HANDOVER (recommended once both held: the context is genuinely long — two batches (G-2, G-3), about a dozen six-window headed passes, three full gates and six decisions of the user — and the boundary is clean: everything committed at `d83939f`, nothing running; the user agreed: "yes")
 - **Started from:** session 9fa0fee9's handover — BATCH G-2 next (layout guides + the page-grid panel).
 - **Got to:** (1) **BATCH G-2 CLOSED** (`ca5eefe`): layout guides (switch · Shift G · right-click · Page settings), span chips, the
