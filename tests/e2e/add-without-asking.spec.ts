@@ -28,6 +28,16 @@ const nodeCount = (page: Page) => page.evaluate(() => {
 
 const tile = (page: Page, name: string) => page.locator('[role="button"]', { hasText: new RegExp(`^${name}`) }).first();
 
+/**
+ * E-1 (E1-2 · E1-3 · E1-4): UNDER 64em THE INSPECTOR STARTS AS ITS TAB (commit 5345e80 — the canvas keeps the screen, Escape closes
+ * it), so on a tablet held upright or a phone a person taps "Inspector" to open it. These tests assumed the docked desktop panel:
+ * the presets and "Full screen" were never on screen there, and "Add a block inside" matched the block toolbar's "+" instead.
+ */
+async function openInspector(page: Page) {
+  const tab = page.getByRole("button", { name: "Expand inspector" });
+  if (await tab.isVisible().catch(() => false)) { await tab.click(); await page.waitForTimeout(400); }
+}
+
 test.describe("a look on an empty box is not worth a question", () => {
   for (const name of ["Stack", "Side by side", "Image", "Icon"]) {
     test(`${name} lands on one click, with nothing in the way`, async ({ page }) => {
@@ -77,6 +87,7 @@ test.describe("the looks did not disappear — they moved to where they can be j
     await page.mouse.click(b.x + b.width * 0.5, b.y + 10);
     await page.waitForTimeout(700);
 
+    await openInspector(page);
     const gallery = page.locator('[aria-label="Style presets"]');
     await expect(gallery, "the same four looks, in the inspector").toBeVisible({ timeout: 10000 });
     for (const look of ["Plain", "Card", "Outline", "Tinted"]) {
@@ -105,6 +116,7 @@ test.describe("a height you set beats the courtesy height", () => {
     await page.mouse.click(b.x + b.width * 0.5, b.y + 10);
     await page.waitForTimeout(600);
 
+    await openInspector(page);
     const arrange = page.locator("button", { hasText: /^Arrange/ }).first();
     if (await arrange.count()) {
       const open = await arrange.getAttribute("aria-expanded");
@@ -216,7 +228,9 @@ test.describe("adding a block never moves your insertion point", () => {
     // and failed against the production build, which is timing, not behaviour.
     await page.keyboard.press("b");
     await page.waitForTimeout(400);
-    const inside = page.getByRole("button", { name: /Add a block inside/i });
+    await openInspector(page);
+    // the inspector's own button (it adds straight away); the block toolbar's "+" is "Add a block inside this one" and opens a menu
+    const inside = page.getByRole("button", { name: "Add a block inside", exact: true });
     expect(await inside.count(), "the explicit nesting control is there").toBeGreaterThan(0);
     const depthBefore = Math.max(...lines.map((l) => Number(l.split(":")[0])));
     await inside.first().click();
@@ -263,8 +277,11 @@ test.describe("the page is exactly as tall as what is on it", () => {
   test("an EMPTY page still has a floor, so there is somewhere to drop the first block", async ({ page }) => {
     // The offer this fix must not remove: with nothing on it, the page is still a visible drop target.
     await freshBuilder(page);
+    // E1-1: in PAGE px, like the courtesy-height test — with the blocks panel docked (1024px and up) the page is shown shrunk to fit,
+    // so the 160px floor is drawn at ~82 screen px on a tablet held sideways
+    const scale = await page.locator("[data-box-id]").first().evaluate((el) => Number(el.closest<HTMLElement>("[data-canvas-scale]")?.dataset.canvasScale) || 1);
     const root = await pageRootBox(page);
-    expect(root.height, "an empty page is still a box you can aim at").toBeGreaterThan(100);
+    expect(root.height / scale, "an empty page is still a box you can aim at").toBeGreaterThan(100);
   });
 
   test("and it still grows past the floor with real content", async ({ page }) => {

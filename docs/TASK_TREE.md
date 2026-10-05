@@ -284,14 +284,41 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
     pages byte-identical
   - `[x]` (2) A SMALLER DEFAULT — DONE (MEASURED: 16px at Mobile / Tablet, 16.19 at Laptop, 18.24 at Desktop, 20 at Wide) (`clamp(1rem, 1.6 × the fluid unit, 1.25rem)`, SPACE_GRID.gutter 23 → 16 in the arithmetic). WAS: 1 rem on a 360 phone (the page audit's floor) growing gently to ~1.25 rem on wide screens (today
     23 units: 1 → 1.6 → 2 rem), in rem with a fluid term (rule 16); the audit's floor unchanged
-- `[ ]` **BATCH E-1 · The editor on tablets and phones** — QUEUED 2026-10-05 by the user (G3c-13) (area: the editor at small
+- `[>]` **BATCH E-1 · The editor on tablets and phones** — OPENED 2026-10-05 after G-3b closed; QUEUED 2026-10-05 by the user (G3c-13) (area: the editor at small
   viewports · 2 changes). Opens after G-3b closes.
   - `[ ]` (1) the 7 that fail on tablet-landscape / tablet-portrait / mobile-chrome (`add-without-asking.spec.ts`: an empty page's floor,
     a Stack's four looks, "Full screen" on an empty section, "Add a block inside" nesting — the same 7 on f4bacbc): measure each,
     fix, guard
   - `[ ]` (2) the gate runs the tablet and phone projects too (`scripts/test-fast.js` runs `--project=desktop-chrome` only), so a
     small-screen fault cannot hide again
-- `[x]` **BATCH G-3 · Placing on columns and rows** — CLOSED 2026-10-04 (HEADED UAT `scripts/uat/uat-g3-headed.js`, six windows,
+  HEADED UAT CHECKLIST (written before the pass; six windows; fresh production build; built through the UI, the way a person does
+  on each screen: tablet landscape 1024 × 768 · tablet portrait 768 × 1024 · phone 393 × 851, touch on; the four editor themes):
+  - `[ ]` E1 an empty page is a box you can aim at (the floor) and a first block dropped into it lands — at each size
+  - `[ ]` E2 a Stack's four looks: tap the block, open the Inspector from its tab, the four live previews are there and apply
+  - `[ ]` E3 "Full screen" on an empty section from the opened Inspector makes it one screen tall; Undo
+  - `[ ]` E4 a block added from the palette is a sibling; "Add a block inside" in the Inspector nests; the toolbar "+" menu nests too
+  - `[ ]` E5 the Inspector's tab is labelled, keyboard-reachable, 4.5:1 in all four themes; Escape closes it on a narrow screen
+  LEDGER E-1:
+  - `[>]` E1-1 · TEST, MEASURED (probe-e1.js): "an empty page's floor" read 82px on a tablet held sideways — the blocks panel docks at
+    1024px and the page is shown shrunk to fit (#55/#57), the 160px floor drawn at ~0.51. The spec measured screen px, its neighbour
+    page px → page px. HEADLESS 60 / 60 on all four projects; closes on the headed pass (E1)
+  - `[>]` E1-2 · TEST, MEASURED: "a Stack's four looks" — under 64em the Inspector starts as its tab by design (5345e80: the canvas keeps
+    the screen; Escape closes it), so the presets were never on screen; the spec assumed the docked panel → it opens the tab as a
+    person does (E2)
+  - `[>]` E1-3 · TEST, MEASURED: "Add a block inside still nests" — with the Inspector closed, the first match of /Add a block inside/
+    was the block toolbar's "+" ("…inside this one"), which opens a menu to choose from, so nothing nested yet → the Inspector's
+    own button, by its exact name (E4)
+  - `[>]` E1-4 · TEST, MEASURED: "Full screen on an empty section" — the same closed Inspector (E3)
+  - `[?]` E1-5 · MEASURED FOR (2) (HEADLESS GATE, `logs/e1-smallscreens.out`): the gate's 76 browser specs on tablet-landscape /
+    tablet-portrait / mobile-chrome — 2,348 passed, 70 FAILED in 14 specs: grid-cell-resize 13 · spacing-gestures 12 · masonry-builder
+    10 · vertical-edges-anchored 7 · side-by-side-resize 6 · multipage-preview 5 · stack-under-column 4 · canvas-zoom 3 ·
+    chrome-follows-resize 3 · float-round-trip 3 · component-layout-invariants 1 · dropped-block-fills-space 1 · pager-hero 1 ·
+    text-is-reachable 1. Each is either a spec that assumes the desktop (as E1-1 … E1-4 were) or a real small-screen bug — not yet
+    measured one by one. (2) cannot switch on until they are green, and they are more than one batch (RULE X, ≤ 6). PROPOSED, for the
+    user to decide: E-1 closes with (1) and its headed pass; the 70 become queued batches by area — E-2 resizing and dropping on small
+    screens (grid-cell, vertical edges, side by side, stack under column, float, drop fills, chrome follows: 37), E-3 the Inspector's
+    controls on a narrow screen (spacing, masonry, text reachable, canvas zoom: 26), E-4 Preview and components on small screens
+    (multipage preview, pager, component invariants: 7) — and (2) switches on in E-4's close, when all are green — CLOSED 2026-10-04 (HEADED UAT `scripts/uat/uat-g3-headed.js`, six windows,
   65 checks 0 failed on the final build (`logs/g3-uat6.out`), Preview at all 70 screens at 100 / 150 / 200 % text; G-2's suite
   re-run as regression 128/0 (`g2-regress-g3c.out`); gate: see the commit) — OPENED 2026-10-04 (session 5da86722, the user's "go") (area: page grid
   · 6 changes). G-3 as signed under R-4 was split so each batch keeps ≤ 6 changes: THIS batch is placing; **G-3b** (queued, below)
