@@ -31,6 +31,8 @@ Run through this checklist BEFORE telling the user it's done:
   through the interface. **Could not reproduce what the user reported? Then you did not build it their way.**
 - [ ] **⛔ RULE X — YOU SAW IT IN THE UI, ONE PASS PER BATCH** — every change in the batch, however small, driven in a real browser from the user's point of view, each checklist line ticked with what you saw, before the next batch opens. Typecheck + the related unit guard still run after EVERY change. Each one checked in EVERY combination it can appear in (themes · 375/768/1280+ · device presets · every entry point · each state ON and OFF), trying hard to break it. State what you drove and what you saw. **The user must never be the one who finds it.** See [docs/UAT_EVERY_CHANGE.md](docs/UAT_EVERY_CHANGE.md).
 - [ ] **⛔ THE TASK TREE IS UP TO DATE** — [docs/TASK_TREE.md](docs/TASK_TREE.md) shows what this change closed (with its commit or measurement), every new promise made along the way, and **YOU ARE HERE** on the next leaf. Work is not done while the tree still describes the state before it.
+- [ ] **⛔ RULE DOCS — ITS DOCUMENTATION PAGE IS WRITTEN OR UPDATED** — in `docs/guide/` (the Docusaurus site), in the same change:
+  the story and the reference for what changed, clean to read, screenshots from the real builder. No batch closes without it.
 - [ ] **Every button/toggle/input works** — click every interactive element, verify it does its job
 - [ ] **All entry points tested** — menu items, toolbar buttons, keyboard shortcuts, right-click
 - [ ] **Side effects verified** — if feature A blocks B/C/D, test ALL of B/C/D are blocked
@@ -603,9 +605,23 @@ Run through this checklist BEFORE telling the user it's done:
   https://github.com/facebook/docusaurus, studied and stored in [docs/DOCUSAURUS.md](docs/DOCUSAURUS.md). Every piece of
   user-facing documentation is Markdown/MDX in `docs/guide/` in the story's voice (RULE L), organised the Docusaurus way
   (one page per area, front matter, a sidebar that puts the story first), and rendered by the `docs-site/` Docusaurus
-  site once it exists — set up as the first thing after the layout work closes, before templates, components or the
-  LLM builder. The Markdown is the single source; the site never becomes a second copy. This is the format every time,
-  going forward, so everyone knows what the documentation is and where it lives.
+  site — set up NOW (the user moved it forward 2026-10-05, BATCH D-2), before templates, components or the LLM builder.
+  The Markdown is the single source; the site never becomes a second copy. This is the format every time, going forward,
+  so everyone knows what the documentation is and where it lives.
+- **RULE DOCS — THE DOCUMENTATION IS CLEAN, COMPLETE AND KEPT CURRENT, THE DOCUSAURUS WAY (MANDATORY — the user, 2026-10-05:
+  "rewrite everything to make sure that it's clean and it follows that… everything documented properly… then we start updating
+  it as we go along… add it as a rule that must be followed").** https://docusaurus.io/ is the model (`docs/DOCUSAURUS.md`).
+  - **Clean to read, measured:** the deck's typography (RULE F / D) — body 16–18px in rem, lines ≤ ~70 characters, line-height
+    1.5–1.7, at most two type families, a clear heading scale, generous whitespace; Educo's colour tokens; light AND dark
+    ≥ 4.5:1; checked HEADED at phone · tablet · laptop · desktop and at 200 % text. "Okay-ish" is a finding, not a finish.
+  - **Complete:** every feature a person uses has its page — the story (what you want, what you do, what you see on every
+    screen, why; RULE L) and the reference (every control by its name in the panel, what it does, its shortcut), with
+    screenshots from the real builder. The layout first, from the beginning, every single thing; then every other area.
+  - **Current, in the same change:** every batch writes or updates its page in `docs/guide/` (rendered by `docs-site/`) in the
+    change that ships it; RULE X's checklist always has that line, and a batch does not close without it. A page that
+    describes a state the code has left behind is a bug in the ledger (rule 14).
+  - **Guarded:** a unit guard fails when a guide page has no front matter, is missing from the sidebar, or links to something
+    that does not exist; `npm run docs:build` joins the gate whenever `docs/guide/` or `docs-site/` changes.
 - **RULE UI — EVERYTHING BUILT IS IN THE BUILDER FOR THE USER TO PLAY WITH (MANDATORY — the user, 2026-10-03: "anything
   you're implementing… should also be visible on the UI that a user can play around with, select and create their own…
   everything we've done so far and everything we're doing").** Every capability the engine has — a background, a

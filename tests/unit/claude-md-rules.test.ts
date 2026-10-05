@@ -140,6 +140,7 @@ const RULES: [name: string, mustSay: RegExp][] = [
   ["…the register lives in docs/RISKS.md", /docs\/RISKS\.md/],
   /** The user, 2026-09-28: documentation is written for and published with Docusaurus, every time. */
   ["Documentation is written for, and published with, Docusaurus (RULE DOC)", /RULE DOC — DOCUMENTATION IS WRITTEN FOR, AND PUBLISHED WITH, DOCUSAURUS/],
+  ["Documentation is clean, complete and kept current, the Docusaurus way (RULE DOCS)", /RULE DOCS — THE DOCUMENTATION IS CLEAN, COMPLETE AND KEPT CURRENT/],
   ["…stored research in docs/DOCUSAURUS.md, the Markdown in docs/guide is the single source", /docs\/DOCUSAURUS\.md[\s\S]*single source/],
   /** The user, 2026-10-03: everything built is surfaced in the builder, easy to select and to make your own. */
   ["Everything built is in the builder for the user to play with (RULE UI)", /RULE UI — EVERYTHING BUILT IS IN THE BUILDER FOR THE USER TO PLAY WITH/],
