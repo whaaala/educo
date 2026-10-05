@@ -50,6 +50,15 @@ describe("the task tree's batches keep RULE X's limits", () => {
     expect(batchProblems(TREE)).toEqual([]);
   });
 
+  // E1-6: an edit that dropped BATCH G-3's header left its closed record running on inside another batch's ledger, and the checks
+  // above passed — every batch the tree NAMES must have a header of its own
+  const headless = (t: string) => {
+    const headed = new Set([...t.matchAll(/\*\*BATCH ([A-Z]+-\d+[a-z]?) ·/g)].map((m) => m[1]));
+    return [...new Set([...t.matchAll(/BATCH ([A-Z]+-\d+[a-z]?)\b/g)].map((m) => m[1]))].filter((id) => !headed.has(id));
+  };
+  it("every batch the tree names has its own header", () => expect(headless(TREE)).toEqual([]));
+  it("…and a dropped header fails", () => expect(headless("- `[x]` **BATCH A-1 · x**\n  see BATCH B-2\n")).toEqual(["B-2"]));
+
   // Each check proven red, so the guard above cannot pass for the wrong reason.
   const ok = "## BATCHES\n\n- `[>]` **BATCH A · x** (area: a · 2 changes)\n  - `[ ]` one\n- `[ ]` **BATCH B · y** (area: b · 1 change)\n\n## 1 · next\n";
   it("a healthy tree passes", () => expect(batchProblems(ok)).toEqual([]));

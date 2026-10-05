@@ -309,7 +309,8 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
     was the block toolbar's "+" ("…inside this one"), which opens a menu to choose from, so nothing nested yet → the Inspector's
     own button, by its exact name (E4)
   - `[>]` E1-4 · TEST, MEASURED: "Full screen on an empty section" — the same closed Inspector (E3)
-  - `[?]` E1-5 · MEASURED FOR (2) (HEADLESS GATE, `logs/e1-smallscreens.out`): the gate's 76 browser specs on tablet-landscape /
+  - `[x]` E1-5 · DECIDED BY THE USER 2026-10-05 ("split by area"): E-1 closes with (1) and its headed pass; the 70 are QUEUED
+    BATCHES E-2 / E-3 / E-4 below; (2) switches on when E-4 closes. MEASURED FOR (2) (HEADLESS GATE, `logs/e1-smallscreens.out`): the gate's 76 browser specs on tablet-landscape /
     tablet-portrait / mobile-chrome — 2,348 passed, 70 FAILED in 14 specs: grid-cell-resize 13 · spacing-gestures 12 · masonry-builder
     10 · vertical-edges-anchored 7 · side-by-side-resize 6 · multipage-preview 5 · stack-under-column 4 · canvas-zoom 3 ·
     chrome-follows-resize 3 · float-round-trip 3 · component-layout-invariants 1 · dropped-block-fills-space 1 · pager-hero 1 ·
@@ -318,7 +319,19 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
     user to decide: E-1 closes with (1) and its headed pass; the 70 become queued batches by area — E-2 resizing and dropping on small
     screens (grid-cell, vertical edges, side by side, stack under column, float, drop fills, chrome follows: 37), E-3 the Inspector's
     controls on a narrow screen (spacing, masonry, text reachable, canvas zoom: 26), E-4 Preview and components on small screens
-    (multipage preview, pager, component invariants: 7) — and (2) switches on in E-4's close, when all are green — CLOSED 2026-10-04 (HEADED UAT `scripts/uat/uat-g3-headed.js`, six windows,
+    (multipage preview, pager, component invariants: 7) — and (2) switches on in E-4's close, when all are green
+  - `[x]` E1-6 · REAL, MINE, FOUND WHILE EDITING THE TREE: adding E-1's checklist dropped BATCH G-3's header line (my edit's text ended
+    on it and did not put it back), so G-3's closed record ran on after E1-5 — committed in e69d4e3 and missed by the tree's guard. →
+    the header restored; the guard now also fails when a batch the tree names has no header of its own (red on e69d4e3's tree)
+- `[ ]` **BATCH E-2 · Resizing and dropping on tablets and phones** — QUEUED 2026-10-05 by the user ("split by area", E1-5) (area: the
+  editor's gestures at small viewports · the failing specs, each measured: a spec that assumes the desktop, or a real bug — fixed
+  either way): grid-cell-resize 13 · vertical-edges-anchored 7 · side-by-side-resize 6 · stack-under-column 4 · float-round-trip 3 ·
+  chrome-follows-resize 3 · dropped-block-fills-space 1 (37 on tablet-landscape / tablet-portrait / mobile-chrome)
+- `[ ]` **BATCH E-3 · The Inspector's controls on a narrow screen** — QUEUED 2026-10-05 by the user (E1-5): spacing-gestures 12 ·
+  masonry-builder 10 · canvas-zoom 3 · text-is-reachable 1 (26)
+- `[ ]` **BATCH E-4 · Preview and components on small screens** — QUEUED 2026-10-05 by the user (E1-5): multipage-preview 5 ·
+  pager-hero 1 · component-layout-invariants 1 (7) — and E-1's (2): the gate runs the tablet and phone projects when all are green
+- `[x]` **BATCH G-3 · Placing on columns and rows** — CLOSED 2026-10-04 (HEADED UAT `scripts/uat/uat-g3-headed.js`, six windows,
   65 checks 0 failed on the final build (`logs/g3-uat6.out`), Preview at all 70 screens at 100 / 150 / 200 % text; G-2's suite
   re-run as regression 128/0 (`g2-regress-g3c.out`); gate: see the commit) — OPENED 2026-10-04 (session 5da86722, the user's "go") (area: page grid
   · 6 changes). G-3 as signed under R-4 was split so each batch keeps ≤ 6 changes: THIS batch is placing; **G-3b** (queued, below)
