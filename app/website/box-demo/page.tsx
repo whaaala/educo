@@ -1274,7 +1274,9 @@ export default function BoxDemoPage() {
         </div>
 
         {inspectorOpen && (
-          <aside aria-label="Inspector" className="absolute inset-y-0 right-0 z-40 w-[min(22rem,100%)] shadow-xl lg:static lg:z-auto lg:w-[22rem] lg:shadow-none shrink-0 border-l border-line bg-surface flex flex-col">
+          <aside aria-label="Inspector" style={{ "--drawer-z": CHROME_Z.drawer } as React.CSSProperties} className="absolute inset-y-0 right-0 z-[var(--drawer-z)] w-[min(22rem,100%)] shadow-xl lg:static lg:z-auto lg:w-[22rem] lg:shadow-none shrink-0 border-l border-line bg-surface flex flex-col">
+            {/* E1-8 / E1-9: the drawer's place on the chrome ladder ONLY while it is a drawer — docked (lg) it is a flex item, which honours
+                z-index even when static, and an inline one covered the header's menus: `lg:z-auto` must still win */}
             <div className="h-11 shrink-0 flex items-center gap-2 px-3.5 border-b border-line">
               <span className="grid place-items-center w-6 h-6 rounded-lg bg-indigo-50 dark:bg-indigo-500/15 text-indigo-600 dark:text-indigo-300"><SlidersHorizontal className="w-3.5 h-3.5" strokeWidth={2} /></span>
               <span className="flex-1 text-xs font-bold uppercase tracking-wide text-gray-500 dark:text-gray-400">Inspector</span>
@@ -1301,7 +1303,8 @@ export default function BoxDemoPage() {
             the panel opened moved the whole page 44px sideways (#51). On a laptop and up, the open panel replaces it. */}
           <aside className={`w-11 shrink-0 border-l border-line bg-surface flex flex-col items-center pt-3 gap-2 ${inspectorOpen ? "lg:hidden" : ""}`}>
             <button onClick={() => setInspectorOpen(true)} aria-label="Expand inspector" title="Open Inspector" className="p-1.5 rounded-lg text-gray-500 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-gray-100 dark:hover:bg-white/10 transition-colors"><PanelRightOpen className="w-4 h-4" /></button>
-            <span className="mt-1 text-[0.625rem] font-semibold uppercase tracking-wide text-gray-400 [writing-mode:vertical-rl] rotate-180">Inspector</span>
+            {/* E1-7: gray-400 read 2.6:1 on the light theme's surface — the word that tells a tablet user where the panel went */}
+            <span className="mt-1 text-[0.625rem] font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-300 midnight:text-slate-300 purple:text-purple-200 [writing-mode:vertical-rl] rotate-180">Inspector</span>
           </aside>
       </div>
 

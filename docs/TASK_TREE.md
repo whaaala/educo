@@ -284,31 +284,33 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
     pages byte-identical
   - `[x]` (2) A SMALLER DEFAULT — DONE (MEASURED: 16px at Mobile / Tablet, 16.19 at Laptop, 18.24 at Desktop, 20 at Wide) (`clamp(1rem, 1.6 × the fluid unit, 1.25rem)`, SPACE_GRID.gutter 23 → 16 in the arithmetic). WAS: 1 rem on a 360 phone (the page audit's floor) growing gently to ~1.25 rem on wide screens (today
     23 units: 1 → 1.6 → 2 rem), in rem with a fluid term (rule 16); the audit's floor unchanged
-- `[>]` **BATCH E-1 · The editor on tablets and phones** — OPENED 2026-10-05 after G-3b closed; QUEUED 2026-10-05 by the user (G3c-13) (area: the editor at small
+- `[x]` **BATCH E-1 · The editor on tablets and phones** — CLOSED 2026-10-05 (HEADED UAT `scripts/uat/uat-e1-headed.js`, six windows:
+  tablet landscape · tablet portrait · phone × the four editor themes, touch on, built through the UI, Preview at all 70 screens —
+  88 checks 0 failed; gate: typecheck 0 · eslint 0 errors · vitest 4,358 · test:fast 806 / 806) — OPENED 2026-10-05 after G-3b closed; QUEUED 2026-10-05 by the user (G3c-13) (area: the editor at small
   viewports · 2 changes). Opens after G-3b closes.
-  - `[ ]` (1) the 7 that fail on tablet-landscape / tablet-portrait / mobile-chrome (`add-without-asking.spec.ts`: an empty page's floor,
+  - `[x]` (1) (DONE: all four were the spec assuming the desktop — E1-1 … E1-4; the headed pass found and fixed E1-7, E1-8, E1-9) the 7 that fail on tablet-landscape / tablet-portrait / mobile-chrome (`add-without-asking.spec.ts`: an empty page's floor,
     a Stack's four looks, "Full screen" on an empty section, "Add a block inside" nesting — the same 7 on f4bacbc): measure each,
     fix, guard
-  - `[ ]` (2) the gate runs the tablet and phone projects too (`scripts/test-fast.js` runs `--project=desktop-chrome` only), so a
+  - `[~]` (2) MOVED TO BATCH E-4 by the user's decision (E1-5, "split by area": it switches on when the 70 are green) — the gate runs the tablet and phone projects too (`scripts/test-fast.js` runs `--project=desktop-chrome` only), so a
     small-screen fault cannot hide again
   HEADED UAT CHECKLIST (written before the pass; six windows; fresh production build; built through the UI, the way a person does
   on each screen: tablet landscape 1024 × 768 · tablet portrait 768 × 1024 · phone 393 × 851, touch on; the four editor themes):
-  - `[ ]` E1 an empty page is a box you can aim at (the floor) and a first block dropped into it lands — at each size
-  - `[ ]` E2 a Stack's four looks: tap the block, open the Inspector from its tab, the four live previews are there and apply
-  - `[ ]` E3 "Full screen" on an empty section from the opened Inspector makes it one screen tall; Undo
-  - `[ ]` E4 a block added from the palette is a sibling; "Add a block inside" in the Inspector nests; the toolbar "+" menu nests too
-  - `[ ]` E5 the Inspector's tab is labelled, keyboard-reachable, 4.5:1 in all four themes; Escape closes it on a narrow screen
+  - `[x]` E1 (SEEN 2026-10-05, 88 / 0) an empty page is a box you can aim at (the floor) and a first block dropped into it lands — at each size
+  - `[x]` E2 (SEEN 2026-10-05, 88 / 0) a Stack's four looks: tap the block, open the Inspector from its tab, the four live previews are there and apply
+  - `[x]` E3 (SEEN 2026-10-05, 88 / 0) "Full screen" on an empty section from the opened Inspector makes it one screen tall; Undo
+  - `[x]` E4 (SEEN 2026-10-05, 88 / 0) a block added from the palette is a sibling; "Add a block inside" in the Inspector nests; the toolbar "+" menu nests too
+  - `[x]` E5 (SEEN 2026-10-05, 88 / 0) the Inspector's tab is labelled, keyboard-reachable, 4.5:1 in all four themes; Escape closes it on a narrow screen
   LEDGER E-1:
-  - `[>]` E1-1 · TEST, MEASURED (probe-e1.js): "an empty page's floor" read 82px on a tablet held sideways — the blocks panel docks at
+  - `[x]` E1-1 · TEST, MEASURED (probe-e1.js): "an empty page's floor" read 82px on a tablet held sideways — the blocks panel docks at
     1024px and the page is shown shrunk to fit (#55/#57), the 160px floor drawn at ~0.51. The spec measured screen px, its neighbour
     page px → page px. HEADLESS 60 / 60 on all four projects; closes on the headed pass (E1)
-  - `[>]` E1-2 · TEST, MEASURED: "a Stack's four looks" — under 64em the Inspector starts as its tab by design (5345e80: the canvas keeps
+  - `[x]` E1-2 · TEST, MEASURED: "a Stack's four looks" — under 64em the Inspector starts as its tab by design (5345e80: the canvas keeps
     the screen; Escape closes it), so the presets were never on screen; the spec assumed the docked panel → it opens the tab as a
     person does (E2)
-  - `[>]` E1-3 · TEST, MEASURED: "Add a block inside still nests" — with the Inspector closed, the first match of /Add a block inside/
+  - `[x]` E1-3 · TEST, MEASURED: "Add a block inside still nests" — with the Inspector closed, the first match of /Add a block inside/
     was the block toolbar's "+" ("…inside this one"), which opens a menu to choose from, so nothing nested yet → the Inspector's
     own button, by its exact name (E4)
-  - `[>]` E1-4 · TEST, MEASURED: "Full screen on an empty section" — the same closed Inspector (E3)
+  - `[x]` E1-4 · TEST, MEASURED: "Full screen on an empty section" — the same closed Inspector (E3)
   - `[x]` E1-5 · DECIDED BY THE USER 2026-10-05 ("split by area"): E-1 closes with (1) and its headed pass; the 70 are QUEUED
     BATCHES E-2 / E-3 / E-4 below; (2) switches on when E-4 closes. MEASURED FOR (2) (HEADLESS GATE, `logs/e1-smallscreens.out`): the gate's 76 browser specs on tablet-landscape /
     tablet-portrait / mobile-chrome — 2,348 passed, 70 FAILED in 14 specs: grid-cell-resize 13 · spacing-gestures 12 · masonry-builder
@@ -320,6 +322,18 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
     screens (grid-cell, vertical edges, side by side, stack under column, float, drop fills, chrome follows: 37), E-3 the Inspector's
     controls on a narrow screen (spacing, masonry, text reachable, canvas zoom: 26), E-4 Preview and components on small screens
     (multipage preview, pager, component invariants: 7) — and (2) switches on in E-4's close, when all are green
+  - `[x]` E1-7 · REAL, FOUND BY THE HEADED PASS (E5, Light): the word "INSPECTOR" on the closed panel's tab read 2.6:1 (gray-400) — the
+    word that tells a tablet or phone user where the panel went. → gray-600 with dark / midnight / purple variants: 7.56 · 11.45 ·
+    12.02 · 11.65:1. Guard: the headed E5 contrast check, red before, green after
+  - `[x]` E1-8 · REAL, SEEN IN THE HEADED SCREENSHOT (phone, Midnight) — every check had passed: with the Inspector opened over the
+    canvas on a narrow screen, the selected block's handles, resize bars and toolbar and the blocks launcher were drawn ACROSS it
+    ("diting: Stack", the toolbar over "Styles") — the drawer sat at z-40 under the chrome ladder's 9200–9400. → a `drawer` tier (9450)
+    on the ladder (`lib/educo-ui/stacking.ts`, its order unit-guarded). HEADED: the new check was RED on all four narrow windows of the
+    old build and green after
+  - `[x]` E1-9 · REAL, MINE, CAUGHT BY THE NEXT HEADED PASS (tablet landscape, Purple Dream): E1-8's z-index, written inline, stayed on
+    the DOCKED Inspector (a flex item honours z-index even when static) and covered the header's theme menu — the step timed out. → the
+    drawer's tier as a class fed by a CSS variable, so `lg:z-auto` still wins when docked. HEADED check: the theme menu opens over the
+    docked Inspector and takes the click, both docked windows
   - `[x]` E1-6 · REAL, MINE, FOUND WHILE EDITING THE TREE: adding E-1's checklist dropped BATCH G-3's header line (my edit's text ended
     on it and did not put it back), so G-3's closed record ran on after E1-5 — committed in e69d4e3 and missed by the tree's guard. →
     the header restored; the guard now also fails when a batch the tree names has no header of its own (red on e69d4e3's tree)
@@ -2616,7 +2630,7 @@ sent), and my research. Nothing on the layout is done until every line here is c
     falls back into the flow unless placed at that rung; the page audit and Page check warn when it covers words;
     shown as drag on the canvas with the half-lines drawn, a Position panel (start / end, column / row, spill above /
     below) and a gallery of ready-made placements (RULE S / UI). Joins AC-10, ST-5, AC-35 — one build
-    - `[>]` AC-37b ← YOU ARE HERE (BATCH G-3b CLOSED 2026-10-05; next: BATCH E-1 (the editor on tablets and phones), and the user's two questions in G-3b's ledger; before the PR: the artifacts and the layout story for the page grid; then its final pass, then BATCH E-1; handover of session 3da81fad in the SESSION LOG; earlier: handover of session 5da86722 in the SESSION LOG — G-3 CLOSED 2026-10-04 (63 headed checks, G3-8 carried to G-3b by the user); earlier: BATCH G-3 · placing on columns AND rows — G-2 CLOSED 2026-10-04 (134 headed checks); P-0 CLOSED 2026-10-04 (R4-1 … R4-5 fixed, 30 headed checks); R-4 SIGNED with D1–D5 (session 9fa0fee9); then G-3, P-1, P-2, G-4, P-3, G-5, G-6. G-1 CLOSED 2026-10-04 (see BATCHES). Plan APPROVED 2026-10-04 with the user's decisions below. Earlier: research R-3 DONE and SIGNED 2026-10-04
+    - `[>]` AC-37b ← YOU ARE HERE (BATCH G-3b and BATCH E-1 CLOSED 2026-10-05; next: the user's two questions in G-3b's ledger, then BATCH E-2 (resizing and dropping on tablets and phones); before the PR: the artifacts and the layout story for the page grid; then its final pass, then BATCH E-1; handover of session 3da81fad in the SESSION LOG; earlier: handover of session 5da86722 in the SESSION LOG — G-3 CLOSED 2026-10-04 (63 headed checks, G3-8 carried to G-3b by the user); earlier: BATCH G-3 · placing on columns AND rows — G-2 CLOSED 2026-10-04 (134 headed checks); P-0 CLOSED 2026-10-04 (R4-1 … R4-5 fixed, 30 headed checks); R-4 SIGNED with D1–D5 (session 9fa0fee9); then G-3, P-1, P-2, G-4, P-3, G-5, G-6. G-1 CLOSED 2026-10-04 (see BATCHES). Plan APPROVED 2026-10-04 with the user's decisions below. Earlier: research R-3 DONE and SIGNED 2026-10-04
       (`ff5c53a`, `4418202`); build to every decision recorded under R-3 below; the mockups settle the open three (row
       snap · the phone gap 11 vs 16 px · panel per site or per page) → the user's approval → build) · **THE PAGE GRID — DECIDED by the user 2026-10-03: done RIGHT AFTER L-4 closes, BEFORE L-5, L-6 and the
       frozen list's placement items** (they are built on it). NAMES (decided): "page grid" in code and docs; the lines a

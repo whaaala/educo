@@ -86,6 +86,9 @@ export const CHROME_Z = {
   toolbar: 9300,
   /** The blocks palette and any docked editing panel. */
   panel: 9400,
+  /** The Inspector drawn OVER the canvas on a narrow screen (E1-8): above the selection chrome and the blocks launcher, which
+   *  were drawn across it on a phone — handles over "Editing: Stack", the toolbar over "Styles". Docked, it is static and has none. */
+  drawer: 9450,
   /** The marquee rectangle drawn while selecting several blocks. */
   marquee: 9600,
   /** Snap guides shown while free-dragging, above the marquee that may have started the selection. */
