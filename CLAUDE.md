@@ -10,6 +10,11 @@ Run through this checklist BEFORE writing any code:
 
 - [ ] **READ THE TASK TREE** — [docs/TASK_TREE.md](docs/TASK_TREE.md) holds everything any session has said it will do, as one tree. Find **YOU ARE HERE** before doing anything else, and put every new promise into it the moment it is made.
 - [ ] **Open a BUG LEDGER** — from this point on, every bug you find gets written into your reply as a numbered line the moment you find it, BEFORE deciding anything about it. See [docs/FIX_WHAT_YOU_FIND.md](docs/FIX_WHAT_YOU_FIND.md).
+- [ ] **⛔ RULE M — PONYTAIL, EVERY TIME, FOR EVERYTHING** (https://github.com/dietrichgebert/ponytail, `docs/PONYTAIL.md`; the
+  user, 2026-10-05: "this must be followed every single time you do anything") — before any code, doc, test, script or tool call,
+  find out EXACTLY what is needed and climb the ladder: (1) does it need to exist — no → skip it (YAGNI; nothing added that was
+  not asked for) · (2) already in this codebase → reuse · (3) standard library · (4) native platform feature · (5) an installed
+  dependency (never add one) · (6) one line · (7) only then the minimum that works. Write down which rung was taken.
 - [ ] **Check existing shared components** — search `components/shared/` for `Button`, `FormDropdown`, `CustomDropdown`, `FormInput`, `Modal`, `EditorDialog`, `ColorPickerPopover`, `DataTable`, etc. NEVER duplicate what exists.
 - [ ] **IMPLEMENT for ALL platforms AND screen sizes** — web (desktop 1280px+, tablet 768px, mobile 375px) AND React Native mobile/tablet app (`apps/mobile/`). Every feature MUST be built for BOTH web responsive AND the native mobile/tablet app. Neither is optional.
 - [ ] **Plan for ALL themes** — check `lib/theme-config.ts` for available themes. Every UI element must work in ALL of them.
@@ -31,6 +36,9 @@ Run through this checklist BEFORE telling the user it's done:
   through the interface. **Could not reproduce what the user reported? Then you did not build it their way.**
 - [ ] **⛔ RULE X — YOU SAW IT IN THE UI, ONE PASS PER BATCH** — every change in the batch, however small, driven in a real browser from the user's point of view, each checklist line ticked with what you saw, before the next batch opens. Typecheck + the related unit guard still run after EVERY change. Each one checked in EVERY combination it can appear in (themes · 375/768/1280+ · device presets · every entry point · each state ON and OFF), trying hard to break it. State what you drove and what you saw. **The user must never be the one who finds it.** See [docs/UAT_EVERY_CHANGE.md](docs/UAT_EVERY_CHANGE.md).
 - [ ] **⛔ THE TASK TREE IS UP TO DATE** — [docs/TASK_TREE.md](docs/TASK_TREE.md) shows what this change closed (with its commit or measurement), every new promise made along the way, and **YOU ARE HERE** on the next leaf. Work is not done while the tree still describes the state before it.
+- [ ] **⛔ RULE M — PONYTAIL CHECKED ON THE DIFF** — nothing in the change that was not needed (no unasked-for feature, file,
+  option, abstraction or dependency), the shortest diff that fixes the root cause, deliberate limits marked `ponytail:`. Never
+  cut: understanding the problem, validation at trust boundaries, error handling that prevents data loss, security, accessibility.
 - [ ] **⛔ RULE DOCS — ITS DOCUMENTATION PAGE IS WRITTEN OR UPDATED** — in `docs/guide/` (the Docusaurus site), in the same change:
   the story and the reference for what changed, clean to read, screenshots from the real builder. No batch closes without it.
 - [ ] **Every button/toggle/input works** — click every interactive element, verify it does its job

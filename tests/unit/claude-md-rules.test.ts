@@ -149,6 +149,8 @@ const RULES: [name: string, mustSay: RegExp][] = [
   ["…ready-made choices AND the user's own, nothing hidden, audited backwards", /Easy to make your own[\s\S]*Nothing hidden[\s\S]*EVERYTHING ALREADY BUILT[\s\S]*BATCH U-1/],
   /** The user, 2026-09-28: the Ponytail discipline (github.com/dietrichgebert/ponytail) is a must on every change. */
   ["Ponytail — the least code that solves it correctly (RULE M)", /RULE M — PONYTAIL: THE LEAST CODE THAT SOLVES IT CORRECTLY/],
+  ["…and it is a BEFORE step every time, for everything (the user, 2026-10-05)", /RULE M — PONYTAIL, EVERY TIME, FOR EVERYTHING/],
+  ["…and an AFTER step checked on the diff", /RULE M — PONYTAIL CHECKED ON THE DIFF/],
   ["…its ladder, in order, from YAGNI to the minimum that works", /does this need to exist[\s\S]*already in this codebase[\s\S]*standard library[\s\S]*native platform feature[\s\S]*installed dependency[\s\S]*one line[\s\S]*the minimum that works/i],
   ["…stored research in docs/PONYTAIL.md", /docs\/PONYTAIL\.md/],
   ["…never on the chopping block: validation, error handling, security, accessibility", /Never on the[\s\S]*chopping block:[\s\S]*validation at trust boundaries[\s\S]*security, accessibility/],

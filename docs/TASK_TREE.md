@@ -3507,7 +3507,7 @@ out) — where the session STARTED FROM, where it GOT TO, and where the next one
   story → pull request.
 - **Next prompt (paste to start):** "FIRST: check that the pull request of `builder/layout-uat` into `master` is merged (git fetch; `git log
   origin/master` holds this handover). If it is: `git switch master && git pull`, delete `builder/layout-uat` locally and on origin, and
-  `git switch -c builder/page-grid` (rule 9). If it is not, stop and ask me. Then read CLAUDE.md (incl. RULE DOC and the new RULE DOCS — the documentation is clean, complete and kept current, the Docusaurus way), then `docs/TASK_TREE.md`: this SESSION
+  `git switch -c builder/page-grid` (rule 9). If it is not, stop and ask me. Then read CLAUDE.md (incl. RULE M — Ponytail, a BEFORE and AFTER step EVERY time, for everything: find out exactly what is needed, add nothing that was not asked for, the ladder YAGNI → reuse → stdlib → native → installed dep → one line → minimum; RULE DOC and the new RULE DOCS — the documentation is clean, complete and kept current, the Docusaurus way), then `docs/TASK_TREE.md`: this SESSION
   LOG entry, then YOU ARE HERE (AC-37b → BATCH D-2, then G-3d), then in BATCHES: D-2 (the Docusaurus site and the layout documented from the beginning — FIRST; the user: "rewrite everything … clean … follows docusaurus.io … then we update it as we go along"), D-3, G-3d
   (two changes, the user's decisions), G-3b
   (closed — its DESIGN paragraph and ledger G3b-15 … G3b-29), E-1 (closed — E1-5's measured 70 small-screen failures and E1-8/E1-9),
