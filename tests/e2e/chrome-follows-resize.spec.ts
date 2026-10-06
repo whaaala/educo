@@ -51,7 +51,8 @@ async function select(page: Page, id: string) {
   for (let i = 0; i < 5; i++) {
     const sel = await page.evaluate(() => document.querySelector(".outline-indigo-500")?.getAttribute("data-box-id") ?? null);
     if (sel === id) return;
-    await page.mouse.click(b.x + b.width * 0.5, b.y + b.height * 0.5);
+    // a quarter in, not the middle: an empty block's "+" hint sits in its middle, and on a shrunk canvas it covers it (E2-9)
+    await page.mouse.click(b.x + b.width * 0.25, b.y + b.height * 0.25);
     await page.waitForTimeout(180);
   }
   throw new Error(`could not select ${id}`);
@@ -99,6 +100,9 @@ test.describe("the selection chrome follows the block it is drawn on", () => {
     await select(page, "B");
 
     expect(await gapToEdge(page, "Resize right edge", "B", "right"), "it starts on the edge").toBeLessThan(4);
+    // Every "it really happened" below is against the block's OWN start: "narrower than 600px" was already true on a phone
+    // before the drag began, so it could not fail there (E2-9's sibling, a guard that cannot fail).
+    const start = (await page.locator('[data-box-id="B"]').boundingBox())!;
 
     // Thirty steps at 8ms — nearly four times the eight-frame budget that used to run out, at a pace a hand
     // can produce. Sampled every fifth step, because the old failure was progressive: it detached partway
@@ -111,12 +115,13 @@ test.describe("the selection chrome follows the block it is drawn on", () => {
       expect(gap, `at step ${step} of 30 the handle was ${gap.toFixed(1)}px off the block`).toBeLessThan(4);
     }
     expect(settled, "and it is exactly on the edge once the pointer is released").toBeLessThan(4);
-    expect((await page.locator('[data-box-id="B"]').boundingBox())!.width, "the block really did narrow").toBeLessThan(600);
+    expect((await page.locator('[data-box-id="B"]').boundingBox())!.width, "the block really did narrow").toBeLessThan(start.width * 0.6);
   });
 
   test("the bottom-edge handle follows a height drag too — the rule is not per-edge", async ({ page }) => {
     await seedOne(page);
     await select(page, "B");
+    const start = (await page.locator('[data-box-id="B"]').boundingBox())!;
 
     const { samples, settled } = await dragSampling(page, {
       label: "Resize bottom edge", id: "B", edge: "bottom", dy: 260, steps: 24, paceMs: 8, sampleEvery: 6,
@@ -126,7 +131,7 @@ test.describe("the selection chrome follows the block it is drawn on", () => {
       expect(gap, `at step ${step} of 24 the handle was ${gap.toFixed(1)}px off the bottom edge`).toBeLessThan(4);
     }
     expect(settled, "and on release").toBeLessThan(4);
-    expect((await page.locator('[data-box-id="B"]').boundingBox())!.height, "the block really did grow").toBeGreaterThan(300);
+    expect((await page.locator('[data-box-id="B"]').boundingBox())!.height, "the block really did grow").toBeGreaterThan(start.height + 200);
   });
 
   test("driven FLAT OUT, the gap stays a frame — it does not grow, and it clears on release", async ({ page }) => {
@@ -173,7 +178,7 @@ test.describe("the selection chrome follows the block it is drawn on", () => {
     await dragSampling(page, { label: "Resize left edge", id: "B", edge: "right", dx: 360, steps: 30, paceMs: 8, sampleEvery: 30 });
 
     const b = (await page.locator('[data-box-id="B"]').boundingBox())!;
-    expect(b.x, "the left edge really did move").toBeGreaterThan(before.x + 200);
+    expect(b.x, "the left edge really did move").toBeGreaterThan(before.x + Math.min(200, before.width * 0.5));
 
     // The TOOLBAR, not a button inside it: the bar is `absolute left-0` within the mirror, so its own left
     // is the mirror's left. A button is inset past the drag grip and would answer a different question.
@@ -195,19 +200,50 @@ test.describe("the selection chrome follows the block it is drawn on", () => {
     const presets = ["Mobile (375px)", "Wide (1920px)", "Tablet (768px)", "Desktop (1280px)", "Laptop (1024px)", "Full width", "Mobile (375px)", "Full width"];
     let last = (await page.locator('[data-box-id="B"]').boundingBox())!;
     let moved = 0;
+    const seen: string[] = [];
     for (const preset of presets) {
       await page.getByRole("button", { name: preset }).first().click();
       await page.waitForTimeout(700); // the frame's transition is 300ms
       const b = (await page.locator('[data-box-id="B"]').boundingBox())!;
-      // Two sizes that are both fitted to the same room draw the same box (Desktop → Laptop in this window), so the
-      // precondition is counted over the run rather than demanded of every step.
-      if (Math.abs(b.width - last.width) + Math.abs(b.x - last.x) > 20) moved++;
+      seen.push(`${preset} ${Math.round(b.x)}+${Math.round(b.width)}×${Math.round(b.height)}`);
+      // Two sizes that are both fitted to the same room draw the same WIDTH (on a tablet or phone every size wider than the
+      // room is — E2-1), but at a different scale, so the block's HEIGHT moves: both count. Still counted over the run.
+      if (Math.abs(b.width - last.width) + Math.abs(b.x - last.x) + Math.abs(b.height - last.height) > 20) moved++;
+      // E2-12: Fit FITS — the page is inside the canvas room at every size, so no edge (and no handle on it) is scrolled away
+      const fits = await page.evaluate(() => {
+        const f = document.querySelector("[data-canvas-scale]")!.getBoundingClientRect(), s = document.querySelector("[data-canvas-scroller]")!.getBoundingClientRect();
+        return { f: Math.round(f.right), s: Math.round(s.right) };
+      });
+      expect(fits.f, `${preset}: the page's right edge (${fits.f}) is inside the canvas room (${fits.s})`).toBeLessThanOrEqual(fits.s);
       last = b;
       expect(await gapToEdge(page, "Resize right edge", "B", "right"), `${preset}: the right handle is on the right edge`).toBeLessThan(4);
       expect(await gapToEdge(page, "Resize bottom edge", "B", "bottom"), `${preset}: the bottom handle is on the bottom edge`).toBeLessThan(4);
       const bar = (await page.locator('[role="toolbar"][aria-label="Block toolbar"]').boundingBox())!;
       expect(Math.abs(bar.x - b.x), `${preset}: the toolbar sits on the block's left edge`).toBeLessThan(6);
     }
-    expect(moved, "the block really did move, at most of the changes — or this proved nothing").toBeGreaterThanOrEqual(5);
+    expect(moved, `the block really did move, at most of the changes — or this proved nothing (${seen.join(" · ")})`).toBeGreaterThanOrEqual(5);
+  });
+
+  /**
+   * EVERY HANDLE CAN BE GRABBED, ON A NARROW BLOCK TOO (E2-8). The toolbar sat 0.25rem above the block while the handles are
+   * drawn outside it (c-21), so on a block narrower than about twice the toolbar — every block on a phone's shrunk canvas —
+   * a press on the top handle landed on the toolbar and the top edge could not be dragged. Found on mobile-chrome, where a
+   * grid cell's top edge moved 0px; true at any size for a narrow block.
+   */
+  test("a press on each handle of a narrow block lands on that handle, not on the toolbar", async ({ page }) => {
+    await seedSite(page, sitePage([
+      { id: "B", type: "container", direction: "column", padding: 0, gap: 0, width: "10%", minHeight: 160, background: "#c7d2fe", children: [] },
+    ], { padding: 120 }));
+    await page.waitForSelector('[data-box-id="B"]', { timeout: 15000 });
+    await page.waitForTimeout(350);
+    await select(page, "B");
+    const bar = (await page.locator('[role="toolbar"][aria-label="Block toolbar"]').boundingBox())!;
+    const block = (await page.locator('[data-box-id="B"]').boundingBox())!;
+    expect(bar.width, "the precondition: the block is narrower than the toolbar would need to miss its top handle").toBeGreaterThan(block.width / 2);
+    for (const label of ["top edge", "bottom edge", "left edge", "right edge", "top-left corner", "top-right corner", "bottom-left corner", "bottom-right corner"]) {
+      const h = (await page.locator(`[aria-label="Resize ${label}"]`).boundingBox())!;
+      const hit = await page.evaluate(([x, y]) => document.elementFromPoint(x, y)?.closest("[aria-label]")?.getAttribute("aria-label") ?? null, [h.x + h.width / 2, h.y + h.height / 2]);
+      expect(hit, `a press on the ${label} handle`).toBe(`Resize ${label}`);
+    }
   });
 });

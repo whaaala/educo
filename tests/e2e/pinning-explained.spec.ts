@@ -129,7 +129,8 @@ async function canvasScroll(page: Page, id: string, to: number | "end") {
     await new Promise((r) => setTimeout(r, 300));
     return {
       found: true,
-      scrolled: Math.round(scroller.scrollTop),
+      // in PAGE px (E-2): the canvas is drawn scaled, so a screen px of scroll is more than one of the page
+      scrolled: Math.round(scroller.scrollTop / (Number(el.closest<HTMLElement>("[data-canvas-scale]")?.dataset.canvasScale) || 1)),
       fromTop: Math.round(el.getBoundingClientRect().top - scroller.getBoundingClientRect().top),
     };
   }, { id, to });

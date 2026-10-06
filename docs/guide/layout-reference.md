@@ -28,7 +28,7 @@ cross-referenced.
 | **Preview** | Opens the real published page. Close it with **Exit preview**; **H** hides the Preview's own controls. | — |
 | **Export** | Downloads `site.zip`: one HTML file per page and a shared `styles.css`, with your fonts and uploaded pictures inside them. | — |
 | **Reset** | Starts the whole site over — every page replaced by one blank page. It asks first, and Undo puts the site back. | — |
-| **Device chips** (Mobile 375 · Tablet 768 · Laptop 1024 · Desktop 1280 · Wide 1920 · Full width) | Switches the canvas to that screen. At Desktop or Full width you edit the base design; a change at Mobile, Tablet or Laptop applies from that screen down; Wide keeps its own. | — |
+| **Device chips** (Mobile 375 · Tablet 768 · Laptop 1024 · Desktop 1280 · Wide 1920 · Full width) | Switches the canvas to that screen. At Desktop or Full width you edit the base design (Full width draws the desktop page, 1200px wide, shrunk to fit the room, so what you see is what you edit on any screen); a change at Mobile, Tablet or Laptop applies from that screen down; Wide keeps its own. | — |
 | **Zoom** (− · Fit · +) | Zooms the canvas; **Fit** fits the whole page width in the window. | — |
 | **Layout guides** (the grid icon) | Draws the page grid's column and row lines over the canvas, and opens the **Page grid** panel. | — |
 | **Show hidden blocks** (the eye) | Draws blocks hidden at this screen faintly, so you can select and edit them. Click again to hide them. | — |

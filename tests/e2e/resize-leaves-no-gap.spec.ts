@@ -120,16 +120,18 @@ const bandedSite = () => ({
 });
 
 const banded = (page: Page) => page.evaluate(() => {
+  // In PAGE px (E-2): Full width is the desktop page drawn shrunk to fit — 300 → 396 read 325 on screen at 0.82
+  const z = Number(document.querySelector<HTMLElement>("[data-canvas-scale]")?.dataset.canvasScale) || 1;
   const g = (id: string) => {
     const el = document.querySelector<HTMLElement>(`[data-box-id="${id}"]`);
     if (!el) return null;
     const b = el.getBoundingClientRect();
-    return { top: Math.round(b.top), bottom: Math.round(b.bottom), h: Math.round(b.height) };
+    return { top: Math.round(b.top / z), bottom: Math.round(b.bottom / z), h: Math.round(b.height / z) };
   };
   const root = document.querySelector<HTMLElement>('[data-box-id="root"]');
   return {
     HEAD: g("HEAD")!, L: g("L")!, col: g("col")!, R1: g("R1")!, R2: g("R2")!, BOT: g("BOT")!, band1: g("band1")!,
-    pageTop: root ? Math.round(root.getBoundingClientRect().top) : 0,
+    pageTop: root ? Math.round(root.getBoundingClientRect().top / z) : 0,
   };
 });
 

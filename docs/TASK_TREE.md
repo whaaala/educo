@@ -654,17 +654,174 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
     run 3 on the rebuilt fresh build: **91 checks, 0 failed** (`logs/g3d-uat3.out`), Preview at all 70 screens × 100 / 150 / 200 %
   - `[x]` G3d-12 · MINE, CAUGHT BY THE GATE: an unused `w` in the UAT script's E callback (eslint error) → removed; eslint 0 errors
   - GATE at the close: typecheck 0 · eslint 0 errors (105 warnings, none new) · vitest 4,400 / 4,400 · `test:fast` 807 passed (exit 0)
-- `[>]` **BATCH E-2 · Resizing and dropping on tablets and phones** — OPEN (next session, branch `builder/editor-small-screens`) — QUEUED 2026-10-05 by the user ("split by area", E1-5) (area: the
+- `[x]` **BATCH E-2 · Resizing and dropping on tablets and phones** — CLOSED 2026-10-06 (HEADED UAT `scripts/uat/uat-e2-headed.js`, six windows, 174 checks 0 failed; gate: typecheck 0 · eslint 0 errors (105 warnings, none new) · vitest 4,405 / 4,405 · `test:fast` 812 / 812 · `docs:build` SUCCESS; the 37 + 22 specs 246 + 256 green on every project; ledger E2-1 … E2-24 closed — E2-20 → BATCH E-5, E2-22 → BATCH L-5 by the user) — branch `builder/editor-small-screens` — QUEUED 2026-10-05 by the user ("split by area", E1-5) (area: the
   editor's gestures at small viewports · the failing specs, each measured: a spec that assumes the desktop, or a real bug — fixed
   either way): grid-cell-resize 13 · vertical-edges-anchored 7 · side-by-side-resize 6 · stack-under-column 4 · float-round-trip 3 ·
   chrome-follows-resize 3 · dropped-block-fills-space 1 (37 on tablet-landscape / tablet-portrait / mobile-chrome)
-- `[ ]` **BATCH E-3 · The Inspector's controls on a narrow screen** — QUEUED 2026-10-05 by the user (E1-5): spacing-gestures 12 ·
+  RE-MEASURED 2026-10-06 at `9ded396` (HEADLESS GATE, fresh build on 3100, `logs/e2-measure.out`): the same 37 fail, 149 pass.
+  HEADED UAT CHECKLIST (written before the pass; six windows, a pool that refills; fresh production build; built through the UI
+  on tablet landscape 1024 × 768 · tablet portrait 768 × 1024 · phone 393 × 851, touch on; Preview at all 70 screens):
+  - `[x]` U1 (SEEN 2026-10-06, 174 / 0) a grid cell: right AND left edge, grow AND shrink, repeated, to where the partner runs out (rule 19) — the edge not held
+    never moves; the neighbour wraps and comes back; one Undo puts the drag back — each screen
+  - `[x]` U2 (SEEN 2026-10-06, 174 / 0) a grid cell: top AND bottom edge, grow AND shrink — the row's cells share a height, the opposite edge stays — each screen
+  - `[x]` U3 (SEEN 2026-10-06, 174 / 0) two blocks side by side: the shared boundary from both sides, grow AND shrink, past the limit and back — the neighbour
+    gives up what you take, wraps keeping its width, returns — each screen (on the phone: what a person sees when the 10rem floor
+    steps the row is checked as it is, not as a desktop)
+  - `[x]` U4 (SEEN 2026-10-06, 174 / 0) a block's top AND bottom edge, at the page top and between blocks, grow AND shrink — the edge not held stays — each screen
+  - `[x]` U5 (SEEN 2026-10-06, 174 / 0) drop a block under one column, into the hole above it, beside it; then shrink the dropped block — each screen
+  - `[x]` U6 (SEEN 2026-10-06, 174 / 0) float a parent and put it back (children and own heights kept, a size set while floating kept), float one child alone;
+    the selection chrome rides on the block through a drag and through every change of screen size; a dropped block fills the
+    section / grid cell — each screen
+  - `[x]` U7 (SEEN 2026-10-06, 174 / 0) Preview at all 70 screens of the pages built in U1–U6: no sideways overflow, no overlaps
+  - `[x]` U8 (SEEN 2026-10-06, 174 / 0) docs: layout-story §11 and the reference say what a person sees, where E-2 changed it
+  ADDED BEFORE THE PASS, for what the measuring found (E2-12 … E2-18):
+  - `[x]` U9 (SEEN 2026-10-06, 174 / 0) a header set to "Stays put while scrolling" (Inspector → Placement) holds at the top of the shrunk canvas while it
+    scrolls; a block set to "Floats on screen" does not move when it is picked — each screen (E2-15, E2-16)
+  - `[x]` U10 (SEEN 2026-10-06, 174 / 0) a Stack holding words, a Stack under it: the lower one's top edge dragged far up — its bottom never moves, the two
+    still touch, the one above shrinks right down to its words; then a bottom edge +80 / −80 three times: the page comes back
+    within half a px — each screen (E2-17, E2-18)
+  - `[x]` U11 (SEEN 2026-10-06, 174 / 0) Fit fits: at Full width and every device size the page is inside the canvas room, on each screen (E2-12, E2-7)
+  HEADED UAT `scripts/uat/uat-e2-headed.js` (six windows, a pool that refills; 21 slices = G grid · S side by side · V one under the
+  other · D column under a column · F float · P pinned / floating · W words above × the three screens, the four themes rotated; every
+  page then in the Preview at all 70 screens × 100 / 150 / 200 % text), on the FRESH build of E2-24: **174 checks, 0 failed**
+  (`logs/e2-uat5.out`). On the PHONE, U3's boundary and U5's drop are reported as not drivable yet — two side-by-side columns come only
+  from "Side by side" there (E2-20 → BATCH E-5) and their shared edge does not move on any screen (E2-22 → BATCH L-5).
+  LEDGER E-2 (each written the moment it was found):
+  - `[x]` E2-1 · TEST, MEASURED (probe-e2.js presets): every handle and the toolbar sat on the block at every preset on all three
+    screens; only the precondition counter fell short (4 < 5) — on a small window the presets are all fitted to the same room
+    (phone: Wide 0.25 · Desktop 0.25 · Laptop 0.26, docW = viewport every time — no page overflow, so E2-7 below is NOT A BUG)
+  - `[x]` E2-2 · REAL, MEASURED (probe-e2.js leftEdge / leftEdgeDesktop): "Full width" (the editor's default) edits the DESKTOP base
+    but drew the page at the room's own width capped at 64rem — 572 / 624 / 274px on tablet landscape / portrait / phone (the PHONE
+    or tablet rung, which steps a row) and 828px on a 1280 desktop (the tablet-portrait rung). A left-edge drag stored [1,5,3,3] and
+    on screen the cell jumped RIGHT (211→259). At the Desktop preset the same drag holds rule 19 on all three (right edge fixed).
+    DECIDED BY THE USER 2026-10-06 (twice — once more after the measured desktop cost: 1280 0.69 shut / 0.46 panel open · 1366 0.76
+    / 0.53 · 1536 0.90 / 0.67 · 1920 1.00): **Full width is always the desktop page** — drawn at 75rem (the desktop rung's first
+    width) and shrunk to fit like every device size; zoom enlarges it. → `app/website/box-demo/page.tsx` fitW. The specs written for
+    a 1:1 Full width canvas move to page px (166 failed on the first run after it, `logs/e2-measure2.out`)
+  - `[x]` E2-11 · REAL, MEASURED (probe-e2.js wrapPull): "keep pulling and the neighbour wraps" never wrapped on tablet landscape or
+    phone — R squeezed to its 4% floor, L held at 96% however far the pointer went. The test `P(want) < limit + P(WRAP_PULL)` used
+    `want` CAPPED at the line's end (100%), while WRAP_PULL is 24 SCREEN px (a wobble of the hand, by design) = 4.3% of a 564px
+    canvas — more than the floor leaves, so the wrap was unreachable on any canvas drawn under ~600px (every tablet and phone, a
+    1280 desktop with the blocks panel open). First read as the spec's short pull (0.51 → 0.6, kept: a deliberate pull)
+  - `[x]` E2-12 · REAL (mine, from E2-2): Fit stopped at the hand zoom's 25 % — the desktop page at 0.25 is 300px in a 393 phone's
+    274px room, its right edge and handles scrolled away → Fit may go below 25 % (0.1 guards a vanishing room); the hand zoom keeps
+    25–400 %. Guard: chrome-follows-resize, the page inside the canvas room at every size
+  - `[x]` E2-7 · REAL (corrected — first closed as NOT A BUG on the wrong measurement): on the phone, Wide / Desktop drew the page
+    68+480 / 68+320 in a ~274px canvas room. The DOCUMENT did not scroll sideways (scrollWidth 394), which is what was measured —
+    but the page ran past the canvas ROOM, its right edge scrolled away inside it. The E2-12 mutant showed it: "Wide: the page's
+    right edge (548) is inside the canvas room (349)" red. Fixed by E2-12 (Fit fits), the same guard
+  - `[x]` E2-13 · REAL, FOUND BY E2-10's resize-leaves-no-gap zv-6 (the user's own page) and MEASURED (probe-e2.js usersPage): a
+    bottom-edge drag of +90 page px raised the capping band 201 → 302 at 0.95 · 519 at 0.47 · 1004 at 0.22 — exactly
+    `lay(h0 + growth)`: the STORED height (page px) added to SCREEN px, the sum divided by the scale — the rest handed to the `fill`
+    block above, so the ANCHORED top edge moved (10 / 226 page px): rule 19, hidden for as long as Full width was drawn 1:1.
+    → `h0 + lay(growth)`, unrounded. The same sweep found the class again: the shared-boundary writes clamp at the UNSCALED
+    `MIN_ROW_PX` (24 screen px = 109 page px at 0.22) while their `slack` uses `MIN_ROW_PX * Z`, and round to whole screen px
+    → scaled, unrounded (four lines). Guards: resize-leaves-no-gap zv-6 / o2-f (red before), vertical-edges "the edge stops
+    where the stack above runs out" drawn at ≤ 0.4
+  - `[x]` E2-14 · REAL, canvas ≠ export, FOUND BY E2-10's pins-stack: three bars pinned to the top overlapped on the canvas (the second
+    started at 152 where the first ended at 158) — `pinStackPass` stacked them by `getBoundingClientRect().height`, SCREEN px on the
+    scaled canvas, written back as a CSS length inside it. → a layout height (÷ the nearest `data-canvas-scale`; the export has none:
+    1); the pass is shipped to the export as its source, unchanged there. Guard: pins-stack "the CANVAS stacks them too" in page px
+  - `[x]` E2-15 · REAL, canvas ≠ export, PRE-EXISTING (every scaled device size) and now on the default view, FOUND BY E2-10's
+    pinning-holds: a pinned header did not hold on a shrunk canvas — it drifted (1 − z) × the scroll (246 of 700 at 0.68; held at
+    1 with Ctrl 0, probe-e2.js stickyScaled): the browser holds a sticky box by the scroll in the transformed frame's OWN px. →
+    `canvasFixedStyle` gives a canvas sticky `top: calc(T + var(--canvas-scroll) × (1 − var(--canvas-z)))` (bottom: minus), the
+    canvas writing `--canvas-z` beside `--canvas-scroll`; `data-held` narrowed to the fixed pins it was written for. Guards:
+    pinning-holds' three CANVAS tests (red before); the bottom edge by probe-e2.js stickyEdges
+  - `[x]` E2-16 · REAL, published wrong, FOUND BY E2-10's float-pin: "Floats on screen" moved the block 51px at 0.69 — and published it
+    there: `measureFixedGeom` stored `pinX` / `pinY` from SCREEN rects, read as page px by the canvas and the export alike. → ÷
+    `zoomOf(el)`. Guard: float-pin "picking Floats on screen does not move it" (red before)
+  - `[x]` E2-17 · REAL (rule 12, "nothing degrades"), FOUND BY E2-10's parity-every-arrangement once it compared PAGE px: six +80 / −80
+    round trips of a bottom edge drifted 0.08 page px a cycle (128.0 → 128.4 by the fifth, taken from the block below) — the dragged
+    height was `Math.round`ed to a whole SCREEN px (1.45 page px at 0.69) while its partner took the unrounded rest; hidden at 1:1
+    inside the old integer comparison. → not rounded (`lay` keeps a thousandth), both copies (partner / no partner). Guard: the
+    six-round-trip test in page px, ±0.5 against the START every cycle (red before)
+  - `[x]` E2-18 · REAL, RULE 19, PRE-EXISTING AT ANY SCALE, FOUND WHILE GUARDING E2-13's floor (the old guard could not fail: its partner
+    was EMPTY, its 8rem minimum above both floors): with a line of WORDS in the stack above, dragging the lower stack's top edge up
+    400 left the stack above at 300 and moved the ANCHORED bottom 500 → 774 — the partner walk dived from the block into the band
+    the editor wraps round its words (stretched to the block, so "exactly as tall"), wrote `minHeight 26.4` to that band, spent the
+    block's 274px of slack, and the dragged block grew out of its far side (probe-e2.js wordsAbove, at 0.33 and at 1). → the dive
+    goes only OUT OF A BAND (`owner.rowBand`), the case its note describes. Guard: vertical-edges "drawn small, the stack above gives
+    ALL it can — down to its words" (red before: 774)
+  - `[x]` E2-19 · REAL, PRE-EXISTING AT ANY SCALE, FOUND BY THE HEADED SMOKE RUN (U6, built through the UI — RULE Y): two Stacks side
+    by side, Alt+F on the first and Alt+F again — it came back on a line of its own, full width, below its neighbour (desktop 0.69
+    as well, probe-e2.js floatTwice). `floatBox` moves the block onto the page and remembered only its size; left there, the
+    row-band pass wrapped it in a band of its own. The seeded float-round-trip spec floated a grid that never left its parent. →
+    `floatFrom` also keeps `parentId` / `index`, and `unfloatBox` moves it home when that parent is still there. Then the next
+    smoke run, built the PHONE's way (Side by side + Add a block inside), still came back after its neighbour: alone in its band,
+    the band is pruned once it floats (home = the band's own place), and a block floating inside the row it came from had been
+    moved to the row's END ("already in its parent" is not "home" — the place counts too). Guards: box-model.test.ts "unfloatBox
+    puts a block back WHERE IT WAS", "…ALONE in its band…", "…floated INSIDE the parent it came from…" (each red by mutation)
+  - `[x]` E2-21 · REAL, DATA LOSS, PRE-EXISTING, FOUND BY THE HEADED SMOKE RUN (U7's reload check, "5 → 1" in nearly every window;
+    probe-e2-reload.js: 3 nodes stored before the reload, 1 after — touch on, off, and phone alike): the one-time prune of the OLD
+    starter's empty sections runs on the first load that FINDS a saved site without the "cleaned" flag — a new visitor's first load
+    finds nothing and never set it, so their FIRST RELOAD pruned the page they had just built, every empty block with it. Both
+    seeding helpers set the flag, so no spec ever began in a truly empty browser. → a fresh start is marked cleaned too. Guard:
+    add-without-asking "a first visit's page survives its first reload" (red before: 3 → 1)
+  - `[x]` E2-22 · REAL, PRE-EXISTING ON EVERY SCREEN, FOUND BY THE HEADED SMOKE RUN (U3 on the phone, built the phone's way —
+    probe-e2.js sbs a): in a "Side by side" block filled with "Add a block inside" ×2, dragging the first column's right edge does
+    NOTHING (both stay 100 % of their own bands, 18–591 / 609–1182, at 0.69, 0.47 and 0.22) — each column is wrapped in a band
+    of its own inside the row, so its edge finds no partner. The columns of a Side by side cannot be sized against each other.
+    DECIDED BY THE USER 2026-10-06 ("queue it with the resize work"): MOVED to BATCH L-5, in the place of #46 (which E-2 closed)
+  - `[x]` E2-23 · REAL, THE CAUSE UNDER E2-11, FOUND BY THE HEADED SMOKE RUN (U3 tablet landscape) and a temporary trace: on a
+    PAGE-GRID page (every page built today) the dragged edge is snapped to the grid's lines AND clamped to the page's edge, so
+    `dx` stopped at the line's end (282) while the hand went on (456) — and the wrap point, 24 screen px past the neighbour's
+    floor, lies past the page's edge on any line drawn under ~600px: A held at 96 % however far the pointer went. → the pull reads
+    the HAND (`handDx`, before any snap). Guard: width-round-trip "keep pulling wraps the neighbour on a page-grid row drawn
+    small", built through the UI at 1024 × 768 (red before: 1150 / 50)
+  - `[x]` E2-24 · REAL, PRE-EXISTING ON EVERY SCREEN, FOUND BY THE HEADED PASS (U5, built through the UI; the same on a 1280 desktop
+    window) — the user: "fix it now in E-2": on a page-grid page (every page built today) a block dropped into the empty space
+    under a short column landed 0.3px tall, invisible. Pulling a block's BOTTOM edge up on a page-grid row keeps the row's height
+    as that block's `margin-bottom` (200) — so the hole IS the target's margin, and carried into the new column it took the whole
+    height. The hole ABOVE was already handed over (`marginTop`); the hole BELOW was not. → `stackWithBlock` clears the target's
+    `marginBottom` when the newcomer goes after it. Guard: box-model.test.ts "the hole BELOW is handed over too" (red by mutation)
+    and the headed U5 (the seeded spec builds a flow row, where the hole is not a margin)
+  - `[x]` E2-20 · DECIDED BY THE USER 2026-10-06 ("queue it, research first"): on a phone the open blocks panel covers the whole
+    canvas (12–332 of a 394 screen, the canvas 68–342; probe-e2.js phonePanel), so a block cannot be DRAGGED beside / under / into
+    another — tapping a tile still adds one after the selection, "Side by side" still makes a row, "Add a block inside" still nests.
+    New behaviour, so RULE RS: QUEUED as BATCH E-5 below. E-2's phone UAT builds the way a phone user can today
+  - `[x]` E2-10 · MINE, FROM E2-2: 22 OTHER desktop specs fail once Full width is the desktop page drawn at 0.69 (`logs/e2-others1.out`,
+    40 tests): selection clicks on an empty block's middle (palette-adds-after 5 · selection-drills-inward 2 · pinning-warnings 4 ·
+    add-grid-in-grid 2 · empty-box-height · add-inside-empty-box) · screen-px numbers (add-without-asking 2 · drag-grid-in ·
+    empty-block-floor 3 · empty-box-height · pager-hero 2 · pinning-explained · resize-leaves-no-gap) · canvas vs export / anchored
+    edges (advanced-css · layout-bands · page-height-is-content · image-intrinsic · pinning-holds 3 · pins-stack · float-pin ·
+    parity-every-arrangement · width-round-trip · resize-leaves-no-gap 2 · drop-placement) — each measured: a spec on screen px,
+    or a real scale bug (as E2-4 and E2-11 were). MEASURED, ONE BY ONE: TEST — the middle-click on an empty block's "+" (E2-9:
+    palette-adds-after, selection-drills-inward, pinning-warnings, add-grid-in-grid, empty-box-height, add-inside-empty-box);
+    screen px read as page px (add-without-asking, drag-grid-in, empty-block-floor, empty-box-height, pager-hero,
+    pinning-explained, resize-leaves-no-gap:185, advanced-css, layout-bands, page-height-is-content, image-intrinsic — a scaled
+    rect against a layout value; width-round-trip's `rowOf` mixed the two; parity's rounded screen px flipped on a sub-pixel);
+    drop-placement's 36px precondition is E2-8's 48. REAL — E2-13 (resize-leaves-no-gap zv-6 / o2-f), E2-14 (pins-stack),
+    E2-15 (pinning-holds ×3), E2-16 (float-pin), E2-17 (parity, once it compared page px). 29 specs on desktop: 246 / 246
+  - `[x]` E2-3 · grid-cell-resize:159 (all three): the 90/10 grid's "eleven and one" — the same Full width mismatch as E2-2 (the
+    phone rung stepping the row); re-measured after E2-2
+  - `[x]` E2-4 · REAL, MEASURED (probe-e2.js spaceKept): first read as rounding in the spec (each scaled SCREEN edge rounded before
+    subtracting — fixed: page px from the frame, the gap rounded once), it stayed 44 → 45; the STORED `marginTop` went 40 → 41 on a
+    top-edge drag at 0.47 and 0.22 (40 kept at 0.52) — the drag rewrote the space the user asked for, re-derived from screen px
+  - `[x]` E2-5 · TEST, MEASURED: float-round-trip:141 filled "Height" in an Inspector that starts as its tab under 64em (E1-2) → it
+    taps the tab open as a person does (`openInspector`, as add-without-asking)
+  - `[x]` E2-8 · REAL, FOUND BY probe-e2.js gridTop (phone, 0.25): a grid cell's top edge moved 0px — the press on "Resize top edge"
+    landed on the Block toolbar, drawn 0.25rem above the block over the handle the c-21 rule draws OUTSIDE it (corners 14px out),
+    true at any size for a block narrower than ~2× the toolbar → the toolbar 1rem clear (`mb-4` / `mt-4`, room check 36 → 48).
+    Guard: chrome-follows-resize "a press on each handle of a narrow block lands on that handle"
+  - `[x]` E2-9 · TEST: the specs selected an empty block by clicking its MIDDLE, where its "+" hint sits — on a shrunk canvas the
+    hint covers it and the click opened "Add inside" ("could not select") → a quarter in, as grid-cell-resize already did
+  - `[x]` E2-6 · phone only, 25 lines (grid-cell height ×4 · side-by-side ×6 · stack-under-column ×4 · vertical edges ×5 ·
+    dropped-block :78 · float :156 …) — not yet measured (the phone's 10rem floor stepping the row, by G-3d's design?)
+- `[>]` **BATCH E-3 · The Inspector's controls on a narrow screen** — OPEN (next, after E-2 closed 2026-10-06) — QUEUED 2026-10-05 by the user (E1-5): spacing-gestures 12 ·
   masonry-builder 10 · canvas-zoom 3 · text-is-reachable 1 (26)
   - `[ ]` THE TOP BAR IS ONE ROW FROM 1280 (D3-32, the user 2026-10-06 "yes, both"): measured 92px (two rows) at 1280 / 1366 / 1440,
     one row needs ~1480 → below that, Page check · Preview · Export · Reset and the "Add a band" text collapse to icons (tooltip and
     accessible name kept); `builder-chrome-fits.spec.ts` asserts one row at 1280 (its comment already says a wrap there is a regression)
 - `[ ]` **BATCH E-4 · Preview and components on small screens** — QUEUED 2026-10-05 by the user (E1-5): multipage-preview 5 ·
   pager-hero 1 · component-layout-invariants 1 (7) — and E-1's (2): the gate runs the tablet and phone projects when all are green
+- `[ ]` **BATCH E-5 · Adding blocks on a phone** — QUEUED 2026-10-06 by the user (E2-20: "queue it, research first") (area: the editor
+  on a phone · adding and dropping): the open blocks panel covers the whole canvas on a phone, so a block cannot be dragged beside,
+  under or into another. RULE RS FIRST: the user's sources and mine (how phone editors — Wix, Canva, Webflow, Framer — add and place
+  blocks: a bottom sheet that leaves the page showing, tap-to-place, a placement target after picking), an "enough" checklist the
+  user signs, THEN the build
+  - `[ ]` (1) the research and its signed "enough" checklist
+  - `[ ]` (2) the build the research settles on, web phone first, then `apps/mobile/` (RULE APP)
 - `[x]` **BATCH G-3 · Placing on columns and rows** — CLOSED 2026-10-04 (HEADED UAT `scripts/uat/uat-g3-headed.js`, six windows,
   65 checks 0 failed on the final build (`logs/g3-uat6.out`), Preview at all 70 screens at 100 / 150 / 200 % text; G-2's suite
   re-run as regression 128/0 (`g2-regress-g3c.out`); gate: see the commit) — OPENED 2026-10-04 (session 5da86722, the user's "go") (area: page grid
@@ -2536,7 +2693,10 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
   - L4-l · (handed over from L-4 by the user 2026-10-03, same root as #42) a Heading's TOP corner dragged inward and back
     stays 14px taller: its words wrap mid-gesture and the height floor is taken from the WRAPPED height (`minHeight` 65.7
     against the words' 42.6, `probe-l4-corner.js`); bottom corners and outward drags come back exact
-  - #46 · the side-by-side-resize spec failing 14 tests on Tablet and Phone — re-run and fix
+  - E2-22 · (moved here by the user 2026-10-06, "queue it with the resize work") the columns of a "Side by side" block filled with
+    "Add a block inside" cannot be sized against each other on any screen — each sits in a band of its own inside the row, so a
+    column's edge finds no partner (columns made by dropping beside each other do resize). Its place here was #46 (the
+    side-by-side-resize spec failing on tablet and phone), CLOSED BY BATCH E-2 2026-10-06: 256 / 256 on all four projects
   - #82b · #83 · width round trips drift at 1366
   - #84 · the left-edge resize uses a fixed 14rem neighbour floor
 - `[ ]` **BATCH L-6 · Africa-first measurements and the innovative pages** (area: harness · 4 changes, queued)
@@ -2950,7 +3110,7 @@ sent), and my research. Nothing on the layout is done until every line here is c
     falls back into the flow unless placed at that rung; the page audit and Page check warn when it covers words;
     shown as drag on the canvas with the half-lines drawn, a Position panel (start / end, column / row, spill above /
     below) and a gallery of ready-made placements (RULE S / UI). Joins AC-10, ST-5, AC-35 — one build
-    - `[>]` AC-37b ← YOU ARE HERE (NOW: BATCH E-2 in BATCHES, on `builder/editor-small-screens` (cut from master `7494a8e` after PR #6 merged `builder/page-grid` 2026-10-06) — its checklist first, then the 37 failing specs one by one; then E-3 → E-4. Before that: BATCH G-3d CLOSED 2026-10-06 (`ec52b51`); handover of session (G-3d) in the SESSION LOG. Before that: BATCH G-3d (three changes); handover of session 49087f08 in the SESSION LOG; D-3 CLOSED 2026-10-06 (both changes). Before that: handover of session ff5dbc77 in the SESSION LOG; D-2 and D-3 (1) CLOSED 2026-10-06. Earlier: handover of session 22981e0a; BATCH G-3b and BATCH E-1 CLOSED 2026-10-05; MERGE DECIDED by the user 2026-10-05: `builder/layout-uat` pushed, the user opens and merges the pull request, then the branch is deleted and `builder/page-grid` cut from master; next there: BATCH D-2 (the Docusaurus site + the layout documented from the beginning, RULE DOCS), then BATCH G-3d (the user's two decisions), then BATCH E-2 (resizing and dropping on tablets and phones); before the PR: the artifacts and the layout story for the page grid; then its final pass, then BATCH E-1; handover of session 3da81fad in the SESSION LOG; earlier: handover of session 5da86722 in the SESSION LOG — G-3 CLOSED 2026-10-04 (63 headed checks, G3-8 carried to G-3b by the user); earlier: BATCH G-3 · placing on columns AND rows — G-2 CLOSED 2026-10-04 (134 headed checks); P-0 CLOSED 2026-10-04 (R4-1 … R4-5 fixed, 30 headed checks); R-4 SIGNED with D1–D5 (session 9fa0fee9); then G-3, P-1, P-2, G-4, P-3, G-5, G-6. G-1 CLOSED 2026-10-04 (see BATCHES). Plan APPROVED 2026-10-04 with the user's decisions below. Earlier: research R-3 DONE and SIGNED 2026-10-04
+    - `[>]` AC-37b ← YOU ARE HERE (NOW: BATCH E-3 in BATCHES — its checklist first, then spacing-gestures 12 · masonry-builder 10 · canvas-zoom 3 · text-is-reachable 1 · D3-32 the top bar one row from 1280; then E-4, then E-5 (research first). Before that: BATCH E-2 CLOSED 2026-10-06 (174 / 0 headed; 24 ledger lines). Before that: BATCH E-2 in BATCHES, on `builder/editor-small-screens` (cut from master `7494a8e` after PR #6 merged `builder/page-grid` 2026-10-06) — its checklist first, then the 37 failing specs one by one; then E-3 → E-4. Before that: BATCH G-3d CLOSED 2026-10-06 (`ec52b51`); handover of session (G-3d) in the SESSION LOG. Before that: BATCH G-3d (three changes); handover of session 49087f08 in the SESSION LOG; D-3 CLOSED 2026-10-06 (both changes). Before that: handover of session ff5dbc77 in the SESSION LOG; D-2 and D-3 (1) CLOSED 2026-10-06. Earlier: handover of session 22981e0a; BATCH G-3b and BATCH E-1 CLOSED 2026-10-05; MERGE DECIDED by the user 2026-10-05: `builder/layout-uat` pushed, the user opens and merges the pull request, then the branch is deleted and `builder/page-grid` cut from master; next there: BATCH D-2 (the Docusaurus site + the layout documented from the beginning, RULE DOCS), then BATCH G-3d (the user's two decisions), then BATCH E-2 (resizing and dropping on tablets and phones); before the PR: the artifacts and the layout story for the page grid; then its final pass, then BATCH E-1; handover of session 3da81fad in the SESSION LOG; earlier: handover of session 5da86722 in the SESSION LOG — G-3 CLOSED 2026-10-04 (63 headed checks, G3-8 carried to G-3b by the user); earlier: BATCH G-3 · placing on columns AND rows — G-2 CLOSED 2026-10-04 (134 headed checks); P-0 CLOSED 2026-10-04 (R4-1 … R4-5 fixed, 30 headed checks); R-4 SIGNED with D1–D5 (session 9fa0fee9); then G-3, P-1, P-2, G-4, P-3, G-5, G-6. G-1 CLOSED 2026-10-04 (see BATCHES). Plan APPROVED 2026-10-04 with the user's decisions below. Earlier: research R-3 DONE and SIGNED 2026-10-04
       (`ff5c53a`, `4418202`); build to every decision recorded under R-3 below; the mockups settle the open three (row
       snap · the phone gap 11 vs 16 px · panel per site or per page) → the user's approval → build) · **THE PAGE GRID — DECIDED by the user 2026-10-03: done RIGHT AFTER L-4 closes, BEFORE L-5, L-6 and the
       frozen list's placement items** (they are built on it). NAMES (decided): "page grid" in code and docs; the lines a

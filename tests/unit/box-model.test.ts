@@ -1356,6 +1356,40 @@ describe("box-model — floating layers (free overlap)", () => {
     expect(findBox(back, "sec")!.minHeight, "the parent's own height is none of un-float's business").toBe(400);
   });
 
+  it("unfloatBox puts a block back WHERE IT WAS — in its band, beside its neighbour, at its width (E2-19)", () => {
+    // Built through the UI, two Stacks side by side are two children of one row band. Floating the first moves it onto the
+    // page; un-floating used to leave it there, so the row-band pass wrapped it in a band of its own, full width, below.
+    const band = createContainer("row", { id: "band", rowBand: true, width: "fill", children: [
+      createContainer("column", { id: "A", width: "50%" } as Partial<BoxNode>), createContainer("column", { id: "B", width: "50%" } as Partial<BoxNode>),
+    ] } as Partial<BoxNode>);
+    const page = createContainer("column", { id: "root", children: [band] } as Partial<BoxNode>);
+    const floated = floatBox(page, "A", "root", 10, 10, "50%", 120);
+    expect(findParent(floated, "A")!.parent.id, "the precondition: floating moved it onto the page").toBe("root");
+    const back = unfloatBox(floated, "A");
+    expect(findParent(back, "A"), "home: in its band, first, beside B").toEqual({ parent: expect.objectContaining({ id: "band" }), index: 0 });
+    expect(findBox(back, "A")!.width).toBe("50%");
+    expect(findBox(back, "band")!.children!.map((c) => c.id)).toEqual(["A", "B"]);
+  });
+
+  it("…and a block ALONE in its band goes back to the band's place, the band having been pruned (E2-19, a Side by side row)", () => {
+    // "Side by side" + "Add a block inside" twice: the row holds two bands of one block each. Floated out, A's band is left empty
+    // and pruned — remembering the band as home left A nowhere to go, and it came back AFTER B.
+    const lone = (id: string, kid: string) => createContainer("row", { id, rowBand: true, width: "fill", children: [createContainer("column", { id: kid, width: "100%" } as Partial<BoxNode>)] } as Partial<BoxNode>);
+    const page = createContainer("column", { id: "root", children: [createContainer("row", { id: "row", children: [lone("bA", "A"), lone("bB", "B")] } as Partial<BoxNode>)] } as Partial<BoxNode>);
+    const floated = removeBox(floatBox(page, "A", "root", 10, 10, "50%", 120), "bA"); // the empty band, pruned as the editor does
+    const back = unfloatBox(floated, "A");
+    expect(findParent(back, "A"), "home: the row, FIRST — before B's band").toEqual({ parent: expect.objectContaining({ id: "row" }), index: 0 });
+  });
+
+  it("…and a block floated INSIDE the parent it came from returns to its PLACE in it, not to the end (E2-19, measured on a phone)", () => {
+    // The row is its own positioning parent: floating moves it to the row's END, so "already in its parent" is not "home".
+    const lone = (id: string, kid: string) => createContainer("row", { id, rowBand: true, width: "fill", children: [createContainer("column", { id: kid, width: "100%" } as Partial<BoxNode>)] } as Partial<BoxNode>);
+    const page = createContainer("column", { id: "root", children: [createContainer("row", { id: "row", children: [lone("bA", "A"), lone("bB", "B")] } as Partial<BoxNode>)] } as Partial<BoxNode>);
+    const floated = removeBox(floatBox(page, "A", "row", 10, 10, "50%", 120), "bA"); // floated within the row; its empty band pruned
+    expect(findParent(floated, "A"), "the precondition: floating put it LAST in the row").toEqual({ parent: expect.objectContaining({ id: "row" }), index: 1 });
+    expect(findParent(unfloatBox(floated, "A"), "A"), "back FIRST, before B's band").toEqual({ parent: expect.objectContaining({ id: "row" }), index: 0 });
+  });
+
   it("unfloatBox restores a COMPONENT to full width (its compact fixed px width was only for the floating card)", () => {
     const sec = createContainer("column", { id: "s", children: [createComponent("accordion", { id: "c", width: "500px" } as Partial<BoxNode>)] } as Partial<BoxNode>);
     const floated = floatBox(sec, "c", "s", 0, 0, "500px", 300);
@@ -1605,6 +1639,17 @@ describe("a block dropped into a margin hole takes the hole", () => {
     const moved = (keep.children ?? [])[0];
     expect(moved.id).toBe("right");
     expect(moved.marginTop, "the hole was handed over, not duplicated").toBe(0);
+  });
+
+  it("the hole BELOW is handed over too — the target's margin-bottom cleared, the newcomer under it filling (E2-24)", () => {
+    // A page-grid row keeps its height when a block's bottom edge is pulled up as that block's margin-bottom; carried into the new
+    // column it took the whole height and the newcomer was 0.3px tall — invisible — on every page built through the UI today.
+    const tree = updateBox(withHole(0), "right", { marginTop: undefined, marginBottom: 200 });
+    const after = stackWithBlock(tree, "right", newcomer(), false);
+    const [keep, fresh] = columnFor(after).children ?? [];
+    expect((keep.children ?? [])[0].id).toBe("right");
+    expect((keep.children ?? [])[0].marginBottom, "the hole was handed over, not left under the block").toBe(0);
+    expect(fresh.height, "the newcomer fills the space that is there").toBe("fill");
   });
 
   it("the newcomer goes FIRST — into the hole, not under the block", () => {

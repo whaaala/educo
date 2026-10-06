@@ -152,9 +152,10 @@ test.describe("a block let go over the selected block's toolbar lands on the pag
   test.use({ viewport: { width: 1520, height: 720 } });
   const band = (id: string, child: unknown) => ({ id, type: "container", layout: "flex", direction: "row", gap: 0, align: "stretch", justify: "start", wrap: false, padding: 0, width: "fill", rowBand: true, children: [child] });
   const stack = (id: string, children: unknown[]) => ({ id, type: "container", layout: "flex", direction: "column", gap: 0, align: "stretch", justify: "start", wrap: false, padding: 0, width: "100%", children });
-  async function seedHeadingOverText(page: Page) {
+  async function seedHeadingOverText(page: Page, headerPx?: number) {
     await seedSite(page, { homeId: "p1", pages: [{ id: "p1", name: "Home", path: "/", root: { id: "root", type: "container", layout: "flex", direction: "column", gap: 0, align: "stretch", justify: "start", wrap: false, padding: 0, width: "fill", baseFont: 10, children: [
-      band("b1", stack("hdr", [band("b1a", { id: "logo", type: "heading", width: "auto", text: "New heading", fontSize: 32, bold: true })])),
+      // `headerPx` (E2-8): how far down the heading sits — the toolbar needs 48 SCREEN px above a block, so where it lands depends on the scale
+      band("b1", { ...stack("hdr", [band("b1a", { id: "logo", type: "heading", width: "auto", text: "New heading", fontSize: 32, bold: true })]), minHeight: headerPx }),
       band("b2", stack("S", [
         band("bh", { id: "H", type: "heading", width: "auto", text: "What we offer", fontSize: 32, bold: true }),
         band("bt", { id: "T", type: "text", width: "auto", text: "New text — click to edit." }),
@@ -199,20 +200,20 @@ test.describe("a block let go over the selected block's toolbar lands on the pag
   });
 
   test("the toolbar takes the side that has room when the page is refitted — it never sticks out over the top of the page", async ({ page }) => {
-    // SELECTED FIRST, the panel docked afterwards: the page is refitted to 77%, the heading moves up to within 36px of
+    // SELECTED FIRST, the panel docked afterwards: the page is refitted to 77%, the heading moves up to within 48px of
     // the top of the page, and a bar that had chosen "above" was left hanging over the page's top edge (c-20).
-    await seedHeadingOverText(page);
+    await seedHeadingOverText(page, 62); // 55 screen px above it at 0.89 (panel shut), 41 docked at ~0.66 — either side of the bar's 48
     await page.getByRole("button", { name: "Close blocks panel" }).click(); await page.waitForTimeout(700);
     await page.keyboard.press("Escape"); await page.waitForTimeout(200);
     const h = (await page.locator('[data-box-id="H"]').boundingBox())!;
     for (let i = 0; i < 6 && await page.evaluate(() => document.querySelector(".outline-indigo-500")?.getAttribute("data-box-id")) !== "H"; i++) { await page.mouse.click(h.x + h.width / 2, h.y + h.height / 2); await page.waitForTimeout(250); }
-    const where = async () => page.evaluate(() => { const bar = document.querySelector('[role="toolbar"][aria-label="Block toolbar"]')!.getBoundingClientRect(); const top = document.querySelector('[data-box-id="root"]')!.getBoundingClientRect().top; const b = document.querySelector('[data-box-id="H"]')!.getBoundingClientRect(); return { barTop: Math.round(bar.top), pageTop: Math.round(top), blockTop: Math.round(b.top), below: bar.top >= b.bottom - 2 }; });
+    const where = async () => page.evaluate(() => { const z = document.querySelector<HTMLElement>("[data-canvas-scale]")?.dataset.canvasScale; const bar = document.querySelector('[role="toolbar"][aria-label="Block toolbar"]')!.getBoundingClientRect(); const top = document.querySelector('[data-box-id="root"]')!.getBoundingClientRect().top; const b = document.querySelector('[data-box-id="H"]')!.getBoundingClientRect(); return { z, barTop: Math.round(bar.top), pageTop: Math.round(top), blockTop: Math.round(b.top), below: bar.top >= b.bottom - 2 }; });
     const open = await where();
-    expect(open.blockTop - open.pageTop, "with the panel closed there is room above the block — or this proves nothing").toBeGreaterThanOrEqual(36);
+    expect(open.blockTop - open.pageTop, `with the panel closed there is room above the block — or this proves nothing (scale ${open.z})`).toBeGreaterThanOrEqual(48); // the bar's 32 + the 16 that clears the handles (E2-8)
     expect(open.below, "so the bar sits above it").toBe(false);
     await page.getByRole("button", { name: "Open blocks panel" }).click(); await page.waitForTimeout(900);
     const docked = await where();
-    expect(docked.blockTop - docked.pageTop, "docked, the block is within 36px of the top of the page").toBeLessThan(36);
+    expect(docked.blockTop - docked.pageTop, `docked, the block is within 48px of the top of the page (scale ${docked.z})`).toBeLessThan(48);
     expect(docked.below, "so the bar has moved below it").toBe(true);
     expect(docked.barTop, "and no part of it is above the page").toBeGreaterThanOrEqual(docked.pageTop);
   });

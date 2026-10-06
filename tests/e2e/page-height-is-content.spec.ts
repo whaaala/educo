@@ -64,7 +64,7 @@ const byColour = (ctx: Page | Frame) => ctx.evaluate(() => {
     if (el === document.documentElement || el === document.body) return;
     const k = want[key(getComputedStyle(el).backgroundColor)];
     if (!k) return;
-    const h = Math.round(el.getBoundingClientRect().height);
+    const h = Math.round(el.getBoundingClientRect().height / (Number(el.closest<HTMLElement>("[data-canvas-scale]")?.dataset.canvasScale) || 1)); // page px (E-2)
     if (out[k] == null || h > out[k]) out[k] = h;
   });
   return out;

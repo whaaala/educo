@@ -35,10 +35,10 @@ const imageTree = (patch: Record<string, unknown>): BoxNode => ({
 const inspect = (sel: string) => (page: import("@playwright/test").Page) =>
   page.locator(sel).evaluate((el) => {
     const img = (el.tagName === "IMG" ? el : el.querySelector("img")) as HTMLImageElement;
-    const r = img.getBoundingClientRect();
+    const r = img.getBoundingClientRect(), z = Number(img.closest<HTMLElement>("[data-canvas-scale]")?.dataset.canvasScale) || 1; // page px (E-2)
     return {
-      width: Math.round(r.width),
-      height: Math.round(r.height),
+      width: Math.round(r.width / z),
+      height: Math.round(r.height / z),
       attrW: img.getAttribute("width"),
       attrH: img.getAttribute("height"),
       ratio: getComputedStyle(img).aspectRatio,

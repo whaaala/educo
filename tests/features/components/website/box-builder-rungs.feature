@@ -32,6 +32,16 @@ Feature: Box Builder — every screen size has a layer of its own
     # Clearing only the new slot name would leave the older value in place and the block looking unchanged —
     # a "reset" button that does nothing.
 
+  Scenario: Full width shows the desktop page it edits, on any screen (E2-2, decided 2026-10-06)
+    # tests/e2e/grid-cell-resize.spec.ts · tests/e2e/side-by-side-resize.spec.ts (run on tablet and phone projects too)
+    Given the editor is at Full width on a 1024px tablet, a 768px tablet, a phone or a 1280px laptop
+    Then the page is drawn 1200px wide — the desktop rung's first width — shrunk to fit the room
+    And four cells across stay four across, as the desktop page has them
+    When I drag a grid cell's left edge to the left
+    Then that edge follows the pointer and the right edge does not move
+    # Full width used to take the room's own width (capped at 64rem): the PHONE rung on a tablet, so the canvas stepped
+    # the row while the drag wrote the desktop, and the cell jumped right under a leftward drag.
+
   # ── Which way the cascade runs ──
   Scenario: A change applies at its rung and every narrower one
     Given a width set at tablet landscape

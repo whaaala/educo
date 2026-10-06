@@ -238,15 +238,15 @@ export default function BoxDemoPage() {
     let loaded: BoxSite | null = null;
     try { const raw = localStorage.getItem(KEY); if (raw) loaded = coerceSite(JSON.parse(raw)); } catch { /* ignore */ }
     if (!loaded) { try { const legacy = localStorage.getItem(LEGACY_KEY); if (legacy) loaded = coerceSite(JSON.parse(legacy)); } catch { /* ignore */ } }
-    // One-time: strip empty tinted sections left by the old starter from previously-saved sites.
-    if (loaded) {
-      try {
-        if (!localStorage.getItem(CLEANED_KEY)) {
-          loaded = { ...loaded, pages: loaded.pages.map((p) => ({ ...p, root: pruneEmptyChrome(p.root) })) };
-          localStorage.setItem(CLEANED_KEY, "1");
-        }
-      } catch { /* ignore */ }
-    }
+    // One-time: strip empty tinted sections left by the old starter from previously-saved sites. A FRESH start is marked done
+    // too — it has nothing from the old starter — or a new visitor's first reload pruned the page they had just built, every
+    // empty block with it (E2-21: 3 nodes stored before the reload, 1 after).
+    try {
+      if (!localStorage.getItem(CLEANED_KEY)) {
+        if (loaded) loaded = { ...loaded, pages: loaded.pages.map((p) => ({ ...p, root: pruneEmptyChrome(p.root) })) };
+        localStorage.setItem(CLEANED_KEY, "1");
+      }
+    } catch { /* ignore */ }
     const s = normalizeSite(loaded ?? siteFromRoot(starter()));
     setHist({ present: s, past: [], future: [] });
     setActivePageId(s.homeId);
@@ -585,18 +585,20 @@ export default function BoxDemoPage() {
    */
 
   /**
-   * FULL WIDTH KEEPS ITS WIDTH WHILE THE PANEL IS DOCKED (#57). Full width is fluid, so the room the docked panel
-   * takes used to RE-LAY OUT the page: a four-across row became three plus one the moment the panel opened — the page
-   * being designed changed shape because a panel opened. Now it keeps the width it had with the panel shut (capped at
-   * the same 64rem as `max-w-5xl`) and is shrunk to fit, exactly like a device size.
+   * FULL WIDTH IS THE DESKTOP PAGE (E2-2, the user 2026-10-06: "always the desktop page"). It edits the desktop base
+   * (DEVICE_RUNG), so it is drawn at the first width of that rung, 75rem, and shrunk to fit exactly like a device size.
+   * It used to take the room's own width, capped at 64rem (#57): the tablet-landscape rung on a desktop and the PHONE
+   * rung on a tablet, so the canvas stepped a row while the drag wrote the desktop, and a grid cell's held edge jumped
+   * the wrong way. A fixed width also keeps #57: opening the docked panel can never re-lay out the page.
    */
   const rootPx = typeof window === "undefined" ? 16 : parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
-  const fullWhileDocked = device === "full" && panelDocked && roomW
-    ? Math.round(Math.min(64 * rootPx, roomW + (PANEL_GUTTER_REM - LAUNCHER_GUTTER_REM) * rootPx))
-    : null;
-  /** How much the frame is shrunk to fit: 1 when it fits, never above 1, two decimals so it does not jitter. */
-  const fitW = fullWhileDocked ?? DEVICES.find((d) => d.id === device)!.w;
-  const fit = fitW && roomW && roomW < fitW ? Math.max(0.25, Math.floor((roomW / fitW) * 100) / 100) : 1;
+  /**
+   * How much the frame is shrunk to fit: 1 when it fits, never above 1, two decimals so it does not jitter. It FITS: the hand zoom
+   * stops at 25 % (ZOOM_MIN), but Fit may go below it, or the desktop page overflowed every phone's room (E2-12: 300px in 274 on
+   * a 393 phone, the right edge and its handles scrolled away) — on a 360 phone first (RULE AF). 0.1 only guards a vanishing room.
+   */
+  const fitW = device === "full" ? Math.round(75 * rootPx) : DEVICES.find((d) => d.id === device)!.w;
+  const fit = fitW && roomW && roomW < fitW ? Math.max(0.1, Math.floor((roomW / fitW) * 100) / 100) : 1;
   /**
    * THE ZOOM THE USER CHOSE (BATCH Z-1), drawn with the same scale as the fit. A fluid Full width page is given the
    * width it has at Fit while zoomed, so zooming enlarges the page instead of re-laying it out in a wider box.

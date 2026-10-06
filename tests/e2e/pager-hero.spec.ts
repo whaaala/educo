@@ -230,7 +230,7 @@ test.describe("the hero", () => {
     // POLLED, not measured once after a guessed wait: a full-screen box settles after the background
     // image decodes, and under parallel workers that can take longer than any number written here.
     await expect.poll(async () => page.locator('[data-box-id="hero"]').evaluate(
-      (el) => Math.round((el.getBoundingClientRect().height / window.innerHeight) * 100),
+      (el) => Math.round((el.getBoundingClientRect().height / (Number(el.closest<HTMLElement>("[data-canvas-scale]")?.dataset.canvasScale) || 1) / window.innerHeight) * 100), // page px (E-2)
     ), { timeout: 10000, message: "a full-screen hero is the screen, not a guess at it" }).toBeGreaterThanOrEqual(90);
   });
 
@@ -279,7 +279,8 @@ test.describe("the hero", () => {
     await page.waitForTimeout(800);
     const r = await page.locator("[data-eu-pager]").evaluate((el) => {
       const slides = Array.from(el.children) as HTMLElement[];
-      return { heights: slides.map((s) => Math.round(s.getBoundingClientRect().height)), vh: window.innerHeight, n: slides.length };
+      const z = Number(el.closest<HTMLElement>("[data-canvas-scale]")?.dataset.canvasScale) || 1; // page px (E-2): the canvas is drawn scaled
+      return { heights: slides.map((s) => Math.round(s.getBoundingClientRect().height / z)), vh: window.innerHeight, n: slides.length };
     });
     expect(r.n).toBe(3);
     for (const h of r.heights) expect(h, "each page is its own full screen").toBeGreaterThanOrEqual(r.vh * 0.8);

@@ -127,11 +127,11 @@ test.describe("bands", () => {
       const probe = document.createElement("div");
       probe.style.cssText = "position:absolute;visibility:hidden;width:var(--eu-gutter-page)";
       rootEl.appendChild(probe);
-      const gutter = probe.getBoundingClientRect().width;
+      const gutter = parseFloat(getComputedStyle(probe).width); // layout px: the canvas is drawn scaled (E-2)
       probe.remove();
       return {
-        bandW: band.getBoundingClientRect().width,
-        innerW: inner.getBoundingClientRect().width,
+        bandW: band.offsetWidth, // layout px, as the padding is: the canvas is drawn scaled (E-2)
+        innerW: inner.offsetWidth,
         padL: parseFloat(cs.paddingLeft),
         padR: parseFloat(cs.paddingRight),
         gutter,

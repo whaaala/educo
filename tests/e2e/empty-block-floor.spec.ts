@@ -52,12 +52,20 @@ async function childBoxes(page: Page, parentId: string) {
     return ((find(site.pages[0].root)?.children as Record<string, unknown>[]) ?? []).map((c) => c.id as string);
   }, parentId);
   const out: { id: string; w: number; h: number }[] = [];
-  for (const id of ids) {
-    const b = await page.locator(`[data-box-id="${id}"]`).boundingBox();
-    out.push({ id, w: b ? b.width : 0, h: b ? b.height : 0 });
-  }
+  for (const id of ids) out.push({ id, ...(await pageBox(page, id)) });
   return out;
 }
+
+/**
+ * A block's size in PAGE px (E-2): the canvas is drawn scaled — Full width is the desktop page shrunk to fit — and every number
+ * here (the 40px floor, the 8rem courtesy, the 200px stack) is a page size.
+ */
+const pageBox = (page: Page, id: string) => page.evaluate((id) => {
+  const el = document.querySelector(`[data-box-id="${id}"]`);
+  if (!el) return { w: 0, h: 0 };
+  const s = Number(el.closest<HTMLElement>("[data-canvas-scale]")?.dataset.canvasScale) || 1, r = el.getBoundingClientRect();
+  return { w: r.width / s, h: r.height / s };
+}, id);
 
 /** The floor, in px at the test's root font size. Below this a block is all handle and no block. */
 const FLOOR = 40;
@@ -78,7 +86,7 @@ test.describe("a block added into a stack stays visible", () => {
   test("…and the parent grows to hold them rather than squeezing them", async ({ page }) => {
     // The other half. A floor that the parent ignores would just make the children overflow it.
     await seedWithChildren(page, 6, { minHeight: 200 });
-    const parent = (await page.locator('[data-box-id="a"]').boundingBox())!;
+    const parent = { height: (await pageBox(page, "a")).h };
     const kids = await childBoxes(page, "a");
     const stacked = kids.reduce((s, k) => s + k.h, 0);
     expect(parent.height, "the parent is at least as tall as what is inside it").toBeGreaterThanOrEqual(stacked - 2);

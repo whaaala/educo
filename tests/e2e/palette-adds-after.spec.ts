@@ -68,7 +68,7 @@ async function seedAndSelect(page: Page, id: string) {
   await page.waitForSelector('[data-box-id="B"]', { timeout: 15000 });
   await page.waitForTimeout(400);
   const b = (await page.locator(`[data-box-id="${id}"]`).boundingBox())!;
-  await page.mouse.click(b.x + b.width / 2, b.y + b.height / 2);
+  await page.mouse.click(b.x + b.width * 0.25, b.y + b.height * 0.25); // a quarter in: an empty block's "+" sits in its middle (E2-9)
   await page.waitForTimeout(250);
   expect(await page.evaluate(() => document.querySelector(".outline-indigo-500")?.getAttribute("data-box-id") ?? null),
     "the block really is selected before the click").toBe(id);
@@ -153,7 +153,7 @@ test.describe("clicking a block in the palette", () => {
     const cell = (await page.locator('[data-box-id="c1"]').boundingBox())!;
     for (let i = 0; i < 4; i++) {
       if (await page.evaluate(() => document.querySelector(".outline-indigo-500")?.getAttribute("data-box-id") ?? null) === "c1") break;
-      await page.mouse.click(cell.x + cell.width / 2, cell.y + cell.height / 2);
+      await page.mouse.click(cell.x + cell.width * 0.25, cell.y + cell.height * 0.25); // clear of the "+" (E2-9)
       await page.waitForTimeout(200);
     }
     expect(await page.evaluate(() => document.querySelector(".outline-indigo-500")?.getAttribute("data-box-id") ?? null),

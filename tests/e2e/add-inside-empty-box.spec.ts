@@ -251,7 +251,7 @@ test.describe("the + inside an empty box", () => {
       const g = (await page.locator('[data-box-id="G"]').boundingBox())!;
       for (let i = 0; i < 5; i++) {
         if (await page.evaluate(() => document.querySelector(".outline-indigo-500")?.getAttribute("data-box-id") ?? null) === "G") break;
-        await page.mouse.click(g.x + g.width / 2, g.y + g.height / 2);
+        await page.mouse.click(g.x + g.width * 0.25, g.y + g.height * 0.25); // clear of the "+" (E2-9)
         await page.waitForTimeout(220);
       }
       const before = await page.evaluate(() => {

@@ -721,10 +721,24 @@ describe("floatHoldCSS — free placement AND holding on screen", () => {
  * it, because the page sits inset inside the canvas and the offset had not paid for that inset.
  */
 describe("canvasFixedStyle — what the editor draws instead", () => {
-  it("leaves everything that is not fixed completely alone", () => {
-    const sticky = { position: "sticky" as const, top: "0px" };
-    expect(canvasFixedStyle(sticky)).toBe(sticky);
-    expect(canvasFixedStyle({ position: "relative" as const })).toEqual({ position: "relative" });
+  it("leaves everything that is neither fixed nor sticky completely alone", () => {
+    const rel = { position: "relative" as const };
+    expect(canvasFixedStyle(rel)).toBe(rel);
+    expect(canvasFixedStyle({ position: "static" as const, top: "0px" })).toEqual({ position: "static", top: "0px" });
+  });
+
+  it("a STICKY block stays sticky, its inset plus the frame's lag (E2-15) — top AND bottom", () => {
+    // The canvas page is drawn with transform: scale(z), and the browser holds a sticky box by the scroll in the frame's own px:
+    // it lagged (1 − z) × the scroll. The lag is from the view's top (scroll − the page's inset), plus the view's height for a
+    // bottom edge — the export is never scaled and never comes through here.
+    const top = canvasFixedStyle({ position: "sticky", top: "0px" });
+    expect(top.position).toBe("sticky");
+    expect(String(top.top)).toMatch(/^calc\(0px \+ /);
+    for (const v of ["var(--canvas-scroll", "var(--canvas-top", "var(--canvas-z"]) expect(String(top.top)).toContain(v);
+    const bottom = canvasFixedStyle({ position: "sticky", bottom: "1rem" });
+    expect(bottom.position).toBe("sticky");
+    expect(String(bottom.bottom)).toMatch(/^calc\(1rem - /);
+    expect(String(bottom.bottom), "a bottom edge maps the view's height through the scale too").toContain("var(--canvas-h");
   });
 
   it("holds a TOP-held block against the top of the view, less the page's own inset", () => {

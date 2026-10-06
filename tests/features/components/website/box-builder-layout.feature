@@ -1127,6 +1127,12 @@ Feature: Placing blocks beside one another in the Box Builder
 
   # ── BATCH L-4 (2026-10-03) — scripts/uat/uat-l4-headed.js, six headed windows ─────────────────────────────
 
+  Scenario: The block toolbar never covers a handle, however narrow the block (E2-8)
+    # tests/e2e/chrome-follows-resize.spec.ts ("a press on each handle of a narrow block lands on that handle")
+    Given a block narrower than twice the block toolbar is selected — every block on a phone's shrunk canvas
+    When I press on any of its eight handles
+    Then the press lands on that handle, because the toolbar sits clear of them above the block
+
   Scenario: The resize handles never cover the block's own words (c-21, decided 2026-09-29: B)
     # tests/unit/mirror-box-churn.test.ts (mirrorFlushSides)
     Given a heading that hugs its words is selected

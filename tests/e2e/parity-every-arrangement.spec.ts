@@ -159,9 +159,13 @@ test.describe("resizing over and over changes nothing", () => {
     await clickTile(page, "Stack");
     await closePanel(page);
 
+    // In PAGE px, unrounded, each value within half a px of the start (E-2): rounded SCREEN px on a canvas drawn at 0.69 flipped
+    // 226 → 227 on a sub-pixel — the same ±0.5 a 1:1 integer comparison always allowed. Compared with the START every cycle, so a
+    // ratchet still adds up past it within six.
     const shape = () => page.evaluate(() => Array.from(document.querySelectorAll<HTMLElement>("[data-box-id]"))
-      .map((e) => { const r = e.getBoundingClientRect(); return `${e.getAttribute("data-box-id")}:${Math.round(r.top)},${Math.round(r.height)}`; })
-      .join("|"));
+      .map((e) => { const z = Number(e.closest<HTMLElement>("[data-canvas-scale]")?.dataset.canvasScale) || 1, r = e.getBoundingClientRect(); return { id: e.getAttribute("data-box-id")!, t: r.top / z, h: r.height / z }; }));
+    const same = (a: { id: string; t: number; h: number }[], b: typeof a) => a.length === b.length && a.every((x, i) => x.id === b[i].id && Math.abs(x.t - b[i].t) <= 0.5 && Math.abs(x.h - b[i].h) <= 0.5);
+    const show = (s: { id: string; t: number; h: number }[]) => s.map((x) => `${x.id}:${x.t.toFixed(1)},${x.h.toFixed(1)}`).join("|");
 
     const built = await leaves(page);
     expect(built.length, "the page did not build").toBeGreaterThanOrEqual(3);
@@ -175,7 +179,8 @@ test.describe("resizing over and over changes nothing", () => {
     for (let cycle = 1; cycle <= 6; cycle++) {
       expect(await dragEdge(page, "Resize bottom edge", 80), `no handle on cycle ${cycle}`).toBe(true);
       expect(await dragEdge(page, "Resize bottom edge", -80), `no handle back on cycle ${cycle}`).toBe(true);
-      expect(await shape(), `the page did not return to where it started after ${cycle} round trip(s)`).toBe(start);
+      const now = await shape();
+      expect(same(now, start), `the page did not return to where it started after ${cycle} round trip(s): ${show(now)} from ${show(start)}`).toBe(true);
     }
 
     expect(errs, `the page threw: ${errs[0] ?? ""}`).toHaveLength(0);
