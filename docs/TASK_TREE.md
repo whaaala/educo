@@ -3506,7 +3506,7 @@ out) — where the session STARTED FROM, where it GOT TO, and where the next one
   `docs/guide/layout-reference.md` (every control by its panel name + shortcuts); `tests/unit/docs-guard.test.ts`; `npm run docs:build`
   / `docs:start`. The user looked at it and decided the typography: 15px body (below RULE DOCS' 16px — the user's call), fluid
   headings, line-height 1.75, callout cards, rounded tables/images; found D2-4 (too large) and D2-5 (the 72ch blank band) — both fixed.
-  Scaffold leftovers removed. Off-topic in this session: the user's separate `site-tester` Railway project (not Educo) — nothing kept.
+  Scaffold leftovers removed.
   AFTER THE FIRST HANDOVER (`98d2bba`): the user asked that every docs size follow the reader's BROWSER text size (rem, WCAG 1.4.4) —
   it does; D2-7 fixed the two Docusaurus px font sizes (phone menu "Back", collapsible contents), measured with Chrome's real font-size
   preference at 12 / 16 / 24 (all text ×0.75 / ×1 / ×1.5). D3-1 found and OPEN, the user to decide: the base size is applied twice
