@@ -87,4 +87,10 @@ describe("docs-guard", () => {
     }
     expect(broken, broken.join("\n")).toEqual([]);
   });
+
+  // D3-1: Infima sets --ifm-font-size-base as the html (root) size; using it again on an element applies it twice
+  it("the base font size is applied once, on html only", () => {
+    const css = readFileSync(join(__dirname, "../../docs-site/src/css/custom.css"), "utf8");
+    expect(css).not.toMatch(/font-size:\s*var\(--ifm-font-size-base\)/);
+  });
 });

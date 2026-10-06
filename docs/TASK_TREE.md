@@ -381,10 +381,15 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
   - `[ ]` (2) the Website Builder Guide's non-layout parts (content, components, themes, Preview, Page check, export), the README
     index, the plan / Builder Hub / Layout System / Builder Parity Audit artifacts corrected to what was built (G-1 … G-3c, E-1) and
     pointing at the site, every page in the same clean format
-  - `[ ]` D3-1 · REAL (found measuring D2-7): the base size is applied TWICE — Infima puts `--ifm-font-size-base` (0.9375rem) on
+  - `[x]` D3-1 · REAL (found measuring D2-7): the base size is applied TWICE — Infima puts `--ifm-font-size-base` (0.9375rem) on
     `html`, and `custom.css` puts it on `body` again, so body text computes 14.06px at a 16px browser, not the 15 written down
-    (headings and spacing, in rem of the 15px root, are as intended). Root fix = delete the `body { font-size }` line. WAITING ON THE
-    USER: the user approved the look at 14px — keep that look (then the base is set to 0.875rem once) or go to the 15 intended
+    (headings and spacing, in rem of the 15px root, are as intended). THE USER (2026-10-06): keep the 14px look → the body is
+    sized once, explicitly (`0.9375rem` of the 15px root, not the root variable), comments say what each size is; guard
+    `docs-guard.test.ts` "applied once" (mutation-proven: the var back on body fails it). MEASURED HEADED, Chrome's real font-size
+    12 / 16 / 24: root 11.25 / 15 / 22.5, body 10.55 / 14.06 / 21.09 (×0.75 / ×1 / ×1.5), no sideways scroll at 375
+  - `[x]` D3-2 · REAL, MY OWN (found before editing D3-1): the tree's planned "keep 14px" fix (`--ifm-font-size-base: 0.875rem`)
+    would have shrunk EVERY heading, gap and sidebar size by 14/15 — Infima's base IS the html (root) size, so every rem follows it
+    (`infima/dist/css/default/default.css:377`). Not applied; D3-1 done as above, root unchanged (measured: root 15, h2 16.88 as before)
 - `[ ]` **BATCH G-3d · Two decisions from G-3b** — QUEUED 2026-10-05 by the user ("yes to both") (area: page grid · 2 changes):
   - `[ ]` (1) ON A PHONE A LONE HALF-WIDTH BLOCK TAKES THE WHOLE LINE: where the fit rule stacks a row, a block alone on its line
     whose width came from a WIDER screen takes the line (~165px of words beside a hole on a 360px phone otherwise); a width set on the
