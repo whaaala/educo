@@ -591,7 +591,8 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
     - TESTS to extend: `page-grid.test.ts` (fit :195-249 — the four-Stats margin drops to 0.5rem, add a 340 check — G3b-11 :737,
       rows :959), `image-intrinsic.test.ts`, `BoxInspector.test.tsx`, `page-grid.feature`, `box-builder-images.feature`; headed
       template `uat-g3b-headed.js`; docs: story §2 / §4 / §6¾, reference "Fill the block's height", retake two phone shots
-  - `[?]` G3d-1 · WAITING ON THE USER (found mapping (2)): the decision says the picture is cropped "at its focal point" — no picture
+  - `[x]` G3d-1 · DECIDED BY THE USER 2026-10-06 — (a): the crop is CENTRED for now (`ponytail:` in the code); the focal point is
+    built later as part of the IMAGE COMPONENT, for web AND the phone / tablet app (1.3 → Components → Image). Found mapping (2): the decision says the picture is cropped "at its focal point" — no picture
     has a focal point today (only backgrounds have a position, `bgPosition`; the exported `<img>` has no `object-position`, so every
     crop is centred). Either (a) the centre for now, marked `ponytail:` — the least code — or (b) a new "Focal point" control on
     every picture (nine-point, like a background's position), used by this crop and by every cropped picture
@@ -3674,6 +3675,8 @@ sent), and my research. Nothing on the layout is done until every line here is c
   - `[ ]` Hamburger / overlay menu · Forms · Tabs · Steps · Tables · Pricing tables · Breadcrumbs · Pagination · Modal ·
     Logo strip · Tags · Inline links · Theme editor (personality) · Carousel · Calendar · News feed · Staff directory ·
     Map · Downloads · Search · Login panel · Newsletter sign-up · Social row
+  - `[ ]` Image — rebuilt as a component; includes a FOCAL POINT on every picture (nine-point, like a background's position)
+    used by every crop, and built for the phone / tablet app (`apps/mobile/`) in the same work (the user, 2026-10-06, G3d-1)
 - `[ ]` **LLM website builder** — v1 deterministic composer → v2 a Claude call emitting the block model → v3 own
   fine-tuned open-weights model (never trained on Claude outputs)
 - `[!]` **Builder parity roadmap, Phases 0–9** (memory `project_builder_parity_plan.md`) — Phase 0 done, Phase 1 in
