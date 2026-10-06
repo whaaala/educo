@@ -3491,6 +3491,30 @@ sent), and my research. Nothing on the layout is done until every line here is c
 One entry per session, newest first. Written the moment the user says "new session" (or the context is about to run
 out) — where the session STARTED FROM, where it GOT TO, and where the next one CONTINUES FROM.
 
+### 2026-10-06 · session 148707ee · branch `builder/page-grid` — HANDOVER (both held: the context was summarised once, and the boundary is clean — D-2 committed, nothing running; the user: "let's start a new session")
+- **Started from:** session 22981e0a's handover — PR of `builder/layout-uat` merged (`1541d98`), `builder/page-grid` cut from master, BATCH D-2.
+- **Got to:** **BATCH D-2 CLOSED** (`f437b5c`): `docs-site/` (Docusaurus 3.10.2 classic, `docs/guide/` as the single source, README.md
+  excluded, the layout story at `/`); `docs/guide/layout-story.md` rewritten §1–§11 incl. the whole page grid; new
+  `docs/guide/layout-reference.md` (every control by its panel name + shortcuts); `tests/unit/docs-guard.test.ts`; `npm run docs:build`
+  / `docs:start`. The user looked at it and decided the typography: 15px body (below RULE DOCS' 16px — the user's call), fluid
+  headings, line-height 1.75, callout cards, rounded tables/images; found D2-4 (too large) and D2-5 (the 72ch blank band) — both fixed.
+  Scaffold leftovers removed. Off-topic in this session: the user's separate `site-tester` Railway project (not Educo) — nothing kept.
+- **Continue from:** **BATCH D-3 (YOU ARE HERE)** → change (1) pictures and examples in the layout pages, then (2) the rest of the
+  documentation; then BATCH G-3d; then E-2 → E-3 → E-4 on `builder/editor-small-screens` (unchanged from the 22981e0a entry below).
+- **Next prompt (paste to start):** "Branch `builder/page-grid` at `f437b5c`. Read CLAUDE.md (RULE M Ponytail before AND after
+  everything; RULE DOC / RULE DOCS; RULE Y build through the UI; RULE Z headed, six windows; RULE K), then `docs/TASK_TREE.md`: the
+  newest SESSION LOG entry (148707ee), then BATCHES → D-2 (closed — its typography decisions and ledger D2-1…D2-6) and D-3 (open).
+  DO, IN ORDER: (1) RULE K — check ports 3000/3100/3200/4000 are free; (2) D-3: write its HEADED checklist first; change (1): build
+  the app (`next build`, `next start` on 3100, `node scripts/check-fresh-build.js` must print FRESH), build each layout-story scenario
+  THROUGH THE UI and screenshot it (canvas + Preview, a phone and a desktop width where the scenario is about screens), save under
+  `docs/guide/img/` (small PNG/WebP, resized to their shown width — RULE AF weight), embed with alt text in `layout-story.md` and the
+  main panels in `layout-reference.md`, add `:::tip` callouts where a scenario has a trick; `npm run docs:build` + docs-guard; look at
+  the site HEADED (`npm run docs:start` on 4000) at 375/768/1280/1536, light and dark, 200% text; stop every server after. Then
+  change (2): the Website Builder Guide's non-layout parts, the README index, the artifacts corrected to what was built. Then close
+  D-3, then BATCH G-3d (its own checklist; see the 22981e0a entry for its details). TRAPS: never `git checkout <file>` to undo; a closed
+  batch must not hold an open ledger line (the batch guard fails); the docs-guard reads sidebar doc IDs as lowercase-hyphen strings;
+  the 15px body is the user's decision — do not raise it back to 16px."
+
 ### 2026-10-05 · session 22981e0a · branch `builder/layout-uat` — HANDOVER (recommended once both held: the context is genuinely long — G-3b's (3) and (6), its whole final pass, all of E-1, about twenty six-window headed runs and five full gates — and the boundary is clean: everything committed, nothing running; the user agreed: "let's start a new session")
 - **Started from:** session 3da81fad's handover — BATCH G-3b (3) Alt free, then (6) rows, then its final pass, then E-1.
 - **Got to:** (1) **BATCH G-3b CLOSED** (`30eee12` (3) · `b97f839` (6) · `2515755` close): Alt free = the nearest lines + a free
