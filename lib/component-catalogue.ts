@@ -1,4 +1,5 @@
 import { createComponent, createContainer, createElement, type BoxNode } from "@/lib/box-model";
+import { ACCORDION_DESIGN_COUNT } from "@/lib/educo-ui/accordions";
 
 /**
  * THE COMPONENT CATALOGUE — the one place that answers "what components exist, and how is each one built".
@@ -205,7 +206,7 @@ const RATING_VARIANTS: PresetVariant[] = [
 
 // ── the catalogue ─────────────────────────────────────────────────────────────────────────────────
 
-/** A handful of real starting points for the accordion — not all 54 designs. */
+/** A handful of real starting points for the accordion — not all of its designs. */
 const ACCORDION_CHOICES: AddChoice[] = [
   { id: "qa", label: "Q & A", patch: { variant: "--qa" } },
   { id: "panel", label: "Solid panel", patch: { variant: "--panel" } },
@@ -225,7 +226,7 @@ const ALERT_CHOICES: AddChoice[] = [
 ];
 
 export const COMPONENT_CATALOGUE: CatalogueEntry[] = [
-  { name: "accordion", label: "Accordion", icon: "PanelTopOpen", hint: "Expandable Q&A / FAQ — 54 designs", build: () => createComponent("accordion"), choices: ACCORDION_CHOICES },
+  { name: "accordion", label: "Accordion", icon: "PanelTopOpen", hint: `Expandable Q&A / FAQ — ${ACCORDION_DESIGN_COUNT} designs`, build: () => createComponent("accordion"), choices: ACCORDION_CHOICES },
   { name: "alert", label: "Alert", icon: "BellRing", hint: "Message / notice — 6 severities, dismissible", build: () => createComponent("alert"), choices: ALERT_CHOICES },
   { name: "card", label: "Card", icon: "LayoutGrid", hint: "Image + title + text + button", build: makeCard, variants: CARD_VARIANTS },
   { name: "quote", label: "Quote", icon: "MessageSquareQuote", hint: "A testimonial quote", build: makeQuote, variants: QUOTE_VARIANTS },

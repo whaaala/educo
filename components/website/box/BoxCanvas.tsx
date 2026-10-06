@@ -21,7 +21,7 @@ import {
   updateBox, deleteBox, insertBox, moveBoxStep, duplicateBox, moveBox, cloneBox, findParent, isAncestor, isContainer, containerLabel, widthPct, stackWithBlock, fitBand, PILL, blockTypography,
   isFloating, floatBox, unfloatBox, groupBoxes, ungroupBoxes, bringToFront, sendToBack, bringForward, sendBackward, packRowLines, allocateLine, type LineFollower,
   shouldTakeMirrorBox, mirrorFlushSides, hostSizedFor, type MirrorBox, type MirrorChase, fadedPaint, boxOpacity, backgroundCss, treePaintLayerCss, radiusCSS, isClipped, SHADOW_CSS, videoEmbedSrc, sanitizeCssDeclarations, expandScopedCss, ACCORDION_CSS_PARTS, itemOverrideCss, itemHasOverride, itemNumberVars, richBody, componentTextCss, componentBoxCss, bgShowThroughCss, resizeTopEdge, blockContainmentCss, alertToastCss, treeHasToast, treeHasFixedHold, accordionClasses, bandClasses, advancedCssStyle, alertActionsHTML, hugsContent, itemFloatContextCss, COMPONENT_ITEM_SEL, clampContentScale, MIN_CONTENT_SCALE, isMultiItemComponent, comfortableWidth, remLen, rootFontPx, isDefiniteLen, addItemAfter, duplicateItem, duplicateChildItem, removeItem, removeChildItem, moveItem, moveChildItem, updateItem, updateChildItem, ALERT_SEVERITY_ICON, alertPartInline, alertIconInline, collectAlertItemStyles,
-  type Breakpoint, resolveResponsive, updateBoxResponsive, treePinArrivalCss, floatHoldCSS, canvasFixedStyle, capturesFixed, imageSizing, importPhoto, treeItemEffectsCss, itemNeedsClass, floatZIndex, gridPlacementAt, masonryMeasureAttr, masonryMeasurePass, mirrorMeasuresNow, baseUnitParts, pinStackMarker, pinStackGroupMarker, pinStackPass, isPager, pagerStripCss, pagerNavHTML, selectionChain, textLen, typoRole, typoRootVars, typoCascadeCss, bandEdgeCSS, LINK_COLOR_CSS, treeGridQueryCss, TYPE_UNIT_PROPERTY_CSS,
+  type Breakpoint, resolveResponsive, updateBoxResponsive, treePinArrivalCss, floatHoldCSS, canvasFixedStyle, capturesFixed, imageSizing, fillsRowsAnywhere, fillHostOf, importPhoto, treeItemEffectsCss, itemNeedsClass, floatZIndex, gridPlacementAt, masonryMeasureAttr, masonryMeasurePass, mirrorMeasuresNow, baseUnitParts, pinStackMarker, pinStackGroupMarker, pinStackPass, isPager, pagerStripCss, pagerNavHTML, selectionChain, textLen, typoRole, typoRootVars, typoCascadeCss, bandEdgeCSS, LINK_COLOR_CSS, treeGridQueryCss, TYPE_UNIT_PROPERTY_CSS,
 } from "@/lib/box-model";
 import { ICON_SET } from "./icons";
 import { PortalMenu, MenuItem, MenuHeader, MenuSep } from "./ui";
@@ -3246,7 +3246,7 @@ export default function BoxCanvas({
    * unsized empty box normally gets must step aside. Otherwise a box you have just dragged small is held
    * open from the inside by empty children nobody sized, and the size you set is not the size you get.
    */
-  const renderNode = (rawNode: BoxNode, parent: BoxNode | null, sizedAbove = false, hostSized = false, capturedAbove = false): React.ReactNode => {
+  const renderNode = (rawNode: BoxNode, parent: BoxNode | null, sizedAbove = false, hostSized = false, capturedAbove = false, grand: BoxNode | null = null): React.ReactNode => {
     // Resolve the box for the active breakpoint (base merged with tablet/mobile overrides). Same id/type/
     // children as the base, so selection + structure are unaffected — only style/geometry differ.
     const node = resolveResponsive(rawNode, breakpoint);
@@ -3293,7 +3293,7 @@ export default function BoxCanvas({
         ? { left: `${node.left ?? 0}%`, top: `${node.top ?? 0}%`, width: sizeToCSS(node.width), height: node.height ? sizeToCSS(node.height) : undefined, minHeight: node.minHeight != null ? remLen(node.minHeight) : undefined, zIndex: floatZIndex(node), ...floatHoldCSS(node) } // no width ⇒ auto ⇒ hug content; a floated block may still hold on screen
         : stacked
         ? { width: "100%" } // content-height (no fixed height/minHeight) so nothing is clipped
-        : parent ? childStyle(node, parent, breakpoint, hostSized) : {
+        : parent ? childStyle(node, parent, breakpoint, hostSized, grand) : {
             /**
              * THE PAGE FLOOR IS AN OFFER FOR AN EMPTY PAGE, and steps aside the moment there is content.
              *
@@ -3494,7 +3494,7 @@ export default function BoxCanvas({
                 style={pagerStripCss()}
               >
                 {kids.map((c) => (
-                  <Fragment key={c.id}>{renderNode(c, node, sizedAbove || node.minHeight != null || node.height != null, hostSizedFor(node, hostSized, parent), capturedAbove || capturesFixed(node))}</Fragment>
+                  <Fragment key={c.id}>{renderNode(c, node, sizedAbove || node.minHeight != null || node.height != null, hostSizedFor(node, hostSized, parent), capturedAbove || capturesFixed(node), parent)}</Fragment>
                 ))}
               </div>
               {/* The nav is the published markup, shown as published — but a dot is an `<a href="#…">`, and
@@ -3521,7 +3521,7 @@ export default function BoxCanvas({
               })()}
             </>
           ) : kids.map((c) => (
-            <Fragment key={c.id}>{renderNode(c, node, sizedAbove || node.minHeight != null || node.height != null, hostSizedFor(node, hostSized, parent), capturedAbove || capturesFixed(node))}</Fragment>
+            <Fragment key={c.id}>{renderNode(c, node, sizedAbove || node.minHeight != null || node.height != null, hostSizedFor(node, hostSized, parent), capturedAbove || capturesFixed(node), parent)}</Fragment>
           ))}
           {editable && kids.length === 0 && (
             // An empty block shows a non-interactive hint — drag a block from the palette (or use the ⋯ menu)
@@ -3640,7 +3640,7 @@ export default function BoxCanvas({
           ...(isDragging ? { opacity: 0.4 } : {}) }}
         className={`${isSel ? "outline outline-2 outline-indigo-500 outline-offset-[-2px]" : editable ? "hover:outline hover:outline-1 hover:outline-indigo-300/70 hover:outline-offset-[-1px]" : ""}`}
       >
-        <ElementView node={node} headingLevel={semR?.level} theme={theme} editable={editable} selected={isSel} breakpoint={breakpoint} onText={(v) => onChange(updateBox(root, node.id, { text: v }))} onSrc={(v) => onChange(updateBox(root, node.id, { src: v }))} onPatchNode={(patch) => onChange(updateBox(root, node.id, patch))} itemSel={itemSel} setItemSel={setItemSel} />
+        <ElementView node={node} headingLevel={semR?.level} theme={theme} editable={editable} selected={isSel} breakpoint={breakpoint} fill={fillsRowsAnywhere(fillHostOf(parent, grand))} onText={(v) => onChange(updateBox(root, node.id, { text: v }))} onSrc={(v) => onChange(updateBox(root, node.id, { src: v }))} onPatchNode={(patch) => onChange(updateBox(root, node.id, patch))} itemSel={itemSel} setItemSel={setItemSel} />
         {isSolo && <ChromeMirror blockId={node.id}><NodeToolbar node={node} isRoot={isRoot} />{resizeHandles}{guides && !isRoot && <SpanChip blockId={node.id} cols={guides.cols} color={guideHue} />}</ChromeMirror>}
       </Tag>
     );
@@ -4481,10 +4481,11 @@ function ComponentView({ node, editable, onPatchNode, breakpoint = "base", itemS
   return <div className="eu-root" style={styleVars} />;
 }
 
-function ElementView({ node, headingLevel, theme, editable, selected, onText, onSrc, onPatchNode, breakpoint = "base", itemSel, setItemSel }: {
+function ElementView({ node, headingLevel, theme, editable, selected, onText, onSrc, onPatchNode, breakpoint = "base", itemSel, setItemSel, fill = false }: {
   node: BoxNode; headingLevel?: number; theme: SiteTheme; editable?: boolean; selected?: boolean; onText: (v: string) => void; onSrc: (v: string) => void; onPatchNode?: (patch: Partial<BoxNode>) => void; breakpoint?: Breakpoint;
   itemSel?: { boxId: string; id: string; parentId?: string } | null;
   setItemSel?: (v: { boxId: string; id: string; parentId?: string } | null) => void;
+  fill?: boolean; // G-3d (2): its block spans rows and holds only it — the picture fills the block's height (`fillsRows`)
 }) {
   const fileRef = useRef<HTMLInputElement>(null);
   // Emitted only when this block sets one: a hard-coded "left" is an explicit value, and an explicit value on
@@ -4518,7 +4519,7 @@ function ElementView({ node, headingLevel, theme, editable, selected, onText, on
     case "image": {
       // Identical sizing to the export — same helper, so "auto" takes the photo's own shape in both places
       // and a height set by hand crops it in both places.
-      const sizing = imageSizing(node);
+      const sizing = imageSizing(node, fill);
       return (
         <div className="relative w-full" style={{ height: sizing.height, aspectRatio: sizing.aspectRatio }}>
           {/* alt is passed here too, so what a screen reader gets while editing matches the published page.

@@ -129,13 +129,13 @@ export default function GallerySetupMenu({ anchor, onClose, onPick, mode = "gall
             </div>
             <ul className="flex max-h-24 flex-wrap gap-1 overflow-y-auto">
               {photos.map((p, i) => (
-                <li key={`${i}-${p.src.slice(-16)}`} className="relative">
+                <li key={`${i}-${p.src.slice(-16)}`} className="group relative">
                   
                   <img src={p.src} alt="" className="h-10 w-10 rounded object-cover" />
                   <button
                     type="button" onClick={() => remove(i)}
                     aria-label={`Remove photo ${i + 1}${p.alt ? ` — ${p.alt}` : ""}`}
-                    className="absolute -right-1 -top-1 grid h-4 w-4 place-items-center rounded-full bg-ink text-[0.5rem] text-white opacity-0 focus-visible:opacity-100 group-hover:opacity-100 hover:opacity-100"
+                    className="absolute -right-1 -top-1 grid h-4 w-4 place-items-center rounded-full bg-ink text-[0.5rem] text-white opacity-0 focus-visible:opacity-100 group-hover:opacity-100 hover:opacity-100 [@media(hover:none)]:opacity-100"
                   ><X className="h-2.5 w-2.5" aria-hidden="true" /></button>
                 </li>
               ))}

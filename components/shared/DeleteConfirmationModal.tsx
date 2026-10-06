@@ -1,7 +1,7 @@
 "use client";
 
 import { AlertTriangle, type LucideIcon } from "lucide-react";
-import { useEffect, useRef, type ReactNode } from "react";
+import { useEffect, useId, useRef, type ReactNode } from "react";
 
 // Color configurations for different variants
 const variantConfig = {
@@ -100,6 +100,7 @@ export default function DeleteConfirmationModal({
   // Use message as alias for warningMessage
   const displayMessage = warningMessage || message || "This will permanently remove this item and all associated data. This action cannot be undone.";
   const modalRef = useRef<HTMLDivElement>(null);
+  const titleId = useId(), messageId = useId();
   const colors = variantConfig[variant];
 
   // Scroll modal into view when it opens
@@ -115,18 +116,18 @@ export default function DeleteConfirmationModal({
     }
   }, [isOpen]);
 
-  // Close on escape key
+  // Close on escape key. D3-19: subscribed once per opening, reading onClose through a ref — keyed on a new onClose
+  // every render, an earlier keydown listener's re-render removed this one mid-event, and Escape never closed it.
+  const onCloseRef = useRef(onClose);
+  onCloseRef.current = onClose;
   useEffect(() => {
+    if (!isOpen) return;
     const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
+      if (e.key === "Escape") onCloseRef.current();
     };
-    if (isOpen) {
-      document.addEventListener("keydown", handleEscape);
-    }
-    return () => {
-      document.removeEventListener("keydown", handleEscape);
-    };
-  }, [isOpen, onClose]);
+    document.addEventListener("keydown", handleEscape);
+    return () => document.removeEventListener("keydown", handleEscape);
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
@@ -141,6 +142,11 @@ export default function DeleteConfirmationModal({
       {/* Modal Content */}
       <div
         ref={modalRef}
+        // D3-18: announced as a dialog, named by its title, described by its warning (WCAG 4.1.2)
+        role="alertdialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        aria-describedby={showWarning ? messageId : undefined}
         className="bg-surface rounded-2xl shadow-2xl w-full max-w-md flex flex-col animate-in zoom-in-95 duration-200"
         onClick={(e) => e.stopPropagation()}
       >
@@ -155,7 +161,7 @@ export default function DeleteConfirmationModal({
               </div>
             </div>
           </div>
-          <h2 className="text-sm font-bold text-center text-gray-900 dark:text-white midnight:text-cyan-100 purple:text-pink-100">
+          <h2 id={titleId} className="text-sm font-bold text-center text-gray-900 dark:text-white midnight:text-cyan-100 purple:text-pink-100">
             {title}
           </h2>
           {subtitle && (
@@ -167,8 +173,8 @@ export default function DeleteConfirmationModal({
 
         {/* Content */}
         <div className="px-6 pt-4 pb-6">
-          {/* Item Info Card */}
-          <div className="bg-gray-50 dark:bg-[#22262e]/50 midnight:bg-[#0f1330]/50 purple:bg-[#251340]/50 rounded-lg p-3 mb-4 border border-gray-200 dark:border-gray-600 midnight:border-cyan-500/20 purple:border-pink-500/20">
+          {/* Item Info Card — only when there is an item to show (D3-18: it drew an empty card) */}
+          {(itemName || itemId) && <div className="bg-gray-50 dark:bg-[#22262e]/50 midnight:bg-[#0f1330]/50 purple:bg-[#251340]/50 rounded-lg p-3 mb-4 border border-gray-200 dark:border-gray-600 midnight:border-cyan-500/20 purple:border-pink-500/20">
             <div className="flex items-center gap-3">
               {itemAvatar ? (
                 <img
@@ -197,12 +203,12 @@ export default function DeleteConfirmationModal({
                 </p>
               </div>
             </div>
-          </div>
+          </div>}
 
           {/* Warning Message */}
           {showWarning && (
             <div className={`mb-4 p-3 ${colors.warningBg} border-l-4 ${colors.warningBorder} rounded`}>
-              <p className={`text-sm ${colors.warningText}`}>
+              <p id={messageId} className={`text-sm ${colors.warningText}`}>
                 {displayMessage}
               </p>
             </div>
@@ -212,6 +218,8 @@ export default function DeleteConfirmationModal({
           <div className="flex items-center justify-end gap-3">
             <button
               onClick={onClose}
+              // a destructive dialog opens with focus on its safe choice (D3-18, WCAG 2.4.3)
+              autoFocus
               className="px-5 py-2.5 rounded-lg font-medium text-sm text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 bg-white dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 hover:bg-gray-50 dark:hover:bg-[#2a2d35] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-all duration-200 active:scale-95 cursor-pointer"
             >
               {cancelButtonText}

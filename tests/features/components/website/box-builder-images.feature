@@ -140,3 +140,25 @@ Feature: Box Builder — images that describe themselves and hold their own shap
   Scenario: Photographs of different shapes can stagger
     When I choose "Follow the picture" in the setup
     Then the gallery arrives with row heights following each photograph
+
+  # ── G-3d (2) · a picture fills a block that spans rows (the user, 2026-10-05; G3d-1: centred crop for now) ──
+  Scenario: A picture fills the block that spans rows
+    Given a block on a page-grid row two rows tall holding only a picture, beside two short blocks of words
+    Then the picture fills the block's whole height, cropped from its centre, never stretched
+    And the canvas and the Preview show the same at every screen where the row is side by side
+
+  Scenario: The fill can be switched off
+    Given that picture
+    When I turn off "Fill the block's height" in the picture's settings
+    Then the picture keeps its own height and the block below it is empty space
+    And one Undo turns the fill back on
+    And after a reload it is still off
+
+  Scenario: The switch shows only where it does something
+    Given a picture in a block that spans one row, or a picture beside words in a block that spans two
+    Then its settings have no "Fill the block's height" switch, and the picture keeps its own height
+
+  Scenario: Where the row steps to one a line, the picture keeps its own height
+    Given a picture filling a block two rows tall
+    When the row stacks on a phone
+    Then the block spans one row and the picture is its own height again

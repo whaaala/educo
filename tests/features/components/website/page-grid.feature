@@ -328,3 +328,41 @@ Feature: The page grid (AC-37b)
     Then at Tablet it spans one row, and at Desktop still two
     And one Undo puts it back
     And a screen reader hears "Rows tall" for the span and "At least this many rows tall" for the height, never two controls with one name
+
+  # ── G-3d · the user's three phone decisions (2026-10-05 / 2026-10-06) ──────────────────────────────
+
+  Scenario Outline: On a phone no block of a row is narrower than ten letters' room (D3-31)
+    Given <row> on a row of a page-grid page, built through the blocks panel
+    When I look at it in the Preview on a <width> px phone
+    Then <result>
+    And nothing scrolls sideways and no word is broken, at 100, 150 and 200 % text
+
+    Examples:
+      | row                                     | width | result                                        |
+      | a paragraph beside a photo 40 % wide    | 375   | the photo goes under the paragraph            |
+      | an article beside a sidebar 30 % wide   | 375   | the sidebar goes under the article            |
+      | four Stats, a quarter each              | 360   | they stay two across                          |
+      | a strip of six logos                    | 360   | they go two across, in three lines            |
+      | two halves                              | 340   | they stack, each the whole line               |
+
+  Scenario: The floor never moves a row on a tablet or a desktop
+    Given a strip of six logos on a row of a page-grid page
+    When I look at it at 600 px and wider
+    Then the floor does not step it (only its words can)
+
+  Scenario: The floor leaves pages saved before the page grid alone
+    Given a page saved before the page grid with a paragraph beside a photo
+    When I publish it
+    Then its HTML is byte for byte what it was
+
+  Scenario: On a phone a block alone on its line takes the whole line (G-3b's decision)
+    Given a block set to half the page at Desktop, alone on its row of a page-grid page
+    When I look at it on a phone
+    Then it takes the whole line, with the page's side space at both edges
+    And at Tablet and Desktop it is still half the page
+
+  Scenario: A width set on the phone itself still wins there (G3b-11)
+    Given a block alone on its row of a page-grid page
+    When I set its Columns to 3 of 6 at Mobile
+    Then on the phone it is half the line
+    And one Undo gives the whole line back

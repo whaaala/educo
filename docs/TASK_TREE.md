@@ -337,48 +337,332 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
   - `[x]` E1-6 · REAL, MINE, FOUND WHILE EDITING THE TREE: adding E-1's checklist dropped BATCH G-3's header line (my edit's text ended
     on it and did not put it back), so G-3's closed record ran on after E1-5 — committed in e69d4e3 and missed by the tree's guard. →
     the header restored; the guard now also fails when a batch the tree names has no header of its own (red on e69d4e3's tree)
-- `[ ]` **BATCH D-2 · The documentation site, and the layout documented from the beginning** — QUEUED 2026-10-05 by the user (FIRST
-  on `builder/page-grid`, before G-3d). The user's words: "we are following https://docusaurus.io/ … rewrite everything to make sure
-  that it's clean and it follows that … the font size, the way the documentation looks right now doesn't look clean enough … let's
-  start from the beginning … everything documented properly, especially for the layout, every single thing … then we start updating
-  as we go along". RULE DOC's site moves from "after the layout closes" to NOW (the user's decision). Research: `docs/DOCUSAURUS.md`
-  (stored, RULE R — extended where the build needs it, never redone). (area: documentation · 6 changes):
-  - `[ ]` (1) THE SITE: `docs-site/` — Docusaurus 3 "classic", its own package.json; the docs plugin reads `docs/guide/` (the single
-    source, never a copy); a hand-written sidebar, the layout story first; `npm run docs:build` / `docs:start`; local search
-  - `[ ]` (2) CLEAN TO READ (RULE F / D, measured): the deck's typography — body 16–18px (rem), lines ≤ ~70 characters, line-height
-    1.5–1.7, one or two type families (the builder's own, Inter), a clear heading scale, generous whitespace; Educo's colour tokens;
-    light AND dark both ≥ 4.5:1; the site checked HEADED at 375 / 768 / 1280 / 1536 and at 200 % text (WCAG 1.4.4)
-  - `[ ]` (3) THE INVENTORY: every document a person reads (`docs/guide/*`, the README index, the user-facing parts of `docs/`, the
-    published Artifacts) listed with where it goes in the site — rewritten, merged, or left as internal engineering notes — so
-    nothing is lost and nothing is duplicated
-  - `[ ]` (4) THE LAYOUT, FROM THE BEGINNING, EVERY SINGLE THING — rewritten as the story (RULE L, scenario by scenario, in plain
-    words): blocks, stacks, rows, bands, grids and grid cells; adding, moving, nesting; sizing and the edge you drag (rule 19);
-    space by default; the responsive ladder and hiding per screen; floating and sticky; components on the page; the page grid
-    (columns per screen, the guides, snapping, Alt free, from / to line, whole line, to the last line, bleed, "Rows tall", the
-    frame, how a row steps on a phone); the editor on tablets and phones — one page per area, each with what to click, what
-    happens on every screen and why, with screenshots taken from the real builder
-  - `[ ]` (5) THE LAYOUT REFERENCE: every layout control by the name it has in the panel, what it does, its keyboard shortcut —
-    beside the story, linked both ways
-  - `[ ]` (6) KEPT TRUE FROM NOW ON: a guard (`tests/unit/`) — every guide page has front matter and is in the sidebar, every link
-    and image resolves, `docs:build` passes; and RULE X's checklist gains a line for every batch from now on: "its page in the
-    documentation site written or updated in the same change"
-- `[ ]` **BATCH D-3 · The rest of the documentation rewritten** — QUEUED 2026-10-05 by the user (after D-2) (area: documentation):
-  the Website Builder Guide's non-layout parts (content, components, themes, Preview, Page check, export), the README index, the
-  plan / Builder Hub / Layout System / Builder Parity Audit artifacts corrected to what was built (G-1 … G-3c, E-1) and pointing at
-  the site, every page in the same clean format
-- `[ ]` **BATCH G-3d · Two decisions from G-3b** — QUEUED 2026-10-05 by the user ("yes to both") (area: page grid · 2 changes):
-  - `[ ]` (1) ON A PHONE A LONE HALF-WIDTH BLOCK TAKES THE WHOLE LINE: where the fit rule stacks a row, a block alone on its line
+- `[x]` **BATCH D-2 · The documentation site, and the layout documented from the beginning** — CLOSED 2026-10-05
+  (HEADED UAT: 375/768/1280/1536 light and dark and 200% text, all pass — no sideways scroll, no overflow, layout holds, contrast ≥4.5:1 in
+  both themes; `npm run docs:build` 0 errors; docs-guard 3/3; vitest 187/187 including docs-guard, batches, rules)
+  — QUEUED 2026-10-05 by the user (FIRST on `builder/page-grid`, before G-3d). (area: documentation · 6 changes):
+  - `[x]` (1) THE SITE: `docs-site/` DONE — Docusaurus 3.10.2 "classic", `package.json`; docs plugin reads `docs/guide/` (single source);
+    hand-written sidebar (Layout → story/reference, Website Builder); `npm run docs:build` / `docs:start`; blog removed; `src/pages/` removed
+  - `[x]` (2) CLEAN TO READ DONE (MEASURED, HEADED): Inter from Google Fonts; Educo blue (`#2563eb` light · `#60a5fa` dark); slate-900
+    dark bg; light ≥4.6:1 · dark ≥6.0:1; checked at 375/768/1280/1536 and 200% text. THEN THE USER'S LOOK AT IT (2026-10-05): "the font
+    is too large" → body 0.9375rem (15px — the user's call, below RULE DOCS' 16px floor; readers still enlarge it, 200% text holds);
+    headings fluid `clamp()` (h1 1.5→1.875rem · h2 1.125→1.375rem); line-height 1.75 and more paragraph/list space ("more space between
+    the lines… cleaner"); tables rounded with a header row and row hover; admonitions (`:::tip/info/warning/danger`) as coloured cards
+    in light and dark; images rounded and responsive; code blocks rounded
+  - `[x]` (3) THE INVENTORY DONE: README.md = internal, excluded; layout-story.md → Layout/story; layout-reference.md → Layout/reference
+    (new); website-builder.md → Website Builder; every file listed with where it goes
+  - `[x]` (4) THE LAYOUT, FROM THE BEGINNING, EVERY SINGLE THING DONE — `docs/guide/layout-story.md` rewritten: §1–§11 covering blocks/bands,
+    row/stack/grid, sidebar, sizing (rule 19), hiding per device, space by default, the full page-grid story (what you see · columns per
+    screen · the guides · snapping · Shift-snap · Alt-drag · From/To line · Whole line · To the last line · Bleed · Space between cols/rows ·
+    Rows tall · The frame · How a row steps on a phone · Nothing left empty that nobody chose · Pages saved before the grid), text/space,
+    colour, small things, publishing, the editor on tablets and phones
+  - `[x]` (5) THE LAYOUT REFERENCE DONE — `docs/guide/layout-reference.md` (new): top bar · blocks panel · block toolbar · Inspector (Design:
+    Arrange, Size, Placement, Meaning, Spacing, Background, Shadow/Border/Radius; Content; Per-device) · Page grid panel · keyboard shortcuts ·
+    how controls change per screen — every control by its exact panel name
+  - `[x]` (6) KEPT TRUE FROM NOW ON DONE — `tests/unit/docs-guard.test.ts` (3 tests: front matter · sidebar references exist · no broken relative
+    links); `npm run docs:build` passes (0 errors); RULE DOCS in CLAUDE.md already names `docs:build` in the gate
+  LEDGER D-2:
+  - `[x]` D2-1 · REAL (mine, guard): sidebar `'Layout'` label was matched as a doc ID by too-broad regex → filter to lowercase-hyphen IDs only; 3/3 green
+  - `[x]` D2-2 · REAL (mine): scaffold's `src/pages/index.js` linked to `/docs/intro` (not found) → removed `src/pages/` since docs serve at `/`
+  - `[x]` D2-3 · REAL (mine): `onBrokenMarkdownLinks: 'warn'` deprecated in v4 → removed (default behaviour unchanged)
+  - `[x]` D2-4 · REAL (FOUND BY THE USER — my headed pass passed it): body text too large at 1536 wide → 15px, headings scaled down
+  - `[x]` D2-5 · REAL (FOUND BY THE USER): `.markdown { max-width: 72ch }` left a wide blank band between the text and the right-hand
+    contents column → removed; the column between the two sidebars already bounds the line length
+  - `[x]` D2-7 · REAL (FOUND BY THE USER's question "it should be based on the browser font… WCAG"): Docusaurus's theme sets
+    `font-size: 15px` on the phone menu's "Back to main menu" and the collapsible "On this page" list — they ignored the reader's
+    browser text size → overridden in rem. MEASURED HEADED with Chrome's real font-size preference at 12 / 16 / 24: every text
+    measured (root, body, h1, h2, sidebar, contents, tables, both phone controls) scales ×0.75 / ×1 / ×1.5; no sideways scroll at 375
+  - `[x]` D2-6 · A PROMISE, NOT A DEFECT (the user, 2026-10-05: "I should include images… examples… more playful"): MOVED to BATCH
+    D-3 change (1) — screenshots from the real builder in the layout story and reference (RULE DOCS)
+- `[x]` **BATCH D-3 · The rest of the documentation rewritten** — CLOSED 2026-10-06 (change (1) `dfb0c36`; change (2): W1–W8 SEEN, ledger
+  D3-33 … D3-51 closed, HEADED docs 36 / 0 at all 70 screens; gate: typecheck 0 · eslint 0 errors · vitest 4,375 · test:fast 807) — QUEUED
+  2026-10-05 by the user (after D-2) (area: documentation):
+  - `[x]` (1) PICTURES AND EXAMPLES IN THE LAYOUT PAGES (from D2-6): screenshots taken from the real builder, built through the UI
+    (RULE Y), for each scenario of the story and the main panels of the reference; `:::tip` callouts where a scenario has a trick —
+    DONE 2026-10-06: 19 pictures in `docs/guide/img/` (`scripts/uat/docs-shots-headed.js`, seven slices in headed windows), 13 in the
+    story and 7 in the reference, each a link to itself (tap → full size), 4 tips; the reference's tables rewritten against the code
+  - **D-3 HEADED CHECKLIST** (written 2026-10-06 before the pass; the shots by `scripts/uat/docs-shots-headed.js`, six windows,
+    fresh `next build` on 3100; the site by `docs:start` on 4000):
+    - `[x]` V1 every scenario of the story has a picture BUILT THROUGH THE UI: §1 the three shapes · §2 photo beside words (canvas
+      desktop + Preview phone) · §3 three cards (canvas + Preview phone) · §4 sidebar (canvas + Preview phone) · §5 a drag with its
+      live label · §6 Per-device hide · §6½ default spacing · §6¾ guides + Page grid panel · §11 the editor on a tablet — SEEN, every
+      picture read (§1 shows the Blocks panel's Stack · Side by side · Grid tiles; §6¾ also the Shift half-lines)
+    - `[x]` V2 the reference's main panels: Top bar · Blocks panel · Block toolbar · Inspector Design · Content · Per-device · Page grid
+    - `[x]` V3 every picture: WebP, resized to the width it is shown at (≤ 800px, a phone shot at 375), ≤ 80 KB, with alt text —
+      largest 26 KB (the guides); "no alt 0" on both pages (`uat-d3-docs-headed.js`)
+    - `[x]` V4 every picture AGREES WITH THE WORDS beside it — eleven disagreements found (D3-5 … D3-15), the words corrected; both
+      tips proven THROUGH THE UI (Whole line at Mobile → the photo under the words in the phone Preview, still beside on desktop)
+    - `[x]` V5 `:::tip` callouts where a scenario has a trick — 4 (photo under on a phone · sidebar under on a phone · Show hidden
+      blocks · Shift / Alt), rendered as callouts on every screen (D3-21)
+    - `[x]` V6 `npm run docs:build` [SUCCESS] · docs guard 5/5 (pictures checked as files, D3-20; callout syntax, D3-21)
+    - `[x]` V7 the site HEADED at 375 / 768 / 1280 / 1536, light AND dark, and 200 % text (Chrome's real font-size): 24/24 — both
+      pages, 13 + 7 pictures load, none past the column, no sideways scroll, AND all 70 screens of `screens.js` split over the six
+      windows; a tap on a picture opens it full size (800px) in a new tab (D3-23)
+    - `[x]` V8 RULE K: 3000 / 3100 / 3200 / 4000 checked free after every pass; `.next-b` removed
+  - `[x]` (2) DONE 2026-10-06 — the Website Builder Guide's non-layout parts (content, components, themes, Preview, Page check, export), the README
+    index, the plan / Builder Hub / Layout System / Builder Parity Audit artifacts corrected to what was built (G-1 … G-3c, E-1) and
+    pointing at the site, every page in the same clean format
+  - **D-3 (2) HEADED CHECKLIST** (written 2026-10-06 before the work, session after ff5dbc77):
+    - `[x]` W1 (DONE: four read-only audits, one per slice of the page, every claim against the code with file:line — 40
+      disagreements, D3-40 … D3-43, all corrected; + D3-50) every claim in `website-builder.md`'s non-layout parts (§1 first win · §2 workspace · §3 blocks · §4 scenarios · §5
+      Inspector · §7 free placement · §9 themes · §10 pages / Preview / Export · §11 keyboard · §12–14 components and movement ·
+      §14b Page check · §15 tips) checked against the CODE; each disagreement a ledger line, the words corrected
+    - `[x]` W2 (SEEN, `docs-shots-headed.js` slices I–N, six headed windows, fresh build on 3100: the panel DOCKS at 1280 — the page's
+      left edge 68 → 347; B closes it; the Link tile; the hint "29 designs"; Accordion offers Default · Q & A · Solid panel · Split
+      (media) · Timeline · Enclosed card; Alert asks Default · Information · Success · Warning · Error · Announcement bar · Docs callout;
+      Typography / Advanced CSS in Content only (0 in Design); items reorder with arrows (6), no drag; Severity "Info"; themes Light ·
+      Dark · Midnight · Purple Dream; the Preview's hide arrow and H; Page check lists pictures to describe; Export → site.zip of
+      index.html + styles.css) the same claims driven THROUGH THE UI in headed windows (the Blocks panel and its tabs, a component added and its
+      design gallery, the Themes control, Preview and Exit, Page check, Export) — what is seen agrees with the words
+    - `[x]` W3 (DONE: six — Blocks panel docked · gallery setup · Accordion starts · Accordion designs in Content · Preview bar · Page check;
+      12–18 KB each, alt text, each a link to itself, each read; two dropped as saying nothing the words don't) pictures where they help, built through the UI (`docs-shots-headed.js` extended): WebP, ≤ 800px, ≤ 80 KB, alt text,
+      each a link to itself; every picture agrees with the words beside it
+    - `[x]` W4 (DONE: D3-40; repeats replaced by anchor links into the story / reference, every anchor checked by the guard, D3-46)
+      the guide's layout sections (§6 · §8 · §10b–10g · §14c) do not contradict the layout story / reference — where they
+      repeat them, they point there instead
+    - `[x]` W5 (DONE) the README index lists the three pages and the docs site, in the same clean format
+    - `[x]` W6 (DONE, each read in full and republished to its url: Builder Hub v36 · Layout System v20 · Builder Parity Audit v20 — its
+      progress card claimed Tabs and Navbar built, neither exists → corrected · the page-grid plan v3 (repo source
+      `docs/web-anatomy/page-grid/plan/page-grid-plan.html`) · Website Builder Guide v27+; each points at the docs site) artifacts read (`Artifact action:"read"`) and corrected to what was built in G-1 … G-3c, E-1, D-3, each pointing at the
+      docs site: Builder Hub · Layout System · Builder Parity Audit · the page-grid plan (`Q5rAsZNSJJ…`) · the Website Builder Guide
+    - `[x]` W7 (SEEN: docs:build [SUCCESS]; docs guard 8/8; HEADED 36 / 0 — three pages × 375 / 768 / 1280 / 1536 light and dark and
+      200 % text, and all 70 screens, now also "no table cut off" (D3-48, D3-49); `logs/d3b-docs-uat2.out`) `npm run docs:build` [SUCCESS] · docs guard green · `uat-d3-docs-headed.js` HEADED at all 70 screens, light AND dark,
+      200 % text, every page and picture (the guide included)
+    - `[x]` W8 (checked after each pass) RULE K: 3000 / 3100 / 3200 / 4000 free after every pass
+  - CHANGE (2) LEDGER (found by four read-only audits of the guide against the code, 2026-10-06; each confirmed before it was logged):
+  - `[x]` D3-33 · REAL, PRODUCT, UI text: the Blocks panel's Accordion hint read "Expandable Q&A / FAQ — 54 designs"; the gallery has 29
+    (`component-catalogue.ts:228`, a count typed by hand that outlived the 2026-09-06 axis split) → the hint takes
+    `ACCORDION_DESIGN_COUNT`; guard `component-registry.test.ts` "a hint's design count is the gallery's count" (mutation-proven:
+    "54" back → red)
+  - `[x]` D3-34 · REAL, words (closed page): layout-reference "In the flow (default)" — the control is "In the layout"
+    (`BoxInspector.tsx:712`); "Floats on screen" lives under Stays put, not Placement → "In the layout", and Stays put while scrolling: Scrolls away · Sticks when reached · Floats on screen
+  - `[x]` D3-35 · REAL, words: layout-reference "Gap between blocks" — it is "Space between blocks" (`:1042`), and Space across /
+    Space down are missing → rewritten, Space across · Space down added
+  - `[x]` D3-36 · REAL, words: layout-reference "Edge shape … a wave, diagonal" under Background — it is Straight / Slope / Curve,
+    top and bottom, under Arrange (`:921`) → moved to Arrange with its real choices and Edge depth; the Arrange table rewritten (Direction · Arrange as · Show one at a time)
+  - `[x]` D3-37 · REAL, words: layout-reference "a value set at a wider screen applies to narrower screens too" — false for Wide,
+    which branches off (`box-model.ts:176`) → says Wide branches off
+  - `[x]` D3-38 · REAL, words: layout-story §11 "the Blocks panel floats … same as on a large screen" — from 64em it DOCKS and the
+    page makes room (`page.tsx:220`) → "on a laptop or larger it docks at the side" (seen: the page's edge 68 → 347)
+  - `[x]` D3-39 · REAL, TEST: D-3 (1) closed the reference with four control names the builder does not have (D3-34/35/36) — nothing
+    checks a documented control name against the code → a guard that every bold control name in the reference's tables is a
+    label the builder renders → guard `docs-guard.test.ts` "every control the reference names is one the builder shows" (labels the builder assembles named
+    with the code that assembles them); RED on the page as it was (Bleed to page edge · Minimum rows tall · In the flow · Inner /
+    Outer spacing (…)), green after; it also found "Bleed to the page edge" and "At least rows tall"; keyboard table completed from
+    `BoxCanvas.tsx:1177-1210`
+  - `[x]` D3-40 · REAL, words: website-builder §6 · §8 · §10c · §14c — 8 layout contradictions with the code and the story (on a
+    phone every row stacks; tablet upright → two; edits at a device "never disturb the base" and "Full" chip; "Tablet or Mobile"
+    only; Content position on containers; grids unpadded at every level; "every row is twelve columns"; 4+ always one row) → corrected (guide agent, checked: docs guard, docs:build)
+  - `[x]` D3-41 · REAL, words: website-builder §12–14 — 10 (the alert is one message, not a list or stack · ask-on-add offers 5
+    designs, not "what it's for" · "Info" · an action goes to a web address or #bookmark only · "Gradient when open" · no
+    "replace" · Expand all, search and item links each add a script · "Q & A" · "54") → corrected; the starts and the asks SEEN (W2)
+  - `[x]` D3-42 · REAL, words: website-builder §7 · §9 · §10 · §11 · §14b · §15 — 10 (paste of a block in the layout · the ⋮ Block
+    actions menu · Preview's hide arrow · "works offline, no scripts" is FALSE: stock photos and videos load from their source,
+    small built-in scripts ship · Page check also flags a link with no words, a picture not uploaded, a skipped heading level
+    (one-click fix), words too tight · Ctrl+Shift+Z · arrows reorder in the layout, nudge only a floating block · H, Shift+G,
+    Alt+←/→ missing · Reset replaces every page and is undoable) → corrected; Export / Preview / Page check SEEN (W2)
+  - `[x]` D3-43 · REAL, words: website-builder §1–§5 — 11 (the Blocks panel docks from 64em · closes with ✕ / Esc / B · "Arrange
+    as" is Free arrange / Grid, a stack ↔ row is Direction · gallery row heights are named · Space between starts at 1rem ·
+    accordion items reorder with ↑/↓ · "54 looks in Design" → 29 in Content · a palette click adds AFTER the selection, not
+    inside · no Typography in Design (Text style / Typography in Content) · Advanced CSS is in Content · Per-device holds only
+    Hidden on <device>) + the Link tile → corrected; the panel, tabs and Inspector SEEN (W2)
+  - `[x]` D3-44 · REAL, PRODUCT, a11y (MEASURED HEADED): the ✕ that removes a photo in the gallery setup uses `group-hover` with no `group` parent
+    (`GallerySetupMenu.tsx:138`) — may show only when hovering the ✕ itself, never on touch → `group` on the photo, and shown always where there is no hover;
+    HEADED: at rest 0 · hovering the photo 1 · a real touch context (isMobile, hasTouch, `hover: none` true) 1, and a tap removes it
+    (2 of 3 left); guard `photo-gallery.test.ts` (mutation-proven: `group` removed → red)
+  - `[x]` D3-45 · REAL, words (found by the plan's agent, confirmed in code): the reference lacked **Columns (of 12)** (`BoxInspector.tsx:1131`)
+    and **Line up with the grid** (`page.tsx:1184`), and its top bar said Reset "clears the page" (it replaces every page, D3-16) and
+    Export "a folder of HTML, CSS and assets" (it is `site.zip`, HTML + `styles.css`, SEEN) → rows added / corrected; the guard names
+    "Columns (of 12)" as an assembled label
+  - `[x]` D3-46 · REAL, TEST (found by the guide's agent): the docs guard's link check took `#section` as part of the file name, so a
+    correct `./page.md#section` link failed → it splits the anchor off AND checks it is a heading of that page (github-slugger's rule,
+    \p{Nd}: the built site drops ½ / ¾ from ids — measured in `docs-site/build`); mutation: a misspelt anchor → red
+  - `[x]` D3-47 · REAL, PRODUCT (seen in the Page check picture): the shared Modal `truncate`d its subtitle — "…including people using
+    screen readers" read "…includin…" → it wraps; guard `Modal.test.tsx` "never cuts its subtitle short" (mutation-proven). The mobile
+    app's modals have no such cut (checked)
+  - `[x]` D3-48 · REAL, a11y (seen in the 375 / 200 % shot): the docs CSS's `overflow: hidden` came after `overflow-x: auto` and won, so a
+    table wider than the column was cut off with no way to reach its words → removed; guard `docs-guard.test.ts` "a wide table scrolls"
+    (mutation-proven); HEADED: 2–6 tables cut off on 320–375 phones even at 100 % on the old CSS, 0 after
+  - `[x]` D3-49 · REAL, TEST: D-3 (1)'s V7 passed those pages — it checked pictures and sideways scroll, never a table → the headed pass
+    fails on any table that overflows without scrolling, on every screen (proven: FAIL on the old CSS, 36 / 0 on the fix)
+  - `[x]` D3-50 · REAL, words (found by the guide artifact's agent): website-builder §6 said to turn pinning off for phones "on the
+    Per-device tab" — that tab holds only Hidden → at the Mobile chip, Stays put while scrolling → Scrolls away
+  - `[x]` D3-51 · MY OWN: the two new source-reading guards (photo-gallery, docs-guard's anchor read) did not strip CRLF in the form
+    `source-reading-tests.test.ts` requires — found by the full vitest run → `.replace(/
+/g, "
+")` on the read; 112 / 112
+  - GATE at the change-(2) commit: typecheck 0 · eslint 0 errors (105 warnings) · vitest 4,375 / 4,375 · `test:fast` 807 passed
+  - `[x]` D3-1 · REAL (found measuring D2-7): the base size is applied TWICE — Infima puts `--ifm-font-size-base` (0.9375rem) on
+    `html`, and `custom.css` puts it on `body` again, so body text computes 14.06px at a 16px browser, not the 15 written down
+    (headings and spacing, in rem of the 15px root, are as intended). THE USER (2026-10-06): keep the 14px look → the body is
+    sized once, explicitly (`0.9375rem` of the 15px root, not the root variable), comments say what each size is; guard
+    `docs-guard.test.ts` "applied once" (mutation-proven: the var back on body fails it). MEASURED HEADED, Chrome's real font-size
+    12 / 16 / 24: root 11.25 / 15 / 22.5, body 10.55 / 14.06 / 21.09 (×0.75 / ×1 / ×1.5), no sideways scroll at 375
+  - `[x]` D3-2 · REAL, MY OWN (found before editing D3-1): the tree's planned "keep 14px" fix (`--ifm-font-size-base: 0.875rem`)
+    would have shrunk EVERY heading, gap and sidebar size by 14/15 — Infima's base IS the html (root) size, so every rem follows it
+    (`infima/dist/css/default/default.css:377`). Not applied; D3-1 done as above, root unchanged (measured: root 15, h2 16.88 as before)
+  - `[x]` D3-3 · REAL (found reading for V4): `layout-reference.md` described the "Fill the block's height" switch as built — it is
+    G-3d (2), not built yet → marked "coming next, batch G-3d … not in the builder yet"; G-3d writes it for real
+  - `[x]` D3-4 · REAL (found reading for V4): `layout-story.md` §6¾ said a lone half-width block on a phone "now takes the whole
+    line" — G-3d (1), not built yet → says what happens today and that G-3d changes it
+  - `[x]` D3-5 · REAL, words (seen in the tablet shot): §11 said the Inspector "never covers the block she just tapped" — below 64em
+    it is a 22rem drawer OVER the canvas (`page.tsx:224`) → rewritten; the shot now comes from a window OPENED at 768 (the Inspector
+    starts closed, as on an iPad) — the first shot narrowed a 1280 window, a harness slip
+  - `[x]` D3-6 · REAL, words (seen in the toolbar shot): the reference listed ↑ ↓ Duplicate Delete buttons on the block toolbar — it
+    has ⠿ Drag to move · + Add a block inside · Lock · ⋮ Block actions → both tables rewritten from `BoxCanvas.tsx:3671` (labels, hints)
+  - `[x]` D3-7 · MY OWN, harness: the top-bar crop cut its second row; slice F waited for "Expand inspector" that a 1280-opened window
+    never shows; Inspector shots showed the top of the panel → cropped to the bar, slice G opened at 768, each control scrolled in
+  - `[x]` D3-8 · REAL, words (seen in the §2 phone Preview): "the photo drops under the words" — on a page-grid page the fit rule keeps
+    the two side by side while the words keep ~14rem (at 375: words 240px, photo ~100px) → the story says so, with the tip that puts
+    it under (proven through the UI). Whether that LOOK is wanted is D3-31, the user's
+  - `[x]` D3-9 · REAL, words (seen in the §4 phone Preview): "the sidebar goes under the article" — it stays beside (article ~220,
+    sidebar ~95px at 375) → same correction and tip; the look → D3-31
+  - `[x]` D3-10 · REAL, words: the reference's Page grid panel lacked Row lines in the guides · Row step · This page uses its own grid
+    · Reset to default (`PageGridPanel.tsx`) → table rewritten from the code, with its picture
+  - `[x]` D3-11 · REAL, words: "when I click a block, faint vertical lines appear" — the guides come from the Layout guides button (it
+    also opens the Page grid panel) → rewritten; the panel's two ways in named
+  - `[x]` D3-12 · REAL, words: §11 said the closed Inspector's label becomes the block's name — it stays "INSPECTOR" (seen) → removed
+  - `[x]` D3-13 · REAL, words: §6½ said every spacing control reads "Default · 2rem" — a Heading's reads "Default · 0rem", its gutter
+    belongs to the section (seen) → rewritten with the picture
+  - `[x]` D3-14 · REAL, words: "Hidden on mobile" / "Hidden on this screen" — the control is "Hidden on phone", the toggle the eye
+    "Show hidden blocks", and "Hidden everywhere" exists → both pages use the real names
+  - `[x]` D3-15 · REAL, words: the keyboard list had F11 (the browser's, not the builder's) and "nudge 1px" (2px, 12px with Shift —
+    `BoxCanvas.tsx:1183`), and lacked Copy / Cut / Paste / Ungroup / Ctrl+Shift+Z / H in Preview → rewritten from the code
+  - `[x]` D3-16 · REAL, PRODUCT, DATA LOSS (found checking the Top bar table): Reset replaced every page AND emptied the undo history in
+    one click, no question → asks first (shared DeleteConfirmationModal, "Start the whole site over?") and is one Undo step
+    (`pushSite`). BDD `box-builder-site.feature`; spec `tests/e2e/reset-asks-first.spec.ts` 4/4 projects (fails on the old build);
+    HEADED UAT `uat-d3-reset-headed.js` 56/56 — four editor themes, a 375 phone, Delete page, Cancel · Enter · Escape · Start over ·
+    Ctrl+Z · reload, and the restored site's Preview at all 70 screens
+  - `[x]` D3-17 · REAL, TEST: `builder-chrome-fits.spec.ts` says "a bar that wrapped at 1280px would be a regression" but asserts one
+    row only at 1536 — measured: 92px (two rows) at 1280 / 1366 / 1440, one row needs ~1480px. Which controls collapse is a design
+    decision → D3-32, the user's; the guard follows that decision
+  - `[x]` D3-18 · REAL, PRODUCT, a11y (found by the Reset spec): the shared DeleteConfirmationModal had no dialog role, name or
+    aria-modal (WCAG 4.1.2) and drew an empty item card → `role="alertdialog"`, named by its title, described by its warning, focus on
+    Cancel (WCAG 2.4.3), the card only with an item. Guard `tests/components/shared/DeleteConfirmationModal.test.tsx` (mutation-proven)
+  - `[x]` D3-19 · REAL, PRODUCT, pre-existing (found by the headed UAT): Escape never closed DeleteConfirmationModal in the builder — its
+    listener was keyed on a new `onClose` each render, and BoxCanvas's earlier Escape listener re-rendered the page mid-event, removing
+    it before it ran (listener churn) → subscribed once per opening, onClose through a ref (rule 2). Guard: the component test
+    reproduces it with `flushSync` in an earlier listener — fails on the old code, passes now
+  - `[x]` D3-20 · REAL, TEST: the docs guard treated every link as a page (`<link>.md`) and could not check a picture → a picture link is
+    checked as that file (mutation: a misspelt picture fails it)
+  - `[x]` D3-21 · MY OWN: the tips used `:::tip Title`, which Docusaurus 3 prints as text → `:::tip[Title]`; guard "every callout title
+    uses the bracket syntax" (mutation-proven)
+  - `[x]` D3-22 · REAL, a11y (found by V7): at 375 with 200 % text the reference's "Next" card was 381px — 22px sideways (WCAG 1.4.10);
+    Infima pins Next to column 2 → below 40em (the reader's own em) the two cards stack. 24/24
+  - `[x]` D3-23 · REAL, readability (seen in V7): a desktop screenshot on a phone is too small to read → every picture links to itself;
+    measured: a tap opens the 800px picture in a new tab
+  - `[x]` D3-24 · MY OWN: whole-window canvas shots were half empty canvas → cropped to the page's last block, the Preview shots to the
+    frame's content; the hide shot kept whole (its point is the Inspector's box)
+  - `[x]` D3-25 · NOT A BUG (product): 1 slice-D run in 6 ended a +140px drag at 321px though the live label said "8 of 12". MEASURED:
+    that run alone had a 12th mousemove at (446, 418) the script never sent (all its moves at y=167) — the REAL mouse pointer resting
+    over that headed window; the builder did what a pointer at 446 means
+  - `[x]` D3-26 · MY OWN, a flaky harness (RULE V): a drag held across a slow step can be moved by the real pointer → the pointer is put
+    back on the target before release; 6/6 runs identical
+  - `[x]` D3-27 · REAL, gate: eslint linted `docs-site/.docusaurus/` (generated by docs:build), 6 errors → ignored with its reason in
+    `eslint.config.mjs`; eslint 0 errors
+  - `[x]` D3-28 · MY OWN + pre-existing: `docs-guard.test.ts` read files without stripping CRLF (source-reading-tests) → stripped;
+    existence checks use `existsSync`
+  - `[x]` D3-29 · MY OWN: `reset-asks-first.spec.ts` was in neither browser list → added to `test-fast.js` and `test:invariants:rest`
+  - `[x]` D3-30 · MY OWN: the two new headed UATs did not use `screens.js` → both sweep all 70 screens
+  - `[x]` D3-31 · DECIDED BY THE USER 2026-10-06 ("yes, both"): on a 375 phone a paragraph + photo row kept a ~100px photo beside the
+    words, and an article + sidebar a ~95px sidebar (the G-1 fit rule protects only the words) → a 10rem floor for EVERY block of a
+    row on a phone; MOVED to BATCH G-3d change (3). The story's §2 / §4 phone lines are rewritten when G-3d ships it
+  - `[x]` D3-32 · DECIDED BY THE USER 2026-10-06 ("yes, both"): the top bar is two rows (92px) from 1280 to 1440 → one row from 1280,
+    labels collapsing to icons (tooltip + accessible name kept), the guard asserting one row at 1280; MOVED to BATCH E-3
+  - GATE at the change-(1) commit: typecheck 0 · eslint 0 errors · vitest 4,370/4,370 · `test:fast` 807 passed (exit 0)
+- `[x]` **BATCH G-3d · Three decisions from G-3b and D-3** — CLOSED 2026-10-06 (HEADED UAT `uat-g3d-headed.js` 91 / 0, regression G-3c 17 / 0 · G-3 65 / 0 · G-2 128 / 0, docs 36 / 0; gate below) — QUEUED 2026-10-05 by the user ("yes to both"), change (3) added
+  2026-10-06 ("yes, both", D3-31) (area: page grid · 3 changes):
+  - MAPPED 2026-10-06 (read-only, before BDD; file:line in `lib/box-model.ts` unless named) — the design each change follows:
+    - (3) the fit rule is `rowNarrowsAt` (:3509): today only WORDS get a floor (`floorOf` 14rem :4703; an Image gets 0, and a row
+      with no words is skipped at :3520 — why the photo and the sidebar stay beside). Change, gated `if (gridRow)` so saved pages are
+      byte-identical: a 10rem floor on every block's AREA (its columns), capped below the tablet rung (37.5em) so wide screens never
+      step. MEASURED BY ARITHMETIC, why the area and not the drawn box: at 360 a Stat's box is (360 − 2·16 − 12) / 2 = 158px < 160 —
+      on the box four Stats would stack, against the user's own line; on the area two across needs 20rem of a 22.5rem page → stay.
+      Paragraph + 40 % photo at 375 → photo area 150px → stacks; article + 30 % sidebar → 112px → stacks. Visible side effect, by
+      the decision's own words ("ANY block"): a strip of six logos on a page row now goes 2 across at 360. One emitter
+      (`rowQueryCss` :3579) serves canvas and export; the panel's `fitStepAt` follows
+    - (1) a lone block is never stepped (`n < 2`); its phone span comes from `rowLinesAt` (:5317) via `resolveResponsive`. Change in
+      `rowLinesAt` only, at the phone: a line holding ONE block whose phone width / margin was not set at the phone takes the whole
+      line; everything downstream (CSS, canvas slot, panel) reads `rowLinesAt`, so they cannot disagree
+    - (2) `fillsRows(block)` = page-grid block spanning 2+ rows whose only child is an Image with `fillHeight !== false` (a new
+      optional `BoxNode.fillHeight?: false`, stored only when switched off); `childStyle` gives the image `flex: 1 1 auto` and
+      `imageSizing` `height: 100%` with its own height kept as a minimum; both renderers pass it; the switch "Fill the block's
+      height" in the picture's settings (`BoxInspector.tsx:1446`), shown only where it applies (RULE UI)
+    - TESTS to extend: `page-grid.test.ts` (fit :195-249 — the four-Stats margin drops to 0.5rem, add a 340 check — G3b-11 :737,
+      rows :959), `image-intrinsic.test.ts`, `BoxInspector.test.tsx`, `page-grid.feature`, `box-builder-images.feature`; headed
+      template `uat-g3b-headed.js`; docs: story §2 / §4 / §6¾, reference "Fill the block's height", retake two phone shots
+  - `[x]` G3d-1 · DECIDED BY THE USER 2026-10-06 — (a): the crop is CENTRED for now (`ponytail:` in the code); the focal point is
+    built later as part of the IMAGE COMPONENT, for web AND the phone / tablet app (1.3 → Components → Image). Found mapping (2): the decision says the picture is cropped "at its focal point" — no picture
+    has a focal point today (only backgrounds have a position, `bgPosition`; the exported `<img>` has no `object-position`, so every
+    crop is centred). Either (a) the centre for now, marked `ponytail:` — the least code — or (b) a new "Focal point" control on
+    every picture (nine-point, like a background's position), used by this crop and by every cropped picture
+  - `[x]` (3) DONE (`rowNarrowsAt`, `BLOCK_FLOOR_REM`; page-grid.test "G-3d (3)", 3 mutations red) — A FLOOR FOR EVERY BLOCK OF A ROW ON A PHONE (D3-31): the fit rule stacks a row on a phone when ANY of its blocks would
+    get narrower than 10rem, not only its words — measured at 375: a ~100px photo beside a paragraph, a ~95px sidebar beside an
+    article. Four Stats on a 360 phone (~165px each) stay two across. Then the story's §2 / §4 phone lines and tips are rewritten
+  - `[x]` (1) DONE (`rowLinesAt`; page-grid.test "G-3d (1)", 3 mutations red; a row of ONE block was already whole on a phone — the case is a block alone on its line in a page row) — ON A PHONE A LONE HALF-WIDTH BLOCK TAKES THE WHOLE LINE: where the fit rule stacks a row, a block alone on its line
     whose width came from a WIDER screen takes the line (~165px of words beside a hole on a 360px phone otherwise); a width set on the
     phone itself still wins (G3b-11)
-  - `[ ]` (2) A PICTURE FILLS A BLOCK THAT SPANS ROWS: when the picture is the only thing in a block that spans 2+ rows, it fills the
+  - `[x]` (2) DONE (`fillsRows` / `fillHostOf` / `--bx-fill`, `BoxNode.fillHeight`, the switch in Content; the tree is block → band → picture, so `childStyle` takes the block around the band; image-intrinsic "G-3d (2)" 6 mutations red, BoxInspector 2 red; G3d-11) — A PICTURE FILLS A BLOCK THAT SPANS ROWS: when the picture is the only thing in a block that spans 2+ rows, it fills the
     block's height, cropped (cover, its focal point), never stretched — on by default, a "Fill the block's height" switch in the
     picture's settings to turn it off (RULE UI); a block with words beside the picture keeps the picture's own height
+  HEADED UAT CHECKLIST (written 2026-10-06 before any code; six windows; a fresh production build; every row BUILT THROUGH THE UI;
+  the Preview at all 70 screens of `screens.js` at 100 / 150 / 200 % text; canvas == Preview; no sideways scroll, no overlap, no
+  broken word, at every line):
+  - `[x]` U1 SEEN (A1 / A2, canvas Mobile + Desktop, Preview 70 × 3): photo and sidebar under the words below 600, beside from 1200 — (3) ON: paragraph + 40 % photo → the photo under the words at every screen < 600 (375 measured); article + 30 % sidebar
+    → the sidebar under it; both side by side again from 600 up
+  - `[x]` U2 SEEN (B1 / B2): Stats 2 across at every screen < 600 (320 included); logos 2 / 3 / 6 at < 480 / < 600 / ≥ 600, canvas Tablet six across — (3) every block: four Stats (25 % each) two across at 360 and every phone ≥ 340 wide enough for 2 × 10rem, one a line
+    below; six logos → 2 across at 360, 3 across from 480 (3 × 10rem), 6 across from 600; never stepped by the floor at 600+
+  - `[x]` U3 SEEN (C): stacked at 375 as always, beside at 1280, no --bx-fill, byte-identical to 99c6c7b (G3d-3) — (3) OFF: a page saved before the page grid with paragraph + photo — Preview byte-identical to before (export string
+    compared) and the photo still beside at 375
+  - `[x]` U4 SEEN (D): Mobile 343 = 343 = 343 (the whole line), Tablet 352 of a 361 half, Desktop half; Preview 70 × 3 — (1) ON: a block set to 50 % at Desktop, alone on its row → the whole line on every phone, the frame at both edges;
+    still half at Tablet / Desktop / Wide
+  - `[x]` U5 SEEN (D): 156 of 343 on the phone, Undo 343, Redo + reload 156, Desktop half — (1) OFF: the same block set to 3 of 6 at Mobile → half the phone line; Undo → whole again; reload → kept
+  - `[x]` U6 SEEN (E × 4 themes): 147–581 = the block's inner bottom (own 249), cover; Preview 42 screens side by side, 39 grown — (2) ON: a photo alone in a block 2 rows tall beside two short blocks of words → the photo fills the block's height,
+    cropped (no stretch: its drawn aspect = the file's, object-fit cover), canvas == Preview where the row is side by side
+  - `[x]` U7 SEEN (E × 4): off → own height, Undo → fills, reload → off; Rows tall 1 → no switch; Mobile → own height; words under → no switch — (2) OFF + where it does not apply: "Fill the block's height" switched off → the picture's own height; Undo → on;
+    reload → kept; a 1-row block or a picture beside words → no switch shown; stacked on a phone → its own height
+  - `[x]` U8 SEEN (E × 4): named, Space toggles it, Light 7.56:1 (G3d-10) — the switch in the editor's four themes: labelled, ≥ 4.5:1, keyboard reachable (Tab + Space), a screen reader name
+  - `[x]` U9 SEEN on the same fresh build: G-3c 17 / 0 · G-3 65 / 0 · G-2 128 / 0 (`logs/g3d-regress-*.out`) — regression: G-3c, G-3 and G-2 headed suites re-run on the same build
+  - `[x]` U10 SEEN: story §2 / §4 / §6¾ (Rows tall, How a row steps) + the reference row + website-builder §8 rewritten; story-photo-beside-phone / story-sidebar-phone retaken (both now under the words, the whole width — looked at); docs:build [SUCCESS]; docs guard green; uat-d3-docs-headed 36 / 0 — docs: layout-story §2 / §4 / §6¾ and the reference row read true against what U1–U7 saw; the two phone shots retaken
+  LEDGER G-3d (session 2026-10-06, after 49087f08):
+  - `[x]` G3d-2 · TEST (mine): D wanted the lone third block the first's width to 1px — alone on its line it gives up a different part
+    of the side space (G3b-3: 361 vs 352px at Tablet) → the same share within 5 %
+  - `[x]` G3d-3 · TEST (mine): C wanted a saved page's photo BESIDE the words at 375 — saved pages always stacked on a phone (L-4) →
+    asserts stacked; BYTE-IDENTITY MEASURED: the UI-built saved page (`logs/uat-g3d/C-saved-site.json`) rendered by `99c6c7b` and by
+    this change: 32,164 bytes each, `cmp` identical
+  - `[x]` G3d-4 · TEST (mine): D's Preview check assumed the two halves stack below 600 (at 599 they fit side by side, 277px each) →
+    the third measured against the PAGE: the whole line below 600, ≤ 55 % from 600
+  - `[x]` G3d-5 · NOT A BUG, MEASURED (probe-g3d-fill.js): "the photo does not fill on the canvas" — with two-line words at 1280 the
+    photo (249px) was the tallest thing, so the rows followed it; the Preview chain shows picture 395 = band 395 > own 337 and the
+    stack 36px taller = its own 18px inner spacing. The check was wrong → G3d-9
+  - `[x]` G3d-6 · TEST (mine): the switch read 2.78:1 in Light — the probe walked up to no background and painted "transparent" as
+    black (gray-600 on black) → falls back to the page's white: 7.56:1 (G3d-10)
+  - `[x]` G3d-7 · TEST (mine): U5 compared the third with the first — a width set on the phone makes the fit rule stand aside for the
+    whole row (G3b-11), so the first changes too → against the third's own whole line: 156 of 343px (3 of 6 columns, less its
+    side space and half a gap); Undo 343 of 343; reload 156
+  - `[x]` G3d-8 · TEST (mine): "words added under the picture" compared a Desktop picture with its own height measured at Mobile →
+    both in the same state: switches 0 · 249 = own 249
+  - `[x]` G3d-9 · TEST (mine): "filled" was the neighbour's OUTER bottom (through the stack's spacing), on a canvas drawn at 0.61 with
+    unscaled padding, beside words shorter than the photo → the block's inner bottom × `data-canvas-scale`, words 4× longer, plus
+    "grew past its own height": 147–581 = inner 581 (own 249); Preview 42 side by side, 39 grown
+  - `[x]` G3d-10 · the G3d-6 fix (see above)
+  - `[x]` G3d-11 · REAL (mine), FOUND BY THE HEADED PASS: at 599 the fit rule steps the row and drops the photo's span (`grid-row:auto`,
+    a container query) but the photo still filled — 301px beside a tall paragraph against its own 184 → `--bx-fill` moved onto the
+    BLOCK and the stepped rule sets `--bx-fill:initial` where it drops a span, so the picture falls back to its own height on canvas
+    and export alike (one rule). Guard: image-intrinsic "G3d-11", red without it
+  - HEADED UAT `scripts/uat/uat-g3d-headed.js` (six windows, a pool that refills): run 1 91 checks / 23 failed (the lines above);
+    run 3 on the rebuilt fresh build: **91 checks, 0 failed** (`logs/g3d-uat3.out`), Preview at all 70 screens × 100 / 150 / 200 %
+  - `[x]` G3d-12 · MINE, CAUGHT BY THE GATE: an unused `w` in the UAT script's E callback (eslint error) → removed; eslint 0 errors
+  - GATE at the close: typecheck 0 · eslint 0 errors (105 warnings, none new) · vitest 4,400 / 4,400 · `test:fast` 807 passed (exit 0)
 - `[ ]` **BATCH E-2 · Resizing and dropping on tablets and phones** — QUEUED 2026-10-05 by the user ("split by area", E1-5) (area: the
   editor's gestures at small viewports · the failing specs, each measured: a spec that assumes the desktop, or a real bug — fixed
   either way): grid-cell-resize 13 · vertical-edges-anchored 7 · side-by-side-resize 6 · stack-under-column 4 · float-round-trip 3 ·
   chrome-follows-resize 3 · dropped-block-fills-space 1 (37 on tablet-landscape / tablet-portrait / mobile-chrome)
 - `[ ]` **BATCH E-3 · The Inspector's controls on a narrow screen** — QUEUED 2026-10-05 by the user (E1-5): spacing-gestures 12 ·
   masonry-builder 10 · canvas-zoom 3 · text-is-reachable 1 (26)
+  - `[ ]` THE TOP BAR IS ONE ROW FROM 1280 (D3-32, the user 2026-10-06 "yes, both"): measured 92px (two rows) at 1280 / 1366 / 1440,
+    one row needs ~1480 → below that, Page check · Preview · Export · Reset and the "Add a band" text collapse to icons (tooltip and
+    accessible name kept); `builder-chrome-fits.spec.ts` asserts one row at 1280 (its comment already says a wrap there is a regression)
 - `[ ]` **BATCH E-4 · Preview and components on small screens** — QUEUED 2026-10-05 by the user (E1-5): multipage-preview 5 ·
   pager-hero 1 · component-layout-invariants 1 (7) — and E-1's (2): the gate runs the tablet and phone projects when all are green
 - `[x]` **BATCH G-3 · Placing on columns and rows** — CLOSED 2026-10-04 (HEADED UAT `scripts/uat/uat-g3-headed.js`, six windows,
@@ -2666,7 +2950,7 @@ sent), and my research. Nothing on the layout is done until every line here is c
     falls back into the flow unless placed at that rung; the page audit and Page check warn when it covers words;
     shown as drag on the canvas with the half-lines drawn, a Position panel (start / end, column / row, spill above /
     below) and a gallery of ready-made placements (RULE S / UI). Joins AC-10, ST-5, AC-35 — one build
-    - `[>]` AC-37b ← YOU ARE HERE (handover of session 22981e0a in the SESSION LOG; BATCH G-3b and BATCH E-1 CLOSED 2026-10-05; MERGE DECIDED by the user 2026-10-05: `builder/layout-uat` pushed, the user opens and merges the pull request, then the branch is deleted and `builder/page-grid` cut from master; next there: BATCH D-2 (the Docusaurus site + the layout documented from the beginning, RULE DOCS), then BATCH G-3d (the user's two decisions), then BATCH E-2 (resizing and dropping on tablets and phones); before the PR: the artifacts and the layout story for the page grid; then its final pass, then BATCH E-1; handover of session 3da81fad in the SESSION LOG; earlier: handover of session 5da86722 in the SESSION LOG — G-3 CLOSED 2026-10-04 (63 headed checks, G3-8 carried to G-3b by the user); earlier: BATCH G-3 · placing on columns AND rows — G-2 CLOSED 2026-10-04 (134 headed checks); P-0 CLOSED 2026-10-04 (R4-1 … R4-5 fixed, 30 headed checks); R-4 SIGNED with D1–D5 (session 9fa0fee9); then G-3, P-1, P-2, G-4, P-3, G-5, G-6. G-1 CLOSED 2026-10-04 (see BATCHES). Plan APPROVED 2026-10-04 with the user's decisions below. Earlier: research R-3 DONE and SIGNED 2026-10-04
+    - `[>]` AC-37b ← YOU ARE HERE (NOW: BATCH G-3d CLOSED 2026-10-06 — `builder/page-grid` is complete (G-1 … G-3d + D-2 / D-3): push it and open its pull request (the user's go), merge, delete the branch, then BATCH E-2 on `builder/editor-small-screens` cut from the fresh master, then E-3 → E-4. Before that: BATCH G-3d (three changes); handover of session 49087f08 in the SESSION LOG; D-3 CLOSED 2026-10-06 (both changes). Before that: handover of session ff5dbc77 in the SESSION LOG; D-2 and D-3 (1) CLOSED 2026-10-06. Earlier: handover of session 22981e0a; BATCH G-3b and BATCH E-1 CLOSED 2026-10-05; MERGE DECIDED by the user 2026-10-05: `builder/layout-uat` pushed, the user opens and merges the pull request, then the branch is deleted and `builder/page-grid` cut from master; next there: BATCH D-2 (the Docusaurus site + the layout documented from the beginning, RULE DOCS), then BATCH G-3d (the user's two decisions), then BATCH E-2 (resizing and dropping on tablets and phones); before the PR: the artifacts and the layout story for the page grid; then its final pass, then BATCH E-1; handover of session 3da81fad in the SESSION LOG; earlier: handover of session 5da86722 in the SESSION LOG — G-3 CLOSED 2026-10-04 (63 headed checks, G3-8 carried to G-3b by the user); earlier: BATCH G-3 · placing on columns AND rows — G-2 CLOSED 2026-10-04 (134 headed checks); P-0 CLOSED 2026-10-04 (R4-1 … R4-5 fixed, 30 headed checks); R-4 SIGNED with D1–D5 (session 9fa0fee9); then G-3, P-1, P-2, G-4, P-3, G-5, G-6. G-1 CLOSED 2026-10-04 (see BATCHES). Plan APPROVED 2026-10-04 with the user's decisions below. Earlier: research R-3 DONE and SIGNED 2026-10-04
       (`ff5c53a`, `4418202`); build to every decision recorded under R-3 below; the mockups settle the open three (row
       snap · the phone gap 11 vs 16 px · panel per site or per page) → the user's approval → build) · **THE PAGE GRID — DECIDED by the user 2026-10-03: done RIGHT AFTER L-4 closes, BEFORE L-5, L-6 and the
       frozen list's placement items** (they are built on it). NAMES (decided): "page grid" in code and docs; the lines a
@@ -3440,6 +3724,8 @@ sent), and my research. Nothing on the layout is done until every line here is c
   - `[ ]` Hamburger / overlay menu · Forms · Tabs · Steps · Tables · Pricing tables · Breadcrumbs · Pagination · Modal ·
     Logo strip · Tags · Inline links · Theme editor (personality) · Carousel · Calendar · News feed · Staff directory ·
     Map · Downloads · Search · Login panel · Newsletter sign-up · Social row
+  - `[ ]` Image — rebuilt as a component; includes a FOCAL POINT on every picture (nine-point, like a background's position)
+    used by every crop, and built for the phone / tablet app (`apps/mobile/`) in the same work (the user, 2026-10-06, G3d-1)
 - `[ ]` **LLM website builder** — v1 deterministic composer → v2 a Claude call emitting the block model → v3 own
   fine-tuned open-weights model (never trained on Claude outputs)
 - `[!]` **Builder parity roadmap, Phases 0–9** (memory `project_builder_parity_plan.md`) — Phase 0 done, Phase 1 in
@@ -3479,6 +3765,66 @@ sent), and my research. Nothing on the layout is done until every line here is c
 
 One entry per session, newest first. Written the moment the user says "new session" (or the context is about to run
 out) — where the session STARTED FROM, where it GOT TO, and where the next one CONTINUES FROM.
+
+### 2026-10-06 · session 49087f08 · branch `builder/page-grid` — HANDOVER (the user: "let's start a new session"; both held: the context is genuinely long — D-3 (2)'s four audits, 19 ledger lines, five artifacts, two headed passes, the G-3d map — and the boundary is clean: everything committed at `5bc1256`, nothing running, ports free)
+- **Started from:** session ff5dbc77's handover (`5ac91fc`), BATCH D-3 change (2).
+- **Got to:** **D-3 CLOSED** (`af533ac`): the Website Builder guide checked claim by claim against the code (40 corrections) and driven
+  headed (slices I–N of `docs-shots-headed.js`), six pictures, the README index, the reference's control names GUARDED against the
+  builder (D3-39), docs anchors checked (D3-46); five artifacts corrected and pointed at the docs site (Hub v36 · Layout System v20 ·
+  Parity Audit v20 · page-grid plan v3 · Website Builder Guide v28). PRODUCT fixes: Accordion hint counts its 29 designs (D3-33), a
+  gallery photo's ✕ visible on hover and touch (D3-44), the shared Modal's subtitle wraps (D3-47), docs tables scroll on phones
+  (D3-48/49). Gate: typecheck 0 · eslint 0 errors · vitest 4,375 · test:fast 807; headed docs 36 / 0. Then **G-3d MAPPED** (`ad38abf`)
+  and **G3d-1 DECIDED** by the user (`5bc1256`): centre crop now; the focal point goes to the Image component, web + app.
+- **Continue from:** **BATCH G-3d (YOU ARE HERE)** — BDD first, then (3) the 10rem floor on each block's COLUMNS, (1) a lone block takes
+  the phone's line, (2) a picture fills a block spanning rows (centre crop, `ponytail:`), the six-window headed pass with the Preview
+  at all 70 screens at 100 / 150 / 200 %, the gate, then the story's §2 / §4 / §6¾ and the reference row rewritten, the two phone
+  pictures retaken. Then E-2 → E-3 → E-4 on `builder/editor-small-screens`.
+- **Next prompt:** given in the user's chat at this handover (2026-10-06).
+
+### 2026-10-06 · session ff5dbc77 · branch `builder/page-grid` — HANDOVER (the user asked "new session or continue here?"; recommended once both held: the context is genuinely long — D3-1 and all of D-3 change (1) with 32 ledger lines, two product fixes, ~30 screenshots read, two full gates — and the boundary is clean: everything committed at `5423dde`, every server stopped)
+- **Started from:** session 148707ee's handover (`0531c06`), BATCH D-3, D3-1 open for the user.
+- **Got to:** D3-1 DONE (`51a2317` — the user: keep the 14px look; body sized once over the unchanged 15px root; D3-2: lowering the
+  base would have shrunk every rem). **D-3 change (1) DONE** (`dfb0c36`): 19 pictures built through the UI in `docs/guide/img/`
+  (`scripts/uat/docs-shots-headed.js`), the reference's tables rewritten from the code, 4 tips, eleven word/builder disagreements fixed;
+  PRODUCT: Reset asks first and is undoable (D3-16), DeleteConfirmationModal a named alertdialog whose Escape works (D3-18/19); docs
+  site Previous/Next stack at 200 % (D3-22); headed docs 24/24 at all 70 screens, Reset 56/56; gate green (vitest 4370, test:fast 807).
+  The user decided D3-31 → G-3d change (3) (a 10rem floor per block on a phone) and D3-32 → E-3 (top bar one row from 1280) (`5423dde`).
+- **Continue from:** **BATCH D-3 (YOU ARE HERE) → change (2)**: write its checklist lines first (U-lines under D-3), then the Website
+  Builder Guide's non-layout parts (`docs/guide/website-builder.md`: content, components, themes, Preview, Page check, export) checked
+  against the CODE and through the UI the way change (1) was (pictures where they help, same clean format), the README index, and the
+  artifacts (Builder Hub · Layout System · Builder Parity Audit · the plan — read each with `Artifact action:"read"`, correct to what was
+  built in G-1 … G-3c, E-1 and D-3, point them at the docs site); docs:build + docs guard; headed docs pass (`uat-d3-docs-headed.js`);
+  close D-3 (every ledger line closed), commit. Then BATCH G-3d (3 changes), then E-2 → E-3 → E-4 on `builder/editor-small-screens`.
+- **Next prompt (paste to start):** given in the user's chat at this handover (2026-10-06).
+
+### 2026-10-06 · session 148707ee · branch `builder/page-grid` — HANDOVER (both held: the context was summarised once, and the boundary is clean — D-2 committed, nothing running; the user: "let's start a new session")
+- **Started from:** session 22981e0a's handover — PR of `builder/layout-uat` merged (`1541d98`), `builder/page-grid` cut from master, BATCH D-2.
+- **Got to:** **BATCH D-2 CLOSED** (`f437b5c`): `docs-site/` (Docusaurus 3.10.2 classic, `docs/guide/` as the single source, README.md
+  excluded, the layout story at `/`); `docs/guide/layout-story.md` rewritten §1–§11 incl. the whole page grid; new
+  `docs/guide/layout-reference.md` (every control by its panel name + shortcuts); `tests/unit/docs-guard.test.ts`; `npm run docs:build`
+  / `docs:start`. The user looked at it and decided the typography: 15px body (below RULE DOCS' 16px — the user's call), fluid
+  headings, line-height 1.75, callout cards, rounded tables/images; found D2-4 (too large) and D2-5 (the 72ch blank band) — both fixed.
+  Scaffold leftovers removed.
+  AFTER THE FIRST HANDOVER (`98d2bba`): the user asked that every docs size follow the reader's BROWSER text size (rem, WCAG 1.4.4) —
+  it does; D2-7 fixed the two Docusaurus px font sizes (phone menu "Back", collapsible contents), measured with Chrome's real font-size
+  preference at 12 / 16 / 24 (all text ×0.75 / ×1 / ×1.5). D3-1 found and OPEN, the user to decide: the base size is applied twice
+  (Infima on `html` + `custom.css` on `body`) → body is 14.06px at a 16px browser, not 15.
+- **Continue from:** **BATCH D-3 (YOU ARE HERE)** → D3-1 (ask the user: keep the 14px look or 15), then change (1) pictures and
+  examples in the layout pages, then (2) the rest of the
+  documentation; then BATCH G-3d; then E-2 → E-3 → E-4 on `builder/editor-small-screens` (unchanged from the 22981e0a entry below).
+- **Next prompt (paste to start):** the full prompt is in the user's chat at the handover (2026-10-06); its short form: "Branch `builder/page-grid` at the handover commit. Read CLAUDE.md (RULE M Ponytail before AND after
+  everything; RULE DOC / RULE DOCS; RULE Y build through the UI; RULE Z headed, six windows; RULE K), then `docs/TASK_TREE.md`: the
+  newest SESSION LOG entry (148707ee), then BATCHES → D-2 (closed — its typography decisions and ledger D2-1…D2-6) and D-3 (open).
+  DO, IN ORDER: (1) RULE K — check ports 3000/3100/3200/4000 are free; (2) D-3: write its HEADED checklist first; change (1): build
+  the app (`next build`, `next start` on 3100, `node scripts/check-fresh-build.js` must print FRESH), build each layout-story scenario
+  THROUGH THE UI and screenshot it (canvas + Preview, a phone and a desktop width where the scenario is about screens), save under
+  `docs/guide/img/` (small PNG/WebP, resized to their shown width — RULE AF weight), embed with alt text in `layout-story.md` and the
+  main panels in `layout-reference.md`, add `:::tip` callouts where a scenario has a trick; `npm run docs:build` + docs-guard; look at
+  the site HEADED (`npm run docs:start` on 4000) at 375/768/1280/1536, light and dark, 200% text; stop every server after. Then
+  change (2): the Website Builder Guide's non-layout parts, the README index, the artifacts corrected to what was built. Then close
+  D-3, then BATCH G-3d (its own checklist; see the 22981e0a entry for its details). TRAPS: never `git checkout <file>` to undo; a closed
+  batch must not hold an open ledger line (the batch guard fails); the docs-guard reads sidebar doc IDs as lowercase-hyphen strings;
+  every docs size is rem — relative to the reader's browser text size, never px (WCAG 1.4.4, D2-7); settle D3-1 with the user first."
 
 ### 2026-10-05 · session 22981e0a · branch `builder/layout-uat` — HANDOVER (recommended once both held: the context is genuinely long — G-3b's (3) and (6), its whole final pass, all of E-1, about twenty six-window headed runs and five full gates — and the boundary is clean: everything committed, nothing running; the user agreed: "let's start a new session")
 - **Started from:** session 3da81fad's handover — BATCH G-3b (3) Alt free, then (6) rows, then its final pass, then E-1.

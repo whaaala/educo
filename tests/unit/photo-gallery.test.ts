@@ -90,3 +90,17 @@ describe("photoGallery", () => {
     expect(g.children, "empty — the setup replaces it wholesale, and a route that skips it adds nothing odd").toHaveLength(0);
   });
 });
+
+describe("a photo's remove ✕ can be found (D3-44)", () => {
+  // The ✕ is hidden until hovered — but it asked for `group-hover` on a list item that was not a `group`, so hovering the
+  // photo showed nothing, and on a touch screen (no hover at all) it was never visible. Seen in the headed pass; pinned here.
+  it("shows on hovering the photo, and always where there is no hover", async () => {
+    const { readFileSync } = await import("node:fs");
+    const src = readFileSync("components/website/box/GallerySetupMenu.tsx", "utf8").replace(/\r\n/g, "\n");
+    const item = /<li key=\{`\$\{i\}-\$\{p\.src\.slice\(-16\)\}`\} className="([^"]*)">/.exec(src)?.[1] ?? "";
+    expect(item.split(" ")).toContain("group");
+    const remove = /aria-label=\{`Remove photo[^\n]*\n\s*className="([^"]*)"/.exec(src)?.[1] ?? "";
+    expect(remove).toContain("group-hover:opacity-100");
+    expect(remove).toContain("[@media(hover:none)]:opacity-100");
+  });
+});

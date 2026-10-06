@@ -489,9 +489,10 @@ function AccPreview({ id, size, axes = [] }: { id: string; size: ThumbSize; axes
   );
 }
 
-export default function BoxInspector({ section = false, sectionPlace, outerDefault, pageSpan, onSetSpan, pageLines, onSetLines, onSetFreeInset, rowStepRem, node, theme, onPatch, onAddChild, onFloat, onUnfloat, onLayer, onAlignInRow, rowJustify, onSectionWidth, sectionWidth, canFloat = true, inGrid = false, inMasonry = false, gridTrack, onSetFraction, onRetrack, breakpoint = "base", overridden = false, onResetOverride, pages, currentPageId, pinBlockedBy = null, fixedBlockedBy = null, pinScope = null }: {
+export default function BoxInspector({ section = false, sectionPlace, outerDefault, fillHeight, pageSpan, onSetSpan, pageLines, onSetLines, onSetFreeInset, rowStepRem, node, theme, onPatch, onAddChild, onFloat, onUnfloat, onLayer, onAlignInRow, rowJustify, onSectionWidth, sectionWidth, canFloat = true, inGrid = false, inMasonry = false, gridTrack, onSetFraction, onRetrack, breakpoint = "base", overridden = false, onResetOverride, pages, currentPageId, pinBlockedBy = null, fixedBlockedBy = null, pinScope = null }: {
   section?: SectionFlag; // the block is the content of a page section, so its default inner spacing is the gutter and the section space
   outerDefault?: [number, number, number, number]; // the outer space it really has by default (`outerSpaceDefaults`, G-3 (1)); else `outerDefaults`
+  fillHeight?: { on: boolean }; // G-3d (2): a picture alone in a block spanning rows — "Fill the block's height"; absent where it does nothing
   sectionPlace?: SectionPlace; // …and where: straight on the page or a column of a band — the default space OUTSIDE a self-painted block (S-2 (5))
   node: BoxNode;
   theme: SiteTheme;
@@ -1469,6 +1470,13 @@ export default function BoxInspector({ section = false, sectionPlace, outerDefau
                           This photo is {node.imgW} × {node.imgH} pixels. Its shape is held open while it loads, so nothing below it jumps.
                         </p>
                       </>
+                    )}
+                    {/* G-3d (2): only where it does something — its block spans rows and holds nothing but this picture (RULE UI) */}
+                    {fillHeight && (
+                      <label className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-300 midnight:text-gray-300 purple:text-gray-300">
+                        <input type="checkbox" checked={fillHeight.on} onChange={(e) => onPatch({ fillHeight: e.target.checked ? undefined : false })} />
+                        Fill the block&apos;s height (cropped from the centre, never stretched)
+                      </label>
                     )}
                   </>
                 )}

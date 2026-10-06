@@ -4,6 +4,10 @@ Welcome. This is the **living documentation** for Educo — the single, always-c
 
 > **Living** means: every time a feature ships or changes, its page here is updated in the same change. If you find something out of date, that's a bug — treat it like one.
 
+**Read it as a site.** These Markdown files are the single source of the documentation site in `docs-site/`
+(Docusaurus): `npm run docs:start` serves it, `npm run docs:build` builds it. This README is the index for people
+working in the repository and is not on the site.
+
 ---
 
 ## Who Educo is for
@@ -11,7 +15,7 @@ Welcome. This is the **living documentation** for Educo — the single, always-c
 | Reader | What they get from Educo | Start here |
 |--------|--------------------------|------------|
 | **School administrator** | Run the school: staff, students, timetable, discipline, leave, transfers, performance, and the public website. | [Admin Guide](./admin.md) *(coming)* |
-| **Teacher** | Day-to-day teaching tools + build and edit the school's public website. | [Website Builder Guide](./website-builder.md) |
+| **Teacher** | Day-to-day teaching tools + build and edit the school's public website. | [Laying out a page — the story](./layout-story.md) |
 | **Parent / Student** | Find the school, read announcements, use the mobile app. | [Mobile App Guide](./mobile.md) *(coming)* |
 
 ---
@@ -22,7 +26,9 @@ Educo is one product made of several areas. Each area has (or will have) its own
 
 | Area | What it is | Guide | Status |
 |------|------------|-------|--------|
-| **Website Builder** | A drag‑and‑drop builder for the school's public website — sections, blocks, design‑system components, themes, responsive preview, export. | [website-builder.md](./website-builder.md) | ✅ Documented |
+| **Website Builder — layout** | How a page is laid out, told as scenarios: rows, stacks, grids, sizing, hiding per device, space by default, the page grid, the editor on a tablet. Read first. | [layout-story.md](./layout-story.md) | ✅ Documented (with pictures from the builder) |
+| **Website Builder — layout reference** | Every layout control by its name in the builder: top bar, Blocks panel, block toolbar, the Inspector's tabs, the Page grid panel, keyboard shortcuts. | [layout-reference.md](./layout-reference.md) | ✅ Documented |
+| **Website Builder — the rest** | Blocks, components (Accordion, Alert…), themes, movement, Preview, Page check, export. | [website-builder.md](./website-builder.md) | ✅ Documented |
 | **Admin app** | The school back‑office (staff, students, timetable, discipline, leave, transfers, performance reviews). | admin.md | ⏳ Planned |
 | **Mobile / Tablet app** | The React Native app for staff, parents and students (incl. Drive). | mobile.md | ⏳ Planned |
 | **Drive** | File storage + sharing inside the mobile app. | drive.md | ⏳ Planned |

@@ -1,9 +1,11 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
 import {
   createContainer, createElement, makeRowBand, imageSizing, hasIntrinsicSize, measureImage,
-  MEASURE_TIMEOUT_MS, type BoxNode,
+  MEASURE_TIMEOUT_MS, type BoxNode, type Breakpoint, fillsRows, childStyle, normalizeRowBands, markPageGrid, BP_ORDER, rowQueryCss,
 } from "@/lib/box-model";
-import { renderPageHTML } from "@/lib/box-export";
+import type { CSSProperties } from "react";
+import { renderPageHTML, renderSitePage } from "@/lib/box-export";
+import { emptyPageRoot, siteFromRoot } from "@/lib/box-site";
 import { DEFAULT_THEME } from "@/lib/site-storage";
 
 /**
@@ -196,5 +198,70 @@ describe("measureImage", () => {
     await expect(measureImage("")).resolves.toEqual({});
     globalThis.Image = undefined as unknown as typeof Image;
     await expect(measureImage("data:image/png;base64,xx")).resolves.toEqual({});
+  });
+});
+
+describe("G-3d (2) · a picture fills a block that spans rows (fillsRows)", () => {
+  /** A photo two rows tall beside two short blocks of words, on a page-grid page, built the way the editor commits it. */
+  const bento = (opts: { photo?: Partial<BoxNode>; block?: Partial<BoxNode>; withWords?: boolean; marked?: boolean } = {}) => {
+    const photo = imageNode({ imgW: 1600, imgH: 900, ...opts.photo });
+    const kids = [createContainer("column", { width: "50%", rowSpan: 2, children: opts.withWords ? [photo, createElement("text", { text: "Words" })] : [photo], ...opts.block } as Partial<BoxNode>),
+      ...[0, 1].map(() => createContainer("column", { width: "50%", children: [createElement("text", { text: "Short" })] } as Partial<BoxNode>))];
+    const root = { ...emptyPageRoot(), children: [makeRowBand(kids)] } as BoxNode; if (opts.marked === false) delete root.pageGrid;
+    return markPageGrid(normalizeRowBands(root));
+  };
+  const blockOf = (root: BoxNode) => root.children![0].children![0];
+  // a block's content is always in row bands (`normalizeRowBands`): block → band → picture, as the editor builds it
+  const bandOf = (root: BoxNode) => blockOf(root).children![0];
+  const picOf = (root: BoxNode) => bandOf(root).children![0];
+  const picStyle = (root: BoxNode, bp: Breakpoint = "base") => childStyle(picOf(root), bandOf(root), bp, false, blockOf(root));
+  const html = (root: BoxNode) => { const site = siteFromRoot(root); return renderSitePage(site, DEFAULT_THEME, site.homeId, { inlineShared: true }); };
+  const imgStyle = (h: string) => /<img [^>]*style="([^"]*)"/.exec(h)![1];
+  const boxRules = (root: BoxNode, h: string) => [...h.matchAll(new RegExp(String.raw`\.[\w-]*${picOf(root).id}[^{]*\{([^}]*)\}`, "g"))].map((m) => m[1]);
+
+  it("fills: the picture's box grows from its own height, and the picture follows it", () => {
+    const r = bento(); expect(fillsRows(blockOf(r))).toBe(true);
+    const h = html(r);
+    expect(imgStyle(h)).toContain("height:var(--bx-fill, auto)");
+    expect(imgStyle(h)).toContain("object-fit:cover"); // cropped, never stretched
+    expect(boxRules(r, h).join("|")).toMatch(/align-self:stretch/);
+    expect(childStyle(blockOf(r), r.children![0])["--bx-fill" as keyof CSSProperties]).toBe("100%"); // on the block: G3d-11
+    expect(childStyle(bandOf(r), blockOf(r)).flex).toBe("1 0 auto"); // the band grows down the block
+  });
+  it("a height set by hand stays its minimum (and its height wherever it does not fill)", () => {
+    const r = bento({ photo: { height: "15rem" } }); const h = html(r);
+    expect(imgStyle(h)).toContain("height:var(--bx-fill, 15rem)");
+    expect(picStyle(r).minHeight).toBe("15rem");
+  });
+  it.each([
+    ["switched off", { photo: { fillHeight: false as const } }],
+    ["words beside the picture", { withWords: true }],
+    ["one row tall", { block: { rowSpan: 1 } }],
+    ["a page saved before the page grid", { marked: false }],
+  ])("does not fill: %s — the picture's own height, the inline style as before", (_, opts) => {
+    const r = bento(opts); const h = html(r);
+    expect(fillsRows(blockOf(r))).toBe(false);
+    expect(imgStyle(h)).toContain("height:auto");
+    expect(h).not.toContain("--bx-fill");
+  });
+  it("per screen: a block one row tall on the phone does not fill there; switched off at Tablet, not there", () => {
+    const r = bento({ block: { responsive: { phone: { rowSpan: 1 } } } });
+    expect([fillsRows(blockOf(r), "base"), fillsRows(blockOf(r), "phone")]).toEqual([true, false]);
+    const fillOn = (bp: Breakpoint) => childStyle(blockOf(r), r.children![0], bp)["--bx-fill" as keyof CSSProperties];
+    expect([fillOn("phone"), fillOn("base")]).toEqual([undefined, "100%"]);
+    expect(picStyle(r, "phone").alignSelf).not.toBe("stretch");
+    const off = bento({ photo: { responsive: { tabletPortrait: { fillHeight: false } } } });
+    expect(BP_ORDER.map((bp) => fillsRows(blockOf(off), bp))).toEqual([false, false, true, true, true]); // phone inherits the tablet
+    expect(fillsRows(blockOf(off), "tabletPortrait", true)).toBe(true); // …but the switch still shows there
+  });
+  it("G3d-11: where the fit rule drops the block's span it drops the fill too — the picture falls back to its own height", () => {
+    const r = bento(), band = r.children![0], id = blockOf(r).id;
+    const stepped = [...rowQueryCss(band, (x) => `.x-${x}`, (c) => c, true).matchAll(new RegExp(String.raw`\.x-${id}\{([^}]*)\}`, "g"))].map((m) => m[1]);
+    expect(stepped.length).toBeGreaterThan(0);
+    for (const rule of stepped) expect(rule).toContain("grid-row:auto !important;--bx-fill:initial !important");
+    expect(rowQueryCss(bento({ photo: { fillHeight: false } }).children![0], (x) => `.x-${x}`, (c) => c, true)).not.toContain("--bx-fill");
+  });
+  it("imageSizing without the fill is exactly what it was", () => {
+    for (const p of [{ imgW: 1600, imgH: 900 }, { height: "15rem" }, {}]) expect(imageSizing(imageNode(p), false)).toEqual(imageSizing(imageNode(p)));
   });
 });
