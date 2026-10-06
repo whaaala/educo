@@ -114,7 +114,7 @@ body {
   width: 100%;
   margin-bottom: 1.5rem;
   border-radius: 0.5rem;
-  overflow: hidden;
+  /* no `overflow: hidden` here (D3-48): it came after overflow-x and cut a wide table's words off at 200 % text */
   border: 1px solid var(--ifm-color-emphasis-200);
 }
 .markdown th,

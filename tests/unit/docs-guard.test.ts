@@ -35,6 +35,20 @@ function guideFiles(): string[] {
     .filter((f) => f.endsWith(".md") && !EXCLUDED.has(f));
 }
 
+/** The ids Docusaurus gives a page's headings: github-slugger's rule (lower case, punctuation dropped, each space a hyphen,
+ *  a repeat numbered), after the Markdown inside the heading is read as text. A `{#custom-id}` wins. */
+function headingIds(md: string): Set<string> {
+  const ids = new Set<string>(); const seen = new Map<string, number>();
+  for (const line of md.replace(/\r\n/g, "\n").split("\n")) {
+    const h = /^#{1,6}\s+(.*?)\s*$/.exec(line)?.[1]; if (!h) continue;
+    const custom = /\{#([^}]+)\}\s*$/.exec(h)?.[1]; if (custom) { ids.add(custom); continue; }
+    const text = h.replace(/\[([^\]]*)\]\([^)]*\)/g, "$1").replace(/[*`]/g, "");
+    const base = text.toLowerCase().trim().replace(/[^\p{L}\p{Nd}\p{M}\s_-]/gu, "") /* "6¾." → "6": a fraction is not a digit */.replace(/ /g, "-");
+    const n = seen.get(base) ?? 0; seen.set(base, n + 1); ids.add(n ? `${base}-${n}` : base);
+  }
+  return ids;
+}
+
 describe("docs-guard", () => {
   it("every guide page has the required front-matter keys", () => {
     const missing: string[] = [];
@@ -70,11 +84,14 @@ describe("docs-guard", () => {
       // Match markdown links: [text](target) where target does not start with http or #
       const links = [...src.matchAll(/\[([^\]]+)\]\(([^)]+)\)/g)];
       for (const [, , href] of links) {
-        if (href.startsWith("http") || href.startsWith("#") || href.startsWith("/")) continue;
+        if (href.startsWith("http") || href.startsWith("/")) continue;
+        // D3-46: the `#section` is not part of the file name — it was, so a correct `./page.md#section` link failed here
+        const [path, anchor] = href.split("#");
         // A file with its own extension (a picture) is checked as itself (D3-20); a page link is a doc ID → <id>.md
-        const rel = href.replace(/^\.\//, "");
+        const rel = (path || file).replace(/^\.\//, "");
         const targetFile = /\.(webp|png|jpe?g|svg|gif)$/i.test(rel) ? join(GUIDE_DIR, rel) : join(GUIDE_DIR, `${rel.replace(/\.md$/, "")}.md`);
         if (!existsSync(targetFile)) broken.push(`${file} → ${href}`);
+        else if (anchor && !headingIds(readFileSync(targetFile, "utf8").replace(/\r\n/g, "\n")).has(anchor)) broken.push(`${file} → ${href} (no such heading)`);
       }
     }
     expect(broken, broken.join("\n")).toEqual([]);
@@ -89,6 +106,50 @@ describe("docs-guard", () => {
       });
     }
     expect(old, old.join("\n")).toEqual([]);
+  });
+
+  // D3-39: D-3 (1) closed the reference with "In the flow", "Gap between blocks", "Bleed to page edge" and "Minimum rows
+  // tall" — names the builder has never shown. A control name in the reference is a promise of what a person will SEE,
+  // so every bold name in its tables must be text the builder renders. Labels the builder ASSEMBLES are named here, each
+  // with the code that assembles it, so a renamed one still fails its own lookup.
+  it("every control the reference names is one the builder shows", () => {
+    const ASSEMBLED: Record<string, string> = {
+      "Hidden on phone": "`on ${bpLabel.toLowerCase()}`", // BoxInspector: Hidden {base ? "everywhere" : `on <screen>`}
+      "Hidden everywhere": '"everywhere"',
+      "Columns on …": "Columns on ${", // Stepper label={`Columns on ${screen}`}
+      "Columns (of 12)": "Columns (of ${pageSpan.cols})", // the Size section's span field, 12 being the page's count
+      "Phone · Tablet · Laptop · Desktop · Wide": "Phone", // the five device chips, one label each
+    };
+    const files: string[] = [];
+    const walk = (dir: string) => { for (const f of readdirSync(dir, { withFileTypes: true })) {
+      const p = join(dir, f.name);
+      if (f.isDirectory()) walk(p); else if (/\.tsx?$/.test(f.name)) files.push(p);
+    } };
+    ["components/website", "app/website/box-demo", "lib", "components/shared"].forEach((d) => walk(join(__dirname, "../..", d)));
+    const norm = (s: string) => s.toLowerCase().replace(/&apos;|[’']/g, "'").replace(/&amp;|&/g, "and").replace(/\s+/g, " ");
+    const src = norm(files.map((f) => readFileSync(f, "utf8")).join("\n"));
+    const md = readFileSync(join(GUIDE_DIR, "layout-reference.md"), "utf8").replace(/\r\n/g, "\n");
+    const missing: string[] = [];
+    for (const line of md.split("\n")) {
+      const name = /^\| \*\*([^*]+)\*\*/.exec(line)?.[1];
+      if (!name || /not in the builder yet/i.test(line)) continue;
+      if (/Ctrl|Cmd|Shift|Alt|Delete|Esc|Enter|F2|[↑↓←→]/.test(name)) continue; // the keyboard table names keys, not labels
+      if (name in ASSEMBLED) { if (!src.includes(norm(ASSEMBLED[name]))) missing.push(name); continue; }
+      for (const part of name.split(/ \/ | · /)) {
+        const label = part.replace(/^[^\p{L}]+/u, "").trim(); // a leading icon (⠿ 🔒 ⋮ +) is the button's picture, not its name
+        if (!src.includes(norm(label))) missing.push(label);
+      }
+    }
+    expect(missing, missing.join(" | ")).toEqual([]);
+  });
+
+  // D3-48: `overflow: hidden` after `overflow-x: auto` won, so a table wider than the column (any table at 200 % text on a
+  // phone) was cut off with no way to reach its words. A table scrolls sideways; nothing in its rule may hide that.
+  it("a wide table scrolls, never cuts its words off", () => {
+    const css = readFileSync(join(__dirname, "../../docs-site/src/css/custom.css"), "utf8").replace(/\r\n/g, "\n").replace(/\/\*[\s\S]*?\*\//g, "");
+    const table = /\.markdown table\s*\{([^}]*)\}/.exec(css)?.[1] ?? "";
+    expect(table).toMatch(/overflow-x:\s*auto/);
+    expect(table).not.toMatch(/(^|[;\s])overflow(-x)?:\s*(hidden|clip)/);
   });
 
   // D3-1: Infima sets --ifm-font-size-base as the html (root) size; using it again on an element applies it twice

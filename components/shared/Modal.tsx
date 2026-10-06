@@ -110,7 +110,7 @@ export default function Modal({
                           </h2>
                         )}
                         {subtitle && (
-                          <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 midnight:text-cyan-400/80 purple:text-pink-400/80 mt-0.5 truncate">
+                          <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 midnight:text-cyan-400/80 purple:text-pink-400/80 mt-0.5">
                             {subtitle}
                           </p>
                         )}

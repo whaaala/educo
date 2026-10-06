@@ -45,6 +45,19 @@ describe("Modal", () => {
     expect(screen.getByText("Subtitle text")).toBeInTheDocument();
   });
 
+  // D3-47: the subtitle was `truncate` — the Page check's "…including people using screen readers" read "…includin…",
+  // the half of the sentence that says who it is for. A subtitle is a sentence: it wraps, never cut (WCAG 1.4.10).
+  it("never cuts its subtitle short", () => {
+    render(
+      <Modal isOpen={true} onClose={vi.fn()} title="Page check" subtitle="Makes sure everyone can use this page — including people using screen readers">
+        <p>Content</p>
+      </Modal>
+    );
+    const sub = screen.getByText(/including people using screen readers/);
+    expect(sub.className.split(/\s+/)).not.toContain("truncate");
+    expect(sub.className).not.toMatch(/line-clamp|text-ellipsis|whitespace-nowrap/);
+  });
+
   it("renders footer when provided", () => {
     render(
       <Modal

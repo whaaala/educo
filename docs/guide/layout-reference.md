@@ -20,21 +20,21 @@ cross-referenced.
 
 | Control | What it does | Shortcut |
 |---------|-------------|---------|
-| **Page tabs** (Home · **+** Add page · Page settings) | Switch between the site's pages, add one, rename or delete one. | — |
+| **Page tabs** (Home · **+** Add page · Page settings) | Switch between the site's pages, add one, rename or delete one. The page's menu also has **Line up with the grid** (every block of this page to the nearest whole column, on the screen you are editing; blocks placed free stay put; one Undo) and **Page grid…** | — |
 | **+ Add a band** | Adds a full-width band at the bottom of the page; you can drag it to any position after. | — |
 | **Undo** | Reverses the last change. | Ctrl / Cmd Z |
 | **Redo** | Re-applies the last undone change. | Ctrl / Cmd Y, or Ctrl / Cmd Shift Z |
 | **Page check** | Lists what to fix before publishing: pictures missing a description, heading levels out of order, lines too tight for their words. The badge counts them. | — |
 | **Preview** | Opens the real published page. Close it with **Exit preview**; **H** hides the Preview's own controls. | — |
-| **Export** | Downloads the built site as a folder of HTML, CSS and assets. | — |
-| **Reset** | Clears the page and starts from blank (asks first). | — |
-| **Device chips** (Mobile 375 · Tablet 768 · Laptop 1024 · Desktop 1280 · Wide 1920 · Full width) | Switches the canvas to that screen. A size, spacing or layout change you make at a chip applies from that screen down. | — |
+| **Export** | Downloads `site.zip`: one HTML file per page and a shared `styles.css`, with your fonts and uploaded pictures inside them. | — |
+| **Reset** | Starts the whole site over — every page replaced by one blank page. It asks first, and Undo puts the site back. | — |
+| **Device chips** (Mobile 375 · Tablet 768 · Laptop 1024 · Desktop 1280 · Wide 1920 · Full width) | Switches the canvas to that screen. At Desktop or Full width you edit the base design; a change at Mobile, Tablet or Laptop applies from that screen down; Wide keeps its own. | — |
 | **Zoom** (− · Fit · +) | Zooms the canvas; **Fit** fits the whole page width in the window. | — |
 | **Layout guides** (the grid icon) | Draws the page grid's column and row lines over the canvas, and opens the **Page grid** panel. | — |
 | **Show hidden blocks** (the eye) | Draws blocks hidden at this screen faintly, so you can select and edit them. Click again to hide them. | — |
 | **Base size** (the number box, 10 by default) | The size in px everything on the canvas scales from, so words stay readable when you zoom. | — |
 | **Website theme** (the palette) and **Editor appearance** (the sun) | The site's own colours and type, saved with it · the builder's light / dark look, for you only. | — |
-| **Blocks** (the floating button at the left) | Opens or closes the Blocks panel. | **B** |
+| **Blocks** (the button at the canvas's left) | Opens or closes the Blocks panel — docked at the side on a laptop or larger, floating over the canvas on a smaller screen. | **B** |
 
 ---
 
@@ -109,36 +109,42 @@ Click a block to select it; click again to go inside it; **Escape** steps back o
 
 Above the three tabs, **Styles** shows ready-made looks for the selected block as live previews; tap one to apply it.
 
-### Arrange as (Stack / Side by side / Grid only)
+### Arrange (Stack / Side by side / Grid only)
+
+Stack, Side by side and Grid are one block in three arrangements; these switch between them without losing what is
+inside.
 
 | Control | What it does |
 |---------|-------------|
-| **Stack / Side by side / Grid** | Switches the container between the three arrangements without losing its children. |
+| **Direction**: Top-to-bottom · Side-by-side | A Stack (blocks down the page) or a row (blocks across it). |
+| **Arrange as**: Free arrange · Grid | Free arrange follows Direction; Grid lays the blocks out across *and* down, in columns. |
 | **Show one at a time** | Turns any container into a pager — children become pages, visitors swipe between them. |
+| **Edge shape**: Top · Bottom — Straight · Slope right · Slope left · Curve out · Curve in | Cuts the band's top or bottom edge into a slope or a curve, shown as little pictures; **Edge depth** sets how deep. The shape cuts the background, never the size. |
 
 ### Size (every block)
 
 | Control | What it does | Notes |
 |---------|-------------|-------|
 | **Width** | The block's share of its row, as a fraction (e.g. 3 of 6) or a fixed rem value. Drag the block's left or right edge to change it; the opposite edge stays fixed. | Per screen |
+| **Columns (of 12)** (page-grid rows) | How many of the page's columns the block spans on this screen, in halves; the block beside it gives what this one takes. | Per screen · Alt ← / → (Shift: half) |
 | **From line** (page-grid rows) | The column line where the block starts. Changing this moves the left edge; the right edge stays. | Per screen |
 | **To line** (page-grid rows) | The column line where the block ends. Changing this moves the right edge; the left edge stays. | Per screen |
 | **Whole line** (page-grid rows) | Spans every column on the current screen. Adapts if the column count changes. | Per screen |
 | **To the last line** (page-grid rows) | Sets the right edge to the last column boundary, from wherever the left edge is. Adapts with column count. | Per screen |
-| **Bleed to page edge** (page-grid rows): Off · Left · Right · Both | Extends the block past the page's side space to the page's physical edge on that side. | Per screen |
+| **Bleed to the page edge** (page-grid rows): Off · Left · Right · Both | Extends the block past the page's side space to the page's physical edge on that side. | Per screen |
 | **Free inside its columns (% of them)** Left / Right (Alt-drag) | Fine position within the block's columns, as a percentage. Appears after an Alt-drag. | Per screen |
 | **Back on the lines** (Alt-drag) | Snaps a free-positioned block back to its column boundaries. Clears the left / right margins. | — |
 | **Rows tall** (page-grid rows) | How many grid rows this block spans. 1 is the default; 2 or more makes it cover multiple rows. | Per screen |
 | **Height** | A minimum height for the block, in rem or px. Not available on all block types. | Per screen |
-| **Minimum rows tall** (bands) | For a page-grid page's outer band — the band is at least this many row-heights tall. | Per screen |
+| **At least rows tall** (bands) | For a page-grid page's outer band — the band is at least this many row-heights tall. | Per screen |
 
 ### Placement
 
 | Control | What it does |
 |---------|-------------|
-| **In the flow (default)** | The block participates in the page's normal layout. |
-| **Floating** | The block is lifted above the flow; you drag it to any x / y position. Other blocks ignore it. |
-| **Sticks when reached** | The block stays on screen as the user scrolls past it (position: sticky). Works in rows and stacks. |
+| **In the layout** (default) | The block takes its place in the page's normal layout. |
+| **Floating** | The block is lifted off the layout; you drag it to any position. Other blocks ignore it. On a phone it goes back into the layout. |
+| **Stays put while scrolling** | **Scrolls away** (default) · **Sticks when reached** (it keeps its own space and holds when it reaches the top) · **Floats on screen** (lifted off the page, held at an edge or corner of the window). |
 
 ### Meaning (semantic role)
 
@@ -155,11 +161,12 @@ Above the three tabs, **Styles** shows ready-made looks for the selected block a
 
 | Control | What it does | Notes |
 |---------|-------------|-------|
-| **Gap between blocks** | The space between children inside this container, across and down. Drag the slider or type a value. Default is about 1rem. | Per screen |
+| **Space between blocks** | The space between the blocks inside this container, across and down at once. A slider. Default is about 1rem. | Per screen |
+| **Space across** · **Space down** | The same space, across and down separately — "same as above" until you move one. | Per screen |
 | **Space between columns** (page-grid rows) | The gap between blocks side by side in a page-grid row (across). | Per screen |
 | **Space between rows** (page-grid rows) | The gap between wrapped lines of a page-grid row (down). | Per screen |
-| **Inner spacing (padding)** | Space between the block's edge and its content, all sides at once or each side separately. Shows "Default · …rem" and a **Back to default** button. | Per screen |
-| **Outer spacing (margin)** | Space outside the block's edge, all sides at once or each side separately. Shows "Default · …rem" and a **Back to default** button. | Per screen |
+| **Inner spacing** (padding) | Space between the block's edge and its content, all sides at once or each side separately. Shows "Default · …rem" and a **Back to default** button. | Per screen |
+| **Outer spacing** (margin) | Space outside the block's edge, all sides at once or each side separately. Shows "Default · …rem" and a **Back to default** button. | Per screen |
 
 *Every spacing control that shows "Default · …rem" means the value is the builder's default and can be returned to it
 with **Back to default**. The default is never zero unless you set it to zero.*
@@ -173,7 +180,6 @@ with **Back to default**. The default is never zero unless you set it to zero.*
 | **Image** | An uploaded photograph or pattern as a background. |
 | **Overlay** | A semi-transparent colour layer over a background image (to keep words readable). Strength: 0–100%. |
 | **Pattern / Grain** | A noise or grid texture over the background. |
-| **Edge shape** | The block's top or bottom edge is given a wave, diagonal, or other decorative shape. |
 
 ### Shadow, Border, Radius
 
@@ -246,13 +252,20 @@ Each setting reads "At the default" or "Follows the default" until you change it
 | **Ctrl / Cmd Y** or **Ctrl / Cmd Shift Z** | Redo |
 | **Ctrl / Cmd D** | Duplicate selected block |
 | **Ctrl / Cmd C · X · V** | Copy · cut · paste a block |
-| **Ctrl / Cmd Shift G** | Ungroup |
+| **Ctrl / Cmd G** · **Ctrl / Cmd Shift G** | Group the selected blocks · Ungroup |
+| **Ctrl / Cmd L** | Lock or unlock the selected blocks' position and size |
+| **Alt F** | Float the block, or put it back in the layout |
+| **Ctrl / Cmd ]** · **[** (Shift: to the front / back) | Bring a floating block forward · send it back |
+| **Shift G** | Layout guides on / off (not while you are typing) |
+| **Alt ← / →** (Shift: half) | A block of a page-grid row takes one column more / fewer, said aloud ("5 of 12 columns") |
+| **Enter** or **F2** | Start typing in the selected block |
 | **Delete / Backspace** | Delete selected block |
-| **Escape** | Step out to the parent block; close the Inspector (below laptop width) |
+| **Escape** | Step out to the parent block; close the Blocks panel, a menu, or the Inspector (below laptop width) |
 | **Tab** | Move focus to the next interactive element |
 | **Shift + drag edge** | Snap to half-column lines (page-grid rows) |
 | **Alt + drop / drag edge** | Free-position inside columns (page-grid rows) |
-| **↑ / ↓** (block selected) | Move a block in the flow one place earlier / later; nudge a floating block 2px (12px with Shift) |
+| **↑ / ↓** (block selected) | Move a block in the layout one place earlier / later |
+| **↑ ↓ ← →** (floating block) | Nudge it 2px (12px with Shift) |
 | **H** (in Preview) | Hide or show the Preview's own controls |
 
 ---
@@ -261,7 +274,8 @@ Each setting reads "At the default" or "Follows the default" until you change it
 
 Many controls are **per screen**: the value you set at Desktop applies to Desktop only; the value at Mobile applies
 to Mobile only. The cascade works like CSS: a value set at a wider screen applies to narrower screens too, unless
-you override it at that narrower screen.
+you override it at that narrower screen. **Wide is the exception** — it branches off Desktop, so what you set at Wide
+stays on big screens and never reaches the narrower ones.
 
 The device chip in the top bar shows which screen you are editing. The Inspector labels a control "(per screen)"
 when it supports this. Controls without that label apply to all screens equally.

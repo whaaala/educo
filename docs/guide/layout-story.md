@@ -402,7 +402,8 @@ the Inspector slides over the canvas from the right.
 [![The same tablet with the Inspector open over the right part of the canvas](img/story-tablet-inspector.webp)](img/story-tablet-inspector.webp)
 
 - **Escape** closes it and returns her to the full-canvas view.
-- The blocks panel floats over the canvas, same as on a large screen.
+- The blocks panel floats over the canvas. (On a laptop or larger it docks at the side instead, and the page moves
+  over to make room.)
 - All gestures — tap to select, drag to move, drag an edge to resize — work with touch. Dragging an edge on a tablet
   works the same as dragging on a desktop: the edge you touch is the only edge that moves.
 

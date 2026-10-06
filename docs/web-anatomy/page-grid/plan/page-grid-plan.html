@@ -68,7 +68,7 @@ th{font:600 .78rem var(--mono);text-transform:uppercase;letter-spacing:.05em;col
 
 /* ---------- the mock school page (fixed school palette: it is the site being built, not the plan) ---------- */
 .pg{--school:#174d36;--school-2:#0f3a28;--gold:#e2b33c;--cream:#fbf8f1;--sink:#1a2420;--soft:#e9efe9;
-  --u:clamp(7px,1cqi,14px);--gap:max(.75rem,calc(var(--u) * 1.6));--side:max(.8rem,calc(var(--u) * 1.6));
+  --u:clamp(7px,1cqi,14px);--gap:max(.75rem,calc(var(--u) * 1.6));--side:clamp(1rem,calc(var(--u) * 1.6),1.25rem);
   --cols:12;--row:24px;
   container-type:inline-size;container-name:pg;position:relative;font:400 15px/1.5 var(--body);color:var(--sink);background:var(--cream)}
 .band{--half:calc(var(--gap) / 2);display:grid;
@@ -210,21 +210,35 @@ ul.check li::before{content:"";position:absolute;left:0;top:.3rem;width:.9rem;he
 </style>
 
 <div class="wrap">
-  <p class="eyebrow">AC-37b · plan APPROVED 2026-10-04 · builder/layout-uat</p>
+  <p class="eyebrow">AC-37b · plan APPROVED 2026-10-04 · BUILT 2026-10-04 → 05 · builder/layout-uat → builder/page-grid</p>
   <h1>The page grid</h1>
   <p class="lede">One invisible set of columns runs across every page. Blocks land on it, snap to it and re-flow by it on every screen, so a photo in the hero and a card in the footer share the same edges without anyone measuring. You never see it unless you switch on <b>Layout guides</b>.</p>
-  <div class="meta"><span>2026-10-04</span><span>research R-3 signed 2026-10-04 (ff5c53a, 4418202)</span><span>approved with the decisions below · next: batch G-1</span></div>
+  <div class="meta"><span>2026-10-04</span><span>research R-3 signed 2026-10-04 (ff5c53a, 4418202)</span><span>approved with the decisions below</span><span>built: G-1 · G-2 · G-3 · G-3b · G-3c (closed) · next: G-3d</span></div>
+
+  <div class="callout" id="status">
+    <h3>Built 2026‑10‑04 → 05 — this plan now records what shipped</h3>
+    <p>The plan was written before the build. Where the build went another way, the plan is corrected here (rule 14), keeping what was proposed so the change can be seen. Every part below carries a pill: <span class="pill rec">shipped · batch</span> built and seen in a headed UAT · <span class="pill">changed</span> built, but not as the plan drew it · <span class="pill new">next · batch</span> queued, not built.</p>
+    <ul class="tight">
+      <li><b>G-1 · the engine</b> (closed 2026-10-04): new pages are page-grid pages; 12 columns from Tablet up, 6 on a phone; one grid per site, a page may use its own; the fit rule on every rung; saved pages untouched.</li>
+      <li><b>G-2 · guides + panel</b> (closed 2026-10-04): <b>Layout guides</b> (toolbar switch · <span class="kbd">Shift G</span> · right-click), the span label, the <b>Page grid</b> panel.</li>
+      <li><b>G-3 · placing</b> (closed 2026-10-04): <b>edge to edge</b>, column snap on resize, <b>Columns (of 12)</b> + <span class="kbd">Alt ←/→</span>, <b>At least rows tall</b>, <b>Line up with the grid</b>.</li>
+      <li><b>G-3b · a real CSS grid</b> (closed 2026-10-05): a page-grid row is emitted as <code>display: grid</code>, blocks sit ON the drawn lines, canvas == export; <b>From line / To line</b>, <b>Whole line</b>, <b>To the last line</b>, <b>Bleed to the page edge</b>, <b>Rows tall</b>, <b>Space between columns / rows</b>; Alt free became lines + a margin.</li>
+      <li><b>G-3c · the frame</b> (closed 2026-10-05): every page edge keeps <code>clamp(1rem, …, 1.25rem)</code> — 1 rem on a phone, 1.25 rem wide — replacing the plan's "side space ≥ 0.8 rem".</li>
+      <li><b>Next:</b> <span class="pill new">next · G-3d</span> a lone half-width block takes a phone's whole line · a picture fills a block that spans rows ("Fill the block's height") · a 10 rem floor for every block of a row on a phone. Later: P-1, P-2, G-4, P-3, G-5, G-6, widened by research R-4.</li>
+    </ul>
+    <p>Each closed batch passed a six-window headed UAT built through the UI, with the Preview at all 70 screens (every device preset and both sides of every breakpoint) at 100 / 150 / 200 % text. <b>Where to learn it:</b> the documentation site (<code>docs-site/</code>, <code>npm run docs:start</code>) — <b>Layout — the story</b> §6¾ "The whole page is mine" and <b>Layout — reference</b> (Size, Spacing, the Page grid panel, the keyboard). This page stays the record of the plan and its decisions.</p>
+  </div>
 
   <div class="callout" id="yours">
     <h3>Your decisions, 2026-10-04</h3>
     <ol class="tight">
-      <li><b>Plan approved</b>, with the grid running <b>edge to edge</b>: no fixed side margins. The space at the sides is padding you can change, down to zero.</li>
-      <li><b>Rows follow the content</b> (no row snap). <b>Every block, component and item keeps a default margin and padding</b>, so nothing ever sits flush against its neighbour.</li>
-      <li><b>Phone gap: tested, 0.75 rem (12 px)</b> as the minimum between blocks. 0.6 rem left tiles almost touching and 1 rem squeezed the cards (see choice 2).</li>
-      <li><b>One grid for the whole site</b>, with a per-page exception.</li>
-      <li><b>Alt = free placement, Shift = half-lines.</b> MUST: free placement never breaks the page (see <a href="#free">Free placement keeps the page whole</a>).</li>
-      <li><b>Readable text width on by default</b> (about 75 characters a line), and a small <b>default side space of 0.8 rem</b> minimum.</li>
-      <li><b>Everything here applies at every breakpoint, every screen size and device preset, in every module, and under every rule</b> (rules 16 and 18, RULE AF, Z and Q, WCAG).</li>
+      <li><b>Plan approved</b>, with the grid running <b>edge to edge</b>: no fixed side margins. The space at the sides is padding you can change, down to zero. <span class="pill rec">shipped · G-3</span> <span class="pill">changed</span> the guides' columns span the whole page; the side space is drawn as a margin inside columns 1 and 12, and the first / last block of a row owns it (its Spacing reads "Default"; a value of its own, 0 included, takes over on that side).</li>
+      <li><b>Rows follow the content</b> (no row snap). <b>Every block, component and item keeps a default margin and padding</b>, so nothing ever sits flush against its neighbour. <span class="pill rec">shipped · G-3 · G-3b</span> row lines are a reference; <b>At least rows tall</b> and <b>Rows tall</b> never cut words.</li>
+      <li><b>Phone gap: tested, 0.75 rem (12 px)</b> as the minimum between blocks. 0.6 rem left tiles almost touching and 1 rem squeezed the cards (see choice 2). <span class="pill rec">shipped · G-1</span> 11.9 px at 360, growing to 23.8 px wide; settable as <b>Space between columns</b> / <b>Space between rows</b> (G-3b).</li>
+      <li><b>One grid for the whole site</b>, with a per-page exception. <span class="pill rec">shipped · G-1 · G-2</span> <b>This page uses its own grid</b>.</li>
+      <li><b>Alt = free placement, Shift = half-lines.</b> MUST: free placement never breaks the page (see <a href="#free">Free placement keeps the page whole</a>). <span class="pill rec">shipped · G-3</span> <span class="pill">changed · G-3b</span> Alt free = the nearest lines + a margin inside them, never a page x / y.</li>
+      <li><b>Readable text width on by default</b> (about 75 characters a line), and a small <b>default side space of 0.8 rem</b> minimum. <span class="pill">changed</span> paragraphs already stopped at a readable width (<code>min(56ch, 32em)</code>, measured in G-1); the side space became the page's <b>frame</b>, <code>clamp(1rem, …, 1.25rem)</code> on all four edges (G-3c).</li>
+      <li><b>Everything here applies at every breakpoint, every screen size and device preset, in every module, and under every rule</b> (rules 16 and 18, RULE AF, Z and Q, WCAG). <span class="pill rec">shipped</span> every batch's Preview checked at all 70 screens, 100 / 150 / 200 % text.</li>
     </ol>
   </div>
 
@@ -233,31 +247,32 @@ ul.check li::before{content:"";position:absolute;left:0;top:.3rem;width:.9rem;he
   <p>A teacher drags a photo beside their words. Without being told, the photo takes exactly half the page and the words the other half. On a tablet it stays half and half. On a phone the photo goes under the words, full width. Three news cards further down line up with those same two halves, and so does the footer. Nobody typed a number.</p>
   <p>That is the whole idea. The page is divided into <b>12 equal columns</b> from tablet width up and <b>6 on a phone</b>. The columns run <b>from one edge of the page to the other</b>: a block can be dragged right to the far left or far right. Between the columns there is <b>no gap</b>; the space between blocks comes from the blocks themselves, half each side (at least 0.75 rem between two blocks). The space at the sides of the page is a small default <b>padding</b> on each section (at least 0.8 rem), which you can drag or set to anything, down to zero. Paragraphs stop at a comfortable reading width (about 75 characters), so wide screens stay readable without shrinking the grid.</p>
   <p>When a row cannot keep its shape on a narrower screen, it becomes the fewest <b>equal</b> columns whose words still fit: four cards go to two, then to one. Never a staircase, never a broken word.</p>
+  <p><span class="pill rec">shipped · G-1 → G-3c</span> <b>As built</b>, two things read differently. The lines run gapless, edge to edge, and the space between two blocks is <b>centred on a line</b>, so three cards share one gap (G-3b). The page keeps a <b>frame</b> of 1 rem on a phone, growing to 1.25 rem wide, on all four edges; a coloured first or last section still reaches the edge, its words keep the frame inside (G-3c). <span class="pill new">next · G-3d</span> today a block set to half the page keeps that half when it ends up alone on its phone line; it will take the whole line.</p>
   </div>
 
   <h2 id="decided">Already decided by you (built to, not re-asked)</h2>
   <div class="tbl"><table>
-    <thead><tr><th>Decision</th><th>What it means in the build</th></tr></thead>
+    <thead><tr><th>Decision</th><th>What it means in the build</th><th>As built</th></tr></thead>
     <tbody>
-      <tr><td>6 columns on the phone · 12 from 600 px</td><td>Every rung re-declares the template. Placements are stored as shares, so "half" stays half on 6 and on 12.</td></tr>
-      <tr><td>Fit-based re-split on every rung</td><td>L-4's <code>rowNarrowsAt</code> / <code>gridNarrowsAt</code> become the one rule for rows on the page grid: most equal columns whose words fit, 4 → 2 → 1.</td></tr>
-      <tr><td>Half-steps in the model, whole-column snap by default</td><td>The template has a middle line in every column; the snap ignores it unless asked.</td></tr>
-      <tr><td>Page order on phones + "picture first" switch</td><td>Source order is reading order. One switch per split writes <code>order</code> at the phone rung only.</td></tr>
-      <tr><td>Zero grid gap; every block keeps a default margin and padding</td><td><code>gutterCSS</code> already gives each block half the spacing each side; the page grid reuses it, with a 0.75 rem floor. Nothing sits flush against a neighbour unless the person sets it to zero.</td></tr>
-      <tr><td>Edge to edge, whole height (replaces "margin | columns | margin, stop at 1280")</td><td>The template is just the columns. Side space is section padding (0.8 rem minimum, fluid, overridable to zero). Readable width lives on the text (≈ 75 characters). Rows run the full document.</td></tr>
-      <tr><td>Invisible in the editor; "Layout guides" switch OFF by default</td><td>The canvas looks as it does today. Guides drawn faint, never published.</td></tr>
-      <tr><td>An advanced panel; everything follows per rung</td><td>Column count, row step, side space, block gap. A change re-derives every block from its stored share; nothing moves or is lost.</td></tr>
-      <tr><td>Best of both worlds</td><td>Snap by default; free placement as today; old pages untouched, with an optional, undoable "Line up with the grid". The engine is extended, not replaced.</td></tr>
-      <tr><td>The content minimum survives large text</td><td>The export writes per-row <code>em</code> container queries measured from the words at build time (finding #24). No script on the published page.</td></tr>
+      <tr><td>6 columns on the phone · 12 from 600 px</td><td>Every rung re-declares the template. Placements are stored as shares, so "half" stays half on 6 and on 12.</td><td><span class="pill rec">shipped · G-1</span> <code>lib/page-grid.ts</code>; the phone follows half of Desktop unless its own count is set.</td></tr>
+      <tr><td>Fit-based re-split on every rung</td><td>L-4's <code>rowNarrowsAt</code> / <code>gridNarrowsAt</code> become the one rule for rows on the page grid: most equal columns whose words fit, 4 → 2 → 1.</td><td><span class="pill rec">shipped · G-1 · G-3b</span> on the phone too, only equal lines, padding counted; in G-3b every line of a page row steps by span. <span class="pill new">next · G-3d</span> a 10 rem floor for every block, not only its words.</td></tr>
+      <tr><td>Half-steps in the model, whole-column snap by default</td><td>The template has a middle line in every column; the snap ignores it unless asked.</td><td><span class="pill rec">shipped · G-3</span> <span class="pill">changed</span> the half-lines are drawn only while <span class="kbd">Shift</span> is held (your call mid-G-3: "some lines are faint").</td></tr>
+      <tr><td>Page order on phones + "picture first" switch</td><td>Source order is reading order. One switch per split writes <code>order</code> at the phone rung only.</td><td>Page order: yes. <span class="pill new">next · G-4</span> the "picture first" switch is not built.</td></tr>
+      <tr><td>Zero grid gap; every block keeps a default margin and padding</td><td><code>gutterCSS</code> already gives each block half the spacing each side; the page grid reuses it, with a 0.75 rem floor. Nothing sits flush against a neighbour unless the person sets it to zero.</td><td><span class="pill">changed · G-3b</span> the row is a real CSS grid; the space between blocks is centred on a line and every block of a line gives up the same width (equal cards stay equal). <b>Space between columns</b> and <b>Space between rows</b>, each Default or 0 – 4 rem.</td></tr>
+      <tr><td>Edge to edge, whole height (replaces "margin | columns | margin, stop at 1280")</td><td>The template is just the columns. Side space is section padding (0.8 rem minimum, fluid, overridable to zero). Readable width lives on the text (≈ 75 characters). Rows run the full document.</td><td><span class="pill rec">shipped · G-3</span> <span class="pill">changed · G-3c</span> the side space is the page's frame, <code>clamp(1rem, …, 1.25rem)</code>, on all four edges, owned by the row's first / last block; <b>Side space (padding)</b> takes it to 0.</td></tr>
+      <tr><td>Invisible in the editor; "Layout guides" switch OFF by default</td><td>The canvas looks as it does today. Guides drawn faint, never published.</td><td><span class="pill rec">shipped · G-2</span> off by default, remembered per person; row lines ON in the guides by default (your call mid-G-2); lines drawn on whole screen pixels (G-3).</td></tr>
+      <tr><td>An advanced panel; everything follows per rung</td><td>Column count, row step, side space, block gap. A change re-derives every block from its stored share; nothing moves or is lost.</td><td><span class="pill rec">shipped · G-2 · G-3b</span> the <b>Page grid</b> panel; one Undo for a whole change.</td></tr>
+      <tr><td>Best of both worlds</td><td>Snap by default; free placement as today; old pages untouched, with an optional, undoable "Line up with the grid". The engine is extended, not replaced.</td><td><span class="pill rec">shipped · G-3</span> <b>Line up with the grid</b> in Page settings. Saved pages publish byte for byte as before (61 saved sites measured, G-3b).</td></tr>
+      <tr><td>The content minimum survives large text</td><td>The export writes per-row <code>em</code> container queries measured from the words at build time (finding #24). No script on the published page.</td><td><span class="pill rec">shipped · G-1 · G-3b</span> seen at 150 / 200 % text on all 70 screens: no sideways scroll, no broken word, no staircase.</td></tr>
     </tbody>
   </table></div>
 
   <h2 id="mock">The school page, on three screens</h2>
   <p class="read">The same page drawn at phone, tablet and desktop width. It is built with the real page-grid CSS from the research examples, so what you see is how the CSS behaves, not a drawing. Each frame scrolls. Switch the guides on to see the columns, the side padding (green), the row lines and a label on each block saying how many columns it takes on that screen.</p>
   <div class="controls" role="group" aria-label="Mockup options">
-    <button class="tog" id="t-guides" aria-pressed="false"><span class="sw" aria-hidden="true"></span>Layout guides <span class="kbd">G</span></button>
+    <button class="tog" id="t-guides" aria-pressed="false"><span class="sw" aria-hidden="true"></span>Layout guides <span class="kbd">Shift G</span></button>
     <button class="tog" id="t-rows" aria-pressed="true"><span class="sw" aria-hidden="true"></span>Row lines in the guides</button>
-        <button class="tog" id="t-pic" aria-pressed="false"><span class="sw" aria-hidden="true"></span>Hero: picture first on phones</button>
+        <button class="tog" id="t-pic" aria-pressed="false"><span class="sw" aria-hidden="true"></span>Hero: picture first on phones <span class="pill new">next · G-4</span></button>
   </div>
   <div class="devices">
     <div class="device" data-w="1280" data-h="800"><div class="device-cap"><span>Desktop · 1280 px · 12 columns</span><span class="sc"></span></div><div class="device-box"><div class="frame"></div></div></div>
@@ -277,10 +292,12 @@ ul.check li::before{content:"";position:absolute;left:0;top:.3rem;width:.9rem;he
     <li><b>Admissions card</b>: it straddles the edge between the gallery and the green band, inset to 8 of 12.</li>
     <li>Every left edge on the page sits on one of the same 13 lines; the first and last are the page's edges, inside its side padding.</li>
   </ul>
+  <p><span class="pill">changed · G-3</span> This mockup is the plan's drawing, with the side space now set to the built frame (1 rem → 1.25 rem). In the builder the guides run <b>edge to edge</b>: the green side space is drawn inside columns 1 and 12, not outside them, and the first / last block of each row carries it. The hero's half-bleed is <b>Bleed to the page edge: Right</b> (G-3b); the straddling Admissions card is <span class="pill new">next · G-5</span>; "picture first" is <span class="pill new">next · G-4</span>. A real page with the guides on is pictured in <b>Layout — the story</b> §6¾.</p>
   </div>
 
-  <h2 id="chrome">Where the controls live</h2>
+  <h2 id="chrome">Where the controls live <span class="pill rec">shipped · G-2 · G-3b · G-3c</span></h2>
   <p class="read">The toolbar gets one new switch beside the device picker. Turning it on draws the guides and opens a small panel for the grid. Turning it off hides both; the grid keeps working.</p>
+  <p class="read"><b>As built (G-2):</b> one switch, <b>Layout guides</b> (the grid icon in the top bar), draws the guides and opens the <b>Page grid</b> panel; <span class="kbd">Shift G</span> toggles the guides alone (not while typing); right-clicking the canvas gives <b>Layout guides  Shift+G</b> and <b>Page grid…</b>, and Page settings has <b>Page grid…</b> too. Off by default, remembered per person. The selected block shows a span label at its top-right ("6 of 12"). The panel below is redrawn with its real fields: <b>Space between columns</b> and <b>Space between rows</b> came in G-3b (they replaced G-2's one "Gap between blocks"), and <b>Side space</b> became the frame in G-3c.</p>
   <div class="chrome" aria-label="Builder toolbar mockup">
     <div class="chrome-bar">
       <span class="seg" aria-label="Device"><span>Mobile</span><span>Tablet</span><span>Laptop</span><span class="on">Desktop</span><span>Wide</span><span>Full</span></span>
@@ -295,13 +312,14 @@ ul.check li::before{content:"";position:absolute;left:0;top:.3rem;width:.9rem;he
       <div class="panel" aria-label="Page grid panel mockup">
         <h4>Page grid <span class="pill">this site</span></h4>
         <div class="rungs" aria-label="Screen"><span>Phone</span><span>Tablet</span><span>Laptop</span><span class="set">Desktop</span><span>Wide</span></div>
-        <div class="field"><span>Columns</span><span class="val"><span class="step">−</span>12<span class="step">+</span></span></div>
-        <div class="field"><span>Columns on phones</span><span class="val">half (6) ▾</span></div>
-        <div class="field"><span>Row step</span><span class="val"><span class="step">−</span>1.5 rem<span class="step">+</span></span></div>
-        <div class="field"><span>Space between columns</span><span class="val"><span class="step">−</span>0<span class="step">+</span></span></div>
-        <div class="field"><span>Side space (padding)</span><span class="val">auto, ≥ 0.8 rem ▾</span></div>
-        <div class="field"><span>Gap between blocks</span><span class="val">auto, ≥ 0.75 rem ▾</span></div>
-        <p class="hint">Changing a number moves every block with it. Half stays half. Nothing is lost, and Undo puts it back.</p>
+        <div class="field"><span>Columns on Desktop</span><span class="val"><span class="step">−</span>12<span class="step">+</span></span></div>
+        <p class="hint">Phone follows half of Desktop (6) unless set there.</p>
+        <div class="field"><span>Row lines in the guides</span><span class="val">on</span></div>
+        <div class="field"><span>Row step</span><span class="val">1.5 rem</span></div>
+        <div class="field"><span>Side space (padding)</span><span class="val">Default · 1–1.25rem</span></div>
+        <div class="field"><span>Space between columns</span><span class="val">Default</span></div>
+        <div class="field"><span>Space between rows</span><span class="val">Default</span></div>
+        <p class="hint">Changing a number moves every block with it. Half stays half; nothing is lost, and Undo puts it back. Each block's own spacing stays in the Inspector.</p>
         <div class="field"><span class="hint">This page uses its own grid</span><span class="val">off</span></div>
         <span class="pill">Reset to default</span>
       </div>
@@ -310,28 +328,30 @@ ul.check li::before{content:"";position:absolute;left:0;top:.3rem;width:.9rem;he
   <div class="read">
   <p><b>Shortcut.</b> <span class="kbd">Shift G</span> toggles the guides, as in Figma. It is free: <span class="kbd">Ctrl Shift G</span> is Ungroup and stays so; <span class="kbd">Shift 0/1/2</span> remain zoom. The switch is also in the canvas right-click menu.</p>
   <p><b>Ranges</b> for the panel: columns 4 – 24 (desktop), phones "half" by default or 2 – 12; row step 0.5 – 3 rem; extra space between columns 0 – 4 rem; side space automatic (≥ 0.8 rem, growing a little on bigger screens) or 0 – 6 rem; block gap automatic (≥ 0.75 rem) or 0 – 4 rem. Every block's own margin and padding stays changeable in Spacing, each side alone. A count that does not divide a split (3 across on 10) rounds to the nearest whole column, and the panel says which blocks did.</p>
+  <p><span class="pill">changed</span> <b>As built:</b> <b>Side space (padding)</b> is Default (the frame, 1 – 1.25 rem: 1 rem on a phone) or 0 – 6 rem, and moves all four page edges together (G-3c); <b>Space between columns</b> (across) and <b>Space between rows</b> (down) are each Default or 0 – 4 rem with <b>Back to default</b> (G-3b); each label reads its range phone → wide. Counts that do not divide no longer round: the row is cut into finer tracks so equal blocks stay equal (five cards are 12 of 60 each, G-3b). <b>Reset to default</b> returns them all.</p>
   </div>
 
-  <h2 id="placing">Placing and resizing a block</h2>
+  <h2 id="placing">Placing and resizing a block <span class="pill rec">shipped · G-3 · G-3b</span></h2>
   <div class="minis">
     <div class="mini"><h4>Drag an edge: it snaps</h4>
-      <div class="g12" style="margin-top:1.8rem"><div class="b" style="grid-column:1/span 5">5 of 12</div><div class="b alt" style="grid-column:6/span 7">7 of 12</div><span class="ghost" style="left:calc(100%*5/12)"></span><span class="lbl" style="left:calc(100%*5/12)">5 of 12 · phone 6 of 6</span></div>
-      <p>The edge moves line to line. The label shows the span on this screen and what the phone will do. The partner gives up exactly what this block takes (rule 19).</p></div>
+      <div class="g12" style="margin-top:1.8rem"><div class="b" style="grid-column:1/span 5">5 of 12</div><div class="b alt" style="grid-column:6/span 7">7 of 12</div><span class="ghost" style="left:calc(100%*5/12)"></span><span class="lbl" style="left:calc(100%*5/12)">5 of 12 · phone 3 of 6</span></div>
+      <p>The edge moves line to line. The label shows the span on this screen and what the phone will do. The partner gives up exactly what this block takes (rule 19). <span class="pill rec">shipped · G-3</span> since G-3b the edge lands ON the drawn line (0.00 px at 1280 and 1536).</p></div>
     <div class="mini"><h4>Hold Shift: half-lines</h4>
       <div class="g12" style="margin-top:1.8rem;grid-template-columns:repeat(24,1fr)"><div class="b" style="grid-column:1/span 9">4½</div><div class="b alt" style="grid-column:10/span 15">7½</div><span class="ghost" style="left:calc(100%*9/24)"></span><span class="lbl" style="left:calc(100%*9/24)">4½ of 12</span></div>
-      <p>The middle line of each column becomes a stop too. No quarters.</p></div>
+      <p>The middle line of each column becomes a stop too. No quarters. <span class="pill rec">shipped · G-3</span> the half-lines are drawn only while Shift is held.</p></div>
     <div class="mini"><h4>Hold Alt: free, as today</h4>
       <div class="g12" style="margin-top:1.8rem;display:flex"><div class="b free" style="width:37.4%">37.4%</div><div class="b alt" style="flex:1">62.6%</div><span class="ghost" style="left:37.4%;background:var(--muted)"></span><span class="lbl" style="left:37.4%;background:var(--muted)">37.4% · free</span></div>
-      <p>Any width. The block still follows every screen by the same fit rule. A "Free placement" switch in Position keeps it free for later drags.</p></div>
+      <p>Any width. The block still follows every screen by the same fit rule. A "Free placement" switch in Position keeps it free for later drags. <span class="pill">changed · G-3b</span> the edge runs its columns out to the nearest line beyond the hand and the rest becomes a margin inside them: <b>Free inside its columns (% of them)</b> Left / Right in the Size section, with <b>Back on the lines</b>. An Alt-drag of the whole block slides it along its line, between neighbours that never move. No separate "Free placement" switch.</p></div>
   </div>
   <div class="read">
   <p><b>Keyboard</b> (rule 2), with the block selected: <span class="kbd">Alt →</span> / <span class="kbd">Alt ←</span> grow or shrink by one column, <span class="kbd">Alt Shift →</span> by half a column, <span class="kbd">Ctrl Alt →</span> move the start one column. Each change is announced ("5 of 12 columns") to screen readers. The Position panel holds the same numbers as fields: start column, span, per screen, with "set here / inherited" for each rung.</p>
+  <p><span class="pill rec">shipped · G-3 · G-3b</span> <span class="pill">changed</span> <b>As built:</b> <span class="kbd">Alt ←</span> / <span class="kbd">Alt →</span> one column, <span class="kbd">Alt Shift ←/→</span> half a column, announced ("5 of 12 columns"). The numbers live in the <b>Size</b> section, per screen: <b>Columns (of 12)</b> (G-3), then <b>From line</b> / <b>To line</b>, <b>Whole line</b> and <b>To the last line</b> (G-3b) — moving the start is <b>From line</b>, so <span class="kbd">Ctrl Alt →</span> was not built. Where the fit rule steps the row, a note says so and a line you set there wins.</p>
   </div>
 
   <h3 id="keys">The modifier keys</h3>
-  <div class="callout"><p><b>Settled 2026-10-04:</b> <span class="kbd">Alt</span> = free placement (as decided, and as the canvas already does), <span class="kbd">Shift</span> = half-lines while resizing.</p></div>
+  <div class="callout"><p><b>Settled 2026-10-04:</b> <span class="kbd">Alt</span> = free placement (as decided, and as the canvas already does), <span class="kbd">Shift</span> = half-lines while resizing. <span class="pill rec">shipped · G-3</span> on a page-grid row Alt no longer lifts a block to a page x / y: it frees it inside its columns (G-3b); Alt on any other flow block still floats it.</p></div>
 
-  <h2 id="free">Free placement keeps the page whole (MUST)</h2>
+  <h2 id="free">Free placement keeps the page whole (MUST) <span class="pill rec">shipped · G-3b</span></h2>
   <div class="read">
   <p>Free placement is the person's choice, and the builder respects it. It must never make the page look broken. A freely placed block:</p>
   <ul class="tight">
@@ -341,9 +361,10 @@ ul.check li::before{content:"";position:absolute;left:0;top:.3rem;width:.9rem;he
     <li><b>keeps everything the person set</b> (spacing, order, per-screen choices) when they switch back to snapping: the block moves to the nearest line, nothing else is lost, and Undo returns the free width.</li>
   </ul>
   <p>The page check warns about anything that still looks wrong after a free move: words too close to an edge, a block overlapping another, or a row that leaves one block stranded.</p>
+  <p><span class="pill">changed · G-3b</span> <b>As built</b>, free placement cannot leave the grid at all: an Alt-dropped block lands on the nearest lines, and the rest is a <code>%</code> margin inside its own columns, kept per screen. At every other screen it stays on its lines; where the fit rule steps a row, the free margin drops so the blocks stay equal. <b>Back on the lines</b> clears it in one Undo. Measured in the headed UAT (108 checks, six devices × four themes, Preview at all 70 screens): no overlap, no sideways scroll. <span class="pill new">next · G-5</span> the page check's "covers words" warning.</p>
   </div>
 
-  <h2 id="lineup">Old pages and "Line up with the grid"</h2>
+  <h2 id="lineup">Old pages and "Line up with the grid" <span class="pill rec">shipped · G-1 · G-3</span></h2>
   <p class="read">Pages saved before the grid keep their exact widths: no migration, no surprise. Page settings gets one button, <b>Line up with the grid</b>. It moves each block on that page to the nearest whole column, shows how many it moved, and one Undo puts them back.</p>
   <div class="minis">
     <div class="mini"><h4>Before: a saved page</h4>
@@ -353,9 +374,11 @@ ul.check li::before{content:"";position:absolute;left:0;top:.3rem;width:.9rem;he
       <div class="g12"><div class="b" style="grid-column:1/span 5">5 of 12</div><div class="b alt" style="grid-column:6/span 7">7 of 12</div></div>
       <p>41.3% is 4.96 columns, so 5. A block marked "Free placement" is left alone.</p></div>
   </div>
+  <p class="read"><b>As built:</b> <b>Line up with the grid</b> is in Page settings and works on the screen being edited; it says how many blocks moved ("… moved to the grid on Desktop. Undo puts them back.") and leaves Alt-free blocks where they are. Pages saved before the grid have no <code>pageGrid</code> and publish byte for byte as before: 59 pages of 59 saved sites checked in G-3b's final pass (18 differed only by the empty-picture placeholder you chose).</p>
 
-  <h2 id="gridblock">The Grid block on the page grid</h2>
+  <h2 id="gridblock">The Grid block on the page grid <span class="pill new">next · G-4</span></h2>
   <p class="read">The Grid block keeps its name and its picker. Underneath, the builder maps it onto the page grid. A count twelve divides lands on page lines; any other count keeps its own equal columns inside the span it covers (already how <code>gridForAcross</code> works).</p>
+  <p class="read"><span class="pill new">next · G-4</span> Not built: the Grid block mapped onto page lines and <code>subgrid</code> are G-4 (1)–(2). Blocks placed straight in a page row already behave this way since G-3b: five equal blocks share the row as 12 of 60 tracks each.</p>
   <div class="minis">
     <div class="mini"><h4>3 across</h4><div class="g12"><div class="b" style="grid-column:1/span 4">4</div><div class="b" style="grid-column:5/span 4">4</div><div class="b" style="grid-column:9/span 4">4</div></div><p>Each card spans 4 of 12.</p></div>
     <div class="mini"><h4>4 across</h4><div class="g12"><div class="b" style="grid-column:1/span 3">3</div><div class="b" style="grid-column:4/span 3">3</div><div class="b" style="grid-column:7/span 3">3</div><div class="b" style="grid-column:10/span 3">3</div></div><p>Each spans 3 of 12.</p></div>
@@ -363,7 +386,7 @@ ul.check li::before{content:"";position:absolute;left:0;top:.3rem;width:.9rem;he
     <div class="mini"><h4>3 across inside 8</h4><div class="g12"><div class="b alt" style="grid-column:1/span 4">words</div><div class="inner" style="grid-column:5/span 8;grid-template-columns:repeat(3,1fr)"><i></i><i></i><i></i></div></div><p>A Grid placed on 8 columns keeps page lines through <code>subgrid</code>, falling back to its own columns.</p></div>
   </div>
 
-  <h2 id="purpose">Choose by purpose (AC-37c)</h2>
+  <h2 id="purpose">Choose by purpose (AC-37c) <span class="pill new">next · G-4</span></h2>
   <p class="read">The "Add" panel offers sections by what they are for. The builder picks rows, grid or a wrapping line underneath; the raw choice stays in the Inspector under friendly names.</p>
   <div class="tbl"><table>
     <thead><tr><th>Pick</th><th>Desktop</th><th>Phone (fit rule)</th><th>Underneath</th></tr></thead>
@@ -381,17 +404,19 @@ ul.check li::before{content:"";position:absolute;left:0;top:.3rem;width:.9rem;he
 
   <h2 id="bleed">Reaching past the columns</h2>
   <p class="read">All of these are placements on the grid's lines, set in the Position panel under <b>Reaches</b> and <b>Overlap</b>, or by dragging an edge past the outermost line. Without the guides on, the canvas shows only the block moving; with them on, the lines it snaps to light up.</p>
+  <p class="read"><span class="pill">changed · G-3b</span> <b>As built</b>, "Reaches" is <b>Bleed to the page edge: Off · Left · Right · Both</b> in the <b>Size</b> section, per screen: on the side where the block starts or ends a line it gives up the page's side space; nothing else moves. "Overlap" is not built.</p>
   <div class="minis">
-    <div class="mini"><h4>Full bleed</h4><div class="bandmini"><div class="bg1"></div><div class="cols"></div><div class="piece" style="left:0;right:0;top:20%;bottom:20%">edge to edge</div></div><p>One block runs window edge to window edge inside a contained section.</p></div>
-    <div class="mini"><h4>Half bleed</h4><div class="bandmini"><div class="bg1"></div><div class="cols"></div><div class="piece" style="left:8%;width:calc(84%*6/12 - 4px);top:20%;bottom:20%;background:#c98a1a;color:#1b1407">words</div><div class="piece" style="left:50%;right:0;top:20%;bottom:20%">photo →</div></div><p>Inner edge on a column line, outer edge on the window.</p></div>
-    <div class="mini"><h4>Straddle</h4><div class="bandmini"><div class="bg1"></div><div class="bg2"></div><div class="cols"></div><div class="piece" style="left:calc(8% + 84%*2/12);width:calc(84%*8/12);top:32%;bottom:32%;box-shadow:0 6px 14px rgba(0,0,0,.25)">card over the edge</div></div><p>Overlaps the band above by 1 – 3 row steps; sits on top; less on a phone; the page check warns if it covers words.</p></div>
-    <div class="mini"><h4>Half-step start</h4><div class="g12" style="grid-template-columns:repeat(24,1fr)"><div class="b" style="grid-column:1/span 8">words</div><div class="b alt" style="grid-column:10/span 15">from 4½</div></div><p>Starts on a middle line. Rare on real sites (1 in 26), so Shift-only.</p></div>
+    <div class="mini"><h4>Full bleed</h4><div class="bandmini"><div class="bg1"></div><div class="cols"></div><div class="piece" style="left:0;right:0;top:20%;bottom:20%">edge to edge</div></div><p>One block runs window edge to window edge inside a contained section. <span class="pill rec">shipped · G-3b</span> <b>Whole line</b> + Bleed <b>Both</b>.</p></div>
+    <div class="mini"><h4>Half bleed</h4><div class="bandmini"><div class="bg1"></div><div class="cols"></div><div class="piece" style="left:8%;width:calc(84%*6/12 - 4px);top:20%;bottom:20%;background:#c98a1a;color:#1b1407">words</div><div class="piece" style="left:50%;right:0;top:20%;bottom:20%">photo →</div></div><p>Inner edge on a column line, outer edge on the window. <span class="pill rec">shipped · G-3b</span> Bleed <b>Left</b> or <b>Right</b>.</p></div>
+    <div class="mini"><h4>Straddle</h4><div class="bandmini"><div class="bg1"></div><div class="bg2"></div><div class="cols"></div><div class="piece" style="left:calc(8% + 84%*2/12);width:calc(84%*8/12);top:32%;bottom:32%;box-shadow:0 6px 14px rgba(0,0,0,.25)">card over the edge</div></div><p>Overlaps the band above by 1 – 3 row steps; sits on top; less on a phone; the page check warns if it covers words. <span class="pill new">next · G-5</span></p></div>
+    <div class="mini"><h4>Half-step start</h4><div class="g12" style="grid-template-columns:repeat(24,1fr)"><div class="b" style="grid-column:1/span 8">words</div><div class="b alt" style="grid-column:10/span 15">from 4½</div></div><p>Starts on a middle line. Rare on real sites (1 in 26), so Shift-only. <span class="pill rec">shipped · G-3 · G-3b</span> Shift-drag, or <b>From line</b> in halves.</p></div>
   </div>
 
-  <h2 id="choices">The three open choices</h2>
+  <h2 id="choices">The three open choices <span class="pill rec">all three built as chosen</span></h2>
   <div class="choice">
     <h3>1 · Do blocks snap to the row step? <span class="pill rec">you chose A</span></h3>
     <p class="read">The guides draw a row line every 1.5 rem. The question is whether block heights and vertical spacing round to it.</p>
+    <p class="read"><span class="pill rec">shipped · G-3 · G-3b</span> Rows follow the content. A block can ask for <b>At least rows tall</b> (G-3, still growing with its words) and, in a page row, <b>Rows tall</b> — covering 2 or more rows of the blocks beside it, a gallery photo two rows tall (G-3b); where the row stacks, it spans one. <span class="pill new">next · G-3d</span> a picture alone in such a block fills its height ("Fill the block's height").</p>
     <div class="ab">
       <div class="opt"><h4>A · No, rows follow the content <span class="pill rec">recommended</span></h4>
         <div class="rowsnap"><i style="height:2.6rem"></i><i style="height:4.1rem"></i></div>
@@ -404,6 +429,7 @@ ul.check li::before{content:"";position:absolute;left:0;top:.3rem;width:.9rem;he
   <div class="choice">
     <h3>2 · The space between blocks on a phone <span class="pill rec">you chose B · tested: 0.75 rem</span></h3>
     <p class="read">Today the builder's spacing comes to about 11 px between two blocks on a 360 px phone. Most design systems use 16 px.</p>
+    <p class="read"><span class="pill rec">shipped · G-1</span> <span class="pill">changed · G-3c</span> The default is 11.9 px at 360, growing to 23.8 px wide, shared by the two blocks and centred on a line (G-3b). The side space is no longer 0.8 rem: the frame puts words exactly 1 rem from a phone's edge, the audit's floor.</p>
     <div class="ab">
       <div class="opt"><h4>A · 11 px, today's spacing</h4>
         <div class="phone"><div class="r" style="gap:11px"><div class="s">640</div><div class="s">38</div></div><small>11 px</small></div>
@@ -414,7 +440,7 @@ ul.check li::before{content:"";position:absolute;left:0;top:.3rem;width:.9rem;he
     </div>
   </div>
   <div class="choice">
-    <h3>3 · Is the page grid set for the whole site, or page by page? <span class="pill rec">you chose A</span></h3>
+    <h3>3 · Is the page grid set for the whole site, or page by page? <span class="pill rec">you chose A</span> <span class="pill rec">shipped · G-1 · G-2</span></h3>
     <div class="ab">
       <div class="opt"><h4>A · The whole site, a page may opt out <span class="pill rec">recommended</span></h4>
         <p>One grid for every page, so the header, footer and content line up when a visitor moves between pages. A page that needs something different (a landing page on 16 columns) switches on "This page uses its own grid". Stored on the site, with an override on the page.</p></div>
@@ -424,27 +450,28 @@ ul.check li::before{content:"";position:absolute;left:0;top:.3rem;width:.9rem;he
   </div>
 
   <h2 id="engine">How it sits on today's engine</h2>
-  <p class="read">Extended, not replaced. Every row below names what exists today and what is added to it.</p>
+  <p class="read">Extended, not replaced. Every row below names what exists today and what is added to it. The pills say what landed.</p>
   <div class="tbl"><table>
     <thead><tr><th>Today</th><th>Where</th><th>What the page grid adds</th></tr></thead>
     <tbody>
-      <tr><td>A block's width is a share (<code>width: "41.3%"</code>) of its row</td><td><code>lib/box-model.ts</code> <code>BoxNode.width</code>, <code>widthPct</code></td><td>Kept as the stored truth. Snapping makes the share a multiple of 1/12 (or 1/24). Free blocks keep any share.</td></tr>
-      <tr><td><code>colStart</code> / <code>colSpan</code> / <code>rowStart</code> / <code>rowSpan</code> per rung</td><td><code>BoxNode</code>, <code>ResponsiveOverride</code></td><td>Derived from the share on each rung's count; written only when someone sets a rung on purpose.</td></tr>
-      <tr><td>The five rungs, <code>base</code> is desktop</td><td><code>Breakpoint</code>, <code>RUNG_PX</code></td><td>Each rung gets a column count: 6 below 600, 12 above, or the panel's numbers.</td></tr>
-      <tr><td>Half spacing each side of a column</td><td><code>gutterCSS</code>, <code>SPACE_DEFAULT.columns</code>, <code>u()</code></td><td>The same numbers inside each slot; the grid itself has zero gap. Choice 2 adds a 1 rem floor.</td></tr>
-      <tr><td>Rows and grids narrow without breaking words</td><td><code>longestWordRem</code>, <code>rowNarrowsAt</code>, <code>rowQueryCss</code>, <code>gridNarrowsAt</code></td><td>The same measurement drives the fit-based re-split on page-grid rows, written as <code>em</code> container queries.</td></tr>
-      <tr><td>Grid blocks emit their own template</td><td><code>gridColumnsAt</code>, <code>gridForAcross</code></td><td>Mapped onto page lines when 12 divides the count; <code>subgrid</code> for a nested Grid on page lines.</td></tr>
-      <tr><td>No page-wide template, no named lines</td><td></td><td><b>New:</b> one emitter writes the template (<code>full</code> · <code>content</code> · column and middle lines) on every band, canvas and export alike. Safe-area aware.</td></tr>
-      <tr><td>Resize snaps only to "fit words"</td><td><code>BoxCanvas.tsx</code> <code>startResize</code>, <code>HUG_SNAP_PX</code></td><td>Snaps to column lines; Shift for half-lines; Alt for free (Alt+drag already lifts a block free in <code>startDrag</code>).</td></tr>
-      <tr><td>No site-level layout settings</td><td><code>lib/box-site.ts</code> <code>BoxSite</code>, <code>BoxPage</code></td><td><b>New:</b> <code>BoxSite.pageGrid</code> with a per-page override on the page's root (choice 3A).</td></tr>
+      <tr><td>A block's width is a share (<code>width: "41.3%"</code>) of its row</td><td><code>lib/box-model.ts</code> <code>BoxNode.width</code>, <code>widthPct</code></td><td>Kept as the stored truth. Snapping makes the share a multiple of 1/12 (or 1/24). Free blocks keep any share. <span class="pill rec">shipped · G-1 · G-3</span> share ↔ span in <code>lib/page-grid.ts</code>, <code>snapShare</code> on resize; <span class="pill">changed · G-3b</span> Alt free is stored as <code>freeInset</code> (% of the block's own columns), not a free share.</td></tr>
+      <tr><td><code>colStart</code> / <code>colSpan</code> / <code>rowStart</code> / <code>rowSpan</code> per rung</td><td><code>BoxNode</code>, <code>ResponsiveOverride</code></td><td>Derived from the share on each rung's count; written only when someone sets a rung on purpose. <span class="pill rec">shipped · G-3b</span> emitted as <code>grid-column: span k</code> per rung; <b>Rows tall</b> reuses the Grid block's <code>rowSpan</code> (<code>grid-row: span N</code>).</td></tr>
+      <tr><td>The five rungs, <code>base</code> is desktop</td><td><code>Breakpoint</code>, <code>RUNG_PX</code></td><td>Each rung gets a column count: 6 below 600, 12 above, or the panel's numbers. <span class="pill rec">shipped · G-1 · G-2</span></td></tr>
+      <tr><td>Half spacing each side of a column</td><td><code>gutterCSS</code>, <code>SPACE_DEFAULT.columns</code>, <code>u()</code></td><td>The same numbers inside each slot; the grid itself has zero gap. Choice 2 adds a 1 rem floor. <span class="pill">changed · G-3b</span> the gap is the grid's own, centred on a line, every block of a line giving up the same width (<code>pageRowSides</code>); choice 2 settled on 0.75 rem, not 1 rem.</td></tr>
+      <tr><td>Rows and grids narrow without breaking words</td><td><code>longestWordRem</code>, <code>rowNarrowsAt</code>, <code>rowQueryCss</code>, <code>gridNarrowsAt</code></td><td>The same measurement drives the fit-based re-split on page-grid rows, written as <code>em</code> container queries. <span class="pill rec">shipped · G-1 · G-3b</span> <span class="pill new">next · G-3d</span> a 10 rem floor per block on a phone.</td></tr>
+      <tr><td>Grid blocks emit their own template</td><td><code>gridColumnsAt</code>, <code>gridForAcross</code></td><td>Mapped onto page lines when 12 divides the count; <code>subgrid</code> for a nested Grid on page lines. <span class="pill new">next · G-4</span></td></tr>
+      <tr><td>No page-wide template, no named lines</td><td></td><td><b>New:</b> one emitter writes the template (<code>full</code> · <code>content</code> · column and middle lines) on every band, canvas and export alike. Safe-area aware. <span class="pill rec">shipped · G-2 · G-3b · G-3c</span> <code>gridTemplate</code> draws the guides; a page row is <code>repeat(T, minmax(0, 1fr))</code>, T from <code>rowTrackCount</code> so every edge sits on a track; the frame comes from one emitter, <code>frameCss</code> / <code>FRAME_CSS</code>.</td></tr>
+      <tr><td>Resize snaps only to "fit words"</td><td><code>BoxCanvas.tsx</code> <code>startResize</code>, <code>HUG_SNAP_PX</code></td><td>Snaps to column lines; Shift for half-lines; Alt for free (Alt+drag already lifts a block free in <code>startDrag</code>). <span class="pill rec">shipped · G-3</span> <span class="pill">changed · G-3b</span> on a page row Alt slides the block along its line (<code>slideFreeAt</code>) instead of lifting it.</td></tr>
+      <tr><td>No site-level layout settings</td><td><code>lib/box-site.ts</code> <code>BoxSite</code>, <code>BoxPage</code></td><td><b>New:</b> <code>BoxSite.pageGrid</code> with a per-page override on the page's root (choice 3A). <span class="pill rec">shipped · G-1</span> the override is <code>BoxPage.grid</code>, read by <code>resolvePageGrid</code>; the page root carries <code>pageGrid</code> to mark a page-grid page.</td></tr>
     </tbody>
   </table></div>
   <p class="read">The engine files stay free of React and the DOM (rule 20, guarded). The phone and tablet app shows the exported page in a webview, so the export's responsiveness is the mobile work; the builder itself has no native counterpart today.</p>
 
   <h2 id="batches">The build, in batches</h2>
   <p class="read">Six batches, one area each, at most six changes, one open at a time (RULE X). Each starts with its <code>.feature</code> file and ends with one headed UAT pass in six windows on a fresh production build, built through the UI, then the Preview at every rung. The checklists below are the first draft; each is written in full in the task tree before its batch opens.</p>
+  <p class="read"><span class="pill">changed</span> <b>As built:</b> G-1, G-2 and G-3 ran as planned, but G-3 was split — <b>G-3b</b> (the page as a real CSS grid) and <b>G-3c</b> (the frame) were added, and <b>G-3d</b> is queued. Research R-4 (CSS grid, flexbox and alignment from MDN, signed with D1 – D5) widened what follows into P-1 (alignment and spacing), P-2 (size and shape), G-4, P-3 (page layouts), G-5 and G-6. The full record of each batch, its checklist and its ledger is in <code>docs/TASK_TREE.md</code>.</p>
 
-  <details class="batch" open><summary>G-1 · The page grid in the engine <span class="pill">engine + export</span></summary><div class="bd">
+  <details class="batch" open><summary>G-1 · The page grid in the engine <span class="pill">engine + export</span> <span class="pill rec">shipped · closed 2026-10-04</span></summary><div class="bd">
     <h4>Changes</h4>
     <ol class="changes">
       <li><code>PageGrid</code> settings on the site (and the page override): columns per rung, row step, extra gap, side space, block gap.</li>
@@ -463,9 +490,11 @@ ul.check li::before{content:"";position:absolute;left:0;top:.3rem;width:.9rem;he
       <li>All four themes; RTL page mirrors its lines.</li>
       <li>Export weight on the 360 phone within RULE AF's budget.</li>
     </ul>
+    <h4>As built</h4>
+    <p>Five changes: <code>pageGrid</code> on every new page; new defaults on the fluid unit (words 1 rem from a phone's edge); a row of 2+ columns owns the side space; <code>lib/page-grid.ts</code> (columns per screen, share ↔ span, whole / half snap, the span label); <code>BoxSite.pageGrid</code> + <code>BoxPage.grid</code>. The fit rule was not already done as assumed — built here (on the phone too, only equal lines). The template emitter and canvas == export came with G-3b. Headed UAT: six windows × 70 screens, clean; light · dark · midnight · purple and right-to-left.</p>
   </div></details>
 
-  <details class="batch"><summary>G-2 · Layout guides and the grid panel <span class="pill">builder chrome</span></summary><div class="bd">
+  <details class="batch"><summary>G-2 · Layout guides and the grid panel <span class="pill">builder chrome</span> <span class="pill rec">shipped · closed 2026-10-04</span></summary><div class="bd">
     <h4>Changes</h4>
     <ol class="changes">
       <li>"Layout guides" switch in the toolbar, <span class="kbd">Shift G</span>, and the canvas right-click menu; off by default, remembered per person.</li>
@@ -482,9 +511,11 @@ ul.check li::before{content:"";position:absolute;left:0;top:.3rem;width:.9rem;he
       <li>Panel fully usable by keyboard and screen reader; focus visible in four themes.</li>
       <li>Reload: settings and the switch's state survive.</li>
     </ul>
+    <h4>As built</h4>
+    <p>As planned, with three changes: <b>one</b> switch (guides + panel) so the top bar stays one row at 1536; row lines ON by default; "Space between columns" moved to G-3b. The span label sits at the block's top-right, off its words. Headed UAT: 134 checks, 0 failed, four editor themes + four website themes.</p>
   </div></details>
 
-  <details class="batch"><summary>G-3 · Placing on the grid <span class="pill">canvas + inspector</span></summary><div class="bd">
+  <details class="batch"><summary>G-3 · Placing on the grid <span class="pill">canvas + inspector</span> <span class="pill rec">shipped · closed 2026-10-04</span></summary><div class="bd">
     <h4>Changes</h4>
     <ol class="changes">
       <li>Resize snaps to column lines, edge-anchored (rule 19), with the partner giving exactly what is taken.</li>
@@ -502,9 +533,47 @@ ul.check li::before{content:"";position:absolute;left:0;top:.3rem;width:.9rem;he
       <li>Free placement never breaks the page: no overlap, no sideways scroll, default spacing kept, the row re-splits evenly on every rung; switching back to snap keeps every other setting.</li>
       <li>Line up, then Undo, on three saved pages.</li>
     </ul>
+    <h4>As built</h4>
+    <p>(1) <b>Edge to edge</b> — your call: the guides span the page, the side space is drawn inside columns 1 and 12 and owned by a row's first / last block. (2) Column snap, Shift half-lines, Alt free, a live label "5 of 12 · phone 3 of 6". (3) <b>Columns (of 12)</b> + <span class="kbd">Alt ←/→</span>, announced. (4) <b>At least rows tall</b>. (5) <b>Line up with the grid</b>. (6) Nested trees in the UAT. "Free placement" as a switch and the offset / empty-column controls were replaced by G-3b's lines. Headed UAT: 65 checks, 0 failed.</p>
   </div></details>
 
-  <details class="batch"><summary>G-4 · The Grid block, splits and purpose picks <span class="pill">add panel + inspector</span></summary><div class="bd">
+  <details class="batch" open><summary>G-3b · The page as a real CSS grid <span class="pill">added during the build</span> <span class="pill rec">shipped · closed 2026-10-05</span></summary><div class="bd">
+    <h4>Why it was added</h4>
+    <p>Split from G-3 so each batch keeps six changes, after research R-4 (decision D5). In G-3 a snapped edge landed 1.7 – 2.6 px off the drawn line at 1280 (G3-8); you chose to fix it here.</p>
+    <h4>What shipped</h4>
+    <ol class="changes">
+      <li>A page-grid row is emitted as <code>display: grid</code> on the page's own lines, each block <code>grid-column: span k</code> per screen — blocks sit ON the lines, canvas == export.</li>
+      <li><b>From line</b> / <b>To line</b>, <b>Whole line</b>, <b>To the last line</b> and <b>Bleed to the page edge: Off · Left · Right · Both</b> in the Size section, per screen.</li>
+      <li>Alt free → the nearest lines + a margin (<b>Free inside its columns (% of them)</b>, <b>Back on the lines</b>); an Alt-drag of a block slides it along its line. Never page x / y.</li>
+      <li>The fit rule for every block of a page row: every line steps by span.</li>
+      <li><b>Space between columns</b> and <b>Space between rows</b> (your split of the one gap), each Default or 0 – 4 rem.</li>
+      <li><b>Rows tall</b>: a block covers N rows of the blocks beside it, still growing with its words; where the row stacks, it spans one.</li>
+    </ol>
+    <p>Final headed UAT in waves of six windows on one build, 0 failed; saved pages byte for byte; regression G-3c, G-3, G-2 all green.</p>
+  </div></details>
+
+  <details class="batch" open><summary>G-3c · The page's frame <span class="pill">added during the build</span> <span class="pill rec">shipped · closed 2026-10-05</span></summary><div class="bd">
+    <h4>Why it was added</h4>
+    <p>You saw in the Preview that the right and bottom margins were missing, and asked for one rem on every side ("do the frame now", G-3b parked).</p>
+    <h4>What shipped</h4>
+    <ol class="changes">
+      <li>The frame all round, from one emitter: <code>clamp(1rem, 1.6 × the fluid unit, 1.25rem)</code> on the page's top, bottom and sides — measured 16 px at Mobile and Tablet, 18.24 at Desktop, 20 at Wide. A coloured first / last section (or a picture) still reaches the edge; its words keep the frame inside.</li>
+      <li>A smaller default: <b>Side space (padding)</b> reads "Default · 1–1.25rem" and takes all four sides to 0 and back. It grows with the reader's text size.</li>
+    </ol>
+    <p>Headed UAT: six windows, 17 checks 0 failed, Preview at all 70 screens at 100 / 150 / 200 % text.</p>
+  </div></details>
+
+  <details class="batch" open><summary>G-3d · Three decisions from G-3b and D-3 <span class="pill new">next · queued</span></summary><div class="bd">
+    <h4>Changes (not built)</h4>
+    <ol class="changes">
+      <li>On a phone a lone half-width block takes the whole line, where its width came from a wider screen; a width set on the phone still wins.</li>
+      <li>A picture that is alone in a block spanning 2+ rows fills its height, cropped, never stretched — on by default, with a <b>Fill the block's height</b> switch in the picture's settings.</li>
+      <li>A 10 rem floor for every block of a row on a phone: the row stacks before a photo or sidebar gets narrower than that (measured: a ~100 px photo beside words at 375).</li>
+    </ol>
+  </div></details>
+
+
+  <details class="batch"><summary>G-4 · The Grid block, splits and purpose picks <span class="pill">add panel + inspector</span> <span class="pill new">next · queued</span></summary><div class="bd">
     <h4>Changes</h4>
     <ol class="changes">
       <li>Grid block mapped onto the page grid (12 divides → page lines; otherwise own columns inside the span).</li>
@@ -523,7 +592,7 @@ ul.check li::before{content:"";position:absolute;left:0;top:.3rem;width:.9rem;he
     </ul>
   </div></details>
 
-  <details class="batch"><summary>G-5 · Bleed, straddle and sticky <span class="pill">position</span></summary><div class="bd">
+  <details class="batch"><summary>G-5 · Bleed, straddle and sticky <span class="pill">position</span> <span class="pill new">next · queued</span></summary><div class="bd">
     <h4>Changes</h4>
     <ol class="changes">
       <li>Reaches: inside · left edge · right edge · both edges (full and half bleed).</li>
@@ -533,6 +602,7 @@ ul.check li::before{content:"";position:absolute;left:0;top:.3rem;width:.9rem;he
       <li>Page check warns when an overlap covers words.</li>
       <li>A gallery of ready-made placements (RULE S).</li>
     </ol>
+    <p><span class="pill">changed</span> Bleed and half-bleed shipped early, in G-3b. After R-4, G-5 is "layering": layer over in one cell + the covers-words warning, floating held by any corner, Cover, the floating fallback, "Overlap the items", scroll padding under a sticky header.</p>
     <h4>UAT checklist</h4>
     <ul class="check">
       <li>Each reach × band backgrounds (colour, photo, gradient) × next band × every rung.</li>
@@ -542,10 +612,10 @@ ul.check li::before{content:"";position:absolute;left:0;top:.3rem;width:.9rem;he
     </ul>
   </div></details>
 
-  <details class="batch"><summary>G-6 · Close-out <span class="pill">docs + sweep</span></summary><div class="bd">
+  <details class="batch"><summary>G-6 · Close-out <span class="pill">docs + sweep</span> <span class="pill new">next · queued</span></summary><div class="bd">
     <h4>Changes</h4>
     <ol class="changes">
-      <li>The page-grid chapter of <code>docs/guide/layout-story.md</code> (RULE L): "I want my photo to reach the edge", "three cards that line up with the hero", and so on.</li>
+      <li>The page-grid chapter of <code>docs/guide/layout-story.md</code> (RULE L): "I want my photo to reach the edge", "three cards that line up with the hero", and so on. <span class="pill rec">shipped · D-2 · D-3</span> §6¾ of <b>Layout — the story</b>, with pictures from the real builder, rendered by the documentation site.</li>
       <li>Website Builder Guide, Layout System and Builder Hub artifacts updated.</li>
       <li>The dressed sweep re-run, tier by tier, with page-grid pages added.</li>
       <li>Real-world pass: a low-cost Android webview (Chromium version vs <code>subgrid</code>), 360 px on Slow 3G.</li>
@@ -563,6 +633,7 @@ ul.check li::before{content:"";position:absolute;left:0;top:.3rem;width:.9rem;he
   <div class="approve" id="approve">
     <h2>Approved</h2>
     <p>Approved by you on 2026-10-04, with the decisions at the top of this page. Batch G-1 (the page grid in the engine) opens next in the task tree, with its full checklist written first.</p>
+    <p><span class="pill rec">built 2026-10-04 → 05</span> G-1, G-2, G-3, G-3b and G-3c are closed; G-3d is next. Learn it on the documentation site (<code>docs-site/</code>, <code>npm run docs:start</code>): <b>Layout — the story</b> §6¾ and <b>Layout — reference</b>.</p>
   </div>
 </div>
 
@@ -643,6 +714,6 @@ ul.check li::before{content:"";position:absolute;left:0;top:.3rem;width:.9rem;he
   const guides=bind('t-guides',on=>pages.forEach(p=>p.classList.toggle('on',on)));
   bind('t-rows',on=>pages.forEach(p=>p.querySelector('.guides').classList.toggle('norows',!on)));
   bind('t-pic',on=>pages.forEach(p=>{const s=p.querySelector('.hero-pic');s.style.setProperty('--po',on?'-1':'0');}));
-  document.addEventListener('keydown',e=>{if((e.key==='g'||e.key==='G')&&!e.ctrlKey&&!e.metaKey&&!e.altKey&&!/INPUT|TEXTAREA|SELECT/.test(e.target.tagName)){guides.click();}});
+  document.addEventListener('keydown',e=>{if((e.key==='g'||e.key==='G')&&e.shiftKey&&!e.ctrlKey&&!e.metaKey&&!e.altKey&&!/INPUT|TEXTAREA|SELECT/.test(e.target.tagName)){guides.click();}});
 })();
 </script>

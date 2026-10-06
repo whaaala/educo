@@ -200,3 +200,17 @@ describe("the component catalogue is the one source of truth", () => {
     expect(applyPresetVariant(card, "no-such-design")).toBe(card);
   });
 });
+
+describe("the palette's hints tell the truth (D3-33)", () => {
+  // The Accordion's hint read "54 designs" for weeks after its gallery became 29 designs × 6 axes — a count typed
+  // by hand outlives the list it counts. Every number of designs a hint states must be the gallery's own count.
+  it("a hint's design count is the gallery's count", async () => {
+    const { ACCORDION_DESIGN_COUNT } = await import("@/lib/educo-ui/accordions");
+    const counts: Record<string, number> = { accordion: ACCORDION_DESIGN_COUNT };
+    for (const e of COMPONENT_CATALOGUE) {
+      const n = /(\d+) designs/.exec(e.hint)?.[1];
+      if (n !== undefined) expect([e.name, Number(n)]).toEqual([e.name, counts[e.name]]);
+    }
+    expect(COMPONENT_CATALOGUE.find((e) => e.name === "accordion")?.hint).toContain(`${ACCORDION_DESIGN_COUNT} designs`);
+  });
+});
