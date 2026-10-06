@@ -1063,3 +1063,85 @@ describe("G3b-27 · on a stepped line a block's readable floor uses the margins 
     for (const [, ml, mr, fl, fr] of rules) expect([fl, fr]).toEqual([ml, mr]);
   });
 });
+
+describe("G-3d (3) · on a phone no block of a page row has columns narrower than 10rem (D3-31)", () => {
+  /** A row of the page from [kind, width] pairs — each a leaf block or, with `col`, a column holding it, as the panel drops them. */
+  const rowOf = (blocks: [string, string, boolean?][], marked = true) => {
+    const kids = blocks.map(([kind, width, col]) => (col ? createContainer("column", { width, children: [blockForKind(kind)] } as Partial<BoxNode>) : { ...blockForKind(kind), width } as BoxNode));
+    const root = { ...emptyPageRoot(), children: [makeRowBand(kids)] } as BoxNode; if (!marked) delete root.pageGrid;
+    return markPageGrid(normalizeRowBands(root)).children![0];
+  };
+  const across = (band: BoxNode, i: number, px: number) => fitStepAt(band, band.children![i].id, px / 16, px < 600 ? "phone" : "tabletPortrait") ?? band.children!.length;
+
+  it.each([true, false])("a photo 40 %% wide beside a paragraph goes under it at 375 (photo in a column: %s)", (col) => {
+    const band = rowOf([["text", "60%", col], ["image", "40%", col]]);
+    expect(across(band, 1, 375)).toBe(1);
+    // a leaf photo is beside again at the tablet rung; a photo in a COLUMN keeps the section's own 14rem floor there (G-1)
+    expect(across(band, 1, col ? 1280 : 600)).toBe(2);
+  });
+  it("a sidebar 30 % wide beside an article goes under it at 375", () => {
+    const band = rowOf([["text", "70%", true], ["text", "30%", true]]);
+    expect(across(band, 1, 375)).toBe(1);
+  });
+  it("four Stats stay two across at 360 and 340, one a line where two areas no longer hold 10rem each", () => {
+    const band = rowOf([["stat", "25%", true], ["stat", "25%", true], ["stat", "25%", true], ["stat", "25%", true]]);
+    expect([360, 340, 300].map((px) => across(band, 0, px))).toEqual([2, 2, 1]);
+  });
+  it("a strip of six logos: 2 across at 360, 3 at 480, all six from the tablet rung (any block, not only words)", () => {
+    const band = rowOf(Array.from({ length: 6 }, () => ["image", "16.6667%"] as [string, string]));
+    expect([360, 479, 480, 599, 600, 1280].map((px) => across(band, 0, px))).toEqual([2, 2, 3, 3, 6, 6]);
+  });
+  it("the floor never steps a row at the tablet rung or wider, however narrow its blocks", () => {
+    for (const n of [2, 3, 4, 6, 12]) {
+      const band = rowOf(Array.from({ length: n }, () => ["image", `${100 / n}%`] as [string, string]));
+      for (const g of rowNarrowsAt(band, true) ?? []) for (const s of g.steps) expect(s.below, `${n} blocks`).toBeLessThanOrEqual(600 / 16);
+    }
+  });
+  it("a page saved before the page grid: a photo beside a paragraph is left as it was", () => {
+    // measured: L-4's word step (8.4rem) stays; the floor would put it at 25rem. Six logos still have no step at all.
+    expect(rowNarrowsAt(rowOf([["text", "60%"], ["image", "40%"]], false), true)![0].steps.map((s) => s.below)).toEqual([8.4]);
+    expect(rowNarrowsAt(rowOf(Array.from({ length: 6 }, () => ["image", "16.6667%"] as [string, string]), false), true)).toBeNull();
+  });
+});
+
+describe("G-3d (1) · on a phone a block alone on its line takes the whole line, unless its width was set on the phone", () => {
+  // a row of ONE block is a flex band, already the whole line on a phone (`min-width:100%`); the case is a row of the page
+  // whose stored lines leave a block alone — the third of three halves
+  const pageOf = (widths: string[], edit?: (cols: BoxNode[]) => void) => {
+    const cols = widths.map((w) => createContainer("column", { width: w, children: [blockForKind("text")] } as Partial<BoxNode>));
+    edit?.(cols);
+    return markPageGrid(normalizeRowBands({ ...emptyPageRoot(), children: [makeRowBand(cols)] } as BoxNode));
+  };
+  const halves = (edit?: (c: BoxNode[]) => void) => pageOf(["50%", "50%", "50%"], edit);
+  const spanOn = (root: BoxNode, i: number, bp: Breakpoint) => { const band = root.children![0]; return pageRowCells(band, bp).get(band.children![i].id)!.span / pageRowTracks(band); };
+
+  it("the third of three halves: the whole line on the phone, still half on every wider screen", () => {
+    const r = halves(); expect(isPageRow(r.children![0])).toBe(true);
+    expect(spanOn(r, 2, "phone")).toBe(1);
+    for (const bp of ["tabletPortrait", "tabletLandscape", "base", "wide"] as Breakpoint[]) expect(spanOn(r, 2, bp), bp).toBe(0.5);
+  });
+  it("a gap brought down from the desktop goes too", () => {
+    const r = halves((c) => { c[2].marginLeftPct = 10; c[2].width = "40%"; });
+    expect(spanOn(r, 2, "phone")).toBe(1);
+    expect(pageRowCells(r.children![0], "phone").get(r.children![0].children![2].id)!.gapPct).toBe(0);
+  });
+  it("a width that came from the tablet is from a wider screen too: the whole line on the phone", () => {
+    const r = halves((c) => { c[2].responsive = { tabletPortrait: { width: "33.33%" } }; });
+    expect(spanOn(r, 2, "phone")).toBe(1);
+  });
+  it.each(["phone", "mobile"])("a width set on the phone itself (%s slot) wins there (G3b-11)", (slot) => {
+    const r = halves((c) => { c[2].responsive = { [slot]: { width: "50%" } }; });
+    expect(spanOn(r, 2, "phone")).toBe(0.5);
+  });
+  it("…and so does a gap set on the phone", () => {
+    const r = halves((c) => { c[2].responsive = { phone: { marginLeftPct: 25 } }; });
+    expect(spanOn(r, 2, "phone")).toBeLessThan(1);
+  });
+  it("the published page agrees: the lone block's phone rule spans every track, its tablet rule half", () => {
+    const r = halves(); const site = siteFromRoot(r); const band = r.children![0], T = pageRowTracks(band), id = band.children![2].id;
+    const html = renderSitePage(site, DEFAULT_THEME, site.homeId, { inlineShared: true });
+    const rules = [...html.matchAll(new RegExp(String.raw`[^{}]*${id}[^{}]*\{[^}]*grid-column:span (\d+)`, "g"))].map((m) => +m[1]);
+    expect(rules[0]).toBe(T); // the phone (mobile first: the unprefixed rule)
+    expect(rules).toContain(T / 2);
+  });
+});

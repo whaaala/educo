@@ -204,7 +204,7 @@ with **Back to default**. The default is never zero unless you set it to zero.*
 | **Describe this image** | The alt text for an Image block. Read aloud to users who cannot see it. |
 | **Load straight away** | Turns off lazy loading for an Image — use only for images at the very top of the page. |
 | **Show the whole picture (don't crop it)** | Ticked: the block takes the photograph's own proportions. Unticked: crops to the Height you set. |
-| **Fill the block's height** *(coming next, batch G-3d)* | For an Image alone in a block that spans 2 or more rows: the picture will fill the block's full height, cropped to its focal point. A switch, on by default. Not in the builder yet. |
+| **Fill the block's height** | Shown only for an Image that is the only thing in a block spanning 2 or more rows. On (the default): the picture fills the block's whole height, cropped from its centre, never stretched and never shorter than its own height. Off: it keeps its own height. Per screen, like **Rows tall**. |
 | **Bookmark** | An anchor name — the block can be linked to directly using `#bookmark`. |
 
 ---

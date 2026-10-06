@@ -505,6 +505,8 @@ export interface BoxNode {
   // `aspect-ratio`, so the box is reserved before the photo loads and the text beneath it never jumps.
   imgW?: number;
   imgH?: number;
+  // G-3d (2): a picture alone in a block spanning rows fills its height (`fillsRows`); stored only when switched off.
+  fillHeight?: false;
   icon?: string;          // lucide icon name (icon element)
   html?: string;          // raw HTML/iframe (embed element)
   listItems?: string[];   // list element items
@@ -3517,7 +3519,7 @@ export function rowNarrowsAt(band: BoxNode, onPage = false): { ids: string[]; st
     // a row of the page is a grid, which never wraps a block that is too narrow: every line of it steps (G-3b (4))
     if (n < 2 || (!(onPage && isPageRow(band)) && cols.filter(holdsWords).length < 2)) continue;
     const floorOf = (k: BoxNode) => { if (!gridRow || !isContainer(k) || k.clip || isEmptyBox(k)) return 0; const f = columnFloorRem(band, k, "base"); return f === HAND_FLOOR_REM ? 0 : f; };
-    const words = cols.map((k) => Math.max(longestWordRem(k), floorOf(k))); const word = Math.max(...words); if (!word) continue;
+    const words = cols.map((k) => Math.max(longestWordRem(k), floorOf(k))); const word = Math.max(...words); if (!word && !gridRow) continue;
     const share = (k: BoxNode) => (widthPct(k.width) || 100 / n) / 100;
     let needs = (k: number) => k * word + (k - 1) * gap;
     let atStart = Math.max(...cols.map((k, i) => words[i] / share(k))) + (n - 1) * gap;
@@ -3546,6 +3548,16 @@ export function rowNarrowsAt(band: BoxNode, onPage = false): { ids: string[]; st
       const solve = (f: (w: number) => number, from: number) => { let w = from; for (let i = 0; i < 12; i++) w = f(w); return w; };
       needs = (k: number) => solve((w) => k * Math.max(...cols.map((_, i) => minAt(i, w))) + (k - 1) * gapAt(w) + edgeAt(w), k * word + (k - 1) * gap);
       atStart = solve((w) => Math.max(...cols.map((k, i) => minAt(i, w) / share(k))) + (n - 1) * gapAt(w) + edgeAt(w), atStart);
+      /**
+       * G-3d (3), D3-31 (the user 2026-10-06: a floor for ANY block) — ON A PHONE NO BLOCK'S COLUMNS ARE NARROWER THAN 10rem. Words
+       * alone gave a photo or a sidebar no floor: ~100px of photo beside a paragraph at 375. Measured on the block's AREA (its
+       * share of the page's columns), not its drawn box: four Stats' boxes are 158px on a 360 phone, their areas 180px — two across,
+       * as the user asked. Only below the tablet rung, so a wider screen is never stepped by it.
+       */
+      const area = (rem: number) => Math.min(RUNG_PX.tabletPortrait / 16, rem);
+      const byWords = needs, startByWords = atStart;
+      needs = (k: number) => Math.max(byWords(k), area(k * BLOCK_FLOOR_REM));
+      atStart = Math.max(startByWords, area(Math.max(...cols.map((k) => BLOCK_FLOOR_REM / share(k)))));
     }
     const steps: { lines: number[]; below: number }[] = [];
     let wider = n; // the count across the line had before this step
@@ -3592,7 +3604,7 @@ export function rowQueryCss(band: BoxNode, cellScope: (id: string) => string, ab
           const k = byId.get(id)!;
           // …and a block spanning rows (G-3b (6)) spans one again: on a stepped line it has no neighbours beside it to span
           const ml = pageRowMargin(band, k, "left", j, across), mr = pageRowMargin(band, k, "right", j, across);
-          rules += `${cellScope(id)}{grid-column:span ${T / across} !important;${hasRowSpan(k) ? "grid-row:auto !important;" : ""}margin-left:${ml} !important;margin-right:${mr} !important${st.lines.length < ids.length ? ";min-width:min-content !important" : floorWith(band, k, ml, mr)}}`;
+          rules += `${cellScope(id)}{grid-column:span ${T / across} !important;${hasRowSpan(k) ? `grid-row:auto !important;${fillsRowsAnywhere(k) ? "--bx-fill:initial !important;" : ""}` : ""}margin-left:${ml} !important;margin-right:${mr} !important${st.lines.length < ids.length ? ";min-width:min-content !important" : floorWith(band, k, ml, mr)}}`;
         });
         i += across;
       }
@@ -4285,7 +4297,12 @@ export function hasIntrinsicSize(node: BoxNode): boolean {
  * The fixed height still wins whenever one is set — cropping to a deliberate shape is a design choice, and
  * `object-fit: cover` is what makes it look right.
  */
-export function imageSizing(node: BoxNode): { height: string; aspectRatio?: string } {
+export function imageSizing(node: BoxNode, fill = false): { height: string; aspectRatio?: string } {
+  const own = ownImageSizing(node);
+  // G-3d (2): where its block fills (`fillsRows`), `--bx-fill` is 100% on the picture's box; everywhere else its own height
+  return fill ? { ...own, height: `var(--bx-fill, ${own.height})` } : own;
+}
+function ownImageSizing(node: BoxNode): { height: string; aspectRatio?: string } {
   const explicit = sizeToCSS(node.height);
   if (explicit) return { height: explicit };
   // No height asked for. Take the photo's own shape if we know it; otherwise fall back to the letterbox,
@@ -4293,6 +4310,24 @@ export function imageSizing(node: BoxNode): { height: string; aspectRatio?: stri
   if (hasIntrinsicSize(node)) return { height: "auto", aspectRatio: `${node.imgW} / ${node.imgH}` };
   return { height: "16.25rem" }; // the letterbox, in rem — a stored pixel box for media breaks rule 16
 }
+
+/**
+ * G-3d (2), the user 2026-10-05 — A PICTURE FILLS A BLOCK THAT SPANS ROWS. A block on the page grid two or more rows tall that
+ * holds only a picture: the picture fills the block's height, cropped (`object-fit: cover`), never stretched, and never shorter
+ * than its own height. A block with words beside the picture keeps the picture's own height; "Fill the block's height" off
+ * (`fillHeight: false`) keeps it too. Read per screen, so where the block spans one row the picture is its own height again.
+ * ponytail: the crop is from the CENTRE (G3d-1, decided) — the focal point comes with the Image component, web and app.
+ */
+export function fillsRows(block: BoxNode, bp: Breakpoint = "base", evenIfOff = false): boolean {
+  const r = resolveResponsive(block, bp), sole = (n: BoxNode) => (n.children?.length === 1 ? n.children[0] : null);
+  // a block's content is always in row bands (`normalizeRowBands`): the picture is the only thing in its only band
+  let pic = sole(r); if (pic?.rowBand) pic = sole(pic);
+  return !!r.onPageGrid && (r.rowSpan ?? 1) >= 2 && pic?.type === "image" && (evenIfOff || resolveResponsive(pic, bp).fillHeight !== false);
+}
+/** Does the picture in `block` fill it on any screen — whether its height reads `--bx-fill` at all (saved pages keep their bytes). */
+export const fillsRowsAnywhere = (block: BoxNode | null | undefined) => !!block && BP_ORDER.some((bp) => fillsRows(block, bp));
+/** The block a picture would fill: the one around its row band, or its parent when it sits in it directly. */
+export const fillHostOf = (parent?: BoxNode | null, grand?: BoxNode | null) => (parent?.rowBand ? grand : parent);
 
 /** How long to wait for a decode before giving up and letting the picture through unmeasured. */
 export const MEASURE_TIMEOUT_MS = 8000;
@@ -4644,6 +4679,8 @@ export function allocateLine(own: number, room: number, followers: LineFollower[
  */
 export const REFLOW_FLOOR_REM = 14;
 export const HAND_FLOOR_REM = 3;
+/** G-3d (3): below the tablet rung no block of a page-grid row has columns narrower than this (`rowNarrowsAt`). */
+export const BLOCK_FLOOR_REM = 10;
 export const floorRemOf = (k: BoxNode) => (k.widthByHand ? HAND_FLOOR_REM : REFLOW_FLOOR_REM);
 
 export function packRowLines(kids: BoxNode[], minPct: number | ((k: BoxNode) => number) = 0): number[] {
@@ -5329,6 +5366,10 @@ function rowLinesAt(band: BoxNode, bp: Breakpoint): RowLineItem[][] {
     const left = Math.max(0, 100 - line.reduce((n, c) => n + c.gapPct + c.sharePct, 0));
     for (const c of free) c.sharePct = left / free.length;
   }
+  // G-3d (1), the user 2026-10-05: ON A PHONE A BLOCK ALONE ON ITS LINE TAKES THE WHOLE LINE — half of a 360 phone left ~165px of
+  // words beside a hole. Only a width (or gap) brought down from a wider screen: one set on the phone itself still wins (G3b-11).
+  const setOnPhone = (k: BoxNode) => RUNG_SLOTS.phone.some((s) => k.responsive?.[s]?.width !== undefined || k.responsive?.[s]?.marginLeftPct !== undefined);
+  if (bp === "phone") for (const line of out) if (line.length === 1 && !setOnPhone(kids.find((k) => k.id === line[0].id)!)) Object.assign(line[0], { gapPct: 0, sharePct: 100 });
   if (!kids.some((k) => rowsOf(k) > 1)) {
     for (const line of out) { let x = 0; for (const c of line) { c.x = x; x += c.gapPct + c.sharePct; } }
     return out;
@@ -6003,7 +6044,7 @@ export function hostSizedFor(node: BoxNode, inheritedHostSized: boolean, parent?
   return ownSize;
 }
 
-export function childStyle(child: BoxNode, parent: BoxNode, bp: Breakpoint = "base", hostSized = false): CSSProperties {
+export function childStyle(child: BoxNode, parent: BoxNode, bp: Breakpoint = "base", hostSized = false, grand?: BoxNode | null): CSSProperties {
   const s: CSSProperties = {};
   // A PAGE of a pager, and nothing else: no span, no offset, no order. Its width comes from the strip
   // (`grid-auto-columns: 100%`), so any stored `colSpan` from before the mode was turned on is ignored
@@ -6326,6 +6367,13 @@ export function childStyle(child: BoxNode, parent: BoxNode, bp: Breakpoint = "ba
   // A line of menu items is spaced by the block it sits in (`linkLineGap`) — the only one of the two you can select.
   const lg = linkLineGap(child, parent, bp); if (lg) Object.assign(s, lg);
   gutterCSS(s, child, parent, bp);
+  // G-3d (2): the band holding the picture grows down the block, the picture's box takes the band's height from its own height up
+  // (a height set by hand stays its minimum), and the picture follows its box (`imageSizing`). `grand`: the block around the band.
+  // `--bx-fill` is set on the BLOCK, so where the fit rule drops its span (`rowQueryCss`) it can take it back (G3d-11).
+  if (fillsRows(child, bp)) (s as Record<string, string>)["--bx-fill"] = "100%";
+  if (child.rowBand && fillsRows(parent, bp)) s.flex = "1 0 auto";
+  const host = fillHostOf(parent, grand), own = ownImageSizing(child).height;
+  if (child.type === "image" && host && fillsRows(host, bp)) Object.assign(s, parent.rowBand ? { alignSelf: "stretch", minHeight: own === "auto" ? undefined : own } : { flex: `1 0 ${own}` });
   return s;
 }
 

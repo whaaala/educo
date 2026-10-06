@@ -11,7 +11,7 @@
 import type { CSSProperties } from "react";
 import { PILL, dividerThickness, blockTypography,pinArrivalCss, pinArrivalKeyframes, floatHoldCSS,
   type BoxNode, type Breakpoint, type SectionFlag, BP_ORDER, containerStyle, childStyle, hostSizedFor, marginCSS, leafPaddingCSS, outerSpaceCSS, pageBandInset, pagePinCover, sectionContent, sizeToCSS, radiusCSS, SHADOW_CSS, u, LIST_ITEM_GAP, textLen, baseUnit, fadedPaint, boxOpacity, backgroundCss, paintLayerCss,
-  resolveResponsive, floatStacksOnMobile, floatingReserve, alertToastCss, accordionClasses, bandClasses, videoEmbedSrc, isContainer, sanitizeCssDeclarations, expandScopedCss, COMPONENT_PARTS, itemFloatContextCss, itemOverrideCss, itemNumberVars, richBody, plainBody, componentTextCss, componentBoxCss, renderAlertHTML, alertDismissScript, masonryMeasureAttr, masonryMeasureScript, pinStackMarker, pinStackGroupMarker, pinStackNeeded, pinStackScript, isPager, pagerNavHTML, pagerScript, pagerStripCss, pagerSlideId, bgShowThroughCss, blockContainmentCss, COMPONENT_ITEM_SEL, remLen, imageSizing, hasIntrinsicSize, itemNeedsClass, itemScope, floatZIndex, typoRole, typoRootVars, typoCascadeCss, bandEdgeCSS, LINK_COLOR_CSS, gridQueryCss, TYPE_UNIT_PROPERTY_CSS,
+  resolveResponsive, floatStacksOnMobile, floatingReserve, alertToastCss, accordionClasses, bandClasses, videoEmbedSrc, isContainer, sanitizeCssDeclarations, expandScopedCss, COMPONENT_PARTS, itemFloatContextCss, itemOverrideCss, itemNumberVars, richBody, plainBody, componentTextCss, componentBoxCss, renderAlertHTML, alertDismissScript, masonryMeasureAttr, masonryMeasureScript, pinStackMarker, pinStackGroupMarker, pinStackNeeded, pinStackScript, isPager, pagerNavHTML, pagerScript, pagerStripCss, pagerSlideId, bgShowThroughCss, blockContainmentCss, COMPONENT_ITEM_SEL, remLen, imageSizing, fillsRowsAnywhere, fillHostOf, hasIntrinsicSize, itemNeedsClass, itemScope, floatZIndex, typoRole, typoRootVars, typoCascadeCss, bandEdgeCSS, LINK_COLOR_CSS, gridQueryCss, TYPE_UNIT_PROPERTY_CSS,
 } from "@/lib/box-model";
 import { isRegistryComponent, renderComponent, componentScripts } from "@/lib/educo-ui/registry";
 import { iconSvg } from "@/lib/educo-ui/icon-svg";
@@ -131,7 +131,7 @@ export const SKIP_LINK_CSS = ".eu-skip{position:absolute;inset-inline-start:-999
   + ".eu-main-start{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}";
 
 /** Render a single element's inner HTML (its wrapper div is added by renderNode). */
-function elementHTML(node: BoxNode, theme: SiteTheme, pageMap: Map<string, string>): string {
+function elementHTML(node: BoxNode, theme: SiteTheme, pageMap: Map<string, string>, fill = false): string {
   // Emitted only when the block itself sets one — a hard-coded "left" is an explicit value, and an explicit
   // value on the child beats the alignment its container was told to have.
   const align = node.textAlign;
@@ -151,7 +151,7 @@ function elementHTML(node: BoxNode, theme: SiteTheme, pageMap: Map<string, strin
     // byte of the photo has arrived — without them the page reflows as each picture lands and the reader's
     // line of text jumps out from under them (Cumulative Layout Shift).
     case "image": {
-      const { height, aspectRatio } = imageSizing(node);
+      const { height, aspectRatio } = imageSizing(node, fill);
       /**
        * A PICTURE NOT UPLOADED YET KEEPS ITS PLACE (G3b-12, found by the user 2026-10-04: "are you sure the item added in the canvas is
        * actually showing?"). It published nothing, so its block was 0px tall in the Preview while the canvas drew it 368 × 159, and
@@ -415,7 +415,7 @@ function belowFloor(current: CSSProperties["minHeight"]): boolean {
 }
 
 /** The full style object for a node at a breakpoint — mirrors BoxCanvas's wrapStyle so editor == export. */
-function styleAt(node: BoxNode, rawParent: BoxNode | null, bp: Breakpoint, theme: SiteTheme, hostSized = false, section: SectionFlag = false, onPage = false): CSSProperties {
+function styleAt(node: BoxNode, rawParent: BoxNode | null, bp: Breakpoint, theme: SiteTheme, hostSized = false, section: SectionFlag = false, onPage = false, grand: BoxNode | null = null): CSSProperties {
   const r = resolveResponsive(node, bp);
   const parent = rawParent ? resolveResponsive(rawParent, bp) : null;
   const isRoot = rawParent === null;
@@ -441,7 +441,7 @@ function styleAt(node: BoxNode, rawParent: BoxNode | null, bp: Breakpoint, theme
       ? { position: "relative", width: "100%", height: "auto", minHeight: "auto", zIndex: "auto" } // full-width flow, grows with content
       // The PAGE ROOT publishes the theme's typography as the role defaults everything below inherits — which
       // is what lets a block stop hard-coding them and a section start overriding them.
-      : parent ? childStyle(r, parent, bp, hostSized) : { width: "100%", ["--box-u" as string]: baseUnit(r.baseFont ?? 10), ["--box-t" as string]: baseUnit(r.baseFont ?? 10), ...typoRootVars(theme) }),
+      : parent ? childStyle(r, parent, bp, hostSized, grand) : { width: "100%", ["--box-u" as string]: baseUnit(r.baseFont ?? 10), ["--box-t" as string]: baseUnit(r.baseFont ?? 10), ...typoRootVars(theme) }),
     // A CONTAINER hands its typography down to everything inside it (see typoCascadeCss).
     ...(isContainer(r) ? typoCascadeCss(r) : {}),
     ...(selfPaint ? {} : bgCss(r)), // background styles the block element (component/button), not this wrapper
@@ -522,7 +522,7 @@ function diffStyle(base: CSSProperties, bp: CSSProperties): string {
 }
 
 /** Render a node (and subtree) to HTML, pushing its base + per-breakpoint rules into `sheet`. */
-function renderNode(node: BoxNode, rawParent: BoxNode | null, theme: SiteTheme, pageMap: Map<string, string>, sheet: Sheet, isPageSection = false, hostSized = false, section: SectionFlag = false): string {
+function renderNode(node: BoxNode, rawParent: BoxNode | null, theme: SiteTheme, pageMap: Map<string, string>, sheet: Sheet, isPageSection = false, hostSized = false, section: SectionFlag = false, grand: BoxNode | null = null): string {
   const r = resolveResponsive(node, "base");
   if (r.hidden && !node.responsive) return ""; // hidden at base with no per-device un-hide → skip entirely
   const sem = SEM?.byId.get(node.id);
@@ -537,7 +537,7 @@ function renderNode(node: BoxNode, rawParent: BoxNode | null, theme: SiteTheme, 
   // Build UP: the phone layout is the unqualified rule and every wider rung adds only what CHANGES from the
   // rung below it. Diffing against the neighbour rather than the base is what keeps the sheet small — a rung
   // that changes nothing emits nothing at all.
-  const byRung = BP_ORDER.map((bp) => styleAt(node, rawParent, bp, theme, hostSized, section, isPageSection));
+  const byRung = BP_ORDER.map((bp) => styleAt(node, rawParent, bp, theme, hostSized, section, isPageSection, grand));
   sheet.rungs.phone.push(`.${cls}{${styleString(byRung[0], "sheet")}}`);
   sheet.overrides.push(...overridesByRung(node, cls));
   // Hover & focus (Interactions 1a) — the SAME emitter the canvas uses, so the builder shows exactly what a
@@ -587,7 +587,7 @@ function renderNode(node: BoxNode, rawParent: BoxNode | null, theme: SiteTheme, 
   if (isContainer(r)) {
     // Children of the PAGE ROOT (the only call with no parent) are the page's sections; nothing deeper is.
     const kidsAreSections = rawParent === null;
-    const kidList = (r.children ?? []).map((c) => renderNode(c, node, theme, pageMap, sheet, kidsAreSections, hostSizedFor(node, hostSized, rawParent), sectionContent(c, kidsAreSections, isPageSection && !!r.rowBand, r)));
+    const kidList = (r.children ?? []).map((c) => renderNode(c, node, theme, pageMap, sheet, kidsAreSections, hostSizedFor(node, hostSized, rawParent), sectionContent(c, kidsAreSections, isPageSection && !!r.rowBand, r), rawParent));
     // A1 — the AUTOMATIC <main>: the page's bands between its header and footer regions, wrapped without a box of its own.
     const mw = rawParent === null ? SEM?.mainWrap : null;
     const kids = mw
@@ -618,7 +618,7 @@ function renderNode(node: BoxNode, rawParent: BoxNode | null, theme: SiteTheme, 
     }
     return wrapLi(`<${el}${idAttr}${semAttr} class="${allCls}">${kids}</${el}>`);
   }
-  return wrapLi(`<${el}${idAttr}${semAttr} class="${allCls}">${elementHTML(r, theme, pageMap)}</${el}>`);
+  return wrapLi(`<${el}${idAttr}${semAttr} class="${allCls}">${elementHTML(r, theme, pageMap, fillsRowsAnywhere(fillHostOf(rawParent, grand)))}</${el}>`);
 }
 
 /** Turn the collected rules into a stylesheet: the phone layout first, then each wider screen adds to it. */

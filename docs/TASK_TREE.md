@@ -570,7 +570,7 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
   - `[x]` D3-32 · DECIDED BY THE USER 2026-10-06 ("yes, both"): the top bar is two rows (92px) from 1280 to 1440 → one row from 1280,
     labels collapsing to icons (tooltip + accessible name kept), the guard asserting one row at 1280; MOVED to BATCH E-3
   - GATE at the change-(1) commit: typecheck 0 · eslint 0 errors · vitest 4,370/4,370 · `test:fast` 807 passed (exit 0)
-- `[>]` **BATCH G-3d · Three decisions from G-3b and D-3** (NEXT — opens after D-3's commit) — QUEUED 2026-10-05 by the user ("yes to both"), change (3) added
+- `[x]` **BATCH G-3d · Three decisions from G-3b and D-3** — CLOSED 2026-10-06 (HEADED UAT `uat-g3d-headed.js` 91 / 0, regression G-3c 17 / 0 · G-3 65 / 0 · G-2 128 / 0, docs 36 / 0; gate below) — QUEUED 2026-10-05 by the user ("yes to both"), change (3) added
   2026-10-06 ("yes, both", D3-31) (area: page grid · 3 changes):
   - MAPPED 2026-10-06 (read-only, before BDD; file:line in `lib/box-model.ts` unless named) — the design each change follows:
     - (3) the fit rule is `rowNarrowsAt` (:3509): today only WORDS get a floor (`floorOf` 14rem :4703; an Image gets 0, and a row
@@ -596,15 +596,64 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
     has a focal point today (only backgrounds have a position, `bgPosition`; the exported `<img>` has no `object-position`, so every
     crop is centred). Either (a) the centre for now, marked `ponytail:` — the least code — or (b) a new "Focal point" control on
     every picture (nine-point, like a background's position), used by this crop and by every cropped picture
-  - `[ ]` (3) A FLOOR FOR EVERY BLOCK OF A ROW ON A PHONE (D3-31): the fit rule stacks a row on a phone when ANY of its blocks would
+  - `[x]` (3) DONE (`rowNarrowsAt`, `BLOCK_FLOOR_REM`; page-grid.test "G-3d (3)", 3 mutations red) — A FLOOR FOR EVERY BLOCK OF A ROW ON A PHONE (D3-31): the fit rule stacks a row on a phone when ANY of its blocks would
     get narrower than 10rem, not only its words — measured at 375: a ~100px photo beside a paragraph, a ~95px sidebar beside an
     article. Four Stats on a 360 phone (~165px each) stay two across. Then the story's §2 / §4 phone lines and tips are rewritten
-  - `[ ]` (1) ON A PHONE A LONE HALF-WIDTH BLOCK TAKES THE WHOLE LINE: where the fit rule stacks a row, a block alone on its line
+  - `[x]` (1) DONE (`rowLinesAt`; page-grid.test "G-3d (1)", 3 mutations red; a row of ONE block was already whole on a phone — the case is a block alone on its line in a page row) — ON A PHONE A LONE HALF-WIDTH BLOCK TAKES THE WHOLE LINE: where the fit rule stacks a row, a block alone on its line
     whose width came from a WIDER screen takes the line (~165px of words beside a hole on a 360px phone otherwise); a width set on the
     phone itself still wins (G3b-11)
-  - `[ ]` (2) A PICTURE FILLS A BLOCK THAT SPANS ROWS: when the picture is the only thing in a block that spans 2+ rows, it fills the
+  - `[x]` (2) DONE (`fillsRows` / `fillHostOf` / `--bx-fill`, `BoxNode.fillHeight`, the switch in Content; the tree is block → band → picture, so `childStyle` takes the block around the band; image-intrinsic "G-3d (2)" 6 mutations red, BoxInspector 2 red; G3d-11) — A PICTURE FILLS A BLOCK THAT SPANS ROWS: when the picture is the only thing in a block that spans 2+ rows, it fills the
     block's height, cropped (cover, its focal point), never stretched — on by default, a "Fill the block's height" switch in the
     picture's settings to turn it off (RULE UI); a block with words beside the picture keeps the picture's own height
+  HEADED UAT CHECKLIST (written 2026-10-06 before any code; six windows; a fresh production build; every row BUILT THROUGH THE UI;
+  the Preview at all 70 screens of `screens.js` at 100 / 150 / 200 % text; canvas == Preview; no sideways scroll, no overlap, no
+  broken word, at every line):
+  - `[x]` U1 SEEN (A1 / A2, canvas Mobile + Desktop, Preview 70 × 3): photo and sidebar under the words below 600, beside from 1200 — (3) ON: paragraph + 40 % photo → the photo under the words at every screen < 600 (375 measured); article + 30 % sidebar
+    → the sidebar under it; both side by side again from 600 up
+  - `[x]` U2 SEEN (B1 / B2): Stats 2 across at every screen < 600 (320 included); logos 2 / 3 / 6 at < 480 / < 600 / ≥ 600, canvas Tablet six across — (3) every block: four Stats (25 % each) two across at 360 and every phone ≥ 340 wide enough for 2 × 10rem, one a line
+    below; six logos → 2 across at 360, 3 across from 480 (3 × 10rem), 6 across from 600; never stepped by the floor at 600+
+  - `[x]` U3 SEEN (C): stacked at 375 as always, beside at 1280, no --bx-fill, byte-identical to 99c6c7b (G3d-3) — (3) OFF: a page saved before the page grid with paragraph + photo — Preview byte-identical to before (export string
+    compared) and the photo still beside at 375
+  - `[x]` U4 SEEN (D): Mobile 343 = 343 = 343 (the whole line), Tablet 352 of a 361 half, Desktop half; Preview 70 × 3 — (1) ON: a block set to 50 % at Desktop, alone on its row → the whole line on every phone, the frame at both edges;
+    still half at Tablet / Desktop / Wide
+  - `[x]` U5 SEEN (D): 156 of 343 on the phone, Undo 343, Redo + reload 156, Desktop half — (1) OFF: the same block set to 3 of 6 at Mobile → half the phone line; Undo → whole again; reload → kept
+  - `[x]` U6 SEEN (E × 4 themes): 147–581 = the block's inner bottom (own 249), cover; Preview 42 screens side by side, 39 grown — (2) ON: a photo alone in a block 2 rows tall beside two short blocks of words → the photo fills the block's height,
+    cropped (no stretch: its drawn aspect = the file's, object-fit cover), canvas == Preview where the row is side by side
+  - `[x]` U7 SEEN (E × 4): off → own height, Undo → fills, reload → off; Rows tall 1 → no switch; Mobile → own height; words under → no switch — (2) OFF + where it does not apply: "Fill the block's height" switched off → the picture's own height; Undo → on;
+    reload → kept; a 1-row block or a picture beside words → no switch shown; stacked on a phone → its own height
+  - `[x]` U8 SEEN (E × 4): named, Space toggles it, Light 7.56:1 (G3d-10) — the switch in the editor's four themes: labelled, ≥ 4.5:1, keyboard reachable (Tab + Space), a screen reader name
+  - `[x]` U9 SEEN on the same fresh build: G-3c 17 / 0 · G-3 65 / 0 · G-2 128 / 0 (`logs/g3d-regress-*.out`) — regression: G-3c, G-3 and G-2 headed suites re-run on the same build
+  - `[x]` U10 SEEN: story §2 / §4 / §6¾ (Rows tall, How a row steps) + the reference row + website-builder §8 rewritten; story-photo-beside-phone / story-sidebar-phone retaken (both now under the words, the whole width — looked at); docs:build [SUCCESS]; docs guard green; uat-d3-docs-headed 36 / 0 — docs: layout-story §2 / §4 / §6¾ and the reference row read true against what U1–U7 saw; the two phone shots retaken
+  LEDGER G-3d (session 2026-10-06, after 49087f08):
+  - `[x]` G3d-2 · TEST (mine): D wanted the lone third block the first's width to 1px — alone on its line it gives up a different part
+    of the side space (G3b-3: 361 vs 352px at Tablet) → the same share within 5 %
+  - `[x]` G3d-3 · TEST (mine): C wanted a saved page's photo BESIDE the words at 375 — saved pages always stacked on a phone (L-4) →
+    asserts stacked; BYTE-IDENTITY MEASURED: the UI-built saved page (`logs/uat-g3d/C-saved-site.json`) rendered by `99c6c7b` and by
+    this change: 32,164 bytes each, `cmp` identical
+  - `[x]` G3d-4 · TEST (mine): D's Preview check assumed the two halves stack below 600 (at 599 they fit side by side, 277px each) →
+    the third measured against the PAGE: the whole line below 600, ≤ 55 % from 600
+  - `[x]` G3d-5 · NOT A BUG, MEASURED (probe-g3d-fill.js): "the photo does not fill on the canvas" — with two-line words at 1280 the
+    photo (249px) was the tallest thing, so the rows followed it; the Preview chain shows picture 395 = band 395 > own 337 and the
+    stack 36px taller = its own 18px inner spacing. The check was wrong → G3d-9
+  - `[x]` G3d-6 · TEST (mine): the switch read 2.78:1 in Light — the probe walked up to no background and painted "transparent" as
+    black (gray-600 on black) → falls back to the page's white: 7.56:1 (G3d-10)
+  - `[x]` G3d-7 · TEST (mine): U5 compared the third with the first — a width set on the phone makes the fit rule stand aside for the
+    whole row (G3b-11), so the first changes too → against the third's own whole line: 156 of 343px (3 of 6 columns, less its
+    side space and half a gap); Undo 343 of 343; reload 156
+  - `[x]` G3d-8 · TEST (mine): "words added under the picture" compared a Desktop picture with its own height measured at Mobile →
+    both in the same state: switches 0 · 249 = own 249
+  - `[x]` G3d-9 · TEST (mine): "filled" was the neighbour's OUTER bottom (through the stack's spacing), on a canvas drawn at 0.61 with
+    unscaled padding, beside words shorter than the photo → the block's inner bottom × `data-canvas-scale`, words 4× longer, plus
+    "grew past its own height": 147–581 = inner 581 (own 249); Preview 42 side by side, 39 grown
+  - `[x]` G3d-10 · the G3d-6 fix (see above)
+  - `[x]` G3d-11 · REAL (mine), FOUND BY THE HEADED PASS: at 599 the fit rule steps the row and drops the photo's span (`grid-row:auto`,
+    a container query) but the photo still filled — 301px beside a tall paragraph against its own 184 → `--bx-fill` moved onto the
+    BLOCK and the stepped rule sets `--bx-fill:initial` where it drops a span, so the picture falls back to its own height on canvas
+    and export alike (one rule). Guard: image-intrinsic "G3d-11", red without it
+  - HEADED UAT `scripts/uat/uat-g3d-headed.js` (six windows, a pool that refills): run 1 91 checks / 23 failed (the lines above);
+    run 3 on the rebuilt fresh build: **91 checks, 0 failed** (`logs/g3d-uat3.out`), Preview at all 70 screens × 100 / 150 / 200 %
+  - `[x]` G3d-12 · MINE, CAUGHT BY THE GATE: an unused `w` in the UAT script's E callback (eslint error) → removed; eslint 0 errors
+  - GATE at the close: typecheck 0 · eslint 0 errors (105 warnings, none new) · vitest 4,400 / 4,400 · `test:fast` 807 passed (exit 0)
 - `[ ]` **BATCH E-2 · Resizing and dropping on tablets and phones** — QUEUED 2026-10-05 by the user ("split by area", E1-5) (area: the
   editor's gestures at small viewports · the failing specs, each measured: a spec that assumes the desktop, or a real bug — fixed
   either way): grid-cell-resize 13 · vertical-edges-anchored 7 · side-by-side-resize 6 · stack-under-column 4 · float-round-trip 3 ·
@@ -2901,7 +2950,7 @@ sent), and my research. Nothing on the layout is done until every line here is c
     falls back into the flow unless placed at that rung; the page audit and Page check warn when it covers words;
     shown as drag on the canvas with the half-lines drawn, a Position panel (start / end, column / row, spill above /
     below) and a gallery of ready-made placements (RULE S / UI). Joins AC-10, ST-5, AC-35 — one build
-    - `[>]` AC-37b ← YOU ARE HERE (NOW: BATCH G-3d in BATCHES — BDD first, then its three changes; handover of session 49087f08 in the SESSION LOG; D-3 CLOSED 2026-10-06 (both changes). Before that: handover of session ff5dbc77 in the SESSION LOG; D-2 and D-3 (1) CLOSED 2026-10-06. Earlier: handover of session 22981e0a; BATCH G-3b and BATCH E-1 CLOSED 2026-10-05; MERGE DECIDED by the user 2026-10-05: `builder/layout-uat` pushed, the user opens and merges the pull request, then the branch is deleted and `builder/page-grid` cut from master; next there: BATCH D-2 (the Docusaurus site + the layout documented from the beginning, RULE DOCS), then BATCH G-3d (the user's two decisions), then BATCH E-2 (resizing and dropping on tablets and phones); before the PR: the artifacts and the layout story for the page grid; then its final pass, then BATCH E-1; handover of session 3da81fad in the SESSION LOG; earlier: handover of session 5da86722 in the SESSION LOG — G-3 CLOSED 2026-10-04 (63 headed checks, G3-8 carried to G-3b by the user); earlier: BATCH G-3 · placing on columns AND rows — G-2 CLOSED 2026-10-04 (134 headed checks); P-0 CLOSED 2026-10-04 (R4-1 … R4-5 fixed, 30 headed checks); R-4 SIGNED with D1–D5 (session 9fa0fee9); then G-3, P-1, P-2, G-4, P-3, G-5, G-6. G-1 CLOSED 2026-10-04 (see BATCHES). Plan APPROVED 2026-10-04 with the user's decisions below. Earlier: research R-3 DONE and SIGNED 2026-10-04
+    - `[>]` AC-37b ← YOU ARE HERE (NOW: BATCH G-3d CLOSED 2026-10-06 — `builder/page-grid` is complete (G-1 … G-3d + D-2 / D-3): push it and open its pull request (the user's go), merge, delete the branch, then BATCH E-2 on `builder/editor-small-screens` cut from the fresh master, then E-3 → E-4. Before that: BATCH G-3d (three changes); handover of session 49087f08 in the SESSION LOG; D-3 CLOSED 2026-10-06 (both changes). Before that: handover of session ff5dbc77 in the SESSION LOG; D-2 and D-3 (1) CLOSED 2026-10-06. Earlier: handover of session 22981e0a; BATCH G-3b and BATCH E-1 CLOSED 2026-10-05; MERGE DECIDED by the user 2026-10-05: `builder/layout-uat` pushed, the user opens and merges the pull request, then the branch is deleted and `builder/page-grid` cut from master; next there: BATCH D-2 (the Docusaurus site + the layout documented from the beginning, RULE DOCS), then BATCH G-3d (the user's two decisions), then BATCH E-2 (resizing and dropping on tablets and phones); before the PR: the artifacts and the layout story for the page grid; then its final pass, then BATCH E-1; handover of session 3da81fad in the SESSION LOG; earlier: handover of session 5da86722 in the SESSION LOG — G-3 CLOSED 2026-10-04 (63 headed checks, G3-8 carried to G-3b by the user); earlier: BATCH G-3 · placing on columns AND rows — G-2 CLOSED 2026-10-04 (134 headed checks); P-0 CLOSED 2026-10-04 (R4-1 … R4-5 fixed, 30 headed checks); R-4 SIGNED with D1–D5 (session 9fa0fee9); then G-3, P-1, P-2, G-4, P-3, G-5, G-6. G-1 CLOSED 2026-10-04 (see BATCHES). Plan APPROVED 2026-10-04 with the user's decisions below. Earlier: research R-3 DONE and SIGNED 2026-10-04
       (`ff5c53a`, `4418202`); build to every decision recorded under R-3 below; the mockups settle the open three (row
       snap · the phone gap 11 vs 16 px · panel per site or per page) → the user's approval → build) · **THE PAGE GRID — DECIDED by the user 2026-10-03: done RIGHT AFTER L-4 closes, BEFORE L-5, L-6 and the
       frozen list's placement items** (they are built on it). NAMES (decided): "page grid" in code and docs; the lines a

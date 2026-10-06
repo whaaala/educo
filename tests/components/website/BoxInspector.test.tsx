@@ -982,3 +982,25 @@ describe("G3c-10 · a size or a space says what it really is, phone → wide (th
     expect(screen.queryByText("1rem")).toBeNull();
   });
 });
+
+describe("BoxInspector — G-3d (2) \"Fill the block's height\" (only where it does something)", () => {
+  const photo = () => createElement("image", { id: "i", src: "data:image/png;base64,AA==", imgW: 800, imgH: 600 } as Partial<BoxNode>);
+  const name = /Fill the block's height/;
+  it("is absent when the page says it does not apply", () => {
+    renderFor(photo()); openContent();
+    expect(screen.queryByRole("checkbox", { name })).toBeNull();
+    cleanup();
+  });
+  it("shown on: switching it off stores false; shown off: on clears it", () => {
+    const onPatch = renderFor(photo(), { fillHeight: { on: true } }); openContent();
+    const box = screen.getByRole("checkbox", { name });
+    expect(box).toBeChecked();
+    fireEvent.click(box);
+    expect(onPatch).toHaveBeenLastCalledWith({ fillHeight: false });
+    cleanup();
+    const onPatch2 = renderFor(photo(), { fillHeight: { on: false } }); openContent();
+    fireEvent.click(screen.getByRole("checkbox", { name }));
+    expect(onPatch2).toHaveBeenLastCalledWith({ fillHeight: undefined });
+    cleanup();
+  });
+});

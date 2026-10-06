@@ -18,7 +18,7 @@ import {
   floatBox, unfloatBox, bringToFront, bringForward, sendBackward, sendToBack,
   resolveResponsive, updateBoxResponsive, clearOverride, hasOverride,
   gridColumns, retrackGrid, setColumnFraction, pinBlockedBy, fixedBlockedBy, blockedByLabel, pinScopeWords, isFloating,
-  isSectionContentIn, sectionPlaceIn, paletteClickSlot, outerSpaceDefaults, spanAt, setSpan, lineUpWithGrid, linesAt, setLinesAt, fullWidthAt, setFreeInset, fitStepAt,
+  isSectionContentIn, sectionPlaceIn, paletteClickSlot, outerSpaceDefaults, spanAt, setSpan, lineUpWithGrid, linesAt, setLinesAt, fullWidthAt, setFreeInset, fitStepAt, fillsRows, fillHostOf,
 } from "@/lib/box-model";
 import { blockForKind } from "@/lib/box-presets";
 import {
@@ -1289,6 +1289,7 @@ export default function BoxDemoPage() {
                 <BulkInspector sampleSection={isSectionContentIn(root, selectedIds[0])} count={selectedIds.length} theme={renderTheme} sample={(() => { const f = findBox(root, selectedIds[0]); return f ? resolveResponsive(f, bp) : null; })()} onStepWidth={bulkStepWidth} onStepHeight={bulkStepHeight} onPatch={bulkPatch} onDuplicate={bulkDuplicate} onDelete={bulkDelete} onFloatAll={bulkFloat} onGroup={bulkGroup} />
               ) : selected ? (
                 <BoxInspector section={isSectionContentIn(root, selected.id)} sectionPlace={sectionPlaceIn(root, selected.id)} outerDefault={outerSpaceDefaults(root, selected.id)}
+                  fillHeight={(() => { const p = fillHostOf(parentGrid, parentGrid && findParent(root, parentGrid.id)?.parent); return selected.type === "image" && p && fillsRows(p, bp, true) ? { on: resolveResponsive(selected, bp).fillHeight !== false } : undefined; })()}
                   pageSpan={(() => { const c = columnsAt(gridHere, bp), v = spanAt(root, selected.id, c, bp); return v === null ? undefined : { value: v, cols: c }; })()}
                   rowStepRem={root.pageGrid ? gridHere.rowStepRem ?? 1.5 : undefined}
                   onSetSpan={(n) => commit(setSpan(root, selected.id, n, columnsAt(gridHere, bp), bp), `span:${selected.id}`)}

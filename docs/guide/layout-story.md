@@ -56,15 +56,17 @@ Now the screens:
 
 - **Desktop and laptop:** 60 / 40, as she set it.
 - **Tablet:** still 60 / 40 — two columns fit comfortably.
-- **Phone:** the two stay side by side **as long as the words keep room to read** — about 14rem (224px). On a 375px
-  phone her paragraph keeps about 240px and the photo shrinks beside it. Where the words would get less than that, the
-  photo drops under the words and each takes the full width. (Pages saved before the page grid always stack on a phone.)
+- **Phone:** the two stay side by side only while **both keep room**: the words about 14rem (224px) to read, and **every
+  block — the photo too — at least 10rem (160px) of the page's columns**. At 60 / 40 on a 375px phone the photo's
+  columns would be 150px, so it drops under the words and each takes the full width. (Pages saved before the page grid
+  always stack on a phone.)
 
-[![The published page on a 375px phone: the paragraph on the left, still readable, the photo smaller on its right](img/story-photo-beside-phone.webp)](img/story-photo-beside-phone.webp)
+[![The published page on a 375px phone: the paragraph across the whole width, and the photo under it, also the whole width](img/story-photo-beside-phone.webp)](img/story-photo-beside-phone.webp)
 
-:::tip[Want the photo under the words on a phone?]
-Switch the device chip to **Mobile**, select the photo and choose **Whole line** in Design → Size. That applies from the
-phone size down and nowhere else.
+:::tip[Want the photo beside the words on a phone anyway?]
+Switch the device chip to **Mobile**, select each block and set its lines in Design → Size (**From line** / **To
+line**). A width you set on the phone itself always wins there, so the row is drawn exactly as you set it. If the words
+then get too tight, **Page check** says so.
 :::
 
 She did not set anything for the phone. Everything she changes at the Mobile chip applies from the phone size down
@@ -112,14 +114,15 @@ sidebar → Design → Placement → *Sticks when reached*, so it stays on scree
 [![The editor on a desktop: the term-dates article on the left, "In this section" on the right, selected, with the Inspector showing Sticks when reached](img/story-sidebar-desktop.webp)](img/story-sidebar-desktop.webp)
 
 - **Desktop, laptop, tablet landscape:** article and sidebar side by side, the sidebar holding its place as you scroll.
-- **Phone:** like the photo in §2, the sidebar stays beside the article while both keep room for their words. Her
-  sidebar's short links fit, so on a 375px phone it stays on the right, narrow.
+- **Phone:** like the photo in §2, every block of a row keeps at least 10rem (160px) of the page's columns on a phone.
+  Her sidebar is 30 % — about 112px on a 375px phone — so it goes under the article, the full width, where its links
+  are easy to tap.
 
-[![The published page on a 375px phone: the article on the left, the narrow "In this section" list on its right](img/story-sidebar-phone.webp)](img/story-sidebar-phone.webp)
+[![The published page on a 375px phone: the article across the whole width, and "In this section" under it](img/story-sidebar-phone.webp)](img/story-sidebar-phone.webp)
 
-:::tip[A sidebar under the article on a phone]
-At the **Mobile** chip, select the sidebar and choose **Whole line** in Design → Size: from the phone size down it
-goes under the article, full width.
+:::tip[A sidebar beside the article on a phone]
+At the **Mobile** chip, set both blocks' lines in Design → Size (**From line** / **To line**). A width set on the phone
+itself wins there; **Page check** warns if the words become too tight.
 :::
 
 Two things she marks under *Meaning*: the article column as **Main content**, the sidebar as **Sidebar**. That is what
@@ -292,12 +295,16 @@ Each has a **Back to default** button.
 A block in a page-grid row can be set to span multiple rows. Select it, go to **Size** → **Rows tall**, and pick 2
 (or more). The block covers two row-heights; the blocks beside it each get their own row.
 
-Where Maya has a gallery photo beside two short paragraphs, she sets the photo to "Rows tall 2". The photo covers the
-height of both paragraph rows; the paragraphs sit one per row beside it. The photo's height still grows with its
-words if any are inside — it doesn't force a fixed height.
+Where Maya has a gallery photo beside two paragraphs, she sets the photo's block to "Rows tall 2". The block covers the
+height of both paragraph rows; the paragraphs sit one per row beside it. **When the picture is the only thing in that
+block, it fills the block's whole height** — cropped from its centre, never stretched, and never shorter than its own
+height. She can turn that off: select the picture → **Content** → **Fill the block's height**; then the picture keeps
+its own height and the rest of the block is empty space. The switch only appears where it does something: a block
+that spans one row, or a picture with words beside it in the same block, keeps the picture's own height.
 
 **On a screen where the fit rule stacks the row** (words too tight to fit side by side), the span is automatically
-dropped — the photo and the paragraphs each take their own line, the same as without the span.
+dropped — the photo and the paragraphs each take their own line, the same as without the span, and the photo is its
+own height again.
 
 ### The frame
 
@@ -322,9 +329,15 @@ keeping a readable word. When that minimum is wider than a single column, the bu
 The stacking is always **even**: four become **2 + 2**, six become **3 + 3**, never five with one alone at the
 bottom. Short words (stats, icons, tags) fit more across; long words step sooner.
 
-**What about a lone half-width block on a phone?** Today a block set to half the page on Desktop keeps that half when it
-ends up alone on its phone row, with a space beside it. *Coming next (batch G-3d):* it will take the whole line, and a
-width you set on the phone itself will still win.
+**Every block keeps room on a phone.** Below the tablet size (600px) no block of a row is given less than 10rem
+(160px) of the page's columns — a photo, a sidebar, a logo, not only words. So a 40 % photo beside a paragraph goes under
+it on a 375px phone, four Stats stay two across on a 360px phone (each has 180px of columns), and a strip of six logos
+goes 2 across on a phone, 3 across from 480px and all six from 600px. On a tablet or wider the floor never moves a row.
+
+**A block alone on its line takes the whole line on a phone.** Three blocks each half the page sit two on the first line
+and one on the second; on a phone that third block spans the whole line instead of half of it with a hole beside it. On
+a tablet and wider it is still half. A width you set at the **Mobile** chip itself still wins: set its **To line** there
+and it keeps that width on the phone.
 
 ### "The page uses its space" — nothing left empty that nobody chose
 

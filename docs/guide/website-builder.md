@@ -308,7 +308,7 @@ The builder is responsive by design, and you can fine‑tune per size.
 
 1. Use the **device switcher** (top‑right) to view **Mobile (375)**, **Tablet (768)**, **Laptop (1024)**, **Desktop (1280)**, **Wide (1920)** or **Full width**.
 2. At **Desktop** or **Full width** you edit the base design. At **Mobile**, **Tablet** or **Laptop** your edit applies to that screen and the narrower ones. **Wide** branches off: what you set there stays on big screens and reaches no other.
-3. On a narrow screen a row stays side by side while every block's words keep about 14rem; when they would not, it stacks. Nothing forces a horizontal scrollbar. (Pages saved before 4 October 2026 always stack on a phone.)
+3. On a narrow screen a row stays side by side while every block's words keep about 14rem and, on a phone, every block keeps at least 10rem of the page's columns; when they would not, it stacks. A block left alone on its line takes the whole line on a phone. Nothing forces a horizontal scrollbar. (Pages saved before 4 October 2026 always stack on a phone.)
 
 The full list of chips, and which controls change per screen, is in the reference: [How controls change per screen](./layout-reference.md#how-controls-change-per-screen). How a row behaves on a phone is told in [the story, §2](./layout-story.md#2-i-want-a-photo-beside-my-words) and [§3](./layout-story.md#3-three-cards-across-that-stack-on-a-phone).
 
@@ -762,7 +762,8 @@ Your page is published as proper HTML5, however you built it — you do not need
   [§3](./layout-story.md#3-three-cards-across-that-stack-on-a-phone) (rows and grids on smaller screens),
   [§5](./layout-story.md#5-sizing-by-hand--and-the-one-pixel-of-slack) (sizing by hand) and
   [§6¾](./layout-story.md#6-the-whole-page-is-mine--the-page-grid) (the page grid). In short: a row stays side by side
-  while every block's words keep about 14rem; when they would not, it stacks. Rows of four or more stay one row on a
+  while every block's words keep about 14rem — and, on a phone, every block (a photo or a logo too) at least 10rem of the
+  page's columns; when they would not, it stacks. Rows of four or more stay one row on a
   desktop unless their words would not fit (six Stats beside a sidebar go 3 + 3). Pages saved before 4 October 2026
   always stack on a phone.
 - **Widening a block never makes it jump.** Pull it until its neighbour no longer fits, and the neighbour moves to the
