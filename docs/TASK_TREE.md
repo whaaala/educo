@@ -973,7 +973,34 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
   under or into another. RULE RS FIRST: the user's sources and mine (how phone editors — Wix, Canva, Webflow, Framer — add and place
   blocks: a bottom sheet that leaves the page showing, tap-to-place, a placement target after picking), an "enough" checklist the
   user signs, THEN the build
-  - `[ ]` (1) the research and its signed "enough" checklist
+  - `[>]` (1) the research and its signed "enough" checklist — stored in `docs/web-anatomy/phone-editing.md` (extends
+    `editor-zoom.md` and the touch floor in `components.md`, never redoes them)
+    - `[>]` (1a) THE USER'S SOURCES (2026-10-06), each read completely with its on-topic links (RULE R):
+      https://support.wix.com/en/article/wix-editor-getting-started-with-the-mobile-editor ·
+      https://help.one.com/hc/en-us/articles/360002274197-Using-the-Mobile-view-editor-in-Website-Builder
+    - `[>]` (1b) MY OWN, in parallel: editing ON a phone in Canva · Squarespace · Webflow · Framer · Google Sites · Shopify · WordPress ·
+      Carrd · Notion · the Wix app; WCAG 2.5.8 / 2.5.5, Apple HIG, Material touch targets; the pattern catalogue
+    - `[x]` (1a) and (1b) READ 2026-10-06 — 31 + 50 pages, combined in `docs/web-anatomy/phone-editing.md` (§7 completeness)
+    - `[ ]` (1a-open) the user's sources' on-topic links NOT yet read (RULE R): Wix browser-theme-colour · new quick action bar
+      (switching / managing / customizing) · shape dividers on mobile · mobile-menu characters · drop-down arrow colour · supported
+      browsers · Wix Owner app overview — peripheral to building on a phone; read before E-5's build closes
+    - `[>]` (1c) THE "ENOUGH" CHECKLIST (RULE MAP, `phone-editing.md` §5) — WAITING ON THE USER'S SIGNATURE:
+      - `[x]` the two meanings of "mobile editing" separated: A (a desktop tool for the phone layout — we have it: the rungs) vs
+        B (editing ON a phone — E-5)
+      - `[x]` axis 1 what the phone canvas shows — zoomed desktop (ours) · the phone's own width 1:1 · + pinch — who and how
+      - `[x]` axis 2 what a phone may change — content only · + order and hide · full building — who and how
+      - `[x]` axis 3 which rung an edit lands on — content everywhere, layout on the phone only (our cascade already does it)
+      - `[x]` axis 4 the picker — bottom sheet (partial, search, Close, Back) · full screen · list
+      - `[x]` axis 5 where a new block goes — after the selection · Before / After / Inside / Start / End · "Add block here" in an
+        empty box · at the end · in a list
+      - `[x]` axis 6 moving — arrows (+ to top / bottom, ← → in a row) · long-press drag (chip, insertion line, auto-scroll)
+      - `[x]` axis 7 selecting and settings — tap, contextual toolbar, settings sheet, plain questions
+      - `[x]` axis 8 resizing — none · presets · handles
+      - `[x]` axis 9 finger floor — 24px AA (spaced) · 44px AAA / Apple · 48dp Android · edges 10–12mm, centre most accurate
+      - `[x]` axis 10 the non-drag route for every drag (WCAG 2.5.7)
+      - `[ ]` GAPS, carried to the build: a TABLET (768 / 1024) between phone and desktop · Canva's phone gestures (did not load) ·
+        Webflow's own page (403) · a real low-cost Android (RULE AF) measured once built · teachers using it (the pilot, RULE RK)
+      - `[?]` THE USER'S DECISIONS (my recommendation first in each): D1 canvas · D2 scope · D3 add · D4 move · D5 resize · D6 floor
   - `[ ]` (2) the build the research settles on, web phone first, then `apps/mobile/` (RULE APP)
   - `[ ]` E4-9 (from BATCH E-4): the drop strips are 25 % of a block's DRAWN height — 9px on a 37px block at the phone's 0.22 canvas.
     Is that enough for a finger? The research answers it with the rest of placing on a phone.
