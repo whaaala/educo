@@ -808,35 +808,74 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
     hint covers it and the click opened "Add inside" ("could not select") → a quarter in, as grid-cell-resize already did
   - `[x]` E2-6 · phone only, 25 lines (grid-cell height ×4 · side-by-side ×6 · stack-under-column ×4 · vertical edges ×5 ·
     dropped-block :78 · float :156 …) — not yet measured (the phone's 10rem floor stepping the row, by G-3d's design?)
-- `[>]` **BATCH E-3 · The Inspector's controls on a narrow screen** — OPEN (next, after E-2 closed 2026-10-06) — QUEUED 2026-10-05 by the user (E1-5): spacing-gestures 12 ·
+- `[x]` **BATCH E-3 · The Inspector's controls on a narrow screen** — CLOSED 2026-10-06 (HEADED UAT `scripts/uat/uat-e3-headed.js`, six windows, **297 checks 0 failed** (`logs/e3-uat2.out`), Preview at all 70 screens × 100 / 150 / 200 % text; gate: typecheck 0 · eslint 0 errors (105 warnings, none new) · vitest 4,409 / 4,409 · `test:fast` 815 / 815 · `docs:build` SUCCESS; the four specs + builder-chrome-fits + the two that share `openInspector` 216 / 216 on all four projects; ledger E3-1 … E3-11 — E3-3 is the user's question) — QUEUED 2026-10-05 by the user (E1-5): spacing-gestures 12 ·
   masonry-builder 10 · canvas-zoom 3 · text-is-reachable 1 (26)
-  - `[ ]` THE TOP BAR IS ONE ROW FROM 1280 (D3-32, the user 2026-10-06 "yes, both"): measured 92px (two rows) at 1280 / 1366 / 1440,
+  - `[x]` THE TOP BAR IS ONE ROW FROM 1280 (D3-32, DONE: icons below 1600, the right-hand labels from 1800 — measured one row at every 20px from 1280 to 1920, E3-7; the user 2026-10-06 "yes, both"): measured 92px (two rows) at 1280 / 1366 / 1440,
     one row needs ~1480 → below that, Page check · Preview · Export · Reset and the "Add a band" text collapse to icons (tooltip and
     accessible name kept); `builder-chrome-fits.spec.ts` asserts one row at 1280 (its comment already says a wrap there is a regression)
   HEADED UAT CHECKLIST (written 2026-10-06 before the measuring; six windows, a pool that refills; fresh production build; built
   through the UI on tablet landscape 1024 × 768 · tablet portrait 768 × 1024 · phone 393 × 851, touch on, Inspector opened from its
   tab; the desktop 1280 · 1366 · 1536 for U7; the four themes rotated; Preview at all 70 screens):
-  - `[ ]` U1 spacing: a block's spacing slider swept, then across / down given their own value and handed back — the canvas shows each
+  - `[x]` U1 (SEEN 2026-10-06, `uat-e3-headed.js` 297 / 0) spacing: a block's spacing slider swept, then across / down given their own value and handed back — the canvas shows each
     step as it moves, ONE Undo takes back the whole sweep, Ctrl+Z works with the slider still focused, two different controls are
     two Undos — each screen
-  - `[ ]` U2 masonry: a grid of pictures → Arrange → "Follow the picture" staggers the canvas, Rows tall / Start at row are gone inside
+  - `[x]` U2 (SEEN 2026-10-06, `uat-e3-headed.js` 297 / 0) masonry: a grid of pictures → Arrange → "Follow the picture" staggers the canvas, Rows tall / Start at row are gone inside
     it, "Even" puts every pixel back; the editor's gaps equal the Preview's at that screen — each screen
-  - `[ ]` U3 the device chip: the page column drawn in the editor is the one the chip asks for; every icon-only toolbar button has a
+  - `[x]` U3 (SEEN 2026-10-06, `uat-e3-headed.js` 297 / 0) the device chip: the page column drawn in the editor is the one the chip asks for; every icon-only toolbar button has a
     name a screen reader says and a tooltip — each screen
-  - `[ ]` U4 zoom: − / + step from Fit and stop at 25 % / 400 %; the shortcuts act only with the pointer on the canvas; Ctrl + scroll
+  - `[x]` U4 (SEEN 2026-10-06, `uat-e3-headed.js` 297 / 0) zoom: − / + step from Fit and stop at 25 % / 400 %; the shortcuts act only with the pointer on the canvas; Ctrl + scroll
     zooms round the pointer, the plain wheel scrolls; Space + drag pans; an edge dragged at 200 % stores what it would at 100 %;
     the zoom is kept per device after a reload — each screen (pinch where touch is the only way)
-  - `[ ]` U5 words: a Heading / Text is reached by a tap anywhere across its words, typing lands where tapped (start of the line,
+  - `[x]` U5 (SEEN 2026-10-06, `uat-e3-headed.js` 297 / 0) words: a Heading / Text is reached by a tap anywhere across its words, typing lands where tapped (start of the line,
     the end), Enter / F2 / a letter on a selected block begins editing, a real drag on its handle still resizes with the far edge
     fixed — each screen
-  - `[ ]` U6 the blocks launcher sits beside the page, never on it — each screen
-  - `[ ]` U7 the top bar (D3-32): ONE row at 1280 · 1366 · 1440 · 1536 and 1920; below ~1480 Page check · Preview · Export · Reset and
+  - `[x]` U6 (SEEN 2026-10-06, `uat-e3-headed.js` 297 / 0) the blocks launcher sits beside the page, never on it — each screen
+  - `[x]` U7 (SEEN 2026-10-06, `uat-e3-headed.js` 297 / 0) the top bar (D3-32): ONE row at 1280 · 1366 · 1440 · 1536 and 1920; below ~1480 Page check · Preview · Export · Reset and
     "Add a band" are icons with a tooltip and the same accessible name, each still does its job (click + keyboard); nothing off
     screen from 375 to 1920, the page never scrolls sideways — the four themes
-  - `[ ]` U8 Preview at all 70 screens of the pages built in U1–U6 (100 / 150 / 200 % text): no sideways overflow, no overlaps
-  - `[ ]` U9 docs (RULE DOCS): the reference pages for spacing, masonry, zoom and the top bar say what a person sees on a tablet and
+  - `[x]` U8 (SEEN 2026-10-06, `uat-e3-headed.js` 297 / 0) Preview at all 70 screens of the pages built in U1–U6 (100 / 150 / 200 % text): no sideways overflow, no overlaps
+  - `[x]` U9 (SEEN 2026-10-06, `uat-e3-headed.js` 297 / 0) docs (RULE DOCS): the reference pages for spacing, masonry, zoom and the top bar say what a person sees on a tablet and
     a phone, and show the icon-only top bar
+  MEASURED 2026-10-06 at `4fcf59a` (HEADLESS GATE, fresh build on 3100, `logs/e3-measure.out`): **28 fail, 59 pass** — spacing-gestures
+  12 (portrait 6 · phone 6) · masonry-builder 10 (portrait 5 · phone 5) · canvas-zoom 3 (the Ctrl + scroll test on all three) ·
+  text-is-reachable 3 (phone). The handover's 26 counted canvas-zoom on two screens; tablet landscape fails it too.
   LEDGER E-3 (each written the moment it is found):
+  - `[x]` E3-1 · CLOSED: one shared `openInspector` in `tests/e2e/helpers/seed-site.ts`, the two copies removed; spacing 18 / 18 on all projects — TEST (spacing 12): under 64em the Inspector starts as its tab (E-1's design), the spec looks for its sliders without
+    opening it; the same `openInspector` is copied in two specs already → one shared helper, used by all
+  - `[x]` E3-2 · CLOSED: the spec taps the tab as a person does; masonry 28 / 28 — TEST (masonry 10): the same — the page loads at the project's width (Inspector a tab), THEN the spec widens the
+    window to 1800 and the Inspector stays a tab (it starts closed below 64em and is never opened by widening — E-1's start rule)
+  - `[?]` E3-3 · for the user: should the Inspector open by itself when a window WIDENS past 64em (a tablet turned to landscape, a
+    browser window dragged wider)? Today it keeps the closed state it started with until the tab is tapped
+  - `[x]` E3-4 · CLOSED: the wheel sent × devicePixelRatio; canvas-zoom 28 / 28 — TEST, MEASURED (probe-e3.js wheel): the product zooms exactly z0 · e^(−deltaY · 0.0015) on every screen (0.83 → 1.51 for
+    −400, → 1.12 for −200); Playwright's `mouse.wheel(0, −400)` under device emulation ARRIVES as −400 ÷ devicePixelRatio (−200 at
+    DPR 2, −145 on the Pixel 5) — a real wheel notch is CSS px at any density → the spec turns the wheel by the same CSS px on every
+    screen
+  - `[x]` E3-5 · CLOSED: `caretFallthrough` hands a still tap to the block under a PARENT's handle (never the handle's own block); guard text-is-reachable "on a phone, a tap…" red on the old build; HEADED: phone 9px heading stack → heading, tablets too — REAL, MEASURED (probe-e3.js select … mid): on the phone (0.22) a heading at the top of its section is 9px tall; with the
+    section selected its "Resize top edge" handle has no room above the page top and lies over the heading's middle — every further
+    tap lands on the handle and the heading can NEVER be selected by tapping its words (desktop / tablets: the second tap selects
+    it). A tap that does not move must fall through a PARENT's handle to the block under it, as it already does for the selected
+    block's own words
+  - `[x]` E3-6 · CLOSED: the frame read in page px, the gap compared in screen px; add-without-asking green on all projects — TEST (add-without-asking :282 on tablet landscape and phone, not in E-2's set): it compares the page's bottom frame in
+    SCREEN px (padding × scale, 4.2px at 0.26) with 8 — since E2-2 (Full width = the shrunk desktop page) a tablet's 1rem frame is
+    under 8 screen px → measured in page px, as E-2's specs were moved
+  - `[x]` E3-7 · CLOSED: `WIDE_LABEL` 1600 · `WIDER_LABEL` 1800 (`app/website/box-demo/page.tsx`); builder-chrome-fits sweeps 1280 – 1920 every 20px; HEADED U7 one row at 13 widths × 4 themes — REAL, MEASURED (header height, 1279 … 1920, on the build with D3-32's first cut): two rows (93px) at 1480 – 1536
+    (my threshold too low: Reset gained an icon) AND at 1700 — the right-hand group's labels (Guides · Hidden · Base size · the theme
+    name, `min-[1700px]`, G2-8) appear there while the bar needs ~1750 for them → both thresholds set from the measurement, and the
+    spec asserts one row at EVERY width from 1280 to 1920 in 20px steps, not at chosen ones
+  - `[x]` E3-8 · CLOSED: every check measured from where it starts; the closing pass 297 / 0 — TEST, MINE (uat-e3-headed.js SP, first headed run): it expected the seeded spec's absolute values (12, 5, 8), but a grid
+    BUILT THROUGH THE UI starts at the default spacing (17px, space by default) — the readings 29 · 22 · 25 are 17 + 12 · 17 + 5 · 17 + 8,
+    the behaviour right → the checks measured from the starting value. Same run, same kind: the top-bar slice still used 1480 (the
+    product moved to 1600, E3-7) · the pan started at the scroll's end on the phone and with the new Stack still selected · the
+    palette floats over the canvas on a tablet held upright too, so portrait builds with the toolbar's "+" as the phone does
+  - `[x]` E3-9 · CLOSED: `onClose` through a ref, the listener added once per opening (`components/shared/Modal.tsx`); unit guard red on the old Modal; HEADED U7 × 4 themes — REAL, FOUND BY THE HEADED PASS (U7, all four themes), MEASURED (listener trace): **Escape never closes the Page check**
+    (nor twice). The builder's own Escape handler (deselect) runs first; React renders between the two document listeners, and the
+    shared Modal's effect — keyed on an `onClose` that is new every render — removes and re-adds its listener mid-dispatch, so it is
+    never called (the listener-churn trap). Shared `components/shared/Modal.tsx`: every modal over a page that re-renders
+  - `[x]` E3-10 · CLOSED: `modalOpen()` (`components/website/box/ui.tsx`) — undo / redo, the canvas's keys and the Inspector's Escape wait while a dialog is open; browser guard red on the old build — REAL, MEASURED (probe): with the Page check OPEN, Ctrl+Z undid the band behind it (3 blocks → 1) — the canvas's keys
+    act on the page under a modal dialog
+  - `[x]` E3-11 · CLOSED: the panel takes the focus when it mounts (unless something inside did), the opener gets it back; unit guard red on the old Modal — REAL, MEASURED (probe): opening the Modal leaves the focus on the button behind it (`activeElement` outside the
+    dialog) — a keyboard or screen-reader user is not taken into the dialog, nor returned when it closes (WCAG 2.4.3)
+  - `[x]` NOT A BUG, MEASURED (HEADED U2): the page grid's "At least this many rows tall" is still offered in a masonry cell — given 12 rows the cell grows (251 → 288) and no cell overlaps another
 - `[ ]` **BATCH E-4 · Preview and components on small screens** — QUEUED 2026-10-05 by the user (E1-5): multipage-preview 5 ·
   pager-hero 1 · component-layout-invariants 1 (7) — and E-1's (2): the gate runs the tablet and phone projects when all are green
 - `[ ]` **BATCH E-5 · Adding blocks on a phone** — QUEUED 2026-10-06 by the user (E2-20: "queue it, research first") (area: the editor
@@ -3175,7 +3214,7 @@ sent), and my research. Nothing on the layout is done until every line here is c
     falls back into the flow unless placed at that rung; the page audit and Page check warn when it covers words;
     shown as drag on the canvas with the half-lines drawn, a Position panel (start / end, column / row, spill above /
     below) and a gallery of ready-made placements (RULE S / UI). Joins AC-10, ST-5, AC-35 — one build
-    - `[>]` AC-37b ← YOU ARE HERE (NOW: BATCH E-3 in BATCHES (the tree audit the user asked for is DONE 2026-10-06 — its true count heads section 1.1) — its checklist first, then spacing-gestures 12 · masonry-builder 10 · canvas-zoom 3 · text-is-reachable 1 · D3-32 the top bar one row from 1280; then E-4, then E-5 (research first). Before that: BATCH E-2 CLOSED 2026-10-06 (174 / 0 headed; 24 ledger lines). Before that: BATCH E-2 in BATCHES, on `builder/editor-small-screens` (cut from master `7494a8e` after PR #6 merged `builder/page-grid` 2026-10-06) — its checklist first, then the 37 failing specs one by one; then E-3 → E-4. Before that: BATCH G-3d CLOSED 2026-10-06 (`ec52b51`); handover of session (G-3d) in the SESSION LOG. Before that: BATCH G-3d (three changes); handover of session 49087f08 in the SESSION LOG; D-3 CLOSED 2026-10-06 (both changes). Before that: handover of session ff5dbc77 in the SESSION LOG; D-2 and D-3 (1) CLOSED 2026-10-06. Earlier: handover of session 22981e0a; BATCH G-3b and BATCH E-1 CLOSED 2026-10-05; MERGE DECIDED by the user 2026-10-05: `builder/layout-uat` pushed, the user opens and merges the pull request, then the branch is deleted and `builder/page-grid` cut from master; next there: BATCH D-2 (the Docusaurus site + the layout documented from the beginning, RULE DOCS), then BATCH G-3d (the user's two decisions), then BATCH E-2 (resizing and dropping on tablets and phones); before the PR: the artifacts and the layout story for the page grid; then its final pass, then BATCH E-1; handover of session 3da81fad in the SESSION LOG; earlier: handover of session 5da86722 in the SESSION LOG — G-3 CLOSED 2026-10-04 (63 headed checks, G3-8 carried to G-3b by the user); earlier: BATCH G-3 · placing on columns AND rows — G-2 CLOSED 2026-10-04 (134 headed checks); P-0 CLOSED 2026-10-04 (R4-1 … R4-5 fixed, 30 headed checks); R-4 SIGNED with D1–D5 (session 9fa0fee9); then G-3, P-1, P-2, G-4, P-3, G-5, G-6. G-1 CLOSED 2026-10-04 (see BATCHES). Plan APPROVED 2026-10-04 with the user's decisions below. Earlier: research R-3 DONE and SIGNED 2026-10-04
+    - `[>]` AC-37b ← YOU ARE HERE (NOW: BATCH E-4 in BATCHES — its checklist first. Before that: BATCH E-3 CLOSED 2026-10-06 (297 / 0 headed; E3-1 … E3-11, E3-3 the user's question); the tree audit DONE 2026-10-06 (`4fcf59a`, its true count heads section 1.1) — its checklist first, then spacing-gestures 12 · masonry-builder 10 · canvas-zoom 3 · text-is-reachable 1 · D3-32 the top bar one row from 1280; then E-4, then E-5 (research first). Before that: BATCH E-2 CLOSED 2026-10-06 (174 / 0 headed; 24 ledger lines). Before that: BATCH E-2 in BATCHES, on `builder/editor-small-screens` (cut from master `7494a8e` after PR #6 merged `builder/page-grid` 2026-10-06) — its checklist first, then the 37 failing specs one by one; then E-3 → E-4. Before that: BATCH G-3d CLOSED 2026-10-06 (`ec52b51`); handover of session (G-3d) in the SESSION LOG. Before that: BATCH G-3d (three changes); handover of session 49087f08 in the SESSION LOG; D-3 CLOSED 2026-10-06 (both changes). Before that: handover of session ff5dbc77 in the SESSION LOG; D-2 and D-3 (1) CLOSED 2026-10-06. Earlier: handover of session 22981e0a; BATCH G-3b and BATCH E-1 CLOSED 2026-10-05; MERGE DECIDED by the user 2026-10-05: `builder/layout-uat` pushed, the user opens and merges the pull request, then the branch is deleted and `builder/page-grid` cut from master; next there: BATCH D-2 (the Docusaurus site + the layout documented from the beginning, RULE DOCS), then BATCH G-3d (the user's two decisions), then BATCH E-2 (resizing and dropping on tablets and phones); before the PR: the artifacts and the layout story for the page grid; then its final pass, then BATCH E-1; handover of session 3da81fad in the SESSION LOG; earlier: handover of session 5da86722 in the SESSION LOG — G-3 CLOSED 2026-10-04 (63 headed checks, G3-8 carried to G-3b by the user); earlier: BATCH G-3 · placing on columns AND rows — G-2 CLOSED 2026-10-04 (134 headed checks); P-0 CLOSED 2026-10-04 (R4-1 … R4-5 fixed, 30 headed checks); R-4 SIGNED with D1–D5 (session 9fa0fee9); then G-3, P-1, P-2, G-4, P-3, G-5, G-6. G-1 CLOSED 2026-10-04 (see BATCHES). Plan APPROVED 2026-10-04 with the user's decisions below. Earlier: research R-3 DONE and SIGNED 2026-10-04
       (`ff5c53a`, `4418202`); build to every decision recorded under R-3 below; the mockups settle the open three (row
       snap · the phone gap 11 vs 16 px · panel per site or per page) → the user's approval → build) · **THE PAGE GRID — DECIDED by the user 2026-10-03: done RIGHT AFTER L-4 closes, BEFORE L-5, L-6 and the
       frozen list's placement items** (they are built on it). NAMES (decided): "page grid" in code and docs; the lines a

@@ -9,7 +9,7 @@
  */
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { LayoutGrid, Plus, Smartphone, Tablet, Laptop, Monitor, Tv, Maximize2, RotateCw, Undo2, Redo2, Eye, ShieldCheck, X, Home, Trash2, Files, Download, Settings2, Palette, SlidersHorizontal, PanelRightClose, PanelRightOpen, AlertTriangle, ChevronUp, ChevronDown } from "lucide-react";
+import { LayoutGrid, Plus, Smartphone, Tablet, Laptop, Monitor, Tv, Maximize2, RotateCw, RotateCcw, Undo2, Redo2, Eye, ShieldCheck, X, Home, Trash2, Files, Download, Settings2, Palette, SlidersHorizontal, PanelRightClose, PanelRightOpen, AlertTriangle, ChevronUp, ChevronDown } from "lucide-react";
 import { DEFAULT_THEME, resolveSiteTheme } from "@/lib/site-storage";
 import { THEMES, type ThemeId } from "@/lib/theme-config";
 import { RUNG_LABEL, RUNG_ORDER, RUNG_PX } from "@/lib/educo-ui/layout";
@@ -35,7 +35,7 @@ import BoxInspector from "@/components/website/box/BoxInspector";
 import BulkInspector from "@/components/website/box/BulkInspector";
 import BlocksPanel, { LAUNCHER_GUTTER_REM, PANEL_GUTTER_REM } from "@/components/website/box/BlocksPanel";
 import ThemeSwitcher from "@/components/shared/ThemeSwitcher";
-import { ToolBtn, ToolDivider, Segmented, PortalMenu, MenuItem } from "@/components/website/box/ui";
+import { ToolBtn, ToolDivider, Segmented, PortalMenu, MenuItem, modalOpen } from "@/components/website/box/ui";
 import PageLoader from "@/components/shared/PageLoader";
 import CompactSelect from "@/components/shared/CompactSelect";
 import DeleteConfirmationModal from "@/components/shared/DeleteConfirmationModal";
@@ -46,6 +46,8 @@ const KEY = "educo_box_site_v1"; // multi-page site
 const LEGACY_KEY = "educo_box_demo_v9"; // old single-tree document (migrated on load)
 const CLEANED_KEY = "educo_box_site_cleaned_v1"; // one-time flag: empty-section chrome already pruned
 const PAGE_MIN_H = 160;
+const WIDE_LABEL = "hidden min-[1600px]:inline"; // a top-bar button's words, shown where one row holds them (D3-32; measured one row from 1560, E3-7)
+const WIDER_LABEL = "hidden min-[1800px]:inline"; // the right-hand group's labels: from 1700 the bar wrapped until ~1750 (E3-7)
 const SECTION_TINTS = ["#eef2ff", "#faf5ff", "#ecfeff", "#fef2f2", "#f0fdf4", "#fffbeb"];
 
 type Device = "mobile" | "tablet" | "laptop" | "desktop" | "wide" | "full";
@@ -224,7 +226,7 @@ export default function BoxDemoPage() {
   useEffect(() => {
     if (window.matchMedia(NARROW).matches) setInspectorOpen(false);
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape" && inspectorOpenRef.current && window.matchMedia(NARROW).matches) setInspectorOpen(false);
+      if (e.key === "Escape" && inspectorOpenRef.current && window.matchMedia(NARROW).matches && !modalOpen()) setInspectorOpen(false);
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
@@ -343,7 +345,7 @@ export default function BoxDemoPage() {
       // browser's own text undo is what you want there — and wrong for one you DRAG. A range slider holds no
       // text to undo, so after adjusting the spacing the focus was still on the slider and Ctrl+Z did
       // absolutely nothing: measured at sixty presses without a single change reversed.
-      if (typingIn(document.activeElement)) return;
+      if (typingIn(document.activeElement) || modalOpen()) return; // under an open dialog Ctrl+Z undid the page behind it (E3-10)
       const mod = e.ctrlKey || e.metaKey; const k = e.key.toLowerCase();
       if (mod && k === "z" && !e.shiftKey) { e.preventDefault(); undo(); }
       else if (mod && (k === "y" || (k === "z" && e.shiftKey))) { e.preventDefault(); redo(); }
@@ -1195,7 +1197,9 @@ export default function BoxDemoPage() {
         {/* "Add a band", not "Add section": this makes a TINTED, 48px-padded, full-width strip, which is a
             different thing from the palette's Stack tile (a plain transparent box). Both were called
             "Section", and a user had no way to know which one they were getting. */}
-        <ToolBtn onClick={addSection} primary title="Add a full-width, tinted band across the page"><Plus className="w-3.5 h-3.5" /> Add a band</ToolBtn>
+        {/* D3-32: below 1600px the words of Add a band · Page check · Preview · Export · Reset fold to their icons, so a 1280
+            desktop keeps ONE row; the name stays in `ariaLabel` and the tooltip, the right-hand group's labels from 1800 (E3-7). */}
+        <ToolBtn onClick={addSection} primary title="Add a full-width, tinted band across the page" ariaLabel="Add a band"><Plus className="w-3.5 h-3.5" aria-hidden="true" /><span className={WIDE_LABEL}>Add a band</span></ToolBtn>
         <div className="flex items-center gap-0.5">
           <ToolBtn onClick={undo} disabled={!canUndo} ariaLabel="Undo" title="Undo (Ctrl+Z)"><Undo2 className="w-4 h-4" /></ToolBtn>
           <ToolBtn onClick={redo} disabled={!canRedo} ariaLabel="Redo" title="Redo (Ctrl+Y)"><Redo2 className="w-4 h-4" /></ToolBtn>
@@ -1203,12 +1207,12 @@ export default function BoxDemoPage() {
         <ToolDivider />
         {(() => { const n = pageCheckCount(root); return (
           <ToolBtn onClick={() => setPageCheckOpen(true)} title={n ? `${n} thing${n === 1 ? "" : "s"} on this page need${n === 1 ? "s" : ""} your words` : "Everyone can use this page"} ariaLabel={`Page check${n ? `, ${n} to do` : ""}`}>
-            <ShieldCheck className="w-3.5 h-3.5" /> Page check{n ? <span className="ml-1 rounded-full bg-amber-500 px-1.5 text-[0.625rem] font-bold text-white">{n}</span> : null}
+            <ShieldCheck className="w-3.5 h-3.5" aria-hidden="true" /><span className={WIDE_LABEL}>Page check</span>{n ? <span className="ml-1 rounded-full bg-amber-500 px-1.5 text-[0.625rem] font-bold text-white">{n}</span> : null}
           </ToolBtn>
         ); })()}
-        <ToolBtn onClick={() => setPreview(true)} title="See it as a visitor"><Eye className="w-3.5 h-3.5" /> Preview</ToolBtn>
-        <ToolBtn onClick={onExport} title="Download the whole site as HTML"><Download className="w-3.5 h-3.5" /> Export</ToolBtn>
-        <ToolBtn onClick={() => setConfirmReset(true)} title="Start over">Reset</ToolBtn>
+        <ToolBtn onClick={() => setPreview(true)} title="See it as a visitor" ariaLabel="Preview"><Eye className="w-3.5 h-3.5" aria-hidden="true" /><span className={WIDE_LABEL}>Preview</span></ToolBtn>
+        <ToolBtn onClick={onExport} title="Download the whole site as HTML" ariaLabel="Export"><Download className="w-3.5 h-3.5" aria-hidden="true" /><span className={WIDE_LABEL}>Export</span></ToolBtn>
+        <ToolBtn onClick={() => setConfirmReset(true)} title="Start over" ariaLabel="Reset"><RotateCcw className="w-3.5 h-3.5" aria-hidden="true" /><span className={WIDE_LABEL}>Reset</span></ToolBtn>
 
         {/* This group wraps too. Left as one unbreakable row it was still 417px wide on a 375px screen, so
             the editor's own theme switcher — the last control in it — hung off the edge while everything
@@ -1222,7 +1226,7 @@ export default function BoxDemoPage() {
             <button ref={guidesBtnRef} type="button" aria-pressed={guides.on} aria-label="Layout guides" title="Layout guides (Shift+G) — the page grid's columns drawn over the page, and its settings; never published"
               onClick={() => { const on = !guides.on; toggleGuides({ on }); setGridPanel(on); }}
               className={`inline-flex items-center gap-1 rounded-lg border px-2 py-1 text-[0.6875rem] ${guides.on ? "border-indigo-400 bg-indigo-50 text-indigo-700 dark:bg-indigo-950/40 dark:text-indigo-300 midnight:bg-indigo-950/40 midnight:text-indigo-300 purple:bg-indigo-950/40 purple:text-indigo-300" : "border-gray-200 text-gray-500 dark:border-gray-700 dark:text-gray-400 midnight:border-gray-700 midnight:text-gray-400 purple:border-gray-700 purple:text-gray-400"}`}>
-              <LayoutGrid className="w-3.5 h-3.5" aria-hidden="true" /><span className="hidden min-[1700px]:inline">Guides</span>
+              <LayoutGrid className="w-3.5 h-3.5" aria-hidden="true" /><span className={WIDER_LABEL}>Guides</span>
             </button>
             {gridPanel && <PageGridPanel grid={gridStored} ownPage={ownGrid} breakpoint={bp} rows={guides.rows} onRows={(rows) => toggleGuides({ rows })}
               onChange={setGrid} onOwnPage={setOwnGrid} onClose={() => { setGridPanel(false); guidesBtnRef.current?.focus(); }} />}
@@ -1231,16 +1235,16 @@ export default function BoxDemoPage() {
               the hidden ones back faintly, so one can be selected and un-hidden. */}
           <button type="button" aria-pressed={showHidden} aria-label="Show hidden blocks" title={showHidden ? "Hidden blocks are shown faintly — click to draw the page as it publishes" : "Show blocks hidden on this device, faintly, so you can select them"} onClick={() => setShowHidden((v) => !v)}
             className={`inline-flex items-center gap-1 rounded-lg border px-2 py-1 text-[0.6875rem] ${showHidden ? "border-indigo-400 bg-indigo-50 text-indigo-700 dark:bg-indigo-950/40 dark:text-indigo-300 midnight:bg-indigo-950/40 midnight:text-indigo-300 purple:bg-indigo-950/40 purple:text-indigo-300" : "border-gray-200 text-gray-500 dark:border-gray-700 dark:text-gray-400 midnight:border-gray-700 midnight:text-gray-400 purple:border-gray-700 purple:text-gray-400"}`}>
-            <Eye className="w-3.5 h-3.5" aria-hidden="true" /><span className="hidden min-[1700px]:inline">Hidden</span>
+            <Eye className="w-3.5 h-3.5" aria-hidden="true" /><span className={WIDER_LABEL}>Hidden</span>
           </button>
           <label className="flex items-center gap-1 text-[0.6875rem] text-gray-400" title="Base size in px — everything scales off this so text stays readable when zoomed (WCAG)">
-            <span className="hidden min-[1700px]:inline">Base size</span>
+            <span className={WIDER_LABEL}>Base size</span>
             <input type="number" min={6} max={24} value={root.baseFont ?? 10} onChange={(e) => commit(updateBox(root, root.id, { baseFont: Number(e.target.value) || 10 }))} aria-label="Base size (px)" className="w-12 text-xs px-1.5 py-1 rounded-lg border border-line bg-transparent" />
           </label>
           {/* WEBSITE theme (saved with the site → canvas + content + export). Distinct from the editor-appearance switcher. */}
           <ThemeSwitcher align="right" value={siteThemeId as ThemeId} onChange={setWebsiteTheme} ariaLabel="Website theme" triggerIcon={Palette} triggerLabel={THEMES[siteThemeId as ThemeId]?.label ?? "Theme"}
-            // its name from 1700px, like every label in this group: the bar stays ONE row at 1536 with the guides switch (G2-8)
-            labelClassName="hidden min-[1700px]:inline" />
+            // its name from 1800px, like every label in this group (E3-7: 1700 wrapped the bar): the bar stays ONE row at 1536 with the guides switch (G2-8)
+            labelClassName={WIDER_LABEL} />
           {/* EDITOR appearance (how the builder UI looks). */}
           <ThemeSwitcher compact align="right" />
         </div>

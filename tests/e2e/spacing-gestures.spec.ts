@@ -1,5 +1,5 @@
 import { test, expect, type Page } from "@playwright/test";
-import { seedSite, sitePage } from "./helpers/seed-site";
+import { seedSite, sitePage, openInspector } from "./helpers/seed-site";
 
 /**
  * ADJUSTING SPACING — the controls, and what one adjustment costs.
@@ -37,6 +37,7 @@ async function selectGrid(page: Page) {
   await page.mouse.click(b.x + b.width * 0.25, b.y + b.height * 0.75);
   await page.waitForTimeout(300);
   await expect(page.locator('[data-box-id="tgt"]')).toHaveClass(/outline-indigo-500/);
+  await openInspector(page); // a tablet held upright and a phone start with it as its tab (E3-1)
 }
 
 /** The grid's stored spacing, read back out of the saved tree. */

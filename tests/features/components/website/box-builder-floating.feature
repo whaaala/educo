@@ -217,6 +217,15 @@ Feature: Box Builder — floating layers (free overlap)
       point a second time, and with the handle live again the caret fell back to
       the end of the block instead.
 
+  Scenario: A tap that does not move goes through a PARENT's handle to the block under it (E3-5)
+    # tests/e2e/text-is-reachable.spec.ts
+    Given a phone, where the page is drawn at about a fifth of its size
+    And a heading at the top of a Stack, the Stack selected, its top handle lying over the heading's words
+    When I tap the heading's words again
+    Then the heading is selected
+    But a drag on that handle still resizes the Stack
+    Because every tap there used to land on the handle, and the heading could never be selected by its words
+
   Scenario: Text can be reached without a mouse
     Given a heading that has just been added from the palette and is selected
     Then nothing holds the caret yet

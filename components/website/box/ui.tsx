@@ -35,6 +35,9 @@ export function ToolBtn({ onClick, title, ariaLabel, active, disabled, primary, 
   return <button onClick={onClick} title={title} aria-label={ariaLabel} aria-pressed={active} disabled={disabled} className={`${base} ${look}`}>{children}</button>;
 }
 
+/** A modal dialog is open: the page's own keys (undo, delete, Escape…) are the dialog's until it closes (E3-10). */
+export const modalOpen = () => !!document.querySelector('[aria-modal="true"]');
+
 /** A thin vertical divider between toolbar groups. */
 export const ToolDivider = () => <div aria-hidden className="w-px h-5 bg-line mx-1 shrink-0" />;
 

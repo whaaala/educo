@@ -74,7 +74,10 @@ test.describe("canvas zoom", () => {
     const h = (await page.locator('[data-box-id="h"]').boundingBox())!;
     const px = h.x + 30, py = h.y + h.height / 2;
     await page.mouse.move(px, py);
-    await page.keyboard.down("Control"); await page.mouse.wheel(0, -400); await page.keyboard.up("Control");
+    // 400 CSS px of wheel, as a real wheel turns at any screen density — under device emulation Playwright's delta arrives divided by
+    // devicePixelRatio (measured, E3-4: −200 at DPR 2, −145 on the Pixel 5), so it is sent multiplied by it
+    const dpr = await page.evaluate(() => devicePixelRatio);
+    await page.keyboard.down("Control"); await page.mouse.wheel(0, -400 * dpr); await page.keyboard.up("Control");
     await page.waitForTimeout(400);
     const h2 = (await page.locator('[data-box-id="h"]').boundingBox())!;
     expect(await pageZoom(page)).toBeGreaterThan(1.2);
@@ -83,7 +86,7 @@ test.describe("canvas zoom", () => {
     expect(Math.abs(h2.x + 30 * k - px), "x drift").toBeLessThanOrEqual(2);
     expect(Math.abs(h2.y + (py - h.y) * k - py), "y drift").toBeLessThanOrEqual(2);
     const z = await pageZoom(page);
-    await page.mouse.wheel(0, 200); await page.waitForTimeout(300);
+    await page.mouse.wheel(0, 200 * dpr); await page.waitForTimeout(300);
     expect(await pageZoom(page), "no Ctrl: the page scrolls, the zoom stays").toBeCloseTo(z, 3);
   });
 

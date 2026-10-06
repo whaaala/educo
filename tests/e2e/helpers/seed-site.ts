@@ -112,3 +112,9 @@ export function sitePage(children: unknown[], rootExtras: Record<string, unknown
     homeId: "p1",
   };
 }
+
+/** Under 64em the Inspector starts as its tab (E1-2), so a person taps it open first (E2-5, E3-1). */
+export async function openInspector(page: Page) {
+  const tab = page.getByRole("button", { name: "Expand inspector" });
+  if (await tab.isVisible().catch(() => false)) { await tab.click(); await page.waitForTimeout(400); }
+}

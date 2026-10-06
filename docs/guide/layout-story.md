@@ -433,6 +433,11 @@ Every control in the Inspector is reachable by scrolling; Escape closes it.
 round handles on its edges, so on a phone, where every block is drawn small, the top edge's handle is still there to
 take hold of.
 
+**A handle never hides the words under it.** On a phone a heading at the top of its section is drawn only a few pixels
+tall, and once Maya has selected the section, its top handle lies right over that heading. A tap that doesn't move goes
+through the handle: tapping the heading again selects the heading, just as it would anywhere else. Only a drag takes
+hold of the handle.
+
 **The shrunk page behaves exactly like the real one.** However small the page is drawn:
 
 - A header set to **stay put while scrolling** stays at the top as Maya scrolls the canvas, and a bar pinned to the

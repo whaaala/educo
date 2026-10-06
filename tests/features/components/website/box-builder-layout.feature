@@ -1158,3 +1158,18 @@ Feature: Placing blocks beside one another in the Box Builder
     When I drag its right edge in until the words wrap, and back out again
     Then the words are on one line again and the heading is its old height
 
+  Scenario: The builder's top bar is one row on a desktop (D3-32, E3-7)
+    # tests/e2e/builder-chrome-fits.spec.ts
+    Given the builder on a screen of any width from 1280px to 1920px
+    Then the top bar is a single row
+    And below 1600px Add a band, Page check, Preview, Export and Reset show only their icons
+    And each keeps its name for a screen reader and as a tooltip, and works by click and by keyboard
+    And below 1800px the right-hand group's words (Guides, Hidden, Base size, the theme name) are icons too
+
+  Scenario: An open dialog has the keyboard (E3-9, E3-10, E3-11)
+    # tests/e2e/builder-chrome-fits.spec.ts · tests/components/shared/Modal.test.tsx
+    Given I open the Page check from the top bar with the keyboard
+    Then the focus is inside the dialog
+    And Ctrl+Z changes nothing on the page behind it
+    When I press Escape once
+    Then the dialog closes and the focus is back on the Page check button

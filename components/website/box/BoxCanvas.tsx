@@ -24,7 +24,7 @@ import {
   type Breakpoint, resolveResponsive, updateBoxResponsive, treePinArrivalCss, floatHoldCSS, canvasFixedStyle, capturesFixed, imageSizing, fillsRowsAnywhere, fillHostOf, importPhoto, treeItemEffectsCss, itemNeedsClass, floatZIndex, gridPlacementAt, masonryMeasureAttr, masonryMeasurePass, mirrorMeasuresNow, baseUnitParts, pinStackMarker, pinStackGroupMarker, pinStackPass, isPager, pagerStripCss, pagerNavHTML, selectionChain, textLen, typoRole, typoRootVars, typoCascadeCss, bandEdgeCSS, LINK_COLOR_CSS, treeGridQueryCss, TYPE_UNIT_PROPERTY_CSS,
 } from "@/lib/box-model";
 import { ICON_SET } from "./icons";
-import { PortalMenu, MenuItem, MenuHeader, MenuSep } from "./ui";
+import { PortalMenu, MenuItem, MenuHeader, MenuSep, modalOpen } from "./ui";
 import GridLayoutMenu, { type MenuAnchor } from "./GridLayoutMenu";
 import GallerySetupMenu from "./GallerySetupMenu";
 import { blockForKind, nodeForPhotos, photoGallery, PHOTO_SETUP, type GalleryPhoto } from "@/lib/box-presets";
@@ -308,7 +308,7 @@ function ownEditable(id: string): HTMLElement | undefined {
  * moved, this was not a resize, and the click belongs to whatever sits underneath. Resize geometry is untouched
  * (Rule 19).
  */
-function caretFallthrough(e: React.MouseEvent) {
+function caretFallthrough(e: React.MouseEvent, owner: string) {
   const startX = e.clientX, startY = e.clientY;
   const onUp = (ev: MouseEvent) => {
     document.removeEventListener("mouseup", onUp, true);
@@ -324,14 +324,22 @@ function caretFallthrough(e: React.MouseEvent) {
     // jsdom has no `elementFromPoint`, and an exception here took two unrelated canvas tests down with it.
     if (typeof document.elementFromPoint !== "function") return;
     const peeled: { el: HTMLElement; prev: string }[] = [];
-    let host: HTMLElement | null = null;
+    let host: HTMLElement | null = null, block: HTMLElement | null = null;
     for (let i = 0; i < 4; i++) {
       const el = document.elementFromPoint(ev.clientX, ev.clientY) as HTMLElement | null;
       if (!el) break;
       const ce = el.closest<HTMLElement>('[contenteditable="true"]');
       if (ce) { host = ce; break; }
+      // A BLOCK of the page under the handle, not yet editable — a PARENT's handle lying over a child's words (E3-5: on a phone a
+      // section's top handle covers the whole 9px of the heading at its top, and every tap re-selected the section). The tap is
+      // that block's: hand it the click it would have had, while the chrome is still switched off.
+      if (el.closest("[data-box-id]")) { block = el; break; }
       peeled.push({ el, prev: el.style.pointerEvents });
       el.style.pointerEvents = "none";
+    }
+    if (!host && block && block.closest("[data-box-id]")?.getAttribute("data-box-id") !== owner) { // its OWN handle: a still tap stays nothing, as before
+      const at = { bubbles: true, cancelable: true, view: window, clientX: ev.clientX, clientY: ev.clientY, button: 0 };
+      for (const type of ["mousedown", "mouseup", "click"]) block.dispatchEvent(new MouseEvent(type, at));
     }
     /**
      * Place the caret WHILE THE CHROME IS STILL SWITCHED OFF. Working out which character was clicked means
@@ -1166,6 +1174,7 @@ export default function BoxCanvas({
     const onKey = (e: KeyboardEvent) => {
       const ae = document.activeElement as HTMLElement | null;
       if (ae && (ae.tagName === "INPUT" || ae.tagName === "TEXTAREA" || ae.isContentEditable)) return; // never hijack text editing
+      if (modalOpen()) return; // …nor act on the page under an open dialog (E3-10)
       // …nor a CONTROL outside the page that has the focus (Z1-j). With a block selected, Enter on a focused toolbar
       // button edited the block's words instead of pressing the button (the zoom menu, Preview, Export never opened by
       // keyboard), and Delete on a focused button DELETED the selected block. A focused control owns the keys it USES —
@@ -3383,7 +3392,7 @@ export default function BoxCanvas({
     const resizeHandles = isSolo && editable && !isRoot && !node.locked ? (
       <>
         {HANDLES.map((h) => (
-          <div key={h.edge} onMouseDown={(e) => { caretFallthrough(e); startResize(e, node.id, h.edge); }} aria-label={`Resize ${h.label}`} title={h.title} className={`absolute ${h.pos} ${h.cursor} bg-indigo-500 border-2 border-white shadow`} style={{ zIndex: CHROME_Z.handle, pointerEvents: "auto" }} />
+          <div key={h.edge} onMouseDown={(e) => { caretFallthrough(e, node.id); startResize(e, node.id, h.edge); }} aria-label={`Resize ${h.label}`} title={h.title} className={`absolute ${h.pos} ${h.cursor} bg-indigo-500 border-2 border-white shadow`} style={{ zIndex: CHROME_Z.handle, pointerEvents: "auto" }} />
         ))}
       </>
     ) : null;

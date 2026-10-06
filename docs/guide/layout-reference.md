@@ -16,7 +16,11 @@ cross-referenced.
 
 ## Top bar
 
-[![The top bar: Box Builder, the page tabs, Add a band, Undo and Redo, Page check, Preview, Export and Reset; under them the six device chips, the zoom, Layout guides, Show hidden blocks, Base size and the two theme menus](img/ref-top-bar.webp)](img/ref-top-bar.webp)
+[![The top bar at 1280px, on one row: Box Builder, the page tabs, then the icons for Add a band, Undo, Redo, Page check, Preview, Export and Reset, the six device chips, the zoom, Layout guides, Show hidden blocks, Base size and the two theme menus](img/ref-top-bar.webp)](img/ref-top-bar.webp)
+
+On a screen narrower than 1,600px, **Add a band**, **Page check**, **Preview**, **Export** and **Reset** show only
+their icons (+, shield, eye, download, a turning arrow), so the bar stays one row on a 1280px desktop. Each keeps its
+name as a tooltip and for screen readers.
 
 | Control | What it does | Shortcut |
 |---------|-------------|---------|

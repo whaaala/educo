@@ -1,5 +1,5 @@
 import { test, expect, type Page } from "@playwright/test";
-import { seedSite, sitePage } from "./helpers/seed-site";
+import { seedSite, sitePage, openInspector } from "./helpers/seed-site";
 
 /**
  * FLOATING A PARENT — the children come with it, and un-floating puts everything back.
@@ -39,12 +39,6 @@ const geo = (page: Page, id: string) =>
     const r = el.getBoundingClientRect(), o = f.getBoundingClientRect();
     return { x: Math.round((r.left - o.left) / s), y: Math.round((r.top - o.top) / s), w: Math.round(r.width / s), h: Math.round(r.height / s) };
   });
-
-/** Under 64em the Inspector starts as its tab (E1-2), so a person taps it open first (E2-5). */
-async function openInspector(page: Page) {
-  const tab = page.getByRole("button", { name: "Expand inspector" });
-  if (await tab.isVisible().catch(() => false)) { await tab.click(); await page.waitForTimeout(400); }
-}
 
 /** The stored node, minus its children — what float/un-float wrote, with no rendering in the way. */
 const nodeOf = (page: Page, id: string) =>

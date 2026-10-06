@@ -332,7 +332,9 @@ shape of your own, set a **Height** and that is what you get.
 
 **The builder's own toolbar follows the same rule.** Narrow the window and the top bar **wraps onto more
 rows** rather than pushing Preview, Export and the device chips off the side. Every control stays on the
-screen at any width, and at desktop sizes it is the single row it always was.
+screen at any width. On a desktop it is a single row: below 1,600px wide, **Add a band**, **Page check**,
+**Preview**, **Export** and **Reset** show only their icons. Point at one to see its name; a screen reader
+reads it the same as before.
 
 ---
 

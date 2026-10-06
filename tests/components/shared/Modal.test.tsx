@@ -122,4 +122,39 @@ describe("Modal", () => {
       expect(screen.getByText("Content")).toBeInTheDocument();
     }
   );
+
+  // E3-9: the Escape listener is added ONCE per opening. Keyed on an inline onClose (new every render) it was removed and re-added by
+  // any render — and a render caused by the same Escape removed it mid-dispatch, so the builder's Page check never closed.
+  it("adds its Escape listener once, however often the page around it re-renders", () => {
+    const spy = vi.spyOn(document, "addEventListener");
+    const { rerender } = render(<Modal isOpen={true} onClose={() => {}}><p>x</p></Modal>);
+    for (let i = 0; i < 3; i++) rerender(<Modal isOpen={true} onClose={() => {}}><p>x</p></Modal>);
+    expect(spy.mock.calls.filter(([t]) => t === "keydown")).toHaveLength(1);
+    spy.mockRestore();
+  });
+
+  it("calls the LATEST onClose on Escape, after the page re-rendered", async () => {
+    const first = vi.fn(), latest = vi.fn();
+    const { rerender } = render(<Modal isOpen={true} onClose={first}><p>x</p></Modal>);
+    rerender(<Modal isOpen={true} onClose={latest}><p>x</p></Modal>);
+    await userEvent.keyboard("{Escape}");
+    expect(latest).toHaveBeenCalledTimes(1);
+    expect(first).not.toHaveBeenCalled();
+  });
+
+  // E3-11 (WCAG 2.4.3): focus goes into the dialog when it opens, and back to what opened it when it closes.
+  it("takes the focus when it opens and gives it back when it closes", () => {
+    const Opener = ({ open }: { open: boolean }) => (<><button>Open</button><Modal isOpen={open} onClose={() => {}} title="T"><p>x</p></Modal></>);
+    const { rerender } = render(<Opener open={false} />);
+    screen.getByRole("button", { name: "Open" }).focus();
+    rerender(<Opener open={true} />);
+    expect(screen.getByRole("dialog").contains(document.activeElement)).toBe(true);
+    rerender(<Opener open={false} />);
+    expect(document.activeElement).toBe(screen.getByRole("button", { name: "Open" }));
+  });
+
+  it("leaves the focus where it is when something inside the dialog took it", () => {
+    render(<Modal isOpen={true} onClose={() => {}}><input aria-label="Name" autoFocus /></Modal>);
+    expect(document.activeElement).toBe(screen.getByLabelText("Name"));
+  });
 });

@@ -1,5 +1,5 @@
 import { test, expect, type Page } from "@playwright/test";
-import { clearSite, BUILDER_PATH } from "./helpers/seed-site";
+import { clearSite, BUILDER_PATH, openInspector } from "./helpers/seed-site";
 
 /**
  * ADDING A BLOCK — what interrupts you, and what does not.
@@ -56,10 +56,6 @@ const tile = (page: Page, name: string) => page.locator('[role="button"]', { has
  * it), so on a tablet held upright or a phone a person taps "Inspector" to open it. These tests assumed the docked desktop panel:
  * the presets and "Full screen" were never on screen there, and "Add a block inside" matched the block toolbar's "+" instead.
  */
-async function openInspector(page: Page) {
-  const tab = page.getByRole("button", { name: "Expand inspector" });
-  if (await tab.isVisible().catch(() => false)) { await tab.click(); await page.waitForTimeout(400); }
-}
 
 test.describe("a look on an empty box is not worth a question", () => {
   for (const name of ["Stack", "Side by side", "Image", "Icon"]) {
@@ -293,9 +289,10 @@ test.describe("the page is exactly as tall as what is on it", () => {
     const last = await page.locator("[data-box-id]").last().evaluate((el) => Math.round(el.getBoundingClientRect().bottom));
     // G-3c (the user, 2026-10-04: "do the same thing for the bottom"): a page-grid page keeps its FRAME below its last block — a
     // space somebody chose, and "Side space" takes it to 0. Nothing MORE than that: no floor nobody can remove (the 32px this guards).
-    const frame = await page.locator("[data-box-id]").first().evaluate((el) => (parseFloat(getComputedStyle(el).paddingBottom) || 0) * (Number(el.closest<HTMLElement>("[data-canvas-scale]")?.dataset.canvasScale) || 1));
-    expect(frame, "the page's bottom frame is there, 1 – 1.25 rem").toBeGreaterThan(8);
-    expect(Math.abs(root.bottom - last - frame), "the page must end its frame below its content, not 32px later").toBeLessThanOrEqual(2);
+    // In PAGE px (E3-6): the padding is a page length, the boxes are screen px — divided by the scale (a tablet draws the page at ~0.26)
+    const { frame, z } = await page.locator("[data-box-id]").first().evaluate((el) => ({ frame: parseFloat(getComputedStyle(el).paddingBottom) || 0, z: Number(el.closest<HTMLElement>("[data-canvas-scale]")?.dataset.canvasScale) || 1 }));
+    expect(frame, "the page's bottom frame is there, 1 – 1.25 rem").toBeGreaterThan(14);
+    expect(Math.abs(root.bottom - last - frame * z), "the page must end its frame below its content, not 32px later").toBeLessThanOrEqual(2); // whole screen px
   });
 
   test("an EMPTY page still has a floor, so there is somewhere to drop the first block", async ({ page }) => {
