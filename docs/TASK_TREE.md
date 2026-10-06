@@ -368,6 +368,10 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
   - `[x]` D2-4 · REAL (FOUND BY THE USER — my headed pass passed it): body text too large at 1536 wide → 15px, headings scaled down
   - `[x]` D2-5 · REAL (FOUND BY THE USER): `.markdown { max-width: 72ch }` left a wide blank band between the text and the right-hand
     contents column → removed; the column between the two sidebars already bounds the line length
+  - `[x]` D2-7 · REAL (FOUND BY THE USER's question "it should be based on the browser font… WCAG"): Docusaurus's theme sets
+    `font-size: 15px` on the phone menu's "Back to main menu" and the collapsible "On this page" list — they ignored the reader's
+    browser text size → overridden in rem. MEASURED HEADED with Chrome's real font-size preference at 12 / 16 / 24: every text
+    measured (root, body, h1, h2, sidebar, contents, tables, both phone controls) scales ×0.75 / ×1 / ×1.5; no sideways scroll at 375
   - `[x]` D2-6 · A PROMISE, NOT A DEFECT (the user, 2026-10-05: "I should include images… examples… more playful"): MOVED to BATCH
     D-3 change (1) — screenshots from the real builder in the layout story and reference (RULE DOCS)
 - `[>]` **BATCH D-3 · The rest of the documentation rewritten** (YOU ARE HERE, opened 2026-10-06 after D-2's commit) — QUEUED
@@ -377,6 +381,10 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
   - `[ ]` (2) the Website Builder Guide's non-layout parts (content, components, themes, Preview, Page check, export), the README
     index, the plan / Builder Hub / Layout System / Builder Parity Audit artifacts corrected to what was built (G-1 … G-3c, E-1) and
     pointing at the site, every page in the same clean format
+  - `[ ]` D3-1 · REAL (found measuring D2-7): the base size is applied TWICE — Infima puts `--ifm-font-size-base` (0.9375rem) on
+    `html`, and `custom.css` puts it on `body` again, so body text computes 14.06px at a 16px browser, not the 15 written down
+    (headings and spacing, in rem of the 15px root, are as intended). Root fix = delete the `body { font-size }` line. WAITING ON THE
+    USER: the user approved the look at 14px — keep that look (then the base is set to 0.875rem once) or go to the 15 intended
 - `[ ]` **BATCH G-3d · Two decisions from G-3b** — QUEUED 2026-10-05 by the user ("yes to both") (area: page grid · 2 changes):
   - `[ ]` (1) ON A PHONE A LONE HALF-WIDTH BLOCK TAKES THE WHOLE LINE: where the fit rule stacks a row, a block alone on its line
     whose width came from a WIDER screen takes the line (~165px of words beside a hole on a 360px phone otherwise); a width set on the
@@ -3513,7 +3521,7 @@ out) — where the session STARTED FROM, where it GOT TO, and where the next one
   change (2): the Website Builder Guide's non-layout parts, the README index, the artifacts corrected to what was built. Then close
   D-3, then BATCH G-3d (its own checklist; see the 22981e0a entry for its details). TRAPS: never `git checkout <file>` to undo; a closed
   batch must not hold an open ledger line (the batch guard fails); the docs-guard reads sidebar doc IDs as lowercase-hyphen strings;
-  the 15px body is the user's decision — do not raise it back to 16px."
+  every docs size is rem — relative to the reader's browser text size, never px (WCAG 1.4.4, D2-7); settle D3-1 with the user first."
 
 ### 2026-10-05 · session 22981e0a · branch `builder/layout-uat` — HANDOVER (recommended once both held: the context is genuinely long — G-3b's (3) and (6), its whole final pass, all of E-1, about twenty six-window headed runs and five full gates — and the boundary is clean: everything committed, nothing running; the user agreed: "let's start a new session")
 - **Started from:** session 3da81fad's handover — BATCH G-3b (3) Alt free, then (6) rows, then its final pass, then E-1.

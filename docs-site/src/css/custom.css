@@ -219,6 +219,12 @@ pre {
   padding-top: 0.5rem;
 }
 
+/* Docusaurus sets these two in px, which ignores the reader's browser text size (WCAG 1.4.4). */
+.navbar-sidebar__back,
+.theme-doc-toc-mobile ul {
+  font-size: 0.9375rem;
+}
+
 /* ─── Footer ────────────────────────────────────────────────────────────────── */
 .footer {
   padding: 1.5rem var(--ifm-spacing-horizontal);
