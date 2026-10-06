@@ -1,5 +1,5 @@
 import { test, expect, type Page } from "@playwright/test";
-import { seedSite, sitePage } from "./helpers/seed-site";
+import { seedSite, sitePage, openInspector } from "./helpers/seed-site";
 
 /**
  * FLOATING A PARENT — the children come with it, and un-floating puts everything back.
@@ -32,10 +32,12 @@ async function seed(page: Page) {
   await page.waitForTimeout(300);
 }
 
+/** In PAGE px, from the canvas frame's corner (E-2): the canvas is drawn scaled, so a screen px is not a page px. */
 const geo = (page: Page, id: string) =>
   page.locator(`[data-box-id="${id}"]`).evaluate((el) => {
-    const r = el.getBoundingClientRect();
-    return { x: Math.round(r.left), y: Math.round(r.top), w: Math.round(r.width), h: Math.round(r.height) };
+    const f = el.closest<HTMLElement>("[data-canvas-scale]")!, s = Number(f.dataset.canvasScale) || 1;
+    const r = el.getBoundingClientRect(), o = f.getBoundingClientRect();
+    return { x: Math.round((r.left - o.left) / s), y: Math.round((r.top - o.top) / s), w: Math.round(r.width / s), h: Math.round(r.height / s) };
   });
 
 /** The stored node, minus its children — what float/un-float wrote, with no rendering in the way. */
@@ -143,6 +145,7 @@ test.describe("floating a parent and putting it back", () => {
     await select(page, "sec", "sec");
     await page.keyboard.press("Alt+f");
     await page.waitForTimeout(400);
+    await openInspector(page);
     const height = page.getByLabel("Height", { exact: true }).first();
     await height.fill("260px");
     await height.press("Enter");

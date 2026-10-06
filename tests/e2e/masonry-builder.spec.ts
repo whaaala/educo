@@ -1,5 +1,5 @@
 import { test, expect, type Page } from "@playwright/test";
-import { seedSite } from "./helpers/seed-site";
+import { seedSite, openInspector } from "./helpers/seed-site";
 
 /**
  * MASONRY through the REAL builder — the control, and canvas = export.
@@ -65,6 +65,9 @@ async function selectGallery(page: Page) {
   await page.mouse.click(a.x + a.width + 6, g.y + 120); // the gap between column one and column two
   await page.waitForTimeout(300);
   await expect(page.locator(".outline-indigo-500")).toHaveAttribute("data-box-id", "gallery");
+  // Loaded at a tablet's or a phone's width, the Inspector starts as its tab (E3-2); widened it docks open by itself (E3-3), so this
+  // is a no-op here — kept for a window that stays narrow
+  await openInspector(page);
   await openSection(page, "Arrange");
 }
 

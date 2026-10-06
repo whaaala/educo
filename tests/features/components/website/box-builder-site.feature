@@ -102,10 +102,20 @@ Feature: Box Builder — multi-page site, preview & export
     When I press Hide, or the H key
     Then the bar steps aside and the page has the whole window
     And a labelled handle stays on the screen to bring it back
+    And the handle sits beside Exit preview in the bottom-right corner, never over the header I built
     And H brings it back too, from wherever I am
     Because a bar slid off the top of the window is still "visible" to the code and
       completely unreachable to a person — so the way back is a real button, never a
       region of the page you have to know to wave the pointer at
+
+  Scenario: The bar fits a tablet and a phone
+    Given I preview my site on a 768px tablet or a 393px phone
+    Then the bar folds onto more rows instead of running off the right edge
+    And every control and the tab for each of my pages is on screen and works
+
+  Scenario: The Preview opens the page once
+    When I open the Preview of a site in the school's own font
+    Then the page loads once, already in that font, and what I do straight away is not wiped by a reload
 
   Scenario: The shortcut still works after I click the page I am previewing
     Given I have clicked inside the previewed page

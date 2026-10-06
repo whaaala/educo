@@ -65,6 +65,12 @@ const bandShape = (page: Page) =>
     return ((band?.children as Record<string, unknown>[]) ?? []).map(shape);
   });
 
+/**
+ * The canvas is drawn scaled (E-2: Full width is the desktop page shrunk to fit), so every distance below that was written in
+ * page px — an aim 60px under a block, a 150px gap, a 100px drag — is multiplied by it before it meets the screen.
+ */
+const scaleOf = (page: Page) => page.evaluate(() => Number(document.querySelector<HTMLElement>("[data-canvas-scale]")?.dataset.canvasScale) || 1);
+
 const indicator = (page: Page) => page.locator("div.rounded-full.bg-indigo-500");
 
 /** The indicator geometry, or null — WITHOUT auto-waiting for one that may legitimately not exist. */
@@ -81,12 +87,12 @@ test.describe("a block dropped under one column", () => {
     const r = (await page.locator('[data-box-id="R"]').boundingBox())!;
     const band = (await page.locator('[data-box-id="band"]').boundingBox())!;
 
-    await dragOver(page, r.x + r.width / 2, r.y + r.height + 60);
+    await dragOver(page, r.x + r.width / 2, r.y + r.height + 60 * (await scaleOf(page)));
     const ind = (await indicatorBox(page))!;
     expect(ind, "a line is drawn").not.toBeNull();
     expect(ind.width, "it is a horizontal line").toBeGreaterThan(ind.height);
     expect(Math.abs(ind.width - r.width), "…exactly as wide as the column it is under").toBeLessThan(8);
-    expect(ind.width, "…and clearly narrower than the band").toBeLessThan(band.width - 40);
+    expect(ind.width, "…and clearly narrower than the band").toBeLessThan(band.width - 40 * (await scaleOf(page)));
   });
 
   test("the right column becomes a Stack holding both, and the left is untouched", async ({ page }) => {
@@ -94,8 +100,8 @@ test.describe("a block dropped under one column", () => {
     const r = (await page.locator('[data-box-id="R"]').boundingBox())!;
     const l0 = (await page.locator('[data-box-id="L"]').boundingBox())!;
 
-    await dragOver(page, r.x + r.width / 2, r.y + r.height + 60);
-    await drop(page, r.x + r.width / 2, r.y + r.height + 60);
+    await dragOver(page, r.x + r.width / 2, r.y + r.height + 60 * (await scaleOf(page)));
+    await drop(page, r.x + r.width / 2, r.y + r.height + 60 * (await scaleOf(page)));
 
     const shape = await bandShape(page);
     expect(shape.length, "the band still has TWO columns, not three").toBe(2);
@@ -117,8 +123,8 @@ test.describe("a block dropped under one column", () => {
   test("the new block sits BELOW the original, sharing its column", async ({ page }) => {
     await seedUneven(page);
     const r0 = (await page.locator('[data-box-id="R"]').boundingBox())!;
-    await dragOver(page, r0.x + r0.width / 2, r0.y + r0.height + 60);
-    await drop(page, r0.x + r0.width / 2, r0.y + r0.height + 60);
+    await dragOver(page, r0.x + r0.width / 2, r0.y + r0.height + 60 * (await scaleOf(page)));
+    await drop(page, r0.x + r0.width / 2, r0.y + r0.height + 60 * (await scaleOf(page)));
 
     const shape = await bandShape(page);
     const right = shape[1] as { kids: unknown[] };
@@ -145,10 +151,10 @@ test.describe("a block dropped under one column", () => {
     const r0 = (await page.locator('[data-box-id="R"]').boundingBox())!;
     const l = (await page.locator('[data-box-id="L"]').boundingBox())!;
     const gap = (l.y + l.height) - (r0.y + r0.height);
-    expect(gap, "the seed really does leave a gap worth filling").toBeGreaterThan(150);
+    expect(gap, "the seed really does leave a gap worth filling").toBeGreaterThan(150 * (await scaleOf(page)));
 
-    await dragOver(page, r0.x + r0.width / 2, r0.y + r0.height + 60);
-    await drop(page, r0.x + r0.width / 2, r0.y + r0.height + 60);
+    await dragOver(page, r0.x + r0.width / 2, r0.y + r0.height + 60 * (await scaleOf(page)));
+    await drop(page, r0.x + r0.width / 2, r0.y + r0.height + 60 * (await scaleOf(page)));
 
     const shape = await bandShape(page);
     const right = shape[1] as { kids: unknown[] };
@@ -168,7 +174,7 @@ test.describe("a block dropped under one column", () => {
     await seedUneven(page);
     const r = (await page.locator('[data-box-id="R"]').boundingBox())!;
     const band = (await page.locator('[data-box-id="band"]').boundingBox())!;
-    const x = Math.min(r.x + r.width + 20, band.x + band.width - 4);
+    const x = Math.min(r.x + r.width + 20 * (await scaleOf(page)), band.x + band.width - 4);
 
     await dragOver(page, x, r.y + r.height / 2);
     await drop(page, x, r.y + r.height / 2);
@@ -216,7 +222,7 @@ test.describe("a block dropped into the hole above a column", () => {
       const r = document.querySelector('[data-box-id="R"]')!.getBoundingClientRect();
       return { x: Math.round(r.left + r.width / 2), y: Math.round(band.top + (r.top - band.top) / 2), h: Math.round(r.top - band.top) };
     });
-    expect(hole.h, "there really is a hole to aim at").toBeGreaterThan(150);
+    expect(hole.h, "there really is a hole to aim at").toBeGreaterThan(150 * (await scaleOf(page)));
 
     await dragOver(page, hole.x, hole.y);
     await drop(page, hole.x, hole.y);
@@ -331,15 +337,15 @@ test.describe("shrinking a dropped block lets the next one follow", () => {
 
     const rBefore = (await rect(page, "R"))!;
     const nBefore = (await rect(page, fresh!))!;
-    expect(nBefore.h, "the newcomer took the space that was there").toBeGreaterThan(200);
+    expect(nBefore.h, "the newcomer took the space that was there").toBeGreaterThan(200 * (await scaleOf(page)));
 
     // Now drag the newcomer shorter — the gesture that used to strand the block below.
     expect(await selectBlock(page, fresh!), "the newcomer could not be selected").toBe(true);
     const handle = (await page.locator('[aria-label="Resize bottom edge"]').boundingBox())!;
-    const cx = handle.x + handle.width / 2, cy = handle.y + handle.height / 2;
+    const cx = handle.x + handle.width / 2, cy = handle.y + handle.height / 2, z = await scaleOf(page);
     await page.mouse.move(cx, cy);
     await page.mouse.down();
-    for (let i = 1; i <= 12; i++) { await page.mouse.move(cx, cy - (100 * i) / 12); await page.waitForTimeout(12); }
+    for (let i = 1; i <= 12; i++) { await page.mouse.move(cx, cy - (100 * z * i) / 12); await page.waitForTimeout(12); }
     await page.mouse.up();
     await page.waitForTimeout(700);
 
@@ -347,7 +353,7 @@ test.describe("shrinking a dropped block lets the next one follow", () => {
     const rAfter = (await rect(page, "R"))!;
     const column = (await rect(page, "L"))!; // the tall neighbour is what makes the column tall
 
-    expect(nBefore.h - nAfter.h, "the newcomer really did get shorter").toBeGreaterThan(40);
+    expect(nBefore.h - nAfter.h, "the newcomer really did get shorter").toBeGreaterThan(40 * z);
     expect(
       Math.round(rAfter.top - nAfter.bottom),
       `a ${Math.round(rAfter.top - nAfter.bottom)}px hole was left between them — the band is still filling`,
@@ -355,7 +361,7 @@ test.describe("shrinking a dropped block lets the next one follow", () => {
     expect(
       rBefore.top - rAfter.top,
       `the block below did not follow: it was at ${rBefore.top} and is now at ${rAfter.top}`,
-    ).toBeGreaterThan(40);
+    ).toBeGreaterThan(40 * z);
 
     /**
      * …AND THE COLUMN STAYS FULL: the block below GROWS into the room, it does not slide up and leave a
@@ -373,6 +379,6 @@ test.describe("shrinking a dropped block lets the next one follow", () => {
     expect(
       rAfter.h - rBefore.h,
       "the block below should have GROWN into the room, not slid up",
-    ).toBeGreaterThan(40);
+    ).toBeGreaterThan(40 * z);
   });
 });

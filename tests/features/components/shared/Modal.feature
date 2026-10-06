@@ -139,3 +139,16 @@ Feature: Modal component
     Given a Modal is rendered with a footer
     Then the footer has a top border with "border-t" and "border-gray-200"
     And the footer has "bg-gray-50/50" background
+
+  Scenario: Escape closes the modal even when the page behind it re-renders on the same key (E3-9)
+    Given a Modal open over a page whose own Escape handler re-renders it
+    When I press Escape once
+    Then the modal closes
+    Because its Escape listener is added once per opening and calls the latest onClose
+
+  Scenario: The modal takes the focus and gives it back (E3-11)
+    Given a button that opens a Modal
+    When the Modal opens
+    Then the focus is inside the Modal, unless something inside it took the focus first
+    When it closes
+    Then the focus is back on the button

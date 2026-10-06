@@ -171,11 +171,13 @@ test.describe("pinned bars stack instead of covering each other", () => {
     await page.waitForSelector('[data-box-id="b3"]', { timeout: 30000 });
     await page.waitForTimeout(700); // the measuring pass runs in a frame after the render
 
+    // In PAGE px (E-2): Full width is the desktop page drawn shrunk to fit — and there the pass stacked the bars by their SCREEN
+    // heights, so they overlapped (E2-14: the second started at 152 where the first ended at 158)
     const boxes = await page.evaluate(() => ["b1", "b2", "b3"].map((id) => {
       const el = document.querySelector<HTMLElement>(`[data-box-id="${id}"]`);
       if (!el) return null;
-      const r = el.getBoundingClientRect();
-      return { id, top: Math.round(r.top), bottom: Math.round(r.bottom), h: Math.round(r.height) };
+      const z = Number(el.closest<HTMLElement>("[data-canvas-scale]")?.dataset.canvasScale) || 1, r = el.getBoundingClientRect();
+      return { id, top: Math.round(r.top / z), bottom: Math.round(r.bottom / z), h: Math.round(r.height / z) };
     }));
     const [c1, c2, c3] = boxes;
     expect(c1 && c2 && c3, "a pinned band is missing from the canvas").toBeTruthy();

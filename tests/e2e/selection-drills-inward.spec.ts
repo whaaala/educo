@@ -30,7 +30,7 @@ async function clickRepeatedly(page: Page, times: number) {
   const g = (await page.locator('[data-box-id="G"]').boundingBox())!;
   const out: (string | null)[] = [];
   for (let i = 0; i < times; i++) {
-    await page.mouse.click(g.x + g.width / 2, g.y + g.height / 2);
+    await page.mouse.click(g.x + g.width * 0.25, g.y + g.height * 0.25); // a quarter in: an empty block's "+" sits in its middle (E2-9)
     await page.waitForTimeout(250);
     out.push(await selected(page));
   }
@@ -64,7 +64,7 @@ test.describe("clicking into nested blocks", () => {
     expect(await selected(page), "empty canvas clears the selection").toBeNull();
 
     const g = (await page.locator('[data-box-id="G"]').boundingBox())!;
-    await page.mouse.click(g.x + g.width / 2, g.y + g.height / 2);
+    await page.mouse.click(g.x + g.width * 0.25, g.y + g.height * 0.25); // a quarter in: an empty block's "+" sits in its middle (E2-9)
     await page.waitForTimeout(300);
     expect(await selected(page), "…and the next click starts from the top again").toBe("P");
   });

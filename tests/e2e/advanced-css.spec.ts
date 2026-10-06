@@ -57,7 +57,7 @@ test.describe("Advanced CSS on a plain block", () => {
       const d = document.createElement("div");
       d.style.cssText = "position:absolute;visibility:hidden;width:var(--eu-gap-section)";
       root.appendChild(d);
-      const w = d.getBoundingClientRect().width;
+      const w = parseFloat(getComputedStyle(d).width); // layout px: the canvas is drawn scaled, a rect is not the value (E-2)
       d.remove();
       return Math.round(w);
     });

@@ -24,7 +24,7 @@ import {
   type Breakpoint, resolveResponsive, updateBoxResponsive, treePinArrivalCss, floatHoldCSS, canvasFixedStyle, capturesFixed, imageSizing, fillsRowsAnywhere, fillHostOf, importPhoto, treeItemEffectsCss, itemNeedsClass, floatZIndex, gridPlacementAt, masonryMeasureAttr, masonryMeasurePass, mirrorMeasuresNow, baseUnitParts, pinStackMarker, pinStackGroupMarker, pinStackPass, isPager, pagerStripCss, pagerNavHTML, selectionChain, textLen, typoRole, typoRootVars, typoCascadeCss, bandEdgeCSS, LINK_COLOR_CSS, treeGridQueryCss, TYPE_UNIT_PROPERTY_CSS,
 } from "@/lib/box-model";
 import { ICON_SET } from "./icons";
-import { PortalMenu, MenuItem, MenuHeader, MenuSep } from "./ui";
+import { PortalMenu, MenuItem, MenuHeader, MenuSep, modalOpen } from "./ui";
 import GridLayoutMenu, { type MenuAnchor } from "./GridLayoutMenu";
 import GallerySetupMenu from "./GallerySetupMenu";
 import { blockForKind, nodeForPhotos, photoGallery, PHOTO_SETUP, type GalleryPhoto } from "@/lib/box-presets";
@@ -175,7 +175,10 @@ export function measureFixedGeom(rootId: string, id: string): { x: number; y: nu
   // that edge scrolls away and the canvas's top edge after it. That is the origin the published page uses
   // (the window), and the origin `canvasFixedStyle` draws against, so all three agree.
   const viewTop = Math.max(scroller ? scroller.getBoundingClientRect().top : 0, pr.top);
-  return { x: Math.round(r.left - pr.left), y: Math.round(r.top - viewTop) };
+  // In PAGE px: the rects are SCREEN px on a canvas drawn scaled, and pinX / pinY are read as page px by the canvas and the export
+  // alike — picking "Floats on screen" at 0.69 moved the block 51px, and published it there (E2-16)
+  const z = zoomOf(el);
+  return { x: Math.round((r.left - pr.left) / z), y: Math.round((r.top - viewTop) / z) };
 }
 
 export function measureFloatGeom(root: BoxNode, id: string): { parentId: string; left: number; top: number; width: string; height: number } | null {
@@ -305,7 +308,7 @@ function ownEditable(id: string): HTMLElement | undefined {
  * moved, this was not a resize, and the click belongs to whatever sits underneath. Resize geometry is untouched
  * (Rule 19).
  */
-function caretFallthrough(e: React.MouseEvent) {
+function caretFallthrough(e: React.MouseEvent, owner: string) {
   const startX = e.clientX, startY = e.clientY;
   const onUp = (ev: MouseEvent) => {
     document.removeEventListener("mouseup", onUp, true);
@@ -321,14 +324,22 @@ function caretFallthrough(e: React.MouseEvent) {
     // jsdom has no `elementFromPoint`, and an exception here took two unrelated canvas tests down with it.
     if (typeof document.elementFromPoint !== "function") return;
     const peeled: { el: HTMLElement; prev: string }[] = [];
-    let host: HTMLElement | null = null;
+    let host: HTMLElement | null = null, block: HTMLElement | null = null;
     for (let i = 0; i < 4; i++) {
       const el = document.elementFromPoint(ev.clientX, ev.clientY) as HTMLElement | null;
       if (!el) break;
       const ce = el.closest<HTMLElement>('[contenteditable="true"]');
       if (ce) { host = ce; break; }
+      // A BLOCK of the page under the handle, not yet editable — a PARENT's handle lying over a child's words (E3-5: on a phone a
+      // section's top handle covers the whole 9px of the heading at its top, and every tap re-selected the section). The tap is
+      // that block's: hand it the click it would have had, while the chrome is still switched off.
+      if (el.closest("[data-box-id]")) { block = el; break; }
       peeled.push({ el, prev: el.style.pointerEvents });
       el.style.pointerEvents = "none";
+    }
+    if (!host && block && block.closest("[data-box-id]")?.getAttribute("data-box-id") !== owner) { // its OWN handle: a still tap stays nothing, as before
+      const at = { bubbles: true, cancelable: true, view: window, clientX: ev.clientX, clientY: ev.clientY, button: 0 };
+      for (const type of ["mousedown", "mouseup", "click"]) block.dispatchEvent(new MouseEvent(type, at));
     }
     /**
      * Place the caret WHILE THE CHROME IS STILL SWITCHED OFF. Working out which character was clicked means
@@ -830,9 +841,9 @@ export default function BoxCanvas({
       const box = document.querySelector<HTMLElement>(`[data-box-id="${CSS.escape(soloId)}"]`);
       if (!box) return;
       const canvasTop = document.querySelector(`[data-box-id="${CSS.escape(rootRef.current.id)}"]`)?.getBoundingClientRect().top ?? 0;
-      // Within 36px of the canvas top there is no room above, so the bar drops BELOW the box rather than
-      // sitting over the app header. Only written when it actually changes, so a stable page settles.
-      setToolbarBelow((prev) => { const next = box.getBoundingClientRect().top < canvasTop + 36; return next === prev ? prev : next; });
+      // Within 48px of the canvas top (the bar's 32 + the 16 that clears the handles) there is no room above, so the bar
+      // drops BELOW the box rather than sitting over the app header. Only written when it actually changes, so a stable page settles.
+      setToolbarBelow((prev) => { const next = box.getBoundingClientRect().top < canvasTop + 48; return next === prev ? prev : next; });
     };
     measure();
     window.addEventListener("scroll", measure, true);
@@ -997,6 +1008,7 @@ export default function BoxCanvas({
       const z = zoomOf(host);
       const scrolled = scroller ? scroller.scrollTop : window.scrollY;
       host.style.setProperty("--canvas-scroll", `${Math.round(scrolled / z)}px`);
+      host.style.setProperty("--canvas-z", String(z)); // a sticky pin's lag under the frame's scale (E2-15, canvasFixedStyle)
       host.style.setProperty("--canvas-h", `${Math.round((scroller ? scroller.clientHeight : window.innerHeight) / z)}px`);
       // How far the PAGE sits below the top of the scrolling area — the canvas's own padding, which the page
       // being edited does not have. Without it a block held at the page's top edge keeps that padding as a
@@ -1162,6 +1174,7 @@ export default function BoxCanvas({
     const onKey = (e: KeyboardEvent) => {
       const ae = document.activeElement as HTMLElement | null;
       if (ae && (ae.tagName === "INPUT" || ae.tagName === "TEXTAREA" || ae.isContentEditable)) return; // never hijack text editing
+      if (modalOpen()) return; // …nor act on the page under an open dialog (E3-10)
       // …nor a CONTROL outside the page that has the focus (Z1-j). With a block selected, Enter on a focused toolbar
       // button edited the block's words instead of pressing the button (the zoom menu, Preview, Export never opened by
       // keyboard), and Delete on a focused button DELETED the selected block. A focused control owns the keys it USES —
@@ -2328,8 +2341,10 @@ export default function BoxCanvas({
     const backToWords = (px: number, sharedWith: string | null) => hugPx > 0 && !sharedWith && Math.abs(px - hugPx) <= HUG_SNAP_PX;
     // Sizes are written in rem (field guide ②) — read the root font once per drag, never per mouse-move.
     const rootPx = rootFontPx() * Z; // in screen px, so remLen(screenPx, rootPx) writes true rem and 14rem floors compare with rects
-    const minWpx = selfSizing ? Math.max(8, naturalW * MIN_CONTENT_SCALE) : Math.max(8, 0.03 * maxW);
-    const minHpx = selfSizing ? Math.max(8, naturalH * MIN_CONTENT_SCALE) : 8;
+    // The 8px floor is a PAGE size, like the engine's (`Math.max(8, …)` in box-model): as screen px it became 36px of page
+    // on a phone's 0.22 canvas, so how small a drag could make a box depended on the zoom it was made at (E4-6).
+    const minWpx = selfSizing ? Math.max(8 * Z, naturalW * MIN_CONTENT_SCALE) : Math.max(8 * Z, 0.03 * maxW);
+    const minHpx = selfSizing ? Math.max(8 * Z, naturalH * MIN_CONTENT_SCALE) : 8 * Z;
     /** The text scale a box of `px` needs so `natural` px of content still fits (1 until it must shrink). */
     const fitScale = (px: number, natural: number) => (natural > 0 ? clampContentScale(px / natural) : 1);
     /**
@@ -2559,6 +2574,10 @@ export default function BoxCanvas({
           let owner = found.c;
           let ownerEl = document.querySelector<HTMLElement>(`[data-box-id="${CSS.escape(found.c.id)}"]`)!;
           for (let dive = 0; dive < 8; dive++) {
+            // Only OUT OF A BAND — scaffolding that hugs its block. A block with words in it holds its own height, and the band the
+            // editor wraps round those words is STRETCHED to it, so it measured "exactly as tall" and was taken for the owner: the
+            // drag wrote the band, the block above never gave, and the dragged block grew out of its far side (E2-18, any scale).
+            if (!owner.rowBand) break;
             const inFlow = (owner.children ?? []).filter((c) => !isFloating(c));
             if (inFlow.length !== 1) break;
             const kEl = document.querySelector<HTMLElement>(`[data-box-id="${CSS.escape(inFlow[0].id)}"]`);
@@ -2668,6 +2687,7 @@ export default function BoxCanvas({
     };
     const onMove = (ev: MouseEvent) => {
       let dx = ev.clientX - startX; const dy = ev.clientY - startY;
+      const handDx = dx; // the HAND, before any snap: a page-grid edge is snapped AND clamped to the page, so a pull past it is only here (E2-23)
       let freeOff = 0; // ALT FREE (G-3b (3), map §1): px from where the edge was let go to the line its columns run to
       if (snapCols && (hasE || hasW)) {
         const from = hasE ? startRightPx : startLeftPx;
@@ -2745,9 +2765,12 @@ export default function BoxCanvas({
           // KEEP PULLING AND IT WRAPS — but not at the exact pixel the floor is reached: the edge STOPS there
           // until the drag goes `WRAP_PULL` further, so a wobble at the end of a drag is not a structural edit.
           // Without a band above to wrap in, it never wraps: the edge simply stops (rule 19).
+          // The pull is the HAND's, not `want`: `want` stops at the line's end, and WRAP_PULL is screen px, so on a canvas drawn
+          // under ~600px (every tablet and phone) the floor left less than the pull and it could never wrap (E2-11) — and not the
+          // snapped `dx` either, which on a page-grid page is clamped to the page's edge just as `want` is (E2-23).
           const holds = canWrap ? keptNow + 1 : startKept;
           const limit = R - fs.slice(0, holds).reduce((s, f) => s + Math.min(f.floor, f.rest) + f.gap, 0);
-          if (!canWrap || P(want) < limit + P(WRAP_PULL)) r = allocateLine(Math.max(limit, P(minWpx)), R, fs, opts);
+          if (!canWrap || P(Math.max(want, W0 + handDx)) < limit + P(WRAP_PULL)) r = allocateLine(Math.max(limit, P(minWpx)), R, fs, opts);
         }
         const scE = selfSizing ? fitScale((r.own / 100) * maxW, naturalW) : 1;
         /**
@@ -2944,7 +2967,7 @@ export default function BoxCanvas({
          */
         // The height is EXACTLY what the drag asked for — the same expression as the no-partner case below,
         // deliberately, so a partner can never change what a drag stores. Three guards assert that directly.
-        const h = Math.round(Math.max(startTopPx + minHpx, startBotPx + dy) - startTopPx);
+        const h = Math.max(startTopPx + minHpx, startBotPx + dy) - startTopPx; // SCREEN px, not rounded: `lay` keeps a thousandth of a page px, and a whole screen px is 1.45 of them at 0.69 — the partner took the unrounded rest and a round trip drifted 0.08 page px a cycle (E2-17)
         const scS = fitScale(h, naturalH);
         tree = writeBox(tree, id, isComp
           ? { height: remLen(h, rootPx), minHeight: undefined, clip: undefined, contentScale: scS < 1 ? scS : undefined }
@@ -2952,8 +2975,10 @@ export default function BoxCanvas({
         // …AND THE ROOM GROWS WITH IT (see `cappingBand`). Without this the gain is taken from whatever sits
         // above inside the same capped band — a `fill` block gives it up without resisting, because its height
         // is leftover — and the anchored TOP edge moves. Measured on the user's page: 61px of a 90px drag.
-        const grewS = Math.round(h - H0);
-        if (cappingBand && grewS > 0) tree = writeBox(tree, cappingBand.id, { minHeight: lay(cappingBand.h0 + grewS) });
+        // `h0` is STORED (layout px), the growth is SCREEN px: only the growth goes through `lay` — the sum did, and on a canvas
+        // drawn at 0.47 the band came out 519 for 291, the rest handed to the `fill` block above (the top edge moved 226, E2-13)
+        const grewS = h - H0;
+        if (cappingBand && grewS > 0) tree = writeBox(tree, cappingBand.id, { minHeight: cappingBand.h0 + lay(grewS) });
         /**
          * ONLY WHAT WAS RELEASED, AND ONLY WHEN SHRINKING.
          *
@@ -2984,14 +3009,14 @@ export default function BoxCanvas({
          */
         const released = H0 - h;
         if (released > 0) {
-          const bh = Math.max(MIN_ROW_PX, Math.round(below.h0 + released));
+          const bh = Math.max(MIN_ROW_PX * Z, below.h0 + released); // screen px throughout: the floor scaled, no whole-screen-px rounding (E2-13)
           tree = writeBox(tree, below.sibId, below.isComp
             ? { height: remLen(bh, rootPx), minHeight: undefined }
             : { minHeight: lay(bh), height: undefined });
         } else if (released < 0) {
           const taken = Math.min(-released, below.slack);
           if (taken > 0) {
-            const bh = Math.max(MIN_ROW_PX, Math.round(below.h0 - taken));
+            const bh = Math.max(MIN_ROW_PX * Z, below.h0 - taken);
             tree = writeBox(tree, below.sibId, below.isComp
               ? { height: remLen(bh, rootPx), minHeight: undefined }
               : { minHeight: lay(bh), height: undefined });
@@ -2999,13 +3024,13 @@ export default function BoxCanvas({
         }
       } else if (hasS) {
         // Nothing below it: the bottom edge faces open space, so it simply opens some. Top fixed, bottom moves.
-        const h = Math.round(Math.max(startTopPx + minHpx, startBotPx + dy) - startTopPx);
+        const h = Math.max(startTopPx + minHpx, startBotPx + dy) - startTopPx; // SCREEN px, not rounded: `lay` keeps a thousandth of a page px, and a whole screen px is 1.45 of them at 0.69 — the partner took the unrounded rest and a round trip drifted 0.08 page px a cycle (E2-17)
         const sc = fitScale(h, naturalH);
         tree = writeBox(tree, id, isComp ? { height: remLen(h, rootPx), minHeight: undefined, clip: undefined, contentScale: sc < 1 ? sc : undefined } : { minHeight: lay(h), height: undefined });
         // GROWING RAISES THE ROOM IT GROWS IN (see `cappingBand`), so the gain never comes out of a sibling
         // above. Shrinking leaves the band alone: that space is the one the gesture is deliberately opening.
-        const grew = Math.round(h - H0);
-        if (cappingBand && grew > 0) tree = writeBox(tree, cappingBand.id, { minHeight: lay(cappingBand.h0 + grew) });
+        const grew = h - H0; // screen px; `h0` is stored — see E2-13 above
+        if (cappingBand && grew > 0) tree = writeBox(tree, cappingBand.id, { minHeight: cappingBand.h0 + lay(grew) });
       }
       if (hasN && aboveSibId) {
         /**
@@ -3036,8 +3061,10 @@ export default function BoxCanvas({
         const rise = Math.max(-selfSlack, Math.min(-dy, aboveGap0 + aboveSlack));
         const fromGap = Math.min(Math.max(rise, 0), aboveGap0); // only GROWING eats the gap
         const fromPartner = rise - fromGap;                     // negative → the block above grows instead
-        const ah = Math.max(MIN_ROW_PX, Math.round(aboveH0 - fromPartner));
-        const mt = pxU(Math.max(0, Math.round(aboveGap0 - fromGap)));
+        const ah = Math.max(MIN_ROW_PX * Z, aboveH0 - fromPartner); // screen px: the floor scaled as `aboveSlack` was (E2-13)
+        // A drag that spent none of the gap KEEPS the stored margin: re-deriving it from the measured screen gap rounded a whole
+        // SCREEN px, and on a shrunk canvas half of one is more than a page px — 40 came back as 41 at 0.47 (E2-4).
+        const mt = fromGap <= 0 && bn.marginTop != null ? bn.marginTop : pxU(Math.max(0, aboveGap0 - fromGap));
         /**
          * THE HEIGHT IS DERIVED FROM THE MARGIN THAT WAS ACTUALLY STORED — rule 19, held by construction
          * rather than by arithmetic that happens to round nicely.
@@ -3060,7 +3087,7 @@ export default function BoxCanvas({
          * bottom lands up to a pixel out. The height is emitted through `remLen`, which keeps three decimals,
          * so it can carry the remainder exactly and the sum closes.
          */
-        const h = Math.max(MIN_ROW_PX, Math.round((startBotPx - (flowY + (ah - aboveH0)) - mtPx) * 1000) / 1000);
+        const h = Math.max(MIN_ROW_PX * Z, Math.round((startBotPx - (flowY + (ah - aboveH0)) - mtPx) * 1000) / 1000);
         const scN = fitScale(h, naturalH);
         tree = writeBox(tree, id, isComp
           ? { height: remLen(h, rootPx), minHeight: undefined, clip: undefined, marginTop: mt, contentScale: scN < 1 ? scN : undefined }
@@ -3355,7 +3382,7 @@ export default function BoxCanvas({
     const canvasStyle = capturedAbove ? wrapStyle : canvasFixedStyle(wrapStyle);
     // Marked so the measuring pass below can find every held block and tell it where its holder sits.
     const heldAttr = {
-      ...(canvasStyle !== wrapStyle ? { "data-held": "1" } : {}),
+      ...(canvasStyle !== wrapStyle && (wrapStyle as React.CSSProperties).position === "fixed" ? { "data-held": "1" } : {}), // a sticky pin is rewritten too (E2-15) but is not held by the canvas
       // STACKED PINS (Step 2c) — the SAME marker the export writes, from the same resolver, so the editor
       // stacks the bars the way the published page will. See `pinStackMarker`.
       ...((m) => (m ? { "data-eu-pin": m } : {}))(pinStackMarker(rawNode, parent ?? undefined)),
@@ -3367,7 +3394,7 @@ export default function BoxCanvas({
     const resizeHandles = isSolo && editable && !isRoot && !node.locked ? (
       <>
         {HANDLES.map((h) => (
-          <div key={h.edge} onMouseDown={(e) => { caretFallthrough(e); startResize(e, node.id, h.edge); }} aria-label={`Resize ${h.label}`} title={h.title} className={`absolute ${h.pos} ${h.cursor} bg-indigo-500 border-2 border-white shadow`} style={{ zIndex: CHROME_Z.handle, pointerEvents: "auto" }} />
+          <div key={h.edge} onMouseDown={(e) => { caretFallthrough(e, node.id); startResize(e, node.id, h.edge); }} aria-label={`Resize ${h.label}`} title={h.title} className={`absolute ${h.pos} ${h.cursor} bg-indigo-500 border-2 border-white shadow`} style={{ zIndex: CHROME_Z.handle, pointerEvents: "auto" }} />
         ))}
       </>
     ) : null;
@@ -3657,6 +3684,9 @@ export default function BoxCanvas({
     );
     // The toolbar sits ABOVE the box (outside it) so it NEVER covers the content — important now that blocks hug
     // their content and can be small. When the box is near the canvas top (no room above), it flips to BELOW.
+    // 1rem clear of the box, not 0.25: the handles are drawn outside it (c-21, the corners 14px out), and on a block
+    // narrower than about twice the bar — every block on a phone's shrunk canvas — the bar covered the top handle, so
+    // the top edge could not be grabbed (E2-8).
     //
     // THIS COMPONENT HOLDS NO HOOKS, deliberately. It is declared inside `BoxCanvas`, so React remounts it on
     // every render — and an effect re-runs on mount whatever its dependency array says, which is how the
@@ -3668,7 +3698,7 @@ export default function BoxCanvas({
     // loose buttons with no indication they belong to the block that was just selected. The item CRUD bar
     // next door already got this right — this one had nothing.
     return (
-      <div role="toolbar" aria-label="Block toolbar" style={{ zIndex: CHROME_Z.toolbar, pointerEvents: "auto" }} className={`absolute left-0 w-max max-w-none ${below ? "top-full mt-1" : "bottom-full mb-1"} flex items-center gap-0.5 rounded-xl bg-gray-900/95 dark:bg-gray-800/95 backdrop-blur-sm px-1 py-1 shadow-lg ring-1 ring-white/10`} onClick={(e) => e.stopPropagation()} onMouseDown={(e) => e.stopPropagation()}>
+      <div role="toolbar" aria-label="Block toolbar" style={{ zIndex: CHROME_Z.toolbar, pointerEvents: "auto" }} className={`absolute left-0 w-max max-w-none ${below ? "top-full mt-4" : "bottom-full mb-4"} flex items-center gap-0.5 rounded-xl bg-gray-900/95 dark:bg-gray-800/95 backdrop-blur-sm px-1 py-1 shadow-lg ring-1 ring-white/10`} onClick={(e) => e.stopPropagation()} onMouseDown={(e) => e.stopPropagation()}>
         {!isRoot && !node.locked && (
           <span
             onMouseDown={(e) => startDrag(e, node)}

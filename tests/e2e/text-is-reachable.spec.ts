@@ -144,6 +144,21 @@ test.describe("the words of a selected block can always be clicked", () => {
     expect(missed, `these points are over the words but the caret would not go there:\n  ${missed.join("\n  ")}`).toEqual([]);
   });
 
+  test("on a phone, a tap on the words under the selected section's top handle selects the heading (E3-5)", async ({ page }) => {
+    // A phone draws the desktop page at ~0.22: the heading at the top of its section is 9px tall, and the section's top handle — with
+    // no room above the page top — lies over the whole of it. Every tap there re-selected the section; the heading was unreachable.
+    await page.setViewportSize({ width: 393, height: 851 });
+    await page.reload(); await page.waitForSelector('[data-box-id="h"]'); await page.waitForTimeout(400);
+    const b = (await page.locator('[data-box-id="h"]').boundingBox())!;
+    const x = b.x + b.width * 0.5, y = b.y + b.height * 0.5;
+    await page.mouse.click(x, y); await page.waitForTimeout(250);
+    expect(await selection(page), "the first tap takes the section, as it does at every size").toBe("sec");
+    const under = await page.evaluate(([x, y]) => document.elementFromPoint(x, y)?.getAttribute("aria-label") ?? null, [x, y]);
+    expect(under, "the precondition: the section's handle really is over the words").toMatch(/^Resize /);
+    await page.mouse.click(x, y); await page.waitForTimeout(250);
+    expect(await selection(page), "the second tap takes the heading under the handle").toBe("h");
+  });
+
   test("typing lands after clicking the very start of the line", async ({ page }) => {
     await selectHeading(page);
     const pts = (await aimPoints(page))!;

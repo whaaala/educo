@@ -151,8 +151,10 @@ test.describe("dragging a Columns block onto a section", () => {
     await dragKindOnto(page, "grid", "sec");
     await pickShape(page, 2, 1);
     const g = (await droppedGrid(page))!;
-    const sec = (await page.locator('[data-box-id="sec"]').boundingBox())!;
-    const grid = (await page.locator(`[data-box-id="${g.id}"]`).boundingBox())!;
+    // in PAGE px (E-2): the canvas is drawn scaled — Full width is the desktop page shrunk to fit
+    const s = await page.evaluate(() => Number(document.querySelector<HTMLElement>("[data-canvas-scale]")?.dataset.canvasScale) || 1);
+    const sec = { height: (await page.locator('[data-box-id="sec"]').boundingBox())!.height / s };
+    const grid = { height: (await page.locator(`[data-box-id="${g.id}"]`).boundingBox())!.height / s };
     expect(sec.height, "the section has real height to give").toBeGreaterThan(350);
     expect(Math.abs(grid.height - sec.height), "the grid takes the height it was given").toBeLessThan(4);
   });

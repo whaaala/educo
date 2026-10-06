@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, ReactNode } from "react";
+import { useEffect, useRef, useCallback, ReactNode } from "react";
 import { X } from "lucide-react";
 import Portal from "./Portal";
 
@@ -33,20 +33,30 @@ export default function Modal({
 }: ModalProps) {
   // Support both maxWidth and size (alias)
   const effectiveMaxWidth = maxWidth || size || "4xl";
-  // Close on escape key (unless prevented)
+  // Close on escape key (unless prevented). `onClose` through a REF, so the listener is added once per opening: keyed on an
+  // `onClose` that is new every render, it was removed and re-added by any render the same keypress caused — a listener removed
+  // mid-dispatch is never called, and Escape never closed the builder's Page check (E3-9, the listener-churn trap).
+  const onCloseRef = useRef(onClose);
+  onCloseRef.current = onClose;
+  // Focus goes INTO the dialog when it opens and back to where it was when it closes (E3-11, WCAG 2.4.3): it stayed on the button
+  // behind the dialog, and the page's own keys acted under it.
+  const opener = useRef<HTMLElement | null>(null);
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === "Escape" && !preventBackdropClose) onClose();
+      if (e.key === "Escape" && !preventBackdropClose) onCloseRef.current();
     };
-    if (isOpen) {
-      document.addEventListener("keydown", handleEscape);
-      document.body.style.overflow = "hidden";
-    }
+    if (!isOpen) return;
+    opener.current = document.activeElement as HTMLElement | null;
+    document.addEventListener("keydown", handleEscape);
+    document.body.style.overflow = "hidden";
     return () => {
       document.removeEventListener("keydown", handleEscape);
       document.body.style.overflow = "unset";
+      if (opener.current?.isConnected) opener.current.focus();
     };
-  }, [isOpen, onClose, preventBackdropClose]);
+  }, [isOpen, preventBackdropClose]);
+  // The panel mounts a render later (Portal): focus it the moment it exists, unless something inside already took the focus.
+  const takeFocus = useCallback((el: HTMLDivElement | null) => { if (el && !el.contains(document.activeElement)) el.focus(); }, []);
 
   if (!isOpen) return null;
 
@@ -73,7 +83,9 @@ export default function Modal({
         onClick={preventBackdropClose ? undefined : onClose}
       >
         <div
-          className={`bg-surface rounded-2xl shadow-2xl w-full ${maxWidthClasses[effectiveMaxWidth]} max-h-[calc(100vh-2rem)] overflow-hidden flex flex-col animate-in zoom-in-95 slide-in-from-bottom-4 duration-300`}
+          ref={takeFocus}
+          tabIndex={-1}
+          className={`outline-none bg-surface rounded-2xl shadow-2xl w-full ${maxWidthClasses[effectiveMaxWidth]} max-h-[calc(100vh-2rem)] overflow-hidden flex flex-col animate-in zoom-in-95 slide-in-from-bottom-4 duration-300`}
           onClick={(e) => e.stopPropagation()}
         >
           {/* Header */}

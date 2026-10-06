@@ -36,13 +36,18 @@ async function select(page: Page, id: string) {
   for (let i = 0; i < 5; i++) {
     const sel = await page.evaluate(() => document.querySelector(".outline-indigo-500")?.getAttribute("data-box-id") ?? null);
     if (sel === id) return true;
-    await page.mouse.click(b.x + b.width * 0.5, b.y + b.height * 0.5);
+    // a quarter in, not the middle: an empty block's "+" hint sits in its middle, and on a shrunk canvas it covers it
+    await page.mouse.click(b.x + b.width * 0.25, b.y + b.height * 0.25);
     await page.waitForTimeout(180);
   }
   return false;
 }
 
-async function dragHandle(page: Page, label: string, dx: number) {
+const scaleOf = (page: Page) => page.evaluate(() => Number(document.querySelector<HTMLElement>("[data-canvas-scale]")?.dataset.canvasScale) || 1);
+
+/** Drag by `dx` PAGE px — the same gesture on the page at any scale (E-2: Full width is the desktop page shrunk to fit). */
+async function dragHandle(page: Page, label: string, pageDx: number) {
+  const dx = pageDx * (await scaleOf(page));
   const h = (await page.locator(`[aria-label="${label}"]`).boundingBox())!;
   await page.mouse.move(h.x + h.width / 2, h.y + h.height / 2);
   await page.mouse.down();
@@ -51,7 +56,7 @@ async function dragHandle(page: Page, label: string, dx: number) {
   await page.waitForTimeout(350);
 }
 
-/** A block's stored width as a percentage, and the box it actually occupies. */
+/** A block's stored width as a percentage, and the box it actually occupies — in PAGE px, from the canvas frame's corner. */
 async function widthOf(page: Page, id: string) {
   const stored = await page.evaluate((id) => {
     const site = JSON.parse(localStorage.getItem("educo_box_site_v1") || "{}");
@@ -59,9 +64,21 @@ async function widthOf(page: Page, id: string) {
       n.id === id ? n : ((n.children as Record<string, unknown>[]) ?? []).reduce<Record<string, unknown> | null>((a, c) => a ?? find(c), null);
     return (find(site.pages[0].root)?.width as string) ?? "";
   }, id);
-  const box = await page.locator(`[data-box-id="${id}"]`).boundingBox();
-  return { pct: parseFloat(stored), box: box! };
+  const box = await page.locator(`[data-box-id="${id}"]`).evaluate((el) => {
+    const f = el.closest<HTMLElement>("[data-canvas-scale]")!, s = Number(f.dataset.canvasScale) || 1;
+    const r = el.getBoundingClientRect(), o = f.getBoundingClientRect();
+    return { x: (r.left - o.left) / s, y: (r.top - o.top) / s, width: r.width / s, height: r.height / s };
+  });
+  return { pct: parseFloat(stored), box };
 }
+
+/**
+ * The row's width in page px, read from L (its drawn width ÷ its stored share). Every drag below is a fraction of it — they
+ * were written as px for an 828px row (Full width at 1:1 on a 1280 window), and Full width is now the 1200px desktop page.
+ * A pull meant to WRAP the neighbour is 0.6 of the row, not 0.51: past the neighbour's floor the edge holds for `WRAP_PULL`
+ * (24 SCREEN px — a wobble of the hand is not a structural edit), and 0.51 overshot by 15 screen px on a phone's 0.25 (E2-11).
+ */
+const rowOf = async (page: Page) => { const l = await widthOf(page, "L"); return l.box.width / (l.pct / 100); };
 
 const noSidewaysScroll = (page: Page) =>
   page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth);
@@ -71,7 +88,7 @@ test.describe("two blocks sharing a line", () => {
     await seedPair(page);
     expect(await select(page, "L")).toBe(true);
     const before = await widthOf(page, "L");
-    await dragHandle(page, "Resize right edge", 200);
+    await dragHandle(page, "Resize right edge", 0.24 * (await rowOf(page)));
 
     const l = await widthOf(page, "L"), r = await widthOf(page, "R");
     expect(l.pct, "the block you dragged got wider").toBeGreaterThan(before.pct + 10);
@@ -89,7 +106,7 @@ test.describe("two blocks sharing a line", () => {
     const l0 = await widthOf(page, "L"), r0 = await widthOf(page, "R");
     const pairRight0 = r0.box.x + r0.box.width;
 
-    await dragHandle(page, "Resize right edge", 200);
+    await dragHandle(page, "Resize right edge", 0.24 * (await rowOf(page)));
     const l1 = await widthOf(page, "L"), r1 = await widthOf(page, "R");
     // FIRST that something happened at all. "Only the grabbed edge moved" is trivially satisfied by a drag
     // that moves nothing, which is exactly the defect this file exists for — a mutation run proved this test
@@ -102,7 +119,7 @@ test.describe("two blocks sharing a line", () => {
   test("dragging the RIGHT block's left edge does the same, mirrored", async ({ page }) => {
     await seedPair(page);
     expect(await select(page, "R")).toBe(true);
-    await dragHandle(page, "Resize left edge", -200);
+    await dragHandle(page, "Resize left edge", -0.24 * (await rowOf(page)));
 
     const l = await widthOf(page, "L"), r = await widthOf(page, "R");
     expect(r.pct, "the block you dragged got wider").toBeGreaterThan(60);
@@ -123,7 +140,7 @@ test.describe("two blocks sharing a line", () => {
     await seedPair(page);
     expect(await select(page, "L")).toBe(true);
 
-    await dragHandle(page, "Resize right edge", 420);           // push R onto its own line
+    await dragHandle(page, "Resize right edge", 0.6 * (await rowOf(page)));           // push R onto its own line
     const wrapped = await widthOf(page, "R");
     expect(wrapped.box.y, "R is below L").toBeGreaterThan((await widthOf(page, "L")).box.y + 100);
 
@@ -134,7 +151,7 @@ test.describe("two blocks sharing a line", () => {
     // DECIDED 2026-09-26 (the user, with a screenshot of the hole it used to leave): the neighbour comes back as soon
     // as it fits and FILLS the rest of the line — it no longer waits at its old width with empty space beside it.
     // Narrowed PAST where it started, L leaves more room, so R is wider than its old 50% and the line is full.
-    await dragHandle(page, "Resize right edge", -470);
+    await dragHandle(page, "Resize right edge", -0.57 * (await rowOf(page)));
     const l = await widthOf(page, "L"), r = await widthOf(page, "R");
     expect(Math.abs(r.box.y - l.box.y), "R is back on L's line").toBeLessThan(4);
     expect(l.pct + r.pct, "the line is FULL — no hole at its end").toBeGreaterThan(99.5);
@@ -171,13 +188,13 @@ test.describe("two blocks sharing a line", () => {
      */
     await seedPair(page);
     expect(await select(page, "L")).toBe(true);
-    await dragHandle(page, "Resize right edge", 420);
-    expect((await widthOf(page, "R")).box.y, "R wrapped below").toBeGreaterThan(200);
+    await dragHandle(page, "Resize right edge", 0.6 * (await rowOf(page)));
+    expect((await widthOf(page, "R")).box.y, "R wrapped below").toBeGreaterThan((await widthOf(page, "L")).box.y + 100);
 
     const seen: number[] = [];
     for (let i = 0; i < 5; i++) {
       expect(await select(page, "L")).toBe(true);
-      await dragHandle(page, "Resize right edge", -100);
+      await dragHandle(page, "Resize right edge", -0.12 * (await rowOf(page)));
       seen.push((await widthOf(page, "L")).box.width);
     }
     // Every step moved, and always in the same direction. A single stuck value repeated is the defect.
@@ -193,12 +210,27 @@ test.describe("two blocks sharing a line", () => {
     expect(l.pct + r.pct).toBeLessThanOrEqual(100.5);
   });
 
+  test("keep pulling wraps the neighbour on a canvas drawn small too — a tablet's, a phone's, a zoomed-out one (E2-11)", async ({ page }) => {
+    // The pull past the floor was measured on a width CAPPED at the line's end, against a 24-SCREEN-px margin: once the canvas
+    // was drawn under ~600px that margin was more than the floor left, and the neighbour could never wrap. Zoomed out as a
+    // person does (Ctrl −) so the desktop project draws it small as well — at 0.69 the old code passed.
+    await seedPair(page);
+    expect(await select(page, "L")).toBe(true);
+    for (let i = 0; i < 4 && (await scaleOf(page)) > 0.4; i++) { await page.keyboard.press("Control+Minus"); await page.waitForTimeout(300); }
+    const row = await rowOf(page);
+    expect(row * (await scaleOf(page)), "the precondition: the line is drawn under 600 screen px").toBeLessThan(600);
+    await dragHandle(page, "Resize right edge", 0.6 * row);
+    const l = await widthOf(page, "L"), r = await widthOf(page, "R");
+    expect(r.box.y, "R wrapped below").toBeGreaterThan(l.box.y + 100);
+    expect(l.pct, "and L took the whole line").toBeGreaterThan(99);
+  });
+
   test("a block alone on its line fills that line", async ({ page }) => {
     // The other half of what wrapping has to do: dropped onto a line of its own, the neighbour spreads to
     // fill it rather than sitting at half width with empty space beside it.
     await seedPair(page);
     expect(await select(page, "L")).toBe(true);
-    await dragHandle(page, "Resize right edge", 420);
+    await dragHandle(page, "Resize right edge", 0.6 * (await rowOf(page)));
 
     const l = await widthOf(page, "L"), r = await widthOf(page, "R");
     expect(r.box.y, "R wrapped below").toBeGreaterThan(l.box.y + 100);
@@ -210,7 +242,7 @@ test.describe("two blocks sharing a line", () => {
     // another line is not a reason to discard it. It arrives in a band of its own, still 50% wide.
     await seedPair(page);
     expect(await select(page, "L")).toBe(true);
-    await dragHandle(page, "Resize right edge", 420);
+    await dragHandle(page, "Resize right edge", 0.6 * (await rowOf(page)));
 
     const l = await widthOf(page, "L"), r = await widthOf(page, "R");
     expect(l.pct, "the dragged block took the whole line").toBeGreaterThan(99);
@@ -251,7 +283,7 @@ test.describe("two blocks sharing a line", () => {
     expect(await select(page, "L")).toBe(true);
 
     const before = await widthOf(page, "L");
-    await dragHandle(page, "Resize right edge", -160);
+    await dragHandle(page, "Resize right edge", -0.19 * (await rowOf(page)));
     const after = await widthOf(page, "L");
     expect(after.box.width, "it actually got narrower on screen").toBeLessThan(before.box.width - 100);
     expect(after.pct, "…and the stored width came down with it").toBeLessThan(before.pct - 10);
@@ -270,8 +302,8 @@ test.describe("two blocks sharing a line", () => {
 
     await seedPair(page);
     expect(await select(page, "L")).toBe(true);
-    await dragHandle(page, "Resize right edge", 150);
-    await dragHandle(page, "Resize right edge", -120);
+    await dragHandle(page, "Resize right edge", 0.18 * (await rowOf(page)));
+    await dragHandle(page, "Resize right edge", -0.145 * (await rowOf(page)));
     await page.waitForTimeout(400);
 
     expect(errs.filter((e) => /Maximum update depth/i.test(e)), "no render loop").toEqual([]);

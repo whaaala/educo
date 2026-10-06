@@ -9,7 +9,7 @@
  */
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { LayoutGrid, Plus, Smartphone, Tablet, Laptop, Monitor, Tv, Maximize2, RotateCw, Undo2, Redo2, Eye, ShieldCheck, X, Home, Trash2, Files, Download, Settings2, Palette, SlidersHorizontal, PanelRightClose, PanelRightOpen, AlertTriangle, ChevronUp, ChevronDown } from "lucide-react";
+import { LayoutGrid, Plus, Smartphone, Tablet, Laptop, Monitor, Tv, Maximize2, RotateCw, RotateCcw, Undo2, Redo2, Eye, ShieldCheck, X, Home, Trash2, Files, Download, Settings2, Palette, SlidersHorizontal, PanelRightClose, PanelRightOpen, AlertTriangle, ChevronUp } from "lucide-react";
 import { DEFAULT_THEME, resolveSiteTheme } from "@/lib/site-storage";
 import { THEMES, type ThemeId } from "@/lib/theme-config";
 import { RUNG_LABEL, RUNG_ORDER, RUNG_PX } from "@/lib/educo-ui/layout";
@@ -35,7 +35,7 @@ import BoxInspector from "@/components/website/box/BoxInspector";
 import BulkInspector from "@/components/website/box/BulkInspector";
 import BlocksPanel, { LAUNCHER_GUTTER_REM, PANEL_GUTTER_REM } from "@/components/website/box/BlocksPanel";
 import ThemeSwitcher from "@/components/shared/ThemeSwitcher";
-import { ToolBtn, ToolDivider, Segmented, PortalMenu, MenuItem } from "@/components/website/box/ui";
+import { ToolBtn, ToolDivider, Segmented, PortalMenu, MenuItem, modalOpen } from "@/components/website/box/ui";
 import PageLoader from "@/components/shared/PageLoader";
 import CompactSelect from "@/components/shared/CompactSelect";
 import DeleteConfirmationModal from "@/components/shared/DeleteConfirmationModal";
@@ -46,6 +46,8 @@ const KEY = "educo_box_site_v1"; // multi-page site
 const LEGACY_KEY = "educo_box_demo_v9"; // old single-tree document (migrated on load)
 const CLEANED_KEY = "educo_box_site_cleaned_v1"; // one-time flag: empty-section chrome already pruned
 const PAGE_MIN_H = 160;
+const WIDE_LABEL = "hidden min-[1600px]:inline"; // a top-bar button's words, shown where one row holds them (D3-32; measured one row from 1560, E3-7)
+const WIDER_LABEL = "hidden min-[1800px]:inline"; // the right-hand group's labels: from 1700 the bar wrapped until ~1750 (E3-7)
 const SECTION_TINTS = ["#eef2ff", "#faf5ff", "#ecfeff", "#fef2f2", "#f0fdf4", "#fffbeb"];
 
 type Device = "mobile" | "tablet" | "laptop" | "desktop" | "wide" | "full";
@@ -222,12 +224,17 @@ export default function BoxDemoPage() {
   const inspectorOpenRef = useRef(inspectorOpen);
   inspectorOpenRef.current = inspectorOpen;
   useEffect(() => {
-    if (window.matchMedia(NARROW).matches) setInspectorOpen(false);
+    const narrow = window.matchMedia(NARROW);
+    if (narrow.matches) setInspectorOpen(false);
+    // E3-3 (the user, 2026-10-06): the Inspector FOLLOWS THE WIDTH at every crossing of 64em, as on load — docked open when the
+    // window widens past it (a tablet turned, a browser dragged wider), its tab again when it narrows; a tap holds until the next crossing
+    const onCross = (e: MediaQueryListEvent) => setInspectorOpen(!e.matches);
+    narrow.addEventListener("change", onCross);
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape" && inspectorOpenRef.current && window.matchMedia(NARROW).matches) setInspectorOpen(false);
+      if (e.key === "Escape" && inspectorOpenRef.current && narrow.matches && !modalOpen()) setInspectorOpen(false);
     };
     window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
+    return () => { window.removeEventListener("keydown", onKey); narrow.removeEventListener("change", onCross); };
   }, []);
 
   const site = hist?.present ?? null;
@@ -238,15 +245,15 @@ export default function BoxDemoPage() {
     let loaded: BoxSite | null = null;
     try { const raw = localStorage.getItem(KEY); if (raw) loaded = coerceSite(JSON.parse(raw)); } catch { /* ignore */ }
     if (!loaded) { try { const legacy = localStorage.getItem(LEGACY_KEY); if (legacy) loaded = coerceSite(JSON.parse(legacy)); } catch { /* ignore */ } }
-    // One-time: strip empty tinted sections left by the old starter from previously-saved sites.
-    if (loaded) {
-      try {
-        if (!localStorage.getItem(CLEANED_KEY)) {
-          loaded = { ...loaded, pages: loaded.pages.map((p) => ({ ...p, root: pruneEmptyChrome(p.root) })) };
-          localStorage.setItem(CLEANED_KEY, "1");
-        }
-      } catch { /* ignore */ }
-    }
+    // One-time: strip empty tinted sections left by the old starter from previously-saved sites. A FRESH start is marked done
+    // too — it has nothing from the old starter — or a new visitor's first reload pruned the page they had just built, every
+    // empty block with it (E2-21: 3 nodes stored before the reload, 1 after).
+    try {
+      if (!localStorage.getItem(CLEANED_KEY)) {
+        if (loaded) loaded = { ...loaded, pages: loaded.pages.map((p) => ({ ...p, root: pruneEmptyChrome(p.root) })) };
+        localStorage.setItem(CLEANED_KEY, "1");
+      }
+    } catch { /* ignore */ }
     const s = normalizeSite(loaded ?? siteFromRoot(starter()));
     setHist({ present: s, past: [], future: [] });
     setActivePageId(s.homeId);
@@ -343,7 +350,7 @@ export default function BoxDemoPage() {
       // browser's own text undo is what you want there — and wrong for one you DRAG. A range slider holds no
       // text to undo, so after adjusting the spacing the focus was still on the slider and Ctrl+Z did
       // absolutely nothing: measured at sixty presses without a single change reversed.
-      if (typingIn(document.activeElement)) return;
+      if (typingIn(document.activeElement) || modalOpen()) return; // under an open dialog Ctrl+Z undid the page behind it (E3-10)
       const mod = e.ctrlKey || e.metaKey; const k = e.key.toLowerCase();
       if (mod && k === "z" && !e.shiftKey) { e.preventDefault(); undo(); }
       else if (mod && (k === "y" || (k === "z" && e.shiftKey))) { e.preventDefault(); redo(); }
@@ -371,16 +378,30 @@ export default function BoxDemoPage() {
    * set of families, only while Preview is open.
    */
   const fontFamilyKey = site ? fontFamiliesInSite(site, renderTheme).join("|") : "";
-  const [previewFontCss, setPreviewFontCss] = useState("");
+  /**
+   * PUT INTO THE OPEN PAGE, NOT REBUILT AROUND IT (E4-5). The fonts land ~400ms after Preview opens; as a dependency of
+   * the page source they reloaded the whole page — every Preview loaded twice, a phone did the work twice, and anything
+   * done in the first 400ms (a scroll, a tap, a running pager) was wiped. Kept in a ref instead, and added to the live
+   * document as a `<style>` when they arrive and on every load after.
+   */
+  const previewFontCss = useRef("");
+  const addPreviewFonts = useCallback(() => {
+    const doc = previewFrameRef.current?.contentDocument;
+    if (!doc?.head || !previewFontCss.current || doc.getElementById("eu-preview-fonts")) return;
+    const s = doc.createElement("style");
+    s.id = "eu-preview-fonts";
+    s.textContent = previewFontCss.current;
+    doc.head.prepend(s);
+  }, []);
   useEffect(() => {
     if (!preview || !fontFamilyKey) return;
     let live = true;
-    embedFontCss(fontFamilyKey.split("|")).then((css) => { if (live) setPreviewFontCss(css); }).catch(() => { /* the fallback font applies, exactly as a failed download would */ });
+    embedFontCss(fontFamilyKey.split("|")).then((css) => { if (live) { previewFontCss.current = css; addPreviewFonts(); } }).catch(() => { /* the fallback font applies, exactly as a failed download would */ });
     return () => { live = false; };
-  }, [preview, fontFamilyKey]);
+  }, [preview, fontFamilyKey, addPreviewFonts]);
   const previewHTML = useMemo(
-    () => (preview && site && activePage ? renderSitePage(site, renderTheme, activePage.id, { inlineShared: true, fontCss: previewFontCss }) : ""),
-    [preview, site, activePage, renderTheme, previewFontCss],
+    () => (preview && site && activePage ? renderSitePage(site, renderTheme, activePage.id, { inlineShared: true }) : ""),
+    [preview, site, activePage, renderTheme],
   );
 
 
@@ -585,18 +606,20 @@ export default function BoxDemoPage() {
    */
 
   /**
-   * FULL WIDTH KEEPS ITS WIDTH WHILE THE PANEL IS DOCKED (#57). Full width is fluid, so the room the docked panel
-   * takes used to RE-LAY OUT the page: a four-across row became three plus one the moment the panel opened — the page
-   * being designed changed shape because a panel opened. Now it keeps the width it had with the panel shut (capped at
-   * the same 64rem as `max-w-5xl`) and is shrunk to fit, exactly like a device size.
+   * FULL WIDTH IS THE DESKTOP PAGE (E2-2, the user 2026-10-06: "always the desktop page"). It edits the desktop base
+   * (DEVICE_RUNG), so it is drawn at the first width of that rung, 75rem, and shrunk to fit exactly like a device size.
+   * It used to take the room's own width, capped at 64rem (#57): the tablet-landscape rung on a desktop and the PHONE
+   * rung on a tablet, so the canvas stepped a row while the drag wrote the desktop, and a grid cell's held edge jumped
+   * the wrong way. A fixed width also keeps #57: opening the docked panel can never re-lay out the page.
    */
   const rootPx = typeof window === "undefined" ? 16 : parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
-  const fullWhileDocked = device === "full" && panelDocked && roomW
-    ? Math.round(Math.min(64 * rootPx, roomW + (PANEL_GUTTER_REM - LAUNCHER_GUTTER_REM) * rootPx))
-    : null;
-  /** How much the frame is shrunk to fit: 1 when it fits, never above 1, two decimals so it does not jitter. */
-  const fitW = fullWhileDocked ?? DEVICES.find((d) => d.id === device)!.w;
-  const fit = fitW && roomW && roomW < fitW ? Math.max(0.25, Math.floor((roomW / fitW) * 100) / 100) : 1;
+  /**
+   * How much the frame is shrunk to fit: 1 when it fits, never above 1, two decimals so it does not jitter. It FITS: the hand zoom
+   * stops at 25 % (ZOOM_MIN), but Fit may go below it, or the desktop page overflowed every phone's room (E2-12: 300px in 274 on
+   * a 393 phone, the right edge and its handles scrolled away) — on a 360 phone first (RULE AF). 0.1 only guards a vanishing room.
+   */
+  const fitW = device === "full" ? Math.round(75 * rootPx) : DEVICES.find((d) => d.id === device)!.w;
+  const fit = fitW && roomW && roomW < fitW ? Math.max(0.1, Math.floor((roomW / fitW) * 100) / 100) : 1;
   /**
    * THE ZOOM THE USER CHOSE (BATCH Z-1), drawn with the same scale as the fit. A fluid Full width page is given the
    * width it has at Fit while zoomed, so zooming enlarges the page instead of re-laying it out in a wider box.
@@ -890,7 +913,7 @@ export default function BoxDemoPage() {
     return (
       <div
         className="h-screen relative overflow-hidden bg-gray-100 dark:bg-gray-950 midnight:bg-[#060a1e] purple:bg-[#120722]"
-        onPointerMove={(e) => { if (e.clientY < 64) setBarShown(true); }}
+        onPointerMove={(e) => { if (e.pointerType === "mouse" && e.clientY < 64) setBarShown(true); }} // a mouse reaching for it, never a finger (E4-12)
       >
         {/**
           * THE BAR STEPS OUT OF THE WAY. It used to sit in the flow and take 48px off the top, so the page
@@ -901,7 +924,8 @@ export default function BoxDemoPage() {
           */}
         <div
           data-preview-bar
-          className={`absolute inset-x-0 top-0 z-20 h-12 flex items-center gap-3 px-4 border-b border-gray-200 dark:border-gray-800 midnight:border-cyan-500/10 purple:border-pink-500/10 bg-white/95 dark:bg-[#161922]/95 backdrop-blur transition-transform duration-200 ${barShown ? "translate-y-0" : "-translate-y-full"}`}
+          // WRAPS, never overflows (E4-3): rigid on one row it ran 879px wide on a 768 tablet and squeezed the page tabs to 0px.
+          className={`absolute inset-x-0 top-0 z-20 min-h-12 py-1.5 flex flex-wrap items-center gap-x-3 gap-y-1.5 px-4 border-b border-gray-200 dark:border-gray-800 midnight:border-cyan-500/10 purple:border-pink-500/10 bg-white/95 dark:bg-[#161922]/95 backdrop-blur transition-transform duration-200 ${barShown ? "translate-y-0" : "-translate-y-full"}`}
           aria-hidden={!barShown}
         >
           <button onClick={() => setPreview(false)} className="inline-flex items-center gap-1 text-xs px-2.5 py-1.5 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700"><X className="w-3.5 h-3.5" /> Exit preview</button>
@@ -911,7 +935,7 @@ export default function BoxDemoPage() {
             ))}
           </nav>
           {/* ── The screen: a size, its exact numbers, a zoom and an orientation ── */}
-          <div className="ml-auto flex items-center gap-2 shrink-0">
+          <div className="ml-auto flex flex-wrap items-center gap-2">
             <div className="w-52">
               <CompactSelect
                 ariaLabel="Preview screen size"
@@ -978,16 +1002,6 @@ export default function BoxDemoPage() {
           </div>
         </div>
 
-        {/* THE WAY BACK IS ALWAYS ON SCREEN. A hidden bar is translated off the top of the window, where
-            nothing can reach it — so the handle that brings it back is a real, focusable button sitting in
-            the viewport, not a region of the page you have to know to wave the pointer at. */}
-        {!barShown && (
-          <button
-            onClick={() => setBarShown(true)} data-preview-bar-show
-            aria-label="Show the preview controls" aria-expanded={false} title="Show the controls (H)"
-            className="absolute top-0 left-1/2 -translate-x-1/2 z-20 inline-flex items-center gap-1 px-3 py-1 rounded-b-lg bg-white/95 dark:bg-[#161922]/95 midnight:bg-[#0b1220]/95 purple:bg-[#1a1020]/95 backdrop-blur shadow-md text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 hover:text-gray-900 dark:hover:text-white"
-          ><ChevronDown className="w-4 h-4" /><span className="text-[0.6875rem]">Controls</span></button>
-        )}
         {/* `overflow-auto`, not hidden: at an explicit zoom the frame may be larger than the stage, and a
             preview you cannot scroll to the rest of is the defect this whole area exists to avoid. */}
         {/**
@@ -1078,7 +1092,7 @@ export default function BoxDemoPage() {
               ref={previewFrameRef}
               title="Site preview"
               srcDoc={previewHTML}
-              onLoad={wirePreviewNav}
+              onLoad={() => { addPreviewFonts(); wirePreviewNav(); }}
               sandbox="allow-same-origin allow-scripts allow-popups"
               /**
                * The card look belongs to a DEVICE. Responsive is the visitor's own screen, and a rounded,
@@ -1109,12 +1123,24 @@ export default function BoxDemoPage() {
         </div>
         {/* THE WAY OUT NEVER HIDES. The bar steps aside so the page gets the whole window; leaving without a
             way back would be a trap, so this pill stays put and also brings the bar back. */}
+        {/* THE WAY BACK IS ALWAYS ON SCREEN, beside the way out: a real, focusable button in the viewport, not a
+            region of the page you have to know to wave the pointer at. Both in ONE corner — the handle used to sit
+            at the top centre, over the header a person built (E4-4). */}
         {!barShown && (
-          <button
-            onClick={() => setPreview(false)}
-            onPointerEnter={() => setBarShown(true)}
-            className="absolute bottom-4 right-4 z-20 inline-flex items-center gap-1 text-xs px-3 py-2 rounded-full bg-indigo-600/90 text-white shadow-lg backdrop-blur hover:bg-indigo-700"
-          ><X className="w-3.5 h-3.5" /> Exit preview</button>
+          <div className="absolute bottom-4 right-4 z-20 flex items-center gap-2">
+            <button
+              onClick={() => setBarShown(true)} data-preview-bar-show
+              aria-label="Show the preview controls" aria-expanded={false} title="Show the controls (H)"
+              className="inline-flex items-center gap-1 text-xs px-3 py-2 rounded-full bg-white/95 dark:bg-[#161922]/95 midnight:bg-[#0b1220]/95 purple:bg-[#1a1020]/95 backdrop-blur shadow-lg text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:text-gray-900 dark:hover:text-white midnight:hover:text-white purple:hover:text-white"
+            ><ChevronUp className="w-3.5 h-3.5" /> Controls</button>
+            <button
+              onClick={() => setPreview(false)}
+              // A MOUSE only (E4-12): a finger "enters" at the moment it taps, so the bar came back, this pill unmounted and
+              // the tap's click landed on nothing — on a phone or tablet, Exit did not exit.
+              onPointerEnter={(e) => { if (e.pointerType === "mouse") setBarShown(true); }}
+              className="inline-flex items-center gap-1 text-xs px-3 py-2 rounded-full bg-indigo-600/90 text-white shadow-lg backdrop-blur hover:bg-indigo-700"
+            ><X className="w-3.5 h-3.5" /> Exit preview</button>
+          </div>
         )}
       </div>
     );
@@ -1193,7 +1219,9 @@ export default function BoxDemoPage() {
         {/* "Add a band", not "Add section": this makes a TINTED, 48px-padded, full-width strip, which is a
             different thing from the palette's Stack tile (a plain transparent box). Both were called
             "Section", and a user had no way to know which one they were getting. */}
-        <ToolBtn onClick={addSection} primary title="Add a full-width, tinted band across the page"><Plus className="w-3.5 h-3.5" /> Add a band</ToolBtn>
+        {/* D3-32: below 1600px the words of Add a band · Page check · Preview · Export · Reset fold to their icons, so a 1280
+            desktop keeps ONE row; the name stays in `ariaLabel` and the tooltip, the right-hand group's labels from 1800 (E3-7). */}
+        <ToolBtn onClick={addSection} primary title="Add a full-width, tinted band across the page" ariaLabel="Add a band"><Plus className="w-3.5 h-3.5" aria-hidden="true" /><span className={WIDE_LABEL}>Add a band</span></ToolBtn>
         <div className="flex items-center gap-0.5">
           <ToolBtn onClick={undo} disabled={!canUndo} ariaLabel="Undo" title="Undo (Ctrl+Z)"><Undo2 className="w-4 h-4" /></ToolBtn>
           <ToolBtn onClick={redo} disabled={!canRedo} ariaLabel="Redo" title="Redo (Ctrl+Y)"><Redo2 className="w-4 h-4" /></ToolBtn>
@@ -1201,12 +1229,12 @@ export default function BoxDemoPage() {
         <ToolDivider />
         {(() => { const n = pageCheckCount(root); return (
           <ToolBtn onClick={() => setPageCheckOpen(true)} title={n ? `${n} thing${n === 1 ? "" : "s"} on this page need${n === 1 ? "s" : ""} your words` : "Everyone can use this page"} ariaLabel={`Page check${n ? `, ${n} to do` : ""}`}>
-            <ShieldCheck className="w-3.5 h-3.5" /> Page check{n ? <span className="ml-1 rounded-full bg-amber-500 px-1.5 text-[0.625rem] font-bold text-white">{n}</span> : null}
+            <ShieldCheck className="w-3.5 h-3.5" aria-hidden="true" /><span className={WIDE_LABEL}>Page check</span>{n ? <span className="ml-1 rounded-full bg-amber-500 px-1.5 text-[0.625rem] font-bold text-white">{n}</span> : null}
           </ToolBtn>
         ); })()}
-        <ToolBtn onClick={() => setPreview(true)} title="See it as a visitor"><Eye className="w-3.5 h-3.5" /> Preview</ToolBtn>
-        <ToolBtn onClick={onExport} title="Download the whole site as HTML"><Download className="w-3.5 h-3.5" /> Export</ToolBtn>
-        <ToolBtn onClick={() => setConfirmReset(true)} title="Start over">Reset</ToolBtn>
+        <ToolBtn onClick={() => setPreview(true)} title="See it as a visitor" ariaLabel="Preview"><Eye className="w-3.5 h-3.5" aria-hidden="true" /><span className={WIDE_LABEL}>Preview</span></ToolBtn>
+        <ToolBtn onClick={onExport} title="Download the whole site as HTML" ariaLabel="Export"><Download className="w-3.5 h-3.5" aria-hidden="true" /><span className={WIDE_LABEL}>Export</span></ToolBtn>
+        <ToolBtn onClick={() => setConfirmReset(true)} title="Start over" ariaLabel="Reset"><RotateCcw className="w-3.5 h-3.5" aria-hidden="true" /><span className={WIDE_LABEL}>Reset</span></ToolBtn>
 
         {/* This group wraps too. Left as one unbreakable row it was still 417px wide on a 375px screen, so
             the editor's own theme switcher — the last control in it — hung off the edge while everything
@@ -1220,7 +1248,7 @@ export default function BoxDemoPage() {
             <button ref={guidesBtnRef} type="button" aria-pressed={guides.on} aria-label="Layout guides" title="Layout guides (Shift+G) — the page grid's columns drawn over the page, and its settings; never published"
               onClick={() => { const on = !guides.on; toggleGuides({ on }); setGridPanel(on); }}
               className={`inline-flex items-center gap-1 rounded-lg border px-2 py-1 text-[0.6875rem] ${guides.on ? "border-indigo-400 bg-indigo-50 text-indigo-700 dark:bg-indigo-950/40 dark:text-indigo-300 midnight:bg-indigo-950/40 midnight:text-indigo-300 purple:bg-indigo-950/40 purple:text-indigo-300" : "border-gray-200 text-gray-500 dark:border-gray-700 dark:text-gray-400 midnight:border-gray-700 midnight:text-gray-400 purple:border-gray-700 purple:text-gray-400"}`}>
-              <LayoutGrid className="w-3.5 h-3.5" aria-hidden="true" /><span className="hidden min-[1700px]:inline">Guides</span>
+              <LayoutGrid className="w-3.5 h-3.5" aria-hidden="true" /><span className={WIDER_LABEL}>Guides</span>
             </button>
             {gridPanel && <PageGridPanel grid={gridStored} ownPage={ownGrid} breakpoint={bp} rows={guides.rows} onRows={(rows) => toggleGuides({ rows })}
               onChange={setGrid} onOwnPage={setOwnGrid} onClose={() => { setGridPanel(false); guidesBtnRef.current?.focus(); }} />}
@@ -1229,16 +1257,16 @@ export default function BoxDemoPage() {
               the hidden ones back faintly, so one can be selected and un-hidden. */}
           <button type="button" aria-pressed={showHidden} aria-label="Show hidden blocks" title={showHidden ? "Hidden blocks are shown faintly — click to draw the page as it publishes" : "Show blocks hidden on this device, faintly, so you can select them"} onClick={() => setShowHidden((v) => !v)}
             className={`inline-flex items-center gap-1 rounded-lg border px-2 py-1 text-[0.6875rem] ${showHidden ? "border-indigo-400 bg-indigo-50 text-indigo-700 dark:bg-indigo-950/40 dark:text-indigo-300 midnight:bg-indigo-950/40 midnight:text-indigo-300 purple:bg-indigo-950/40 purple:text-indigo-300" : "border-gray-200 text-gray-500 dark:border-gray-700 dark:text-gray-400 midnight:border-gray-700 midnight:text-gray-400 purple:border-gray-700 purple:text-gray-400"}`}>
-            <Eye className="w-3.5 h-3.5" aria-hidden="true" /><span className="hidden min-[1700px]:inline">Hidden</span>
+            <Eye className="w-3.5 h-3.5" aria-hidden="true" /><span className={WIDER_LABEL}>Hidden</span>
           </button>
           <label className="flex items-center gap-1 text-[0.6875rem] text-gray-400" title="Base size in px — everything scales off this so text stays readable when zoomed (WCAG)">
-            <span className="hidden min-[1700px]:inline">Base size</span>
+            <span className={WIDER_LABEL}>Base size</span>
             <input type="number" min={6} max={24} value={root.baseFont ?? 10} onChange={(e) => commit(updateBox(root, root.id, { baseFont: Number(e.target.value) || 10 }))} aria-label="Base size (px)" className="w-12 text-xs px-1.5 py-1 rounded-lg border border-line bg-transparent" />
           </label>
           {/* WEBSITE theme (saved with the site → canvas + content + export). Distinct from the editor-appearance switcher. */}
           <ThemeSwitcher align="right" value={siteThemeId as ThemeId} onChange={setWebsiteTheme} ariaLabel="Website theme" triggerIcon={Palette} triggerLabel={THEMES[siteThemeId as ThemeId]?.label ?? "Theme"}
-            // its name from 1700px, like every label in this group: the bar stays ONE row at 1536 with the guides switch (G2-8)
-            labelClassName="hidden min-[1700px]:inline" />
+            // its name from 1800px, like every label in this group (E3-7: 1700 wrapped the bar): the bar stays ONE row at 1536 with the guides switch (G2-8)
+            labelClassName={WIDER_LABEL} />
           {/* EDITOR appearance (how the builder UI looks). */}
           <ThemeSwitcher compact align="right" />
         </div>

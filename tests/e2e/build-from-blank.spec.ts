@@ -61,7 +61,7 @@ async function blankPage(page: Page) {
 test.describe("building a page from blank, by dragging", () => {
   test("a second block dropped at the first one's EDGE lands BESIDE it, sharing the line", async ({ page }) => {
     const canvas = await blankPage(page);
-    await dropAt(page, canvas.x + canvas.width / 2, canvas.y + 60);
+    await dropAt(page, canvas.x + canvas.width / 2, canvas.y + Math.min(60, canvas.height / 2)); // inside the page at any canvas scale (E4-8)
 
     const first = (await blocks(page))[0];
     expect(first, "the first block was added").toBeTruthy();
@@ -85,7 +85,7 @@ test.describe("building a page from blank, by dragging", () => {
     // The second half. Both arrive wanting the whole line; something has to give, and the ADD is where that
     // is decided. Without it they are two 100% blocks on two lines — present, correct, and not side by side.
     const canvas = await blankPage(page);
-    await dropAt(page, canvas.x + canvas.width / 2, canvas.y + 60);
+    await dropAt(page, canvas.x + canvas.width / 2, canvas.y + Math.min(60, canvas.height / 2)); // inside the page at any canvas scale (E4-8)
     const first = (await blocks(page))[0];
     const b1 = (await page.locator(`[data-box-id="${first.id}"]`).boundingBox())!;
     await dropAt(page, b1.x + b1.width - 8, b1.y + b1.height / 2);
@@ -102,7 +102,7 @@ test.describe("building a page from blank, by dragging", () => {
     // The direction that keeps the edge rule honest: if every drop on a block became side-by-side, there
     // would be no way left to start a new line.
     const canvas = await blankPage(page);
-    await dropAt(page, canvas.x + canvas.width / 2, canvas.y + 60);
+    await dropAt(page, canvas.x + canvas.width / 2, canvas.y + Math.min(60, canvas.height / 2)); // inside the page at any canvas scale (E4-8)
     const first = (await blocks(page))[0];
     const b1 = (await page.locator(`[data-box-id="${first.id}"]`).boundingBox())!;
 

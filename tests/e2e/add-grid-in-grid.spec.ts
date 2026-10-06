@@ -40,9 +40,10 @@ const gridsInside = (page: Page, id: string) =>
 /** Click a box until it is the selected one (click selects the outermost, then steps inside). */
 async function selectBox(page: Page, id: string) {
   const b = (await page.locator(`[data-box-id="${id}"]`).boundingBox())!;
-  // Dead centre. A corner or an edge lands on a resize handle of whatever is already selected, and on a small
-  // nested cell an offset point can fall in the sibling next door.
-  const x = b.x + b.width / 2, y = b.y + b.height / 2;
+  // A quarter in. A corner or an edge lands on a resize handle of whatever is already selected, and on a small
+  // nested cell a point outside it can fall in the sibling next door — but dead centre is an empty block's "+",
+  // which on a shrunk canvas covers it (E2-9).
+  const x = b.x + b.width * 0.25, y = b.y + b.height * 0.25;
   for (let i = 0; i < 4; i++) {
     const sel = await page.evaluate(() => document.querySelector(".outline-indigo-500")?.getAttribute("data-box-id") ?? null);
     if (sel === id) return;
@@ -105,7 +106,7 @@ test.describe("adding a grid inside a grid", () => {
     for (let i = 0; i < 5; i++) {
       const sel = await page.evaluate(() => document.querySelector(".outline-indigo-500")?.getAttribute("data-box-id") ?? null);
       if (sel && sel !== "a" && sel !== "tgt" && sel !== innerGridId) break; // we are inside the nested grid
-      await page.mouse.click(g.x + g.width / 2, g.y + g.height / 2);
+      await page.mouse.click(g.x + g.width * 0.25, g.y + g.height * 0.25); // clear of the "+" (E2-9)
       await page.waitForTimeout(150);
     }
     await addColumnsBlock(page);

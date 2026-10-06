@@ -1127,6 +1127,12 @@ Feature: Placing blocks beside one another in the Box Builder
 
   # ── BATCH L-4 (2026-10-03) — scripts/uat/uat-l4-headed.js, six headed windows ─────────────────────────────
 
+  Scenario: The block toolbar never covers a handle, however narrow the block (E2-8)
+    # tests/e2e/chrome-follows-resize.spec.ts ("a press on each handle of a narrow block lands on that handle")
+    Given a block narrower than twice the block toolbar is selected — every block on a phone's shrunk canvas
+    When I press on any of its eight handles
+    Then the press lands on that handle, because the toolbar sits clear of them above the block
+
   Scenario: The resize handles never cover the block's own words (c-21, decided 2026-09-29: B)
     # tests/unit/mirror-box-churn.test.ts (mirrorFlushSides)
     Given a heading that hugs its words is selected
@@ -1152,3 +1158,27 @@ Feature: Placing blocks beside one another in the Box Builder
     When I drag its right edge in until the words wrap, and back out again
     Then the words are on one line again and the heading is its old height
 
+  Scenario: The builder's top bar is one row on a desktop (D3-32, E3-7)
+    # tests/e2e/builder-chrome-fits.spec.ts
+    Given the builder on a screen of any width from 1280px to 1920px
+    Then the top bar is a single row
+    And below 1600px Add a band, Page check, Preview, Export and Reset show only their icons
+    And each keeps its name for a screen reader and as a tooltip, and works by click and by keyboard
+    And below 1800px the right-hand group's words (Guides, Hidden, Base size, the theme name) are icons too
+
+  Scenario: An open dialog has the keyboard (E3-9, E3-10, E3-11)
+    # tests/e2e/builder-chrome-fits.spec.ts · tests/components/shared/Modal.test.tsx
+    Given I open the Page check from the top bar with the keyboard
+    Then the focus is inside the dialog
+    And Ctrl+Z changes nothing on the page behind it
+    When I press Escape once
+    Then the dialog closes and the focus is back on the Page check button
+
+  Scenario: The Inspector follows the width, as when the builder opens (E3-3, the user 2026-10-06)
+    # tests/e2e/builder-chrome-fits.spec.ts
+    Given the builder on a tablet held upright, the Inspector a strip at the side
+    When I turn the tablet or widen the window past a tablet's width
+    Then the Inspector docks open beside the page
+    When I narrow it again
+    Then the Inspector is a strip again
+    But opening or closing it myself holds until the next time the width crosses that line

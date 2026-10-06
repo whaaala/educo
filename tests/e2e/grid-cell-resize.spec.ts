@@ -31,8 +31,17 @@ async function seedGrid(page: Page, cells: number, rows: number, minHeight?: num
   await page.waitForTimeout(250);
 }
 
-const heightOf = (page: Page, id: string) =>
-  page.locator(`[data-box-id="${id}"]`).evaluate((el) => el.getBoundingClientRect().height);
+/**
+ * Every measure and every drag below is in PAGE px, from the canvas frame's corner (E-2): the canvas is drawn scaled — Full
+ * width is the desktop page shrunk to fit, and every device size is too — so a screen px is not a page px.
+ */
+const pageRect = (page: Page, id: string) => page.locator(`[data-box-id="${id}"]`).evaluate((el) => {
+  const f = el.closest<HTMLElement>("[data-canvas-scale]")!, s = Number(f.dataset.canvasScale) || 1;
+  const r = el.getBoundingClientRect(), o = f.getBoundingClientRect();
+  return { left: (r.left - o.left) / s, right: (r.right - o.left) / s, top: (r.top - o.top) / s, bottom: (r.bottom - o.top) / s, width: r.width / s, height: r.height / s };
+});
+const scaleOf = (page: Page) => page.evaluate(() => Number(document.querySelector<HTMLElement>("[data-canvas-scale]")?.dataset.canvasScale) || 1);
+const heightOf = async (page: Page, id: string) => (await pageRect(page, id)).height;
 /** Every cell's stored column span, in document order — the row's arithmetic, read from the saved tree. */
 const spansOf = (page: Page) =>
   page.evaluate(() => {
@@ -42,8 +51,7 @@ const spansOf = (page: Page) =>
     walk(site.pages[0].root);
     return (((g as unknown as Record<string, unknown>).children as Record<string, unknown>[]) ?? []).map((c) => c.colSpan as number);
   });
-const rectOf = (page: Page, id: string) =>
-  page.locator(`[data-box-id="${id}"]`).evaluate((el) => { const r = el.getBoundingClientRect(); return { top: r.top, bottom: r.bottom, height: r.height }; });
+const rectOf = pageRect;
 
 /**
  * Click a cell twice — the first click selects the grid, the second steps inside to the cell itself.
@@ -63,8 +71,9 @@ async function selectCell(page: Page, id: string) {
     .toHaveClass(/outline-indigo-500/);
 }
 
-/** Drag a named resize handle by (dx, dy) with a real mouse, in steps so every move event fires. */
-async function dragHandle(page: Page, label: string, dx: number, dy: number) {
+/** Drag a named resize handle by (dx, dy) PAGE px with a real mouse, in steps so every move event fires. */
+async function dragHandle(page: Page, label: string, pageDx: number, pageDy: number) {
+  const s = await scaleOf(page), dx = pageDx * s, dy = pageDy * s;
   const h = (await page.locator(`[aria-label="${label}"]`).boundingBox())!;
   await page.mouse.move(h.x + h.width / 2, h.y + h.height / 2);
   await page.mouse.down();
@@ -143,7 +152,7 @@ test.describe("resizing a grid cell's height", () => {
     // nothing left to reverse. Both halves have to hold: B returns to the row, AND it takes the width A freed.
     await seedGrid(page, 2, 1);
     await selectCell(page, "c0");
-    const grid = (await page.locator('[data-box-id="tgt"]').boundingBox())!;
+    const grid = await pageRect(page, "tgt");
     const topOf = async (id: string) => (await rectOf(page, id)).top;
     const rowOne = await topOf("c1");
 
@@ -162,7 +171,7 @@ test.describe("resizing a grid cell's height", () => {
     // wide cell's edge, while a row beside them could (#76). Reproduced through the UI first (scripts/uat/probe-section.js).
     await seedGrid(page, 2, 1);
     await selectCell(page, "c0");
-    const grid = (await page.locator('[data-box-id="tgt"]').boundingBox())!;
+    const grid = await pageRect(page, "tgt");
     const topOf = async (id: string) => (await rectOf(page, id)).top;
     const rowOne = await topOf("c1");
     await dragHandle(page, "Resize right edge", grid.width * (5 / 12), 0);
@@ -178,12 +187,13 @@ test.describe("resizing a grid cell's height", () => {
     // left it two columns narrower than it began.
     await seedGrid(page, 2, 1);
     await selectCell(page, "c0");
-    const grid = (await page.locator('[data-box-id="tgt"]').boundingBox())!;
+    const grid = await pageRect(page, "tgt");
     const h = (await page.locator('[aria-label="Resize right edge"]').boundingBox())!;
     const x = h.x + h.width / 2, y = h.y + h.height / 2;
     await page.mouse.move(x, y);
     await page.mouse.down();
-    for (const f of [0.2, 0.4, 0.55, 0.4, 0.2, 0]) { await page.mouse.move(x + grid.width * f, y); await page.waitForTimeout(30); }
+    const s = await scaleOf(page); // the mouse moves in screen px
+    for (const f of [0.2, 0.4, 0.55, 0.4, 0.2, 0]) { await page.mouse.move(x + grid.width * s * f, y); await page.waitForTimeout(30); }
     await page.mouse.up();
     await page.waitForTimeout(250);
     expect(await spansOf(page), "back where it started").toEqual([6, 6]);
@@ -224,12 +234,7 @@ test.describe("resizing a grid cell's height", () => {
  * The second is the one that would have caught this, because the clamp is the half that goes missing.
  */
 test.describe("the grabbed edge is the only one that moves", () => {
-  /** A full rect — `rectOf` above answers about the down axis only. */
-  const boxOf = (page: Page, id: string) =>
-    page.locator(`[data-box-id="${id}"]`).evaluate((el) => {
-      const r = el.getBoundingClientRect();
-      return { left: r.left, right: r.right, top: r.top, bottom: r.bottom, width: r.width, height: r.height };
-    });
+  const boxOf = pageRect;
 
   test("the LEFT edge grows the cell leftward — the right edge never moves", async ({ page }) => {
     // FOUR across, which is the shape that failed. With two, the previous cell had room to give and the bug
@@ -237,7 +242,7 @@ test.describe("the grabbed edge is the only one that moves", () => {
     await seedGrid(page, 4, 2);
     await selectCell(page, "c1"); // a cell WITH a previous sibling, so there is a boundary to move
     const before = await boxOf(page, "c1");
-    const grid = (await page.locator('[data-box-id="tgt"]').boundingBox())!;
+    const grid = await pageRect(page, "tgt");
     await dragHandle(page, "Resize left edge", -grid.width / 6, 0); // two of twelve columns, leftward
 
     const after = await boxOf(page, "c1");
@@ -251,7 +256,7 @@ test.describe("the grabbed edge is the only one that moves", () => {
     await seedGrid(page, 4, 2);
     await selectCell(page, "c1");
     const before = await boxOf(page, "c1");
-    const grid = (await page.locator('[data-box-id="tgt"]').boundingBox())!;
+    const grid = await pageRect(page, "tgt");
     await dragHandle(page, "Resize left edge", -grid.width * 1.5, 0); // far further than there is room for
 
     const after = await boxOf(page, "c1");

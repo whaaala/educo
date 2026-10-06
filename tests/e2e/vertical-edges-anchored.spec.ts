@@ -28,23 +28,33 @@ import { seedSite, sitePage } from "./helpers/seed-site";
 
 const MIN_ROW_PX = 24;
 
-const rect = async (page: Page, id: string) => {
-  const b = (await page.locator(`[data-box-id="${id}"]`).boundingBox())!;
-  return { top: Math.round(b.y), bottom: Math.round(b.y + b.height), h: Math.round(b.height) };
-};
+/**
+ * In PAGE px, measured from the top of the canvas frame (E-2): the canvas is drawn scaled (Full width is the desktop page
+ * shrunk to fit, and every device size is too), so a screen px is not a page px, and the rounding of a scaled screen value
+ * read 59 against 60 on a tablet (E2-4).
+ */
+const rect = (page: Page, id: string) => page.locator(`[data-box-id="${id}"]`).evaluate((el) => {
+  const f = el.closest<HTMLElement>("[data-canvas-scale]")!, s = Number(f.dataset.canvasScale) || 1;
+  const r = el.getBoundingClientRect(), top = f.getBoundingClientRect().top;
+  return { top: Math.round((r.top - top) / s), bottom: Math.round((r.bottom - top) / s), h: Math.round(r.height / s) };
+});
+const scaleOf = (page: Page) => page.evaluate(() => Number(document.querySelector<HTMLElement>("[data-canvas-scale]")?.dataset.canvasScale) || 1);
 
 async function select(page: Page, id: string) {
   const b = (await page.locator(`[data-box-id="${id}"]`).boundingBox())!;
   for (let i = 0; i < 6; i++) {
     const sel = await page.evaluate(() => document.querySelector(".outline-indigo-500")?.getAttribute("data-box-id") ?? null);
     if (sel === id) return;
-    await page.mouse.click(b.x + b.width * 0.5, b.y + b.height * 0.5);
+    // a quarter in, not the middle: an empty block's "+" hint sits in its middle, and on a shrunk canvas it covers it
+    await page.mouse.click(b.x + b.width * 0.25, b.y + b.height * 0.25);
     await page.waitForTimeout(200);
   }
   throw new Error(`could not select ${id}`);
 }
 
-async function dragEdge(page: Page, label: string, dy: number) {
+/** Drag by `dy` PAGE px — the same gesture on the page at any scale. */
+async function dragEdge(page: Page, label: string, pageDy: number) {
+  const dy = pageDy * (await scaleOf(page));
   const h = (await page.locator(`[aria-label="${label}"]`).boundingBox())!;
   const cx = h.x + h.width / 2, cy = h.y + h.height / 2;
   await page.mouse.move(cx, cy);
@@ -256,6 +266,9 @@ test.describe("two stacks that touch", () => {
       await page.waitForSelector('[data-box-id="magenta"]', { timeout: 15000 });
       await page.waitForTimeout(300);
       await select(page, "magenta");
+      // Drawn small (Ctrl −), where the partner's floor was clamped at 24 SCREEN px — 72 page px at 0.33 — while the boundary
+      // was worked out at 24 page px, so the two stopped meeting (E2-13)
+      for (let i = 0; i < 4 && (await scaleOf(page)) > 0.4; i++) { await page.keyboard.press("Control+Minus"); await page.waitForTimeout(300); }
 
       const before = await rect(page, "magenta");
       await dragEdge(page, "Resize top edge", -400); // far more than the 300px stack above owns
@@ -267,6 +280,28 @@ test.describe("two stacks that touch", () => {
       expect(after.top - aboveAfter.bottom, "still touching, even at the wall").toBe(0);
     });
   }
+
+  test("drawn small, the stack above gives ALL it can — down to its words, never to a floor three times too tall (E2-13)", async ({ page }) => {
+    // Rule 19: a drag is clamped to what the partner can actually give. The partner's floor was the UNSCALED 24 SCREEN px while
+    // its slack used 24 PAGE px, so drawn at ≤ 0.4 the edge stopped at ~72 page px above words that need ~30. An EMPTY partner
+    // cannot show it — its own 8rem minimum is above both — so this one holds one line of words.
+    await seedSite(page, sitePage([
+      { ...stack("green", "#4d8c0f", 300), children: [{ id: "gt", type: "text", text: "Term dates", width: "auto" }] },
+      stack("magenta", "#8c0f52", 200),
+    ]));
+    await page.waitForSelector('[data-box-id="magenta"]', { timeout: 15000 });
+    await page.waitForTimeout(300);
+    await select(page, "magenta");
+    for (let i = 0; i < 4 && (await scaleOf(page)) > 0.4; i++) { await page.keyboard.press("Control+Minus"); await page.waitForTimeout(300); }
+    expect(await scaleOf(page), "the precondition: drawn at 0.4 or less").toBeLessThanOrEqual(0.4);
+    const before = await rect(page, "magenta");
+    await dragEdge(page, "Resize top edge", -400);
+    const after = await rect(page, "magenta"), green = await rect(page, "green");
+    const words = await page.locator('[data-box-id="gt"]').evaluate((el) => el.getBoundingClientRect().height / (Number(el.closest<HTMLElement>("[data-canvas-scale]")?.dataset.canvasScale) || 1));
+    expect(after.bottom, "the bottom never moves").toBe(before.bottom);
+    expect(after.top - green.bottom, "still touching").toBe(0);
+    expect(green.h, `the stack above stopped at ${green.h} page px over ${Math.round(words)} of words`).toBeLessThan(words + 20);
+  });
 
   test.describe("with deliberate space above it", () => {
     /**
@@ -283,14 +318,23 @@ test.describe("two stacks that touch", () => {
       { ...stack("magenta", "#8c0f52", 200), marginTop: 40 },
     ]);
 
-    /** The real rendered gap, measured rather than assumed — stored spacing is in the fluid base unit. */
-    const gapOf = async (page: Page) => (await rect(page, "magenta")).top - (await rect(page, "green")).bottom;
+    /**
+     * The real rendered gap, measured rather than assumed — stored spacing is in the fluid base unit. Rounded ONCE, from the
+     * two raw edges: rounding each edge first read 44 against 45 on a canvas drawn at 0.47 (E2-4).
+     */
+    const gapOf = (page: Page) => page.evaluate(() => {
+      const r = (id: string) => document.querySelector(`[data-box-id="${id}"]`)!.getBoundingClientRect();
+      const s = Number(document.querySelector<HTMLElement>("[data-canvas-scale]")?.dataset.canvasScale) || 1;
+      return Math.round((r("magenta").top - r("green").bottom) / s);
+    });
 
     test("dragging the top edge DOWN moves it down, and keeps the space", async ({ page }) => {
       await seedSite(page, spaced());
       await page.waitForSelector('[data-box-id="magenta"]', { timeout: 15000 });
       await page.waitForTimeout(300);
       await select(page, "magenta");
+      // Drawn small, as on a tablet or phone (Ctrl −, as a person zooms out): at 0.69 the old rounding happened to keep 40 (E2-4)
+      for (let i = 0; i < 4 && (await scaleOf(page)) > 0.4; i++) { await page.keyboard.press("Control+Minus"); await page.waitForTimeout(300); }
 
       const before = await rect(page, "magenta"), above = await rect(page, "green");
       const gap0 = await gapOf(page);
@@ -302,6 +346,9 @@ test.describe("two stacks that touch", () => {
       expect(after.top - before.top, "the grabbed edge went DOWN, the way it was dragged").toBeGreaterThan(40);
       expect(after.bottom, "the bottom is still anchored").toBe(before.bottom);
       expect(await gapOf(page), "and the space the user asked for is still exactly what it was").toBe(gap0);
+      // …STORED as it was, not re-derived from the screen: at 0.47 a whole screen px of rounding stored 41 for 40 (E2-4)
+      const mt = await page.evaluate(() => { let v: unknown; const w = (n: { id?: string; marginTop?: number; children?: unknown[] }) => { if (n.id === "magenta") v = n.marginTop; (n.children ?? []).forEach((c) => w(c as typeof n)); }; w(JSON.parse(localStorage.getItem("educo_box_site_v1")!).pages[0].root); return v; });
+      expect(mt, "the stored outer space is untouched").toBe(40);
       expect(aboveAfter.h - above.h, "the block above took up what was released").toBe(before.h - after.h);
     });
 

@@ -129,7 +129,8 @@ const SLICES = {
     const pr = await page.evaluate(() => { const p = [...document.querySelectorAll('*')].find((e) => /^\s*Add a block/.test(e.firstChild?.textContent || '') && e.getBoundingClientRect().width < 500); const c = p && (p.closest('[class*="fixed"], [class*="absolute"]') || p); const r = c.getBoundingClientRect(); return { x: Math.max(0, r.left), y: Math.max(0, r.top), width: r.width, height: Math.min(r.height, innerHeight - r.top) }; });
     await snap(page, 'ref-blocks-panel', { clip: pr, width: 340 });
     const s = await P.first(page, 'Stack'); const h = await P.into(page, s, 'Heading'); await P.under(page, h, 'Text');
-    await H.panel(page, false); await words(page, h, 'Welcome to Hillside Primary');
+    await H.panel(page, false); await H.select(page, h); await page.getByRole('button', { name: 'Expand inspector' }).click().catch(() => {}); await page.waitForTimeout(500); // starts closed below 64em (E1-2)
+    await words(page, h, 'Welcome to Hillside Primary');
     await H.select(page, s);
     const tb = await page.locator('[role="toolbar"]').first().boundingBox();
     await snap(page, 'ref-block-toolbar', { clip: { x: Math.max(0, tb.x - 12), y: Math.max(0, tb.y - 12), width: tb.width + 24, height: tb.height + 24 }, width: 600 });
@@ -157,7 +158,8 @@ const SLICES = {
   // §11 the editor on a tablet — OPENED at 768, as on an iPad (the Inspector starts closed below 64em)
   async G(page) {
     await H.panel(page, true); const s = await P.first(page, 'Stack'); const h = await P.into(page, s, 'Heading');
-    await H.panel(page, false); await words(page, h, 'Welcome to Hillside Primary');
+    await H.panel(page, false); await H.select(page, h); await page.getByRole('button', { name: 'Expand inspector' }).click().catch(() => {}); await page.waitForTimeout(500); // starts closed below 64em (E1-2)
+    await words(page, h, 'Welcome to Hillside Primary');
     await page.getByRole('button', { name: 'Collapse inspector' }).click().catch(() => {}); await page.waitForTimeout(400);
     await H.select(page, h); await snap(page, 'story-tablet-editor', { width: 384 });
     await page.getByRole('button', { name: 'Expand inspector' }).click(); await page.waitForTimeout(600);

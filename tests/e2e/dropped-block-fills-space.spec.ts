@@ -47,16 +47,20 @@ async function dropKindOn(page: Page, kind: string, targetId: string) {
   await page.waitForTimeout(450);
 }
 
-/** Every block inside `id`, deepest last — the dropped block is the innermost one. */
+/**
+ * Every block inside `id`, deepest last — the dropped block is the innermost one. Heights in PAGE px (E-2): the canvas is drawn
+ * scaled — Full width is the desktop page shrunk to fit — so a screen px is not a page px.
+ */
 const inside = (page: Page, id: string) => page.evaluate((id) => {
   const host = document.querySelector(`[data-box-id="${id}"]`)!;
+  const s = Number(host.closest<HTMLElement>("[data-canvas-scale]")?.dataset.canvasScale) || 1;
   return Array.from(host.querySelectorAll("[data-box-id]")).map((n) => ({
-    id: n.getAttribute("data-box-id")!, h: Math.round(n.getBoundingClientRect().height),
+    id: n.getAttribute("data-box-id")!, h: Math.round(n.getBoundingClientRect().height / s),
   }));
 }, id);
 
-const heightOf = async (page: Page, id: string) =>
-  Math.round((await page.locator(`[data-box-id="${id}"]`).boundingBox())!.height);
+const heightOf = (page: Page, id: string) => page.locator(`[data-box-id="${id}"]`).evaluate((el) =>
+  Math.round(el.getBoundingClientRect().height / (Number(el.closest<HTMLElement>("[data-canvas-scale]")?.dataset.canvasScale) || 1)));
 
 test.describe("a dropped block fills the space it lands in", () => {
   test("dropped into a section 400px tall, it is 400px tall — not 40", async ({ page }) => {

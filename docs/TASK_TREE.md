@@ -291,7 +291,7 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
   - `[x]` (1) (DONE: all four were the spec assuming the desktop — E1-1 … E1-4; the headed pass found and fixed E1-7, E1-8, E1-9) the 7 that fail on tablet-landscape / tablet-portrait / mobile-chrome (`add-without-asking.spec.ts`: an empty page's floor,
     a Stack's four looks, "Full screen" on an empty section, "Add a block inside" nesting — the same 7 on f4bacbc): measure each,
     fix, guard
-  - `[~]` (2) MOVED TO BATCH E-4 by the user's decision (E1-5, "split by area": it switches on when the 70 are green) — the gate runs the tablet and phone projects too (`scripts/test-fast.js` runs `--project=desktop-chrome` only), so a
+  - `[x]` (2) DONE in BATCH E-4 change (3), 2026-10-06 (`test:fast` runs all four projects: 3,272 / 3,272) — MOVED TO BATCH E-4 by the user's decision (E1-5, "split by area": it switches on when the 70 are green) — the gate runs the tablet and phone projects too (`scripts/test-fast.js` runs `--project=desktop-chrome` only), so a
     small-screen fault cannot hide again
   HEADED UAT CHECKLIST (written before the pass; six windows; fresh production build; built through the UI, the way a person does
   on each screen: tablet landscape 1024 × 768 · tablet portrait 768 × 1024 · phone 393 × 851, touch on; the four editor themes):
@@ -654,17 +654,331 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
     run 3 on the rebuilt fresh build: **91 checks, 0 failed** (`logs/g3d-uat3.out`), Preview at all 70 screens × 100 / 150 / 200 %
   - `[x]` G3d-12 · MINE, CAUGHT BY THE GATE: an unused `w` in the UAT script's E callback (eslint error) → removed; eslint 0 errors
   - GATE at the close: typecheck 0 · eslint 0 errors (105 warnings, none new) · vitest 4,400 / 4,400 · `test:fast` 807 passed (exit 0)
-- `[ ]` **BATCH E-2 · Resizing and dropping on tablets and phones** — QUEUED 2026-10-05 by the user ("split by area", E1-5) (area: the
+- `[x]` **BATCH E-2 · Resizing and dropping on tablets and phones** — CLOSED 2026-10-06 (HEADED UAT `scripts/uat/uat-e2-headed.js`, six windows, 174 checks 0 failed; gate: typecheck 0 · eslint 0 errors (105 warnings, none new) · vitest 4,405 / 4,405 · `test:fast` 812 / 812 · `docs:build` SUCCESS; the 37 + 22 specs 246 + 256 green on every project; ledger E2-1 … E2-24 closed — E2-20 → BATCH E-5, E2-22 → BATCH L-5 by the user) — branch `builder/editor-small-screens` — QUEUED 2026-10-05 by the user ("split by area", E1-5) (area: the
   editor's gestures at small viewports · the failing specs, each measured: a spec that assumes the desktop, or a real bug — fixed
   either way): grid-cell-resize 13 · vertical-edges-anchored 7 · side-by-side-resize 6 · stack-under-column 4 · float-round-trip 3 ·
   chrome-follows-resize 3 · dropped-block-fills-space 1 (37 on tablet-landscape / tablet-portrait / mobile-chrome)
-- `[ ]` **BATCH E-3 · The Inspector's controls on a narrow screen** — QUEUED 2026-10-05 by the user (E1-5): spacing-gestures 12 ·
+  RE-MEASURED 2026-10-06 at `9ded396` (HEADLESS GATE, fresh build on 3100, `logs/e2-measure.out`): the same 37 fail, 149 pass.
+  HEADED UAT CHECKLIST (written before the pass; six windows, a pool that refills; fresh production build; built through the UI
+  on tablet landscape 1024 × 768 · tablet portrait 768 × 1024 · phone 393 × 851, touch on; Preview at all 70 screens):
+  - `[x]` U1 (SEEN 2026-10-06, 174 / 0) a grid cell: right AND left edge, grow AND shrink, repeated, to where the partner runs out (rule 19) — the edge not held
+    never moves; the neighbour wraps and comes back; one Undo puts the drag back — each screen
+  - `[x]` U2 (SEEN 2026-10-06, 174 / 0) a grid cell: top AND bottom edge, grow AND shrink — the row's cells share a height, the opposite edge stays — each screen
+  - `[x]` U3 (SEEN 2026-10-06, 174 / 0) two blocks side by side: the shared boundary from both sides, grow AND shrink, past the limit and back — the neighbour
+    gives up what you take, wraps keeping its width, returns — each screen (on the phone: what a person sees when the 10rem floor
+    steps the row is checked as it is, not as a desktop)
+  - `[x]` U4 (SEEN 2026-10-06, 174 / 0) a block's top AND bottom edge, at the page top and between blocks, grow AND shrink — the edge not held stays — each screen
+  - `[x]` U5 (SEEN 2026-10-06, 174 / 0) drop a block under one column, into the hole above it, beside it; then shrink the dropped block — each screen
+  - `[x]` U6 (SEEN 2026-10-06, 174 / 0) float a parent and put it back (children and own heights kept, a size set while floating kept), float one child alone;
+    the selection chrome rides on the block through a drag and through every change of screen size; a dropped block fills the
+    section / grid cell — each screen
+  - `[x]` U7 (SEEN 2026-10-06, 174 / 0) Preview at all 70 screens of the pages built in U1–U6: no sideways overflow, no overlaps
+  - `[x]` U8 (SEEN 2026-10-06, 174 / 0) docs: layout-story §11 and the reference say what a person sees, where E-2 changed it
+  ADDED BEFORE THE PASS, for what the measuring found (E2-12 … E2-18):
+  - `[x]` U9 (SEEN 2026-10-06, 174 / 0) a header set to "Stays put while scrolling" (Inspector → Placement) holds at the top of the shrunk canvas while it
+    scrolls; a block set to "Floats on screen" does not move when it is picked — each screen (E2-15, E2-16)
+  - `[x]` U10 (SEEN 2026-10-06, 174 / 0) a Stack holding words, a Stack under it: the lower one's top edge dragged far up — its bottom never moves, the two
+    still touch, the one above shrinks right down to its words; then a bottom edge +80 / −80 three times: the page comes back
+    within half a px — each screen (E2-17, E2-18)
+  - `[x]` U11 (SEEN 2026-10-06, 174 / 0) Fit fits: at Full width and every device size the page is inside the canvas room, on each screen (E2-12, E2-7)
+  HEADED UAT `scripts/uat/uat-e2-headed.js` (six windows, a pool that refills; 21 slices = G grid · S side by side · V one under the
+  other · D column under a column · F float · P pinned / floating · W words above × the three screens, the four themes rotated; every
+  page then in the Preview at all 70 screens × 100 / 150 / 200 % text), on the FRESH build of E2-24: **174 checks, 0 failed**
+  (`logs/e2-uat5.out`). On the PHONE, U3's boundary and U5's drop are reported as not drivable yet — two side-by-side columns come only
+  from "Side by side" there (E2-20 → BATCH E-5) and their shared edge does not move on any screen (E2-22 → BATCH L-5).
+  LEDGER E-2 (each written the moment it was found):
+  - `[x]` E2-1 · TEST, MEASURED (probe-e2.js presets): every handle and the toolbar sat on the block at every preset on all three
+    screens; only the precondition counter fell short (4 < 5) — on a small window the presets are all fitted to the same room
+    (phone: Wide 0.25 · Desktop 0.25 · Laptop 0.26, docW = viewport every time — no page overflow, so E2-7 below is NOT A BUG)
+  - `[x]` E2-2 · REAL, MEASURED (probe-e2.js leftEdge / leftEdgeDesktop): "Full width" (the editor's default) edits the DESKTOP base
+    but drew the page at the room's own width capped at 64rem — 572 / 624 / 274px on tablet landscape / portrait / phone (the PHONE
+    or tablet rung, which steps a row) and 828px on a 1280 desktop (the tablet-portrait rung). A left-edge drag stored [1,5,3,3] and
+    on screen the cell jumped RIGHT (211→259). At the Desktop preset the same drag holds rule 19 on all three (right edge fixed).
+    DECIDED BY THE USER 2026-10-06 (twice — once more after the measured desktop cost: 1280 0.69 shut / 0.46 panel open · 1366 0.76
+    / 0.53 · 1536 0.90 / 0.67 · 1920 1.00): **Full width is always the desktop page** — drawn at 75rem (the desktop rung's first
+    width) and shrunk to fit like every device size; zoom enlarges it. → `app/website/box-demo/page.tsx` fitW. The specs written for
+    a 1:1 Full width canvas move to page px (166 failed on the first run after it, `logs/e2-measure2.out`)
+  - `[x]` E2-11 · REAL, MEASURED (probe-e2.js wrapPull): "keep pulling and the neighbour wraps" never wrapped on tablet landscape or
+    phone — R squeezed to its 4% floor, L held at 96% however far the pointer went. The test `P(want) < limit + P(WRAP_PULL)` used
+    `want` CAPPED at the line's end (100%), while WRAP_PULL is 24 SCREEN px (a wobble of the hand, by design) = 4.3% of a 564px
+    canvas — more than the floor leaves, so the wrap was unreachable on any canvas drawn under ~600px (every tablet and phone, a
+    1280 desktop with the blocks panel open). First read as the spec's short pull (0.51 → 0.6, kept: a deliberate pull)
+  - `[x]` E2-12 · REAL (mine, from E2-2): Fit stopped at the hand zoom's 25 % — the desktop page at 0.25 is 300px in a 393 phone's
+    274px room, its right edge and handles scrolled away → Fit may go below 25 % (0.1 guards a vanishing room); the hand zoom keeps
+    25–400 %. Guard: chrome-follows-resize, the page inside the canvas room at every size
+  - `[x]` E2-7 · REAL (corrected — first closed as NOT A BUG on the wrong measurement): on the phone, Wide / Desktop drew the page
+    68+480 / 68+320 in a ~274px canvas room. The DOCUMENT did not scroll sideways (scrollWidth 394), which is what was measured —
+    but the page ran past the canvas ROOM, its right edge scrolled away inside it. The E2-12 mutant showed it: "Wide: the page's
+    right edge (548) is inside the canvas room (349)" red. Fixed by E2-12 (Fit fits), the same guard
+  - `[x]` E2-13 · REAL, FOUND BY E2-10's resize-leaves-no-gap zv-6 (the user's own page) and MEASURED (probe-e2.js usersPage): a
+    bottom-edge drag of +90 page px raised the capping band 201 → 302 at 0.95 · 519 at 0.47 · 1004 at 0.22 — exactly
+    `lay(h0 + growth)`: the STORED height (page px) added to SCREEN px, the sum divided by the scale — the rest handed to the `fill`
+    block above, so the ANCHORED top edge moved (10 / 226 page px): rule 19, hidden for as long as Full width was drawn 1:1.
+    → `h0 + lay(growth)`, unrounded. The same sweep found the class again: the shared-boundary writes clamp at the UNSCALED
+    `MIN_ROW_PX` (24 screen px = 109 page px at 0.22) while their `slack` uses `MIN_ROW_PX * Z`, and round to whole screen px
+    → scaled, unrounded (four lines). Guards: resize-leaves-no-gap zv-6 / o2-f (red before), vertical-edges "the edge stops
+    where the stack above runs out" drawn at ≤ 0.4
+  - `[x]` E2-14 · REAL, canvas ≠ export, FOUND BY E2-10's pins-stack: three bars pinned to the top overlapped on the canvas (the second
+    started at 152 where the first ended at 158) — `pinStackPass` stacked them by `getBoundingClientRect().height`, SCREEN px on the
+    scaled canvas, written back as a CSS length inside it. → a layout height (÷ the nearest `data-canvas-scale`; the export has none:
+    1); the pass is shipped to the export as its source, unchanged there. Guard: pins-stack "the CANVAS stacks them too" in page px
+  - `[x]` E2-15 · REAL, canvas ≠ export, PRE-EXISTING (every scaled device size) and now on the default view, FOUND BY E2-10's
+    pinning-holds: a pinned header did not hold on a shrunk canvas — it drifted (1 − z) × the scroll (246 of 700 at 0.68; held at
+    1 with Ctrl 0, probe-e2.js stickyScaled): the browser holds a sticky box by the scroll in the transformed frame's OWN px. →
+    `canvasFixedStyle` gives a canvas sticky `top: calc(T + var(--canvas-scroll) × (1 − var(--canvas-z)))` (bottom: minus), the
+    canvas writing `--canvas-z` beside `--canvas-scroll`; `data-held` narrowed to the fixed pins it was written for. Guards:
+    pinning-holds' three CANVAS tests (red before); the bottom edge by probe-e2.js stickyEdges
+  - `[x]` E2-16 · REAL, published wrong, FOUND BY E2-10's float-pin: "Floats on screen" moved the block 51px at 0.69 — and published it
+    there: `measureFixedGeom` stored `pinX` / `pinY` from SCREEN rects, read as page px by the canvas and the export alike. → ÷
+    `zoomOf(el)`. Guard: float-pin "picking Floats on screen does not move it" (red before)
+  - `[x]` E2-17 · REAL (rule 12, "nothing degrades"), FOUND BY E2-10's parity-every-arrangement once it compared PAGE px: six +80 / −80
+    round trips of a bottom edge drifted 0.08 page px a cycle (128.0 → 128.4 by the fifth, taken from the block below) — the dragged
+    height was `Math.round`ed to a whole SCREEN px (1.45 page px at 0.69) while its partner took the unrounded rest; hidden at 1:1
+    inside the old integer comparison. → not rounded (`lay` keeps a thousandth), both copies (partner / no partner). Guard: the
+    six-round-trip test in page px, ±0.5 against the START every cycle (red before)
+  - `[x]` E2-18 · REAL, RULE 19, PRE-EXISTING AT ANY SCALE, FOUND WHILE GUARDING E2-13's floor (the old guard could not fail: its partner
+    was EMPTY, its 8rem minimum above both floors): with a line of WORDS in the stack above, dragging the lower stack's top edge up
+    400 left the stack above at 300 and moved the ANCHORED bottom 500 → 774 — the partner walk dived from the block into the band
+    the editor wraps round its words (stretched to the block, so "exactly as tall"), wrote `minHeight 26.4` to that band, spent the
+    block's 274px of slack, and the dragged block grew out of its far side (probe-e2.js wordsAbove, at 0.33 and at 1). → the dive
+    goes only OUT OF A BAND (`owner.rowBand`), the case its note describes. Guard: vertical-edges "drawn small, the stack above gives
+    ALL it can — down to its words" (red before: 774)
+  - `[x]` E2-19 · REAL, PRE-EXISTING AT ANY SCALE, FOUND BY THE HEADED SMOKE RUN (U6, built through the UI — RULE Y): two Stacks side
+    by side, Alt+F on the first and Alt+F again — it came back on a line of its own, full width, below its neighbour (desktop 0.69
+    as well, probe-e2.js floatTwice). `floatBox` moves the block onto the page and remembered only its size; left there, the
+    row-band pass wrapped it in a band of its own. The seeded float-round-trip spec floated a grid that never left its parent. →
+    `floatFrom` also keeps `parentId` / `index`, and `unfloatBox` moves it home when that parent is still there. Then the next
+    smoke run, built the PHONE's way (Side by side + Add a block inside), still came back after its neighbour: alone in its band,
+    the band is pruned once it floats (home = the band's own place), and a block floating inside the row it came from had been
+    moved to the row's END ("already in its parent" is not "home" — the place counts too). Guards: box-model.test.ts "unfloatBox
+    puts a block back WHERE IT WAS", "…ALONE in its band…", "…floated INSIDE the parent it came from…" (each red by mutation)
+  - `[x]` E2-21 · REAL, DATA LOSS, PRE-EXISTING, FOUND BY THE HEADED SMOKE RUN (U7's reload check, "5 → 1" in nearly every window;
+    probe-e2-reload.js: 3 nodes stored before the reload, 1 after — touch on, off, and phone alike): the one-time prune of the OLD
+    starter's empty sections runs on the first load that FINDS a saved site without the "cleaned" flag — a new visitor's first load
+    finds nothing and never set it, so their FIRST RELOAD pruned the page they had just built, every empty block with it. Both
+    seeding helpers set the flag, so no spec ever began in a truly empty browser. → a fresh start is marked cleaned too. Guard:
+    add-without-asking "a first visit's page survives its first reload" (red before: 3 → 1)
+  - `[x]` E2-22 · REAL, PRE-EXISTING ON EVERY SCREEN, FOUND BY THE HEADED SMOKE RUN (U3 on the phone, built the phone's way —
+    probe-e2.js sbs a): in a "Side by side" block filled with "Add a block inside" ×2, dragging the first column's right edge does
+    NOTHING (both stay 100 % of their own bands, 18–591 / 609–1182, at 0.69, 0.47 and 0.22) — each column is wrapped in a band
+    of its own inside the row, so its edge finds no partner. The columns of a Side by side cannot be sized against each other.
+    DECIDED BY THE USER 2026-10-06 ("queue it with the resize work"): MOVED to BATCH L-5, in the place of #46 (which E-2 closed)
+  - `[x]` E2-23 · REAL, THE CAUSE UNDER E2-11, FOUND BY THE HEADED SMOKE RUN (U3 tablet landscape) and a temporary trace: on a
+    PAGE-GRID page (every page built today) the dragged edge is snapped to the grid's lines AND clamped to the page's edge, so
+    `dx` stopped at the line's end (282) while the hand went on (456) — and the wrap point, 24 screen px past the neighbour's
+    floor, lies past the page's edge on any line drawn under ~600px: A held at 96 % however far the pointer went. → the pull reads
+    the HAND (`handDx`, before any snap). Guard: width-round-trip "keep pulling wraps the neighbour on a page-grid row drawn
+    small", built through the UI at 1024 × 768 (red before: 1150 / 50)
+  - `[x]` E2-24 · REAL, PRE-EXISTING ON EVERY SCREEN, FOUND BY THE HEADED PASS (U5, built through the UI; the same on a 1280 desktop
+    window) — the user: "fix it now in E-2": on a page-grid page (every page built today) a block dropped into the empty space
+    under a short column landed 0.3px tall, invisible. Pulling a block's BOTTOM edge up on a page-grid row keeps the row's height
+    as that block's `margin-bottom` (200) — so the hole IS the target's margin, and carried into the new column it took the whole
+    height. The hole ABOVE was already handed over (`marginTop`); the hole BELOW was not. → `stackWithBlock` clears the target's
+    `marginBottom` when the newcomer goes after it. Guard: box-model.test.ts "the hole BELOW is handed over too" (red by mutation)
+    and the headed U5 (the seeded spec builds a flow row, where the hole is not a margin)
+  - `[x]` E2-20 · DECIDED BY THE USER 2026-10-06 ("queue it, research first"): on a phone the open blocks panel covers the whole
+    canvas (12–332 of a 394 screen, the canvas 68–342; probe-e2.js phonePanel), so a block cannot be DRAGGED beside / under / into
+    another — tapping a tile still adds one after the selection, "Side by side" still makes a row, "Add a block inside" still nests.
+    New behaviour, so RULE RS: QUEUED as BATCH E-5 below. E-2's phone UAT builds the way a phone user can today
+  - `[x]` E2-10 · MINE, FROM E2-2: 22 OTHER desktop specs fail once Full width is the desktop page drawn at 0.69 (`logs/e2-others1.out`,
+    40 tests): selection clicks on an empty block's middle (palette-adds-after 5 · selection-drills-inward 2 · pinning-warnings 4 ·
+    add-grid-in-grid 2 · empty-box-height · add-inside-empty-box) · screen-px numbers (add-without-asking 2 · drag-grid-in ·
+    empty-block-floor 3 · empty-box-height · pager-hero 2 · pinning-explained · resize-leaves-no-gap) · canvas vs export / anchored
+    edges (advanced-css · layout-bands · page-height-is-content · image-intrinsic · pinning-holds 3 · pins-stack · float-pin ·
+    parity-every-arrangement · width-round-trip · resize-leaves-no-gap 2 · drop-placement) — each measured: a spec on screen px,
+    or a real scale bug (as E2-4 and E2-11 were). MEASURED, ONE BY ONE: TEST — the middle-click on an empty block's "+" (E2-9:
+    palette-adds-after, selection-drills-inward, pinning-warnings, add-grid-in-grid, empty-box-height, add-inside-empty-box);
+    screen px read as page px (add-without-asking, drag-grid-in, empty-block-floor, empty-box-height, pager-hero,
+    pinning-explained, resize-leaves-no-gap:185, advanced-css, layout-bands, page-height-is-content, image-intrinsic — a scaled
+    rect against a layout value; width-round-trip's `rowOf` mixed the two; parity's rounded screen px flipped on a sub-pixel);
+    drop-placement's 36px precondition is E2-8's 48. REAL — E2-13 (resize-leaves-no-gap zv-6 / o2-f), E2-14 (pins-stack),
+    E2-15 (pinning-holds ×3), E2-16 (float-pin), E2-17 (parity, once it compared page px). 29 specs on desktop: 246 / 246
+  - `[x]` E2-3 · grid-cell-resize:159 (all three): the 90/10 grid's "eleven and one" — the same Full width mismatch as E2-2 (the
+    phone rung stepping the row); re-measured after E2-2
+  - `[x]` E2-4 · REAL, MEASURED (probe-e2.js spaceKept): first read as rounding in the spec (each scaled SCREEN edge rounded before
+    subtracting — fixed: page px from the frame, the gap rounded once), it stayed 44 → 45; the STORED `marginTop` went 40 → 41 on a
+    top-edge drag at 0.47 and 0.22 (40 kept at 0.52) — the drag rewrote the space the user asked for, re-derived from screen px
+  - `[x]` E2-5 · TEST, MEASURED: float-round-trip:141 filled "Height" in an Inspector that starts as its tab under 64em (E1-2) → it
+    taps the tab open as a person does (`openInspector`, as add-without-asking)
+  - `[x]` E2-8 · REAL, FOUND BY probe-e2.js gridTop (phone, 0.25): a grid cell's top edge moved 0px — the press on "Resize top edge"
+    landed on the Block toolbar, drawn 0.25rem above the block over the handle the c-21 rule draws OUTSIDE it (corners 14px out),
+    true at any size for a block narrower than ~2× the toolbar → the toolbar 1rem clear (`mb-4` / `mt-4`, room check 36 → 48).
+    Guard: chrome-follows-resize "a press on each handle of a narrow block lands on that handle"
+  - `[x]` E2-9 · TEST: the specs selected an empty block by clicking its MIDDLE, where its "+" hint sits — on a shrunk canvas the
+    hint covers it and the click opened "Add inside" ("could not select") → a quarter in, as grid-cell-resize already did
+  - `[x]` E2-6 · phone only, 25 lines (grid-cell height ×4 · side-by-side ×6 · stack-under-column ×4 · vertical edges ×5 ·
+    dropped-block :78 · float :156 …) — not yet measured (the phone's 10rem floor stepping the row, by G-3d's design?)
+- `[x]` **BATCH E-3 · The Inspector's controls on a narrow screen** — CLOSED 2026-10-06 (HEADED UAT `scripts/uat/uat-e3-headed.js`, six windows, **297 checks 0 failed** (`logs/e3-uat2.out`), Preview at all 70 screens × 100 / 150 / 200 % text; gate: typecheck 0 · eslint 0 errors (105 warnings, none new) · vitest 4,409 / 4,409 · `test:fast` 815 / 815 · `docs:build` SUCCESS; the four specs + builder-chrome-fits + the two that share `openInspector` 216 / 216 on all four projects; ledger E3-1 … E3-11 — E3-3 is the user's question) — QUEUED 2026-10-05 by the user (E1-5): spacing-gestures 12 ·
   masonry-builder 10 · canvas-zoom 3 · text-is-reachable 1 (26)
-  - `[ ]` THE TOP BAR IS ONE ROW FROM 1280 (D3-32, the user 2026-10-06 "yes, both"): measured 92px (two rows) at 1280 / 1366 / 1440,
+  - `[x]` THE TOP BAR IS ONE ROW FROM 1280 (D3-32, DONE: icons below 1600, the right-hand labels from 1800 — measured one row at every 20px from 1280 to 1920, E3-7; the user 2026-10-06 "yes, both"): measured 92px (two rows) at 1280 / 1366 / 1440,
     one row needs ~1480 → below that, Page check · Preview · Export · Reset and the "Add a band" text collapse to icons (tooltip and
     accessible name kept); `builder-chrome-fits.spec.ts` asserts one row at 1280 (its comment already says a wrap there is a regression)
-- `[ ]` **BATCH E-4 · Preview and components on small screens** — QUEUED 2026-10-05 by the user (E1-5): multipage-preview 5 ·
+  HEADED UAT CHECKLIST (written 2026-10-06 before the measuring; six windows, a pool that refills; fresh production build; built
+  through the UI on tablet landscape 1024 × 768 · tablet portrait 768 × 1024 · phone 393 × 851, touch on, Inspector opened from its
+  tab; the desktop 1280 · 1366 · 1536 for U7; the four themes rotated; Preview at all 70 screens):
+  - `[x]` U1 (SEEN 2026-10-06, `uat-e3-headed.js` 297 / 0) spacing: a block's spacing slider swept, then across / down given their own value and handed back — the canvas shows each
+    step as it moves, ONE Undo takes back the whole sweep, Ctrl+Z works with the slider still focused, two different controls are
+    two Undos — each screen
+  - `[x]` U2 (SEEN 2026-10-06, `uat-e3-headed.js` 297 / 0) masonry: a grid of pictures → Arrange → "Follow the picture" staggers the canvas, Rows tall / Start at row are gone inside
+    it, "Even" puts every pixel back; the editor's gaps equal the Preview's at that screen — each screen
+  - `[x]` U3 (SEEN 2026-10-06, `uat-e3-headed.js` 297 / 0) the device chip: the page column drawn in the editor is the one the chip asks for; every icon-only toolbar button has a
+    name a screen reader says and a tooltip — each screen
+  - `[x]` U4 (SEEN 2026-10-06, `uat-e3-headed.js` 297 / 0) zoom: − / + step from Fit and stop at 25 % / 400 %; the shortcuts act only with the pointer on the canvas; Ctrl + scroll
+    zooms round the pointer, the plain wheel scrolls; Space + drag pans; an edge dragged at 200 % stores what it would at 100 %;
+    the zoom is kept per device after a reload — each screen (pinch where touch is the only way)
+  - `[x]` U5 (SEEN 2026-10-06, `uat-e3-headed.js` 297 / 0) words: a Heading / Text is reached by a tap anywhere across its words, typing lands where tapped (start of the line,
+    the end), Enter / F2 / a letter on a selected block begins editing, a real drag on its handle still resizes with the far edge
+    fixed — each screen
+  - `[x]` U6 (SEEN 2026-10-06, `uat-e3-headed.js` 297 / 0) the blocks launcher sits beside the page, never on it — each screen
+  - `[x]` U7 (SEEN 2026-10-06, `uat-e3-headed.js` 297 / 0) the top bar (D3-32): ONE row at 1280 · 1366 · 1440 · 1536 and 1920; below ~1480 Page check · Preview · Export · Reset and
+    "Add a band" are icons with a tooltip and the same accessible name, each still does its job (click + keyboard); nothing off
+    screen from 375 to 1920, the page never scrolls sideways — the four themes
+  - `[x]` U8 (SEEN 2026-10-06, `uat-e3-headed.js` 297 / 0) Preview at all 70 screens of the pages built in U1–U6 (100 / 150 / 200 % text): no sideways overflow, no overlaps
+  - `[x]` U9 (SEEN 2026-10-06, `uat-e3-headed.js` 297 / 0) docs (RULE DOCS): the reference pages for spacing, masonry, zoom and the top bar say what a person sees on a tablet and
+    a phone, and show the icon-only top bar
+  MEASURED 2026-10-06 at `4fcf59a` (HEADLESS GATE, fresh build on 3100, `logs/e3-measure.out`): **28 fail, 59 pass** — spacing-gestures
+  12 (portrait 6 · phone 6) · masonry-builder 10 (portrait 5 · phone 5) · canvas-zoom 3 (the Ctrl + scroll test on all three) ·
+  text-is-reachable 3 (phone). The handover's 26 counted canvas-zoom on two screens; tablet landscape fails it too.
+  LEDGER E-3 (each written the moment it is found):
+  - `[x]` E3-1 · CLOSED: one shared `openInspector` in `tests/e2e/helpers/seed-site.ts`, the two copies removed; spacing 18 / 18 on all projects — TEST (spacing 12): under 64em the Inspector starts as its tab (E-1's design), the spec looks for its sliders without
+    opening it; the same `openInspector` is copied in two specs already → one shared helper, used by all
+  - `[x]` E3-2 · CLOSED: the spec taps the tab as a person does; masonry 28 / 28 — TEST (masonry 10): the same — the page loads at the project's width (Inspector a tab), THEN the spec widens the
+    window to 1800 and the Inspector stays a tab (it starts closed below 64em and is never opened by widening — E-1's start rule)
+  - `[x]` E3-3 · DECIDED BY THE USER 2026-10-06 ("we'll go with what you recommend"): the Inspector FOLLOWS THE WIDTH at every crossing of 64em, as on load — docked open when the window widens past it, back to its tab when it narrows; a person's own tap holds until the next crossing → built as BATCH E-4 change (1). The question was: should the Inspector open by itself when a window WIDENS past 64em (a tablet turned to landscape, a
+    browser window dragged wider)? Today it keeps the closed state it started with until the tab is tapped
+  - `[x]` E3-4 · CLOSED: the wheel sent × devicePixelRatio; canvas-zoom 28 / 28 — TEST, MEASURED (probe-e3.js wheel): the product zooms exactly z0 · e^(−deltaY · 0.0015) on every screen (0.83 → 1.51 for
+    −400, → 1.12 for −200); Playwright's `mouse.wheel(0, −400)` under device emulation ARRIVES as −400 ÷ devicePixelRatio (−200 at
+    DPR 2, −145 on the Pixel 5) — a real wheel notch is CSS px at any density → the spec turns the wheel by the same CSS px on every
+    screen
+  - `[x]` E3-5 · CLOSED: `caretFallthrough` hands a still tap to the block under a PARENT's handle (never the handle's own block); guard text-is-reachable "on a phone, a tap…" red on the old build; HEADED: phone 9px heading stack → heading, tablets too — REAL, MEASURED (probe-e3.js select … mid): on the phone (0.22) a heading at the top of its section is 9px tall; with the
+    section selected its "Resize top edge" handle has no room above the page top and lies over the heading's middle — every further
+    tap lands on the handle and the heading can NEVER be selected by tapping its words (desktop / tablets: the second tap selects
+    it). A tap that does not move must fall through a PARENT's handle to the block under it, as it already does for the selected
+    block's own words
+  - `[x]` E3-6 · CLOSED: the frame read in page px, the gap compared in screen px; add-without-asking green on all projects — TEST (add-without-asking :282 on tablet landscape and phone, not in E-2's set): it compares the page's bottom frame in
+    SCREEN px (padding × scale, 4.2px at 0.26) with 8 — since E2-2 (Full width = the shrunk desktop page) a tablet's 1rem frame is
+    under 8 screen px → measured in page px, as E-2's specs were moved
+  - `[x]` E3-7 · CLOSED: `WIDE_LABEL` 1600 · `WIDER_LABEL` 1800 (`app/website/box-demo/page.tsx`); builder-chrome-fits sweeps 1280 – 1920 every 20px; HEADED U7 one row at 13 widths × 4 themes — REAL, MEASURED (header height, 1279 … 1920, on the build with D3-32's first cut): two rows (93px) at 1480 – 1536
+    (my threshold too low: Reset gained an icon) AND at 1700 — the right-hand group's labels (Guides · Hidden · Base size · the theme
+    name, `min-[1700px]`, G2-8) appear there while the bar needs ~1750 for them → both thresholds set from the measurement, and the
+    spec asserts one row at EVERY width from 1280 to 1920 in 20px steps, not at chosen ones
+  - `[x]` E3-8 · CLOSED: every check measured from where it starts; the closing pass 297 / 0 — TEST, MINE (uat-e3-headed.js SP, first headed run): it expected the seeded spec's absolute values (12, 5, 8), but a grid
+    BUILT THROUGH THE UI starts at the default spacing (17px, space by default) — the readings 29 · 22 · 25 are 17 + 12 · 17 + 5 · 17 + 8,
+    the behaviour right → the checks measured from the starting value. Same run, same kind: the top-bar slice still used 1480 (the
+    product moved to 1600, E3-7) · the pan started at the scroll's end on the phone and with the new Stack still selected · the
+    palette floats over the canvas on a tablet held upright too, so portrait builds with the toolbar's "+" as the phone does
+  - `[x]` E3-9 · CLOSED: `onClose` through a ref, the listener added once per opening (`components/shared/Modal.tsx`); unit guard red on the old Modal; HEADED U7 × 4 themes — REAL, FOUND BY THE HEADED PASS (U7, all four themes), MEASURED (listener trace): **Escape never closes the Page check**
+    (nor twice). The builder's own Escape handler (deselect) runs first; React renders between the two document listeners, and the
+    shared Modal's effect — keyed on an `onClose` that is new every render — removes and re-adds its listener mid-dispatch, so it is
+    never called (the listener-churn trap). Shared `components/shared/Modal.tsx`: every modal over a page that re-renders
+  - `[x]` E3-10 · CLOSED: `modalOpen()` (`components/website/box/ui.tsx`) — undo / redo, the canvas's keys and the Inspector's Escape wait while a dialog is open; browser guard red on the old build — REAL, MEASURED (probe): with the Page check OPEN, Ctrl+Z undid the band behind it (3 blocks → 1) — the canvas's keys
+    act on the page under a modal dialog
+  - `[x]` E3-11 · CLOSED: the panel takes the focus when it mounts (unless something inside did), the opener gets it back; unit guard red on the old Modal — REAL, MEASURED (probe): opening the Modal leaves the focus on the button behind it (`activeElement` outside the
+    dialog) — a keyboard or screen-reader user is not taken into the dialog, nor returned when it closes (WCAG 2.4.3)
+  - `[x]` NOT A BUG, MEASURED (HEADED U2): the page grid's "At least this many rows tall" is still offered in a masonry cell — given 12 rows the cell grows (251 → 288) and no cell overlaps another
+- `[x]` **BATCH E-4 · Preview and components on small screens** — CLOSED 2026-10-06 (HEADED UAT `scripts/uat/uat-e4-headed.js`, six
+  windows, **232 checks 0 failed** (`logs/e4-uat4.out`) + the slider as a real phone and tablet (`isMobile`) 4 / 0 (`e4-uat4m.out`), the
+  Preview at all 70 screens × 100 / 150 / 200 % text; gate: typecheck 0 · eslint 0 errors (105 warnings, none new) · vitest 4,423 /
+  4,423 · **`test:fast` on ALL FOUR screens 3,272 / 3,272 in 12.3 min** · `docs:build` SUCCESS; ledger E4-1 … E4-14 — E4-9 and E4-14
+  → BATCH E-5) — OPENED 2026-10-06 (after E-3 closed) — QUEUED 2026-10-05 by the user (E1-5): multipage-preview 5 ·
   pager-hero 1 · component-layout-invariants 1 (7) — and E-1's (2): the gate runs the tablet and phone projects when all are green
+  (area: the editor on small screens · 3 changes: (1) E3-3 · (2) the seven specs, each measured · (3) E-1's (2) the gate runs the tablet and phone projects)
+  HEADED UAT CHECKLIST (written before the pass; the lines for (2) are added after its specs are measured, before the pass):
+  - `[x]` U1 (SEEN 2026-10-06, `uat-e4-headed.js` 66 / 0 incl. the Preview at all 70 screens × 3 text sizes) (1) E3-3: open the builder at 768 × 1024 (Inspector a tab), widen the window to 1280 — it docks open; narrow back to 768 —
+    it is a tab again; tap it open at 768 and widen — it stays open; collapse it at 1280 and narrow then widen — it follows the width;
+    also 1023 ↔ 1024 (the crossing itself) and a phone 393 ↔ 1024 — each in the four themes
+  - `[x]` U2 (DONE 2026-10-06) docs (RULE DOCS): the layout story's tablet section says the Inspector follows the width
+  - `[x]` U3 (SEEN 2026-10-06, HEADED `e4-uat4.out` 232 / 0 + `e4-uat4m.out` 4 / 0, screenshots read) (2) E4-3: open Preview at 393 · 768 · 1024 · 1280 · 1536 — the bar never runs off the right edge (bar scrollWidth ≤ window),
+    every control on screen and usable (Pages tab switches page, screen-size menu opens, Rotate toggles with a preset, Hide hides),
+    the bar wraps onto more rows when narrow and is one row at 1280+; in the four themes
+  - `[x]` U4 (SEEN 2026-10-06, HEADED `e4-uat4.out` 232 / 0 + `e4-uat4m.out` 4 / 0, screenshots read) (2) E4-4: hide the controls (button and H) at 393 · 768 · 1280 — the Controls handle and Exit preview sit together
+    bottom-right, nothing at the top centre; a header link the person built at the top is tappable; the handle brings the bar
+    back, Exit leaves; focus-visible on both by Tab; four themes
+  - `[x]` U5 (SEEN 2026-10-06, HEADED `e4-uat4.out` 232 / 0 + `e4-uat4m.out` 4 / 0, screenshots read) (2) E4-5: open Preview on a site with a school font at 393 · 768 · 1280 — the frame loads ONCE (navigations counted),
+    the font is the school's (not the fallback), a scroll made at once is not wiped; switch page by the tabs — still the school's font
+  - `[x]` U6 (SEEN 2026-10-06, HEADED `e4-uat4.out` 232 / 0 + `e4-uat4m.out` 4 / 0, screenshots read) (2) E4-2: a pager with auto-advance opened in Preview by a TAP on a phone and a tablet — it advances; hovering (mouse,
+    desktop) and focusing (Tab) hold it
+  - `[x]` U7 (SEEN 2026-10-06, HEADED `e4-uat4.out` 232 / 0 + `e4-uat4m.out` 4 / 0, screenshots read) (2) E4-1: the component invariants on the canvas at phone / tablet / desktop — a hug alert, a badge and a floated item
+    look right at every scale (screenshots read)
+  - `[x]` U8 (DONE 2026-10-06: `docs/guide/website-builder.md` Preview section + `box-builder-site.feature`; docs:build SUCCESS) docs (RULE DOCS): the guide's Preview section — the bar wraps on narrow screens, the Controls handle sits beside Exit
+  - `[x]` CHANGE (1) E3-3 BUILT 2026-10-06: `app/website/box-demo/page.tsx` follows the 64em media query's `change`; guard builder-chrome-fits "the Inspector follows the width…" red on the old build; 156 / 156 on all four projects; HEADED 66 / 0; gate typecheck 0 · eslint 0 errors · vitest 4,418 · test:fast 816
+  - `[x]` CHANGE (2) BUILT 2026-10-06 — the seven were 24 once measured, then 13 more on the phone (E4-1 … E4-13); every spec green on all four projects the seven specs, each measured (multipage-preview 5 · pager-hero 1 · component-layout-invariants 1)
+  - `[x]` CHANGE (3) BUILT 2026-10-06 — `test:fast` runs all four projects at 8 workers: 3,272 / 3,272 in 12.3 min; guard `test-scripts.test.ts` (red without the phone) E-1's (2): `scripts/test-fast.js` runs the tablet and phone projects too
+  LEDGER E-4 (each written the moment it is found):
+  - MEASURED 2026-10-06 (HEADLESS GATE, fresh build `hhvY26hyJDD84Vm-8oG5E` on 3100, `logs/e4-small3.out`): the three specs on
+    tablet-landscape / tablet-portrait / mobile-chrome — **24 failed / 228 passed**, not the 7 the handover counted (E-3 left more
+    of them failing on the phone). Probe (`zz-probe-e4`): the canvas is the 1200px Desktop frame drawn at `scale()` to fit —
+    0.69 at 1280 · 0.47 at 1024 · 0.52 at 768 · 0.22 at 393.
+  - `[x]` E4-1 (FIXED 2026-10-06, guard green on all four projects; HEADED 232 / 0) · BUG IN THE TEST: `component-layout-invariants` measures SCREEN px (`getBoundingClientRect`) of a SCALED canvas
+    against LAYOUT-px floors (8 · 40 · 160 · 22rem · 2px tolerances) — 18 cases fail on the phone/tablets (badge/rating height 7.3
+    < 8, a floated item 36 < 40, the hug alert 114 < 160, the 22rem container rule compared with a scaled width), and the desktop
+    case passes only by luck (hug alert 167 vs 160 at 0.69). Fix: every measurement divided by `data-canvas-scale`.
+  - `[x]` E4-2 (FIXED 2026-10-06, guard green on all four projects; HEADED 232 / 0) · BUG IN THE TEST: `pager-hero` "moves on its own" fails on the phone — the spec opens the Preview with a MOUSE click,
+    and on a 393px phone the Preview button (157, 49) sits over where the strip appears, so the parked cursor reads as a hover and
+    the pause holds (probe: `:hover` true, no scroll in 4.5s). A real TAP leaves no hover — the strip advances on phone and tablet
+    (probe: x 0 → 1170 / 2236). Not a product bug. Fix: `published()` taps on a touch project, clicks on desktop.
+  - `[x]` E4-3 (FIXED 2026-10-06, guard green on all four projects; HEADED 232 / 0) · REAL BUG: the Preview's bar does not fit a tablet portrait or a phone — its right-hand group is a rigid 771px
+    (`shrink-0`), so at 768 and 393 the bar's content is 879px wide and runs off the right edge (the size readout cut at
+    "768 px ·", the zoom / rotate / hide controls off screen), and the Pages tabs are squeezed to **0px** — a person cannot switch
+    pages from the toolbar at all (probe + screenshots, `multipage-preview` "the preview's OWN toolbar" fails at 768 and 393).
+    Fix: the bar WRAPS onto more rows (and the group within it) instead of overflowing; it grows downward and still hides.
+  - `[x]` E4-4 (FIXED 2026-10-06, guard green on all four projects; HEADED 232 / 0) · REAL BUG: with the controls hidden, the "Controls" handle sits at the TOP CENTRE of the page — on a phone that is
+    over the user's own heading and header links ("Welcome to ou▒▒l", screenshot; `multipage-preview` "a header the USER built"
+    cannot click its Home link at 393 / 768 / 1024). Fix: the handle joins the Exit pill in the bottom-right corner — one corner
+    reserved for the preview's chrome, the header the person built left uncovered.
+  - `[x]` E4-5 (FIXED 2026-10-06, guard green on all four projects; HEADED 232 / 0) · REAL BUG (found as a flake: `pager-hero` auto-advance, tablet-landscape, "Execution context was destroyed" once in
+    the 4-project run, 224 / 224 repeated alone): EVERY Preview open loads the page TWICE, on all four projects (probe: the frame
+    navigates at ~60ms and again at ~400–500ms) — the school's fonts (`embedFontCss`) were a dependency of the page source, so their
+    arrival rebuilt the whole page: twice the work on a phone, and a scroll / tap / running pager in the first 400ms wiped. Fix:
+    the fonts are held in a ref and put into the OPEN page as a `<style>` (on arrival and on every load). Guard
+    `multipage-preview` "opening the Preview loads the page once, fonts included" — red on the old build (all projects).
+  - MEASURED 2026-10-06 for change (3) (HEADLESS GATE, every `test:fast` spec on tablet-landscape / tablet-portrait / mobile-chrome,
+    `logs/e4-small-all2.out`): **2,438 passed · 13 failed, in 9.5 min at 8 workers** — all 13 on the phone, the same 13 alone
+    (`e4-phone5.out`). The first attempt at 3 workers was on course for ~4 h with the CPU at 2 % (the user: "faster than that") —
+    the workers, not the tests, were the limit.
+  - `[x]` E4-6 (FIXED 2026-10-06, guard green on all four projects; HEADED 232 / 0) · REAL BUG: a resize drag's 8px floor (`BoxCanvas` `minWpx` / `minHpx`) was in SCREEN px while every other size in the
+    drag is scaled by `Z` — so on a phone's 0.22 canvas the smallest a box could be dragged to was 36px of PAGE (8 / 0.22), and the
+    saved page depended on the zoom it was edited at (`empty-box-height` ×5 on the phone: 36 vs < 20). Fix: `8 * Z`, the engine's
+    own page-px floor.
+  - `[x]` E4-7 (FIXED 2026-10-06, guard green on all four projects; HEADED 232 / 0) · BUG IN THE TEST: `add-inside-empty-box` ×3 compared screen px of the scaled canvas with the 2.5rem (40 / 80px) PAGE
+    floors (24 vs 39 on the phone; the floor itself measured 110 layout px on every project). Fix: `pageBox()` reads page px.
+  - `[x]` E4-8 (FIXED 2026-10-06, guard green on all four projects; HEADED 232 / 0) · BUG IN THE TEST: `build-from-blank` ×3 aimed its first drop a fixed 60 screen px down a blank page that is 35px tall
+    on the phone — below the page. Fix: inside the page at any scale.
+  - `[x]` E4-9 (TEST FIXED 2026-10-06; the finger-size question → BATCH E-5) · BUG IN THE TEST: `drop-placement` "its BOTTOM edge" aimed 12px above the bottom of a block 37px tall on the phone;
+    the strips are 25 % of the DRAWN height (9px there), so 12px is the middle. Fix: aim inside the strip. Whether a 9px strip is
+    enough for a FINGER at a 0.22 canvas is the question BATCH E-5 (adding and placing on a phone, research first) exists for →
+    BATCH E-5.
+  - `[x]` E4-10 (FIXED 2026-10-06, guard green on all four projects; HEADED 232 / 0) · BUG IN THE TEST: `side-by-side-drop` ×2 used fixed screen distances (100 · 60 · 8 · 4px) on the scaled canvas.
+    Fix: multiplied by the canvas scale; the drop aims at the middle of the row's side space.
+  - `[x]` E4-11 (FIXED 2026-10-06, guard green on all four projects; HEADED 232 / 0) · MY OWN, IN A TEST: change (3)'s new guard in `test-scripts.test.ts` read `playwright.config.ts` without stripping
+    carriage returns — caught by `source-reading-tests` (vitest 4,422 / 4,423). Fixed; both guards 105 / 105.
+  - `[x]` E4-12 (FIXED 2026-10-06, guard green on all four projects; HEADED 232 / 0) · REAL BUG (HEADED UAT, `e4-uat1.out`: "Exit leaves the Preview" FAIL at 393 and 768 in every theme): with the controls
+    hidden, TAPPING Exit preview did not exit — the pill brought the bar back on `pointerenter`, a finger "enters" at the moment it
+    taps, so the pill unmounted and the click landed on nothing. Fix: only a MOUSE brings the bar back on hover (the pill and the
+    top-edge reveal alike). Guard `multipage-preview` "with the controls hidden, Exit preview leaves…" — red on the old build on
+    all three touch projects.
+  - `[x]` E4-13 (FIXED 2026-10-06, guard green on all four projects; HEADED 232 / 0) · REAL BUG (HEADED UAT `e4-uat2.out`, a Slider built through the UI, "Move on its own every 2s"): on a phone and a
+    tablet the slider NEVER moved — the tap that opened the Preview left the browser's hover stuck over the strip (`:hover` true,
+    measured as a touch laptop AND as a real phone/tablet, `isMobile`), and the pager pauses on `mouseenter`. The same freezes a
+    published slider for a visitor whose tap leaves a hover on it. Fix (`pagerWire`): hover pauses it only where the device CAN
+    hover (`(hover: hover)`); on a touch screen a FINGER ON IT (`pointerdown`) is what stops it; focus stops it everywhere.
+    Guard `pager-hero` "moves on its own, and HOLDS STILL…": a stuck hover on a touch screen does not stop it, a tap does — red on
+    the old build on every touch project.
+  - `[x]` E4-14 · FOUND IN THE HEADED PASS (`CO-393-U7-components.png`), HANDED ON → BATCH E-5: on a phone the canvas opens as the
+    1200px Desktop page at **22 %** — an Alert and a Badge a few pixels tall, the block's own toolbar bigger than the block. Correct
+    to the model (every invariant holds in page px) and unusable for a finger. How a phone EDITS is the question BATCH E-5 was queued
+    to research first (the user, E2-20), so it is answered there, not patched here.
+- `[ ]` **BATCH E-5 · Adding blocks on a phone** — QUEUED 2026-10-06 by the user (E2-20: "queue it, research first") (area: the editor
+  on a phone · adding and dropping): the open blocks panel covers the whole canvas on a phone, so a block cannot be dragged beside,
+  under or into another. RULE RS FIRST: the user's sources and mine (how phone editors — Wix, Canva, Webflow, Framer — add and place
+  blocks: a bottom sheet that leaves the page showing, tap-to-place, a placement target after picking), an "enough" checklist the
+  user signs, THEN the build
+  - `[ ]` (1) the research and its signed "enough" checklist
+  - `[ ]` (2) the build the research settles on, web phone first, then `apps/mobile/` (RULE APP)
+  - `[ ]` E4-9 (from BATCH E-4): the drop strips are 25 % of a block's DRAWN height — 9px on a 37px block at the phone's 0.22 canvas.
+    Is that enough for a finger? The research answers it with the rest of placing on a phone.
+  - `[ ]` E4-14 (from BATCH E-4): the phone canvas opens as the Desktop page at 22 % — blocks a few pixels tall, the toolbar bigger
+    than the block. What a phone edits at (its own width? a zoom a finger can use?) is part of this research.
 - `[x]` **BATCH G-3 · Placing on columns and rows** — CLOSED 2026-10-04 (HEADED UAT `scripts/uat/uat-g3-headed.js`, six windows,
   65 checks 0 failed on the final build (`logs/g3-uat6.out`), Preview at all 70 screens at 100 / 150 / 200 % text; G-2's suite
   re-run as regression 128/0 (`g2-regress-g3c.out`); gate: see the commit) — OPENED 2026-10-04 (session 5da86722, the user's "go") (area: page grid
@@ -2520,7 +2834,7 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
       the tile entry point is B's
     - `[x]` L4-j · MY OWN PROBE: the "cut off" check compared the picker with the wrong box and said CLEAN with it cut —
       it now measures against the nearest scrolling box's client width, frame AND squares; proven RED on the 360 build
-- `[ ]` **BATCH E-1 · The empty-box hint is not a button** (area: editor chrome · 2 changes, queued — asked by the user
+- `[ ]` **BATCH E-6 · The empty-box hint is not a button** (RENAMED from E-1 by the tree audit 2026-10-06 — the id clashed with the closed E-1 · The editor on tablets and phones) (area: editor chrome · 2 changes, queued — asked by the user
   2026-10-03: "do we actually need that in the center… that doesn't make the user click on it by mistake"): every empty box
   draws a large centred "+  Empty — drag a block in, or click to add" that is one big click target. PROPOSED (the user to
   confirm when it opens): a faint dashed outline and a quiet, NOT clickable "Drop a block here"; the "+" only on the
@@ -2536,7 +2850,10 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
   - L4-l · (handed over from L-4 by the user 2026-10-03, same root as #42) a Heading's TOP corner dragged inward and back
     stays 14px taller: its words wrap mid-gesture and the height floor is taken from the WRAPPED height (`minHeight` 65.7
     against the words' 42.6, `probe-l4-corner.js`); bottom corners and outward drags come back exact
-  - #46 · the side-by-side-resize spec failing 14 tests on Tablet and Phone — re-run and fix
+  - E2-22 · (moved here by the user 2026-10-06, "queue it with the resize work") the columns of a "Side by side" block filled with
+    "Add a block inside" cannot be sized against each other on any screen — each sits in a band of its own inside the row, so a
+    column's edge finds no partner (columns made by dropping beside each other do resize). Its place here was #46 (the
+    side-by-side-resize spec failing on tablet and phone), CLOSED BY BATCH E-2 2026-10-06: 256 / 256 on all four projects
   - #82b · #83 · width round trips drift at 1366
   - #84 · the left-edge resize uses a fixed 14rem neighbour floor
 - `[ ]` **BATCH L-6 · Africa-first measurements and the innovative pages** (area: harness · 4 changes, queued)
@@ -2560,6 +2877,26 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
 - `[ ]` **BATCH L-9 · Task 4: the parity spec covers every arrangement** (area: canvas = Preview · 1 change, queued
   2026-10-01) — tree 1.1.4: `parity-every-arrangement.spec.ts` extended to grid cells, components, sticky, floating and
   fixed (neighbours of a floating/fixed block do not move), at every breakpoint. Branch `builder/layout-2`
+- `[ ]` **BATCH P-1 · Alignment and spacing panel** (area: the Inspector's alignment · 6 changes, queued 2026-10-04 inside R-4's
+  "BUILD BATCHES IT IMPLIES" — given its own heading by the tree audit 2026-10-06): (1) Across / Down with Fill + the 3×3 shortcut
+  (AC-27) · (2) container Down incl. "Text lines up" + `safe` · (3) Spread incl. even spacing + wrapped lines (AC-25) · (4) Push to
+  the end / bottom (AC-26) · (5) RTL logical sides · (6) `min-width: 0` on fills measured. Detail: R-4 in this file
+- `[ ]` **BATCH P-2 · Size and shape** (area: block size · 4 changes, queued 2026-10-04 inside R-4 — heading added by the tree audit
+  2026-10-06): (1) Shape — a chosen proportion (AC-34) · (2) readable width per block + largest width · (3) height as a minimum only,
+  incl. a screen-height share and "minus the header" (AC-3) · (4) fluid default inner space checked
+- `[ ]` **BATCH G-4 · Grid block, extended** (area: the Grid block · 6 changes, queued 2026-10-04 inside R-4 — heading added by the
+  tree audit 2026-10-06): (1) cards fit ≥ X, fill / fit (AC-33) · (2) subgrid (AC-36) · (3) a fixed-width or content-sized column
+  beside the shares (AC-30) · (4) the planned splits gallery · (5) purpose picks (AC-37c) · (6) dense packing (AC-32 — in no batch
+  until the audit)
+- `[ ]` **BATCH P-3 · Page layouts** (area: whole-page layouts · 5 changes, queued 2026-10-04 inside R-4 (D1) — heading added by the
+  tree audit 2026-10-06): presets gallery · blank canvas · "draw your areas" editor · reading order follows the drawing · change the
+  layout after picking one, nothing lost
+- `[ ]` **BATCH G-5 · Layering, extended** (area: overlap and floating · 6 changes, queued 2026-10-04 inside R-4 — heading added by the
+  tree audit 2026-10-06): (1) layer over in one cell + the covers-words warning (AC-31) · (2) floating held by any corner, "half
+  outside the edge" (AC-10) · (3) Cover · (4) the floating fallback on a phone (AC-21) · (5) "Overlap the items" on a row · (6) scroll
+  padding under a sticky header + safe areas (SP-1, SP-14)
+- `[ ]` **BATCH G-6 · Page-grid close-out** (area: page grid · queued 2026-10-04 inside R-4 "as planned" — heading added by the tree
+  audit 2026-10-06; its changes are set when it opens): the real-world pass R-3 left (low-cost Android, screen reader, Slow 3G)
 - `[ ]` **BATCH M-1 · The L-2 fixes in the phone and tablet app** (area: `apps/mobile/` · MUST BE DONE, NOT STARTED — the
   user, 2026-10-01: "Yes, I want something built in mobile for this, but… just have this noted that it must be done", so
   we do not get carried away). What it holds, to be planned when it opens (phone AND tablet, `isTablet`, Jest + both
@@ -2580,21 +2917,42 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
 
 ### 1.1 · The four tasks (the user's handoff note, 2026-09-26) — see memory `project_four_tasks.md`
 
-- `[>]` **1.1.1 · TASK 1 — the layout** (grew from "width round trips"; branch `builder/layout-uat`)
+**TREE AUDIT 2026-10-06 (the user: "what is left for the layout task?" → "yes, please do that").** Every open line of 1.1 – 1.3
+checked against the BATCHES, `git log` and the code; 109 lines re-marked in place (each carries "AUDIT 2026-10-06:" and its
+evidence), nothing deleted. Most of 1.1.1 had been closed by L-1 … L-4, S-1, S-2, F-1, E-0 and E-2 without its lines being ticked.
+Ids fixed: the queued "empty-box hint" batch is now **E-6** (it clashed with the closed E-1); the second SP-12 is **SP-12b**.
+P-1 · P-2 · G-4 · P-3 · G-5 · G-6 existed only as text inside R-4 and now have queued headings in BATCHES. **WHAT IS LEFT OF THE LAYOUT:**
+- **Now:** E-3 (open) · E-4 · E-5 (research first).
+- **Task 1 tail:** L-5 resize round trips (6: #42 · #82b / #83 · #84 · L4-l · L4-n · E2-22) · L-6 Africa-first measurements + the
+  innovative pages (4) + the dresser's "Centred column" · S-3 Page check warns about space (2) · E-6 the empty-box hint (2) · the
+  1.2 queue (Add a block inside nests · Side by side makes an empty row · the stale `alignSelf` · "Place here") · then the whole-tier
+  re-sweep, the final story and the artifacts.
+- **Tasks 2–4:** L-7 · L-8 · L-9 (one change each; L-9 also takes WebKit and Firefox projects, #144's follow-up).
+- **The frozen list (1.1.5):** MUST 1 of 6 done (AC-35) — 3 not started (AC-33 · AC-36 · AC-34), 2 partly (AC-26 · AC-3) · BUILD 0 of 6
+  — 2 not started (AC-30 · AC-32), 4 partly (AC-31 · AC-21 · AC-10 · AC-37) · smaller 0 of 14 — 10 not started, 4 partly · CHECK 0 of
+  9 seen headed (7 have their feature built) · sticky / fixed: SP-1 and SP-4 (the two MUSTs), SP-2 · 3 · 5 · 7 · 8 · 11 · 14, the SP-12
+  gallery, SP-13, SF-8, the SP headed check — 3 more LATER. Nearly all of MUST / BUILD sit in the queued P-1 · P-2 · G-4 · G-5.
+- **Unbatched ledger lines (found, never given a batch):** the motion / effects bugs EX-2 · 3 · 5 · 6, MR-2 … MR-9, SA-1, N1 … N10,
+  SH-7, NEW-A1, EX-10, MR-16, AM-1, CE-19, HV-17, NEW-C1 (planned as "Batch A / B / C", never opened) — they go to S-2 / a motion batch
+  when AREA V opens; until then they stay open here.
+- **Queued batches beside the layout:** S-2 section transitions (5) · U-1 surface what is built · D-1 README · M-1 the app.
+- **After the layout (1.3 on):** everything except the documentation site (built early: D-2 `f437b5c`, D-3 `af533ac`).
+
+- `[>]` **1.1.1 · TASK 1 — the layout** (grew from "width round trips"; branch `builder/layout-uat`) — AUDIT 2026-10-06: the batches closed nearly every line below — what is left is L-5 · L-6 · L-7 · L-8 · L-9, the whole-tier re-sweep, the story and the artifacts; `builder/layout-uat` merged early as PR #5 (`1541d98`)
   - `[x]` Width round trips in stored percentages — `2de0ef2`
   - `[x]` Semantic pages, real-screen editing, resize that comes home — `5345e80`
   - `[x]` Link blocks, band colour schemes, dressed pages (RULE E) — `c3e99cf`
   - `[x]` The four layout decisions 1D · 2A · 3A · 4A — `919d731`
   - `[x]` **Tier 80 dressed sweep** — 70 pages, fixes in `67f7f64`
-    - `[ ]` page 38 "could not select" the 2nd of 4 card columns (same class as 1.1.1.c-11 below)
-  - `[>]` **Tier 95 dressed sweep** — 135 pages swept, fixes in `919d731`
-    - `[ ]` The 19 build failures re-run (could-not-select ×9 · drop-offered-nothing ×7 · barely visible ×1 · click
+    - `[x]` page 38 "could not select" the 2nd of 4 card columns (same class as 1.1.1.c-11 below) — AUDIT 2026-10-06: L-1 L1-r3 "page 38 … BUILT, 212 blocks" (`509822a`)
+  - `[x]` **Tier 95 dressed sweep** — 135 pages swept, fixes in `919d731` — AUDIT 2026-10-06: its one child closed
+    - `[x]` The 19 build failures re-run (could-not-select ×9 · drop-offered-nothing ×7 · barely visible ×1 · click — AUDIT 2026-10-06: L-1 L1-r2: 16 of 19 built; 142 / 109 / 124 after L1-3 / L1-8; page 12 in Z-1 (`509822a`)
       timeout ×2) — same classes as tier 99, fixed there first
-  - `[>]` **Tier 99 dressed sweep** — 403 pages in 688 min, 52 could not be built, 17 clean (2026-09-29)
+  - `[x]` **Tier 99 dressed sweep** — 403 pages in 688 min, 52 could not be built, 17 clean (2026-09-29) — AUDIT 2026-10-06: every c- and e-line closed by a batch (below)
     - `[x]` a · The log copied out of Temp → `scripts/uat/logs/sweep99.log`; baseline results kept in
       `scripts/uat/dressed99-baseline-out`
     - `[x]` b · Uncommitted work secured — gate green, `bc89d68` pushed
-    - `[>]` c · **Triage and fix, class by class (the bug ledger of this sweep)** — counts are pages affected
+    - `[x]` c · **Triage and fix, class by class (the bug ledger of this sweep)** — counts are pages affected — AUDIT 2026-10-06: every class closed below
       - `[x]` c-1 · **Icon taller in the Preview than on the canvas** (#143) — 185 pages, +18px phone … +6px wide.
         ROOT CAUSE: `isEmptyBox` counted a block that draws its own content (Icon, List, Divider) as an empty box, so
         it got the 2.5rem floor; the canvas then discarded the floor's height and the export kept it (7 of 11 block
@@ -2604,7 +2962,7 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
       - `[x]` c-2 · **List shorter in the Preview** (#135) — 145 pages, −8 … −17px. Root cause: the canvas spaced its
         items, the export did not. Fixed with one shared `LIST_ITEM_GAP`, guard mutation-proven. HEADED UAT probe-t7 on
         build DM9hSozR: identical at all five rungs (80.4 · 82.6 · 84.9 · 95.7 · 117.6px); same five pages at 0 errors
-      - `[ ]` c-3 · **Heading / text wraps differently in the Preview** — 77 pages at Tablet 768 (+33 / +50px), 28 at
+      - `[x]` c-3 · **Heading / text wraps differently in the Preview** — 77 pages at Tablet 768 (+33 / +50px), 28 at — AUDIT 2026-10-06: = e-4, closed by L-2 (0 R11 findings, `2bcc73f`)
         Desktop. #137 (page as a size container) is in `bc89d68`. Pages 139, 63, 10 carried it and are at 0 errors on
         the fresh build; the full re-run (d) closes it or reopens it
       - `[x]` c-4 · **Build failed: could not select a column** — 36 pages (incl. page 199). HARNESS. Measured on all 36:
@@ -2626,21 +2984,21 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
           picker offers 1 · 2 · 3 · 4 · 6 · 12 — it found no square, clicked nothing, and the picker sat open. It takes
           the next size up and deletes a cell now, and says so under GAPS. Pages 33, 163, 219, 249 re-run headed: all
           four BUILD; 33 and 163 at 0 errors, 219 and 249 at 1 each (canvas≠Preview at Wide, to look at)
-        - `[?]` GAP, the user's decision: **a grid of five across cannot be chosen** (nor 5, 7, 8… — only what
+        - `[x]` GAP, the user's decision: **a grid of five across cannot be chosen** (nor 5, 7, 8… — only what — AUDIT 2026-10-06: decided B and built in L-4: 5 · 7 · 8 · 9 · 10 · 11 across give equal cells (`7aa75e5`)
           twelve divides into). A leave, take six and delete one · B let the picker offer any count up to 12 (a grid
           already stores its own column count)
-          - `[ ]` **DECIDED by the user 2026-09-29: B** — the picker offers any count up to 12. Before building: drive
+          - `[x]` **DECIDED by the user 2026-09-29: B** — the picker offers any count up to 12. Before building: drive — AUDIT 2026-10-06: L-4 + L4-o (`7aa75e5`); the round-trip leftover L4-n is in L-5
             how a cell resizes on a count twelve does not divide into (5, 7, 8, 9, 10, 11). Not started
       - `[x]` c-20 · **The toolbar kept the side it chose when the block was selected** — dock the blocks panel and the
         page is refitted to 77%, the block moves to within 36px of the top, and the bar stayed ABOVE it, over the top
         edge of the page. It re-measures on `transitionend` now. Browser guard, red on the old build, green on TylJ2DR6
-      - `[?]` c-21 · **The right-edge handle covers the last letter of a selected block that hugs its words** ("What we
+      - `[x]` c-21 · **The right-edge handle covers the last letter of a selected block that hugs its words** ("What we — AUDIT 2026-10-06: decided B, built in L-4: 0 handles over the block at every rung (`7aa75e5`)
         offe", probe-t9 screenshots). The handles are centred ON the edge, so half of each lies inside the block. The
         user's decision — it moves every handle: A leave · B draw the edge handles outside the block · C fade a handle
         that lies over words. Recommended: B
-        - `[ ]` **DECIDED by the user 2026-09-29: B** — the edge handles are drawn outside the block. The UAT drives a
+        - `[x]` **DECIDED by the user 2026-09-29: B** — the edge handles are drawn outside the block. The UAT drives a — AUDIT 2026-10-06: L-4 checklist (1), L4-e, L4-t (`7aa75e5`)
           block flush against the page edge, where a handle has no room outside. Not started
-      - `[ ]` c-6 · **Build failed: timeout** — 1 page (+2 click timeouts that also could not select)
+      - `[x]` c-6 · **Build failed: timeout** — 1 page (+2 click timeouts that also could not select) — AUDIT 2026-10-06: = e-2: E-0 (68 the machine, 145 builds); the missing `__step` fixed in L3-d / c-12c
         - READ ONLY, 2026-09-29. idx 38 (altamedfoundation.org/help_campaign): `scrollIntoViewIfNeeded` timed out
           after 10 s waiting for a palette tile, 209 blocks built; its screenshot shows the blocks panel CLOSED.
           INFERRED: a harness step closed the panel and did not reopen it — which step is not recorded (`__step` is
@@ -2655,11 +3013,11 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
           (then Wide) screen size, as a person would, and the count is in the report (`SIZING:`); a row no screen size
           holds on one line is left as dropped and listed under `GAPS`. Pages 6, 74, 101, 186, 36 re-run headed: 0 errors
         - `[x]` page 64 had c-8's cause (a Quote in a 111px column); 0 errors after the dresser's width-first change
-        - `[?]` ENGINE, the user's decision: a person who DOES size two columns while the third is on the next line
+        - `[x]` ENGINE, the user's decision: a person who DOES size two columns while the third is on the next line — AUDIT 2026-10-06: decided B, built in F-1 (`e6a30d4`)
           gets 50 + 25 + 33.34, and a hole on every wider screen. A keep as is (the size you drag is the size you get,
           and an unsized column keeps the share it was dropped with) · B a column nobody has sized by hand takes what
           is left of its line · C the editor warns when a line adds up to more than 100%. Recommended: B
-          - `[ ]` **DECIDED by the user 2026-09-29: B** — a column nobody has sized by hand takes what is left of its
+          - `[x]` **DECIDED by the user 2026-09-29: B** — a column nobody has sized by hand takes what is left of its — AUDIT 2026-10-06: F-1 change (2) c-7 B in `childStyle` (`e6a30d4`)
             line; under its floor it drops to the next line as today. Not started
       - `[x]` c-8 · CLOSED in BATCH L-4 2026-10-03 (the grid gives up columns, evenly, by its words; the eight tier-99 pages L8 = 0) —
         **Words broken across lines in the Preview** — 23 pages, 905 instances, column width median 77px.
@@ -2670,10 +3028,10 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
           and sets the section's width BEFORE filling it. Pages 148, 150, 159 re-run headed: 40, 18, 32 errors → 0.
           After the width-first change page 64 is at 0 errors; page 211 still breaks "1,000+" in a Stat at 900px
           (120px columns; the estimate said 150): the floor is 190px now, carrying that fifth. Page 211 re-run: 0 errors
-        - `[?]` ENGINE, the user's decision: what a grid does when words are put in a cell narrower than the longest
+        - `[x]` ENGINE, the user's decision: what a grid does when words are put in a cell narrower than the longest — AUDIT 2026-10-06: decided B, built in L-4 (`7aa75e5`)
           word — A break the word (today) · B narrow the grid by its narrowest cell that holds words · C leave it
           and have the Page check say so. (A row column is already never narrower than its longest word.)
-          - `[ ]` **DECIDED by the user 2026-09-29: B** — the grid narrows by its narrowest cell that holds words;
+          - `[x]` **DECIDED by the user 2026-09-29: B** — the grid narrows by its narrowest cell that holds words; — AUDIT 2026-10-06: L-4: the grid gives up columns by its words; tier-99 pages L8 = 0 (`7aa75e5`)
             breaking the word stays as the last resort when one column cannot hold it. The largest of the decisions:
             read how the grid narrows by its own box before choosing how. Not started
       - `[x]` c-9 · **Image runs off the page by 1px** (#142) — 12 pages at 600–899px. Right edge lands at 769 on a
@@ -2683,28 +3041,28 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
       - `[x]` c-10 · **150% text: an Icon spills out of a 50–55px column and overlaps** — 9 pages spill, 5 overlap.
         Same root as c-1 (the floor's 2.5rem minimum width is 60px at 150%). Pages 119, 285, 378, 328, 254 re-run
         headed: no spill and no overlap left
-      - `[ ]` c-11 · **Tablet: 4 columns on one line** (L6, #78) — 3 pages
+      - `[x]` c-11 · **Tablet: 4 columns on one line** (L6, #78) — 3 pages — AUDIT 2026-10-06: = e-6, L-3 (`6d67d52`)
         - READ ONLY, 2026-09-29 (the sweep was running; nothing driven yet). Pages idx 223 (5 rows), 359 (2 rows),
           382 (1 row, only at 800–876). MEASURED from the baseline trees: all 8 flagged rows store widths that add up
           to 100.01 – 100.19% (70.04 · 9.99 · 10.14 · 10.02); of 984 rows of four or more, the 965 that add up to
           100.001 or less are all clean, and the 8 are among the 19 that add up to more
-        - `[ ]` c-11a · ENGINE, MEASURED in the file: `packRowLines` (`lib/box-model.ts` 4328) starts a new line at
+        - `[x]` c-11a · ENGINE, MEASURED in the file: `packRowLines` (`lib/box-model.ts` 4328) starts a new line at — AUDIT 2026-10-06: the user decided "fix the comment only" — closed in L-3, no behaviour change
           `> 100.001`, while its own comment (4306) says "percentages that round to 100.4 are meant to be a full
           line". INFERRED, to be driven: the stored packing says 3 + 1, so `tabletPlaces` finds no line of four and
           the #78 rule is skipped, while the browser draws all four on one line. Guard first:
           `packRowLines([70.04, 9.99, 10.14, 10.02])`, red before the fix; then HEADED UAT at 768 reading each
           column's computed `flex` and `margin-right`
-        - `[ ]` c-11b · **Rows that store more than 100%** — 19 in the baseline, against "every probe on one line
+        - `[x]` c-11b · **Rows that store more than 100%** — 19 in the baseline, against "every probe on one line — AUDIT 2026-10-06: L-3: found, fixed, guarded by `row-never-stores-over-100.spec.ts` (`6d67d52`)
           stores 100%" (c-7). Count them in the re-run's trees; if they are still there, find whether the drag or the
           dresser writes them, through the UI
-        - `[?]` c-11c · The user's decision: **does a cell holding one icon count as a column for the tablet rule?**
+        - `[x]` c-11c · The user's decision: **does a cell holding one icon count as a column for the tablet rule?** — AUDIT 2026-10-06: decided B, built in L-3: `holdsWords` in `tabletPlaces` + the audit's L6 (`e80b889`)
           On all three pages the three narrow "columns" are single-icon cells of 8–10% beside the words (a table of
           ticks). A yes, four is four (today's check) · B a line of four is rearranged only when at least two of them
           hold words or a card. Asked, not assumed
-          - `[ ]` **DECIDED by the user 2026-09-29: B** — a line of four is rearranged on a tablet only when at least
+          - `[x]` **DECIDED by the user 2026-09-29: B** — a line of four is rearranged on a tablet only when at least — AUDIT 2026-10-06: L-3 (`e80b889`)
             two of its cells hold words or a card; a cell holding one icon does not count. The engine (`tabletPlaces`)
             and the audit's L6 check take the SAME rule, in the same change. Not started
-      - `[ ]` c-12 · **React error #185** (max update depth, #134) — 2 pages (idx 34, 43)
+      - `[x]` c-12 · **React error #185** (max update depth, #134) — 2 pages (idx 34, 43) — AUDIT 2026-10-06: L-3 change 1: 0 #185 on all 9 e-5 pages + idx 34, 43 (`cf614c8`)
         - READ ONLY, 2026-09-29. MEASURED: idx 34 is 522 blocks, idx 43 is 156; the editor survived and both audits
           finished; the two share nothing the other 401 lack (7 pages of the same recipe ran clean); the same error
           is in tier 95 (page 0) and tier 80 (page 26) on other recipes — so timing, not structure. No stack, step or
@@ -2715,13 +3073,13 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
           no delay; more than 50 such commits while another update waits (the handles' next measurement, the scroll
           re-measure) and React throws #185 in the next `setState`. None of the canvas's measuring loops can reach it
           alone (default priority, frame budget)
-        - `[ ]` c-12a · Reproduce through the UI (a long page, type 3 × 150 characters, repeated), full stack kept;
+        - `[x]` c-12a · Reproduce through the UI (a long page, type 3 × 150 characters, repeated), full stack kept; — AUDIT 2026-10-06: L-3 checklist (1)
           guard red first: a `pageerror` matching #185 fails the spec
-        - `[ ]` c-12b · **Typing re-renders and saves the whole site on every key** — beyond the error, this is what
+        - `[x]` c-12b · **Typing re-renders and saves the whole site on every key** — beyond the error, this is what — AUDIT 2026-10-06: L-3: 65–95 → 8–9.5 ms a key (`cf614c8`)
           a teacher on a low-cost phone feels as lag on a long page (RULE AF). To be MEASURED (time per keystroke at
           150 and 520 blocks) before anything is changed. The fix changes what one Undo takes back while typing, so
           the user is asked first
-        - `[ ]` c-12c · HARNESS: a page error keeps only its first line (`h.js` 11) and is attached once at the end
+        - `[x]` c-12c · HARNESS: a page error keeps only its first line (`h.js` 11) and is attached once at the end — AUDIT 2026-10-06: L3-d: `h.js` keeps the stack and the step
           (`uat-pages.js` 184), so neither the stack nor the step is known — same gap as c-6. After the sweep
       - `[x]` c-15 · **Selection handles stay at the previous screen size** — the page frame changes width by a 300ms
         transition with no render, so the handles were never re-measured (97…1107 around a block at 415…790). The
@@ -2751,7 +3109,7 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
       - `[x]` c-13 · Sweep header said "tier ≤ 80%" on a tier-99 run — names the plan now (`uat-pages.js`)
       - `[x]` c-14 · Two unit guards were wrong about what ships (base budget counted comments; scaffolding guard
         forbade the page's own size container) — both measure the shipped sheet now, mutation-proven, `bc89d68`
-    - `[>]` d · **The whole tier re-run on the fixed build** — 39 affected pages re-run headed first, 35 of them at 0
+    - `[x]` d · **The whole tier re-run on the fixed build** — 39 affected pages re-run headed first, 35 of them at 0 — AUDIT 2026-10-06: finished 2026-09-30, 403 pages in 957 min (child below)
       errors. The full run (403 pages, about 11.5 hours, no tokens spent) was STARTED 2026-09-29 on build wg5lR_xU:
       log `scripts/uat/logs/sweep99-rerun.log`, results `scripts/uat/dressed99-out`, the first run kept in
       `scripts/uat/dressed99-baseline-out`. **DO NOT edit `scripts/uat/*.js` while it runs.** When the log ends with
@@ -2765,48 +3123,48 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
         `scripts/uat/logs/triage99-rerun.txt` and `triage99-rerun-r11.txt`. **Against the baseline:** clean 17 → **356**
         · built and audited 351 → **382** · not built 52 → **21** · pages with 0 errors **373**
       - The classes of the re-run, 80/20 (pages affected):
-        - `[ ]` e-1 · not built: **the canvas offered the drop and added nothing** — 7 (idx 2, 87, 142, 153, 227, 278,
+        - `[x]` e-1 · not built: **the canvas offered the drop and added nothing** — 7 (idx 2, 87, 142, 153, 227, 278, — AUDIT 2026-10-06: L-1 L1-2 / L1-7, L1-r6: the 7 pages build (the intermittent L1-13 parked there)
           385): "into" ×4, "under" ×2, "beside" ×1. = c-22, now 7 pages
-        - `[ ]` e-2 · not built: **scroll / click timeouts** — 9 (idx 393, 396–401 scroll; 68, 145, 400 click). Six of
+        - `[x]` e-2 · not built: **scroll / click timeouts** — 9 (idx 393, 396–401 scroll; 68, 145, 400 click). Six of — AUDIT 2026-10-06: E-0 (`78cc6ee`, `0ae9b5f`)
           the scroll timeouts are the LAST pages of the night, in a row — INFERRED the machine, not the page (screen
           lock or load); re-run them in PARALLEL, and only a page that fails there alone (RULE Z). = c-6
-        - `[ ]` e-3 · not built: **the drag never reached the canvas, twice** — 4 (idx 23, 334, 335, 337; three in a
+        - `[x]` e-3 · not built: **the drag never reached the canvas, twice** — 4 (idx 23, 334, 335, 337; three in a — AUDIT 2026-10-06: E-0; 334 in Z-1 (443 blocks); 337 18 / 18 in L1-7
           row) · and 1 "cannot drop into m-2a: only 0px visible" (idx 336). Same clustering: re-run in PARALLEL, a failure there alone (RULE Z)
-        - `[ ]` e-4 · **canvas≠Preview (R11)** — 13 pages, 37 findings, every screen size; 6 pages carry most of it
+        - `[x]` e-4 · **canvas≠Preview (R11)** — 13 pages, 37 findings, every screen size; 6 pages carry most of it — AUDIT 2026-10-06: L-2 (1)(2), L2-b / c (`2bcc73f`)
           (idx 109, 141): headings, links and buttons 0.4–3.6% narrower in the Preview, text wrapping to other heights
           (−24 … +10px); 4 containers 122–198px shorter at Wide. = c-3, reopened
-        - `[ ]` e-5 · **React #185** — 9 pages (was 2). = c-12
-        - `[ ]` e-6 · **Tablet: 4 columns on one line** — 8 pages, 142 findings (was 3). = c-11
-        - `[ ]` e-7 · **Words broken across lines** — 4 pages, 58 ("1,000+" in 165px Stat columns). = c-8 (decided B)
-        - `[ ]` e-8 · canvas≠Preview on a component 20–24px taller in the Preview — 2 pages (idx 209 and one more)
-        - `[ ]` e-9 · HOLE at the end of a line — 2 pages (idx 210 at Wide 228px; one at Mobile). = c-7 (decided B)
-        - `[ ]` e-10 · canvas≠Preview on one block 28px taller — 1 page (idx 272)
-        - `[ ]` **Re-run e-2 and e-3** — in PARALLEL; only a page that fails there is re-run alone (RULE Z, the user 2026-09-30) (idx 23, 68, 145, 334–337, 393, 396–401) on a FRESH build —
+        - `[x]` e-5 · **React #185** — 9 pages (was 2). = c-12 — AUDIT 2026-10-06: L-3 (`cf614c8`)
+        - `[x]` e-6 · **Tablet: 4 columns on one line** — 8 pages, 142 findings (was 3). = c-11 — AUDIT 2026-10-06: L-3 c-11b / c-11c (`6d67d52`, `e80b889`)
+        - `[x]` e-7 · **Words broken across lines** — 4 pages, 58 ("1,000+" in 165px Stat columns). = c-8 (decided B) — AUDIT 2026-10-06: L-4: the eight tier-99 pages L8 = 0 (`7aa75e5`)
+        - `[x]` e-8 · canvas≠Preview on a component 20–24px taller in the Preview — 2 pages (idx 209 and one more) — AUDIT 2026-10-06: L-2 (3), L2-i (`2bcc73f`)
+        - `[x]` e-9 · HOLE at the end of a line — 2 pages (idx 210 at Wide 228px; one at Mobile). = c-7 (decided B) — AUDIT 2026-10-06: F-1 change (2) (`e6a30d4`)
+        - `[x]` e-10 · canvas≠Preview on one block 28px taller — 1 page (idx 272) — AUDIT 2026-10-06: L-2 (4), the cause of e-4 (`2bcc73f`)
+        - `[x]` **Re-run e-2 and e-3** — in PARALLEL; only a page that fails there is re-run alone (RULE Z, the user 2026-09-30) (idx 23, 68, 145, 334–337, 393, 396–401) on a FRESH build — — AUDIT 2026-10-06: E-0 closed
           a failure that goes away alone was the machine, one that stays is a bug — STOPPED by the user at 3 of 14, the rest
           moved to BATCH E-0 (top of this file). **YOU ARE HERE is BATCH L-1** (S-1, S-2 and E-0 closed 2026-09-30)
         - NOT A BUG, expected: 379 pages warn "things need the user's words" (the dressed placeholders' empty text)
-      - `[ ]` c-22 · **A page that BUILT in the baseline does not build on the fixed build** — the first page logged
+      - `[x]` c-22 · **A page that BUILT in the baseline does not build on the fixed build** — the first page logged — AUDIT 2026-10-06: = tier-99 idx 2, in e-1; L1-r1 page 2 BUILT, 178 blocks
         (nodenza.com/partners_ross_morton): baseline 182 blocks, 2 errors; re-run BUILD FAILED at 80 blocks, "the canvas
         offered the drop and added nothing (after: under(2-2h,tack))", released at (422,646) on a `<span>` in block
         2-2h. c-5's signature, but NOT on the toolbar. One page so far: a regression from c-5 / c-20, or a race — the
         finished run gives the count; then reproduced through the UI before it is called either
-  - `[ ]` **SPACE BY DEFAULT — words never touch an edge** (the user, 2026-09-29: "I hope you are considering the margin
+  - `[x]` **SPACE BY DEFAULT — words never touch an edge** (the user, 2026-09-29: "I hope you are considering the margin — AUDIT 2026-10-06: S-1 (`1cfcfc1`) and S-2 (`60a2051`) closed; only the whole-tier re-sweep is left, after L-9 (ORDER line)
     and padding… some tests are very close to the edge… the user can override, but it is already considered")
     - MEASURED 2026-09-29: it was NOT considered. CLAUDE.md rule 3 says "Spacing is a decision, never a default"
       (`gap: 0`, `padding: 0`); a new section is edge to edge; the page audit has no check for words near an edge or
       for space between sections; design-foundation Rule #7 (96–192px between sections, ~24px within a group, a
       16px scale, pp. 185–196) is written down and not enforced
-    - `[>]` BDD scenarios DRAFTED 2026-09-29 while the sweep runs (the user chose "A": read c-11, c-12, c-6 and
+    - `[x]` BDD scenarios DRAFTED 2026-09-29 while the sweep runs (the user chose "A": read c-11, c-12, c-6 and — AUDIT 2026-10-06: `box-builder-spacing.feature` committed; S-2 added scenarios
       draft this; nothing built or run): `tests/features/components/website/box-builder-spacing.feature`, uncommitted.
       The default VALUES and the saved-pages scenario wait on the user
-    - `[?]` The user's decision: **the default values** — proposed from the tokens and deck Rule #7: side gutter
+    - `[x]` The user's decision: **the default values** — proposed from the tokens and deck Rule #7: side gutter
       1rem → 2rem · section space 2rem → 4rem a side (64 → 128px between two sections) · stack gap 1rem · column gap
       1.5rem · inner padding of a coloured or bordered box 1.5rem, 1rem in a narrow box
       - `[x]` **DECIDED by the user 2026-09-29: as proposed** ("I will go with your recommendation. For all of it.")
-    - `[>]` Rule 3 REWRITTEN in CLAUDE.md 2026-09-29, at the user's word ("it should be for every element in every
+    - `[x]` Rule 3 REWRITTEN in CLAUDE.md 2026-09-29, at the user's word ("it should be for every element in every — AUDIT 2026-10-06: CLAUDE.md rule 3 + `claude-md-rules.test.ts`, committed
       component and everything added on the layout… you should have added it as a rule"), with three lines in
       `tests/unit/claude-md-rules.test.ts`. NOT YET RUN — vitest waits for the sweep. Uncommitted
-      - `[ ]` The old wording is still in: `GallerySetupMenu.tsx` 62 · `lib/box-presets.ts` 200 ·
+      - `[x]` The old wording is still in: `GallerySetupMenu.tsx` 62 · `lib/box-presets.ts` 200 · — AUDIT 2026-10-06: S-2 checklist (4): 0 hits; only the reversal notes remain
         `box-builder-layout.feature` 347 · `tests/e2e/text-is-reachable.spec.ts` 34 (a guard that asserts a heading
         FLUSH against its box by default — it changes with the engine) · design-foundation `02` line 485 · memory
         `feedback_radius_and_spacing.md`. Each corrected in the same change as the engine
@@ -2814,14 +3172,14 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
       margin or padding is being considered"**. TRUE, and expected on this build: the sweep runs the build from
       BEFORE space by default, where a header is created with `padding: 0`. The header scenario is in the feature
       file; the whole tier is swept again after the engine change
-    - `[ ]` c-23 · **A plain element cannot be given inner spacing.** MEASURED in the file: `BoxInspector.tsx` 1139
+    - `[x]` c-23 · **A plain element cannot be given inner spacing.** MEASURED in the file: `BoxInspector.tsx` 1139 — AUDIT 2026-10-06: S-1 checklist: Heading, Text, Link, Image and Icon each given inner spacing (`1cfcfc1`)
       offers "Inner spacing" only to a container or a component; a Heading, Text, Link, Button, Image or Icon gets
       outer spacing only (1140). Against the rule as the user states it (every element). To be confirmed through the
       UI, block by block, then fixed with the enumerated guard
-    - `[ ]` c-24 · **The bulk inspector shows 1.5rem of inner spacing for blocks that have none.** MEASURED in the
+    - `[x]` c-24 · **The bulk inspector shows 1.5rem of inner spacing for blocks that have none.** MEASURED in the — AUDIT 2026-10-06: S-1 checklist: the bulk slider reads 0rem (`1cfcfc1`)
       file: `BulkInspector.tsx` 62–63 falls back to `padding ?? 24` while blocks are created with 0 / unset. To be
       confirmed through the UI (select two blocks, read the slider, measure the blocks)
-    - `[ ]` **Components breathe too** (the user 2026-09-30: "spacing within components by default… the text, the
+    - `[x]` **Components breathe too** (the user 2026-09-30: "spacing within components by default… the text, the — AUDIT 2026-10-06: S-2 (1) `component-breathing.spec.ts` 68 tests (`60a2051`)
       edges breathe… natural and slick"): a gap between a component's parts and inner padding from its own edge, from
       the same tokens, overridable to 0; measured across the whole catalogue in a browser, guard enumerates it. A
       component with no visible edge gets the gaps but no outer padding (told to the user; theirs to overrule)
@@ -2830,7 +3188,7 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
       (2) the page header and footer are BARS: 1rem above and below, the 2rem gutter at the sides (not 4rem) · (3) the
       phone gutter stays as built (~22px at 360, fluid through --box-u; 16px was offered) — confirmed 2026-09-30 · (4) the
       SECTION SPACE above and below is **1rem**, not 4rem ("the heading is too far from the top… 2rem is too much")
-    - `[>]` Engine, from the spacing tokens (rem + cqw), in BOTH engines by one emitter — WRITTEN 2026-09-30, not yet
+    - `[x]` Engine, from the spacing tokens (rem + cqw), in BOTH engines by one emitter — WRITTEN 2026-09-30, not yet — AUDIT 2026-10-06: S-1 changes (1)–(6), 0 findings (`1cfcfc1`)
       tested: new blocks carry `spaced`; unset spacing reads `spaceDefaults` (`lib/box-model.ts`); `sectionContent`
       decides the gutter/section space the same way in the canvas and the export; `leafPaddingCSS` gives a plain
       element inner spacing (c-23); the inspector shows "Default · size" and "Back to default"; the bulk inspector reads
@@ -2838,30 +3196,30 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
       section's content even when its background runs edge to edge (only pictures and backgrounds bleed) · space
       above and below a section · a gap between the blocks of a stack and the columns of a row · inner padding for
       any box that has a background or a border
-    - `[ ]` Audit: two new checks on every page at every size — words within N px of the page edge or of the edge
+    - `[x]` Audit: two new checks on every page at every size — words within N px of the page edge or of the edge — AUDIT 2026-10-06: S-2 (2)(3) W7a / W7b in `page-audit.js`; the in-app Page check is BATCH S-3 (queued)
       of the coloured box they sit in · space between sections under the floor
-    - `[ ]` The dresser stops compensating (it sets "Centred column" to get an inset) once the default exists
-    - `[ ]` Story and guide; then THE WHOLE TIER IS SWEPT AGAIN — every page's geometry changes
-    - `[?]` The user's decision: pages already saved keep their spacing (defaults for NEW blocks only — recommended),
+    - `[ ]` The dresser stops compensating (it sets "Centred column" to get an inset) once the default exists — AUDIT 2026-10-06: STILL OPEN, no batch: `scripts/uat/dress.js` 124 / 144 / 204 still set "Centred column" → joins L-6 (the harness)
+    - `[ ]` Story and guide; then THE WHOLE TIER IS SWEPT AGAIN — every page's geometry changes — AUDIT 2026-10-06: after L-9 by the ORDER line; D-2 / D-3 wrote the story so far (`af533ac`)
+    - `[x]` The user's decision: pages already saved keep their spacing (defaults for NEW blocks only — recommended),
       or take the new defaults too?
       - `[x]` **DECIDED by the user 2026-09-29: saved pages KEEP their spacing**; the defaults are for new blocks
-  - `[ ]` **RULE AF harness additions** (promised 2026-09-28)
+  - `[ ]` **RULE AF harness additions** (promised 2026-09-28) — AUDIT 2026-10-06: → BATCH L-6 (queued)
     - `[ ]` Page-weight audit in every page report (HTML+CSS+JS ≤ 100 KB compressed · first view ≤ 500 KB at 360px ·
       images sized and lazy · ≤ 2 font families)
     - `[ ]` Slow-3G profile in the sweep and in `test:fast` (first band within 5 s)
-  - `[ ]` **The innovative plan** — `--plan=dressedinnovative`, 19 pages
-  - `[ ]` **Open engine lines carried from earlier sessions**
-    - `[ ]` #144 `capturesFixed` / `fixedBlockedBy` still assume a size container captures a fixed block (false in
+  - `[ ]` **The innovative plan** — `--plan=dressedinnovative`, 19 pages — AUDIT 2026-10-06: → BATCH L-6 (queued)
+  - `[ ]` **Open engine lines carried from earlier sessions** — AUDIT 2026-10-06: #144 · #127b · B30 / P4 · #46 closed; #42 · #82b · #83 · #84 are in L-5
+    - `[ ]` #144 `capturesFixed` / `fixedBlockedBy` still assume a size container captures a fixed block (false in — AUDIT 2026-10-06: the engine half CLOSED in L-2 (all three engines); OPEN: WebKit and Firefox projects in `playwright.config.ts` → joins L-9 (parity)
       Chromium 145; check Safari 16 before removing the canvas mirror). The user 2026-09-30: do NOT wait for a Mac —
       check it in Playwright's **WebKit** (Safari's engine, runs on Windows) now, and add WebKit and Firefox to the
       browser checks; a real Safari 16 only if WebKit and Chromium disagree
-    - `[ ]` #127b the stat number "1,000+" breaks in a 10% column (joins c-8)
-    - `[ ]` #82b · #83 (1366 width round trips drift) · #84 (left-edge resize uses a fixed 14rem neighbour floor)
-    - `[ ]` previewcheck B30 / P4 (harness: drop / select)
-    - `[ ]` **#42 · a Stats row's height does not come back after a top/bottom round trip** — drag a Stat's top or
+    - `[x]` #127b the stat number "1,000+" breaks in a 10% column (joins c-8) — AUDIT 2026-10-06: L-4 (`7aa75e5`)
+    - `[ ]` #82b · #83 (1366 width round trips drift) · #84 (left-edge resize uses a fixed 14rem neighbour floor) — AUDIT 2026-10-06: → BATCH L-5 (queued)
+    - `[x]` previewcheck B30 / P4 (harness: drop / select) — AUDIT 2026-10-06: L1-r4: B30_footer_5col and P4_stress both ok
+    - `[ ]` **#42 · a Stats row's height does not come back after a top/bottom round trip** — drag a Stat's top or — AUDIT 2026-10-06: → BATCH L-5 (queued), with L4-l
       bottom edge out and back and the row stays taller. Suspected a stale `alignSelf`/`minHeight` stretch; never
       diagnosed. Re-check through the UI; fix at the root with a guard (joins the round-trip family, #82b · #83)
-    - `[ ]` **#46 · the side-by-side-resize spec failed 14 tests on the Tablet and Phone Playwright projects** — marked
+    - `[x]` **#46 · the side-by-side-resize spec failed 14 tests on the Tablet and Phone Playwright projects** — marked — AUDIT 2026-10-06: closed by BATCH E-2: 256 / 256 on all four projects (`979fc5d`)
       "pre-existing" (the phone half was fixed as #48), left as "re-run after the matrix", never re-run. Re-run it
     - WHY THEY WERE LOST (found 2026-09-30 in the transcript of session c7a3c172, 2026-09-26): both were written only in
       replies and handovers, then carried forward as bare numbers until nobody knew what they meant. **From now on a
@@ -2869,11 +3227,11 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
       "why you got missed? We need to add it to our tree"
     - `[~]` the slide-image check (Sonnet) — named in the 2026-09-28 handover, status unknown. PARKED by the user
       2026-09-30: it belongs to the components, which are rebuilt one by one (1.3); the placeholder stands until then
-  - `[ ]` **Story additions** in `docs/guide/layout-story.md` for everything above (RULE L)
-  - `[ ]` Artifacts and guide updated in the same change (Builder Hub · Layout System · Parity Audit · Semantic plan ·
+  - `[ ]` **Story additions** in `docs/guide/layout-story.md` for everything above (RULE L) — AUDIT 2026-10-06: D-2 / D-3 documented the layout from the beginning (`f437b5c`, `af533ac`); the final story after L-9
+  - `[ ]` Artifacts and guide updated in the same change (Builder Hub · Layout System · Parity Audit · Semantic plan · — AUDIT 2026-10-06: the guide checked in D-3 (`af533ac`); the published artifacts with the final story
     `docs/guide/website-builder.md`)
-  - `[ ]` Gate → commit → **pull request to `master`** → delete the branch (rule 9)
-- `[ ]` **1.1.2 – 1.1.4 are BATCHES L-7 · L-8 · L-9** (BATCHES, decided 2026-10-01: before the re-sweep and the story)
+  - `[x]` Gate → commit → **pull request to `master`** → delete the branch (rule 9) — AUDIT 2026-10-06: PR #5 merged `1541d98` 2026-10-05 — earlier than the ORDER line planned; later work runs on short branches (rule 9)
+- `[ ]` **1.1.2 – 1.1.4 are BATCHES L-7 · L-8 · L-9** (BATCHES, decided 2026-10-01: before the re-sweep and the story) — AUDIT 2026-10-06: still queued, none started
 - `[ ]` **1.1.2 · TASK 2 — put the wrapper dissolve back.** A band holding ONE block inside a column is dissolved; a
   band with a background, height or edge-to-edge setting is kept. Built once and reverted: a block directly in a
   stretched column could not be shrunk (V4 in `resize-leaves-no-gap.spec.ts`)
@@ -2881,7 +3239,7 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
 - `[ ]` **1.1.4 · TASK 4 — extend `parity-every-arrangement.spec.ts`** to grid cells, components, sticky, floating and
   fixed (neighbours of a floating/fixed block do NOT move; their contents follow every rule), at all breakpoints.
   Today it covers Stack / Side by side / Grid only
-- `[?]` **Which list is Tasks 2–4?** A 2026-09-28 session wrote a different one (semantic layer · template feature ·
+- `[x]` **Which list is Tasks 2–4?** A 2026-09-28 session wrote a different one (semantic layer · template feature · — AUDIT 2026-10-06: confirmed by the user 2026-09-29 (child)
   template library) and marked it "correct this if different"; never confirmed. The original above is assumed
   - `[x]` **CONFIRMED by the user 2026-09-29: the ORIGINAL list** — wrapper dissolve · column outer-edge space ·
     parity spec extended
@@ -2912,34 +3270,34 @@ sent), and my research. Nothing on the layout is done until every line here is c
   order (`order`, explicit grid placement, `dense`).
 
 - `[ ]` **MUST — common on real pages, missing today**
-  - `[ ]` AC-33 · **"as many as fit, each at least X rem" grids** — a card / feature / gallery grid adapts to its OWN
+  - `[ ]` AC-33 · **"as many as fit, each at least X rem" grids** — a card / feature / gallery grid adapts to its OWN — AUDIT 2026-10-06: not built (`auto-fit` only inside the Accordion) → G-4 (1)
     width wherever it sits, no breakpoint (`repeat(auto-fit, minmax(min(100%, X rem), 1fr))`); today only the Accordion
     uses it, grid blocks step a fixed count at the window rungs. Decide whether it is the DEFAULT for card grids; saved
     pages keep their count; how spans behave in it
-  - `[ ]` AC-35 · **half-bleed** — a picture runs off the window edge while the text beside it starts on the page's
+  - `[x]` AC-35 · **half-bleed** — a picture runs off the window edge while the text beside it starts on the page's — AUDIT 2026-10-06: G-3b (2) "Bleed to the page edge: Off · Left · Right · Both" per screen (`f4bacbc`, closed `2515755`)
     content column (Nexter's story / header); today a band is contained or full width, and a two-cell row splits the
     WINDOW, so the text drifts from the content edge
-  - `[ ]` AC-36 · **subgrid** — titles, texts and buttons line up ACROSS a row of cards whatever the text lengths; and a
+  - `[ ]` AC-36 · **subgrid** — titles, texts and buttons line up ACROSS a row of cards whatever the text lengths; and a — AUDIT 2026-10-06: not built (no `subgrid`) → G-4 (2)
     nested grid's columns snap to the page's content columns. Ships in every current engine; never written today
-  - `[ ]` AC-26 · **push / grow space in a stack** — `space-between` in a column (a sidebar's legal line at the bottom,
+  - `[ ]` AC-26 · **push / grow space in a stack** — `space-between` in a column (a sidebar's legal line at the bottom, — AUDIT 2026-10-06: PARTLY: "Spread out" (space-between) is in the Inspector; `push` is engine-only → P-1 (4)
     card buttons at the bottom), and space that GROWS between particular blocks of a fixed-height band (a hero: logo
     top, message middle, press strip bottom); the spacer block is a fixed height today
-  - `[ ]` AC-3 · **height-aware sizing** — any share of the screen height (80%, 95%), with `svh` / `dvh` for phone
+  - `[ ]` AC-3 · **height-aware sizing** — any share of the screen height (80%, 95%), with `svh` / `dvh` for phone — AUDIT 2026-10-06: PARTLY: Full / half screen = 100svh / 50svh, Height takes a typed vh; no "minus the header" → P-2
     browser bars; *Full screen* UNDER a pinned header (`calc(100svh - bar)`); spacing that shrinks on SHORT screens;
     today `screenHeight` is half / full only
-  - `[ ]` AC-34 · **a box with a chosen proportion** — 16:9 hero, 2:1 band, square tiles, and grid ROWS a proportion of
+  - `[ ]` AC-34 · **a box with a chosen proportion** — 16:9 hero, 2:1 band, square tiles, and grid ROWS a proportion of — AUDIT 2026-10-06: not built (aspect-ratio only for a picture's own shape) → P-2 (1)
     the column width (a mosaic gallery); `aspect-ratio` today only for a picture's own shape
 - `[ ]` **BUILD (was DECIDE — all approved by the user 2026-10-02)**
-  - `[ ]` AC-30 · a fixed, content-sized or bounded GRID track beside fluid ones (`20rem 1fr`, `max-content 1fr`,
+  - `[ ]` AC-30 · a fixed, content-sized or bounded GRID track beside fluid ones (`20rem 1fr`, `max-content 1fr`, — AUDIT 2026-10-06: not built → G-4 (3)
     `minmax(12rem, 18rem)`) — `HAVE` in a flex row, not in a grid
-  - `[ ]` AC-31 · two blocks layered in ONE grid area in the flow (caption over picture, collage), and a block running
+  - `[ ]` AC-31 · two blocks layered in ONE grid area in the flow (caption over picture, collage), and a block running — AUDIT 2026-10-06: PARTLY: two blocks can share a grid cell by Start at column / row; no designed layering → G-5 (1)
     out of its cell over the neighbour — with a simple phone fallback (with AC-21)
-  - `[ ]` AC-21 · overlapping floating pictures that reflow into a row on narrow screens (the photo composition)
-  - `[ ]` AC-32 · dense packing (`grid-auto-flow: dense`) for galleries / bento grids of mixed spans — only where order
+  - `[ ]` AC-21 · overlapping floating pictures that reflow into a row on narrow screens (the photo composition) — AUDIT 2026-10-06: PARTLY: "Float on top" with X / Y and order exists; the phone fallback → G-5 (4)
+  - `[ ]` AC-32 · dense packing (`grid-auto-flow: dense`) for galleries / bento grids of mixed spans — only where order — AUDIT 2026-10-06: not built and in NO batch (masonry's "Follow the picture" is a different thing) → added to G-4
     carries no meaning
-  - `[ ]` AC-10 · **negative spacing and a nudge** — pull a section up over the one before, tuck a line closer, overlap
+  - `[ ]` AC-10 · **negative spacing and a nudge** — pull a section up over the one before, tuck a line closer, overlap — AUDIT 2026-10-06: PARTLY, wording stale: R-4 D2 (signed) chose no negative-margin control — overlaps by float + "Overlap the items" → G-5 (2)(5); the nudge exists (G-3b (3) Alt free, `30eee12`)
     avatars, an optical translate; today only by dragging a top edge
-  - `[ ]` AC-37 · **ADDED TO THE FROZEN LIST BY THE USER 2026-10-03** ("I go with your recommendation": joins AC-10 /
+  - `[ ]` AC-37 · **ADDED TO THE FROZEN LIST BY THE USER 2026-10-03** ("I go with your recommendation": joins AC-10 / — AUDIT 2026-10-06: PARTLY: placement per rung and row spans built (G-3 `d83939f`, G-3b `f4bacbc` / `b97f839`); spilling out of a section, layer order, the covers-words warning → G-5
     ST-5 / AC-35 as one build; HALF-steps first, quarters later without changing anything saved) — place ANYTHING
     (a picture, a column, a whole section) at ANY point of a grid: start in the MIDDLE of column 1 and end in the middle
     of column 9, start halfway down row 1 and end in row 8 — and let it run OUT of its section, above the first row and
@@ -2950,7 +3308,7 @@ sent), and my research. Nothing on the layout is done until every line here is c
     falls back into the flow unless placed at that rung; the page audit and Page check warn when it covers words;
     shown as drag on the canvas with the half-lines drawn, a Position panel (start / end, column / row, spill above /
     below) and a gallery of ready-made placements (RULE S / UI). Joins AC-10, ST-5, AC-35 — one build
-    - `[>]` AC-37b ← YOU ARE HERE (NOW: BATCH G-3d CLOSED 2026-10-06 — `builder/page-grid` is complete (G-1 … G-3d + D-2 / D-3): push it and open its pull request (the user's go), merge, delete the branch, then BATCH E-2 on `builder/editor-small-screens` cut from the fresh master, then E-3 → E-4. Before that: BATCH G-3d (three changes); handover of session 49087f08 in the SESSION LOG; D-3 CLOSED 2026-10-06 (both changes). Before that: handover of session ff5dbc77 in the SESSION LOG; D-2 and D-3 (1) CLOSED 2026-10-06. Earlier: handover of session 22981e0a; BATCH G-3b and BATCH E-1 CLOSED 2026-10-05; MERGE DECIDED by the user 2026-10-05: `builder/layout-uat` pushed, the user opens and merges the pull request, then the branch is deleted and `builder/page-grid` cut from master; next there: BATCH D-2 (the Docusaurus site + the layout documented from the beginning, RULE DOCS), then BATCH G-3d (the user's two decisions), then BATCH E-2 (resizing and dropping on tablets and phones); before the PR: the artifacts and the layout story for the page grid; then its final pass, then BATCH E-1; handover of session 3da81fad in the SESSION LOG; earlier: handover of session 5da86722 in the SESSION LOG — G-3 CLOSED 2026-10-04 (63 headed checks, G3-8 carried to G-3b by the user); earlier: BATCH G-3 · placing on columns AND rows — G-2 CLOSED 2026-10-04 (134 headed checks); P-0 CLOSED 2026-10-04 (R4-1 … R4-5 fixed, 30 headed checks); R-4 SIGNED with D1–D5 (session 9fa0fee9); then G-3, P-1, P-2, G-4, P-3, G-5, G-6. G-1 CLOSED 2026-10-04 (see BATCHES). Plan APPROVED 2026-10-04 with the user's decisions below. Earlier: research R-3 DONE and SIGNED 2026-10-04
+    - `[>]` AC-37b ← YOU ARE HERE (NOW: BATCH E-4 CLOSED 2026-10-06 (HEADED 232 / 0; `test:fast` now runs all four screens, 3,272 / 3,272 in 12.3 min; E4-1 … E4-14, E4-9 and E4-14 → BATCH E-5) — next: the pull request for `builder/editor-small-screens` (the user opens it from the compare link), then BATCH E-5 (research first: ask the user for their sources). Before that: BATCH E-4 change (1) E3-3 done (`6042e79`); handover of session E-3 in the SESSION LOG. Before that: BATCH E-3 CLOSED 2026-10-06 (297 / 0 headed; E3-1 … E3-11, E3-3 the user's question); the tree audit DONE 2026-10-06 (`4fcf59a`, its true count heads section 1.1) — its checklist first, then spacing-gestures 12 · masonry-builder 10 · canvas-zoom 3 · text-is-reachable 1 · D3-32 the top bar one row from 1280; then E-4, then E-5 (research first). Before that: BATCH E-2 CLOSED 2026-10-06 (174 / 0 headed; 24 ledger lines). Before that: BATCH E-2 in BATCHES, on `builder/editor-small-screens` (cut from master `7494a8e` after PR #6 merged `builder/page-grid` 2026-10-06) — its checklist first, then the 37 failing specs one by one; then E-3, then E-4. Before that: BATCH G-3d CLOSED 2026-10-06 (`ec52b51`); handover of session (G-3d) in the SESSION LOG. Before that: BATCH G-3d (three changes); handover of session 49087f08 in the SESSION LOG; D-3 CLOSED 2026-10-06 (both changes). Before that: handover of session ff5dbc77 in the SESSION LOG; D-2 and D-3 (1) CLOSED 2026-10-06. Earlier: handover of session 22981e0a; BATCH G-3b and BATCH E-1 CLOSED 2026-10-05; MERGE DECIDED by the user 2026-10-05: `builder/layout-uat` pushed, the user opens and merges the pull request, then the branch is deleted and `builder/page-grid` cut from master; next there: BATCH D-2 (the Docusaurus site + the layout documented from the beginning, RULE DOCS), then BATCH G-3d (the user's two decisions), then BATCH E-2 (resizing and dropping on tablets and phones); before the PR: the artifacts and the layout story for the page grid; then its final pass, then BATCH E-1; handover of session 3da81fad in the SESSION LOG; earlier: handover of session 5da86722 in the SESSION LOG — G-3 CLOSED 2026-10-04 (63 headed checks, G3-8 carried to G-3b by the user); earlier: BATCH G-3 · placing on columns AND rows — G-2 CLOSED 2026-10-04 (134 headed checks); P-0 CLOSED 2026-10-04 (R4-1 … R4-5 fixed, 30 headed checks); R-4 SIGNED with D1–D5 (session 9fa0fee9); then G-3, P-1, P-2, G-4, P-3, G-5, G-6. G-1 CLOSED 2026-10-04 (see BATCHES). Plan APPROVED 2026-10-04 with the user's decisions below. Earlier: research R-3 DONE and SIGNED 2026-10-04
       (`ff5c53a`, `4418202`); build to every decision recorded under R-3 below; the mockups settle the open three (row
       snap · the phone gap 11 vs 16 px · panel per site or per page) → the user's approval → build) · **THE PAGE GRID — DECIDED by the user 2026-10-03: done RIGHT AFTER L-4 closes, BEFORE L-5, L-6 and the
       frozen list's placement items** (they are built on it). NAMES (decided): "page grid" in code and docs; the lines a
@@ -2975,6 +3333,7 @@ sent), and my research. Nothing on the layout is done until every line here is c
       the model's word estimate (c-8's `longestWordRem`), saved pages keep their rows / stacks (a mode, never a
       migration). NEXT: research (Nexter + Webflow / Framer / Wix Studio page grids, RULE RS) → plan artifact with mockups
       → the user's approval → built WITH AC-37 (one build). Not part of L-4
+      - `[>]` WHAT IS LEFT UNDER AC-37b (the tree audit 2026-10-06; this line keeps the parent honest — it closes when they do): the editor on small screens: BATCH E-4 CLOSED 2026-10-06, E-5 next (research first) · the page grid's queued P-1 · P-2 · G-4 · P-3 · G-5 · G-6 (all in BATCHES)
       - `[x]` **THE USER'S DECISIONS ON THE PLAN, 2026-10-04 (session 87422eae) — APPROVED ("1, yes please")**:
         (1) plan approved, and the page grid runs **EDGE TO EDGE** (the user: "a user should be able to use the whole page…
         the margin at the right and the left should not be there unless the user wants it… use margin or padding to make
@@ -3023,8 +3382,8 @@ sent), and my research. Nothing on the layout is done until every line here is c
         `scripts/research/grid-measure.js` (six headed windows; each item opened, its live site followed and measured at
         1440 · 1024 · 768 · 375: CSS grids, subgrid, named lines, framework column classes, gutter, full-bleed, and how
         many visible left edges sit on a 12-column half-step). Raw: `C:\Users\eyite\educo-research\grid\` (outside git)
-        - `[>]` THE USER'S SOURCES — completeness list (RULE R: nothing in a link is left out)
-          - `[>]` (1) awwwards.com/inspiration/grow-section-12-column-layout-thirdweb-studio-1 — the item (a11.studio,
+        - `[x]` THE USER'S SOURCES — completeness list (RULE R: nothing in a link is left out) — AUDIT 2026-10-06: read in full, R-3 signed 2026-10-04 (`ff5c53a`)
+          - `[x]` (1) awwwards.com/inspiration/grow-section-12-column-layout-thirdweb-studio-1 — the item (a11.studio, — AUDIT 2026-10-06: 35 records stored (`ff5c53a`)
             thirdweb.studio; tags grow · benefits · bootstrap · layout · 12column), its 3 sibling items (projects layout,
             navbar menu, about us) and 7 related items (punchline bento grid, Street Art News magazine, Arthur Simonini
             typography, dobrynow layout, timbrack one-page scroll, PP Fragment characters, saintlouvent portfolio) — all
@@ -3033,7 +3392,7 @@ sent), and my research. Nothing on the layout is done until every line here is c
             each: tabs · photo · words, 393 px of a 1194 px content box inside an 8vw gutter); the heading does NOT sit on
             the same left edge (67 px vs 115 px); on a phone (375) it stacks, the PHOTO IS HIDDEN, gutter 8vw = 30 px;
             a decorative SVG of square modules sits above it
-          - `[>]` (2) dribbble.com/search/12-column-grid — 42 shots load signed-out (the listing stops there); all 42
+          - `[x]` (2) dribbble.com/search/12-column-grid — 42 shots load signed-out (the listing stops there); all 42 — AUDIT 2026-10-06: all 42 shots stored (`ff5c53a`)
             queued, each opened: description, tags, images, any link in the description followed
           - PASS 2 (`r3-v2.json`, 454 pictures): 80 items — the user's 53 + 27 on-topic related items one level down.
             Dribbble showed "Human Verification" after ~20 shots → stepped back (never bypassed), the other 21 re-run in
@@ -3069,14 +3428,14 @@ sent), and my research. Nothing on the layout is done until every line here is c
           - Reading (agents, every picture opened): `02-awwwards-items.md` — all 35 Awwwards records, groups 0–4, 232 images;
             `03-dribbble-shots.md` — 21 shots, 102 images. Final capture pass v3 (`r3-v3-aw.json`, `r3-v3-dr.json`) running:
             then the 21 later Dribbble shots + the Awwwards records whose live captures were blind (#12) are read again
-        - `[ ]` MY SOURCES — Nexter (`08-nexter.md`, extend only) · `07-grid.md` · MDN grid / subgrid / named lines ·
+        - `[x]` MY SOURCES — Nexter (`08-nexter.md`, extend only) · `07-grid.md` · MDN grid / subgrid / named lines · — AUDIT 2026-10-06: read and stored as 01 · 05 · 06 (`ff5c53a`)
           Webflow · Framer · Wix Studio page grids · Figma layout grids · Material 4/8/12 · Bootstrap · GOV.UK · the
           design deck's responsive part · the real-site crawl (`docs/layout-benchmark/`): how many real pages align
           to one page-wide column grid
         - `[x]` MINE (part): `01-builders-and-systems.md` (Webflow · Framer · Wix Studio · Figma · Material · Bootstrap ·
           GOV.UK · MDN, 15 axes) · `05-crawl-splits.md` + `scripts/research/grid-splits.js` (23,728 rows of the 4,250-page
           crawl: 66% land on whole 12ths, 38% on 8, 36% on 4; 32 splits = 80%; 6+6 · 4+4+4 · 5+7 · 4+8 · 3+3+3+3 · 3+9 ≈ 57%)
-        - `[>]` THE MAP — `04-map.md`: 24 axes (A1–A15 + A16 stagger · A17 empty cells · A18 layers · A19 sticky cells ·
+        - `[x]` THE MAP — DONE (`ff5c53a`; the enough checklist signed 2026-10-04) — `04-map.md`: 24 axes (A1–A15 + A16 stagger · A17 empty cells · A18 layers · A19 sticky cells ·
           A20 published grid lines · A21 outer-margin content · A22 phone strategy · A23 sideways strips · A24 interaction,
           out of scope), every value with its CSS, who uses it, CORE / LATER / AVOID; gaps G1–G11; the enough-checklist draft
           - **THE USER'S DECISIONS, 2026-10-03 (from the evidence):** (Q1) columns **6 on the phone · 12 from 600 px** — NOT
@@ -3104,12 +3463,12 @@ sent), and my research. Nothing on the layout is done until every line here is c
               by default · page order + "picture first" · zero grid gap (blocks space themselves, builder spacing) · margins
               + columns cover the whole width, rows the whole height · invisible in the editor, a "Layout guides" switch
               OFF by default · an advanced panel (columns, row step, gutter, margin), everything following automatically
-            - `[ ]` NOT COVERED — open for the plan mockups, not research: the ROW STEP (snap or not; 1.5rem proposed) · the
+            - `[x]` NOT COVERED — open for the plan mockups, not research: the ROW STEP (snap or not; 1.5rem proposed) · the — AUDIT 2026-10-06: decided in the approved plan: row snap off, gap 0.75rem, side 0.8rem, one grid per site (`5b1c7ee`)
               phone gap (11 px builder vs 16 px norm) · per SITE or per PAGE for the panel, and its ranges
-            - `[ ]` NOT COVERED — real-world, left for the build's UAT (RULE AF): a low-cost Android WebView (subgrid needs
+            - `[ ]` NOT COVERED — real-world, left for the build's UAT (RULE AF): a low-cost Android WebView (subgrid needs — AUDIT 2026-10-06: → BATCH G-6 (queued)
               Chrome 117+; the fallback is the block's own equal columns — proven in the examples), a screen reader on the
               re-ordered phone ("picture first"), 360 px at Slow 3G
-            - `[ ]` NOT COVERED — people: pilot-school feedback (RULE RK), none yet; the crawl's school pages are inside 05 / 06
+            - `[ ]` NOT COVERED — people: pilot-school feedback (RULE RK), none yet; the crawl's school pages are inside 05 / 06 — AUDIT 2026-10-06: open: the pilot schools (RULE RK), none recruited yet
               but not studied apart
           - `[x]` the stop rule (proposed: the 21 unread Dribbble shots + G9 / G10, ≥ 30 items in a row adding no new axis
             and no new CORE value) — MET: the 21 shots added 0 axes and 0 CORE values (≈ 55 items in a row); G10 answered
@@ -3196,7 +3555,7 @@ sent), and my research. Nothing on the layout is done until every line here is c
             measured hidden guides · `[ ]` step 3 the
             combinations proven in a browser · `[ ]` taste / real-world (low-cost Android, 150–200% text, RTL, a screen
             reader) / school + regional sites · `[ ]` the "enough" checklist signed by the user
-    - `[ ]` AC-37c · **CHOOSE BY PURPOSE, THE BUILDER PICKS FLEX OR GRID — proposed by the user 2026-10-03** ("a user can
+    - `[ ]` AC-37c · **CHOOSE BY PURPOSE, THE BUILDER PICKS FLEX OR GRID — proposed by the user 2026-10-03** ("a user can — AUDIT 2026-10-06: → BATCH G-4 (5) (queued)
       select a section as a grid or as a flexbox… a menu would use a flexbox… it won't be called grid or flexbox in
       front of the user"). Already there: Stack = flex column, Side by side = flex row, Grid = CSS grid, and the
       Inspector's "Arrange as". Session a51af34e's view, given to the user: not one choice per SECTION — every level
@@ -3205,7 +3564,7 @@ sent), and my research. Nothing on the layout is done until every line here is c
       columns · Logos → a wrapping flex line · Photo beside words → two page-grid columns) and the raw choice stays
       in the Inspector under friendly names (Line up / Grid). Part of the page-grid plan and its mockups (AC-37b); the
       menu itself is the Navigation component, waiting on its own approved plan (RULE C)
-    - `[ ]` AC-37a · the canvas interaction, PROPOSED to the user 2026-10-03 (not yet a plan to approve): the 12 × 12 lines
+    - `[ ]` AC-37a · the canvas interaction, PROPOSED to the user 2026-10-03 (not yet a plan to approve): the 12 × 12 lines — AUDIT 2026-10-06: PARTLY built (snap, half-lines, Alt arrows, guides — G-2 / G-3); spilling into a neighbour, the covers-words outline and the Position gallery → BATCH G-5 (queued)
       (halves dotted) and a ruler appear only while a block in a grid is selected or dragged · drag the body to move, the
       edge handles to resize, both snapping to half-lines, with a live "column 1½ → 9½ · row 1½ → 8½" label · drag past
       the band edge and the lines carry on into the neighbour, which dims; the label says "spills 1½ rows into the section
@@ -3214,9 +3573,9 @@ sent), and my research. Nothing on the layout is done until every line here is c
       the rung being edited is named ("Tablet only"); on a phone it falls into the flow unless kept. BEFORE BUILDING:
       research how Webflow, Wix Studio, Framer and Figma do it (RULE RS), then a plan artifact with mockups → approval
       (rule 13)
-  - `[ ]` AC-27 · stretch ONE block to the full height of a line / cell whose others are centred
-  - `[ ]` AC-25 · `space-evenly`, `baseline` alignment, and `align-content` for wrapped lines in a fixed-height band
-  - `[ ]` AC-9 · ONE site-wide content width, set in one place (with AC-35)
+  - `[ ]` AC-27 · stretch ONE block to the full height of a line / cell whose others are centred — AUDIT 2026-10-06: PARTLY: a grid cell's "Line up (across): Fill"; Down Fill → P-1 (1)
+  - `[ ]` AC-25 · `space-evenly`, `baseline` alignment, and `align-content` for wrapped lines in a fixed-height band — AUDIT 2026-10-06: not built (start / center / end / between / around only) → P-1 (3)
+  - `[ ]` AC-9 · ONE site-wide content width, set in one place (with AC-35) — AUDIT 2026-10-06: PARTLY, wording stale: the edge-to-edge page grid replaced the capped column; side space set once in the page-grid panel (G-2, G-3c)
   - `[ ]` AC-2 · a page frame (a border round the whole page, off on narrow screens)
   - `[ ]` AC-5 · content placed at 40% from the top rather than the exact middle
   - `[ ]` AC-1 · a hero edge cut on a screen-height measure, not a % of the band
@@ -3226,13 +3585,13 @@ sent), and my research. Nothing on the layout is done until every line here is c
     across (an A–Z directory)
   - `[ ]` AC-22 · responsive images — several sizes per photo (`srcset` + `sizes` computed from the layout), art
     direction (`<picture>`) (RULE AF / page weight)
-  - `[ ]` AC-23 · browser baseline — the newer features the export uses checked against the real audience's phones,
+  - `[ ]` AC-23 · browser baseline — the newer features the export uses checked against the real audience's phones, — AUDIT 2026-10-06: PARTLY: @supports used for overflow clip and scroll timelines; no audience-phone audit, no minifier
     each with a fallback reset inside `@supports`; the generated CSS minified
-  - `[ ]` AC-29 · see the grid while editing — an overlay of a selected grid's tracks and gaps on the canvas
+  - `[ ]` AC-29 · see the grid while editing — an overlay of a selected grid's tracks and gaps on the canvas — AUDIT 2026-10-06: PARTLY: the page grid's guides (G-2 `ca5eefe`); a selected Grid block's own tracks are not drawn
   - `[ ]` AC-4 · one heading in two styled lines (main + sub) — or an `hgroup` with an eyebrow
   - `[ ]` style by grid row / column (zebra rows, a bold first column) — the builder knows each block's row and column
 - `[ ]` **CHECK — lines for the next HEADED UAT, not features**
-  - `[ ]` the inspector offers DIRECTION, ORDER and PLACEMENT at one rung as plainly as *hide* (a sidebar → top bar; icon
+  - `[ ]` the inspector offers DIRECTION, ORDER and PLACEMENT at one rung as plainly as *hide* (a sidebar → top bar; icon — AUDIT 2026-10-06: PARTLY built (P-0 R4-3 `9018368`, G-3 Columns per screen); direction per rung not checked
     above its label on a phone; text before pictures on a phone)
   - `[ ]` a deliberately EMPTY grid cell can be made through the UI and later blocks do not flow back into it
   - `[ ]` a full-width grid cell STAYS full width when the column count changes 3 → 4
@@ -3240,7 +3599,7 @@ sent), and my research. Nothing on the layout is done until every line here is c
   - `[ ]` a stack whose width is its content's widest line ("Fit" on a container), placed in the centre
   - `[ ]` the semantic audit flags an `h3` placed before its `h2` (an eyebrow) and offers the fix
   - `[ ]` a footer / menu list of links publishes as `nav > ul > li > a`
-  - `[ ]` *Full screen* — what it writes today (`vh` or `svh`, minus a pinned header or not)
+  - `[ ]` *Full screen* — what it writes today (`vh` or `svh`, minus a pinned header or not) — AUDIT 2026-10-06: ANSWERED from the code: 100svh / 50svh with max() of the block's minimum, never minus a pinned header (box-model.ts); still to be seen headed
   - `[ ]` every picture path emits `aspect-ratio` or `object-fit` — a catalogue-enumerating guard so no photo can stretch
 - `[ ]` **LATER — not layout; moved to 1.3 (components / motion / typography) when the layout closes**
   - `[ ]` motion: AC-6 easing / delay / repeat · AC-7 halo hover · AC-12 group hover · AC-18 sweeping fill · AC-24 hover
@@ -3251,8 +3610,8 @@ sent), and my research. Nothing on the layout is done until every line here is c
     subgrid-aligned parts) · Quote / Testimonial (`figure` + `blockquote` + `figcaption`, quote mark) · Logo strip ·
     People / Team list · Avatar group · Divider with a label · Navigation menu button · Gallery (mosaic layouts) ·
     data-bound list (unknown length, empty / loading states)
-- `[ ]` **The user's own layout list** — approved to add (user, 2026-10-02: "group four let's do that as well"); add line by line as the user sends them
-  - `[>]` **Section transitions · animation · `position: sticky` · `position: fixed`** (the user, 2026-10-01: "mainly
+- `[x]` **The user's own layout list** — approved to add (user, 2026-10-02: "group four let's do that as well"); add line by line as the user sends them — AUDIT 2026-10-06: 1.1.5 was frozen and signed 2026-10-02; its one entry (sticky / fixed, below) is GROUP 3
+  - `[x]` **Section transitions · animation · `position: sticky` · `position: fixed`** (the user, 2026-10-01: "mainly — AUDIT 2026-10-06: research DONE (`186dec5`, R-1 closed `fe320f5`); the build is BATCH S-2 (transitions) and the SP lines below
     for layout", components second). The user sends links, each a different way of doing it. For EACH link: study it
     (and expand online, RULE R), store it distilled in `docs/web-anatomy/scroll-and-position/`, mark every technique
     HAVE / PARTIAL / GAP against the builder (pins, floats, `pinArrival`, entrances, the motion tokens and
@@ -3291,10 +3650,10 @@ sent), and my research. Nothing on the layout is done until every line here is c
       appears after a point. **NOT LAYOUT (the user, 2026-10-03: blending, transitions, animation, overlay, shadow are not layout):**
       HOW it looks while holding — glass / shadow / colour change on scroll, a shrink animation, a progress bar — goes to AREA V. Which
       variations, and how many, are settled with the user when GROUP 3 opens ("we can talk about it"), mapped the RULE MAP way
-    - `[ ]` SP-12 · LATER (component) · Navigation: off-canvas panel (inert, aria-expanded, Escape, focus return, scroll
+    - `[ ]` SP-12b (RENAMED by the tree audit 2026-10-06 — the id clashed with the gallery line above) · LATER (component) · Navigation: off-canvas panel (inert, aria-expanded, Escape, focus return, scroll
       lock), active link following the scroll
     - `[ ]` SP-13 · LATER (component) · a real `<dialog>` popup, centred with `inset: 0; margin: auto`
-    - `[>]` **Awwwards "Animation" category — EVERY site, in full detail** (the user, 2026-10-02: "go inside each
+    - `[~]` **Awwwards "Animation" category — EVERY site, in full detail** (the user, 2026-10-02: "go inside each — AUDIT 2026-10-06: dropped by the user's "enough" (R-1, `fe320f5`): 8 of 243 read
       website on that page… check exactly what the sticky element is, what the animation is, and what the transition
       is… get everything in full details, don't just get the first one"). https://www.awwwards.com/websites/animation/
       — the listing is COLLECTED: 248 sites from 8 pages, `scroll-and-position/raw/awwwards-animation-sites.json`
@@ -3312,7 +3671,7 @@ sent), and my research. Nothing on the layout is done until every line here is c
       full-screen overlay for 1.5s. Then run it (≈15–20 min, six windows), then a subagent distils it into
       `scroll-and-position/02-awwwards-animation.md` by technique (sticky · scroll animation · section transition ·
       page transition), each HAVE / PARTIAL / GAP, and the gaps go here as SP-15…
-    - `[>]` **Awwwards "Transitions" CATEGORY — EVERY site, in full detail** (the user's link, 2026-10-02 session
+    - `[~]` **Awwwards "Transitions" CATEGORY — EVERY site, in full detail** (the user's link, 2026-10-02 session — AUDIT 2026-10-06: dropped by the user's "enough" (R-1, `fe320f5`); the 366-item collection itself was read
       1427d547: https://www.awwwards.com/websites/transitions/). NOT the same source as the Transitions COLLECTION
       already stored in `awwwards-motion-survey.md` (`/awwwards/collections/transitions/`, 366 items, fingerprinted
       from code only, never driven live). Same method as the Animation category: every listing page until one adds
@@ -3322,7 +3681,7 @@ sent), and my research. Nothing on the layout is done until every line here is c
       1427d547: https://webflow.com/made-in-webflow/page-transitions). Every item of the listing (all pages / all "load
       more") → each project's live site measured by the same `aw-measure.js` page-transition probe (click an internal
       link, sample the overlay / view transition for 1.5s) → distilled with the Awwwards results, gaps here as SP-…
-    - `[>]` **STICKY and FIXED — EXHAUSTIVE research, every situation, every component** (the user, 2026-10-02 session
+    - `[x]` **STICKY and FIXED — EXHAUSTIVE research, every situation, every component** (the user, 2026-10-02 session — AUDIT 2026-10-06: `04-sticky-fixed-exhaustive.md` (`186dec5`)
       1427d547: "do a lot of excessive research on sticky position… for any situation… and also fixed position on any
       component, anything on a website"). SUPERSEDES "sticky / fixed is enough once its completeness list is closed".
       A catalogue of EVERY use of each on real pages and in every component (headers, sub-navs, tables, sidebars, TOCs,
@@ -3350,7 +3709,7 @@ sent), and my research. Nothing on the layout is done until every line here is c
       - `[ ]` R-2 · `cp-tag.js` read CodePen's "verify you are human" page as "no more pens" (hover stopped at 96,
         reduced-motion at 0) and then crashed on the challenge's navigation; fix: detect the check, PAUSE and ask the
         user to tick it once in the visible window (no automated bypass), retry, 2 windows + random pauses on CodePen
-      - `[ ]` R-3 · `src-list.js` gave up on one Webflow page timeout; fix: 4 retries per page
+      - `[x]` R-3 · `src-list.js` gave up on one Webflow page timeout; fix: 4 retries per page — DONE (checked in the code 2026-10-06: four tries per page, `scripts/research/src-list.js` line 15, `186dec5`)
       - `[ ]` R-4 · `aw-list.js` crashed at Animation page 185 (connection dropped) and LOST 184 pages — it saved only at
         the end; fix: `src-list.js` saves after every page and resumes
       - `[ ]` R-5 · an Awwwards INSPIRATION item has no "Visit site" of its own — recorded as "null" (a false miss); fix:
@@ -3415,7 +3774,7 @@ sent), and my research. Nothing on the layout is done until every line here is c
       - `[ ]` NEW-C1 · scroll effects are switched on by `@supports (animation-timeline…)` alone (`interactions.ts:242`,
         `box-model.ts:6362`) — a half-built engine passes and plays them with the wrong timing; add `and
         (animation-range: 0% 100%)`
-    - `[ ]` **Redo results so far** — `06-motion-rules.md` +9 gaps MR-16…24 (Material 3 read via its content endpoint) ·
+    - `[x]` **Redo results so far** — `06-motion-rules.md` +9 gaps MR-16…24 (Material 3 read via its content endpoint) · — AUDIT 2026-10-06: results in `186dec5`; R-1 closed (`fe320f5`)
       `07-shadows.md` SH-1…12 (79 demos) · `05-entrance-exit.md` 62 sources, 213 demos, EX-9…19 · reading cluster A
       (MDN, ~95 sources, 129 demos, NEW-A1…A8) · cluster C (Bramus + scroll-driven-animations.style: 141 posts, every
       demo page, 235 demos, NEW-C1/C2) · cluster E (Codrops: 123 articles + the 1,139-entry demo index + the
@@ -3433,7 +3792,7 @@ sent), and my research. Nothing on the layout is done until every line here is c
       the sandbox disabled on its own — TOLD the user). · `09-app-motion.md` (Material 3 · 17 Apple HIG pages · Fluent
       · Carbon · Atlassian · Polaris · React Navigation 7 · expo-router · all 96 Reanimated 4 pages · gesture-handler ·
       Moti · FLIP · Next view transitions; 62 demos; AM-1…27). Waiting: cluster D, component effects
-    - `[>]` **THE MOTION & EFFECTS LIBRARY — one library for EVERYTHING (the user, 2026-10-02: "make sure everything we
+    - `[x]` **THE MOTION & EFFECTS LIBRARY — one library for EVERYTHING (the user, 2026-10-02: "make sure everything we — AUDIT 2026-10-06: `motion/library/1…11-*.md` (`186dec5`)
       collect is something we can use for everything… the website builder and any application we develop… so we
       don't have to redo it")** — `docs/web-anatomy/motion/LIBRARY.md` (index, 11 families, ONE entry shape: what a
       visitor sees · code · MEASURED timing → token · phone · reduced motion · accessibility · cost · how common ·
@@ -3446,14 +3805,14 @@ sent), and my research. Nothing on the layout is done until every line here is c
         scroll lock) · page transition (+ focus and title after) · a REDUCED-MOTION pass (what still moves) · a PHONE
         pass (360×740, touch, Android UA, CPU 4×: held bars, scroll changes, long tasks, sideways overflow, the phone
         menu). Trialled on 6 sites 2026-10-02
-      - `[>]` 35 more Awwwards collections (intro animations · CSS animations · animation · animation libraries ·
+      - `[~]` 35 more Awwwards collections (intro animations · CSS animations · animation · animation libraries · — AUDIT 2026-10-06: dropped by the user's "enough" (R-1, `fe320f5`)
         loading · parallax · horizontal scrolling · storytelling · filters & effects · drag · playful · menu · best of
         navigation · galleries & slideshows · forms · search · search filters · video / audio players · UI elements ·
         3D UI · cookie · layout · grid layout · hero · footers ×2 · about · contact · product · project · 404 · one-page
         · mobile UI · responsive · dark mode · then WebGL · three.js) — listing (`collections.log`), measured by the chain
-      - `[>]` COMPONENT effects (uiverse galaxy — every element, by script · Animate.css · Animista · Motion examples ·
+      - `[x]` COMPONENT effects (uiverse galaxy — every element, by script · Animate.css · Animista · Motion examples · — AUDIT 2026-10-06: 08-component-effects (`186dec5`)
         Codrops · freefrontend · Material 3 / Apple components) → `motion/08-component-effects.md`, CE-…
-      - `[>]` APPLICATION motion (Material 3 · Apple HIG · Fluent 2 · Carbon · Polaris · React Native Animated /
+      - `[x]` APPLICATION motion (Material 3 · Apple HIG · Fluent 2 · Carbon · Polaris · React Native Animated / — AUDIT 2026-10-06: 09-app-motion.md (`186dec5`)
         Reanimated / gesture-handler / Moti / React Navigation · web-app FLIP / View Transitions) → `motion/09-app-motion
         .md`, AM-…
       - `[ ]` SMOOTHNESS in its own one-window pass (foreground, 60 Hz, CPU 4×) on the shortlisted techniques — frames
@@ -3484,7 +3843,7 @@ sent), and my research. Nothing on the layout is done until every line here is c
         behaviour; for pens, the techniques in their full code) → a `.saturated.json` beside each run says where it
         stopped and what was known. `aw-measure.js` / `cp-tag.js --saturate=150`. ~1 day of machine time instead of 3–4
       - `[x]` uiverse — ALL 3,802 elements run locally, 2026-10-02 (`educo-research/runs/uiverse.json`)
-      - `[>]` **THE USER'S GO (2026-10-02): (1) write the library while the runs finish, (2) verify the bug ledger in
+      - `[x]` **THE USER'S GO (2026-10-02): (1) write the library while the runs finish, (2) verify the bug ledger in — AUDIT 2026-10-06: library and ledger done (`186dec5`)
         code** — nothing that needs the browser meanwhile (memory ~1 GB free). `scripts/research/aggregate.js` condenses
         every finished run into `docs/web-anatomy/research-runs/AGGREGATE.md` (regenerated, never edited; first pass:
         732 sites, uiverse 3,802, 17 CodePen tags — sticky 47% · fade on scroll 55% · median transition 350 ms · Escape
@@ -3564,7 +3923,7 @@ sent), and my research. Nothing on the layout is done until every line here is c
         · getcssscan box-shadow · One Page Love drop-shadow — recorded, not started
       - `[ ]` the older sources from earlier sessions (the layout crawl, `LAYOUT_BENCHMARK.md`, the Advanced CSS course,
         the motion survey) — audited the same way; any that were listed but not opened item by item get an open line here
-    - `[>]` **CodePen — "look through everything there, see exactly how people do it"** (the user, 2026-10-02 session
+    - `[x]` **CodePen — "look through everything there, see exactly how people do it"** (the user, 2026-10-02 session — AUDIT 2026-10-06: R-1 change (4): 29 tag pages in docs/web-anatomy/codepen/
       1427d547), and "go INSIDE each and every pen" (the sticky-header / fixed-position pens were summarised, never run
       one by one). `scripts/research/cp-tag.js`: `list` walks every page of a tag (`?cursor=`), `read` opens EVERY pen
       LIVE in its full view, scrolls it, two screenshots, records its sticky / fixed elements and what changed, and saves
@@ -3579,7 +3938,7 @@ sent), and my research. Nothing on the layout is done until every line here is c
         (p73), cursor (p63), marquee (p42) were CUT SHORT; pens-own stopped at 570 of 4,714; section-divider,
         shape-divider and stacking-cards listed 0 pens; sticky-nav was never run. NOTHING distilled yet (the folder
         holds only `raw/`)
-      - `[>]` RESUMED, NO saturation — the user: "don't start from the beginning… grab everything". 
+      - `[~]` RESUMED, NO saturation — the user: "don't start from the beginning… grab everything". — AUDIT 2026-10-06: stopped at the user's "enough" (R-1, `fe320f5`)
         `educo-research/codepen-resume.sh` (a detached Git Bash process): every tag again, already-read pens skipped,
         then `list:pens-own` for the 4,144 not read. Logs: `educo-research/runs/codepen-resume.out` ·
         `pens-own-resume.out` · `chain.log` marks each end. Started 2026-10-02 ~17:58
@@ -3592,9 +3951,9 @@ sent), and my research. Nothing on the layout is done until every line here is c
         calls it on every pen it reads; the ~5,300 already read were given theirs from their saved code (no re-opening),
         and each tag has its page `docs/web-anatomy/codepen/<tag>.md` (techniques by count, then every pen with its how).
         Regenerate the pages after the run: `node scripts/research/cp-how.js docs/web-anatomy/codepen/raw`
-      - `[ ]` HAVE / PARTIAL / GAP against the builder, technique by technique, into the motion library — once the
+      - `[x]` HAVE / PARTIAL / GAP against the builder, technique by technique, into the motion library — once the — AUDIT 2026-10-06: R-2 step 4 — every crawled technique is code and proven (`43fb21c`)
         reading ends (a judgement against our code, not a second read of CodePen)
-    - `[ ]` **Box shadows** (the user's links, 2026-10-02 session 1427d547: https://getcssscan.com/css-box-shadow-examples
+    - `[x]` **Box shadows** (the user's links, 2026-10-02 session 1427d547: https://getcssscan.com/css-box-shadow-examples — AUDIT 2026-10-06: R-2 closed; library/10-surface.md
       · https://onepagelove.com/tag/drop-shadow — every page of the tag, each site's shadows measured live)
       — every example stored with its value; checked against the shadow tokens and Web Design Rule #5 (design
       foundation `02`). LATER (style, not layout) unless it shows a layout need
@@ -3627,7 +3986,7 @@ sent), and my research. Nothing on the layout is done until every line here is c
       - `[ ]` MR-9 · motion tokens incomplete, three timings bypass them, `emphasized` still the overshoot curve
       - `[ ]` SA-1 · reveal-on-scroll inside a rounded / clipped box (`overflow: hidden`) — with SP-4
       - `[ ]` ST-1 · a sloped / curved band edge shows the page colour, not the next band (the guide says the next band)
-    - `[>]` **MY OWN research (RULE RS), running in parallel 2026-10-02** — `docs/web-anatomy/motion/` 01 section
+    - `[x]` **MY OWN research (RULE RS), running in parallel 2026-10-02** — `docs/web-anatomy/motion/` 01 section — AUDIT 2026-10-06: motion/01–06 (`186dec5`)
       transitions (ST-…) · 02 scroll animation (SA-…) · 03 page transitions (PT-…) · 04 hover / focus (HV-…) · 05
       entrance / exit (EX-…) · 06 motion rules (MR-…); each EXTENDS `motion-effects.md` + `awwwards-motion-survey.md`,
       never redoes them; gaps come here when they land
@@ -3660,7 +4019,7 @@ sent), and my research. Nothing on the layout is done until every line here is c
         performance on low-cost Android (compositor-only properties, no heavy scroll listeners — RULE AF)
       - the user sends links for these; the session ALSO researches each on its own (MDN, web.dev / Chrome developers,
         CSS-Tricks, Codrops, CodePen tags, Awwwards categories, design-system motion guides) and stores it the same way
-      - `[>]` **"ENOUGH" CHECKLIST (RULE RS)** — written 2026-10-02 (session 1427d547); **waiting for the user's
+      - `[x]` **"ENOUGH" CHECKLIST (RULE RS)** — written 2026-10-02 (session 1427d547); **waiting for the user's — AUDIT 2026-10-06: signed; 1.1.5 FROZEN 2026-10-02; R-1 closed (`fe320f5`)
         sign-off** before 1.1.5 is frozen. "Covered" = the user's links run item by item AND my own research read in
         full AND written into the library with measured numbers and the builder's status verified in code.
         | Need | Covered? | Where | What is still open |
@@ -3698,23 +4057,23 @@ sent), and my research. Nothing on the layout is done until every line here is c
       is unpinned on the phone · a sticky sidebar under the header with room to travel · canvas = export for held blocks
       with zoom · held bars at 200% zoom / 150% text on 360×640 · `bgAttach: fixed` on iOS / low-end Android · a bottom
       bar + keyboard · `pinStackScript` re-measuring when late images change a bar's height
-- `[ ]` **My research of what is left** — to be added here (RULE R: the crawl tiers 95/99, `docs/LAYOUT_BENCHMARK.md`,
+- `[x]` **My research of what is left** — to be added here (RULE R: the crawl tiers 95/99, `docs/LAYOUT_BENCHMARK.md`, — AUDIT 2026-10-06: overtaken: 1.1.5 frozen without it; R-3 (`ff5c53a`) and R-4 (`f25b6a6`) researched the grid, L-6 holds the innovative pages
   the innovative structures) before the list is frozen
-- `[ ]` **FROZEN** — the user approves the list; from then on nothing is added to the layout without the user's word
+- `[x]` **FROZEN** — the user approves the list; from then on nothing is added to the layout without the user's word — AUDIT 2026-10-06: signed by the user 2026-10-02 (1.1.5 header)
 
 ### 1.2 · The original queue (after the four tasks)
 
-- `[ ]` **"Place here"** + **"Return to original position"** — approved plan
+- `[ ]` **"Place here"** + **"Return to original position"** — approved plan — AUDIT 2026-10-06: PARTLY: putting a floated block back returns it to its own parent and place (E2-19, `979fc5d`); "Place here" itself not built
   https://claude.ai/artifact/M5bfZ5NtDiW9oYjZ6NPNqN, nothing built. On release offer "Keep floating" / "Place here"
-- `[ ]` "Add a block inside" NESTS each click instead of adding a sibling
-- `[ ]` "Side by side" creates an empty row that clicked tiles land AFTER, not inside
-- `[ ]` A resize can leave a stale `alignSelf` on old saved pages (may need a migration)
+- `[ ]` "Add a block inside" NESTS each click instead of adding a sibling — AUDIT 2026-10-06: still true (E2-20, 2026-10-06); the phone side is BATCH E-5
+- `[ ]` "Side by side" creates an empty row that clicked tiles land AFTER, not inside — AUDIT 2026-10-06: still true (E2-20); its resize half E2-22 is in BATCH L-5
+- `[ ]` A resize can leave a stale `alignSelf` on old saved pages (may need a migration) — AUDIT 2026-10-06: no migration yet; the same family as #42 → BATCH L-5
 
 ### 1.3 · The roadmap after the layout closes (in this order)
 
-- `[ ]` **Documentation site** — `docs-site/` on Docusaurus, the FIRST thing after the layout closes (RULE DOC)
+- `[x]` **Documentation site** — `docs-site/` on Docusaurus, the FIRST thing after the layout closes (RULE DOC) — AUDIT 2026-10-06: BUILT EARLY at the user's word: BATCH D-2 (`f437b5c`), D-3 (`af533ac`) — `docs-site/` over `docs/guide/`
 - `[ ]` **Semantic layer** — decisions A1 · B1 · C1 made; plan https://claude.ai/artifact/21gRsmKjw9RZTgdVbqNMmQ
-  - `[ ]` `lang` per page and per block (RULE AF: languages are content)
+  - `[ ]` `lang` per page and per block (RULE AF: languages are content) — AUDIT 2026-10-06: not built: the export writes `<html lang="en">`
 - `[ ]` **Template feature** — gallery per RULE S; plan artifact for the user's approval first
 - `[ ]` **Template library** — one original template per crawled site (~475); `docs/TEMPLATE_LIBRARY_PLAN.md`
 - `[ ]` **Components, rebuilt one by one from scratch, every variation** — research first (RULE R); each row of
@@ -3741,7 +4100,7 @@ sent), and my research. Nothing on the layout is done until every line here is c
 ## 3 · Developing countries first (RULE AF — `docs/DEVELOPING_COUNTRIES_FIRST.md`)
 
 - `[x]` Low-cost phones (Tecno, Infinix, itel, Redmi) in the Preview device list — `bc89d68`
-- `[ ]` Weight budget and Slow-3G profile → see 1.1.1
+- `[ ]` Weight budget and Slow-3G profile → see 1.1.1 — AUDIT 2026-10-06: → BATCH L-6 (queued)
 - `[ ]` Offline-first application layer · Paystack / Flutterwave · WhatsApp / SMS · cheap static hosting and local
   domains · second-language versions · templates from the region — each its own area, researched first
 
@@ -3755,7 +4114,7 @@ sent), and my research. Nothing on the layout is done until every line here is c
     Schools & Branches, Settings → User Management. Building one = the page + deleting its line from `UNBUILT` in
     `components/layout/Sidebar.tsx`; list in `docs/MVP_AUDIT.md` → "Menu links with no page"
 - `[!]` **Mobile Drive feature** — memory `project_drive_status.md`
-- `[ ]` **Builder on phone and tablet** — a webview over the real export, inside the Educo app (rule 20); after the web
+- `[ ]` **Builder on phone and tablet** — a webview over the real export, inside the Educo app (rule 20); after the web — AUDIT 2026-10-06: the L-2 fixes for the app are BATCH M-1 (queued)
   builder is finished. Its first piece is queued as BATCH M-1 (the user, 2026-10-01: must be done, not now)
 - `[?]` **What exactly is "the original work"?** Confirm with the user which of these it means before returning to it
 
@@ -3765,6 +4124,54 @@ sent), and my research. Nothing on the layout is done until every line here is c
 
 One entry per session, newest first. Written the moment the user says "new session" (or the context is about to run
 out) — where the session STARTED FROM, where it GOT TO, and where the next one CONTINUES FROM.
+
+### 2026-10-06 · session E-3 · branch `builder/editor-small-screens` — HANDOVER (the user: "give me the prompt for the new session"; both held: the context is genuinely long — the tree audit, a whole batch with 11 ledger lines, five builds, four headed passes, the new rule — and the boundary is clean: everything committed at `6042e79`, nothing running, ports free)
+- **Started from:** session E-2's handover (`0bb6d77`): the tree audit, then BATCH E-3.
+- **Got to:** (1) **the tree audit** (`4fcf59a`): 109 lines re-marked with evidence, its true count of what is left of the layout at
+  the head of section 1.1; E-6 / SP-12b renamed; P-1 · P-2 · G-4 · P-3 · G-5 · G-6 given queued headings. (2) **BATCH E-3 CLOSED**
+  (`889878b`): HEADED 297 / 0; real bugs E3-5 (a still tap goes through a PARENT's handle) · E3-7 (top bar one row 1280 – 1920) · E3-9 /
+  10 / 11 (the shared Modal: Escape, the page's keys under a dialog, focus in and back); gate vitest 4,409 · test:fast 815.
+  (3) **DONE IS DONE EVERYWHERE** (`8395e1f`), the user's rule: CLAUDE.md rule 7 + AFTER checklist; `staleLines()` in
+  `tests/unit/task-tree-batches.test.ts`; 13 more stale lines closed. (4) **E3-3 decided** (the user took my recommendation) and built
+  as **BATCH E-4 change (1)** (`6042e79`): the Inspector follows the width at every crossing of 64em; HEADED 66 / 0; gate vitest 4,418 ·
+  test:fast 816.
+- **Continue from:** **BATCH E-4 (OPEN, YOU ARE HERE)** → change (2): measure multipage-preview 5 · pager-hero 1 ·
+  component-layout-invariants 1 on tablet-landscape / tablet-portrait / mobile-chrome (HEADLESS GATE, labelled), each a spec that
+  assumes the desktop or a real bug, into LEDGER E-4 the moment it is found; add their checklist lines BEFORE the pass; then
+  change (3) `scripts/test-fast.js` runs the tablet and phone projects; then the six-window headed pass (`uat-e4-headed.js`), docs,
+  the gate, close E-4 (ticking every line that tracks it), then the pull request (the user opens it from the compare link).
+
+### 2026-10-06 · session E-2 · branch `builder/editor-small-screens` — HANDOVER (the user: "let's hand over and move on to the new session"; both held: the context is genuinely long — a whole batch, 24 ledger lines, ~40 probes, three headed passes, the full gate — and the boundary is clean: everything committed at `979fc5d`, nothing running, ports free)
+- **Started from:** session G-3d's handover (`9ded396`), BATCH E-2 (YOU ARE HERE), the 37 failing small-screen specs.
+- **Got to:** **E-2 CLOSED** (`979fc5d`). Decided by the user: Full width is always the desktop page (75rem, shrunk to fit — twice,
+  the second time with the measured desktop cost). 16 real bugs fixed with guards proven red (E2-2 · 4 · 7/12 · 8 · 11/23 · 13 ·
+  14 · 15 · 16 · 17 · 18 · 19 · 21 · 24), 22 desktop specs moved to page px / the person's aim. Queued by the user: E2-20 adding
+  blocks on a phone → BATCH E-5 (research first); E2-22 Side by side columns cannot be resized against each other → BATCH L-5
+  (in #46's place, which E-2 closed). HEADED UAT `uat-e2-headed.js` 174 / 0; gate typecheck 0 · eslint 0 errors · vitest 4,405 ·
+  test:fast 812 · docs:build SUCCESS.
+- **Asked at the end (the user, "what is left for the layout task?"):** answered from the tree; many layout lines look stale
+  (e.g. the Docusaurus site still listed under 1.3 though D-2 built it). The user: "yes, please do that" — the TREE AUDIT below.
+- **Continue from:** (1) **THE TREE AUDIT** (read-only, short): every open line under 1.1 (1.1.1 Task 1 · 1.1.2–1.1.4 · 1.1.5 the
+  frozen list) and 1.2 / 1.3, checked against the code (grep) and `git log`; a line that is DONE is closed with its commit or
+  measurement, a stale one corrected, nothing deleted; then the user gets a TRUE count of what is left of the layout, grouped
+  as the end-of-session answer was. (2) **BATCH E-3 (YOU ARE HERE)** — its HEADED checklist first, then spacing-gestures 12 ·
+  masonry-builder 10 · canvas-zoom 3 · text-is-reachable 1 on tablet-landscape / tablet-portrait / mobile-chrome, each measured
+  (a spec on screen px or a real bug — E-2 found both), and D3-32 (the top bar one row from 1280, labels collapsing to icons).
+  Then E-4 (incl. E-1 (2): `test-fast.js` runs the tablet and phone projects), then E-5 (research first).
+
+### 2026-10-06 · session G-3d · branches `builder/page-grid` → `builder/editor-small-screens` — HANDOVER (the user: "create a new branch, give me the next session"; both held: the context is genuinely long — a whole batch, three changes, four headed passes, the gate, the PR — and the boundary is clean: PR #6 merged, the new branch cut, nothing running, ports free)
+- **Started from:** session 49087f08's handover (`99c6c7b`), BATCH G-3d (YOU ARE HERE), G3d-1 decided.
+- **Got to:** **G-3d CLOSED** (`ec52b51`): (3) a 10rem floor per block of a page-grid row below the tablet rung (`BLOCK_FLOOR_REM`,
+  `rowNarrowsAt`), (1) a lone block on its line takes the phone's whole line (`rowLinesAt`), (2) a picture alone in a block spanning
+  rows fills it (`fillsRows`, `--bx-fill` on the block, "Fill the block's height" switch); a saved page byte-identical to `99c6c7b`.
+  HEADED UAT `uat-g3d-headed.js` 91 / 0, regression 210 / 0, docs 36 / 0; gate typecheck 0 · eslint 0 errors · vitest 4,400 ·
+  test:fast 807. Ledger G3d-2 … G3d-12 closed. **`builder/page-grid` pushed, PR #6 merged by the user (`7494a8e`), branch deleted;
+  `builder/editor-small-screens` cut from that master.**
+- **Continue from:** **BATCH E-2 (YOU ARE HERE)** on `builder/editor-small-screens`: write its HEADED checklist first, measure each of
+  the 37 failing specs on tablet-landscape / tablet-portrait / mobile-chrome (a spec that assumes the desktop, or a real bug — fixed
+  either way, mutation-proven), then its headed pass; then E-3 (incl. D3-32 top bar one row from 1280), then E-4 (incl. E-1 (2): the
+  gate runs the tablet and phone projects). Traps: see the next-session prompt in the conversation; the older queued "BATCH E-1 · The
+  empty-box hint" (~line 2523) is a different, unrelated batch with a colliding name.
 
 ### 2026-10-06 · session 49087f08 · branch `builder/page-grid` — HANDOVER (the user: "let's start a new session"; both held: the context is genuinely long — D-3 (2)'s four audits, 19 ledger lines, five artifacts, two headed passes, the G-3d map — and the boundary is clean: everything committed at `5bc1256`, nothing running, ports free)
 - **Started from:** session ff5dbc77's handover (`5ac91fc`), BATCH D-3 change (2).

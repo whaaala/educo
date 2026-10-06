@@ -332,7 +332,9 @@ shape of your own, set a **Height** and that is what you get.
 
 **The builder's own toolbar follows the same rule.** Narrow the window and the top bar **wraps onto more
 rows** rather than pushing Preview, Export and the device chips off the side. Every control stays on the
-screen at any width, and at desktop sizes it is the single row it always was.
+screen at any width. On a desktop it is a single row: below 1,600px wide, **Add a band**, **Page check**,
+**Preview**, **Export** and **Reset** show only their icons. Point at one to see its name; a screen reader
+reads it the same as before.
 
 ---
 
@@ -358,7 +360,8 @@ screen at any width, and at desktop sizes it is the single row it always was.
 - **Pages:** use the Pages control (top‑left) to add pages, rename them, set the **Home** page, and duplicate. Buttons can **link to a page** so your nav works.
 - **Preview:** a true, isolated preview of the exported site — **one real page at a time**, not every page stacked together. Switch devices inside preview, and click your own nav to walk from page to page exactly as a visitor will.
 - **It opens at the size of your own screen.** The page fills your whole window — the same width *and* height a visitor on your monitor gets — with no frame, no padding and no rounded corners around it. The bar floats *over* the page rather than sitting above it, so it costs the preview no height.
-- **The controls step aside when you say so — never on their own.** Press the hide arrow at the right end of the bar (or **H**) and the bar slides away for an unobstructed look; a small **Controls** handle stays at the top to bring it back, and **H** works from anywhere, including after you've clicked the page you're previewing. The bar used to hide itself on a timer and again whenever the pointer left it — which meant choosing a device made the whole strip vanish before you could rotate it. It doesn't do that any more.
+- **The controls step aside when you say so — never on their own.** Press the hide arrow at the right end of the bar (or **H**) and the bar slides away for an unobstructed look; a small **Controls** button waits in the bottom‑right corner beside **Exit preview** to bring it back — down there, rather than at the top, so it never sits on the header and menu you built — and **H** works from anywhere, including after you've clicked the page you're previewing. The bar used to hide itself on a timer and again whenever the pointer left it — which meant choosing a device made the whole strip vanish before you could rotate it. It doesn't do that any more.
+- **On a tablet or a phone the bar folds onto more rows** instead of running off the edge of the screen — every control, and the tab for each of your pages, stays on screen and in reach. On a laptop or a desktop it is one row.
 - **Pick a device to see one.** A phone or tablet from the menu is shown at its real size, framed like a device sitting on a surface — which is right for a device and wrong for "show me my site".
 - **Sweep the width to find your breakpoints.** Drag **either edge** of the preview: the page narrows from both sides and stays centred, and the readout names the width and the rung it lands on — *1024 px · Tablet landscape*. Keep going and you can walk it down to a phone. Double‑click an edge to get the whole window back.
 - **Pick a screen by name.** The preview bar works like a browser's device mode. The **size** menu lists this site's own five screen sizes (Mobile, Tablet, Laptop, Desktop, Wide) and then **over sixty real devices**, grouped: iPhone · Android phones · Foldables · Tablets · Laptops · Monitors — each at its true size, named with its generation and its dimensions (*iPhone SE (3rd gen) — 375 × 667*). **Responsive** just fills the window.

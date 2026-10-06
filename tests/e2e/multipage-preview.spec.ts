@@ -126,3 +126,37 @@ test.describe("Multi-page preview", () => {
     expect(styled.radius, "with the button's own rounding applied").not.toBe("0px");
   });
 });
+
+/**
+ * THE PREVIEW LOADS THE PAGE ONCE (E4-5). The school's fonts arrive ~400ms after Preview opens; they used to be part of
+ * the page source, so their arrival reloaded the whole page — two loads on every open, on every screen, and a scroll, tap
+ * or running pager in the first 400ms wiped. Measured with the frame's own navigations, after the fonts have had time.
+ */
+test("opening the Preview loads the page once, fonts included", async ({ page }) => {
+  await seedSite(page, { homeId: "p1", pages: [{ id: "p1", name: "Home", path: "home", root: { id: "root", type: "container", direction: "column",
+    children: [{ id: "h", type: "heading", text: "Welcome to our school", fontSize: 28, bold: true }] } }] });
+  await page.waitForSelector("[data-box-id]", { timeout: 20000 });
+  let loads = 0;
+  page.on("framenavigated", (fr) => { if (fr !== page.mainFrame()) loads++; });
+  await page.getByRole("button", { name: /preview/i }).first().click();
+  const frame = page.frameLocator('iframe[title="Site preview"]');
+  await expect(frame.locator("#eu-preview-fonts"), "the fonts reach the open page").toHaveCount(1, { timeout: 15000 });
+  await page.waitForTimeout(1000);
+  expect(loads, "one load — the fonts join the page instead of rebuilding it").toBe(1);
+});
+
+/**
+ * WITH THE CONTROLS HIDDEN, EXIT EXITS — BY A FINGER TOO (E4-12). The pill brought the bar back on `pointerenter`, and a finger
+ * "enters" at the moment it taps: the bar came back, the pill unmounted, and the tap's click landed on nothing. On every touch
+ * project this is a TAP, as a person there does it.
+ */
+test("with the controls hidden, Exit preview leaves the Preview — by a tap on a touch screen", async ({ page }) => {
+  await seedSite(page, { homeId: "p1", pages: [{ id: "p1", name: "Home", path: "home", root: { id: "root", type: "container", direction: "column",
+    children: [{ id: "h", type: "heading", text: "Welcome to our school", fontSize: 28, bold: true }] } }] });
+  await page.waitForSelector("[data-box-id]", { timeout: 20000 });
+  await page.getByRole("button", { name: /preview/i }).first().click();
+  await page.getByRole("button", { name: "Hide the preview controls" }).click();
+  const exit = page.getByRole("button", { name: /Exit preview/ });
+  if (test.info().project.use.hasTouch) await exit.tap(); else await exit.click();
+  await expect(page.locator('iframe[title="Site preview"]'), "back in the editor").toHaveCount(0);
+});

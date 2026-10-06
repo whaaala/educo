@@ -97,3 +97,18 @@ describe("the browser suites are the same on both paths", () => {
     expect(pkg.scripts["test:fast"]).toContain("scripts/test-fast.js");
   });
 });
+
+/**
+ * THE FAST GATE RUNS EVERY SCREEN (BATCH E-4 (3)). It ran `--project=desktop-chrome` alone, and 37 specs failed on the tablets
+ * and the phone for weeks with nothing saying so. Every project in `playwright.config.ts` is named in the runner.
+ */
+describe("test:fast runs on every screen the browser config defines", () => {
+  const config = readFileSync(resolve(root, "playwright.config.ts"), "utf8").replace(/\r\n/g, "\n");
+  const projects = [...config.matchAll(/name:\s*"([\w-]+)"/g)].map((m) => m[1]);
+  it("the config defines the four screens", () => {
+    expect(projects).toEqual(["desktop-chrome", "tablet-landscape", "tablet-portrait", "mobile-chrome"]);
+  });
+  for (const p of projects) {
+    it(`runs ${p}`, () => { expect(fastRunner).toContain(`"--project=${p}"`); });
+  }
+});

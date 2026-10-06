@@ -35,7 +35,7 @@ async function select(page: Page, id: string) {
   for (let i = 0; i < 8; i++) {
     const sel = await page.evaluate(() => document.querySelector(".outline-indigo-500")?.getAttribute("data-box-id") ?? null);
     if (sel === id) return;
-    await page.mouse.click(b.x + b.width * 0.5, b.y + b.height * 0.5);
+    await page.mouse.click(b.x + b.width * 0.25, b.y + b.height * 0.25); // a quarter in: an empty block's "+" sits in its middle (E2-9)
     await page.waitForTimeout(220);
   }
   throw new Error(`could not select ${id}`);

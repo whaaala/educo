@@ -46,7 +46,11 @@ type Row = { inner: number; kids: Kid[]; gap?: number };
 const rowOf = (page: Page, id: string) => page.evaluate((id): Row => {
   let el = document.querySelector<HTMLElement>(`[data-box-id="${id}"]`)!;
   while (el.parentElement && getComputedStyle(el.parentElement).flexDirection !== "row") el = el.parentElement.closest<HTMLElement>("[data-box-id]")!;
-  const row = el.parentElement!, rr = row.getBoundingClientRect(), cs = getComputedStyle(row);
+  // IN PAGE PX (E-2): the canvas is drawn scaled, and the paddings and margins below are layout px — a rect is divided by
+  // the scale before it meets them (mixed, the first block of a fresh row read l -1 at 0.69). The export has no scale: 1.
+  const z = Number(el.closest<HTMLElement>("[data-canvas-scale]")?.dataset.canvasScale) || 1;
+  const R = (e: Element) => { const b = e.getBoundingClientRect(); return { left: b.left / z, top: b.top / z, width: b.width / z }; };
+  const row = el.parentElement!, rr = R(row), cs = getComputedStyle(row);
   const padL = parseFloat(cs.paddingLeft) || 0, padR = parseFloat(cs.paddingRight) || 0;
   const kids = Array.from(row.children).filter((k) => k.hasAttribute("data-box-id")) as HTMLElement[];
   // Each column's SLOT (S1-a): a band with a gutter reaches half a gap past each side and draws every column one gap
@@ -60,13 +64,13 @@ const rowOf = (page: Page, id: string) => page.evaluate((id): Row => {
     return {
       inner: Math.round(rr.width - padL - padR),
       // a gap dragged open before a block rides in its left margin as a `%` of its area (`calc(20% + …)`): the share starts after it
-      kids: kids.map((k) => { const r = k.getBoundingClientRect(), [ml, mr] = m(k), area = r.width + ml + mr, gapPx = (parseFloat(/(-?[\d.]+)%/.exec(k.style.marginLeft)?.[1] ?? "0") / 100) * area; return { id: k.getAttribute("data-box-id")!, l: Math.round(r.left - ml + gapPx - rr.left - padL), t: Math.round(r.top - rr.top), w: Math.round(area - gapPx) }; }),
+      kids: kids.map((k) => { const r = R(k), [ml, mr] = m(k), area = r.width + ml + mr, gapPx = (parseFloat(/(-?[\d.]+)%/.exec(k.style.marginLeft)?.[1] ?? "0") / 100) * area; return { id: k.getAttribute("data-box-id")!, l: Math.round(r.left - ml + gapPx - rr.left - padL), t: Math.round(r.top - rr.top), w: Math.round(area - gapPx) }; }),
       gap: kids.length > 1 ? m(kids[0])[1] + m(kids[1])[0] : 0,
     };
   }
   return {
     inner: Math.round(rr.width - padL - padR),
-    kids: kids.map((k) => { const r = k.getBoundingClientRect(); return { id: k.getAttribute("data-box-id")!, l: Math.round(r.left - hg - rr.left - padL), t: Math.round(r.top - rr.top), w: Math.round(r.width + 2 * hg) }; }),
+    kids: kids.map((k) => { const r = R(k); return { id: k.getAttribute("data-box-id")!, l: Math.round(r.left - hg - rr.left - padL), t: Math.round(r.top - rr.top), w: Math.round(r.width + 2 * hg) }; }),
     gap: 2 * hg,
   };
 }, id);
@@ -204,6 +208,23 @@ test.describe("width round trips come back, and nothing leaves a hole", () => {
     expect(stored?.marginLeftPct ?? 0).toBe(0);
   });
 
+  test("keep pulling wraps the neighbour on a page-grid row drawn small — the pull is the hand's, not the snapped edge (E2-23)", async ({ page }) => {
+    // Built through the UI, a page today is a PAGE-GRID page: the dragged edge is snapped to the grid's lines AND clamped to the
+    // page's edge. The wrap is "pull 24 SCREEN px past the neighbour's floor" — on a line drawn under ~600px that point lies past
+    // the page's edge, which a clamped pointer never reaches: measured at 1024 × 768, A held at 96 % however far the hand went.
+    const id = await buildRow(page, 2);
+    await page.setViewportSize({ width: 1024, height: 768 });
+    await page.waitForTimeout(900);
+    await select(page, id);
+    const z = await page.evaluate(() => Number(document.querySelector<HTMLElement>("[data-canvas-scale]")?.dataset.canvasScale) || 1);
+    const start = await rowOf(page, id);
+    expect(start.kids[1].t, "two on one line").toBe(start.kids[0].t);
+    expect(start.inner * z, "the precondition: the line is drawn under 600 screen px").toBeLessThan(600);
+    await dragRight(page, start.inner * 0.75 * z); // screen px: well past the end of the line, as a hand pulls
+    const after = await rowOf(page, id);
+    expect(after.kids[1].t, `the neighbour wrapped below (${JSON.stringify(after.kids)})`).toBeGreaterThan(after.kids[0].t);
+  });
+
   test("the first block's LEFT edge opens a space and closes it again — its right edge never moves", async ({ page }) => {
     const id = await buildRow(page, 2);
     await select(page, id);
@@ -213,6 +234,7 @@ test.describe("width round trips come back, and nothing leaves a hole", () => {
     const dragLeft = async (dx: number) => {
       const h = (await page.locator('[aria-label="Resize left edge"]').first().boundingBox())!;
       const cx = h.x + h.width / 2, cy = h.y + h.height / 2;
+      dx *= await page.evaluate(() => Number(document.querySelector<HTMLElement>("[data-canvas-scale]")?.dataset.canvasScale) || 1); // page px → screen
       await page.keyboard.down("Alt");
       await page.mouse.move(cx, cy); await page.mouse.down();
       for (let i = 1; i <= 12; i++) { await page.mouse.move(cx + (dx * i) / 12, cy); await page.waitForTimeout(12); }

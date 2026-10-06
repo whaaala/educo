@@ -38,8 +38,9 @@ async function seed(page: Page, target: Kid) {
   await page.waitForTimeout(300);
 }
 
+/** In PAGE px (E-2): the canvas is drawn scaled, and the 8rem courtesy is a page size. */
 const heightOf = (page: Page, id: string) =>
-  page.locator(`[data-box-id="${id}"]`).evaluate((el) => Math.round(el.getBoundingClientRect().height));
+  page.locator(`[data-box-id="${id}"]`).evaluate((el) => Math.round(el.getBoundingClientRect().height / (Number(el.closest<HTMLElement>("[data-canvas-scale]")?.dataset.canvasScale) || 1)));
 
 /**
  * Click until THIS box is the selection.
@@ -50,7 +51,7 @@ const heightOf = (page: Page, id: string) =>
  */
 async function selectBox(page: Page, id: string) {
   const b = (await page.locator(`[data-box-id="${id}"]`).boundingBox())!;
-  const x = b.x + b.width * 0.25, y = b.y + b.height * 0.5;
+  const x = b.x + b.width * 0.25, y = b.y + b.height * 0.25; // clear of the centred "+" hints (E2-9)
   for (let i = 0; i < 4; i++) {
     const sel = await page.evaluate(() => document.querySelector(".outline-indigo-500")?.getAttribute("data-box-id") ?? null);
     if (sel === id) break;

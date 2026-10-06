@@ -1,5 +1,5 @@
 import { test, expect, type Page } from "@playwright/test";
-import { clearSite } from "./helpers/seed-site";
+import { clearSite, BUILDER_PATH, openInspector } from "./helpers/seed-site";
 
 /**
  * ADDING A BLOCK — what interrupts you, and what does not.
@@ -18,6 +18,29 @@ async function freshBuilder(page: Page) {
   await page.waitForTimeout(600);
 }
 
+/**
+ * A FIRST VISIT'S PAGE SURVIVES ITS FIRST RELOAD (E2-21). The one-time prune of the OLD starter's empty sections ran on the first
+ * load that found a saved site without the "cleaned" flag — and a new visitor's first load found nothing, so it never set the flag:
+ * their first reload pruned the page they had just built, every empty block with it (3 nodes stored before, 1 after). Both
+ * seeding helpers set the flag, so no spec ever started from a truly empty browser; this one does.
+ */
+test("a first visit's page survives its first reload — an empty block is not taken for old starter chrome (E2-21)", async ({ page }) => {
+  await page.addInitScript(() => { try { if (!sessionStorage.getItem("e2-21")) { localStorage.clear(); sessionStorage.setItem("e2-21", "1"); } } catch { /* private mode */ } });
+  await page.goto(BUILDER_PATH);
+  await page.waitForSelector("text=Box Builder", { timeout: 20000 });
+  await page.waitForTimeout(600);
+  await page.keyboard.press("b");
+  await page.waitForTimeout(600);
+  await tile(page, "Stack").click();
+  await page.waitForTimeout(900);
+  const before = await nodeCount(page);
+  expect(before, "the precondition: a Stack landed").toBeGreaterThan(1);
+  await page.reload();
+  await page.waitForSelector("text=Box Builder", { timeout: 20000 });
+  await page.waitForTimeout(900);
+  expect(await nodeCount(page), "the Stack added on the first visit is still there after the reload").toBe(before);
+});
+
 /** How many nodes the page holds — the honest way to ask "did something land?". */
 const nodeCount = (page: Page) => page.evaluate(() => {
   const site = JSON.parse(localStorage.getItem("educo_box_site_v1") || "{}");
@@ -33,10 +56,6 @@ const tile = (page: Page, name: string) => page.locator('[role="button"]', { has
  * it), so on a tablet held upright or a phone a person taps "Inspector" to open it. These tests assumed the docked desktop panel:
  * the presets and "Full screen" were never on screen there, and "Add a block inside" matched the block toolbar's "+" instead.
  */
-async function openInspector(page: Page) {
-  const tab = page.getByRole("button", { name: "Expand inspector" });
-  if (await tab.isVisible().catch(() => false)) { await tab.click(); await page.waitForTimeout(400); }
-}
 
 test.describe("a look on an empty box is not worth a question", () => {
   for (const name of ["Stack", "Side by side", "Image", "Icon"]) {
@@ -126,7 +145,8 @@ test.describe("a height you set beats the courtesy height", () => {
     await page.locator('[aria-label="Screen height"] button', { hasText: "Full screen" }).click();
 
     await expect.poll(async () => page.locator("[data-box-id]").last().evaluate(
-      (el) => Math.round((el.getBoundingClientRect().height / window.innerHeight) * 100),
+      // in PAGE px (E-2): one screen tall on the page, drawn at the canvas's scale
+      (el) => Math.round((el.getBoundingClientRect().height / (Number(el.closest<HTMLElement>("[data-canvas-scale]")?.dataset.canvasScale) || 1) / window.innerHeight) * 100),
     ), { timeout: 8000, message: "an empty section set to Full screen must actually be one screen tall" })
       .toBeGreaterThanOrEqual(90);
   });
@@ -269,9 +289,10 @@ test.describe("the page is exactly as tall as what is on it", () => {
     const last = await page.locator("[data-box-id]").last().evaluate((el) => Math.round(el.getBoundingClientRect().bottom));
     // G-3c (the user, 2026-10-04: "do the same thing for the bottom"): a page-grid page keeps its FRAME below its last block — a
     // space somebody chose, and "Side space" takes it to 0. Nothing MORE than that: no floor nobody can remove (the 32px this guards).
-    const frame = await page.locator("[data-box-id]").first().evaluate((el) => (parseFloat(getComputedStyle(el).paddingBottom) || 0) * (Number(el.closest<HTMLElement>("[data-canvas-scale]")?.dataset.canvasScale) || 1));
-    expect(frame, "the page's bottom frame is there, 1 – 1.25 rem").toBeGreaterThan(8);
-    expect(Math.abs(root.bottom - last - frame), "the page must end its frame below its content, not 32px later").toBeLessThanOrEqual(2);
+    // In PAGE px (E3-6): the padding is a page length, the boxes are screen px — divided by the scale (a tablet draws the page at ~0.26)
+    const { frame, z } = await page.locator("[data-box-id]").first().evaluate((el) => ({ frame: parseFloat(getComputedStyle(el).paddingBottom) || 0, z: Number(el.closest<HTMLElement>("[data-canvas-scale]")?.dataset.canvasScale) || 1 }));
+    expect(frame, "the page's bottom frame is there, 1 – 1.25 rem").toBeGreaterThan(14);
+    expect(Math.abs(root.bottom - last - frame * z), "the page must end its frame below its content, not 32px later").toBeLessThanOrEqual(2); // whole screen px
   });
 
   test("an EMPTY page still has a floor, so there is somewhere to drop the first block", async ({ page }) => {
@@ -299,6 +320,7 @@ test.describe("the page is exactly as tall as what is on it", () => {
       await page.waitForTimeout(800);
     }
     const root = await pageRootBox(page);
-    expect(root.height, "three bands make a page taller than the empty-page floor").toBeGreaterThan(300);
+    const scale = await page.locator("[data-box-id]").first().evaluate((el) => Number(el.closest<HTMLElement>("[data-canvas-scale]")?.dataset.canvasScale) || 1);
+    expect(root.height / scale, "three bands make a page taller than the empty-page floor (page px)").toBeGreaterThan(300);
   });
 });

@@ -455,7 +455,7 @@ export interface BoxNode {
    * `sized` records what the float itself wrote, so a size the USER changed while it floated can be told
    * apart from the one the builder wrote — theirs is kept, the builder's is undone.
    */
-  floatFrom?: { width?: string; height?: string; minHeight?: number; clip?: boolean; sized?: string; sizedMin?: number };
+  floatFrom?: { width?: string; height?: string; minHeight?: number; clip?: boolean; sized?: string; sizedMin?: number; /** where it was in the layout, so putting it back is a round trip (E2-19) */ parentId?: string; index?: number };
   left?: number;            // absolute only: X offset as % of the positioning parent's content box (responsive)
   top?: number;             // absolute only: Y offset as % of the positioning parent's content box
   zIndex?: number;          // absolute only: stacking order among floating siblings (higher = on top)
@@ -2328,7 +2328,11 @@ export function stackWithBlock(root: BoxNode, id: string, node: BoxNode, before 
    * every other, and would have gone on drifting as the window resized. Filling asks no unit question at all.
    */
   const holeAbove = before ? Math.max(0, Math.round(target.marginTop ?? target.margin ?? 0)) : 0;
-  const inner: BoxNode = { ...target, width: "100%", ...(holeAbove > 0 ? { marginTop: 0 } : {}) };
+  // …AND THE HOLE BELOW, the mirror (E2-24): on a page-grid row, pulling a block's BOTTOM edge up keeps the row's height as a
+  // `margin-bottom` — so the space under a short column is the target's own margin, and riding along into the column it took
+  // the whole height: the newcomer's band was handed 0.3px, an invisible block, on every page built today.
+  const holeBelow = !before ? Math.max(0, Math.round(target.marginBottom ?? target.margin ?? 0)) : 0;
+  const inner: BoxNode = { ...target, width: "100%", ...(holeAbove > 0 ? { marginTop: 0 } : {}), ...(holeBelow > 0 ? { marginBottom: 0 } : {}) };
   /**
    * THE NEWCOMER TAKES THE SPACE THAT IS ACTUALLY THERE.
    *
@@ -2651,10 +2655,13 @@ export function floatBox(root: BoxNode, id: string, targetParentId: string, left
     ? { minHeight: Math.max(8, Math.round(height)), height: undefined, clip: undefined }
     : { width: geom.width, height: remLen(Math.max(8, Math.round(height)), rootFontPx()), minHeight: undefined, clip: true };
   // Remembered BEFORE the card sizing is written over it — the whole point is to be able to undo exactly this.
-  const was = findBox(root, id);
+  // Home is where it can be put back: alone in its band, the band is pruned once it leaves, so home is the band's own place (E2-19)
+  const was = findBox(root, id), inner = findParent(root, id);
+  const at = inner && inner.parent.rowBand && (inner.parent.children?.length ?? 0) === 1 ? findParent(root, inner.parent.id) ?? inner : inner;
   const floatFrom: NonNullable<BoxNode["floatFrom"]> = {
     width: was?.width, height: was?.height, minHeight: was?.minHeight, clip: was?.clip,
     sized: sizing.height as string | undefined, sizedMin: sizing.minHeight as number | undefined,
+    parentId: at?.parent.id, index: at?.index,
   };
   let next = moveBox(root, id, targetParentId, tp?.children?.length ?? 0);
   next = updateBox(next, id, {
@@ -2720,7 +2727,19 @@ export function unfloatBox(root: BoxNode, id: string): BoxNode {
   }
   // A COMPONENT returns to full width — its compact fixed px width was only ever for the card.
   if (node?.type === "component") patch.width = "100%";
-  return updateBox(root, id, patch);
+  const next = updateBox(root, id, patch);
+  /**
+   * …AND BACK WHERE IT WAS (E2-19). Floating moves the block onto its positioning parent (the page), so left there it was
+   * wrapped in a band of its own, full width, below everything: a Stack floated out from beside another came back on a
+   * line of its own. Its old parent and place are remembered, and it goes home when that parent is still on the page.
+   */
+  // Its PLACE too, not only its parent: a block that floats inside the parent it came from is moved to that parent's END, and
+  // left there it came back after its neighbour (a Side by side column on a phone: 609 for 18).
+  const home = was?.parentId ? findBox(next, was.parentId) : null;
+  if (!home) return next;
+  const now = findParent(next, id), at = Math.min(was!.index ?? 0, home.children?.length ?? 0);
+  if (now?.parent.id === home.id && now.index === at) return next;
+  return moveBox(next, id, home.id, now?.parent.id === home.id && now.index < at ? at + 1 : at);
 }
 
 /**
@@ -3922,11 +3941,16 @@ export function pagerWire(strip: HTMLElement): void {
   const start = () => { if (!timer) timer = win.setInterval(() => { if (!d.hidden) go(at() + 1); }, every * 1000); };
   // Pause while it is being read or operated, and pick up again when it is not. `focusin` covers the
   // keyboard: tabbing INTO a slide has to stop it just as surely as hovering does.
-  strip.addEventListener("mouseenter", stop);
-  strip.addEventListener("mouseleave", start);
+  // A MOUSE THAT IS REALLY THERE, OR A FINGER ON IT (E4-13). It paused on `mouseenter`, and on a touch screen a tap leaves a
+  // "hover" stuck where the finger was — a slider under it froze for good with nobody touching it. A stuck hover sends no
+  // `pointermove`; a mouse over it does, on any device (a touch laptop's mouse too). A finger on it means the reader took over.
+  for (const el of nav ? [strip, nav] : [strip]) {
+    el.addEventListener("pointermove", (e) => { if (e.pointerType === "mouse") stop(); });
+    el.addEventListener("pointerleave", (e) => { if (e.pointerType === "mouse") start(); });
+  }
+  strip.addEventListener("pointerdown", (e) => { if (e.pointerType !== "mouse") stop(); });
   strip.addEventListener("focusin", stop);
   strip.addEventListener("focusout", start);
-  if (nav) { nav.addEventListener("mouseenter", stop); nav.addEventListener("mouseleave", start); }
   start();
 }
 
@@ -6672,12 +6696,17 @@ export function pinStackPass(root: ParentNode): void {
      * 87px sticky header (z 30 / 30, so its heading painted over the logo and "Apply now"). Two bars in SIBLING sections
      * still never meet (2e): neither holder contains the other.
      */
+    // A HEIGHT IN LAYOUT PX (E2-14): the canvas host is drawn scaled (`data-canvas-scale`), so a rect is SCREEN px — written back
+    // as a CSS length it offset each bar by the scale × its height, and on a shrunk canvas the bars overlapped (canvas ≠ export,
+    // 152 against 158). The export has no scale: 1.
+    const z = Number((root as Element).closest?.("[data-canvas-scale]")?.getAttribute("data-canvas-scale")) || 1;
+    const hOf = (el: Element) => el.getBoundingClientRect().height / z;
     const keyOf = (el: Element) => el.getAttribute("data-eu-pin-in") || "window";
     // The holder BY ITS ID (canvas `data-box-id`, export `bx-` class): a landmark (`<header>`, `<main>`) can sit between a bar and it.
     const holderOf = (b: Element) => { const k = keyOf(b); return (root.querySelector(`[data-box-id="${k}"], .bx-${CSS.escape(k)}`)) ?? b.parentElement; };
     const nearer = (b: Element, el: Element) => !!((edge === "top" ? b.compareDocumentPosition(el) : el.compareDocumentPosition(b)) & Node.DOCUMENT_POSITION_FOLLOWING);
     const outer = (el: Element) => held.filter((b) => keyOf(b) !== keyOf(el) && !b.contains(el) && nearer(b, el) && (keyOf(b) === "window" ? keyOf(el) !== "window" : keyOf(b) === "page" || !!holderOf(b)?.contains(el)))
-      .reduce((n, b) => n + b.getBoundingClientRect().height, 0);
+      .reduce((n, b) => n + hOf(b), 0);
     let windowStack = 0; // the FIXED bars' total, which is the only one 2d's padding may use
     for (const [key, members] of groups) {
       // Down the page for a top edge; up it for a bottom one — in both cases, nearest the edge is first.
@@ -6685,7 +6714,7 @@ export function pinStackPass(root: ParentNode): void {
       let above = 0;
       for (const el of order) {
         el.style.setProperty("--eu-pin-above", above + outer(el) + "px");
-        above += el.getBoundingClientRect().height;
+        above += hOf(el);
       }
       if (key === "window") windowStack = above;
     }
@@ -7017,6 +7046,20 @@ const scrollLen = (px: number) => remLen(px);
  * where that lives — writing it here would silently erase it.
  */
 export function canvasFixedStyle(css: CSSProperties): CSSProperties {
+  /**
+   * STICKY UNDER THE FRAME'S SCALE (E2-15). The canvas page is drawn with `transform: scale(z)`, and the browser holds a sticky
+   * box by the scroll in the frame's OWN px: it lagged (1 − z) × the scroll — a pinned header drifted 246 of 700px at 0.68 and
+   * held at 1. The view's top, in page px from the page's own top, is `--canvas-scroll − --canvas-top` (the room's padding sits
+   * above the page — measured as a P × (1 − z) residual when it was left out), so `× (1 − z)` is exactly the lag; a BOTTOM edge
+   * maps the view's height through the scale too (`+ --canvas-h`). Measured: both bars on their edges at every scroll and scale.
+   * The export is never scaled: it never sees this.
+   */
+  if (css.position === "sticky") {
+    const view = "(var(--canvas-scroll, 0px) - var(--canvas-top, 0px))", k = "(1 - var(--canvas-z, 1))";
+    if (css.top != null) return { ...css, top: `calc(${String(css.top)} + ${view} * ${k})` };
+    if (css.bottom != null) return { ...css, bottom: `calc(${String(css.bottom)} - (${view} + var(--canvas-h, 0px)) * ${k})` };
+    return css;
+  }
   if (css.position !== "fixed") return css;
   /**
    * THE PAGE IS INSET INSIDE THE CANVAS, AND THE OFFSET HAS TO PAY FOR IT.

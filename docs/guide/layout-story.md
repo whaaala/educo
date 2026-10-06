@@ -415,13 +415,42 @@ the Inspector slides over the canvas from the right.
 [![The same tablet with the Inspector open over the right part of the canvas](img/story-tablet-inspector.webp)](img/story-tablet-inspector.webp)
 
 - **Escape** closes it and returns her to the full-canvas view.
+- When she turns the iPad sideways (or drags a browser window wider than a tablet), the Inspector docks at the side by
+  itself, as it does on a laptop; turned upright again, it goes back to its strip. If she opens or closes it herself, that
+  holds until the next time the screen crosses that width.
 - The blocks panel floats over the canvas. (On a laptop or larger it docks at the side instead, and the page moves
   over to make room.)
 - All gestures — tap to select, drag to move, drag an edge to resize — work with touch. Dragging an edge on a tablet
   works the same as dragging on a desktop: the edge you touch is the only edge that moves.
 
+**Full width is the desktop page, on every screen.** The editor opens at Full width, and Full width always draws the
+page as it is on a desktop (1200px wide), shrunk to fit whatever room there is, just as Desktop or Wide would be. So
+on the iPad Maya sees the page she is actually editing: four cards across stay four across, and when she drags a
+card's left edge, that edge follows her finger and the right edge stays put. To change how the page looks on a phone,
+she picks **Mobile** at the top. That draws the phone's own layout, and what she changes there applies to phones.
+
 On a phone the canvas is zoomed to fit the screen. Maya can zoom in to work on a narrow section, then zoom back out.
 Every control in the Inspector is reachable by scrolling; Escape closes it.
+
+**Every handle can be grabbed, however narrow the block.** The block's toolbar sits above the block, clear of the
+round handles on its edges, so on a phone, where every block is drawn small, the top edge's handle is still there to
+take hold of.
+
+**A handle never hides the words under it.** On a phone a heading at the top of its section is drawn only a few pixels
+tall, and once Maya has selected the section, its top handle lies right over that heading. A tap that doesn't move goes
+through the handle: tapping the heading again selects the heading, just as it would anywhere else. Only a drag takes
+hold of the handle.
+
+**The shrunk page behaves exactly like the real one.** However small the page is drawn:
+
+- A header set to **stay put while scrolling** stays at the top as Maya scrolls the canvas, and a bar pinned to the
+  bottom stays at the bottom. Bars pinned at the same edge sit one under another, never on top of each other.
+- A block set to **float on screen** stays exactly where she placed it, on the canvas and on the published page.
+- Dragging an edge spends exactly what its neighbour can give. The stack above shrinks right down to its words, and the
+  edge she is not holding never moves.
+- Pull a block's side far enough past its neighbour and the neighbour moves down to the next line. Pull back and it
+  returns. A small wobble at the end of a drag never does this.
+- Dragging the same edge out and back, over and over, brings the page back to exactly where it was.
 
 **The open Inspector lies over the right part of the canvas** (22rem of it). Nothing of the canvas — no handle, no
 toolbar — is drawn over the Inspector, so every control in it can be reached; what lies behind it comes back when

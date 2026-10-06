@@ -119,6 +119,10 @@ async function indicatorBox(page: Page) {
   return indicator(page).first().boundingBox();
 }
 
+/** The canvas's drawing scale (0.22 on a phone): page distances in these tests are multiplied by it on screen (E4-10). */
+const canvasScale = (page: Page) =>
+  page.evaluate(() => Number(document.querySelector<HTMLElement>("[data-canvas-scale]")?.dataset.canvasScale) || 1);
+
 test.describe("dropping a Stack into the empty space beside another", () => {
   test("the MIDDLE of the opening offers a side-by-side drop, not a stacked one", async ({ page }) => {
     await seedHalfWidthStack(page);
@@ -207,10 +211,11 @@ test.describe("dropping a Stack into the empty space beside another", () => {
     await seedStackWithFloorBelow(page);
     const sec = (await page.locator('[data-box-id="sec"]').boundingBox())!;
     const band = (await page.locator('[data-box-id="band"]').boundingBox())!;
-    expect(band.height, "the band really does have floor beneath the stack").toBeGreaterThan(sec.height + 100);
+    const Z = await canvasScale(page);
+    expect(band.height, "the band really does have floor beneath the stack").toBeGreaterThan(sec.height + 100 * Z);
 
     const x = sec.x + sec.width / 2;          // horizontally ON the stack, so only the vertical reading differs
-    const y = sec.y + sec.height + 60;        // clear of it, on the band's own empty floor
+    const y = sec.y + sec.height + 60 * Z;    // clear of it, on the band's own empty floor
 
     await dragOverPoint(page, "container", x, y);
     const ind = await indicatorBox(page);
@@ -257,8 +262,9 @@ test.describe("a page-grid row's own side space", () => {
     await page.waitForSelector('[data-box-id="b"]', { timeout: 15000 }); await page.waitForTimeout(300);
     const b = (await page.locator('[data-box-id="b"]').boundingBox())!;
     const band = (await page.locator('[data-box-id="band"]').boundingBox())!;
-    expect(band.x + band.width - (b.x + b.width), "the row keeps side space past its last column").toBeGreaterThan(8);
-    const x = b.x + b.width + 4, y = b.y + b.height / 2;
+    const side = band.x + band.width - (b.x + b.width);
+    expect(side, "the row keeps side space past its last column").toBeGreaterThan(8 * await canvasScale(page));
+    const x = b.x + b.width + side / 2, y = b.y + b.height / 2; // the middle of that side space, at any canvas scale
     await dragOverPoint(page, "container", x, y);
     await dropAtPoint(page, x, y);
     const kids = await bandChildren(page);

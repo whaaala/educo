@@ -57,12 +57,17 @@ async function seed(page: Page, node: Record<string, unknown>) {
 
 async function measure(page: Page): Promise<Geometry> {
   return page.evaluate(() => {
+    // LAYOUT px, not screen px: the canvas is the Desktop frame drawn at `scale()` to fit the window (0.22 on a phone),
+    // and every floor below (8 · 40 · 160 · 22rem · the 2px tolerances) is a layout length (E4-1).
+    const Z = Number(document.querySelector<HTMLElement>("[data-canvas-scale]")?.dataset.canvasScale) || 1;
+    const rect = (e: Element) => { const r = e.getBoundingClientRect();
+      return { width: r.width / Z, height: r.height / Z, left: r.left / Z, right: r.right / Z, top: r.top / Z, bottom: r.bottom / Z }; };
     const box = document.querySelector('[data-box-id="tgt"]') as HTMLElement;
     // A TREE component (Card/Quote/Stat/Badge/Rating) has no `.eu-*` element, so fall back to the box and
     // rely on the overflow + piece-count checks below, which are meaningful for both shapes.
     const comp = (box.querySelector('[class*="eu-"]:not(.eu-root)') ?? box) as HTMLElement;
     const pageEl = document.querySelectorAll("[data-box-id]")[0] as HTMLElement;
-    const b = box.getBoundingClientRect(), c = comp.getBoundingClientRect(), p = pageEl.getBoundingClientRect();
+    const b = rect(box), c = rect(comp), p = rect(pageEl);
     const text = (box.querySelector("[class*='__title'], [class*='__value'], [class*='__text']") ?? comp) as HTMLElement;
     return {
       boxW: b.width, boxH: b.height, compW: c.width, compH: c.height,
@@ -185,8 +190,9 @@ test.describe("Component layout invariants", () => {
         const inside = await page.evaluate(() => {
           const boxSel = document.querySelector(".eu-alert-stack, .eu-accordion") as HTMLElement;
           const item = document.querySelector("[data-eu-item]") as HTMLElement;
+          const Z = Number(document.querySelector<HTMLElement>("[data-canvas-scale]")?.dataset.canvasScale) || 1; // layout px (E4-1)
           const b = boxSel.getBoundingClientRect(), i = item.getBoundingClientRect();
-          return { overRight: i.right - b.right, overLeft: b.left - i.left, width: i.width };
+          return { overRight: (i.right - b.right) / Z, overLeft: (b.left - i.left) / Z, width: i.width / Z };
         });
         expect(inside.overRight, `${component}/${label}: floated item must stay inside its component`).toBeLessThanOrEqual(2);
         expect(inside.overLeft, `${component}/${label}: floated item must stay inside its component`).toBeLessThanOrEqual(2);
@@ -237,7 +243,7 @@ test.describe("Component layout invariants", () => {
       alertSeverity: "info", alertForm: "inline", items: [{ id: "i1", title: "Heads up", body: "This is an alert" }] });
     const narrow = await page.evaluate(() => {
       const a = document.querySelector(".eu-alert") as HTMLElement;
-      return { wrap: getComputedStyle(a).flexWrap, width: a.getBoundingClientRect().width };
+      return { wrap: getComputedStyle(a).flexWrap, width: a.offsetWidth }; // layout px, not the scaled canvas's (E4-1)
     });
     expect(narrow.width, "the alert really is narrower than the 22rem breakpoint").toBeLessThan(22 * 16);
     expect(narrow.wrap, "a narrow component must apply its own container-query rule").toBe("wrap");
@@ -246,7 +252,7 @@ test.describe("Component layout invariants", () => {
       alertSeverity: "info", alertForm: "inline", items: [{ id: "i1", title: "Heads up", body: "This is an alert" }] });
     const wide = await page.evaluate(() => {
       const a = document.querySelector(".eu-alert") as HTMLElement;
-      return { wrap: getComputedStyle(a).flexWrap, width: a.getBoundingClientRect().width };
+      return { wrap: getComputedStyle(a).flexWrap, width: a.offsetWidth }; // layout px, not the scaled canvas's (E4-1)
     });
     // Asserted against the MEASURED width rather than a hardcoded "nowrap": in a narrow frame a full-width
     // alert is itself under 22rem and correctly wraps. The invariant is that the rule tracks the COMPONENT's
@@ -262,7 +268,7 @@ test.describe("Component layout invariants", () => {
     // If containment ever leaks onto a hug block, this collapses to roughly its padding.
     await seed(page, { id: "tgt", type: "component", component: "alert", width: "auto",
       alertSeverity: "info", alertForm: "inline", items: [{ id: "i1", title: "Heads up", body: "This is an alert message" }] });
-    const w = await page.evaluate(() => (document.querySelector(".eu-alert") as HTMLElement).getBoundingClientRect().width);
+    const w = await page.evaluate(() => (document.querySelector(".eu-alert") as HTMLElement).offsetWidth); // layout px (E4-1)
     expect(w, "a hug block must be as wide as its content, not its padding").toBeGreaterThan(160);
   });
 });
