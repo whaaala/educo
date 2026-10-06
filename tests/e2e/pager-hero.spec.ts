@@ -45,7 +45,10 @@ async function seedPager(page: Page, opts: { nav?: string; auto?: number; below?
 
 /** The published page, in the Preview iframe. */
 async function published(page: Page): Promise<Frame> {
-  await page.click('button:has-text("Preview")');
+  // A TAP on a touch screen, as a person there opens it: a mouse click parks the cursor where it clicked, and on a phone
+  // the Preview button sits over where the strip then appears — a "hover" that pauses auto-advance for good (E4-2).
+  const preview = page.locator('button:has-text("Preview")').first();
+  if (test.info().project.use.hasTouch) await preview.tap(); else await preview.click();
   await page.waitForTimeout(2000);
   const f = page.frames().filter((x) => x !== page.mainFrame())[0];
   await f.waitForSelector("[data-eu-pager]", { timeout: 20000 });
@@ -158,17 +161,33 @@ test.describe("auto-advance", () => {
     }));
     expect(moved.b, "it advances by itself").not.toBe(moved.a);
 
+    // A STUCK "HOVER" DOES NOT FREEZE IT (E4-13): a tap leaves the browser's hover where the finger was, and a slider under it
+    // stopped for good with nobody touching it. A bare `mouseenter` with no mouse moving is exactly that.
+    const stuck = await f.evaluate(() => new Promise<{ a: number; b: number }>((resolve) => {
+      const strip = document.querySelector("[data-eu-pager]") as HTMLElement;
+      strip.dispatchEvent(new MouseEvent("mouseenter"));
+      const at = () => Math.round(strip.scrollLeft / Math.max(1, strip.clientWidth));
+      const a = at();
+      setTimeout(() => resolve({ a, b: at() }), 4500);
+    }));
+    expect(stuck.b, "a stuck hover does not stop it").not.toBe(stuck.a);
+
+    // …a FINGER on it does, or a MOUSE really over it. Near its foot — on a phone the Preview's controls cover its top.
+    const touch = !!test.info().project.use.hasTouch;
+    const s = (await f.locator("[data-eu-pager]").boundingBox())!;
+    if (touch) await f.locator("[data-eu-pager]").tap({ position: { x: s.width / 2, y: s.height - 12 } });
+    else { await page.mouse.move(s.x + s.width / 2, s.y + s.height - 20); await page.mouse.move(s.x + s.width / 2 + 5, s.y + s.height - 15); }
+
     // WCAG 2.2.2 — a moving thing a reader cannot hold still to read is a failure.
     const held = await f.evaluate(() => new Promise<{ a: number; b: number }>((resolve) => {
       const strip = document.querySelector("[data-eu-pager]") as HTMLElement;
-      strip.dispatchEvent(new MouseEvent("mouseenter"));
       // WHICH PAGE, not which pixel — a mandatory snap can settle by a couple of pixels while nothing
       // has advanced at all, and asserting the raw scrollLeft reads that as movement.
       const at = () => Math.round(strip.scrollLeft / Math.max(1, strip.clientWidth));
       const a = at();
       setTimeout(() => resolve({ a, b: at() }), 4500);
     }));
-    expect(held.b, "hovering stops it").toBe(held.a);
+    expect(held.b, touch ? "a finger on it stops it" : "a mouse over it stops it").toBe(held.a);
   });
 
   test("stops for a keyboard too, not only for a mouse", async ({ page }) => {

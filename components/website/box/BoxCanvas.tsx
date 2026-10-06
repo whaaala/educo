@@ -2341,8 +2341,10 @@ export default function BoxCanvas({
     const backToWords = (px: number, sharedWith: string | null) => hugPx > 0 && !sharedWith && Math.abs(px - hugPx) <= HUG_SNAP_PX;
     // Sizes are written in rem (field guide ②) — read the root font once per drag, never per mouse-move.
     const rootPx = rootFontPx() * Z; // in screen px, so remLen(screenPx, rootPx) writes true rem and 14rem floors compare with rects
-    const minWpx = selfSizing ? Math.max(8, naturalW * MIN_CONTENT_SCALE) : Math.max(8, 0.03 * maxW);
-    const minHpx = selfSizing ? Math.max(8, naturalH * MIN_CONTENT_SCALE) : 8;
+    // The 8px floor is a PAGE size, like the engine's (`Math.max(8, …)` in box-model): as screen px it became 36px of page
+    // on a phone's 0.22 canvas, so how small a drag could make a box depended on the zoom it was made at (E4-6).
+    const minWpx = selfSizing ? Math.max(8 * Z, naturalW * MIN_CONTENT_SCALE) : Math.max(8 * Z, 0.03 * maxW);
+    const minHpx = selfSizing ? Math.max(8 * Z, naturalH * MIN_CONTENT_SCALE) : 8 * Z;
     /** The text scale a box of `px` needs so `natural` px of content still fits (1 until it must shrink). */
     const fitScale = (px: number, natural: number) => (natural > 0 ? clampContentScale(px / natural) : 1);
     /**

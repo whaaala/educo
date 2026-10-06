@@ -36,6 +36,12 @@ const childCount = (page: Page) =>
     return ((find(site.pages[0].root)?.children as unknown[]) ?? []).length;
   });
 
+/** A box in PAGE px: the canvas is the Desktop frame drawn at `scale()` (0.22 on a phone), and the floors are page sizes (E4-7). */
+const pageBox = (page: Page, id: string) => page.locator(`[data-box-id="${id}"]`).evaluate((el) => {
+  const Z = Number(el.closest<HTMLElement>("[data-canvas-scale]")?.dataset.canvasScale) || 1, r = el.getBoundingClientRect();
+  return { width: r.width / Z, height: r.height / Z };
+}).catch(() => null);
+
 const addButton = (page: Page) => page.locator(`[data-box-id="A"] button[aria-label="Choose a block to add inside"]`);
 
 test.describe("the + inside an empty box", () => {
@@ -285,7 +291,7 @@ test.describe("the + inside an empty box", () => {
       const fresh = added.filter((i) => !known.has(i));
       expect(fresh.length, `${label}: something was added`).toBeGreaterThan(0);
       const boxes = [];
-      for (const id of fresh) boxes.push(await page.locator(`[data-box-id="${id}"]`).boundingBox());
+      for (const id of fresh) boxes.push(await pageBox(page, id));
       const tallest = Math.max(...boxes.map((b) => b?.height ?? 0));
       expect(tallest, `${label}: the new cell is big enough to see and to grab`).toBeGreaterThanOrEqual(39);
     }
@@ -351,8 +357,8 @@ test.describe("the + inside an empty box", () => {
     await page.waitForSelector('[data-box-id="d"]', { timeout: 15000 });
     await page.waitForTimeout(450);
 
-    const c = (await page.locator('[data-box-id="C"]').boundingBox())!;
-    const d = (await page.locator('[data-box-id="d"]').boundingBox())!;
+    const c = (await pageBox(page, "C"))!;
+    const d = (await pageBox(page, "d"))!;
     expect(c.height, "the stack around it is grabbable").toBeGreaterThanOrEqual(39);
     expect(d.height, "…while the divider is still a thin line").toBeLessThan(8);
     expect(d.width, "…spanning its container, as the published page draws it").toBeGreaterThan(c.width - 8);
@@ -388,12 +394,12 @@ test.describe("the + inside an empty box", () => {
     await page.waitForTimeout(450);
 
     for (const id of ["C", "G", "g1", "g4"]) {
-      const b = await page.locator(`[data-box-id="${id}"]`).boundingBox();
+      const b = await pageBox(page, id);
       expect(b, `${id} is on the page`).not.toBeNull();
       expect(b!.height, `${id} has not collapsed`).toBeGreaterThanOrEqual(19);
     }
     // ONE FLOOR PER ROW: a 2×2 asks for two rows' worth, or its cells are back under the grabbable size.
-    const g = (await page.locator('[data-box-id="G"]').boundingBox())!;
+    const g = (await pageBox(page, "G"))!;
     expect(g.height, "two rows get two floors, not one shared between them").toBeGreaterThanOrEqual(79);
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth),
       "and nothing spills sideways").toBe(true);

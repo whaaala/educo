@@ -85,7 +85,7 @@ test.describe("the edges place around a block, the middle places inside it", () 
     // The one that had no answer at all. Before this it landed nested inside the block.
     await seedNarrow(page);
     const a = (await page.locator('[data-box-id="A"]').boundingBox())!;
-    await dropAt(page, a.x + a.width / 2, a.y + a.height - 12);
+    await dropAt(page, a.x + a.width / 2, a.y + a.height - Math.min(12, a.height * 0.1)); // inside the bottom strip (25% of the DRAWN height) at any canvas scale (E4-9)
     expect(await placement(page)).toBe("below");
   });
 
@@ -130,7 +130,7 @@ test.describe("the edges place around a block, the middle places inside it", () 
   test("nothing spills sideways whichever way it lands", async ({ page }) => {
     await seedNarrow(page);
     const a = (await page.locator('[data-box-id="A"]').boundingBox())!;
-    await dropAt(page, a.x + a.width / 2, a.y + a.height - 12);
+    await dropAt(page, a.x + a.width / 2, a.y + a.height - Math.min(12, a.height * 0.1)); // inside the bottom strip (25% of the DRAWN height) at any canvas scale (E4-9)
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true);
   });
 });

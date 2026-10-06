@@ -9,7 +9,7 @@
  */
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { LayoutGrid, Plus, Smartphone, Tablet, Laptop, Monitor, Tv, Maximize2, RotateCw, RotateCcw, Undo2, Redo2, Eye, ShieldCheck, X, Home, Trash2, Files, Download, Settings2, Palette, SlidersHorizontal, PanelRightClose, PanelRightOpen, AlertTriangle, ChevronUp, ChevronDown } from "lucide-react";
+import { LayoutGrid, Plus, Smartphone, Tablet, Laptop, Monitor, Tv, Maximize2, RotateCw, RotateCcw, Undo2, Redo2, Eye, ShieldCheck, X, Home, Trash2, Files, Download, Settings2, Palette, SlidersHorizontal, PanelRightClose, PanelRightOpen, AlertTriangle, ChevronUp } from "lucide-react";
 import { DEFAULT_THEME, resolveSiteTheme } from "@/lib/site-storage";
 import { THEMES, type ThemeId } from "@/lib/theme-config";
 import { RUNG_LABEL, RUNG_ORDER, RUNG_PX } from "@/lib/educo-ui/layout";
@@ -378,16 +378,30 @@ export default function BoxDemoPage() {
    * set of families, only while Preview is open.
    */
   const fontFamilyKey = site ? fontFamiliesInSite(site, renderTheme).join("|") : "";
-  const [previewFontCss, setPreviewFontCss] = useState("");
+  /**
+   * PUT INTO THE OPEN PAGE, NOT REBUILT AROUND IT (E4-5). The fonts land ~400ms after Preview opens; as a dependency of
+   * the page source they reloaded the whole page — every Preview loaded twice, a phone did the work twice, and anything
+   * done in the first 400ms (a scroll, a tap, a running pager) was wiped. Kept in a ref instead, and added to the live
+   * document as a `<style>` when they arrive and on every load after.
+   */
+  const previewFontCss = useRef("");
+  const addPreviewFonts = useCallback(() => {
+    const doc = previewFrameRef.current?.contentDocument;
+    if (!doc?.head || !previewFontCss.current || doc.getElementById("eu-preview-fonts")) return;
+    const s = doc.createElement("style");
+    s.id = "eu-preview-fonts";
+    s.textContent = previewFontCss.current;
+    doc.head.prepend(s);
+  }, []);
   useEffect(() => {
     if (!preview || !fontFamilyKey) return;
     let live = true;
-    embedFontCss(fontFamilyKey.split("|")).then((css) => { if (live) setPreviewFontCss(css); }).catch(() => { /* the fallback font applies, exactly as a failed download would */ });
+    embedFontCss(fontFamilyKey.split("|")).then((css) => { if (live) { previewFontCss.current = css; addPreviewFonts(); } }).catch(() => { /* the fallback font applies, exactly as a failed download would */ });
     return () => { live = false; };
-  }, [preview, fontFamilyKey]);
+  }, [preview, fontFamilyKey, addPreviewFonts]);
   const previewHTML = useMemo(
-    () => (preview && site && activePage ? renderSitePage(site, renderTheme, activePage.id, { inlineShared: true, fontCss: previewFontCss }) : ""),
-    [preview, site, activePage, renderTheme, previewFontCss],
+    () => (preview && site && activePage ? renderSitePage(site, renderTheme, activePage.id, { inlineShared: true }) : ""),
+    [preview, site, activePage, renderTheme],
   );
 
 
@@ -899,7 +913,7 @@ export default function BoxDemoPage() {
     return (
       <div
         className="h-screen relative overflow-hidden bg-gray-100 dark:bg-gray-950 midnight:bg-[#060a1e] purple:bg-[#120722]"
-        onPointerMove={(e) => { if (e.clientY < 64) setBarShown(true); }}
+        onPointerMove={(e) => { if (e.pointerType === "mouse" && e.clientY < 64) setBarShown(true); }} // a mouse reaching for it, never a finger (E4-12)
       >
         {/**
           * THE BAR STEPS OUT OF THE WAY. It used to sit in the flow and take 48px off the top, so the page
@@ -910,7 +924,8 @@ export default function BoxDemoPage() {
           */}
         <div
           data-preview-bar
-          className={`absolute inset-x-0 top-0 z-20 h-12 flex items-center gap-3 px-4 border-b border-gray-200 dark:border-gray-800 midnight:border-cyan-500/10 purple:border-pink-500/10 bg-white/95 dark:bg-[#161922]/95 backdrop-blur transition-transform duration-200 ${barShown ? "translate-y-0" : "-translate-y-full"}`}
+          // WRAPS, never overflows (E4-3): rigid on one row it ran 879px wide on a 768 tablet and squeezed the page tabs to 0px.
+          className={`absolute inset-x-0 top-0 z-20 min-h-12 py-1.5 flex flex-wrap items-center gap-x-3 gap-y-1.5 px-4 border-b border-gray-200 dark:border-gray-800 midnight:border-cyan-500/10 purple:border-pink-500/10 bg-white/95 dark:bg-[#161922]/95 backdrop-blur transition-transform duration-200 ${barShown ? "translate-y-0" : "-translate-y-full"}`}
           aria-hidden={!barShown}
         >
           <button onClick={() => setPreview(false)} className="inline-flex items-center gap-1 text-xs px-2.5 py-1.5 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700"><X className="w-3.5 h-3.5" /> Exit preview</button>
@@ -920,7 +935,7 @@ export default function BoxDemoPage() {
             ))}
           </nav>
           {/* ── The screen: a size, its exact numbers, a zoom and an orientation ── */}
-          <div className="ml-auto flex items-center gap-2 shrink-0">
+          <div className="ml-auto flex flex-wrap items-center gap-2">
             <div className="w-52">
               <CompactSelect
                 ariaLabel="Preview screen size"
@@ -987,16 +1002,6 @@ export default function BoxDemoPage() {
           </div>
         </div>
 
-        {/* THE WAY BACK IS ALWAYS ON SCREEN. A hidden bar is translated off the top of the window, where
-            nothing can reach it — so the handle that brings it back is a real, focusable button sitting in
-            the viewport, not a region of the page you have to know to wave the pointer at. */}
-        {!barShown && (
-          <button
-            onClick={() => setBarShown(true)} data-preview-bar-show
-            aria-label="Show the preview controls" aria-expanded={false} title="Show the controls (H)"
-            className="absolute top-0 left-1/2 -translate-x-1/2 z-20 inline-flex items-center gap-1 px-3 py-1 rounded-b-lg bg-white/95 dark:bg-[#161922]/95 midnight:bg-[#0b1220]/95 purple:bg-[#1a1020]/95 backdrop-blur shadow-md text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 hover:text-gray-900 dark:hover:text-white"
-          ><ChevronDown className="w-4 h-4" /><span className="text-[0.6875rem]">Controls</span></button>
-        )}
         {/* `overflow-auto`, not hidden: at an explicit zoom the frame may be larger than the stage, and a
             preview you cannot scroll to the rest of is the defect this whole area exists to avoid. */}
         {/**
@@ -1087,7 +1092,7 @@ export default function BoxDemoPage() {
               ref={previewFrameRef}
               title="Site preview"
               srcDoc={previewHTML}
-              onLoad={wirePreviewNav}
+              onLoad={() => { addPreviewFonts(); wirePreviewNav(); }}
               sandbox="allow-same-origin allow-scripts allow-popups"
               /**
                * The card look belongs to a DEVICE. Responsive is the visitor's own screen, and a rounded,
@@ -1118,12 +1123,24 @@ export default function BoxDemoPage() {
         </div>
         {/* THE WAY OUT NEVER HIDES. The bar steps aside so the page gets the whole window; leaving without a
             way back would be a trap, so this pill stays put and also brings the bar back. */}
+        {/* THE WAY BACK IS ALWAYS ON SCREEN, beside the way out: a real, focusable button in the viewport, not a
+            region of the page you have to know to wave the pointer at. Both in ONE corner — the handle used to sit
+            at the top centre, over the header a person built (E4-4). */}
         {!barShown && (
-          <button
-            onClick={() => setPreview(false)}
-            onPointerEnter={() => setBarShown(true)}
-            className="absolute bottom-4 right-4 z-20 inline-flex items-center gap-1 text-xs px-3 py-2 rounded-full bg-indigo-600/90 text-white shadow-lg backdrop-blur hover:bg-indigo-700"
-          ><X className="w-3.5 h-3.5" /> Exit preview</button>
+          <div className="absolute bottom-4 right-4 z-20 flex items-center gap-2">
+            <button
+              onClick={() => setBarShown(true)} data-preview-bar-show
+              aria-label="Show the preview controls" aria-expanded={false} title="Show the controls (H)"
+              className="inline-flex items-center gap-1 text-xs px-3 py-2 rounded-full bg-white/95 dark:bg-[#161922]/95 midnight:bg-[#0b1220]/95 purple:bg-[#1a1020]/95 backdrop-blur shadow-lg text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:text-gray-900 dark:hover:text-white midnight:hover:text-white purple:hover:text-white"
+            ><ChevronUp className="w-3.5 h-3.5" /> Controls</button>
+            <button
+              onClick={() => setPreview(false)}
+              // A MOUSE only (E4-12): a finger "enters" at the moment it taps, so the bar came back, this pill unmounted and
+              // the tap's click landed on nothing — on a phone or tablet, Exit did not exit.
+              onPointerEnter={(e) => { if (e.pointerType === "mouse") setBarShown(true); }}
+              className="inline-flex items-center gap-1 text-xs px-3 py-2 rounded-full bg-indigo-600/90 text-white shadow-lg backdrop-blur hover:bg-indigo-700"
+            ><X className="w-3.5 h-3.5" /> Exit preview</button>
+          </div>
         )}
       </div>
     );

@@ -291,7 +291,7 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
   - `[x]` (1) (DONE: all four were the spec assuming the desktop — E1-1 … E1-4; the headed pass found and fixed E1-7, E1-8, E1-9) the 7 that fail on tablet-landscape / tablet-portrait / mobile-chrome (`add-without-asking.spec.ts`: an empty page's floor,
     a Stack's four looks, "Full screen" on an empty section, "Add a block inside" nesting — the same 7 on f4bacbc): measure each,
     fix, guard
-  - `[~]` (2) MOVED TO BATCH E-4 by the user's decision (E1-5, "split by area": it switches on when the 70 are green) — the gate runs the tablet and phone projects too (`scripts/test-fast.js` runs `--project=desktop-chrome` only), so a
+  - `[x]` (2) DONE in BATCH E-4 change (3), 2026-10-06 (`test:fast` runs all four projects: 3,272 / 3,272) — MOVED TO BATCH E-4 by the user's decision (E1-5, "split by area": it switches on when the 70 are green) — the gate runs the tablet and phone projects too (`scripts/test-fast.js` runs `--project=desktop-chrome` only), so a
     small-screen fault cannot hide again
   HEADED UAT CHECKLIST (written before the pass; six windows; fresh production build; built through the UI, the way a person does
   on each screen: tablet landscape 1024 × 768 · tablet portrait 768 × 1024 · phone 393 × 851, touch on; the four editor themes):
@@ -876,7 +876,11 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
   - `[x]` E3-11 · CLOSED: the panel takes the focus when it mounts (unless something inside did), the opener gets it back; unit guard red on the old Modal — REAL, MEASURED (probe): opening the Modal leaves the focus on the button behind it (`activeElement` outside the
     dialog) — a keyboard or screen-reader user is not taken into the dialog, nor returned when it closes (WCAG 2.4.3)
   - `[x]` NOT A BUG, MEASURED (HEADED U2): the page grid's "At least this many rows tall" is still offered in a masonry cell — given 12 rows the cell grows (251 → 288) and no cell overlaps another
-- `[>]` **BATCH E-4 · Preview and components on small screens** — OPEN 2026-10-06 (after E-3 closed) — QUEUED 2026-10-05 by the user (E1-5): multipage-preview 5 ·
+- `[x]` **BATCH E-4 · Preview and components on small screens** — CLOSED 2026-10-06 (HEADED UAT `scripts/uat/uat-e4-headed.js`, six
+  windows, **232 checks 0 failed** (`logs/e4-uat4.out`) + the slider as a real phone and tablet (`isMobile`) 4 / 0 (`e4-uat4m.out`), the
+  Preview at all 70 screens × 100 / 150 / 200 % text; gate: typecheck 0 · eslint 0 errors (105 warnings, none new) · vitest 4,423 /
+  4,423 · **`test:fast` on ALL FOUR screens 3,272 / 3,272 in 12.3 min** · `docs:build` SUCCESS; ledger E4-1 … E4-14 — E4-9 and E4-14
+  → BATCH E-5) — OPENED 2026-10-06 (after E-3 closed) — QUEUED 2026-10-05 by the user (E1-5): multipage-preview 5 ·
   pager-hero 1 · component-layout-invariants 1 (7) — and E-1's (2): the gate runs the tablet and phone projects when all are green
   (area: the editor on small screens · 3 changes: (1) E3-3 · (2) the seven specs, each measured · (3) E-1's (2) the gate runs the tablet and phone projects)
   HEADED UAT CHECKLIST (written before the pass; the lines for (2) are added after its specs are measured, before the pass):
@@ -884,10 +888,86 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
     it is a tab again; tap it open at 768 and widen — it stays open; collapse it at 1280 and narrow then widen — it follows the width;
     also 1023 ↔ 1024 (the crossing itself) and a phone 393 ↔ 1024 — each in the four themes
   - `[x]` U2 (DONE 2026-10-06) docs (RULE DOCS): the layout story's tablet section says the Inspector follows the width
+  - `[x]` U3 (SEEN 2026-10-06, HEADED `e4-uat4.out` 232 / 0 + `e4-uat4m.out` 4 / 0, screenshots read) (2) E4-3: open Preview at 393 · 768 · 1024 · 1280 · 1536 — the bar never runs off the right edge (bar scrollWidth ≤ window),
+    every control on screen and usable (Pages tab switches page, screen-size menu opens, Rotate toggles with a preset, Hide hides),
+    the bar wraps onto more rows when narrow and is one row at 1280+; in the four themes
+  - `[x]` U4 (SEEN 2026-10-06, HEADED `e4-uat4.out` 232 / 0 + `e4-uat4m.out` 4 / 0, screenshots read) (2) E4-4: hide the controls (button and H) at 393 · 768 · 1280 — the Controls handle and Exit preview sit together
+    bottom-right, nothing at the top centre; a header link the person built at the top is tappable; the handle brings the bar
+    back, Exit leaves; focus-visible on both by Tab; four themes
+  - `[x]` U5 (SEEN 2026-10-06, HEADED `e4-uat4.out` 232 / 0 + `e4-uat4m.out` 4 / 0, screenshots read) (2) E4-5: open Preview on a site with a school font at 393 · 768 · 1280 — the frame loads ONCE (navigations counted),
+    the font is the school's (not the fallback), a scroll made at once is not wiped; switch page by the tabs — still the school's font
+  - `[x]` U6 (SEEN 2026-10-06, HEADED `e4-uat4.out` 232 / 0 + `e4-uat4m.out` 4 / 0, screenshots read) (2) E4-2: a pager with auto-advance opened in Preview by a TAP on a phone and a tablet — it advances; hovering (mouse,
+    desktop) and focusing (Tab) hold it
+  - `[x]` U7 (SEEN 2026-10-06, HEADED `e4-uat4.out` 232 / 0 + `e4-uat4m.out` 4 / 0, screenshots read) (2) E4-1: the component invariants on the canvas at phone / tablet / desktop — a hug alert, a badge and a floated item
+    look right at every scale (screenshots read)
+  - `[x]` U8 (DONE 2026-10-06: `docs/guide/website-builder.md` Preview section + `box-builder-site.feature`; docs:build SUCCESS) docs (RULE DOCS): the guide's Preview section — the bar wraps on narrow screens, the Controls handle sits beside Exit
   - `[x]` CHANGE (1) E3-3 BUILT 2026-10-06: `app/website/box-demo/page.tsx` follows the 64em media query's `change`; guard builder-chrome-fits "the Inspector follows the width…" red on the old build; 156 / 156 on all four projects; HEADED 66 / 0; gate typecheck 0 · eslint 0 errors · vitest 4,418 · test:fast 816
-  - `[ ]` CHANGE (2) the seven specs, each measured (multipage-preview 5 · pager-hero 1 · component-layout-invariants 1)
-  - `[ ]` CHANGE (3) E-1's (2): `scripts/test-fast.js` runs the tablet and phone projects too
+  - `[x]` CHANGE (2) BUILT 2026-10-06 — the seven were 24 once measured, then 13 more on the phone (E4-1 … E4-13); every spec green on all four projects the seven specs, each measured (multipage-preview 5 · pager-hero 1 · component-layout-invariants 1)
+  - `[x]` CHANGE (3) BUILT 2026-10-06 — `test:fast` runs all four projects at 8 workers: 3,272 / 3,272 in 12.3 min; guard `test-scripts.test.ts` (red without the phone) E-1's (2): `scripts/test-fast.js` runs the tablet and phone projects too
   LEDGER E-4 (each written the moment it is found):
+  - MEASURED 2026-10-06 (HEADLESS GATE, fresh build `hhvY26hyJDD84Vm-8oG5E` on 3100, `logs/e4-small3.out`): the three specs on
+    tablet-landscape / tablet-portrait / mobile-chrome — **24 failed / 228 passed**, not the 7 the handover counted (E-3 left more
+    of them failing on the phone). Probe (`zz-probe-e4`): the canvas is the 1200px Desktop frame drawn at `scale()` to fit —
+    0.69 at 1280 · 0.47 at 1024 · 0.52 at 768 · 0.22 at 393.
+  - `[x]` E4-1 (FIXED 2026-10-06, guard green on all four projects; HEADED 232 / 0) · BUG IN THE TEST: `component-layout-invariants` measures SCREEN px (`getBoundingClientRect`) of a SCALED canvas
+    against LAYOUT-px floors (8 · 40 · 160 · 22rem · 2px tolerances) — 18 cases fail on the phone/tablets (badge/rating height 7.3
+    < 8, a floated item 36 < 40, the hug alert 114 < 160, the 22rem container rule compared with a scaled width), and the desktop
+    case passes only by luck (hug alert 167 vs 160 at 0.69). Fix: every measurement divided by `data-canvas-scale`.
+  - `[x]` E4-2 (FIXED 2026-10-06, guard green on all four projects; HEADED 232 / 0) · BUG IN THE TEST: `pager-hero` "moves on its own" fails on the phone — the spec opens the Preview with a MOUSE click,
+    and on a 393px phone the Preview button (157, 49) sits over where the strip appears, so the parked cursor reads as a hover and
+    the pause holds (probe: `:hover` true, no scroll in 4.5s). A real TAP leaves no hover — the strip advances on phone and tablet
+    (probe: x 0 → 1170 / 2236). Not a product bug. Fix: `published()` taps on a touch project, clicks on desktop.
+  - `[x]` E4-3 (FIXED 2026-10-06, guard green on all four projects; HEADED 232 / 0) · REAL BUG: the Preview's bar does not fit a tablet portrait or a phone — its right-hand group is a rigid 771px
+    (`shrink-0`), so at 768 and 393 the bar's content is 879px wide and runs off the right edge (the size readout cut at
+    "768 px ·", the zoom / rotate / hide controls off screen), and the Pages tabs are squeezed to **0px** — a person cannot switch
+    pages from the toolbar at all (probe + screenshots, `multipage-preview` "the preview's OWN toolbar" fails at 768 and 393).
+    Fix: the bar WRAPS onto more rows (and the group within it) instead of overflowing; it grows downward and still hides.
+  - `[x]` E4-4 (FIXED 2026-10-06, guard green on all four projects; HEADED 232 / 0) · REAL BUG: with the controls hidden, the "Controls" handle sits at the TOP CENTRE of the page — on a phone that is
+    over the user's own heading and header links ("Welcome to ou▒▒l", screenshot; `multipage-preview` "a header the USER built"
+    cannot click its Home link at 393 / 768 / 1024). Fix: the handle joins the Exit pill in the bottom-right corner — one corner
+    reserved for the preview's chrome, the header the person built left uncovered.
+  - `[x]` E4-5 (FIXED 2026-10-06, guard green on all four projects; HEADED 232 / 0) · REAL BUG (found as a flake: `pager-hero` auto-advance, tablet-landscape, "Execution context was destroyed" once in
+    the 4-project run, 224 / 224 repeated alone): EVERY Preview open loads the page TWICE, on all four projects (probe: the frame
+    navigates at ~60ms and again at ~400–500ms) — the school's fonts (`embedFontCss`) were a dependency of the page source, so their
+    arrival rebuilt the whole page: twice the work on a phone, and a scroll / tap / running pager in the first 400ms wiped. Fix:
+    the fonts are held in a ref and put into the OPEN page as a `<style>` (on arrival and on every load). Guard
+    `multipage-preview` "opening the Preview loads the page once, fonts included" — red on the old build (all projects).
+  - MEASURED 2026-10-06 for change (3) (HEADLESS GATE, every `test:fast` spec on tablet-landscape / tablet-portrait / mobile-chrome,
+    `logs/e4-small-all2.out`): **2,438 passed · 13 failed, in 9.5 min at 8 workers** — all 13 on the phone, the same 13 alone
+    (`e4-phone5.out`). The first attempt at 3 workers was on course for ~4 h with the CPU at 2 % (the user: "faster than that") —
+    the workers, not the tests, were the limit.
+  - `[x]` E4-6 (FIXED 2026-10-06, guard green on all four projects; HEADED 232 / 0) · REAL BUG: a resize drag's 8px floor (`BoxCanvas` `minWpx` / `minHpx`) was in SCREEN px while every other size in the
+    drag is scaled by `Z` — so on a phone's 0.22 canvas the smallest a box could be dragged to was 36px of PAGE (8 / 0.22), and the
+    saved page depended on the zoom it was edited at (`empty-box-height` ×5 on the phone: 36 vs < 20). Fix: `8 * Z`, the engine's
+    own page-px floor.
+  - `[x]` E4-7 (FIXED 2026-10-06, guard green on all four projects; HEADED 232 / 0) · BUG IN THE TEST: `add-inside-empty-box` ×3 compared screen px of the scaled canvas with the 2.5rem (40 / 80px) PAGE
+    floors (24 vs 39 on the phone; the floor itself measured 110 layout px on every project). Fix: `pageBox()` reads page px.
+  - `[x]` E4-8 (FIXED 2026-10-06, guard green on all four projects; HEADED 232 / 0) · BUG IN THE TEST: `build-from-blank` ×3 aimed its first drop a fixed 60 screen px down a blank page that is 35px tall
+    on the phone — below the page. Fix: inside the page at any scale.
+  - `[x]` E4-9 (TEST FIXED 2026-10-06; the finger-size question → BATCH E-5) · BUG IN THE TEST: `drop-placement` "its BOTTOM edge" aimed 12px above the bottom of a block 37px tall on the phone;
+    the strips are 25 % of the DRAWN height (9px there), so 12px is the middle. Fix: aim inside the strip. Whether a 9px strip is
+    enough for a FINGER at a 0.22 canvas is the question BATCH E-5 (adding and placing on a phone, research first) exists for →
+    BATCH E-5.
+  - `[x]` E4-10 (FIXED 2026-10-06, guard green on all four projects; HEADED 232 / 0) · BUG IN THE TEST: `side-by-side-drop` ×2 used fixed screen distances (100 · 60 · 8 · 4px) on the scaled canvas.
+    Fix: multiplied by the canvas scale; the drop aims at the middle of the row's side space.
+  - `[x]` E4-11 (FIXED 2026-10-06, guard green on all four projects; HEADED 232 / 0) · MY OWN, IN A TEST: change (3)'s new guard in `test-scripts.test.ts` read `playwright.config.ts` without stripping
+    carriage returns — caught by `source-reading-tests` (vitest 4,422 / 4,423). Fixed; both guards 105 / 105.
+  - `[x]` E4-12 (FIXED 2026-10-06, guard green on all four projects; HEADED 232 / 0) · REAL BUG (HEADED UAT, `e4-uat1.out`: "Exit leaves the Preview" FAIL at 393 and 768 in every theme): with the controls
+    hidden, TAPPING Exit preview did not exit — the pill brought the bar back on `pointerenter`, a finger "enters" at the moment it
+    taps, so the pill unmounted and the click landed on nothing. Fix: only a MOUSE brings the bar back on hover (the pill and the
+    top-edge reveal alike). Guard `multipage-preview` "with the controls hidden, Exit preview leaves…" — red on the old build on
+    all three touch projects.
+  - `[x]` E4-13 (FIXED 2026-10-06, guard green on all four projects; HEADED 232 / 0) · REAL BUG (HEADED UAT `e4-uat2.out`, a Slider built through the UI, "Move on its own every 2s"): on a phone and a
+    tablet the slider NEVER moved — the tap that opened the Preview left the browser's hover stuck over the strip (`:hover` true,
+    measured as a touch laptop AND as a real phone/tablet, `isMobile`), and the pager pauses on `mouseenter`. The same freezes a
+    published slider for a visitor whose tap leaves a hover on it. Fix (`pagerWire`): hover pauses it only where the device CAN
+    hover (`(hover: hover)`); on a touch screen a FINGER ON IT (`pointerdown`) is what stops it; focus stops it everywhere.
+    Guard `pager-hero` "moves on its own, and HOLDS STILL…": a stuck hover on a touch screen does not stop it, a tap does — red on
+    the old build on every touch project.
+  - `[x]` E4-14 · FOUND IN THE HEADED PASS (`CO-393-U7-components.png`), HANDED ON → BATCH E-5: on a phone the canvas opens as the
+    1200px Desktop page at **22 %** — an Alert and a Badge a few pixels tall, the block's own toolbar bigger than the block. Correct
+    to the model (every invariant holds in page px) and unusable for a finger. How a phone EDITS is the question BATCH E-5 was queued
+    to research first (the user, E2-20), so it is answered there, not patched here.
 - `[ ]` **BATCH E-5 · Adding blocks on a phone** — QUEUED 2026-10-06 by the user (E2-20: "queue it, research first") (area: the editor
   on a phone · adding and dropping): the open blocks panel covers the whole canvas on a phone, so a block cannot be dragged beside,
   under or into another. RULE RS FIRST: the user's sources and mine (how phone editors — Wix, Canva, Webflow, Framer — add and place
@@ -895,6 +975,10 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
   user signs, THEN the build
   - `[ ]` (1) the research and its signed "enough" checklist
   - `[ ]` (2) the build the research settles on, web phone first, then `apps/mobile/` (RULE APP)
+  - `[ ]` E4-9 (from BATCH E-4): the drop strips are 25 % of a block's DRAWN height — 9px on a 37px block at the phone's 0.22 canvas.
+    Is that enough for a finger? The research answers it with the rest of placing on a phone.
+  - `[ ]` E4-14 (from BATCH E-4): the phone canvas opens as the Desktop page at 22 % — blocks a few pixels tall, the toolbar bigger
+    than the block. What a phone edits at (its own width? a zoom a finger can use?) is part of this research.
 - `[x]` **BATCH G-3 · Placing on columns and rows** — CLOSED 2026-10-04 (HEADED UAT `scripts/uat/uat-g3-headed.js`, six windows,
   65 checks 0 failed on the final build (`logs/g3-uat6.out`), Preview at all 70 screens at 100 / 150 / 200 % text; G-2's suite
   re-run as regression 128/0 (`g2-regress-g3c.out`); gate: see the commit) — OPENED 2026-10-04 (session 5da86722, the user's "go") (area: page grid
@@ -3224,7 +3308,7 @@ sent), and my research. Nothing on the layout is done until every line here is c
     falls back into the flow unless placed at that rung; the page audit and Page check warn when it covers words;
     shown as drag on the canvas with the half-lines drawn, a Position panel (start / end, column / row, spill above /
     below) and a gallery of ready-made placements (RULE S / UI). Joins AC-10, ST-5, AC-35 — one build
-    - `[>]` AC-37b ← YOU ARE HERE (NOW: BATCH E-4 in BATCHES — change (1) E3-3 done (`6042e79`); next change (2), the seven specs measured; handover of session E-3 in the SESSION LOG. Before that: BATCH E-3 CLOSED 2026-10-06 (297 / 0 headed; E3-1 … E3-11, E3-3 the user's question); the tree audit DONE 2026-10-06 (`4fcf59a`, its true count heads section 1.1) — its checklist first, then spacing-gestures 12 · masonry-builder 10 · canvas-zoom 3 · text-is-reachable 1 · D3-32 the top bar one row from 1280; then E-4, then E-5 (research first). Before that: BATCH E-2 CLOSED 2026-10-06 (174 / 0 headed; 24 ledger lines). Before that: BATCH E-2 in BATCHES, on `builder/editor-small-screens` (cut from master `7494a8e` after PR #6 merged `builder/page-grid` 2026-10-06) — its checklist first, then the 37 failing specs one by one; then E-3 → E-4. Before that: BATCH G-3d CLOSED 2026-10-06 (`ec52b51`); handover of session (G-3d) in the SESSION LOG. Before that: BATCH G-3d (three changes); handover of session 49087f08 in the SESSION LOG; D-3 CLOSED 2026-10-06 (both changes). Before that: handover of session ff5dbc77 in the SESSION LOG; D-2 and D-3 (1) CLOSED 2026-10-06. Earlier: handover of session 22981e0a; BATCH G-3b and BATCH E-1 CLOSED 2026-10-05; MERGE DECIDED by the user 2026-10-05: `builder/layout-uat` pushed, the user opens and merges the pull request, then the branch is deleted and `builder/page-grid` cut from master; next there: BATCH D-2 (the Docusaurus site + the layout documented from the beginning, RULE DOCS), then BATCH G-3d (the user's two decisions), then BATCH E-2 (resizing and dropping on tablets and phones); before the PR: the artifacts and the layout story for the page grid; then its final pass, then BATCH E-1; handover of session 3da81fad in the SESSION LOG; earlier: handover of session 5da86722 in the SESSION LOG — G-3 CLOSED 2026-10-04 (63 headed checks, G3-8 carried to G-3b by the user); earlier: BATCH G-3 · placing on columns AND rows — G-2 CLOSED 2026-10-04 (134 headed checks); P-0 CLOSED 2026-10-04 (R4-1 … R4-5 fixed, 30 headed checks); R-4 SIGNED with D1–D5 (session 9fa0fee9); then G-3, P-1, P-2, G-4, P-3, G-5, G-6. G-1 CLOSED 2026-10-04 (see BATCHES). Plan APPROVED 2026-10-04 with the user's decisions below. Earlier: research R-3 DONE and SIGNED 2026-10-04
+    - `[>]` AC-37b ← YOU ARE HERE (NOW: BATCH E-4 CLOSED 2026-10-06 (HEADED 232 / 0; `test:fast` now runs all four screens, 3,272 / 3,272 in 12.3 min; E4-1 … E4-14, E4-9 and E4-14 → BATCH E-5) — next: the pull request for `builder/editor-small-screens` (the user opens it from the compare link), then BATCH E-5 (research first: ask the user for their sources). Before that: BATCH E-4 change (1) E3-3 done (`6042e79`); handover of session E-3 in the SESSION LOG. Before that: BATCH E-3 CLOSED 2026-10-06 (297 / 0 headed; E3-1 … E3-11, E3-3 the user's question); the tree audit DONE 2026-10-06 (`4fcf59a`, its true count heads section 1.1) — its checklist first, then spacing-gestures 12 · masonry-builder 10 · canvas-zoom 3 · text-is-reachable 1 · D3-32 the top bar one row from 1280; then E-4, then E-5 (research first). Before that: BATCH E-2 CLOSED 2026-10-06 (174 / 0 headed; 24 ledger lines). Before that: BATCH E-2 in BATCHES, on `builder/editor-small-screens` (cut from master `7494a8e` after PR #6 merged `builder/page-grid` 2026-10-06) — its checklist first, then the 37 failing specs one by one; then E-3, then E-4. Before that: BATCH G-3d CLOSED 2026-10-06 (`ec52b51`); handover of session (G-3d) in the SESSION LOG. Before that: BATCH G-3d (three changes); handover of session 49087f08 in the SESSION LOG; D-3 CLOSED 2026-10-06 (both changes). Before that: handover of session ff5dbc77 in the SESSION LOG; D-2 and D-3 (1) CLOSED 2026-10-06. Earlier: handover of session 22981e0a; BATCH G-3b and BATCH E-1 CLOSED 2026-10-05; MERGE DECIDED by the user 2026-10-05: `builder/layout-uat` pushed, the user opens and merges the pull request, then the branch is deleted and `builder/page-grid` cut from master; next there: BATCH D-2 (the Docusaurus site + the layout documented from the beginning, RULE DOCS), then BATCH G-3d (the user's two decisions), then BATCH E-2 (resizing and dropping on tablets and phones); before the PR: the artifacts and the layout story for the page grid; then its final pass, then BATCH E-1; handover of session 3da81fad in the SESSION LOG; earlier: handover of session 5da86722 in the SESSION LOG — G-3 CLOSED 2026-10-04 (63 headed checks, G3-8 carried to G-3b by the user); earlier: BATCH G-3 · placing on columns AND rows — G-2 CLOSED 2026-10-04 (134 headed checks); P-0 CLOSED 2026-10-04 (R4-1 … R4-5 fixed, 30 headed checks); R-4 SIGNED with D1–D5 (session 9fa0fee9); then G-3, P-1, P-2, G-4, P-3, G-5, G-6. G-1 CLOSED 2026-10-04 (see BATCHES). Plan APPROVED 2026-10-04 with the user's decisions below. Earlier: research R-3 DONE and SIGNED 2026-10-04
       (`ff5c53a`, `4418202`); build to every decision recorded under R-3 below; the mockups settle the open three (row
       snap · the phone gap 11 vs 16 px · panel per site or per page) → the user's approval → build) · **THE PAGE GRID — DECIDED by the user 2026-10-03: done RIGHT AFTER L-4 closes, BEFORE L-5, L-6 and the
       frozen list's placement items** (they are built on it). NAMES (decided): "page grid" in code and docs; the lines a
@@ -3249,7 +3333,7 @@ sent), and my research. Nothing on the layout is done until every line here is c
       the model's word estimate (c-8's `longestWordRem`), saved pages keep their rows / stacks (a mode, never a
       migration). NEXT: research (Nexter + Webflow / Framer / Wix Studio page grids, RULE RS) → plan artifact with mockups
       → the user's approval → built WITH AC-37 (one build). Not part of L-4
-      - `[>]` WHAT IS LEFT UNDER AC-37b (the tree audit 2026-10-06; this line keeps the parent honest — it closes when they do): the editor on small screens, BATCH E-4 (next) and E-5 · the page grid's queued P-1 · P-2 · G-4 · P-3 · G-5 · G-6 (all in BATCHES)
+      - `[>]` WHAT IS LEFT UNDER AC-37b (the tree audit 2026-10-06; this line keeps the parent honest — it closes when they do): the editor on small screens: BATCH E-4 CLOSED 2026-10-06, E-5 next (research first) · the page grid's queued P-1 · P-2 · G-4 · P-3 · G-5 · G-6 (all in BATCHES)
       - `[x]` **THE USER'S DECISIONS ON THE PLAN, 2026-10-04 (session 87422eae) — APPROVED ("1, yes please")**:
         (1) plan approved, and the page grid runs **EDGE TO EDGE** (the user: "a user should be able to use the whole page…
         the margin at the right and the left should not be there unless the user wants it… use margin or padding to make

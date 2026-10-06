@@ -273,9 +273,11 @@ const devContaminated = () => existsSync(".next/server/chunks/ssr/[turbopack]_ru
     process.exit(1);
   }
 
-  const target = specs.length
-    ? ["playwright", "test", ...specs, "--project=desktop-chrome", "--workers=3"]
-    : ["playwright", "test", "--project=desktop-chrome", "--workers=3", ...INVARIANT_SPECS];
+  // EVERY SCREEN, not the desktop alone (BATCH E-4 (3)): tablet landscape, tablet portrait and a phone too, so a small-screen
+  // fault cannot hide again — 37 specs failed there unseen until E-1 looked. EIGHT workers: these suites WAIT far more than they
+  // compute (measured: 3 workers ran at 2 % CPU on a 16-thread machine, on course for ~4 h; 8 did the three small screens in 9.5 min).
+  const target = ["playwright", "test", ...(specs.length ? specs : INVARIANT_SPECS), "--workers=8",
+    "--project=desktop-chrome", "--project=tablet-landscape", "--project=tablet-portrait", "--project=mobile-chrome"];
 
   console.log("\n=== running the browser suites ===");
   const code = run(npx, target, { BASE_URL });

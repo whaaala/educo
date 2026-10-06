@@ -3941,11 +3941,16 @@ export function pagerWire(strip: HTMLElement): void {
   const start = () => { if (!timer) timer = win.setInterval(() => { if (!d.hidden) go(at() + 1); }, every * 1000); };
   // Pause while it is being read or operated, and pick up again when it is not. `focusin` covers the
   // keyboard: tabbing INTO a slide has to stop it just as surely as hovering does.
-  strip.addEventListener("mouseenter", stop);
-  strip.addEventListener("mouseleave", start);
+  // A MOUSE THAT IS REALLY THERE, OR A FINGER ON IT (E4-13). It paused on `mouseenter`, and on a touch screen a tap leaves a
+  // "hover" stuck where the finger was — a slider under it froze for good with nobody touching it. A stuck hover sends no
+  // `pointermove`; a mouse over it does, on any device (a touch laptop's mouse too). A finger on it means the reader took over.
+  for (const el of nav ? [strip, nav] : [strip]) {
+    el.addEventListener("pointermove", (e) => { if (e.pointerType === "mouse") stop(); });
+    el.addEventListener("pointerleave", (e) => { if (e.pointerType === "mouse") start(); });
+  }
+  strip.addEventListener("pointerdown", (e) => { if (e.pointerType !== "mouse") stop(); });
   strip.addEventListener("focusin", stop);
   strip.addEventListener("focusout", start);
-  if (nav) { nav.addEventListener("mouseenter", stop); nav.addEventListener("mouseleave", start); }
   start();
 }
 
