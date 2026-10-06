@@ -415,6 +415,9 @@ the Inspector slides over the canvas from the right.
 [![The same tablet with the Inspector open over the right part of the canvas](img/story-tablet-inspector.webp)](img/story-tablet-inspector.webp)
 
 - **Escape** closes it and returns her to the full-canvas view.
+- When she turns the iPad sideways (or drags a browser window wider than a tablet), the Inspector docks at the side by
+  itself, as it does on a laptop; turned upright again, it goes back to its strip. If she opens or closes it herself, that
+  holds until the next time the screen crosses that width.
 - The blocks panel floats over the canvas. (On a laptop or larger it docks at the side instead, and the page moves
   over to make room.)
 - All gestures — tap to select, drag to move, drag an edge to resize — work with touch. Dragging an edge on a tablet

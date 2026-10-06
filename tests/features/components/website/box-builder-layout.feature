@@ -1173,3 +1173,12 @@ Feature: Placing blocks beside one another in the Box Builder
     And Ctrl+Z changes nothing on the page behind it
     When I press Escape once
     Then the dialog closes and the focus is back on the Page check button
+
+  Scenario: The Inspector follows the width, as when the builder opens (E3-3, the user 2026-10-06)
+    # tests/e2e/builder-chrome-fits.spec.ts
+    Given the builder on a tablet held upright, the Inspector a strip at the side
+    When I turn the tablet or widen the window past a tablet's width
+    Then the Inspector docks open beside the page
+    When I narrow it again
+    Then the Inspector is a strip again
+    But opening or closing it myself holds until the next time the width crosses that line

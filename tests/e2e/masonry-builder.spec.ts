@@ -65,7 +65,8 @@ async function selectGallery(page: Page) {
   await page.mouse.click(a.x + a.width + 6, g.y + 120); // the gap between column one and column two
   await page.waitForTimeout(300);
   await expect(page.locator(".outline-indigo-500")).toHaveAttribute("data-box-id", "gallery");
-  // Loaded at a tablet's or a phone's width, the Inspector started as its tab and stays one when the window widens (E3-2)
+  // Loaded at a tablet's or a phone's width, the Inspector starts as its tab (E3-2); widened it docks open by itself (E3-3), so this
+  // is a no-op here — kept for a window that stays narrow
   await openInspector(page);
   await openSection(page, "Arrange");
 }

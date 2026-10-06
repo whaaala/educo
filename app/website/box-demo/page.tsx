@@ -224,12 +224,17 @@ export default function BoxDemoPage() {
   const inspectorOpenRef = useRef(inspectorOpen);
   inspectorOpenRef.current = inspectorOpen;
   useEffect(() => {
-    if (window.matchMedia(NARROW).matches) setInspectorOpen(false);
+    const narrow = window.matchMedia(NARROW);
+    if (narrow.matches) setInspectorOpen(false);
+    // E3-3 (the user, 2026-10-06): the Inspector FOLLOWS THE WIDTH at every crossing of 64em, as on load — docked open when the
+    // window widens past it (a tablet turned, a browser dragged wider), its tab again when it narrows; a tap holds until the next crossing
+    const onCross = (e: MediaQueryListEvent) => setInspectorOpen(!e.matches);
+    narrow.addEventListener("change", onCross);
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape" && inspectorOpenRef.current && window.matchMedia(NARROW).matches && !modalOpen()) setInspectorOpen(false);
+      if (e.key === "Escape" && inspectorOpenRef.current && narrow.matches && !modalOpen()) setInspectorOpen(false);
     };
     window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
+    return () => { window.removeEventListener("keydown", onKey); narrow.removeEventListener("change", onCross); };
   }, []);
 
   const site = hist?.present ?? null;

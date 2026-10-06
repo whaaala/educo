@@ -124,4 +124,24 @@ test.describe("the builder's toolbar fits the screen it is on", () => {
     await expect(dialog, "ONE Escape closes it").toHaveCount(0);
     expect(await check.evaluate((b) => b === document.activeElement), "the focus is back on the button that opened it").toBe(true);
   });
+
+  test("the Inspector follows the width at every crossing of 64em, as on load (E3-3, the user 2026-10-06)", async ({ page }) => {
+    const docked = () => page.locator('aside[aria-label="Inspector"]').isVisible();
+    await page.setViewportSize({ width: 768, height: 1000 });
+    await page.goto("/website/box-demo");
+    await page.waitForSelector("header", { timeout: 30000 });
+    await page.waitForTimeout(500);
+    expect(await docked(), "768: it starts as its tab").toBe(false);
+    await page.setViewportSize({ width: 1024, height: 1000 }); await page.waitForTimeout(400);
+    expect(await docked(), "widened to 1024 (the crossing itself): it docks open").toBe(true);
+    await page.setViewportSize({ width: 1023, height: 1000 }); await page.waitForTimeout(400);
+    expect(await docked(), "1023: its tab again").toBe(false);
+    await page.getByRole("button", { name: "Expand inspector" }).click(); await page.waitForTimeout(300);
+    await page.setViewportSize({ width: 900, height: 1000 }); await page.waitForTimeout(400);
+    expect(await docked(), "tapped open, then narrower WITHOUT crossing: the tap holds").toBe(true);
+    await page.setViewportSize({ width: 1280, height: 1000 }); await page.waitForTimeout(400);
+    await page.getByRole("button", { name: "Collapse inspector" }).click(); await page.waitForTimeout(300);
+    await page.setViewportSize({ width: 1440, height: 1000 }); await page.waitForTimeout(400);
+    expect(await docked(), "collapsed by hand, wider without crossing: it stays collapsed").toBe(false);
+  });
 });

@@ -844,7 +844,7 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
     opening it; the same `openInspector` is copied in two specs already → one shared helper, used by all
   - `[x]` E3-2 · CLOSED: the spec taps the tab as a person does; masonry 28 / 28 — TEST (masonry 10): the same — the page loads at the project's width (Inspector a tab), THEN the spec widens the
     window to 1800 and the Inspector stays a tab (it starts closed below 64em and is never opened by widening — E-1's start rule)
-  - `[?]` E3-3 · for the user: should the Inspector open by itself when a window WIDENS past 64em (a tablet turned to landscape, a
+  - `[x]` E3-3 · DECIDED BY THE USER 2026-10-06 ("we'll go with what you recommend"): the Inspector FOLLOWS THE WIDTH at every crossing of 64em, as on load — docked open when the window widens past it, back to its tab when it narrows; a person's own tap holds until the next crossing → built as BATCH E-4 change (1). The question was: should the Inspector open by itself when a window WIDENS past 64em (a tablet turned to landscape, a
     browser window dragged wider)? Today it keeps the closed state it started with until the tab is tapped
   - `[x]` E3-4 · CLOSED: the wheel sent × devicePixelRatio; canvas-zoom 28 / 28 — TEST, MEASURED (probe-e3.js wheel): the product zooms exactly z0 · e^(−deltaY · 0.0015) on every screen (0.83 → 1.51 for
     −400, → 1.12 for −200); Playwright's `mouse.wheel(0, −400)` under device emulation ARRIVES as −400 ÷ devicePixelRatio (−200 at
@@ -876,8 +876,18 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
   - `[x]` E3-11 · CLOSED: the panel takes the focus when it mounts (unless something inside did), the opener gets it back; unit guard red on the old Modal — REAL, MEASURED (probe): opening the Modal leaves the focus on the button behind it (`activeElement` outside the
     dialog) — a keyboard or screen-reader user is not taken into the dialog, nor returned when it closes (WCAG 2.4.3)
   - `[x]` NOT A BUG, MEASURED (HEADED U2): the page grid's "At least this many rows tall" is still offered in a masonry cell — given 12 rows the cell grows (251 → 288) and no cell overlaps another
-- `[ ]` **BATCH E-4 · Preview and components on small screens** — QUEUED 2026-10-05 by the user (E1-5): multipage-preview 5 ·
+- `[>]` **BATCH E-4 · Preview and components on small screens** — OPEN 2026-10-06 (after E-3 closed) — QUEUED 2026-10-05 by the user (E1-5): multipage-preview 5 ·
   pager-hero 1 · component-layout-invariants 1 (7) — and E-1's (2): the gate runs the tablet and phone projects when all are green
+  (area: the editor on small screens · 3 changes: (1) E3-3 · (2) the seven specs, each measured · (3) E-1's (2) the gate runs the tablet and phone projects)
+  HEADED UAT CHECKLIST (written before the pass; the lines for (2) are added after its specs are measured, before the pass):
+  - `[x]` U1 (SEEN 2026-10-06, `uat-e4-headed.js` 66 / 0 incl. the Preview at all 70 screens × 3 text sizes) (1) E3-3: open the builder at 768 × 1024 (Inspector a tab), widen the window to 1280 — it docks open; narrow back to 768 —
+    it is a tab again; tap it open at 768 and widen — it stays open; collapse it at 1280 and narrow then widen — it follows the width;
+    also 1023 ↔ 1024 (the crossing itself) and a phone 393 ↔ 1024 — each in the four themes
+  - `[x]` U2 (DONE 2026-10-06) docs (RULE DOCS): the layout story's tablet section says the Inspector follows the width
+  - `[x]` CHANGE (1) E3-3 BUILT 2026-10-06: `app/website/box-demo/page.tsx` follows the 64em media query's `change`; guard builder-chrome-fits "the Inspector follows the width…" red on the old build; 156 / 156 on all four projects; HEADED 66 / 0; gate typecheck 0 · eslint 0 errors · vitest 4,418 · test:fast 816
+  - `[ ]` CHANGE (2) the seven specs, each measured (multipage-preview 5 · pager-hero 1 · component-layout-invariants 1)
+  - `[ ]` CHANGE (3) E-1's (2): `scripts/test-fast.js` runs the tablet and phone projects too
+  LEDGER E-4 (each written the moment it is found):
 - `[ ]` **BATCH E-5 · Adding blocks on a phone** — QUEUED 2026-10-06 by the user (E2-20: "queue it, research first") (area: the editor
   on a phone · adding and dropping): the open blocks panel covers the whole canvas on a phone, so a block cannot be dragged beside,
   under or into another. RULE RS FIRST: the user's sources and mine (how phone editors — Wix, Canva, Webflow, Framer — add and place
