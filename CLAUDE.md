@@ -35,7 +35,7 @@ Run through this checklist BEFORE telling the user it's done:
   clicking, never written into `localStorage`. A seeded tree is allowed only to pin a repro you already found
   through the interface. **Could not reproduce what the user reported? Then you did not build it their way.**
 - [ ] **⛔ RULE X — YOU SAW IT IN THE UI, ONE PASS PER BATCH** — every change in the batch, however small, driven in a real browser from the user's point of view, each checklist line ticked with what you saw, before the next batch opens. Typecheck + the related unit guard still run after EVERY change. Each one checked in EVERY combination it can appear in (themes · 375/768/1280+ · device presets · every entry point · each state ON and OFF), trying hard to break it. State what you drove and what you saw. **The user must never be the one who finds it.** See [docs/UAT_EVERY_CHANGE.md](docs/UAT_EVERY_CHANGE.md).
-- [ ] **⛔ THE TASK TREE IS UP TO DATE** — [docs/TASK_TREE.md](docs/TASK_TREE.md) shows what this change closed (with its commit or measurement), every new promise made along the way, and **YOU ARE HERE** on the next leaf. Work is not done while the tree still describes the state before it.
+- [ ] **⛔ THE TASK TREE IS UP TO DATE** — [docs/TASK_TREE.md](docs/TASK_TREE.md) shows what this change closed (with its commit or measurement), every new promise made along the way, and **YOU ARE HERE** on the next leaf. Work is not done while the tree still describes the state before it. **Done is done everywhere:** every other line that tracks the same work (its copy, its parent, its question, a "→ BATCH" hand-off) is ticked in the same change.
 - [ ] **⛔ RULE M — PONYTAIL CHECKED ON THE DIFF** — nothing in the change that was not needed (no unasked-for feature, file,
   option, abstraction or dependency), the shortest diff that fixes the root cause, deliberate limits marked `ponytail:`. Never
   cut: understanding the problem, validation at trust boundaries, error handling that prevents data loss, security, accessibility.
@@ -161,6 +161,14 @@ Run through this checklist BEFORE telling the user it's done:
     under the work that found it. Work that is interrupted stays in the tree as in progress, never dropped.
   - **End of a session:** move **YOU ARE HERE**, mark what closed with its commit or measurement, and commit the file.
   - Nothing is deleted from it. A branch closes only when its children are closed or the user decides otherwise.
+  - **DONE IS DONE EVERYWHERE (the user, 2026-10-06: "make sure that this mistake doesn't happen again… anybody that picks it up
+    would understand this is ticked, this is done").** The same work is often written in more than one place — a ledger line in
+    section 1 and its fix in a batch, a question and its decision, a parent and its children. **Closing work ticks EVERY line that
+    tracks it, in the same change:** its copy elsewhere in the tree (search the id AND its subject words), the parent whose last
+    child it was, the `[?]` its decision answers, and any line that handed it to the batch ("→ BATCH X"). A line handed to a batch
+    says so ("→ BATCH L-5"), so the batch's closing finds it. Measured, 2026-10-06: the tree audit found 109 lines still open
+    whose work was finished. **Guarded:** `tests/unit/task-tree-batches.test.ts` fails on an id open in one place and done in
+    another, on an open line or `[?]` whose every child is done, and on a line handed to a batch that has closed.
   - **THE MOMENT THE USER SAYS "new session"** (or the context is about to run out): stop, and write the handover into
     the tree BEFORE anything else — a line in its SESSION LOG saying where this session STARTED FROM, where it GOT TO, and
     where the next one CONTINUES FROM — then move **YOU ARE HERE** and commit. The user never has to ask for it.

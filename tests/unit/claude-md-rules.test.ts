@@ -216,6 +216,7 @@ const RULES: [name: string, mustSay: RegExp][] = [
   ["…the handover is written the moment the user says new session", /THE MOMENT THE USER SAYS "new session"/],
   ["…and the tree reminds the user what is still open", /IT REMINDS THE USER TOO/],
   ["…and it is checked before anything is called done", /THE TASK TREE IS UP TO DATE/],
+  ["…and done is done everywhere: closing work ticks every line that tracks it (the user, 2026-10-06)", /DONE IS DONE EVERYWHERE/],
   ["Reuse-first component architecture", /components\/shared\//],
   ["One branch per AREA, named for the area", /One branch per AREA/],
   ["…and named for the area, not the audience", /never the audience/i],

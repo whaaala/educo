@@ -3063,7 +3063,7 @@ P-1 · P-2 · G-4 · P-3 · G-5 · G-6 existed only as text inside R-4 and now h
     - `[x]` BDD scenarios DRAFTED 2026-09-29 while the sweep runs (the user chose "A": read c-11, c-12, c-6 and — AUDIT 2026-10-06: `box-builder-spacing.feature` committed; S-2 added scenarios
       draft this; nothing built or run): `tests/features/components/website/box-builder-spacing.feature`, uncommitted.
       The default VALUES and the saved-pages scenario wait on the user
-    - `[?]` The user's decision: **the default values** — proposed from the tokens and deck Rule #7: side gutter
+    - `[x]` The user's decision: **the default values** — proposed from the tokens and deck Rule #7: side gutter
       1rem → 2rem · section space 2rem → 4rem a side (64 → 128px between two sections) · stack gap 1rem · column gap
       1.5rem · inner padding of a coloured or bordered box 1.5rem, 1rem in a narrow box
       - `[x]` **DECIDED by the user 2026-09-29: as proposed** ("I will go with your recommendation. For all of it.")
@@ -3106,7 +3106,7 @@ P-1 · P-2 · G-4 · P-3 · G-5 · G-6 existed only as text inside R-4 and now h
       of the coloured box they sit in · space between sections under the floor
     - `[ ]` The dresser stops compensating (it sets "Centred column" to get an inset) once the default exists — AUDIT 2026-10-06: STILL OPEN, no batch: `scripts/uat/dress.js` 124 / 144 / 204 still set "Centred column" → joins L-6 (the harness)
     - `[ ]` Story and guide; then THE WHOLE TIER IS SWEPT AGAIN — every page's geometry changes — AUDIT 2026-10-06: after L-9 by the ORDER line; D-2 / D-3 wrote the story so far (`af533ac`)
-    - `[?]` The user's decision: pages already saved keep their spacing (defaults for NEW blocks only — recommended),
+    - `[x]` The user's decision: pages already saved keep their spacing (defaults for NEW blocks only — recommended),
       or take the new defaults too?
       - `[x]` **DECIDED by the user 2026-09-29: saved pages KEEP their spacing**; the defaults are for new blocks
   - `[ ]` **RULE AF harness additions** (promised 2026-09-28) — AUDIT 2026-10-06: → BATCH L-6 (queued)
@@ -3239,6 +3239,7 @@ sent), and my research. Nothing on the layout is done until every line here is c
       the model's word estimate (c-8's `longestWordRem`), saved pages keep their rows / stacks (a mode, never a
       migration). NEXT: research (Nexter + Webflow / Framer / Wix Studio page grids, RULE RS) → plan artifact with mockups
       → the user's approval → built WITH AC-37 (one build). Not part of L-4
+      - `[>]` WHAT IS LEFT UNDER AC-37b (the tree audit 2026-10-06; this line keeps the parent honest — it closes when they do): the editor on small screens, BATCH E-4 (next) and E-5 · the page grid's queued P-1 · P-2 · G-4 · P-3 · G-5 · G-6 (all in BATCHES)
       - `[x]` **THE USER'S DECISIONS ON THE PLAN, 2026-10-04 (session 87422eae) — APPROVED ("1, yes please")**:
         (1) plan approved, and the page grid runs **EDGE TO EDGE** (the user: "a user should be able to use the whole page…
         the margin at the right and the left should not be there unless the user wants it… use margin or padding to make
@@ -3287,8 +3288,8 @@ sent), and my research. Nothing on the layout is done until every line here is c
         `scripts/research/grid-measure.js` (six headed windows; each item opened, its live site followed and measured at
         1440 · 1024 · 768 · 375: CSS grids, subgrid, named lines, framework column classes, gutter, full-bleed, and how
         many visible left edges sit on a 12-column half-step). Raw: `C:\Users\eyite\educo-research\grid\` (outside git)
-        - `[>]` THE USER'S SOURCES — completeness list (RULE R: nothing in a link is left out)
-          - `[>]` (1) awwwards.com/inspiration/grow-section-12-column-layout-thirdweb-studio-1 — the item (a11.studio,
+        - `[x]` THE USER'S SOURCES — completeness list (RULE R: nothing in a link is left out) — AUDIT 2026-10-06: read in full, R-3 signed 2026-10-04 (`ff5c53a`)
+          - `[x]` (1) awwwards.com/inspiration/grow-section-12-column-layout-thirdweb-studio-1 — the item (a11.studio, — AUDIT 2026-10-06: 35 records stored (`ff5c53a`)
             thirdweb.studio; tags grow · benefits · bootstrap · layout · 12column), its 3 sibling items (projects layout,
             navbar menu, about us) and 7 related items (punchline bento grid, Street Art News magazine, Arthur Simonini
             typography, dobrynow layout, timbrack one-page scroll, PP Fragment characters, saintlouvent portfolio) — all
@@ -3297,7 +3298,7 @@ sent), and my research. Nothing on the layout is done until every line here is c
             each: tabs · photo · words, 393 px of a 1194 px content box inside an 8vw gutter); the heading does NOT sit on
             the same left edge (67 px vs 115 px); on a phone (375) it stacks, the PHOTO IS HIDDEN, gutter 8vw = 30 px;
             a decorative SVG of square modules sits above it
-          - `[>]` (2) dribbble.com/search/12-column-grid — 42 shots load signed-out (the listing stops there); all 42
+          - `[x]` (2) dribbble.com/search/12-column-grid — 42 shots load signed-out (the listing stops there); all 42 — AUDIT 2026-10-06: all 42 shots stored (`ff5c53a`)
             queued, each opened: description, tags, images, any link in the description followed
           - PASS 2 (`r3-v2.json`, 454 pictures): 80 items — the user's 53 + 27 on-topic related items one level down.
             Dribbble showed "Human Verification" after ~20 shots → stepped back (never bypassed), the other 21 re-run in
@@ -3333,14 +3334,14 @@ sent), and my research. Nothing on the layout is done until every line here is c
           - Reading (agents, every picture opened): `02-awwwards-items.md` — all 35 Awwwards records, groups 0–4, 232 images;
             `03-dribbble-shots.md` — 21 shots, 102 images. Final capture pass v3 (`r3-v3-aw.json`, `r3-v3-dr.json`) running:
             then the 21 later Dribbble shots + the Awwwards records whose live captures were blind (#12) are read again
-        - `[ ]` MY SOURCES — Nexter (`08-nexter.md`, extend only) · `07-grid.md` · MDN grid / subgrid / named lines ·
+        - `[x]` MY SOURCES — Nexter (`08-nexter.md`, extend only) · `07-grid.md` · MDN grid / subgrid / named lines · — AUDIT 2026-10-06: read and stored as 01 · 05 · 06 (`ff5c53a`)
           Webflow · Framer · Wix Studio page grids · Figma layout grids · Material 4/8/12 · Bootstrap · GOV.UK · the
           design deck's responsive part · the real-site crawl (`docs/layout-benchmark/`): how many real pages align
           to one page-wide column grid
         - `[x]` MINE (part): `01-builders-and-systems.md` (Webflow · Framer · Wix Studio · Figma · Material · Bootstrap ·
           GOV.UK · MDN, 15 axes) · `05-crawl-splits.md` + `scripts/research/grid-splits.js` (23,728 rows of the 4,250-page
           crawl: 66% land on whole 12ths, 38% on 8, 36% on 4; 32 splits = 80%; 6+6 · 4+4+4 · 5+7 · 4+8 · 3+3+3+3 · 3+9 ≈ 57%)
-        - `[>]` THE MAP — `04-map.md`: 24 axes (A1–A15 + A16 stagger · A17 empty cells · A18 layers · A19 sticky cells ·
+        - `[x]` THE MAP — DONE (`ff5c53a`; the enough checklist signed 2026-10-04) — `04-map.md`: 24 axes (A1–A15 + A16 stagger · A17 empty cells · A18 layers · A19 sticky cells ·
           A20 published grid lines · A21 outer-margin content · A22 phone strategy · A23 sideways strips · A24 interaction,
           out of scope), every value with its CSS, who uses it, CORE / LATER / AVOID; gaps G1–G11; the enough-checklist draft
           - **THE USER'S DECISIONS, 2026-10-03 (from the evidence):** (Q1) columns **6 on the phone · 12 from 600 px** — NOT
@@ -3368,12 +3369,12 @@ sent), and my research. Nothing on the layout is done until every line here is c
               by default · page order + "picture first" · zero grid gap (blocks space themselves, builder spacing) · margins
               + columns cover the whole width, rows the whole height · invisible in the editor, a "Layout guides" switch
               OFF by default · an advanced panel (columns, row step, gutter, margin), everything following automatically
-            - `[ ]` NOT COVERED — open for the plan mockups, not research: the ROW STEP (snap or not; 1.5rem proposed) · the
+            - `[x]` NOT COVERED — open for the plan mockups, not research: the ROW STEP (snap or not; 1.5rem proposed) · the — AUDIT 2026-10-06: decided in the approved plan: row snap off, gap 0.75rem, side 0.8rem, one grid per site (`5b1c7ee`)
               phone gap (11 px builder vs 16 px norm) · per SITE or per PAGE for the panel, and its ranges
-            - `[ ]` NOT COVERED — real-world, left for the build's UAT (RULE AF): a low-cost Android WebView (subgrid needs
+            - `[ ]` NOT COVERED — real-world, left for the build's UAT (RULE AF): a low-cost Android WebView (subgrid needs — AUDIT 2026-10-06: → BATCH G-6 (queued)
               Chrome 117+; the fallback is the block's own equal columns — proven in the examples), a screen reader on the
               re-ordered phone ("picture first"), 360 px at Slow 3G
-            - `[ ]` NOT COVERED — people: pilot-school feedback (RULE RK), none yet; the crawl's school pages are inside 05 / 06
+            - `[ ]` NOT COVERED — people: pilot-school feedback (RULE RK), none yet; the crawl's school pages are inside 05 / 06 — AUDIT 2026-10-06: open: the pilot schools (RULE RK), none recruited yet
               but not studied apart
           - `[x]` the stop rule (proposed: the 21 unread Dribbble shots + G9 / G10, ≥ 30 items in a row adding no new axis
             and no new CORE value) — MET: the 21 shots added 0 axes and 0 CORE values (≈ 55 items in a row); G10 answered
@@ -3460,7 +3461,7 @@ sent), and my research. Nothing on the layout is done until every line here is c
             measured hidden guides · `[ ]` step 3 the
             combinations proven in a browser · `[ ]` taste / real-world (low-cost Android, 150–200% text, RTL, a screen
             reader) / school + regional sites · `[ ]` the "enough" checklist signed by the user
-    - `[ ]` AC-37c · **CHOOSE BY PURPOSE, THE BUILDER PICKS FLEX OR GRID — proposed by the user 2026-10-03** ("a user can
+    - `[ ]` AC-37c · **CHOOSE BY PURPOSE, THE BUILDER PICKS FLEX OR GRID — proposed by the user 2026-10-03** ("a user can — AUDIT 2026-10-06: → BATCH G-4 (5) (queued)
       select a section as a grid or as a flexbox… a menu would use a flexbox… it won't be called grid or flexbox in
       front of the user"). Already there: Stack = flex column, Side by side = flex row, Grid = CSS grid, and the
       Inspector's "Arrange as". Session a51af34e's view, given to the user: not one choice per SECTION — every level
@@ -3469,7 +3470,7 @@ sent), and my research. Nothing on the layout is done until every line here is c
       columns · Logos → a wrapping flex line · Photo beside words → two page-grid columns) and the raw choice stays
       in the Inspector under friendly names (Line up / Grid). Part of the page-grid plan and its mockups (AC-37b); the
       menu itself is the Navigation component, waiting on its own approved plan (RULE C)
-    - `[ ]` AC-37a · the canvas interaction, PROPOSED to the user 2026-10-03 (not yet a plan to approve): the 12 × 12 lines
+    - `[ ]` AC-37a · the canvas interaction, PROPOSED to the user 2026-10-03 (not yet a plan to approve): the 12 × 12 lines — AUDIT 2026-10-06: PARTLY built (snap, half-lines, Alt arrows, guides — G-2 / G-3); spilling into a neighbour, the covers-words outline and the Position gallery → BATCH G-5 (queued)
       (halves dotted) and a ruler appear only while a block in a grid is selected or dragged · drag the body to move, the
       edge handles to resize, both snapping to half-lines, with a live "column 1½ → 9½ · row 1½ → 8½" label · drag past
       the band edge and the lines carry on into the neighbour, which dims; the label says "spills 1½ rows into the section
@@ -3614,7 +3615,7 @@ sent), and my research. Nothing on the layout is done until every line here is c
       - `[ ]` R-2 · `cp-tag.js` read CodePen's "verify you are human" page as "no more pens" (hover stopped at 96,
         reduced-motion at 0) and then crashed on the challenge's navigation; fix: detect the check, PAUSE and ask the
         user to tick it once in the visible window (no automated bypass), retry, 2 windows + random pauses on CodePen
-      - `[ ]` R-3 · `src-list.js` gave up on one Webflow page timeout; fix: 4 retries per page
+      - `[x]` R-3 · `src-list.js` gave up on one Webflow page timeout; fix: 4 retries per page — DONE (checked in the code 2026-10-06: four tries per page, `scripts/research/src-list.js` line 15, `186dec5`)
       - `[ ]` R-4 · `aw-list.js` crashed at Animation page 185 (connection dropped) and LOST 184 pages — it saved only at
         the end; fix: `src-list.js` saves after every page and resumes
       - `[ ]` R-5 · an Awwwards INSPIRATION item has no "Visit site" of its own — recorded as "null" (a false miss); fix:
