@@ -374,7 +374,7 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
     measured (root, body, h1, h2, sidebar, contents, tables, both phone controls) scales ×0.75 / ×1 / ×1.5; no sideways scroll at 375
   - `[x]` D2-6 · A PROMISE, NOT A DEFECT (the user, 2026-10-05: "I should include images… examples… more playful"): MOVED to BATCH
     D-3 change (1) — screenshots from the real builder in the layout story and reference (RULE DOCS)
-- `[>]` **BATCH D-3 · The rest of the documentation rewritten** (YOU ARE HERE, opened 2026-10-06 after D-2's commit) — QUEUED
+- `[>]` **BATCH D-3 · The rest of the documentation rewritten** (opened 2026-10-06 after D-2's commit; YOU ARE HERE → change (2)) — QUEUED
   2026-10-05 by the user (after D-2) (area: documentation):
   - `[x]` (1) PICTURES AND EXAMPLES IN THE LAYOUT PAGES (from D2-6): screenshots taken from the real builder, built through the UI
     (RULE Y), for each scenario of the story and the main panels of the reference; `:::tip` callouts where a scenario has a trick —
@@ -398,7 +398,7 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
       pages, 13 + 7 pictures load, none past the column, no sideways scroll, AND all 70 screens of `screens.js` split over the six
       windows; a tap on a picture opens it full size (800px) in a new tab (D3-23)
     - `[x]` V8 RULE K: 3000 / 3100 / 3200 / 4000 checked free after every pass; `.next-b` removed
-  - `[ ]` (2) the Website Builder Guide's non-layout parts (content, components, themes, Preview, Page check, export), the README
+  - `[>]` (2) ← YOU ARE HERE · the Website Builder Guide's non-layout parts (content, components, themes, Preview, Page check, export), the README
     index, the plan / Builder Hub / Layout System / Builder Parity Audit artifacts corrected to what was built (G-1 … G-3c, E-1) and
     pointing at the site, every page in the same clean format
   - `[x]` D3-1 · REAL (found measuring D2-7): the base size is applied TWICE — Infima puts `--ifm-font-size-base` (0.9375rem) on
@@ -3599,6 +3599,22 @@ sent), and my research. Nothing on the layout is done until every line here is c
 
 One entry per session, newest first. Written the moment the user says "new session" (or the context is about to run
 out) — where the session STARTED FROM, where it GOT TO, and where the next one CONTINUES FROM.
+
+### 2026-10-06 · session ff5dbc77 · branch `builder/page-grid` — HANDOVER (the user asked "new session or continue here?"; recommended once both held: the context is genuinely long — D3-1 and all of D-3 change (1) with 32 ledger lines, two product fixes, ~30 screenshots read, two full gates — and the boundary is clean: everything committed at `5423dde`, every server stopped)
+- **Started from:** session 148707ee's handover (`0531c06`), BATCH D-3, D3-1 open for the user.
+- **Got to:** D3-1 DONE (`51a2317` — the user: keep the 14px look; body sized once over the unchanged 15px root; D3-2: lowering the
+  base would have shrunk every rem). **D-3 change (1) DONE** (`dfb0c36`): 19 pictures built through the UI in `docs/guide/img/`
+  (`scripts/uat/docs-shots-headed.js`), the reference's tables rewritten from the code, 4 tips, eleven word/builder disagreements fixed;
+  PRODUCT: Reset asks first and is undoable (D3-16), DeleteConfirmationModal a named alertdialog whose Escape works (D3-18/19); docs
+  site Previous/Next stack at 200 % (D3-22); headed docs 24/24 at all 70 screens, Reset 56/56; gate green (vitest 4370, test:fast 807).
+  The user decided D3-31 → G-3d change (3) (a 10rem floor per block on a phone) and D3-32 → E-3 (top bar one row from 1280) (`5423dde`).
+- **Continue from:** **BATCH D-3 (YOU ARE HERE) → change (2)**: write its checklist lines first (U-lines under D-3), then the Website
+  Builder Guide's non-layout parts (`docs/guide/website-builder.md`: content, components, themes, Preview, Page check, export) checked
+  against the CODE and through the UI the way change (1) was (pictures where they help, same clean format), the README index, and the
+  artifacts (Builder Hub · Layout System · Builder Parity Audit · the plan — read each with `Artifact action:"read"`, correct to what was
+  built in G-1 … G-3c, E-1 and D-3, point them at the docs site); docs:build + docs guard; headed docs pass (`uat-d3-docs-headed.js`);
+  close D-3 (every ledger line closed), commit. Then BATCH G-3d (3 changes), then E-2 → E-3 → E-4 on `builder/editor-small-screens`.
+- **Next prompt (paste to start):** given in the user's chat at this handover (2026-10-06).
 
 ### 2026-10-06 · session 148707ee · branch `builder/page-grid` — HANDOVER (both held: the context was summarised once, and the boundary is clean — D-2 committed, nothing running; the user: "let's start a new session")
 - **Started from:** session 22981e0a's handover — PR of `builder/layout-uat` merged (`1541d98`), `builder/page-grid` cut from master, BATCH D-2.
