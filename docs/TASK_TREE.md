@@ -572,6 +572,29 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
   - GATE at the change-(1) commit: typecheck 0 · eslint 0 errors · vitest 4,370/4,370 · `test:fast` 807 passed (exit 0)
 - `[>]` **BATCH G-3d · Three decisions from G-3b and D-3** (NEXT — opens after D-3's commit) — QUEUED 2026-10-05 by the user ("yes to both"), change (3) added
   2026-10-06 ("yes, both", D3-31) (area: page grid · 3 changes):
+  - MAPPED 2026-10-06 (read-only, before BDD; file:line in `lib/box-model.ts` unless named) — the design each change follows:
+    - (3) the fit rule is `rowNarrowsAt` (:3509): today only WORDS get a floor (`floorOf` 14rem :4703; an Image gets 0, and a row
+      with no words is skipped at :3520 — why the photo and the sidebar stay beside). Change, gated `if (gridRow)` so saved pages are
+      byte-identical: a 10rem floor on every block's AREA (its columns), capped below the tablet rung (37.5em) so wide screens never
+      step. MEASURED BY ARITHMETIC, why the area and not the drawn box: at 360 a Stat's box is (360 − 2·16 − 12) / 2 = 158px < 160 —
+      on the box four Stats would stack, against the user's own line; on the area two across needs 20rem of a 22.5rem page → stay.
+      Paragraph + 40 % photo at 375 → photo area 150px → stacks; article + 30 % sidebar → 112px → stacks. Visible side effect, by
+      the decision's own words ("ANY block"): a strip of six logos on a page row now goes 2 across at 360. One emitter
+      (`rowQueryCss` :3579) serves canvas and export; the panel's `fitStepAt` follows
+    - (1) a lone block is never stepped (`n < 2`); its phone span comes from `rowLinesAt` (:5317) via `resolveResponsive`. Change in
+      `rowLinesAt` only, at the phone: a line holding ONE block whose phone width / margin was not set at the phone takes the whole
+      line; everything downstream (CSS, canvas slot, panel) reads `rowLinesAt`, so they cannot disagree
+    - (2) `fillsRows(block)` = page-grid block spanning 2+ rows whose only child is an Image with `fillHeight !== false` (a new
+      optional `BoxNode.fillHeight?: false`, stored only when switched off); `childStyle` gives the image `flex: 1 1 auto` and
+      `imageSizing` `height: 100%` with its own height kept as a minimum; both renderers pass it; the switch "Fill the block's
+      height" in the picture's settings (`BoxInspector.tsx:1446`), shown only where it applies (RULE UI)
+    - TESTS to extend: `page-grid.test.ts` (fit :195-249 — the four-Stats margin drops to 0.5rem, add a 340 check — G3b-11 :737,
+      rows :959), `image-intrinsic.test.ts`, `BoxInspector.test.tsx`, `page-grid.feature`, `box-builder-images.feature`; headed
+      template `uat-g3b-headed.js`; docs: story §2 / §4 / §6¾, reference "Fill the block's height", retake two phone shots
+  - `[?]` G3d-1 · WAITING ON THE USER (found mapping (2)): the decision says the picture is cropped "at its focal point" — no picture
+    has a focal point today (only backgrounds have a position, `bgPosition`; the exported `<img>` has no `object-position`, so every
+    crop is centred). Either (a) the centre for now, marked `ponytail:` — the least code — or (b) a new "Focal point" control on
+    every picture (nine-point, like a background's position), used by this crop and by every cropped picture
   - `[ ]` (3) A FLOOR FOR EVERY BLOCK OF A ROW ON A PHONE (D3-31): the fit rule stacks a row on a phone when ANY of its blocks would
     get narrower than 10rem, not only its words — measured at 375: a ~100px photo beside a paragraph, a ~95px sidebar beside an
     article. Four Stats on a 360 phone (~165px each) stay two across. Then the story's §2 / §4 phone lines and tips are rewritten
