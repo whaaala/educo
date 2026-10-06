@@ -167,6 +167,7 @@ export default function BoxDemoPage() {
   }, [toggleGuides]);
   const [pageMenu, setPageMenu] = useState(false); // page-settings popover open
   const [confirmDeletePage, setConfirmDeletePage] = useState(false); // delete-page confirmation modal
+  const [confirmReset, setConfirmReset] = useState(false); // start-over confirmation modal (D3-16)
   const [pageCheckOpen, setPageCheckOpen] = useState(false); // the Page check (semantics C1)
   const [inspectorOpen, setInspectorOpen] = useState(true); // right Inspector panel collapsed?
   /**
@@ -301,7 +302,8 @@ export default function BoxDemoPage() {
   const mergeAt = useRef<{ key: string; at: number } | null>(null);
 
   const pushSite = (next: BoxSite) => setHist((h) => (h ? { present: next, past: [...h.past, h.present].slice(-HIST_CAP), future: [] } : h));
-  const resetSite = (next: BoxSite) => { const s = normalizeSite(next); setHist({ present: s, past: [], future: [] }); setActivePageId(s.homeId); setSelectedIds([]); };
+  // D3-16: one undoable step — it emptied the history, so a single click lost the whole site for good
+  const resetSite = (next: BoxSite) => { const s = normalizeSite(next); pushSite(s); setActivePageId(s.homeId); setSelectedIds([]); };
   // An edit to the ACTIVE page's tree.
   const commit = (nextRoot: BoxNode, mergeKey?: string) => {
     // Worked out BEFORE the updater, never inside it: a state updater may be called more than once for one
@@ -1204,7 +1206,7 @@ export default function BoxDemoPage() {
         ); })()}
         <ToolBtn onClick={() => setPreview(true)} title="See it as a visitor"><Eye className="w-3.5 h-3.5" /> Preview</ToolBtn>
         <ToolBtn onClick={onExport} title="Download the whole site as HTML"><Download className="w-3.5 h-3.5" /> Export</ToolBtn>
-        <ToolBtn onClick={() => resetSite(siteFromRoot(starter()))} title="Start over">Reset</ToolBtn>
+        <ToolBtn onClick={() => setConfirmReset(true)} title="Start over">Reset</ToolBtn>
 
         {/* This group wraps too. Left as one unbreakable row it was still 417px wide on a 375px screen, so
             the editor's own theme switcher — the last control in it — hung off the edge while everything
@@ -1320,6 +1322,14 @@ export default function BoxDemoPage() {
         itemId={`/${activePage.path}`}
         confirmButtonText="Delete page"
         warningMessage={`Deleting “${activePage.name}” permanently removes the page and everything on it. You'll need to rebuild it from scratch — though you can still Undo (Ctrl+Z) right after.`}
+      />
+      <DeleteConfirmationModal
+        isOpen={confirmReset}
+        onClose={() => setConfirmReset(false)}
+        onConfirm={() => { setConfirmReset(false); resetSite(siteFromRoot(starter())); }}
+        title="Start the whole site over?"
+        confirmButtonText="Start over"
+        warningMessage="Every page of this site is replaced by one starter page. You can Undo (Ctrl+Z) right after."
       />
     </div>
   );

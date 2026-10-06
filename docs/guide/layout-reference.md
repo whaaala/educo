@@ -16,23 +16,33 @@ cross-referenced.
 
 ## Top bar
 
+[![The top bar: Box Builder, the page tabs, Add a band, Undo and Redo, Page check, Preview, Export and Reset; under them the six device chips, the zoom, Layout guides, Show hidden blocks, Base size and the two theme menus](img/ref-top-bar.webp)](img/ref-top-bar.webp)
+
 | Control | What it does | Shortcut |
 |---------|-------------|---------|
-| **+ Add a band** | Adds a full-width coloured band at the bottom of the page; you can drag it to any position after. | — |
+| **Page tabs** (Home · **+** Add page · Page settings) | Switch between the site's pages, add one, rename or delete one. | — |
+| **+ Add a band** | Adds a full-width band at the bottom of the page; you can drag it to any position after. | — |
 | **Undo** | Reverses the last change. | Ctrl / Cmd Z |
-| **Redo** | Re-applies the last undone change. | Ctrl / Cmd Y |
-| **Preview** | Opens the real published page at the current screen width. Close it with **Exit preview** or Escape. | — |
+| **Redo** | Re-applies the last undone change. | Ctrl / Cmd Y, or Ctrl / Cmd Shift Z |
+| **Page check** | Lists what to fix before publishing: pictures missing a description, heading levels out of order, lines too tight for their words. The badge counts them. | — |
+| **Preview** | Opens the real published page. Close it with **Exit preview**; **H** hides the Preview's own controls. | — |
 | **Export** | Downloads the built site as a folder of HTML, CSS and assets. | — |
-| **Reset** | Clears the page and starts from blank. | — |
-| **Device chips** (Mobile · Tablet · Laptop · Desktop · Wide · Full width) | Switches the canvas to that screen width. Settings you change at that width apply only below (or above) it. | — |
-| **Base size** | The width in pixels that the canvas is zoomed to fit on your screen. | — |
-| **Page grid** icon | Opens the Page grid panel (see below). | — |
-| **Page check** icon | Shows warnings: pictures missing a description, lines too tight for words, heading levels out of order. | — |
-| **Blocks** launcher | Opens or closes the floating Blocks panel. | **B** |
+| **Reset** | Clears the page and starts from blank (asks first). | — |
+| **Device chips** (Mobile 375 · Tablet 768 · Laptop 1024 · Desktop 1280 · Wide 1920 · Full width) | Switches the canvas to that screen. A size, spacing or layout change you make at a chip applies from that screen down. | — |
+| **Zoom** (− · Fit · +) | Zooms the canvas; **Fit** fits the whole page width in the window. | — |
+| **Layout guides** (the grid icon) | Draws the page grid's column and row lines over the canvas, and opens the **Page grid** panel. | — |
+| **Show hidden blocks** (the eye) | Draws blocks hidden at this screen faintly, so you can select and edit them. Click again to hide them. | — |
+| **Base size** (the number box, 10 by default) | The size in px everything on the canvas scales from, so words stay readable when you zoom. | — |
+| **Website theme** (the palette) and **Editor appearance** (the sun) | The site's own colours and type, saved with it · the builder's light / dark look, for you only. | — |
+| **Blocks** (the floating button at the left) | Opens or closes the Blocks panel. | **B** |
 
 ---
 
 ## Blocks panel
+
+[![The Blocks panel open over the canvas, its tiles in sections](img/ref-blocks-panel.webp)](img/ref-blocks-panel.webp)
+
+Drag a tile onto the page and let go where the dashed marker shows, or click a tile to add it after the selected block.
 
 | Section | Block | What it makes |
 |---------|-------|--------------|
@@ -68,19 +78,36 @@ cross-referenced.
 
 Appears just above (or below) the selected block.
 
+[![The block toolbar: a drag handle, a plus, a lock and a three-dot menu](img/ref-block-toolbar.webp)](img/ref-block-toolbar.webp)
+
 | Button | What it does | Shortcut |
 |--------|-------------|---------|
-| Block name (e.g. "Stack") | Opens the Inspector for this block. | Click anywhere on the block |
-| **↑ Move up** | Moves the block one position earlier in its container. | — |
-| **↓ Move down** | Moves the block one position later in its container. | — |
-| **⊕** (plus) | Opens a menu: **Add a block after** (adds a sibling below), **Add a block inside** (nests inside this block). | — |
-| **⧉ Duplicate** | Makes an identical copy directly below. | Ctrl / Cmd D |
-| **✕ Delete** | Removes the block and its children. | Delete / Backspace |
-| **⋯** | More: Wrap in a Stack, Float / Stick, Meaning (semantic role). | — |
+| **⠿ Drag to move** | Hold and drag the block to a new place; let go where the dashed marker shows. | — |
+| **+ Add a block inside** | Nests a new block inside this one. | — |
+| **🔒 Lock position and size** | Freezes the block's place and size; click again to unlock. | — |
+| **⋮ Block actions** | The menu below. | — |
+
+The **⋮ Block actions** menu:
+
+| Item | What it does | Shortcut |
+|------|-------------|---------|
+| **Move up** / **Move down** | One place earlier / later in its container. | ↑ / ↓ |
+| **Duplicate** | An identical copy directly after it. | Ctrl / Cmd D |
+| **Copy** · **Cut** · **Paste** | The usual clipboard, for blocks. | Ctrl / Cmd C · X · V |
+| **Delete** | Removes the block and everything inside it. | Delete / Backspace |
+| **Float on top** / **Return to flow** | Lifts the block out of the layout to place it freely, or puts it back. | — |
+| **Bring to front** · **Bring forward** · **Send backward** · **Send to back** | Layer order of floating blocks. | — |
+| **Ungroup** | Takes the blocks out of a group. | Ctrl / Cmd Shift G |
+
+Click a block to select it; click again to go inside it; **Escape** steps back out one level.
 
 ---
 
 ## Inspector — Design tab
+
+[![The Inspector for a Stack: the Styles gallery (Plain, Card, Outline, Tinted) above the Design, Content and Per-device tabs, then the Meaning and Placement sections](img/ref-inspector-design.webp)](img/ref-inspector-design.webp)
+
+Above the three tabs, **Styles** shows ready-made looks for the selected block as live previews; tap one to apply it.
 
 ### Arrange as (Stack / Side by side / Grid only)
 
@@ -162,6 +189,8 @@ with **Back to default**. The default is never zero unless you set it to zero.*
 
 (Available on Text, Heading, Button, Image, List, and component blocks.)
 
+[![The Inspector's Content tab for a Heading](img/ref-inspector-content.webp)](img/ref-inspector-content.webp)
+
 | Control | What it does |
 |---------|-------------|
 | **Text / Label** | The editable text for this block. Click the block on the canvas to edit inline instead. |
@@ -169,7 +198,7 @@ with **Back to default**. The default is never zero unless you set it to zero.*
 | **Describe this image** | The alt text for an Image block. Read aloud to users who cannot see it. |
 | **Load straight away** | Turns off lazy loading for an Image — use only for images at the very top of the page. |
 | **Show the whole picture (don't crop it)** | Ticked: the block takes the photograph's own proportions. Unticked: crops to the Height you set. |
-| **Fill the block's height** | For an Image inside a block that spans multiple rows (Rows tall ≥ 2): the picture fills the block's full height, cropped to its focal point. A **switch** in the Content tab; on by default for a solo picture in a spanning block. |
+| **Fill the block's height** *(coming next, batch G-3d)* | For an Image alone in a block that spans 2 or more rows: the picture will fill the block's full height, cropped to its focal point. A switch, on by default. Not in the builder yet. |
 | **Bookmark** | An anchor name — the block can be linked to directly using `#bookmark`. |
 
 ---
@@ -178,21 +207,33 @@ with **Back to default**. The default is never zero unless you set it to zero.*
 
 | Control | What it does |
 |---------|-------------|
-| **Hidden on this screen** | The block is completely absent at the selected device chip's width — no space, no content in the HTML. |
-| Device chip selector | Shows which screen's settings you are editing. Values set here apply from that width down (or up for Wide). |
+| **Hidden on phone** (the name follows the device chip: phone, tablet…) | The block is gone at that screen — no space taken, nothing moved — on the canvas and on the published page. **Show hidden blocks** (the eye in the top bar) draws it faintly so you can select it. |
+| **Hidden everywhere** | Hides the block on every screen; tick it, then untick "Hidden on phone" at the Mobile chip to show it on phones only. |
+| The yellow note "Editing Phone…" | Says which screen your size, spacing and layout changes apply to, with **Reset phone changes to default**. |
+
+[![The Per-device tab at Full width: a note to switch to Tablet or Mobile, and Hidden everywhere](img/ref-inspector-device.webp)](img/ref-inspector-device.webp)
 
 ---
 
 ## Page grid panel
 
-Opened with the **Page grid** icon in the toolbar (the grid of squares).
+Opened by the **Layout guides** button in the top bar (the grid icon), or right-click the canvas → **Page grid…**.
+
+[![The Page grid panel: screen tabs, Columns on Desktop 12, Row lines in the guides, Row step, Side space, Space between columns, Space between rows, This page uses its own grid, Reset to default](img/ref-page-grid-panel.webp)](img/ref-page-grid-panel.webp)
 
 | Control | What it does | Notes |
 |---------|-------------|-------|
-| **Columns** per screen | The number of column divisions on each device. Default 12 for tablet and up, 6 for phone. | Per screen |
-| **Side space** (frame) | Breathing room on all four page edges. Default: `clamp(1rem, …, 1.25rem)` — 1rem on a phone, gently growing to 1.25rem wide. Setting it to 0 puts every block against the page edge. | Single value, all four sides |
-| **Space between columns** | Gap between blocks side by side in page-grid rows (across). Default ~0.75–1.5rem. **Back to default** restores it. | Per screen |
-| **Space between rows** | Gap between wrapped lines in page-grid rows (down). Same defaults. **Back to default** restores it. | Per screen |
+| **Phone · Tablet · Laptop · Desktop · Wide** | Which screen the settings below are for. | — |
+| **Columns on …** (− / number / +) | The number of columns on that screen. Default 12 from a tablet up, 6 on a phone. Every block keeps its share (half stays half); Undo puts it back. | Per screen |
+| **Row lines in the guides** | Draws the row lines as well as the column lines. | — |
+| **Row step** | The height of one grid row (default 1.5rem) — what **Rows tall** counts in. | — |
+| **Side space (padding)** | Breathing room on all four page edges. Default 1–1.25rem (1rem on a phone, growing to 1.25rem wide). 0 puts every block against the page edge. | All four sides |
+| **Space between columns** | Gap between blocks side by side (across). Default about 0.75–1.5rem. | Per screen |
+| **Space between rows** | Gap between wrapped lines (down). Default about 0.7–1.4rem. | Per screen |
+| **This page uses its own grid** | The settings above apply to this page only; unticked, they are shared by every page of the site. | — |
+| **Reset to default** | Puts every setting in the panel back to its default. | — |
+
+Each setting reads "At the default" or "Follows the default" until you change it.
 
 ---
 
@@ -202,15 +243,17 @@ Opened with the **Page grid** icon in the toolbar (the grid of squares).
 |-----|-------------|
 | **B** | Open / close the Blocks panel |
 | **Ctrl / Cmd Z** | Undo |
-| **Ctrl / Cmd Y** | Redo |
+| **Ctrl / Cmd Y** or **Ctrl / Cmd Shift Z** | Redo |
 | **Ctrl / Cmd D** | Duplicate selected block |
+| **Ctrl / Cmd C · X · V** | Copy · cut · paste a block |
+| **Ctrl / Cmd Shift G** | Ungroup |
 | **Delete / Backspace** | Delete selected block |
-| **Escape** | Deselect; close panel / inspector (on tablet) |
+| **Escape** | Step out to the parent block; close the Inspector (below laptop width) |
 | **Tab** | Move focus to the next interactive element |
 | **Shift + drag edge** | Snap to half-column lines (page-grid rows) |
 | **Alt + drop / drag edge** | Free-position inside columns (page-grid rows) |
-| **Arrow keys** (block selected) | Nudge a floating block 1px; reorder in the flow 1 step |
-| **F11** | Full-screen the canvas |
+| **↑ / ↓** (block selected) | Move a block in the flow one place earlier / later; nudge a floating block 2px (12px with Shift) |
+| **H** (in Preview) | Hide or show the Preview's own controls |
 
 ---
 

@@ -376,8 +376,28 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
     D-3 change (1) — screenshots from the real builder in the layout story and reference (RULE DOCS)
 - `[>]` **BATCH D-3 · The rest of the documentation rewritten** (YOU ARE HERE, opened 2026-10-06 after D-2's commit) — QUEUED
   2026-10-05 by the user (after D-2) (area: documentation):
-  - `[ ]` (1) PICTURES AND EXAMPLES IN THE LAYOUT PAGES (from D2-6): screenshots taken from the real builder, built through the UI
-    (RULE Y), for each scenario of the story and the main panels of the reference; `:::tip` callouts where a scenario has a trick
+  - `[x]` (1) PICTURES AND EXAMPLES IN THE LAYOUT PAGES (from D2-6): screenshots taken from the real builder, built through the UI
+    (RULE Y), for each scenario of the story and the main panels of the reference; `:::tip` callouts where a scenario has a trick —
+    DONE 2026-10-06: 19 pictures in `docs/guide/img/` (`scripts/uat/docs-shots-headed.js`, seven slices in headed windows), 13 in the
+    story and 7 in the reference, each a link to itself (tap → full size), 4 tips; the reference's tables rewritten against the code
+  - **D-3 HEADED CHECKLIST** (written 2026-10-06 before the pass; the shots by `scripts/uat/docs-shots-headed.js`, six windows,
+    fresh `next build` on 3100; the site by `docs:start` on 4000):
+    - `[x]` V1 every scenario of the story has a picture BUILT THROUGH THE UI: §1 the three shapes · §2 photo beside words (canvas
+      desktop + Preview phone) · §3 three cards (canvas + Preview phone) · §4 sidebar (canvas + Preview phone) · §5 a drag with its
+      live label · §6 Per-device hide · §6½ default spacing · §6¾ guides + Page grid panel · §11 the editor on a tablet — SEEN, every
+      picture read (§1 shows the Blocks panel's Stack · Side by side · Grid tiles; §6¾ also the Shift half-lines)
+    - `[x]` V2 the reference's main panels: Top bar · Blocks panel · Block toolbar · Inspector Design · Content · Per-device · Page grid
+    - `[x]` V3 every picture: WebP, resized to the width it is shown at (≤ 800px, a phone shot at 375), ≤ 80 KB, with alt text —
+      largest 26 KB (the guides); "no alt 0" on both pages (`uat-d3-docs-headed.js`)
+    - `[x]` V4 every picture AGREES WITH THE WORDS beside it — eleven disagreements found (D3-5 … D3-15), the words corrected; both
+      tips proven THROUGH THE UI (Whole line at Mobile → the photo under the words in the phone Preview, still beside on desktop)
+    - `[x]` V5 `:::tip` callouts where a scenario has a trick — 4 (photo under on a phone · sidebar under on a phone · Show hidden
+      blocks · Shift / Alt), rendered as callouts on every screen (D3-21)
+    - `[x]` V6 `npm run docs:build` [SUCCESS] · docs guard 5/5 (pictures checked as files, D3-20; callout syntax, D3-21)
+    - `[x]` V7 the site HEADED at 375 / 768 / 1280 / 1536, light AND dark, and 200 % text (Chrome's real font-size): 24/24 — both
+      pages, 13 + 7 pictures load, none past the column, no sideways scroll, AND all 70 screens of `screens.js` split over the six
+      windows; a tap on a picture opens it full size (800px) in a new tab (D3-23)
+    - `[x]` V8 RULE K: 3000 / 3100 / 3200 / 4000 checked free after every pass; `.next-b` removed
   - `[ ]` (2) the Website Builder Guide's non-layout parts (content, components, themes, Preview, Page check, export), the README
     index, the plan / Builder Hub / Layout System / Builder Parity Audit artifacts corrected to what was built (G-1 … G-3c, E-1) and
     pointing at the site, every page in the same clean format
@@ -390,6 +410,75 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
   - `[x]` D3-2 · REAL, MY OWN (found before editing D3-1): the tree's planned "keep 14px" fix (`--ifm-font-size-base: 0.875rem`)
     would have shrunk EVERY heading, gap and sidebar size by 14/15 — Infima's base IS the html (root) size, so every rem follows it
     (`infima/dist/css/default/default.css:377`). Not applied; D3-1 done as above, root unchanged (measured: root 15, h2 16.88 as before)
+  - `[x]` D3-3 · REAL (found reading for V4): `layout-reference.md` described the "Fill the block's height" switch as built — it is
+    G-3d (2), not built yet → marked "coming next, batch G-3d … not in the builder yet"; G-3d writes it for real
+  - `[x]` D3-4 · REAL (found reading for V4): `layout-story.md` §6¾ said a lone half-width block on a phone "now takes the whole
+    line" — G-3d (1), not built yet → says what happens today and that G-3d changes it
+  - `[x]` D3-5 · REAL, words (seen in the tablet shot): §11 said the Inspector "never covers the block she just tapped" — below 64em
+    it is a 22rem drawer OVER the canvas (`page.tsx:224`) → rewritten; the shot now comes from a window OPENED at 768 (the Inspector
+    starts closed, as on an iPad) — the first shot narrowed a 1280 window, a harness slip
+  - `[x]` D3-6 · REAL, words (seen in the toolbar shot): the reference listed ↑ ↓ Duplicate Delete buttons on the block toolbar — it
+    has ⠿ Drag to move · + Add a block inside · Lock · ⋮ Block actions → both tables rewritten from `BoxCanvas.tsx:3671` (labels, hints)
+  - `[x]` D3-7 · MY OWN, harness: the top-bar crop cut its second row; slice F waited for "Expand inspector" that a 1280-opened window
+    never shows; Inspector shots showed the top of the panel → cropped to the bar, slice G opened at 768, each control scrolled in
+  - `[x]` D3-8 · REAL, words (seen in the §2 phone Preview): "the photo drops under the words" — on a page-grid page the fit rule keeps
+    the two side by side while the words keep ~14rem (at 375: words 240px, photo ~100px) → the story says so, with the tip that puts
+    it under (proven through the UI). Whether that LOOK is wanted is D3-31, the user's
+  - `[x]` D3-9 · REAL, words (seen in the §4 phone Preview): "the sidebar goes under the article" — it stays beside (article ~220,
+    sidebar ~95px at 375) → same correction and tip; the look → D3-31
+  - `[x]` D3-10 · REAL, words: the reference's Page grid panel lacked Row lines in the guides · Row step · This page uses its own grid
+    · Reset to default (`PageGridPanel.tsx`) → table rewritten from the code, with its picture
+  - `[x]` D3-11 · REAL, words: "when I click a block, faint vertical lines appear" — the guides come from the Layout guides button (it
+    also opens the Page grid panel) → rewritten; the panel's two ways in named
+  - `[x]` D3-12 · REAL, words: §11 said the closed Inspector's label becomes the block's name — it stays "INSPECTOR" (seen) → removed
+  - `[x]` D3-13 · REAL, words: §6½ said every spacing control reads "Default · 2rem" — a Heading's reads "Default · 0rem", its gutter
+    belongs to the section (seen) → rewritten with the picture
+  - `[x]` D3-14 · REAL, words: "Hidden on mobile" / "Hidden on this screen" — the control is "Hidden on phone", the toggle the eye
+    "Show hidden blocks", and "Hidden everywhere" exists → both pages use the real names
+  - `[x]` D3-15 · REAL, words: the keyboard list had F11 (the browser's, not the builder's) and "nudge 1px" (2px, 12px with Shift —
+    `BoxCanvas.tsx:1183`), and lacked Copy / Cut / Paste / Ungroup / Ctrl+Shift+Z / H in Preview → rewritten from the code
+  - `[x]` D3-16 · REAL, PRODUCT, DATA LOSS (found checking the Top bar table): Reset replaced every page AND emptied the undo history in
+    one click, no question → asks first (shared DeleteConfirmationModal, "Start the whole site over?") and is one Undo step
+    (`pushSite`). BDD `box-builder-site.feature`; spec `tests/e2e/reset-asks-first.spec.ts` 4/4 projects (fails on the old build);
+    HEADED UAT `uat-d3-reset-headed.js` 56/56 — four editor themes, a 375 phone, Delete page, Cancel · Enter · Escape · Start over ·
+    Ctrl+Z · reload, and the restored site's Preview at all 70 screens
+  - `[x]` D3-17 · REAL, TEST: `builder-chrome-fits.spec.ts` says "a bar that wrapped at 1280px would be a regression" but asserts one
+    row only at 1536 — measured: 92px (two rows) at 1280 / 1366 / 1440, one row needs ~1480px. Which controls collapse is a design
+    decision → D3-32, the user's; the guard follows that decision
+  - `[x]` D3-18 · REAL, PRODUCT, a11y (found by the Reset spec): the shared DeleteConfirmationModal had no dialog role, name or
+    aria-modal (WCAG 4.1.2) and drew an empty item card → `role="alertdialog"`, named by its title, described by its warning, focus on
+    Cancel (WCAG 2.4.3), the card only with an item. Guard `tests/components/shared/DeleteConfirmationModal.test.tsx` (mutation-proven)
+  - `[x]` D3-19 · REAL, PRODUCT, pre-existing (found by the headed UAT): Escape never closed DeleteConfirmationModal in the builder — its
+    listener was keyed on a new `onClose` each render, and BoxCanvas's earlier Escape listener re-rendered the page mid-event, removing
+    it before it ran (listener churn) → subscribed once per opening, onClose through a ref (rule 2). Guard: the component test
+    reproduces it with `flushSync` in an earlier listener — fails on the old code, passes now
+  - `[x]` D3-20 · REAL, TEST: the docs guard treated every link as a page (`<link>.md`) and could not check a picture → a picture link is
+    checked as that file (mutation: a misspelt picture fails it)
+  - `[x]` D3-21 · MY OWN: the tips used `:::tip Title`, which Docusaurus 3 prints as text → `:::tip[Title]`; guard "every callout title
+    uses the bracket syntax" (mutation-proven)
+  - `[x]` D3-22 · REAL, a11y (found by V7): at 375 with 200 % text the reference's "Next" card was 381px — 22px sideways (WCAG 1.4.10);
+    Infima pins Next to column 2 → below 40em (the reader's own em) the two cards stack. 24/24
+  - `[x]` D3-23 · REAL, readability (seen in V7): a desktop screenshot on a phone is too small to read → every picture links to itself;
+    measured: a tap opens the 800px picture in a new tab
+  - `[x]` D3-24 · MY OWN: whole-window canvas shots were half empty canvas → cropped to the page's last block, the Preview shots to the
+    frame's content; the hide shot kept whole (its point is the Inspector's box)
+  - `[x]` D3-25 · NOT A BUG (product): 1 slice-D run in 6 ended a +140px drag at 321px though the live label said "8 of 12". MEASURED:
+    that run alone had a 12th mousemove at (446, 418) the script never sent (all its moves at y=167) — the REAL mouse pointer resting
+    over that headed window; the builder did what a pointer at 446 means
+  - `[x]` D3-26 · MY OWN, a flaky harness (RULE V): a drag held across a slow step can be moved by the real pointer → the pointer is put
+    back on the target before release; 6/6 runs identical
+  - `[x]` D3-27 · REAL, gate: eslint linted `docs-site/.docusaurus/` (generated by docs:build), 6 errors → ignored with its reason in
+    `eslint.config.mjs`; eslint 0 errors
+  - `[x]` D3-28 · MY OWN + pre-existing: `docs-guard.test.ts` read files without stripping CRLF (source-reading-tests) → stripped;
+    existence checks use `existsSync`
+  - `[x]` D3-29 · MY OWN: `reset-asks-first.spec.ts` was in neither browser list → added to `test-fast.js` and `test:invariants:rest`
+  - `[x]` D3-30 · MY OWN: the two new headed UATs did not use `screens.js` → both sweep all 70 screens
+  - `[?]` D3-31 · WAITING ON THE USER (from D3-8 / D3-9): on a 375 phone a paragraph + photo row keeps a ~100px photo beside the words,
+    and an article + sidebar a ~95px sidebar, because the words still fit (the G-1 fit rule). Keep that, or should a row whose PICTURE
+    or SIDEBAR would get narrower than a floor stack on a phone?
+  - `[?]` D3-32 · WAITING ON THE USER (from D3-17): the top bar is two rows (92px) from 1280 to 1440, one row from ~1480. Keep two rows
+    at a laptop, or collapse some labels to icons so 1280 is one row — and the guard asserts whichever is chosen
+  - GATE at the change-(1) commit: typecheck 0 · eslint 0 errors · vitest 4,370/4,370 · `test:fast` 807 passed (exit 0)
 - `[ ]` **BATCH G-3d · Two decisions from G-3b** — QUEUED 2026-10-05 by the user ("yes to both") (area: page grid · 2 changes):
   - `[ ]` (1) ON A PHONE A LONE HALF-WIDTH BLOCK TAKES THE WHOLE LINE: where the fit rule stacks a row, a block alone on its line
     whose width came from a WIDER screen takes the line (~165px of words beside a hole on a 360px phone otherwise); a width set on the

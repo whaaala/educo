@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { readdirSync, readFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 
 /**
@@ -39,7 +39,7 @@ describe("docs-guard", () => {
   it("every guide page has the required front-matter keys", () => {
     const missing: string[] = [];
     for (const file of guideFiles()) {
-      const src = readFileSync(join(GUIDE_DIR, file), "utf8");
+      const src = readFileSync(join(GUIDE_DIR, file), "utf8").replace(/\r\n/g, "\n");
       const fm = parseFrontMatter(src);
       for (const key of REQUIRED_KEYS) {
         if (!fm[key]) missing.push(`${file}: missing '${key}'`);
@@ -50,7 +50,7 @@ describe("docs-guard", () => {
 
   it("sidebar references only files that exist", () => {
     // Extract the doc IDs from the sidebars.js text (simple scan — no need to evaluate JS)
-    const src = readFileSync(SIDEBAR_PATH, "utf8");
+    const src = readFileSync(SIDEBAR_PATH, "utf8").replace(/\r\n/g, "\n");
     // Doc IDs are lowercase-and-hyphen strings (e.g. 'layout-story'); labels/types are Title Case or keywords.
     const ids = [...src.matchAll(/'([a-z][a-z0-9-]+)'/g)]
       .map((m) => m[1])
@@ -58,11 +58,7 @@ describe("docs-guard", () => {
     const missing: string[] = [];
     for (const id of ids) {
       const expected = join(GUIDE_DIR, `${id}.md`);
-      try {
-        readFileSync(expected);
-      } catch {
-        missing.push(`sidebars.js references '${id}' but docs/guide/${id}.md does not exist`);
-      }
+      if (!existsSync(expected)) missing.push(`sidebars.js references '${id}' but docs/guide/${id}.md does not exist`);
     }
     expect(missing, missing.join("\n")).toEqual([]);
   });
@@ -70,27 +66,34 @@ describe("docs-guard", () => {
   it("no guide page has a broken relative link to a file that does not exist", () => {
     const broken: string[] = [];
     for (const file of guideFiles()) {
-      const src = readFileSync(join(GUIDE_DIR, file), "utf8");
+      const src = readFileSync(join(GUIDE_DIR, file), "utf8").replace(/\r\n/g, "\n");
       // Match markdown links: [text](target) where target does not start with http or #
       const links = [...src.matchAll(/\[([^\]]+)\]\(([^)]+)\)/g)];
       for (const [, , href] of links) {
         if (href.startsWith("http") || href.startsWith("#") || href.startsWith("/")) continue;
-        // Relative .md link
-        const target = href.replace(/\.md$/, "").replace(/^\.\//, "");
-        const targetFile = join(GUIDE_DIR, `${target}.md`);
-        try {
-          readFileSync(targetFile);
-        } catch {
-          broken.push(`${file} → ${href}`);
-        }
+        // A file with its own extension (a picture) is checked as itself (D3-20); a page link is a doc ID → <id>.md
+        const rel = href.replace(/^\.\//, "");
+        const targetFile = /\.(webp|png|jpe?g|svg|gif)$/i.test(rel) ? join(GUIDE_DIR, rel) : join(GUIDE_DIR, `${rel.replace(/\.md$/, "")}.md`);
+        if (!existsSync(targetFile)) broken.push(`${file} → ${href}`);
       }
     }
     expect(broken, broken.join("\n")).toEqual([]);
   });
 
+  // D3-21: Docusaurus 3 reads a callout title only in brackets — `:::tip Title` is printed as plain text
+  it("every callout title uses the bracket syntax", () => {
+    const old: string[] = [];
+    for (const file of guideFiles()) {
+      readFileSync(join(GUIDE_DIR, file), "utf8").replace(/\r\n/g, "\n").split("\n").forEach((line, i) => {
+        if (/^:::(tip|note|info|warning|danger|caution)\s+\S/.test(line)) old.push(`${file}:${i + 1} ${line}`);
+      });
+    }
+    expect(old, old.join("\n")).toEqual([]);
+  });
+
   // D3-1: Infima sets --ifm-font-size-base as the html (root) size; using it again on an element applies it twice
   it("the base font size is applied once, on html only", () => {
-    const css = readFileSync(join(__dirname, "../../docs-site/src/css/custom.css"), "utf8");
+    const css = readFileSync(join(__dirname, "../../docs-site/src/css/custom.css"), "utf8").replace(/\r\n/g, "\n");
     expect(css).not.toMatch(/font-size:\s*var\(--ifm-font-size-base\)/);
   });
 });

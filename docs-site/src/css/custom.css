@@ -237,3 +237,10 @@ pre {
   outline: 2px solid var(--ifm-color-primary);
   outline-offset: 2px;
 }
+
+/* ─── Previous / Next — stack when there is no room for both (D3-22: at 200 % text on a 375 phone the
+   two-column grid kept the "Next" card at its longest word and the page scrolled sideways, WCAG 1.4.10) ── */
+@media (max-width: 40em) { /* em here is the reader's own text size, so a larger text stacks sooner */
+  .pagination-nav { grid-template-columns: 1fr; }
+  .pagination-nav__link--next { grid-column: 1; }
+}

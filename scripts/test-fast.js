@@ -118,6 +118,7 @@ const INVARIANT_SPECS = [
   "tests/e2e/add-inside-empty-box.spec.ts",
   "tests/e2e/selection-drills-inward.spec.ts",
   "tests/e2e/chrome-follows-resize.spec.ts",
+  "tests/e2e/reset-asks-first.spec.ts",
   "tests/e2e/dropped-block-fills-space.spec.ts",
   "tests/e2e/vertical-edges-anchored.spec.ts",
   "tests/e2e/page-height-is-content.spec.ts",

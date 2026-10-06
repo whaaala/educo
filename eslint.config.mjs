@@ -96,6 +96,8 @@ const eslintConfig = defineConfig([
     // …and the second build folders a UAT serves beside the first (`NEXT_DIST_DIR=.next-b`, next.config.ts): 127,808
     // "errors" appeared the day they were introduced, every one in build output (L-1 · L1-11).
     "**/.next-*/**",
+    // …and what `docs:build` / `docs:start` generate for the Docusaurus site (D3-27): route tables, not code anyone writes.
+    "docs-site/.docusaurus/**",
     "**/dist/**",
     "**/out/**",
     "**/build/**",

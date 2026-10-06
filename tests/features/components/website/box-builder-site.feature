@@ -313,3 +313,16 @@ Feature: Box Builder — multi-page site, preview & export
     Then nothing is emitted and the browser default stands
     Because re-drawing the whole gradient under the content would be adding
       something, which is the one thing this must not do
+
+  Scenario: Starting the whole site over asks first, and can be undone
+    Given a site with two pages
+    When the person clicks Reset
+    Then a dialog asks "Start the whole site over?" and nothing has changed yet
+    When they cancel
+    Then both pages are still there
+    When they click Reset and choose "Start over"
+    Then the site is one starter page
+    When they press Ctrl+Z
+    Then both pages are back
+    Because Reset replaced every page AND emptied the undo history in one click,
+      with no question asked — a mis-click lost the whole site for good (D3-16)

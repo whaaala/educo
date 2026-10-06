@@ -25,6 +25,8 @@ Maya is putting together the Year 6 page. She opens the Blocks panel and sees th
 - **Side by side** — things next to each other. A photo beside a paragraph.
 - **Grid** — a table-like arrangement: three cards across, two rows of them.
 
+[![The Blocks panel: under Layout, the Stack, Side by side and Grid tiles, each with a line saying what it makes](img/ref-blocks-panel.webp)](img/ref-blocks-panel.webp)
+
 They are the same block in three arrangements, so nothing is a dead end: a stack can hold a row, a row's column can
 hold a stack, and a grid cell can hold either. Every layout on every real site we studied is made of these three,
 nested. (That is not a guess: 4,147 crawled pages, every one of them describable this way.)
@@ -48,16 +50,25 @@ She wants the photo smaller. She clicks the text column, grabs its right edge an
 the two moves, the words widen, the photo narrows — **the edge you grab is the only thing that moves; the far edges
 stay where they are.** She lets go at 60 / 40.
 
+[![The editor on a desktop: a heading, and under it a paragraph on the left and a photo on the right, the words wider than the photo](img/story-photo-beside-desktop.webp)](img/story-photo-beside-desktop.webp)
+
 Now the screens:
 
 - **Desktop and laptop:** 60 / 40, as she set it.
 - **Tablet:** still 60 / 40 — two columns fit comfortably.
-- **Phone:** the photo drops under the words, each full width, because two columns on a 375px screen are two unreadable
-  slivers. (On a page-grid page, a row of short things — four stats — may stay two across on a phone where their words
-  fit; see §6¾.)
+- **Phone:** the two stay side by side **as long as the words keep room to read** — about 14rem (224px). On a 375px
+  phone her paragraph keeps about 240px and the photo shrinks beside it. Where the words would get less than that, the
+  photo drops under the words and each takes the full width. (Pages saved before the page grid always stack on a phone.)
 
-She did not set anything for the phone. She could: switch the device chip to Mobile and change the photo there, and
-that choice would apply from the phone size down and nowhere else.
+[![The published page on a 375px phone: the paragraph on the left, still readable, the photo smaller on its right](img/story-photo-beside-phone.webp)](img/story-photo-beside-phone.webp)
+
+:::tip[Want the photo under the words on a phone?]
+Switch the device chip to **Mobile**, select the photo and choose **Whole line** in Design → Size. That applies from the
+phone size down and nowhere else.
+:::
+
+She did not set anything for the phone. Everything she changes at the Mobile chip applies from the phone size down
+and nowhere else.
 
 ## 3. "Three cards across, that stack on a phone"
 
@@ -65,11 +76,15 @@ For the clubs, Maya wants three cards. She clicks **Grid**, sweeps *3 across, 1 
 drops a **Card** into each. The cells share the width equally; the cards grow to the tallest one so their buttons line
 up.
 
+[![The editor on a desktop: "Our clubs" above three cards side by side, each with a picture, a title, words and a Learn more button](img/story-cards-desktop.webp)](img/story-cards-desktop.webp)
+
 - **Desktop, laptop:** three across.
 - **Tablet (600–900px):** still three across — three cards at 250px each are perfectly readable, so the builder leaves
   them. (Four or more across *would* be rearranged to at most three a line on a tablet, as evenly as they can: 4 → 2 + 2,
   6 → 3 + 3.)
 - **Phone:** one under another.
+
+[![The published page on a 375px phone: the cards one under another, each the full width](img/story-cards-phone.webp)](img/story-cards-phone.webp)
 
 **The grid also watches its own box, not only the screen.** Later Maya puts a three-across grid of quotes *inside* the
 middle card. That inner grid is now in a box a third of the page wide. On a laptop the screen has room for three
@@ -94,8 +109,18 @@ The term-dates page has a long article and a short "In this section" list. Maya 
 it, then drops another Stack on its right edge for the sidebar, and drags the boundary to 70 / 30. She selects the
 sidebar → Design → Placement → *Sticks when reached*, so it stays on screen while the article scrolls.
 
+[![The editor on a desktop: the term-dates article on the left, "In this section" on the right, selected, with the Inspector showing Sticks when reached](img/story-sidebar-desktop.webp)](img/story-sidebar-desktop.webp)
+
 - **Desktop, laptop, tablet landscape:** article and sidebar side by side, the sidebar holding its place as you scroll.
-- **Phone:** the sidebar goes under the article, full width.
+- **Phone:** like the photo in §2, the sidebar stays beside the article while both keep room for their words. Her
+  sidebar's short links fit, so on a 375px phone it stays on the right, narrow.
+
+[![The published page on a 375px phone: the article on the left, the narrow "In this section" list on its right](img/story-sidebar-phone.webp)](img/story-sidebar-phone.webp)
+
+:::tip[A sidebar under the article on a phone]
+At the **Mobile** chip, select the sidebar and choose **Whole line** in Design → Size: from the phone size down it
+goes under the article, full width.
+:::
 
 Two things she marks under *Meaning*: the article column as **Main content**, the sidebar as **Sidebar**. That is what
 makes the published page say `<main>` and `<aside>` to a screen reader; she never sees the tags.
@@ -105,6 +130,11 @@ makes the published page say `<main>` and `<aside>` to a screen reader; she neve
 When Maya sizes a column herself, that size is hers: "the size you drag is the size you get", and the builder never
 quietly changes it. Two things protect that promise:
 
+While she drags, a label beside the edge says where she is in columns — "8 of 12" on this screen, and what that
+becomes on a phone:
+
+[![A column being dragged wider: the right edge is held, and a label beside it reads "8 of 12 · phone 4 of 6"](img/story-drag-edge.webp)](img/story-drag-edge.webp)
+
 - **Nothing is drawn narrower than its longest word.** Drag a column to 3rem and it will still be as wide as the
   longest word in it, so words never break.
 - **Every line that holds a hand-sized column has one pixel of slack.** A word that needed one pixel more than the
@@ -113,12 +143,19 @@ quietly changes it. Two things protect that promise:
 
 ## 6. Hiding something on one device
 
-The menu is a list of links on a desktop and a "☰ Menu" button on a phone. Maya selects the link list → *Per-device*
-→ at the Mobile chip, ticks *Hidden on mobile*; then selects the button and hides it everywhere else.
+The menu is a list of links on a desktop and a "☰ Menu" button on a phone. Maya switches to the **Mobile** chip,
+selects the link list → *Per-device* → ticks **Hidden on phone**; then selects the button and hides it on every other
+screen the same way.
+
+[![The editor at the Mobile chip: the right-hand block is gone from the canvas, and the Inspector's Per-device tab shows Hidden on phone ticked](img/story-hide-mobile.webp)](img/story-hide-mobile.webp)
 
 **A hidden block is gone from that device — on the canvas as much as on the published page.** It takes no space and
-moves nothing. When she needs the hidden menu back to edit it, the **Hidden** toggle beside the device chips draws it
-faintly; click again and it is gone.
+moves nothing.
+
+:::tip[Getting a hidden block back]
+The **eye** beside the device chips (*Show hidden blocks*) draws hidden blocks faintly so you can select and edit them;
+click it again and they are gone.
+:::
 
 ## 6½. "My words never touch an edge" — space by default
 
@@ -128,8 +165,12 @@ with a little space above and below — I never set any of it. I drop three Stac
 three stay on one line.
 
 Every one of these is mine to change, down to zero: select the block, open **Spacing**, and each control says
-"Default · 2rem" until I move it, with **Back to default** to undo my change. A page I saved before these
-defaults existed opens exactly as it was.
+"Default ·" and its value until I move it, with **Back to default** to undo my change. A heading's own default is 0 —
+its gutter belongs to the section around it, so that is where it is changed.
+
+A page I saved before these defaults existed opens exactly as it was.
+
+[![The Inspector's Spacing section for a heading: Inner spacing and Outer spacing, each reading Default · 0rem, with a box per side](img/story-spacing-default.webp)](img/story-spacing-default.webp)
 
 ---
 
@@ -159,19 +200,30 @@ The builder gives every screen its own column count:
 | Desktop (1200–1800px) | 12 |
 | Wide (≥ 1800px) | 12 |
 
-I can change any of these in **Page grid** (the grid icon in the toolbar). Adding more columns — say 16 for a fine
+I can change any of these in the **Page grid** panel (the Layout guides button in the top bar, or right-click the
+canvas → *Page grid…*). Adding more columns — say 16 for a fine
 grid — divides the page into more, thinner slices. The blocks on the page keep their proportional share of the
 column count.
 
 ### The guides
 
-When I click a block, faint vertical lines appear across the canvas. Each line is a grid column boundary. A block
-snaps to the nearest line when I drag its edge, so every edge lands on a line, not a pixel between two.
+The **Layout guides** button in the top bar (the grid icon) draws the grid over the canvas: a line at every column
+boundary, and faint row lines. It also opens the **Page grid** panel. A block snaps to the nearest line when I drag its
+edge, so every edge lands on a line, not a pixel between two. The label on the selected card says how many columns it
+covers.
+
+[![The editor with Layout guides on: column lines from edge to edge over a heading, a photo and three cards; the middle card is selected and labelled "4 of 12"](img/story-page-grid-guides.webp)](img/story-page-grid-guides.webp)
 
 ### Snapping and Shift-snap
 
 Drag a block's edge and it snaps to the nearest column line. Hold **Shift** while dragging and it snaps to half-lines
 too — the centre of a column. That lets me place a block that spans a column and a half, or a precise two-and-a-half.
+
+[![The same page while Shift is held: a half-line appears between every pair of column lines](img/story-page-grid-shift.webp)](img/story-page-grid-shift.webp)
+
+:::tip[Shift for halves, Alt for free]
+**Shift** while dragging an edge adds the half-lines. **Alt** lets the edge go anywhere inside its columns (below).
+:::
 
 **The far edge stays put.** When I drag a block's left edge right, its right edge does not move. When I drag the right
 edge left, the left edge stays. This is "the edge you drag is the only edge that moves" — the same rule as resizing
@@ -270,9 +322,9 @@ keeping a readable word. When that minimum is wider than a single column, the bu
 The stacking is always **even**: four become **2 + 2**, six become **3 + 3**, never five with one alone at the
 bottom. Short words (stats, icons, tags) fit more across; long words step sooner.
 
-**What about a lone half-width block on a phone?** If a block was set to half the page on Desktop and ends up alone
-on its phone row, it now takes the whole line — there is no reason for a hole. A width you explicitly set on the
-phone itself still wins over this widening.
+**What about a lone half-width block on a phone?** Today a block set to half the page on Desktop keeps that half when it
+ends up alone on its phone row, with a space beside it. *Coming next (batch G-3d):* it will take the whole line, and a
+width you set on the phone itself will still win.
 
 ### "The page uses its space" — nothing left empty that nobody chose
 
@@ -342,11 +394,14 @@ re-measures it.
 
 ## 11. The editor on a tablet or phone
 
-Maya opens the builder on her school's iPad. The canvas fills the screen; the Inspector hides as a narrow tab on the
-right edge labelled **INSPECTOR**. She taps a block; the tab label changes to the block's name. She taps the tab and
+Maya opens the builder on her school's iPad. Below a laptop's width the canvas fills the screen and the Inspector
+waits as a narrow strip on the right edge labelled **INSPECTOR**. She taps a block, then the strip's open button, and
 the Inspector slides over the canvas from the right.
 
-- **Escape** (or tapping outside the Inspector) closes it and returns her to the full-canvas view.
+[![The editor on a 768px tablet: the page fills the screen, a heading is selected, and the Inspector is a narrow strip on the right](img/story-tablet-editor.webp)](img/story-tablet-editor.webp)
+[![The same tablet with the Inspector open over the right part of the canvas](img/story-tablet-inspector.webp)](img/story-tablet-inspector.webp)
+
+- **Escape** closes it and returns her to the full-canvas view.
 - The blocks panel floats over the canvas, same as on a large screen.
 - All gestures — tap to select, drag to move, drag an edge to resize — work with touch. Dragging an edge on a tablet
   works the same as dragging on a desktop: the edge you touch is the only edge that moves.
@@ -354,9 +409,9 @@ the Inspector slides over the canvas from the right.
 On a phone the canvas is zoomed to fit the screen. Maya can zoom in to work on a narrow section, then zoom back out.
 Every control in the Inspector is reachable by scrolling; Escape closes it.
 
-**The inspector never covers the block she just tapped.** On narrow screens the inspector panel sits above the block's
-z-order, so she can see the canvas while the inspector is open — she just cannot interact with the part of the canvas
-behind it.
+**The open Inspector lies over the right part of the canvas** (22rem of it). Nothing of the canvas — no handle, no
+toolbar — is drawn over the Inspector, so every control in it can be reached; what lies behind it comes back when
+she closes it.
 
 ---
 
