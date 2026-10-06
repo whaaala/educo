@@ -473,13 +473,17 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
     existence checks use `existsSync`
   - `[x]` D3-29 · MY OWN: `reset-asks-first.spec.ts` was in neither browser list → added to `test-fast.js` and `test:invariants:rest`
   - `[x]` D3-30 · MY OWN: the two new headed UATs did not use `screens.js` → both sweep all 70 screens
-  - `[?]` D3-31 · WAITING ON THE USER (from D3-8 / D3-9): on a 375 phone a paragraph + photo row keeps a ~100px photo beside the words,
-    and an article + sidebar a ~95px sidebar, because the words still fit (the G-1 fit rule). Keep that, or should a row whose PICTURE
-    or SIDEBAR would get narrower than a floor stack on a phone?
-  - `[?]` D3-32 · WAITING ON THE USER (from D3-17): the top bar is two rows (92px) from 1280 to 1440, one row from ~1480. Keep two rows
-    at a laptop, or collapse some labels to icons so 1280 is one row — and the guard asserts whichever is chosen
+  - `[x]` D3-31 · DECIDED BY THE USER 2026-10-06 ("yes, both"): on a 375 phone a paragraph + photo row kept a ~100px photo beside the
+    words, and an article + sidebar a ~95px sidebar (the G-1 fit rule protects only the words) → a 10rem floor for EVERY block of a
+    row on a phone; MOVED to BATCH G-3d change (3). The story's §2 / §4 phone lines are rewritten when G-3d ships it
+  - `[x]` D3-32 · DECIDED BY THE USER 2026-10-06 ("yes, both"): the top bar is two rows (92px) from 1280 to 1440 → one row from 1280,
+    labels collapsing to icons (tooltip + accessible name kept), the guard asserting one row at 1280; MOVED to BATCH E-3
   - GATE at the change-(1) commit: typecheck 0 · eslint 0 errors · vitest 4,370/4,370 · `test:fast` 807 passed (exit 0)
-- `[ ]` **BATCH G-3d · Two decisions from G-3b** — QUEUED 2026-10-05 by the user ("yes to both") (area: page grid · 2 changes):
+- `[ ]` **BATCH G-3d · Three decisions from G-3b and D-3** — QUEUED 2026-10-05 by the user ("yes to both"), change (3) added
+  2026-10-06 ("yes, both", D3-31) (area: page grid · 3 changes):
+  - `[ ]` (3) A FLOOR FOR EVERY BLOCK OF A ROW ON A PHONE (D3-31): the fit rule stacks a row on a phone when ANY of its blocks would
+    get narrower than 10rem, not only its words — measured at 375: a ~100px photo beside a paragraph, a ~95px sidebar beside an
+    article. Four Stats on a 360 phone (~165px each) stay two across. Then the story's §2 / §4 phone lines and tips are rewritten
   - `[ ]` (1) ON A PHONE A LONE HALF-WIDTH BLOCK TAKES THE WHOLE LINE: where the fit rule stacks a row, a block alone on its line
     whose width came from a WIDER screen takes the line (~165px of words beside a hole on a 360px phone otherwise); a width set on the
     phone itself still wins (G3b-11)
@@ -492,6 +496,9 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
   chrome-follows-resize 3 · dropped-block-fills-space 1 (37 on tablet-landscape / tablet-portrait / mobile-chrome)
 - `[ ]` **BATCH E-3 · The Inspector's controls on a narrow screen** — QUEUED 2026-10-05 by the user (E1-5): spacing-gestures 12 ·
   masonry-builder 10 · canvas-zoom 3 · text-is-reachable 1 (26)
+  - `[ ]` THE TOP BAR IS ONE ROW FROM 1280 (D3-32, the user 2026-10-06 "yes, both"): measured 92px (two rows) at 1280 / 1366 / 1440,
+    one row needs ~1480 → below that, Page check · Preview · Export · Reset and the "Add a band" text collapse to icons (tooltip and
+    accessible name kept); `builder-chrome-fits.spec.ts` asserts one row at 1280 (its comment already says a wrap there is a regression)
 - `[ ]` **BATCH E-4 · Preview and components on small screens** — QUEUED 2026-10-05 by the user (E1-5): multipage-preview 5 ·
   pager-hero 1 · component-layout-invariants 1 (7) — and E-1's (2): the gate runs the tablet and phone projects when all are green
 - `[x]` **BATCH G-3 · Placing on columns and rows** — CLOSED 2026-10-04 (HEADED UAT `scripts/uat/uat-g3-headed.js`, six windows,
