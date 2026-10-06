@@ -3507,9 +3507,14 @@ out) — where the session STARTED FROM, where it GOT TO, and where the next one
   / `docs:start`. The user looked at it and decided the typography: 15px body (below RULE DOCS' 16px — the user's call), fluid
   headings, line-height 1.75, callout cards, rounded tables/images; found D2-4 (too large) and D2-5 (the 72ch blank band) — both fixed.
   Scaffold leftovers removed. Off-topic in this session: the user's separate `site-tester` Railway project (not Educo) — nothing kept.
-- **Continue from:** **BATCH D-3 (YOU ARE HERE)** → change (1) pictures and examples in the layout pages, then (2) the rest of the
+  AFTER THE FIRST HANDOVER (`98d2bba`): the user asked that every docs size follow the reader's BROWSER text size (rem, WCAG 1.4.4) —
+  it does; D2-7 fixed the two Docusaurus px font sizes (phone menu "Back", collapsible contents), measured with Chrome's real font-size
+  preference at 12 / 16 / 24 (all text ×0.75 / ×1 / ×1.5). D3-1 found and OPEN, the user to decide: the base size is applied twice
+  (Infima on `html` + `custom.css` on `body`) → body is 14.06px at a 16px browser, not 15.
+- **Continue from:** **BATCH D-3 (YOU ARE HERE)** → D3-1 (ask the user: keep the 14px look or 15), then change (1) pictures and
+  examples in the layout pages, then (2) the rest of the
   documentation; then BATCH G-3d; then E-2 → E-3 → E-4 on `builder/editor-small-screens` (unchanged from the 22981e0a entry below).
-- **Next prompt (paste to start):** "Branch `builder/page-grid` at `f437b5c`. Read CLAUDE.md (RULE M Ponytail before AND after
+- **Next prompt (paste to start):** the full prompt is in the user's chat at the handover (2026-10-06); its short form: "Branch `builder/page-grid` at the handover commit. Read CLAUDE.md (RULE M Ponytail before AND after
   everything; RULE DOC / RULE DOCS; RULE Y build through the UI; RULE Z headed, six windows; RULE K), then `docs/TASK_TREE.md`: the
   newest SESSION LOG entry (148707ee), then BATCHES → D-2 (closed — its typography decisions and ledger D2-1…D2-6) and D-3 (open).
   DO, IN ORDER: (1) RULE K — check ports 3000/3100/3200/4000 are free; (2) D-3: write its HEADED checklist first; change (1): build
