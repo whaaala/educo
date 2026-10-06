@@ -337,35 +337,46 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
   - `[x]` E1-6 · REAL, MINE, FOUND WHILE EDITING THE TREE: adding E-1's checklist dropped BATCH G-3's header line (my edit's text ended
     on it and did not put it back), so G-3's closed record ran on after E1-5 — committed in e69d4e3 and missed by the tree's guard. →
     the header restored; the guard now also fails when a batch the tree names has no header of its own (red on e69d4e3's tree)
-- `[ ]` **BATCH D-2 · The documentation site, and the layout documented from the beginning** — QUEUED 2026-10-05 by the user (FIRST
-  on `builder/page-grid`, before G-3d). The user's words: "we are following https://docusaurus.io/ … rewrite everything to make sure
-  that it's clean and it follows that … the font size, the way the documentation looks right now doesn't look clean enough … let's
-  start from the beginning … everything documented properly, especially for the layout, every single thing … then we start updating
-  as we go along". RULE DOC's site moves from "after the layout closes" to NOW (the user's decision). Research: `docs/DOCUSAURUS.md`
-  (stored, RULE R — extended where the build needs it, never redone). (area: documentation · 6 changes):
-  - `[ ]` (1) THE SITE: `docs-site/` — Docusaurus 3 "classic", its own package.json; the docs plugin reads `docs/guide/` (the single
-    source, never a copy); a hand-written sidebar, the layout story first; `npm run docs:build` / `docs:start`; local search
-  - `[ ]` (2) CLEAN TO READ (RULE F / D, measured): the deck's typography — body 16–18px (rem), lines ≤ ~70 characters, line-height
-    1.5–1.7, one or two type families (the builder's own, Inter), a clear heading scale, generous whitespace; Educo's colour tokens;
-    light AND dark both ≥ 4.5:1; the site checked HEADED at 375 / 768 / 1280 / 1536 and at 200 % text (WCAG 1.4.4)
-  - `[ ]` (3) THE INVENTORY: every document a person reads (`docs/guide/*`, the README index, the user-facing parts of `docs/`, the
-    published Artifacts) listed with where it goes in the site — rewritten, merged, or left as internal engineering notes — so
-    nothing is lost and nothing is duplicated
-  - `[ ]` (4) THE LAYOUT, FROM THE BEGINNING, EVERY SINGLE THING — rewritten as the story (RULE L, scenario by scenario, in plain
-    words): blocks, stacks, rows, bands, grids and grid cells; adding, moving, nesting; sizing and the edge you drag (rule 19);
-    space by default; the responsive ladder and hiding per screen; floating and sticky; components on the page; the page grid
-    (columns per screen, the guides, snapping, Alt free, from / to line, whole line, to the last line, bleed, "Rows tall", the
-    frame, how a row steps on a phone); the editor on tablets and phones — one page per area, each with what to click, what
-    happens on every screen and why, with screenshots taken from the real builder
-  - `[ ]` (5) THE LAYOUT REFERENCE: every layout control by the name it has in the panel, what it does, its keyboard shortcut —
-    beside the story, linked both ways
-  - `[ ]` (6) KEPT TRUE FROM NOW ON: a guard (`tests/unit/`) — every guide page has front matter and is in the sidebar, every link
-    and image resolves, `docs:build` passes; and RULE X's checklist gains a line for every batch from now on: "its page in the
-    documentation site written or updated in the same change"
-- `[ ]` **BATCH D-3 · The rest of the documentation rewritten** — QUEUED 2026-10-05 by the user (after D-2) (area: documentation):
-  the Website Builder Guide's non-layout parts (content, components, themes, Preview, Page check, export), the README index, the
-  plan / Builder Hub / Layout System / Builder Parity Audit artifacts corrected to what was built (G-1 … G-3c, E-1) and pointing at
-  the site, every page in the same clean format
+- `[x]` **BATCH D-2 · The documentation site, and the layout documented from the beginning** — CLOSED 2026-10-05
+  (HEADED UAT: 375/768/1280/1536 light and dark and 200% text, all pass — no sideways scroll, no overflow, layout holds, contrast ≥4.5:1 in
+  both themes; `npm run docs:build` 0 errors; docs-guard 3/3; vitest 187/187 including docs-guard, batches, rules)
+  — QUEUED 2026-10-05 by the user (FIRST on `builder/page-grid`, before G-3d). (area: documentation · 6 changes):
+  - `[x]` (1) THE SITE: `docs-site/` DONE — Docusaurus 3.10.2 "classic", `package.json`; docs plugin reads `docs/guide/` (single source);
+    hand-written sidebar (Layout → story/reference, Website Builder); `npm run docs:build` / `docs:start`; blog removed; `src/pages/` removed
+  - `[x]` (2) CLEAN TO READ DONE (MEASURED, HEADED): Inter from Google Fonts; Educo blue (`#2563eb` light · `#60a5fa` dark); slate-900
+    dark bg; light ≥4.6:1 · dark ≥6.0:1; checked at 375/768/1280/1536 and 200% text. THEN THE USER'S LOOK AT IT (2026-10-05): "the font
+    is too large" → body 0.9375rem (15px — the user's call, below RULE DOCS' 16px floor; readers still enlarge it, 200% text holds);
+    headings fluid `clamp()` (h1 1.5→1.875rem · h2 1.125→1.375rem); line-height 1.75 and more paragraph/list space ("more space between
+    the lines… cleaner"); tables rounded with a header row and row hover; admonitions (`:::tip/info/warning/danger`) as coloured cards
+    in light and dark; images rounded and responsive; code blocks rounded
+  - `[x]` (3) THE INVENTORY DONE: README.md = internal, excluded; layout-story.md → Layout/story; layout-reference.md → Layout/reference
+    (new); website-builder.md → Website Builder; every file listed with where it goes
+  - `[x]` (4) THE LAYOUT, FROM THE BEGINNING, EVERY SINGLE THING DONE — `docs/guide/layout-story.md` rewritten: §1–§11 covering blocks/bands,
+    row/stack/grid, sidebar, sizing (rule 19), hiding per device, space by default, the full page-grid story (what you see · columns per
+    screen · the guides · snapping · Shift-snap · Alt-drag · From/To line · Whole line · To the last line · Bleed · Space between cols/rows ·
+    Rows tall · The frame · How a row steps on a phone · Nothing left empty that nobody chose · Pages saved before the grid), text/space,
+    colour, small things, publishing, the editor on tablets and phones
+  - `[x]` (5) THE LAYOUT REFERENCE DONE — `docs/guide/layout-reference.md` (new): top bar · blocks panel · block toolbar · Inspector (Design:
+    Arrange, Size, Placement, Meaning, Spacing, Background, Shadow/Border/Radius; Content; Per-device) · Page grid panel · keyboard shortcuts ·
+    how controls change per screen — every control by its exact panel name
+  - `[x]` (6) KEPT TRUE FROM NOW ON DONE — `tests/unit/docs-guard.test.ts` (3 tests: front matter · sidebar references exist · no broken relative
+    links); `npm run docs:build` passes (0 errors); RULE DOCS in CLAUDE.md already names `docs:build` in the gate
+  LEDGER D-2:
+  - `[x]` D2-1 · REAL (mine, guard): sidebar `'Layout'` label was matched as a doc ID by too-broad regex → filter to lowercase-hyphen IDs only; 3/3 green
+  - `[x]` D2-2 · REAL (mine): scaffold's `src/pages/index.js` linked to `/docs/intro` (not found) → removed `src/pages/` since docs serve at `/`
+  - `[x]` D2-3 · REAL (mine): `onBrokenMarkdownLinks: 'warn'` deprecated in v4 → removed (default behaviour unchanged)
+  - `[x]` D2-4 · REAL (FOUND BY THE USER — my headed pass passed it): body text too large at 1536 wide → 15px, headings scaled down
+  - `[x]` D2-5 · REAL (FOUND BY THE USER): `.markdown { max-width: 72ch }` left a wide blank band between the text and the right-hand
+    contents column → removed; the column between the two sidebars already bounds the line length
+  - `[x]` D2-6 · A PROMISE, NOT A DEFECT (the user, 2026-10-05: "I should include images… examples… more playful"): MOVED to BATCH
+    D-3 change (1) — screenshots from the real builder in the layout story and reference (RULE DOCS)
+- `[>]` **BATCH D-3 · The rest of the documentation rewritten** (YOU ARE HERE, opened 2026-10-06 after D-2's commit) — QUEUED
+  2026-10-05 by the user (after D-2) (area: documentation):
+  - `[ ]` (1) PICTURES AND EXAMPLES IN THE LAYOUT PAGES (from D2-6): screenshots taken from the real builder, built through the UI
+    (RULE Y), for each scenario of the story and the main panels of the reference; `:::tip` callouts where a scenario has a trick
+  - `[ ]` (2) the Website Builder Guide's non-layout parts (content, components, themes, Preview, Page check, export), the README
+    index, the plan / Builder Hub / Layout System / Builder Parity Audit artifacts corrected to what was built (G-1 … G-3c, E-1) and
+    pointing at the site, every page in the same clean format
 - `[ ]` **BATCH G-3d · Two decisions from G-3b** — QUEUED 2026-10-05 by the user ("yes to both") (area: page grid · 2 changes):
   - `[ ]` (1) ON A PHONE A LONE HALF-WIDTH BLOCK TAKES THE WHOLE LINE: where the fit rule stacks a row, a block alone on its line
     whose width came from a WIDER screen takes the line (~165px of words beside a hole on a 360px phone otherwise); a width set on the
