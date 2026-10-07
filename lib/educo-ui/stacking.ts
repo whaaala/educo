@@ -80,6 +80,9 @@ export const CHROME_Z = {
   itemBox: 9100,
   /** That layer's own little toolbar, which must clear the outline. */
   itemBar: 9110,
+  /** A finger's 44 × 44 hit area around each resize handle (D6, E5b-4) — UNDER every handle, so on a narrow block one handle's area
+   *  never covers the next handle (E5b-15: the top-left corner's area took a press aimed at the top edge). */
+  handleHit: 9190,
   /** A selected block's resize handles. */
   handle: 9200,
   /** The floating toolbar above or below a selected block. */

@@ -67,3 +67,34 @@ Feature: Building a page on a phone (BATCH E-5a)
     Given a touch screen
     Then every button in the block toolbar, the blocks sheet, the Inspector and its menus is at least 44 × 44
     But with a mouse the editor keeps its compact sizes
+
+  # BATCH E-5b — a finger drags and resizes (D4 · D6; E5a-1; E4-9). Guarded by tests/e2e/phone-editing.spec.ts with real
+  # touch events; driven headed by scripts/uat/uat-e5b-headed.js.
+
+  Scenario: A finger resizes a block by its handles
+    Given a touch screen and a selected block
+    When I drag one of its handles with my finger
+    Then the block changes size, the edge I hold is the only one that moves, and the page does not scroll under my finger
+    And a mouse resizes exactly as before
+
+  Scenario: A finger drags a block by its grip
+    Given a touch screen and a selected block
+    When I drag the grip in its toolbar to another place on the page
+    Then the block lands where the insertion line showed
+
+  Scenario: A long press lifts a block
+    Given a touch screen
+    When I hold my finger still on a block for half a second
+    Then it lifts: a chip shows its name above my finger and an insertion line shows where it will land
+    And when I let go it lands there
+    But a short tap only selects the block, and a quick swipe scrolls the page and moves nothing
+
+  Scenario: The page scrolls while I drag near its edge
+    Given I am dragging a block with my finger
+    When my finger rests near the top or the bottom of the editor
+    Then the page scrolls that way until I move away from the edge or let go
+
+  Scenario: Drop zones are big enough for a finger
+    Given a touch screen
+    Then the strip that means "above", "below" or "beside" a block is at least 44px, or a third of a smaller block
+    But with a mouse the strips keep their size

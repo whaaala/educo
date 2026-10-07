@@ -1013,7 +1013,7 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
     `paletteClickSlot` / `insertBox`; moving `moveBoxStep` / `moveBox`; toolbar `NodeToolbar` BoxCanvas :3677; width
     `WidthControl` BoxInspector :196; NO touch handling anywhere; resize / drag are mouse-only):
     - **E-5a** (below, OPEN) · D1 · D3 · D4 arrows · D5 · D6 — 6 changes
-    - **E-5b** (QUEUED) · D4's long-press drag (a touch path for drag: chip, insertion line, auto-scroll) · touch resize on the
+    - **E-5b** (CLOSED 2026-10-07, see below) · D4's long-press drag (a touch path for drag: chip, insertion line, auto-scroll) · touch resize on the
       handles · drop strips ≥ 44px (E4-9)
     - **E-5c** (QUEUED) · the tablet (600–1023): what it edits at, the sheet or the side panel · then `apps/mobile/` (rule 20: a
       webview over the same editor, phone AND tablet)
@@ -1129,15 +1129,120 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
       stays 44px and the top bar takes two rows at 1280, one row (65px) from 1366; with a mouse, one row from 1280 as D3-32 says.
       The question was: D6 (44px on touch) widens the top bar's 23 buttons from 910 to 1,012px, against E-3's "one row from 1280".
       Built: `builder-chrome-fits` asks one row from 1366 (≤ 72px) on touch, from 1280 (≤ 64px) with a mouse.
-  - `[>]` (2) the build the research settles on, web phone first, then `apps/mobile/` (RULE APP) — E-5a CLOSED 2026-10-07; E-5b and E-5c queued below
-  - `[ ]` E4-9 (from BATCH E-4): the drop strips are 25 % of a block's DRAWN height — 9px on a 37px block at the phone's 0.22 canvas.
+  - `[>]` (2) the build the research settles on, web phone first, then `apps/mobile/` (RULE APP) — E-5a CLOSED 2026-10-07; E-5b CLOSED 2026-10-07; E-5c queued below
+  - `[x]` E4-9 (DONE 2026-10-07 in BATCH E-5b change (5) + E5b-5 / E5b-13: a finger's drag reads strips of ≥ 44px, a third of a smaller block; a mouse keeps its own) (from BATCH E-4): the drop strips are 25 % of a block's DRAWN height — 9px on a 37px block at the phone's 0.22 canvas.
     Is that enough for a finger? The research answers it with the rest of placing on a phone. → BATCH E-5b (strips ≥ 44px, D6)
   - `[x]` E4-14 (DONE 2026-10-07 in E-5a change (1): the phone edits at its own width, 1:1) (from BATCH E-4): the phone canvas opens as the Desktop page at 22 % — blocks a few pixels tall, the toolbar bigger
     than the block. What a phone edits at (its own width? a zoom a finger can use?) is part of this research. → answered by D1,
     built in E-5a change (1)
-- `[ ]` **BATCH E-5b · A finger drags and resizes** — QUEUED 2026-10-07 (from E-5's research, D4; E5a-1; E4-9) (area: the editor on
-  touch screens): a touch path for drag AND resize by pointer events (long-press to lift, a chip above the finger, an insertion
-  line, auto-scroll at the edges, `pointercancel` handled); the grip offered again on touch; drop strips ≥ 44px
+  - `[x]` **BATCH E-5b · A finger drags and resizes** — CLOSED 2026-10-07 (HEADED UAT `scripts/uat/uat-e5b-headed.js`, six windows, real CDP touch on phones 360 · 393 · 412 (`isMobile`) and tablets 768 · 1024 in the four themes + the mouse at 1280, **206 checks 0 failed** (`logs/e5b-uat7.out`), the Preview at all 70 screens × 100 / 150 / 200 % text; gate: typecheck 0 · eslint 0 errors (105 warnings, none new) · vitest 4,442 · `test:fast` 3,333 on all four screens (`logs/e5b-testfast2.out`) · docs:build SUCCESS; ledger E5b-1 … E5b-16) — part of BATCH E-5 (one open batch, RULE X; E5b-11) — OPENED 2026-10-07 (from E-5's research, D4 · D6; E5a-1; E4-9) (area: the editor
+    on touch screens · 6 changes). MEASURED FIRST (code): `startResize` / `startResizeGridCell` / `startResizeAbsolute` / `startDrag` /
+    `startFreeDrag` / `startSlideFree` and `caretFallthrough` start on `onMouseDown` and follow `document` `mousemove` / `mouseup`; the
+    unit suite (`BoxCanvas.test.tsx`) drives them with `fireEvent.mouseMove(document)`, so the MOUSE path stays on mouse events and a
+    finger gets its own start. Drop strips: `slotFromKids` min(25 %, 48px), `computeDrop` min(22 %, 22px). No auto-scroll anywhere.
+      (1) E5a-1 a FINGER RESIZES: every handle starts the same gesture on a finger's `pointerdown`; a gesture follows the events that
+          started it (a mouse: `mousemove` / `mouseup` as today; a finger or pen: `pointermove` / `pointerup`, `pointercancel` ends it);
+          `touch-action: none` on the handles so the page does not scroll instead; rule 19 unchanged (the held edge is the only one
+          that moves); a still tap on a handle still falls through (E3-5)
+      (2) the GRIP is offered to a finger again (it was `pointer-coarse:hidden`): 44px, a press on it starts the drag at once (it is
+          the explicit route); floating / Alt paths unchanged for the mouse
+      (3) LONG-PRESS (500ms) on a block lifts it — a haptic tick where the phone has one, the chip 32px ABOVE the finger (never
+          under it), the insertion line as today; a short tap still selects; a finger that moves before 500ms scrolls the page; the
+          phone's own long-press menu / text selection does not appear on a lifted block
+      (4) AUTO-SCROLL while a finger drags near the top or bottom of the editor's scrolling area, faster the nearer the edge
+      (5) E4-9 DROP STRIPS on touch ≥ 44px (no more than a third of the block, so before / inside / after all stay reachable)
+      (6) docs (RULE DOCS): "Building on a phone" in the layout story + the guide's phone page — drag, long-press, resize by finger
+      HEADED UAT CHECKLIST (written before the pass; six windows; fresh production build; real phones `isMobile` + `hasTouch`
+      360 × 640 · 393 × 851 · 412 × 915, tablets 768 × 1024 and 1024 × 768 with touch, four themes; 1280 with a MOUSE to prove it
+      unchanged; the state built through the UI; touches sent as real CDP touch events, not mouse):
+      - `[x]` U1 (SEEN 2026-10-07, HEADED `e5b-uat7.out` 206 / 0 on the final build, screenshots read) (1) a finger drags each handle — n · s · e · w and a corner — on a block in a stack, a row, a grid cell and a
+        floating block: the block changes size, the opposite edge stays where it was (rule 19), the page does not scroll; lift
+        mid-way and the size stays; a still tap on a handle selects what is under it
+      - `[x]` U2 (SEEN 2026-10-07, HEADED `e5b-uat7.out` 206 / 0 on the final build, screenshots read) (2) where the toolbar sits by its block (tablets, 600+) the grip shows at 44px on touch; a finger dragging it moves the
+        block and the stored tree agrees; Undo puts it back. On a phone the bar DOCKS, has no grip (a long press is the drag there,
+        E5b-8), and ends before the blocks "+" with nothing scrolled out of sight, a Stack's bar included, at 360
+      - `[x]` U3 (SEEN 2026-10-07, HEADED `e5b-uat7.out` 206 / 0 on the final build, screenshots read) (3) a 600ms press lifts the block (chip above the finger, insertion line), the drop lands where the line said; a
+        200ms tap only selects; a quick swipe scrolls the page and moves nothing; no phone menu or text selection appears
+      - `[x]` U4 (SEEN 2026-10-07, HEADED `e5b-uat7.out` 206 / 0 on the final build, screenshots read) (4) a finger held 20px from the bottom of the editor scrolls it down, and from the top scrolls it up, while lifted;
+        it stops when the finger leaves the edge or lifts
+      - `[x]` U5 (SEEN 2026-10-07, HEADED `e5b-uat7.out` 206 / 0 on the final build, screenshots read) (5) the strips measured ≥ 44px (or a third of a smaller block) on touch; with a mouse at 1280 unchanged (25 % / 48)
+      - `[x]` U6 (SEEN 2026-10-07, HEADED `e5b-uat7.out` 206 / 0 on the final build, screenshots read) the MOUSE at 1280: resize every edge, grip-drag, Alt-drag float, marquee — exactly as before (the mouse suites green)
+      - `[x]` U7 (SEEN 2026-10-07, HEADED `e5b-uat7.out` 206 / 0 on the final build, screenshots read) (6) docs: the story's "Building on a phone" and the guide describe drag, long-press and finger resize, screenshots
+        from the real builder; the Preview at all 70 screens agrees with the canvas after a finger's edits
+      LEDGER E-5b (each written the moment it is found):
+      - `[x]` E5b-1 · BUG IN MY TEST (FIXED 2026-10-07): the finger-resize guard tapped the empty box's centre, where its "+" sits
+        (E5a-9), so it failed on SELECTING, not on resizing — it could not tell a broken resize from a working one. It now taps
+        near the corner (`tapBlock(…, position)`); red on the old build at "the block grew with the finger".
+      - `[x]` E5b-2 · REAL, finger (FIXED 2026-10-07): a finger on a block's TOP handle lying over the block above's words never
+        held it — measured (`probe-e5b.js`): the press's target was the heading's editable span, then `pointercancel`, while
+        `elementFromPoint` said the handle. Chrome's touch adjustment moves a press to the nearest node "a tap is for" — an
+        editable span is one, a bare handle (React's listeners live on the root) was not. Fix: `active:` on the handle (pressed
+        feedback, and it makes the handle a tap target). Guard `phone-editing` "a finger holds a top handle…" (built through the
+        sheet, RULE Y) — red on the old build on the phone.
+      - `[x]` E5b-3 · REAL, every pointer, pre-existing (FIXED 2026-10-07): a still tap on a handle CHANGED THE PAGE after a corner
+        drag (measured: `alignSelf "flex-start" → undefined`, `minHeight 127.998 → 128`). Two faults: (a) a corner drag never
+        released the cross-axis `flex-start` anchor (only a pure top / bottom drag did), so a corner-dragged block stopped
+        following its band for good — the 50px-hole bug the release exists for, on corners; (b) a still press still ran the
+        release's write (E5a-8 had stopped only the anchor at the press). Fix: the release covers any drag with a vertical part,
+        and a press that never moved returns before it. Guard `phone-editing` "a corner drag lets the block follow its band, and a
+        still press on a handle writes nothing" — both halves red on the old build, all four projects.
+      - `[x]` E5b-4 · REAL, a gap in E-5a change (6) / D6 (FIXED 2026-10-07): on touch the resize handles' hit areas were 36 × 10 and
+        12 × 12, not the ≥ 44 × 44 D6 promised (E-5a's size audit looked at buttons only). Fix: a 44 × 44 `::before` on touch.
+        Guarded in the E5b-2 test (every handle's `::before` ≥ 44) — red on the old build.
+      - `[x]` E5b-5 · BUG IN MY TEST (FIXED 2026-10-07): the drop-strip guard asked "is T's parent R?", but a block dropped inside a
+        box is wrapped in a band of its own — so it PASSED on a mutant with no finger strip. Now: T anywhere in R's subtree.
+        Mutation-proven: red 3/3 on the mutant build (`fingerStrip` → the mouse's strip), green on the real one.
+      - `[x]` E5b-6 · NOT A BUG (measured, `probe-undo.js`): after a finger drag, the first tap within ~200ms did nothing (Undo
+        missed on three phones in the headed pass). Logged: `pointerdown` / `pointerup` on Undo, no `mousedown`, no `click`, nothing
+        `preventDefault`ed. Only when the finger LEAVES AT SPEED: a 60ms-step drag, or a 300ms rest before lifting, and the next
+        tap works at 150ms — Chrome's own rule that a tap right after a flick stops the flick. A person rests on the target before
+        letting go; the headed script now does too.
+      - `[x]` E5b-7 · REAL, MY OWN change (3) (FIXED 2026-10-07): a finger's chip was centred on the finger with no clamp — on a phone
+        a wide block's chip ran off the left edge, its grip icon cut (`FG-393-Light-U3-lifted.png`). Kept on the screen now. Guard:
+        the long-press test moves the finger to x = 6 — red on the previous build (3/3 touch projects).
+      - `[x]` E5b-8 · REAL, MY OWN change (2) + E-5a's width (FIXED 2026-10-07): on a 360 phone the docked toolbar, with the grip back,
+        ran under the blocks "+" and hid ⋮ (`FG-360-Midnight-U1-resized.png`); its `max-width` also left out the 3rem Inspector rail.
+        Fix: the docked bar (phones) carries no grip — a long press is the drag there, as in the research's WordPress phone editor,
+        and the user's E5a-14 keeps the "+" in its corner — and its widest is the room left of the "+" (8.25rem). Guard
+        `phone-editing` "on a 360 phone the docked toolbar never runs under the blocks +" — red on the previous build.
+      - `[x]` E5b-9 · NOT A BUG (measured): the block toolbar's `dark:bg-gray-800/95` has no `midnight:` / `purple:` variant, but
+        `ThemeContext` (lines 35–37) adds `dark` for every dark-based theme, and the Midnight and Purple screenshots show the bar right.
+      - `[x]` E5b-10 · MY OWN, clean code (FIXED 2026-10-07): `parentOf` defined and never used in `uat-e5b-headed.js` — eslint's one
+        error in the gate. Removed.
+      - `[x]` E5b-11 · MY OWN, the tree (FIXED 2026-10-07): E-5b was opened as a second top-level open batch beside BATCH E-5 —
+        `task-tree-batches` "2 batches open at once". It is part of BATCH E-5, as E-5a was, and now sits inside it.
+      - MEASURED 2026-10-07 (HEADLESS GATE, `test:fast` all four screens, `logs/e5b-testfast1.out`): **3,322 passed · 10 failed**, every
+        one on a touch project — sorted below.
+      - `[x]` E5b-12 · REAL, MY OWN (E5b-4's first fix) (FIXED 2026-10-07): `text-is-reachable` "every plausible aim point… takes the
+        caret" / "typing lands after… the very start of the line" (3 touch projects): the 44px hit areas, centred on the handles as
+        `::before`s, lay over the first word, and a still click peeled at most 4 layers of chrome without reaching it. Fixed by
+        E5b-14's outward areas — nothing of the finger's lies over the block's own words; the existing spec is the guard (red on
+        the previous build).
+      - `[x]` E5b-13 · REAL, MY OWN change (5) (FIXED 2026-10-07): `resize-leaves-no-gap` "the blocks already on the page do not move
+        at all" (3 touch projects): the strip was sized by the DEVICE (`pointer: coarse`), so a mouse's drop on a touch laptop or
+        tablet changed its reading. Now by the DRAG (`dragArm.finger`). The existing spec is the guard (red on the previous build);
+        the finger's strip keeps its own (E5b-5's mutation-proven test).
+      - `[x]` E5b-14 · REAL, MY OWN (E5b-4's first fix) (FIXED 2026-10-07): `add-without-asking` "a container YOU selected gets the
+        block AFTER it…" (phone): on a zoomed canvas (the desktop page on a phone, 0.27) the centred 44px areas covered a small
+        selected block whole, so a tap at its middle no longer reached its "+" — E-5a's build 3 / 3 pass, this one 3 / 3 fail
+        (`--repeat-each=3`, both builds served side by side). Fix: each hit area is its own element, 44 × 44, reaching OUTWARD from
+        the block's edge or corner (`HIT_POS`), never over its own content. Guards: the spec, and `phone-editing` "no hit area lies
+        over the block's own middle".
+      - `[x]` E5b-15 · REAL, MY OWN (E5b-4's first fix) (FIXED 2026-10-07): `chrome-follows-resize` "a press on each handle of a narrow
+        block lands on that handle" (phone): the top-left corner's area took a press aimed at the top edge. The hit areas are now
+        a layer UNDER every handle (`CHROME_Z.handleHit` 9190), so no area covers a handle. Guards: the spec (red on the previous
+        build) and `phone-editing` "a press on each handle's centre is that handle".
+      - `[x]` E5b-16 · REAL, every pointer, pre-existing (FIXED 2026-10-07; found by the headed pass on a 360 phone): while a GRID
+        CELL'S edge was held, the editor jumped (measured with `probe-scroll2.js`: scrollTop 325 → 75 mid-drag, back on release —
+        no script scrolled it, the mouse the same). The live preview wrote every cell's stored `grid-column`, the stored row
+        tracks and an empty `min-height` onto cells the drag had not changed — wiping their courtesy height, so the page got
+        ~250px shorter and the scroll was clamped. Fix: the preview writes only what differs from the tree as the drag began.
+        Guard `phone-editing` "while a grid cell's edge is held, the cells keep their arrangement and the editor does not
+        scroll" (built through the sheet) — red on the previous build.
+      - HEADED UAT (`scripts/uat/uat-e5b-headed.js`, six windows): pass 1 170 / 42 failed (most the script's own assumptions: a
+        docked Inspector at 1280, a covered tap point, a corner move under one column, a one-column grid on a phone, floats in
+        the flow on a phone by design, the mouse moves by the grip) → E5b-2, -3, -4 found by probe; pass 2 207 / 6; pass 3 153 / 6
+        (E5b-6, the zoomed tablet off-screen); pass 4 209 / 0 — screenshots read → E5b-7, E5b-8; pass 5 206 / 0; then the gate's E5b-12 … E5b-15, pass 6 206 / 2 → E5b-16; **pass 7 206 / 0 on the final build** (`logs/e5b-uat7.out`, screenshots read).
 - `[ ]` **BATCH E-5c · The tablet, then the app** — QUEUED 2026-10-07 (from E-5's research) (area: the editor on a tablet): what a
   tablet (600–1023) edits at, the sheet or the side panel; then `apps/mobile/` — a webview over the same editor (rule 20), phone AND
   tablet
@@ -3470,7 +3575,7 @@ sent), and my research. Nothing on the layout is done until every line here is c
     falls back into the flow unless placed at that rung; the page audit and Page check warn when it covers words;
     shown as drag on the canvas with the half-lines drawn, a Position panel (start / end, column / row, spill above /
     below) and a gallery of ready-made placements (RULE S / UI). Joins AC-10, ST-5, AC-35 — one build
-    - `[>]` AC-37b ← YOU ARE HERE (NOW: BATCH E-5 — research SIGNED 2026-10-06 (D1–D6, `docs/web-anatomy/phone-editing.md`), E-5a · Building on a phone CLOSED 2026-10-07 (HEADED 258 / 0; test:fast 3,312; the user's E5a-7 and E5a-16) on `builder/phone-editing` — next: BATCH E-5b (a finger drags and resizes: E5a-1 + E4-9), then E-5c (the tablet, then the app); handover of session E-4/E-5a in the SESSION LOG. Before that: BATCH E-4 CLOSED 2026-10-06 (HEADED 232 / 0; `test:fast` now runs all four screens, 3,272 / 3,272 in 12.3 min; E4-1 … E4-14, E4-9 and E4-14 → BATCH E-5) — PR #7 MERGED to master 2026-10-06 (`05c66ee`), `builder/editor-small-screens` deleted, `builder/phone-editing` cut from master — next: BATCH E-5, research first (the user's sources and mine). Before that: BATCH E-4 change (1) E3-3 done (`6042e79`); handover of session E-3 in the SESSION LOG. Before that: BATCH E-3 CLOSED 2026-10-06 (297 / 0 headed; E3-1 … E3-11, E3-3 the user's question); the tree audit DONE 2026-10-06 (`4fcf59a`, its true count heads section 1.1) — its checklist first, then spacing-gestures 12 · masonry-builder 10 · canvas-zoom 3 · text-is-reachable 1 · D3-32 the top bar one row from 1280; then E-4, then E-5 (research first). Before that: BATCH E-2 CLOSED 2026-10-06 (174 / 0 headed; 24 ledger lines). Before that: BATCH E-2 in BATCHES, on `builder/editor-small-screens` (cut from master `7494a8e` after PR #6 merged `builder/page-grid` 2026-10-06) — its checklist first, then the 37 failing specs one by one; then E-3, then E-4. Before that: BATCH G-3d CLOSED 2026-10-06 (`ec52b51`); handover of session (G-3d) in the SESSION LOG. Before that: BATCH G-3d (three changes); handover of session 49087f08 in the SESSION LOG; D-3 CLOSED 2026-10-06 (both changes). Before that: handover of session ff5dbc77 in the SESSION LOG; D-2 and D-3 (1) CLOSED 2026-10-06. Earlier: handover of session 22981e0a; BATCH G-3b and BATCH E-1 CLOSED 2026-10-05; MERGE DECIDED by the user 2026-10-05: `builder/layout-uat` pushed, the user opens and merges the pull request, then the branch is deleted and `builder/page-grid` cut from master; next there: BATCH D-2 (the Docusaurus site + the layout documented from the beginning, RULE DOCS), then BATCH G-3d (the user's two decisions), then BATCH E-2 (resizing and dropping on tablets and phones); before the PR: the artifacts and the layout story for the page grid; then its final pass, then BATCH E-1; handover of session 3da81fad in the SESSION LOG; earlier: handover of session 5da86722 in the SESSION LOG — G-3 CLOSED 2026-10-04 (63 headed checks, G3-8 carried to G-3b by the user); earlier: BATCH G-3 · placing on columns AND rows — G-2 CLOSED 2026-10-04 (134 headed checks); P-0 CLOSED 2026-10-04 (R4-1 … R4-5 fixed, 30 headed checks); R-4 SIGNED with D1–D5 (session 9fa0fee9); then G-3, P-1, P-2, G-4, P-3, G-5, G-6. G-1 CLOSED 2026-10-04 (see BATCHES). Plan APPROVED 2026-10-04 with the user's decisions below. Earlier: research R-3 DONE and SIGNED 2026-10-04
+    - `[>]` AC-37b ← YOU ARE HERE (NOW: BATCH E-5 — E-5b · A finger drags and resizes CLOSED 2026-10-07 (HEADED 206 / 0; test:fast 3,333; E5b-1 … E5b-16) on `builder/phone-editing` — next: BATCH E-5c (the tablet 600–1023, then `apps/mobile/` as a webview), research-led. Before that: research SIGNED 2026-10-06 (D1–D6, `docs/web-anatomy/phone-editing.md`), E-5a · Building on a phone CLOSED 2026-10-07 (HEADED 258 / 0; test:fast 3,312; the user's E5a-7 and E5a-16) on `builder/phone-editing` — next: BATCH E-5b (a finger drags and resizes: E5a-1 + E4-9), then E-5c (the tablet, then the app); handover of session E-4/E-5a in the SESSION LOG. Before that: BATCH E-4 CLOSED 2026-10-06 (HEADED 232 / 0; `test:fast` now runs all four screens, 3,272 / 3,272 in 12.3 min; E4-1 … E4-14, E4-9 and E4-14 → BATCH E-5) — PR #7 MERGED to master 2026-10-06 (`05c66ee`), `builder/editor-small-screens` deleted, `builder/phone-editing` cut from master — next: BATCH E-5, research first (the user's sources and mine). Before that: BATCH E-4 change (1) E3-3 done (`6042e79`); handover of session E-3 in the SESSION LOG. Before that: BATCH E-3 CLOSED 2026-10-06 (297 / 0 headed; E3-1 … E3-11, E3-3 the user's question); the tree audit DONE 2026-10-06 (`4fcf59a`, its true count heads section 1.1) — its checklist first, then spacing-gestures 12 · masonry-builder 10 · canvas-zoom 3 · text-is-reachable 1 · D3-32 the top bar one row from 1280; then E-4, then E-5 (research first). Before that: BATCH E-2 CLOSED 2026-10-06 (174 / 0 headed; 24 ledger lines). Before that: BATCH E-2 in BATCHES, on `builder/editor-small-screens` (cut from master `7494a8e` after PR #6 merged `builder/page-grid` 2026-10-06) — its checklist first, then the 37 failing specs one by one; then E-3, then E-4. Before that: BATCH G-3d CLOSED 2026-10-06 (`ec52b51`); handover of session (G-3d) in the SESSION LOG. Before that: BATCH G-3d (three changes); handover of session 49087f08 in the SESSION LOG; D-3 CLOSED 2026-10-06 (both changes). Before that: handover of session ff5dbc77 in the SESSION LOG; D-2 and D-3 (1) CLOSED 2026-10-06. Earlier: handover of session 22981e0a; BATCH G-3b and BATCH E-1 CLOSED 2026-10-05; MERGE DECIDED by the user 2026-10-05: `builder/layout-uat` pushed, the user opens and merges the pull request, then the branch is deleted and `builder/page-grid` cut from master; next there: BATCH D-2 (the Docusaurus site + the layout documented from the beginning, RULE DOCS), then BATCH G-3d (the user's two decisions), then BATCH E-2 (resizing and dropping on tablets and phones); before the PR: the artifacts and the layout story for the page grid; then its final pass, then BATCH E-1; handover of session 3da81fad in the SESSION LOG; earlier: handover of session 5da86722 in the SESSION LOG — G-3 CLOSED 2026-10-04 (63 headed checks, G3-8 carried to G-3b by the user); earlier: BATCH G-3 · placing on columns AND rows — G-2 CLOSED 2026-10-04 (134 headed checks); P-0 CLOSED 2026-10-04 (R4-1 … R4-5 fixed, 30 headed checks); R-4 SIGNED with D1–D5 (session 9fa0fee9); then G-3, P-1, P-2, G-4, P-3, G-5, G-6. G-1 CLOSED 2026-10-04 (see BATCHES). Plan APPROVED 2026-10-04 with the user's decisions below. Earlier: research R-3 DONE and SIGNED 2026-10-04
       (`ff5c53a`, `4418202`); build to every decision recorded under R-3 below; the mockups settle the open three (row
       snap · the phone gap 11 vs 16 px · panel per site or per page) → the user's approval → build) · **THE PAGE GRID — DECIDED by the user 2026-10-03: done RIGHT AFTER L-4 closes, BEFORE L-5, L-6 and the
       frozen list's placement items** (they are built on it). NAMES (decided): "page grid" in code and docs; the lines a

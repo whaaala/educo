@@ -1,4 +1,4 @@
-import { test, expect, type Page } from "@playwright/test";
+import { test, expect, type Page, type CDPSession } from "@playwright/test";
 import { seedSite, sitePage } from "./helpers/seed-site";
 
 /**
@@ -28,11 +28,12 @@ async function threeBlocks(page: Page) {
   await page.waitForSelector('[data-box-id="c"]', { timeout: 15000 });
   await page.waitForTimeout(400);
 }
-async function tapBlock(page: Page, id: string) {
+/** `position` for an EMPTY box: its centre is its "+", which adds rather than selects (E5a-9, E5b-1). */
+async function tapBlock(page: Page, id: string, position?: { x: number; y: number }) {
   const el = page.locator(`[data-box-id="${id}"]`);
   for (let i = 0; i < 4; i++) {
     if (await el.evaluate((e) => e.classList.contains("outline-indigo-500"))) return;
-    if (test.info().project.use.hasTouch) await el.tap(); else await el.click();
+    if (test.info().project.use.hasTouch) await el.tap({ position }); else await el.click({ position });
     await page.waitForTimeout(150);
   }
   await expect(el).toHaveClass(/outline-indigo-500/);
@@ -167,6 +168,81 @@ test("a still click on any handle leaves the page exactly as it was", async ({ p
 });
 
 /**
+ * E5b-3 · A CORNER LETS ITS BLOCK FOLLOW ITS BAND, AND A STILL PRESS COMMITS NOTHING AT ITS RELEASE EITHER. A corner drag kept the
+ * `flex-start` anchor for good (only a pure top / bottom drag released it), so the block stopped following its band; and a still
+ * press on a handle ran the release's write — which is how it showed: a tap after a corner drag rewrote the page. Every screen.
+ * The second half seeds the leftover the corner used to leave (RULE Y: reproduced through the UI first, `probe-e5b.js`).
+ */
+test("a corner drag lets the block follow its band, and a still press on a handle writes nothing", async ({ page }) => {
+  const row = (kids: unknown[]) => sitePage([{ id: "band-1", type: "container", direction: "row", rowBand: true, width: "fill", gap: 0, padding: 0, children: kids }]);
+  await seedSite(page, row([
+    { id: "L", type: "container", direction: "column", width: "50%", minHeight: 160, background: "#c7d2fe", children: [] },
+    { id: "R", type: "container", direction: "column", width: "50%", minHeight: 160, background: "#bbf7d0", children: [] },
+  ]));
+  await page.waitForSelector('[data-box-id="R"]'); await page.waitForTimeout(400);
+  const r = (await page.locator('[data-box-id="L"]').boundingBox())!;
+  await page.mouse.click(r.x + r.width * 0.3, r.y + r.height * 0.3); await page.waitForTimeout(300);
+  const c = (await page.locator('[aria-label="Resize bottom-right corner"]').first().boundingBox())!;
+  await page.mouse.move(c.x + c.width / 2, c.y + c.height / 2); await page.mouse.down();
+  await page.mouse.move(c.x + c.width / 2 - 10, c.y + c.height / 2 + 20, { steps: 6 }); await page.mouse.move(c.x + c.width / 2 - 10, c.y + c.height / 2 + 40, { steps: 6 });
+  await page.mouse.up(); await page.waitForTimeout(400);
+  const L = JSON.stringify(flat(await stored(page)).find((n) => n.id === "L"));
+  expect.soft(L, "the corner's height anchor was released — the block follows its band again").not.toContain('"alignSelf":"flex-start"');
+
+  await seedSite(page, row([
+    { id: "L", type: "container", direction: "column", width: "50%", minHeight: 160, alignSelf: "flex-start", background: "#c7d2fe", children: [] },
+    { id: "R", type: "container", direction: "column", width: "50%", minHeight: 200, background: "#bbf7d0", children: [] },
+  ]));
+  await page.waitForSelector('[data-box-id="R"]'); await page.waitForTimeout(400);
+  const before = await page.evaluate(() => localStorage.getItem("educo_box_site_v1"));
+  const q = (await page.locator('[data-box-id="L"]').boundingBox())!;
+  await page.mouse.click(q.x + q.width * 0.3, q.y + q.height * 0.3); await page.waitForTimeout(300);
+  const h = (await page.locator('[aria-label="Resize bottom edge"]').first().boundingBox())!;
+  await page.mouse.move(h.x + h.width / 2, h.y + h.height / 2); await page.mouse.down(); await page.waitForTimeout(80); await page.mouse.up(); await page.waitForTimeout(300);
+  expect.soft(await page.evaluate(() => localStorage.getItem("educo_box_site_v1")), "a still press on the bottom edge wrote nothing").toBe(before);
+});
+
+/**
+ * E5b-16 · WHILE A GRID CELL'S EDGE IS HELD, THE PAGE KEEPS ITS SHAPE. The live preview painted every cell's stored `grid-column`
+ * and the stored row tracks, overriding the stylesheet that stacks a narrow grid into one column — so mid-drag the cells jumped
+ * side by side, the page got 250px shorter and the editor's scroll was clamped (measured on a 360 phone, mouse and finger alike).
+ * Built through the sheet (RULE Y), as `probe-scroll2.js` reproduced it; a phone, where a 2-across grid is one column.
+ */
+test("while a grid cell's edge is held, the cells keep their arrangement and the editor does not scroll", async ({ page }) => {
+  test.skip(!phone(page), "a 2-across grid is one column only on a phone");
+  await seedSite(page, sitePage([]), undefined, { phoneScreen: true });
+  await page.waitForSelector('[aria-label="Open blocks panel"]'); await page.waitForTimeout(400);
+  for (const [tile, layout] of [["Heading", null], ["Stack", null], ["Stack", null], ["Stack", null], ["Grid", "2 across, 1 down"]] as const) {
+    await page.getByRole("button", { name: "Open blocks panel" }).tap();
+    await page.getByRole("button", { name: new RegExp(`^Add ${tile}( —|$)`) }).first().tap(); await page.waitForTimeout(400);
+    const look = page.getByRole("menuitem", { name: "Default", exact: true }).first();
+    if (await look.isVisible().catch(() => false)) await look.tap();
+    if (layout) await page.locator(`[role="menu"][aria-label="Choose a layout"] [aria-label="${layout}"]`).first().tap();
+    await page.waitForTimeout(400);
+    if (await page.getByRole("dialog", { name: "Blocks" }).isVisible()) await page.keyboard.press("Escape");
+  }
+  const r0 = (await stored(page)) as N & { layout?: string };
+  const grid = flat(r0).find((n) => (n as { layout?: string }).layout === "grid")!;
+  const [c1, c2] = grid.children!.map((c) => c.id);
+  await tapBlock(page, c1, { x: 20, y: 12 }); await page.waitForTimeout(800);
+  const scroller = () => page.evaluate(() => { let n = document.querySelector<HTMLElement>("[data-canvas-scale]"); while (n && !(/(auto|scroll)/.test(getComputedStyle(n).overflowY) && n.scrollHeight > n.clientHeight)) n = n.parentElement; return n ? n.scrollTop : -1; });
+  await page.evaluate(() => { let n = document.querySelector<HTMLElement>("[data-canvas-scale]"); while (n && !(/(auto|scroll)/.test(getComputedStyle(n).overflowY) && n.scrollHeight > n.clientHeight)) n = n.parentElement; if (n) n.scrollTop = n.scrollHeight; });
+  await page.waitForTimeout(400);
+  const s0 = await scroller();
+  expect(s0, "the editor scrolls, and is at its bottom").toBeGreaterThan(0);
+  const stackedAt = () => page.evaluate(([a, b]) => { const p = document.querySelector(`[data-box-id="${a}"]`)!.getBoundingClientRect(), q = document.querySelector(`[data-box-id="${b}"]`)!.getBoundingClientRect(); return q.top >= p.bottom - 1 && Math.abs(q.left - p.left) < 2; }, [c1, c2]);
+  expect(await stackedAt(), "a phone stacks the 2-across grid").toBe(true);
+  const h = (await page.locator('[aria-label="Resize bottom edge"]').first().boundingBox())!;
+  await page.mouse.move(h.x + h.width / 2, h.y + h.height / 2); await page.mouse.down();
+  for (let i = 1; i <= 8; i++) { await page.mouse.move(h.x + h.width / 2, h.y + h.height / 2 + 5 * i); await page.waitForTimeout(16); }
+  await page.waitForTimeout(100);
+  const during = { scroll: await scroller(), stacked: await stackedAt() };
+  await page.mouse.up(); await page.waitForTimeout(300);
+  expect(during.stacked, "mid-drag the cells are still stacked").toBe(true);
+  expect(during.scroll, "mid-drag the editor has not scrolled").toBe(s0);
+});
+
+/**
  * A FINGER'S TOOLBAR NEVER STICKS OUT ABOVE THE PAGE (E5a-11). The bar goes below a block that has no room above it, and "room"
  * was the mouse bar's 32 + 16px; a finger's bar is 52px tall, so a block 48–68px down the page hung its bar over the app's
  * header — c-20 again, on every touch screen. A block placed in exactly that band, on every screen: the bar stays on the page.
@@ -212,6 +288,25 @@ test("a phone's top bar is one row, and More holds the rest", async ({ page }) =
  * ON A PHONE THE BLOCK TOOLBAR DOCKS AT THE BOTTOM (E5a-14). Hanging over the page, a finger's bar covered most of the block under
  * it, so a tap meant for that block landed on the bar. Elsewhere it stays by its block.
  */
+test("on a 360 phone the docked toolbar never runs under the blocks + (E5b-8)", async ({ page }) => {
+  test.skip(!phone(page), "only a phone docks the toolbar");
+  await page.setViewportSize({ width: 360, height: 640 }); // a Tecno / itel-class phone, the narrowest the research names
+  const s = sitePage([]);
+  s.pages[0].root.children = [band("band-S", [{ id: "S", type: "container", direction: "column", width: "100%", minHeight: 120, children: [] }])];
+  await seedSite(page, s, undefined, { phoneScreen: true });
+  await page.waitForSelector('[data-box-id="S"]'); await page.waitForTimeout(400);
+  await tapBlock(page, "S", { x: 16, y: 12 }); // a Stack: its bar has the most buttons (+ inside)
+  const g = await page.evaluate(() => {
+    const bar = document.querySelector('[role="toolbar"][aria-label="Block toolbar"]')!.getBoundingClientRect();
+    const plus = document.querySelector('[aria-label="Open blocks panel"]')!.getBoundingClientRect();
+    const menu = document.querySelector('[role="toolbar"][aria-label="Block toolbar"] [aria-label="Block actions"]')!.getBoundingClientRect();
+    return { barRight: bar.right, plusLeft: plus.left, menuRight: menu.right, barScrolls: document.querySelector('[role="toolbar"][aria-label="Block toolbar"]')!.scrollWidth > document.querySelector('[role="toolbar"][aria-label="Block toolbar"]')!.clientWidth + 1 };
+  });
+  expect(g.barRight, "the bar ends before the blocks +").toBeLessThanOrEqual(g.plusLeft);
+  expect(g.barScrolls, "and every button fits, ⋮ included, with nothing scrolled out of sight").toBe(false);
+  expect(g.menuRight, "⋮ is in sight").toBeLessThanOrEqual(g.plusLeft);
+});
+
 test("on a phone the block toolbar docks at the bottom of the screen", async ({ page }) => {
   await threeBlocks(page);
   await tapBlock(page, "a");
@@ -222,4 +317,144 @@ test("on a phone the block toolbar docks at the bottom of the screen", async ({ 
   });
   if (phone(page)) expect(g.barBottom, "docked at the bottom edge").toBeGreaterThan(g.vh - 40);
   else expect(g.gapToBlock, "by its block, as before").toBeLessThan(40);
+});
+
+/**
+ * A FINGER DRAGS AND RESIZES — BATCH E-5b (E5a-1, D4, D6, E4-9). Real touch events through CDP, not the mouse: every resize and
+ * drag listened to the mouse only, and a finger sends no mouse drag, so on a phone or a tablet nothing could be resized or
+ * dragged at all. Only the touch projects run these; the mouse's own suites prove the mouse unchanged.
+ */
+type Pt = { x: number; y: number };
+const touchAt = (cdp: CDPSession, type: "touchStart" | "touchMove" | "touchEnd", p?: Pt) =>
+  cdp.send("Input.dispatchTouchEvent", { type, touchPoints: p ? [{ x: Math.round(p.x), y: Math.round(p.y), id: 1 }] : [] });
+/** One finger down at the first point, held `holdMs`, moved through the rest, lifted. */
+async function finger(page: Page, path: Pt[], { holdMs = 0, stepMs = 16 } = {}) {
+  const cdp = await page.context().newCDPSession(page);
+  await touchAt(cdp, "touchStart", path[0]);
+  if (holdMs) await page.waitForTimeout(holdMs);
+  for (const p of path.slice(1)) { await touchAt(cdp, "touchMove", p); await page.waitForTimeout(stepMs); }
+  await touchAt(cdp, "touchEnd");
+  await cdp.detach();
+  await page.waitForTimeout(300);
+}
+/** A straight line in `n` steps — a finger's drag, not a jump. */
+const line = (a: Pt, b: Pt, n = 10): Pt[] => Array.from({ length: n + 1 }, (_, i) => ({ x: a.x + ((b.x - a.x) * i) / n, y: a.y + ((b.y - a.y) * i) / n }));
+const mid = (r: { x: number; y: number; width: number; height: number }): Pt => ({ x: r.x + r.width / 2, y: r.y + r.height / 2 });
+const scrolled = (page: Page) => page.evaluate(() => [scrollY, ...Array.from(document.querySelectorAll("*")).map((e) => e.scrollTop)].join());
+const band = (id: string, kids: unknown[]) => ({ id, type: "container", direction: "row", rowBand: true, width: "fill", gap: 0, padding: 0, children: kids });
+
+test.describe("a finger drags and resizes (E-5b)", () => {
+  test.beforeEach(() => { test.skip(!test.info().project.use.hasTouch, "a finger needs a touch screen; the mouse suites cover the mouse"); });
+
+  test("a finger resizes a block by its bottom handle; its top stays put and the page does not scroll", async ({ page }) => {
+    const s = sitePage([]);
+    s.pages[0].root.children = [band("band-L", [{ id: "L", type: "container", direction: "column", width: "50%", minHeight: 120, background: "#c7d2fe", children: [] }])];
+    await seedSite(page, s, undefined, { phoneScreen: true });
+    await page.waitForSelector('[data-box-id="L"]'); await page.waitForTimeout(400);
+    await tapBlock(page, "L", { x: 16, y: 12 });
+    const b0 = (await page.locator('[data-box-id="L"]').boundingBox())!;
+    const h = mid((await page.locator('[aria-label="Resize bottom edge"]').first().boundingBox())!);
+    const s0 = await scrolled(page);
+    await finger(page, line(h, { x: h.x, y: h.y + 60 }));
+    const b1 = (await page.locator('[data-box-id="L"]').boundingBox())!;
+    expect(b1.height - b0.height, "the block grew with the finger").toBeGreaterThan(30);
+    expect(Math.abs(b1.y - b0.y), "the top it was not held by stayed where it was (rule 19)").toBeLessThan(2);
+    expect(await scrolled(page), "nothing scrolled under the finger").toBe(s0);
+  });
+
+  test("a finger drags a block by its grip where the toolbar sits by its block; a phone's docked bar has none", async ({ page }) => {
+    await threeBlocks(page);
+    await tapBlock(page, "a");
+    const grip = page.getByRole("toolbar", { name: "Block toolbar" }).getByLabel("Drag to move");
+    if (phone(page)) { await expect(grip, "a phone's docked bar has no grip — a long press is the drag there (E5b-8)").toHaveCount(0); return; }
+    await expect(grip, "the grip is offered to a finger").toBeVisible();
+    const g = (await grip.boundingBox())!;
+    expect(Math.min(g.width, g.height), "at a finger's size").toBeGreaterThanOrEqual(44);
+    const c = (await page.locator('[data-box-id="c"]').boundingBox())!;
+    await finger(page, line(mid(g), { x: c.x + c.width / 2, y: c.y + c.height - 2 }, 14));
+    expect(texts(await stored(page)), "Alpha now under Charlie").toEqual(["Bravo", "Charlie", "Alpha"]);
+  });
+
+  test("a long press lifts a block, its chip above the finger; a short tap and a swipe move nothing", async ({ page }) => {
+    await threeBlocks(page);
+    const a = mid((await page.locator('[data-box-id="a"]').boundingBox())!);
+    await finger(page, [a], { holdMs: 120 });
+    expect(texts(await stored(page)), "a tap moves nothing").toEqual(["Alpha", "Bravo", "Charlie"]);
+    const c0 = (await page.locator('[data-box-id="c"]').boundingBox())!;
+    await finger(page, line(a, { x: a.x, y: c0.y + c0.height - 2 }, 6), { stepMs: 8 });
+    expect(texts(await stored(page)), "a swipe moves nothing").toEqual(["Alpha", "Bravo", "Charlie"]);
+    const a1 = mid((await page.locator('[data-box-id="a"]').boundingBox())!);
+    const c = (await page.locator('[data-box-id="c"]').boundingBox())!;
+    const cdp = await page.context().newCDPSession(page);
+    await touchAt(cdp, "touchStart", a1); await page.waitForTimeout(650);
+    await touchAt(cdp, "touchMove", { x: a1.x, y: a1.y + 6 }); await page.waitForTimeout(100);
+    const chipBottom = await page.evaluate(() => [...document.querySelectorAll<HTMLElement>('body > div[aria-hidden="true"]')]
+      .find((d) => d.style.position === "fixed" && d.textContent)?.getBoundingClientRect().bottom ?? null);
+    expect(chipBottom, "a chip shows the lifted block").not.toBeNull();
+    expect(chipBottom!, "above the finger, 32px clear").toBeLessThanOrEqual(a1.y + 6 - 30);
+    await touchAt(cdp, "touchMove", { x: 6, y: a1.y + 6 }); await page.waitForTimeout(100); // the finger at the screen's left edge
+    const chipX = await page.evaluate(() => { const r = [...document.querySelectorAll<HTMLElement>('body > div[aria-hidden="true"]')].find((d) => d.style.position === "fixed" && d.textContent)!.getBoundingClientRect(); return { left: r.left, right: r.right, vw: innerWidth }; });
+    expect(chipX.left, "the chip stays on the screen at its left edge (E5b-7)").toBeGreaterThanOrEqual(0);
+    expect(chipX.right, "…and inside its right edge").toBeLessThanOrEqual(chipX.vw);
+    for (const p of line({ x: a1.x, y: a1.y + 6 }, { x: c.x + c.width / 2, y: c.y + c.height - 2 }, 10)) { await touchAt(cdp, "touchMove", p); await page.waitForTimeout(16); }
+    await touchAt(cdp, "touchEnd"); await cdp.detach(); await page.waitForTimeout(300);
+    expect(texts(await stored(page)), "lifted and dropped under Charlie").toEqual(["Bravo", "Charlie", "Alpha"]);
+  });
+
+  /**
+   * E5b-2 · E5b-4: a top edge lying over a HEADING. Chrome's touch adjustment moves a press to the nearest node "a tap is for",
+   * and an editable span is one while a bare handle was not — so the press went to the words and was cancelled. And D6's 44px.
+   */
+  test("a finger holds a top handle that lies over a heading's words, and every handle is a finger's size", async ({ page }) => {
+    // BUILT THROUGH THE SHEET (RULE Y) — the shape `probe-e5b.js` reproduced it in: a Heading, then a Stack under it.
+    await seedSite(page, sitePage([]), undefined, { phoneScreen: true });
+    await page.waitForSelector('[aria-label="Open blocks panel"]'); await page.waitForTimeout(400);
+    for (const tile of ["Heading", "Stack"]) {
+      await page.getByRole("button", { name: "Open blocks panel" }).tap();
+      await page.getByRole("button", { name: new RegExp(`^Add ${tile}( —|$)`) }).first().tap(); await page.waitForTimeout(400);
+      const look = page.getByRole("menuitem", { name: "Default", exact: true }).first();
+      if (await look.isVisible().catch(() => false)) await look.tap();
+      await page.waitForTimeout(300);
+      if (await page.getByRole("dialog", { name: "Blocks" }).isVisible()) await page.keyboard.press("Escape");
+    }
+    const r0 = (await stored(page)) as N;
+    const L = flat(r0).find((n) => n.type === "container" && !n.rowBand && n !== r0 && !n.children?.length)!.id;
+    await tapBlock(page, L, { x: 16, y: 40 });
+    const b0 = (await page.locator(`[data-box-id="${L}"]`).boundingBox())!;
+    const h = mid((await page.locator('[aria-label="Resize top edge"]').first().boundingBox())!);
+    await finger(page, line(h, { x: h.x, y: h.y + 30 }));
+    const b1 = (await page.locator(`[data-box-id="${L}"]`).boundingBox())!;
+    expect(b0.height - b1.height, "the top edge came down with the finger").toBeGreaterThan(15);
+    expect(Math.abs(b1.y + b1.height - (b0.y + b0.height)), "the bottom it was not held by stayed (rule 19)").toBeLessThan(2);
+    // Every handle has its hit area, 44 × 44, OUTSIDE the block (E5b-14) and UNDER the handles (E5b-15): a press on any handle's
+    // centre is that handle, and a press in the block's middle is the block's.
+    const hit = await page.locator("[data-handle-hit]").evaluateAll((hs) => hs.map((h) => { const r = h.getBoundingClientRect(); return Math.min(r.width, r.height); }));
+    expect(hit.length, "a hit area for each of the 8 handles").toBe(8);
+    expect(Math.min(...hit), "every handle's hit area is 44 × 44 for a finger").toBeGreaterThanOrEqual(44);
+    const own = await page.locator('[aria-label^="Resize "]').evaluateAll((hs) => hs.map((h) => { const r = h.getBoundingClientRect(); return document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2) === h; }));
+    expect(own.every(Boolean), "a press on each handle's centre is that handle").toBe(true);
+    const inside = await page.locator(`[data-box-id="${L}"]`).evaluate((el) => { const r = el.getBoundingClientRect(); return !!document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2)?.closest("[data-handle-hit]"); });
+    expect(inside, "no hit area lies over the block's own middle").toBe(false);
+  });
+
+  test("a drop strip is a finger's size: between a mouse's strip and a finger's, a tall box's bottom means BELOW it", async ({ page }) => {
+    const s = sitePage([]);
+    s.pages[0].root.children = [
+      band("band-T", [{ id: "T", type: "text", text: "Tango", width: "auto" }]),
+      band("band-R", [
+        { id: "L", type: "container", direction: "column", width: "50%", minHeight: 200, background: "#c7d2fe", children: [] },
+        { id: "R", type: "container", direction: "column", width: "50%", minHeight: 200, background: "#bbf7d0", children: [] }]),
+    ];
+    await seedSite(page, s, undefined, { phoneScreen: true });
+    await page.waitForSelector('[data-box-id="R"]'); await page.waitForTimeout(400);
+    const t = mid((await page.locator('[data-box-id="T"]').boundingBox())!);
+    const r = (await page.locator('[data-box-id="R"]').boundingBox())!;
+    const mouse = Math.min(r.height * 0.22, 22), fingerStrip = Math.max(mouse, Math.min(44, r.height / 3));
+    expect(fingerStrip - mouse, "the box is tall enough for the two strips to differ").toBeGreaterThan(8);
+    await finger(page, line(t, { x: r.x + r.width / 2, y: r.y + r.height - (mouse + fingerStrip) / 2 }, 12), { holdMs: 650 });
+    const root = (await stored(page)) as N;
+    // Anywhere in R's subtree, not only as its child: a block dropped inside a box is wrapped in a band of its own (E5b-5).
+    expect(flat(flat(root).find((n) => n.id === "R")!).some((n) => n.id === "T"), "not dropped INSIDE the green box").toBe(false);
+    expect(texts(root)[0], "Tango left the top of the page").not.toBe("Tango");
+  });
 });

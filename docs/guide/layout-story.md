@@ -420,10 +420,9 @@ the Inspector slides over the canvas from the right.
   holds until the next time the screen crosses that width.
 - The blocks panel floats over the canvas. (On a laptop or larger it docks at the side instead, and the page moves
   over to make room.)
-- Tap to select works with a finger. Dragging a block or an edge still needs a mouse, a trackpad or a stylus that acts
-  as one; with a finger, move a block with its arrows and size it with **Width** (below). Dragging by finger is the
-  next piece of work (BATCH E-5b). With a mouse on a tablet, dragging an edge works as on a desktop: the edge you hold is
-  the only edge that moves.
+- A finger does everything a mouse does. Tap to select; drag an edge's handle to size a block; drag the grip in the
+  block's toolbar, or hold a block still for half a second, to move it (both told under "Building on a phone" below).
+  Whatever she drags, with a finger or a mouse, the edge she holds is the only edge that moves.
 
 **Full width is the desktop page, on every screen.** On a tablet or larger the editor opens at Full width (on a phone, at
 Mobile; see below), and Full width always draws the
@@ -460,15 +459,32 @@ adds goes after it. Back, Escape or the ✕ puts the sheet away without leaving 
 **An empty box says where to add.** On a touch screen an empty box reads **Add block here — tap +**, and its **+** is a
 finger's size.
 
-**She moves blocks with arrows, not by dragging.** On a phone the selected block's toolbar waits at the bottom of the
+**She moves blocks with arrows.** On a phone the selected block's toolbar waits at the bottom of the
 screen, under her thumb, instead of hanging over the page, so it never covers the block below the one she chose. It has
 **Move up** and **Move down**. A block
 alone on its line moves the whole line one step down the page. A block sharing a line with others has **Move left** and
 **Move right** instead. The ⋮ menu adds **Move to top** and **Move to bottom**. An arrow is greyed out when there is nowhere
-to go, and Undo puts a move back. The same moves work from a keyboard: the arrow keys.
+to go, and Undo puts a move back. The same moves work from a keyboard: the arrow keys. The arrows are always there, so
+nothing on the page ever needs a drag.
 
-**She sets widths by choosing, not dragging.** Under **Width** in the Inspector: **Fit**, **Full**, **½**, **⅓** or
-**Custom**. On the phone, ½ makes the block half the line on phones only.
+**…or she picks it up with her finger.** Maya holds her finger still on the results table for half a second. Her phone
+gives a small tick, and the block lifts: a chip with its name rides just above her finger, where she can see it, and a
+line on the page shows where it will land. She slides it up under the heading and lets go; it lands on the line. Near
+the top or the bottom of the screen the page scrolls by itself, faster the nearer the edge, so a block can travel the
+whole page. A quick tap still only selects, and a quick swipe still scrolls the page. Nothing is picked up by accident.
+The **grip** at the start of the toolbar does the same without the wait: drag it and the block comes with it.
+
+[![On a 393px phone, a Divider lifted by a long press: its chip rides above the finger and a line shows where it will land](img/story-phone-lift.webp)](img/story-phone-lift.webp)
+
+**Where it lands is easy to aim at.** Dropping near the top or the bottom of a block means above it or below it, and near
+its sides means beside it. With a finger those strips are at least 44 pixels deep (on a small block, a third of it, so
+"inside" stays reachable too); with a mouse they keep their narrower size.
+
+**She sizes a block with her finger, or by choosing.** The round handles on a selected block's edges and corners can be
+dragged with a finger exactly as with a mouse: the edge she holds follows her finger, the opposite edge stays put, and the
+page does not scroll while she drags. On a touch screen each handle answers to a 44-pixel area just outside the
+block's edge, even though it is drawn small, and a tap in the middle of the block is still the block's. Or, under **Width** in the Inspector: **Fit**, **Full**, **½**, **⅓** or **Custom**. On the phone, ½
+makes the block half the line on phones only.
 
 **Everything is a finger's size.** On a touch screen every button in the block toolbar, the sheet, the Inspector and its
 menus is at least 44 × 44 pixels (WCAG's enhanced size, and Apple's). With a mouse the editor keeps its compact sizes.

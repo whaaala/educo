@@ -87,7 +87,7 @@ Appears just above (or below) the selected block.
 
 | Button | What it does | Shortcut |
 |--------|-------------|---------|
-| **⠿ Drag to move** | Hold and drag the block to a new place; let go where the dashed marker shows. | — |
+| **⠿ Drag to move** | Hold and drag the block to a new place; let go where the dashed marker shows. Works with a finger too; on a touch screen you can also hold the block itself still for half a second to lift it. | — |
 | **+ Add a block inside** | Nests a new block inside this one. | — |
 | **🔒 Lock position and size** | Freezes the block's place and size; click again to unlock. | — |
 | **⋮ Block actions** | The menu below. | — |
