@@ -65,7 +65,7 @@ export default function CompactSelect({ label, ariaLabel, value, onChange, optio
   const renderOpt = (o: CompactSelectOption) => (
     <button key={o.value} type="button" role="option" aria-selected={o.value === value}
       onClick={() => { onChange(o.value); setOpen(false); }}
-      className={`w-full flex items-center gap-2 px-2 py-1.5 text-xs text-left rounded-lg transition-colors ${o.value === value ? "bg-brand text-brand-fg" : "text-ink hover:bg-surface-2"}`}>
+      className={`w-full flex items-center gap-2 px-2 py-1.5 pointer-coarse:min-h-11 text-xs text-left rounded-lg transition-colors ${o.value === value ? "bg-brand text-brand-fg" : "text-ink hover:bg-surface-2"}`}>
       <span className="flex-1 truncate">{o.label}</span>
       {o.value === value && <Check className="w-3 h-3 shrink-0" />}
     </button>
@@ -74,7 +74,7 @@ export default function CompactSelect({ label, ariaLabel, value, onChange, optio
   const trigger = (
     <button ref={btnRef} type="button" id={id} aria-haspopup="listbox" aria-expanded={open} aria-label={aria} disabled={disabled}
       onClick={() => setOpen((o) => !o)}
-      className={`${COMPACT_INPUT_CLS} flex items-center justify-between gap-2 text-left disabled:opacity-50 disabled:cursor-not-allowed`}>
+      className={`${COMPACT_INPUT_CLS} pointer-coarse:min-h-11 flex items-center justify-between gap-2 text-left disabled:opacity-50 disabled:cursor-not-allowed`}>
       <span className={`truncate ${selected ? "" : "text-gray-400"}`}>{selected?.label ?? placeholder ?? ""}</span>
       <ChevronDown className={`w-3.5 h-3.5 shrink-0 text-gray-400 transition-transform ${open ? "rotate-180" : ""}`} />
     </button>

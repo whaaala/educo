@@ -63,7 +63,7 @@ export default function Slider({
       <input
         id={id} type="range" min={lo} max={hi} step={step} value={value} disabled={disabled}
         onChange={(e) => onChange(Number(e.target.value))}
-        className="h-2 w-full cursor-pointer appearance-none rounded-full bg-gray-200 accent-blue-600 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-[#22262e] dark:accent-blue-500 midnight:bg-cyan-500/15 midnight:accent-cyan-500 purple:bg-pink-500/15 purple:accent-pink-500"
+        className="h-2 pointer-coarse:h-11 pointer-coarse:bg-clip-content pointer-coarse:py-[1.125rem] w-full cursor-pointer appearance-none rounded-full bg-gray-200 accent-blue-600 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-[#22262e] dark:accent-blue-500 midnight:bg-cyan-500/15 midnight:accent-cyan-500 purple:bg-pink-500/15 purple:accent-pink-500"
         aria-label={label}
         aria-valuetext={display}
       />

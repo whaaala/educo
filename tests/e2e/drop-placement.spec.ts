@@ -185,6 +185,7 @@ test.describe("a block let go over the selected block's toolbar lands on the pag
   test("every control of the toolbar, one after another: the block is added each time", async ({ page }) => {
     await seedHeadingOverText(page);
     const controls = await page.evaluate(() => Array.from(document.querySelectorAll('[role="toolbar"][aria-label="Block toolbar"] > *'))
+      .filter((e) => e.getBoundingClientRect().width > 0) // only what is SHOWN: the grip is not offered to a finger (E-5a)
       .map((e) => { const r = e.getBoundingClientRect(); return { name: e.getAttribute("aria-label") || e.textContent || e.tagName, x: Math.round(r.left + r.width / 2), y: Math.round(r.top + r.height / 2) }; }));
     expect(controls.length, "the toolbar is there, with its controls").toBeGreaterThanOrEqual(3);
     const text = (await page.locator('[data-box-id="T"]').boundingBox())!;
@@ -209,6 +210,15 @@ test.describe("a block let go over the selected block's toolbar lands on the pag
     for (let i = 0; i < 6 && await page.evaluate(() => document.querySelector(".outline-indigo-500")?.getAttribute("data-box-id")) !== "H"; i++) { await page.mouse.click(h.x + h.width / 2, h.y + h.height / 2); await page.waitForTimeout(250); }
     const where = async () => page.evaluate(() => { const z = document.querySelector<HTMLElement>("[data-canvas-scale]")?.dataset.canvasScale; const bar = document.querySelector('[role="toolbar"][aria-label="Block toolbar"]')!.getBoundingClientRect(); const top = document.querySelector('[data-box-id="root"]')!.getBoundingClientRect().top; const b = document.querySelector('[data-box-id="H"]')!.getBoundingClientRect(); return { z, barTop: Math.round(bar.top), pageTop: Math.round(top), blockTop: Math.round(b.top), below: bar.top >= b.bottom - 2 }; });
     const open = await where();
+    // A FINGER'S BAR IS 52px and needs 68 above (E5a-11); there the RULE is asserted in both states, whatever the scale puts the
+    // block at — above with room, below without, never over the top of the page. The mouse keeps the c-20 proof exactly.
+    if (await page.evaluate(() => matchMedia("(pointer: coarse)").matches)) {
+      for (const [state, w] of [["closed", open], ["opened", (await page.getByRole("button", { name: "Open blocks panel" }).click(), await page.waitForTimeout(900), await where())]] as const) {
+        expect(w.below, `${state}: the bar is below exactly when there is under 68px above (${w.blockTop - w.pageTop}px, scale ${w.z})`).toBe(w.blockTop - w.pageTop < 68);
+        expect(w.barTop, `${state}: and no part of it is above the page`).toBeGreaterThanOrEqual(w.pageTop);
+      }
+      return;
+    }
     expect(open.blockTop - open.pageTop, `with the panel closed there is room above the block — or this proves nothing (scale ${open.z})`).toBeGreaterThanOrEqual(48); // the bar's 32 + the 16 that clears the handles (E2-8)
     expect(open.below, "so the bar sits above it").toBe(false);
     await page.getByRole("button", { name: "Open blocks panel" }).click(); await page.waitForTimeout(900);

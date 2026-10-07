@@ -59,7 +59,11 @@ test.describe("clicking into nested blocks", () => {
     expect(await selected(page), "drilled all the way in").toBe("G");
 
     const p = (await page.locator('[data-box-id="P"]').boundingBox())!;
-    await page.mouse.click(p.x + p.width / 2, p.y + p.height + 40); // below the page, on bare canvas
+    // Below the page, on bare canvas — and below the selected block's toolbar, which hangs under a block near the top and on a
+    // touch screen is a finger's height, 52px, reaching past the page (E5a-11).
+    const bar = await page.locator('[role="toolbar"][aria-label="Block toolbar"]').boundingBox();
+    const docked = !!bar && bar.y + bar.height > page.viewportSize()!.height - 40; // a phone docks it at the bottom edge (E5a-14)
+    await page.mouse.click(p.x + p.width / 2, Math.max(p.y + p.height + 40, bar && !docked ? bar.y + bar.height + 16 : 0));
     await page.waitForTimeout(300);
     expect(await selected(page), "empty canvas clears the selection").toBeNull();
 

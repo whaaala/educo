@@ -2190,6 +2190,28 @@ export function paletteClickSlot(root: BoxNode, selectedId: string | null): { pa
   return at ? { parentId: at.parent.id, index: at.index + 1 } : { parentId: root.id, index: root.children?.length ?? 0 };
 }
 
+/**
+ * WHERE A NEW BLOCK GOES, CHOSEN BY NAME (E-5a, D3 — the user's decision; WordPress's "Add Block Before / After…").
+ * Before / After are siblings of the selection, stepping out of a row band as `paletteClickSlot` does so the newcomer gets
+ * a line of its own; Inside is the end of the selection when it is a container (After otherwise); Start / End are the page's.
+ */
+export type InsertWhere = "before" | "after" | "inside" | "start" | "end";
+export function insertSlot(root: BoxNode, selectedId: string | null, where: InsertWhere): { parentId: string; index: number } {
+  const selected = selectedId ? findBox(root, selectedId) : null;
+  if (where === "start") return { parentId: root.id, index: 0 };
+  if (!selected || where === "end") return { parentId: root.id, index: root.children?.length ?? 0 };
+  if (where === "inside" && isContainer(selected)) return { parentId: selected.id, index: selected.children?.length ?? 0 };
+  const here = findParent(root, selected.id);
+  const at = (here?.parent.rowBand ? findParent(root, here.parent.id) : null) ?? here;
+  if (!at) return { parentId: root.id, index: root.children?.length ?? 0 };
+  return { parentId: at.parent.id, index: at.index + (where === "before" ? 0 : 1) };
+}
+/** The choice a plain click makes — `paletteClickSlot`'s rule, named, so the menu shows what WILL happen. */
+export function defaultWhere(root: BoxNode, selectedId: string | null): InsertWhere {
+  if (!selectedId || !findBox(root, selectedId)) return "end";
+  return paletteClickSlot(root, selectedId).parentId === selectedId ? "inside" : "after";
+}
+
 /** Insert `node` into `parentId` at `index` (clamped). No-op if the parent is missing. */
 export function insertBox(root: BoxNode, parentId: string, index: number, node: BoxNode): BoxNode {
   if (root.id === parentId) {
@@ -2279,6 +2301,47 @@ export function moveBoxStep(root: BoxNode, id: string, dir: -1 | 1): BoxNode {
   const next = [...kids];
   [next[index], next[j]] = [next[j], next[index]];
   return updateBox(root, parent.id, { children: next });
+}
+
+/**
+ * THE ARROWS ON A BLOCK (E-5a, D4 — the user's decision): what moves, along which axis, and where it may go.
+ * A block ALONE on its line moves the LINE (its row band) up and down the page — the band is scaffolding nobody selects;
+ * a block SHARING a line (a band of several, a row, a grid) moves along it, left and right. "first" / "last" are Move to
+ * top / bottom (start / end of the line). Every move is a non-drag route for what a drag does (WCAG 2.5.7).
+ */
+export type MoveStep = -1 | 1 | "first" | "last";
+function moveUnit(root: BoxNode, id: string): { id: string; parent: BoxNode; index: number } | null {
+  const p = findParent(root, id);
+  if (!p) return null;
+  if (p.parent.rowBand && (p.parent.children?.length ?? 0) === 1) {
+    const band = findParent(root, p.parent.id);
+    return band ? { id: p.parent.id, ...band } : null;
+  }
+  return { id, ...p };
+}
+export function moveAxis(root: BoxNode, id: string): "vertical" | "horizontal" {
+  const p = findParent(root, id);
+  if (!p) return "vertical";
+  const along = p.parent.rowBand ? (p.parent.children?.length ?? 0) > 1 : p.parent.direction === "row" || p.parent.layout === "grid";
+  return along ? "horizontal" : "vertical";
+}
+const stepTo = (u: { index: number; parent: BoxNode }, step: MoveStep) => {
+  const n = u.parent.children?.length ?? 0;
+  return step === "first" ? 0 : step === "last" ? n - 1 : u.index + step;
+};
+export function canMoveBlock(root: BoxNode, id: string, step: MoveStep): boolean {
+  const u = moveUnit(root, id);
+  if (!u) return false;
+  const j = stepTo(u, step);
+  return j >= 0 && j < (u.parent.children?.length ?? 0) && j !== u.index;
+}
+export function moveBlock(root: BoxNode, id: string, step: MoveStep): BoxNode {
+  const u = moveUnit(root, id);
+  if (!u || !canMoveBlock(root, id, step)) return root;
+  const kids = [...u.parent.children!];
+  const [m] = kids.splice(u.index, 1);
+  kids.splice(stepTo(u, step), 0, m);
+  return updateBox(root, u.parent.id, { children: kids });
 }
 
 /**

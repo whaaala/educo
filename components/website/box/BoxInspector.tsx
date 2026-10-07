@@ -193,16 +193,20 @@ function AccPartDesign({ title, ariaPrefix, style, onChange, moveLabel = "conten
   );
 }
 
-/** Width: Fit content / Full width / Custom (% or px). */
+/**
+ * Width: Fit · Full · ½ · ⅓ · Custom. The halves and thirds are the presets a FINGER uses instead of a resize handle (E-5a, D5 —
+ * the user's decision); like every value here they are written at the screen being edited, so on a phone they change the phone.
+ */
+const WIDTH_PRESETS: Record<string, string> = { auto: "auto", fill: "fill", half: "50%", third: "33.33%" };
 function WidthControl({ node, onPatch }: { node: BoxNode; onPatch: (p: Partial<BoxNode>) => void }) {
   const w = node.width ?? "auto";
-  const isCustom = w !== "auto" && w !== "fill";
-  const mode = w === "auto" ? "auto" : w === "fill" ? "fill" : "custom";
+  const mode = Object.keys(WIDTH_PRESETS).find((k) => WIDTH_PRESETS[k] === w) ?? "custom";
+  const isCustom = mode === "custom";
   return (
     <div className="space-y-1.5">
       <span className={label}>Width</span>
-      <Segmented full ariaLabel="Width" value={mode} onChange={(m) => onPatch({ width: m === "auto" ? "auto" : m === "fill" ? "fill" : isCustom ? w : "50%" })}
-        options={[{ value: "auto", label: "Fit" }, { value: "fill", label: "Full" }, { value: "custom", label: "Custom" }]} />
+      <Segmented full ariaLabel="Width" value={mode} onChange={(m) => onPatch({ width: WIDTH_PRESETS[m] ?? (isCustom ? w : "40%") })}
+        options={[{ value: "auto", label: "Fit" }, { value: "fill", label: "Full" }, { value: "half", label: "½", title: "Half the line" }, { value: "third", label: "⅓", title: "A third of the line" }, { value: "custom", label: "Custom" }]} />
       {isCustom && <CompactField ariaLabel="Custom width" value={w} onChange={(v) => onPatch({ width: typedLength(v) })} placeholder="50% or 15rem" />}
     </div>
   );
@@ -231,7 +235,7 @@ function SideSpacing({ title, node, base, sides, onPatch, max = 96, defaults = [
       {hasDefault && (
         <button type="button" disabled={!set} onClick={() => onPatch({ [base]: undefined, [t]: undefined, [r]: undefined, [b]: undefined, [l]: undefined } as Partial<BoxNode>)}
           aria-label={`${title} — back to default`}
-          className="text-[0.625rem] text-gray-500 hover:text-brand disabled:hover:text-gray-500 disabled:cursor-default dark:text-gray-400 midnight:text-slate-400 purple:text-purple-300">
+          className="pointer-coarse:min-h-11 text-[0.625rem] text-gray-500 hover:text-brand disabled:hover:text-gray-500 disabled:cursor-default dark:text-gray-400 midnight:text-slate-400 purple:text-purple-300">
           {set ? "Back to default" : "At the default"}
         </button>
       )}
@@ -239,7 +243,7 @@ function SideSpacing({ title, node, base, sides, onPatch, max = 96, defaults = [
         {([["Top", t], ["Right", r], ["Bottom", b], ["Left", l]] as const).map(([lab, key]) => (
           <label key={lab} className="flex flex-col items-center gap-0.5">
             <span className="text-[0.5625rem] uppercase tracking-wide text-gray-400">{lab}</span>
-            <input type="number" step={0.1} min={0} value={node[key] !== undefined ? toRem(node[key] as number) : ""} placeholder={String(toRem(own ?? defaults[[t, r, b, l].indexOf(key)]))} onChange={(e) => setRem(key, e.target.value)} aria-label={`${title} ${lab.toLowerCase()}`} className="w-full text-xs px-1 py-1 rounded-lg border border-gray-200 dark:border-white/10 midnight:border-white/10 purple:border-white/10 bg-transparent text-center outline-none focus:ring-1 focus:ring-indigo-400" />
+            <input type="number" step={0.1} min={0} value={node[key] !== undefined ? toRem(node[key] as number) : ""} placeholder={String(toRem(own ?? defaults[[t, r, b, l].indexOf(key)]))} onChange={(e) => setRem(key, e.target.value)} aria-label={`${title} ${lab.toLowerCase()}`} className="w-full text-xs px-1 py-1 pointer-coarse:min-h-11 rounded-lg border border-gray-200 dark:border-white/10 midnight:border-white/10 purple:border-white/10 bg-transparent text-center outline-none focus:ring-1 focus:ring-indigo-400" />
           </label>
         ))}
       </div>
@@ -638,7 +642,7 @@ export default function BoxInspector({ section = false, sectionPlace, outerDefau
       {breakpoint !== "base" && (
         <div className="rounded-xl border border-amber-300 dark:border-amber-500/30 bg-amber-50 dark:bg-amber-500/10 p-2.5 space-y-1.5">
           <div className="text-[0.6875rem] font-semibold text-amber-700 dark:text-amber-300 midnight:text-amber-300 purple:text-amber-300 flex items-center gap-1.5"><MonitorSmartphone className="w-3.5 h-3.5" /> Editing {bpLabel} — size &amp; layout only change here, unless a control says “every screen”.</div>
-          {overridden && onResetOverride && <button onClick={onResetOverride} className="text-[0.6875rem] text-amber-700 dark:text-amber-300 midnight:text-amber-300 purple:text-amber-300 underline hover:no-underline">Reset {bpLabel.toLowerCase()} changes to default</button>}
+          {overridden && onResetOverride && <button onClick={onResetOverride} className="pointer-coarse:min-h-11 inline-flex items-center text-[0.6875rem] text-amber-700 dark:text-amber-300 midnight:text-amber-300 purple:text-amber-300 underline hover:no-underline">Reset {bpLabel.toLowerCase()} changes to default</button>}
         </div>
       )}
 
@@ -715,7 +719,7 @@ export default function BoxInspector({ section = false, sectionPlace, outerDefau
               <button
                 onClick={() => onPatch({ locked: !node.locked })}
                 aria-pressed={!!node.locked}
-                className={`w-full flex items-center justify-center gap-2 py-2 rounded-lg text-xs font-medium border transition-colors ${node.locked ? "bg-amber-500 border-transparent text-white" : "border-gray-200 dark:border-white/10 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-white/10"}`}
+                className={`w-full flex items-center justify-center gap-2 py-2 pointer-coarse:min-h-11 rounded-lg text-xs font-medium border transition-colors ${node.locked ? "bg-amber-500 border-transparent text-white" : "border-gray-200 dark:border-white/10 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-white/10"}`}
                 title={node.locked ? "Unlock (Ctrl+L)" : "Lock position & size (Ctrl+L)"}
               >{node.locked ? <><LockOpen className="w-3.5 h-3.5" /> Unlock position &amp; size</> : <><Lock className="w-3.5 h-3.5" /> Lock position &amp; size</>}</button>
               {node.locked && <p className="text-[0.625rem] text-gray-400 flex items-start gap-1"><Lock className="w-3 h-3 mt-0.5 shrink-0" /> Frozen — can&rsquo;t be moved or resized. Content &amp; colours stay editable.</p>}
@@ -948,7 +952,7 @@ export default function BoxInspector({ section = false, sectionPlace, outerDefau
                   how the blocks inside are arranged, but whether they are all on screen at once. With it
                   on, each block in this box becomes a page a visitor swipes or arrows between — and each
                   page stays an ordinary box, so everything else in this panel still applies inside it. */}
-              <label className="flex items-start gap-2 text-xs text-gray-600 dark:text-gray-300 midnight:text-slate-300 purple:text-purple-200">
+              <label className="pointer-coarse:min-h-11 flex items-start gap-2 text-xs text-gray-600 dark:text-gray-300 midnight:text-slate-300 purple:text-purple-200">
                 <input type="checkbox" className="mt-0.5" checked={!!node.pager} aria-label="Show one at a time"
                   onChange={(e) => onPatch({ pager: e.target.checked || undefined, pagerNav: undefined, pagerAuto: undefined })} />
                 <span><span className="font-medium text-ink">Show one at a time</span> — the blocks in this box become pages to swipe between.</span>
@@ -1013,7 +1017,7 @@ export default function BoxInspector({ section = false, sectionPlace, outerDefau
                         being cropped to match. Blocks still read in the order you put them in. On a phone the row
                         stacks, as it always does.
                       </p>
-                      <label className="flex items-start gap-2 text-xs text-gray-600 dark:text-gray-300">
+                      <label className="pointer-coarse:min-h-11 flex items-start gap-2 text-xs text-gray-600 dark:text-gray-300">
                         <input type="checkbox" className="mt-0.5" checked={!!node.rowMeasure}
                           aria-label="Measure on the page"
                           onChange={(e) => onPatch({ rowMeasure: e.target.checked || undefined })} />
@@ -1034,7 +1038,7 @@ export default function BoxInspector({ section = false, sectionPlace, outerDefau
                   <Segmented full ariaLabel="Direction" value={node.direction === "row" ? "row" : "column"} onChange={(v) => onPatch({ direction: v as "row" | "column" })}
                     options={[{ value: "column", label: "Top-to-bottom", Icon: Rows3 }, { value: "row", label: "Side-by-side", Icon: Columns3 }]} />
                   <CompactSelect label="Position blocks" ariaLabel="Position blocks" value={node.justify ?? "start"} onChange={(v) => onPatch({ justify: v as FlexJustify })} options={JUSTIFY_OPTS.map(([v, l]) => ({ value: v, label: l }))} />
-                  <label className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-300"><input type="checkbox" checked={!!node.wrap} onChange={(e) => onPatch({ wrap: e.target.checked })} /> Let blocks wrap to a new line</label>
+                  <label className="pointer-coarse:min-h-11 flex items-center gap-2 text-xs text-gray-600 dark:text-gray-300"><input type="checkbox" checked={!!node.wrap} onChange={(e) => onPatch({ wrap: e.target.checked })} /> Let blocks wrap to a new line</label>
                 </>
               )}
               {/* `align-items` lines blocks up across a top-to-bottom stack, but DOWN in a side-by-side row and in a grid
@@ -1109,7 +1113,7 @@ export default function BoxInspector({ section = false, sectionPlace, outerDefau
                     return (
                       <button key={`${y}-${x}`} aria-label={name} title={name} aria-pressed={on}
                         onClick={() => onPatch(on ? { placeX: undefined, placeY: undefined } : { placeX: x, placeY: y, justifySelf: undefined })}
-                        className={`grid h-6 w-6 place-items-center rounded-md transition-colors ${on ? "bg-brand text-brand-fg" : "text-muted hover:bg-brand/10 hover:text-brand"}`}>
+                        className={`grid h-6 w-6 pointer-coarse:h-11 pointer-coarse:w-11 place-items-center rounded-md transition-colors ${on ? "bg-brand text-brand-fg" : "text-muted hover:bg-brand/10 hover:text-brand"}`}>
                         <span className="block h-2 w-2 rounded-sm bg-current" />
                       </button>
                     );
@@ -1212,7 +1216,7 @@ export default function BoxInspector({ section = false, sectionPlace, outerDefau
                     return (
                       <button key={`${y}-${x}`} aria-label={`Content ${y === "start" ? "top" : y === "end" ? "bottom" : "middle"} ${x === "start" ? "left" : x === "end" ? "right" : "center"}`}
                         onClick={() => onPatch({ contentX: x, contentY: y })}
-                        className={`w-6 h-6 rounded flex items-center justify-center transition-colors ${on ? "bg-indigo-600 text-white" : "text-gray-400 hover:bg-gray-100 dark:hover:bg-white/10"}`}>
+                        className={`w-6 h-6 pointer-coarse:w-11 pointer-coarse:h-11 rounded flex items-center justify-center transition-colors ${on ? "bg-indigo-600 text-white" : "text-gray-400 hover:bg-gray-100 dark:hover:bg-white/10"}`}>
                         <span className="block w-2 h-2 rounded-sm bg-current" />
                       </button>
                     );
@@ -1220,7 +1224,7 @@ export default function BoxInspector({ section = false, sectionPlace, outerDefau
                 </div>
               </div>
             )}
-            <label className="flex items-start gap-2 text-xs text-gray-600 dark:text-gray-300">
+            <label className="pointer-coarse:min-h-11 flex items-start gap-2 text-xs text-gray-600 dark:text-gray-300">
               <input type="checkbox" checked={!!node.clip} onChange={(e) => onPatch({ clip: e.target.checked })} className="mt-0.5" />
               <span>Trim to size <span className="text-gray-400">— by default a block grows to fit its content; tick this to force a smaller size and hide the overflow.</span></span>
             </label>
@@ -1259,7 +1263,7 @@ export default function BoxInspector({ section = false, sectionPlace, outerDefau
             />
             {!!node.revealEffect && (
               <>
-                <label className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200">
+                <label className="pointer-coarse:min-h-11 flex items-center gap-2 text-xs text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200">
                   <input type="checkbox" checked={!!node.revealScroll} onChange={(e) => onPatch({ revealScroll: e.target.checked || undefined })} aria-label="Play when it scrolls into view" />
                   Play when it scrolls into view
                 </label>
@@ -1268,7 +1272,7 @@ export default function BoxInspector({ section = false, sectionPlace, outerDefau
                     children — a <style> tag and the component itself — rather than the items. Both halves are
                     fixed together: there is no point offering a control that does the wrong thing. */}
                 {(container || isMultiItemComponent(node.component)) && (
-                  <label className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200">
+                  <label className="pointer-coarse:min-h-11 flex items-center gap-2 text-xs text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200">
                     <input type="checkbox" checked={!!node.revealStagger} onChange={(e) => onPatch({ revealStagger: e.target.checked || undefined })}
                       aria-label={container ? "Bring the blocks inside in one after another" : "Bring the items in one after another"} />
                     {container ? "Bring the blocks inside in one after another" : "Bring the items in one after another"}
@@ -1281,7 +1285,7 @@ export default function BoxInspector({ section = false, sectionPlace, outerDefau
               {([["TL", "radiusTopLeft", "top-left"], ["TR", "radiusTopRight", "top-right"], ["BR", "radiusBottomRight", "bottom-right"], ["BL", "radiusBottomLeft", "bottom-left"]] as const).map(([lab, key, full]) => (
                 <label key={key} className="flex flex-col items-center gap-0.5">
                   <span className="text-[0.5625rem] uppercase tracking-wide text-gray-400">{lab}</span>
-                  <input type="number" min={0} value={node[key] !== undefined ? (node[key] as number) : ""} placeholder={String(node.radius ?? 0)} onChange={(e) => onPatch({ [key]: e.target.value === "" ? undefined : Number(e.target.value) } as Partial<BoxNode>)} aria-label={`Rounded corner ${full}`} className="w-full text-xs px-1 py-1 rounded-lg border border-gray-200 dark:border-white/10 midnight:border-white/10 purple:border-white/10 bg-transparent text-center outline-none focus:ring-1 focus:ring-indigo-400" />
+                  <input type="number" min={0} value={node[key] !== undefined ? (node[key] as number) : ""} placeholder={String(node.radius ?? 0)} onChange={(e) => onPatch({ [key]: e.target.value === "" ? undefined : Number(e.target.value) } as Partial<BoxNode>)} aria-label={`Rounded corner ${full}`} className="w-full text-xs px-1 py-1 pointer-coarse:min-h-11 rounded-lg border border-gray-200 dark:border-white/10 midnight:border-white/10 purple:border-white/10 bg-transparent text-center outline-none focus:ring-1 focus:ring-indigo-400" />
                 </label>
               ))}
             </div>
@@ -1303,7 +1307,7 @@ export default function BoxInspector({ section = false, sectionPlace, outerDefau
                 and this is the opt-in for the other meaning. Offered only where there is something inside to
                 protect, and only once a fade has actually been set. */}
             {(isContainer(node) || node.type === "component") && node.opacity !== undefined && node.opacity !== 100 && (
-              <label className="flex items-start gap-2 text-xs text-gray-600 dark:text-gray-300">
+              <label className="pointer-coarse:min-h-11 flex items-start gap-2 text-xs text-gray-600 dark:text-gray-300">
                 <input
                   type="checkbox"
                   checked={!!node.fadeContents}
@@ -1340,7 +1344,7 @@ export default function BoxInspector({ section = false, sectionPlace, outerDefau
             </div>
             {/* Photo: paste a URL or upload (data URL) */}
             <CompactField ariaLabel="Background image URL" value={node.bgImage && /^(https?:|data:)/.test(node.bgImage) ? node.bgImage : ""} placeholder="Paste an image URL…" onChange={(v) => onPatch({ bgImage: v || undefined, bgTile: undefined })} />
-            <button onClick={() => fileRef.current?.click()} className="w-full flex items-center justify-center gap-2 text-sm px-3 py-2 rounded-lg border border-dashed border-gray-300 dark:border-white/15 hover:bg-gray-50 dark:hover:bg-white/5 text-gray-700 dark:text-gray-200"><Upload className="w-3.5 h-3.5" /> {node.bgImage ? "Replace with an upload" : "Upload an image"}</button>
+            <button onClick={() => fileRef.current?.click()} className="w-full flex items-center justify-center gap-2 text-sm px-3 py-2 pointer-coarse:min-h-11 rounded-lg border border-dashed border-gray-300 dark:border-white/15 hover:bg-gray-50 dark:hover:bg-white/5 text-gray-700 dark:text-gray-200"><Upload className="w-3.5 h-3.5" /> {node.bgImage ? "Replace with an upload" : "Upload an image"}</button>
             <input ref={fileRef} type="file" accept="image/*" className="hidden" aria-label="Upload background image" onChange={(e) => { const f = e.target.files?.[0]; if (!f) return; const r = new FileReader(); r.onload = () => onPatch({ bgImage: String(r.result), bgTile: undefined }); r.readAsDataURL(f); e.target.value = ""; }} />
             {node.bgImage && (
               <>
@@ -1384,7 +1388,7 @@ export default function BoxInspector({ section = false, sectionPlace, outerDefau
                   </div>
                 ))}
                 {/* Fixed = parallax-style locked background (any image) */}
-                <label className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-300">
+                <label className="pointer-coarse:min-h-11 flex items-center gap-2 text-xs text-gray-600 dark:text-gray-300">
                   <input type="checkbox" checked={node.bgAttach === "fixed"} onChange={(e) => onPatch({ bgAttach: e.target.checked ? "fixed" : undefined })} aria-label="Fixed background (parallax)" className="accent-indigo-600" />
                   Fixed (parallax scroll)
                 </label>
@@ -1441,7 +1445,7 @@ export default function BoxInspector({ section = false, sectionPlace, outerDefau
                       <CompactSelect label="…or jump to a page" ariaLabel="Link to page" value={node.href?.startsWith("page:") ? node.href : ""} onChange={(v) => onPatch({ href: v })}
                         options={[{ value: "", label: "— choose a page —" }, ...pages.filter((p) => p.id !== currentPageId).map((p) => ({ value: `page:${p.id}`, label: p.name }))]} />
                     )}
-                    <label className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-300"><input type="checkbox" checked={!!node.newTab} onChange={(e) => onPatch({ newTab: e.target.checked })} /> Open in a new tab</label>
+                    <label className="pointer-coarse:min-h-11 flex items-center gap-2 text-xs text-gray-600 dark:text-gray-300"><input type="checkbox" checked={!!node.newTab} onChange={(e) => onPatch({ newTab: e.target.checked })} /> Open in a new tab</label>
                   </>
                 )}
                 {node.type === "image" && (
@@ -1453,7 +1457,7 @@ export default function BoxInspector({ section = false, sectionPlace, outerDefau
                       onChange={(v) => onPatch({ alt: v || undefined })}
                       placeholder="e.g. Pupils planting in the school garden"
                       helpText="Read aloud to visitors who cannot see it, and used by search engines. Leave blank only if the image is purely decorative." />
-                    <label className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-300">
+                    <label className="pointer-coarse:min-h-11 flex items-center gap-2 text-xs text-gray-600 dark:text-gray-300">
                       <input type="checkbox" checked={!!node.eager} onChange={(e) => onPatch({ eager: e.target.checked || undefined })} />
                       Load straight away (for an image at the top of the page)
                     </label>
@@ -1462,7 +1466,7 @@ export default function BoxInspector({ section = false, sectionPlace, outerDefau
                         the fixed height in that case, or `object-fit: cover` collapses the box to nothing. */}
                     {hasIntrinsicSize(node) && (
                       <>
-                        <label className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-300">
+                        <label className="pointer-coarse:min-h-11 flex items-center gap-2 text-xs text-gray-600 dark:text-gray-300">
                           <input type="checkbox" checked={!sizeToCSS(node.height)} onChange={(e) => onPatch({ height: e.target.checked ? "auto" : remLen(260) })} />
                           Show the whole picture (don&apos;t crop it)
                         </label>
@@ -1473,7 +1477,7 @@ export default function BoxInspector({ section = false, sectionPlace, outerDefau
                     )}
                     {/* G-3d (2): only where it does something — its block spans rows and holds nothing but this picture (RULE UI) */}
                     {fillHeight && (
-                      <label className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-300 midnight:text-gray-300 purple:text-gray-300">
+                      <label className="pointer-coarse:min-h-11 flex items-center gap-2 text-xs text-gray-600 dark:text-gray-300 midnight:text-gray-300 purple:text-gray-300">
                         <input type="checkbox" checked={fillHeight.on} onChange={(e) => onPatch({ fillHeight: e.target.checked ? undefined : false })} />
                         Fill the block&apos;s height (cropped from the centre, never stretched)
                       </label>
@@ -1537,10 +1541,10 @@ export default function BoxInspector({ section = false, sectionPlace, outerDefau
                         onChange={(key, value) => onPatch({ [key]: value || undefined } as Partial<BoxNode>)}
                         onReset={() => onPatch(Object.fromEntries(ACCORDION_AXES.map((a) => [a.key, undefined])) as Partial<BoxNode>)}
                       />
-                    <label className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-300"><input type="checkbox" checked={!!node.accMultiOpen} onChange={(e) => onPatch({ accMultiOpen: e.target.checked })} /> Allow more than one open at once</label>
-                    <label className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-300"><input type="checkbox" checked={!!node.accShowAll} onChange={(e) => onPatch({ accShowAll: e.target.checked })} /> Show “Expand all / Collapse all” controls</label>
-                    <label className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-300"><input type="checkbox" aria-label="Search box" checked={!!node.accSearch} onChange={(e) => onPatch({ accSearch: e.target.checked })} /> Show a search / filter box</label>
-                    <label className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-300"><input type="checkbox" aria-label="FAQ SEO markup" checked={!!node.accFaqSchema} onChange={(e) => onPatch({ accFaqSchema: e.target.checked })} /> This is a FAQ — add SEO rich‑results markup</label>
+                    <label className="pointer-coarse:min-h-11 flex items-center gap-2 text-xs text-gray-600 dark:text-gray-300"><input type="checkbox" checked={!!node.accMultiOpen} onChange={(e) => onPatch({ accMultiOpen: e.target.checked })} /> Allow more than one open at once</label>
+                    <label className="pointer-coarse:min-h-11 flex items-center gap-2 text-xs text-gray-600 dark:text-gray-300"><input type="checkbox" checked={!!node.accShowAll} onChange={(e) => onPatch({ accShowAll: e.target.checked })} /> Show “Expand all / Collapse all” controls</label>
+                    <label className="pointer-coarse:min-h-11 flex items-center gap-2 text-xs text-gray-600 dark:text-gray-300"><input type="checkbox" aria-label="Search box" checked={!!node.accSearch} onChange={(e) => onPatch({ accSearch: e.target.checked })} /> Show a search / filter box</label>
+                    <label className="pointer-coarse:min-h-11 flex items-center gap-2 text-xs text-gray-600 dark:text-gray-300"><input type="checkbox" aria-label="FAQ SEO markup" checked={!!node.accFaqSchema} onChange={(e) => onPatch({ accFaqSchema: e.target.checked })} /> This is a FAQ — add SEO rich‑results markup</label>
                     {node.variant === "--split" && (
                       <CompactField label="Split panel image" ariaLabel="Split panel image" value={node.accSplitMedia ?? ""} onChange={(v) => onPatch({ accSplitMedia: v || undefined })} placeholder="Image URL for the panel beside the items" />
                     )}
@@ -1617,7 +1621,7 @@ export default function BoxInspector({ section = false, sectionPlace, outerDefau
                                     value={a.css ?? ""} placeholder="box-shadow: 0 2px 8px #0003;"
                                     onChange={(v) => write(actions.map((x) => (x.id === a.id ? { ...x, css: v || undefined } : x)))} />
                                   <div className="flex items-center justify-between">
-                                    <label className="flex items-center gap-1.5 text-[0.6875rem] text-gray-600 dark:text-gray-300">
+                                    <label className="pointer-coarse:min-h-11 flex items-center gap-1.5 text-[0.6875rem] text-gray-600 dark:text-gray-300">
                                       <input type="checkbox" checked={!!a.newTab} aria-label={`Action ${i + 1} opens in a new tab`}
                                         onChange={(e) => write(actions.map((x) => (x.id === a.id ? { ...x, newTab: e.target.checked || undefined } : x)))} />
                                       Open in a new tab
@@ -1644,7 +1648,7 @@ export default function BoxInspector({ section = false, sectionPlace, outerDefau
                             </div>
                           );
                         })()}
-                        <label className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200"><input type="checkbox" checked={!!node.alertDismiss} onChange={(e) => onPatch({ alertDismiss: e.target.checked })} aria-label="Show a dismiss (×) button" /> Show a dismiss (×) button</label>
+                        <label className="pointer-coarse:min-h-11 flex items-center gap-2 text-xs text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200"><input type="checkbox" checked={!!node.alertDismiss} onChange={(e) => onPatch({ alertDismiss: e.target.checked })} aria-label="Show a dismiss (×) button" /> Show a dismiss (×) button</label>
                         {/* Auto-dismiss: a countdown bar appears and the message hides itself. It PAUSES while
                             the reader hovers or tabs into it — an auto-hiding message that cannot be held still
                             is a WCAG 2.2.1 failure. Zero is off, and off ships no script. */}
@@ -1653,7 +1657,7 @@ export default function BoxInspector({ section = false, sectionPlace, outerDefau
                         {!!node.alertAutoSeconds && (
                           <p className="text-[0.625rem] text-gray-500 dark:text-gray-400">Shows a countdown bar. Pauses while a visitor hovers or tabs into it.</p>
                         )}
-                        <label className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200"><input type="checkbox" checked={!!node.alertPersist} onChange={(e) => onPatch({ alertPersist: e.target.checked })} aria-label="Stay dismissed on the next visit" /> Once dismissed, stay dismissed on the next visit</label>
+                        <label className="pointer-coarse:min-h-11 flex items-center gap-2 text-xs text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200"><input type="checkbox" checked={!!node.alertPersist} onChange={(e) => onPatch({ alertPersist: e.target.checked })} aria-label="Stay dismissed on the next visit" /> Once dismissed, stay dismissed on the next visit</label>
                       </>
                     )}
                     <div className="space-y-2">
@@ -1735,7 +1739,7 @@ export default function BoxInspector({ section = false, sectionPlace, outerDefau
                               groups={[{ items: REVEAL_EFFECTS.map((fx) => ({ id: fx.id, label: fx.label, preview: () => <RevealPreview effect={fx} /> })) }]}
                             />
                             {!!it.revealEffect && (
-                              <label className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200">
+                              <label className="pointer-coarse:min-h-11 flex items-center gap-2 text-xs text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200">
                                 <input type="checkbox" aria-label={`Item ${i + 1} play on scroll`} checked={!!it.revealScroll}
                                   onChange={(e) => onPatch({ items: updateItem(node, it.id, { revealScroll: e.target.checked || undefined }).items })} />
                                 Play when it scrolls into view
@@ -1746,7 +1750,7 @@ export default function BoxInspector({ section = false, sectionPlace, outerDefau
                               Available on EVERY multi-item component (accordion, alert, and future ones). */}
                           {(
                           <div className="rounded-lg border border-line p-1.5 space-y-1.5">
-                            <label className="flex items-center gap-2 text-xs text-ink">
+                            <label className="pointer-coarse:min-h-11 flex items-center gap-2 text-xs text-ink">
                               <input type="checkbox" aria-label={`Item ${i + 1} float`} checked={!!it.float}
                                 onChange={(e) => onPatch({ items: updateItem(node, it.id, { float: e.target.checked ? (it.float ?? { x: 4, y: 4, z: 1 }) : undefined }).items })} />
                               Move freely — position within the {isAcc ? "accordion" : "component"}
@@ -1766,7 +1770,7 @@ export default function BoxInspector({ section = false, sectionPlace, outerDefau
                                 <p className="text-[0.625rem] leading-snug text-muted">Drag the item on the canvas to place it — or type X/Y here. On phones it returns to the stack.</p>
                               </>
                             )}
-                            <label className="flex items-center gap-2 text-[0.6875rem] text-muted">
+                            <label className="pointer-coarse:min-h-11 flex items-center gap-2 text-[0.6875rem] text-muted">
                               <input type="checkbox" aria-label={`Item ${i + 1} group select`} checked={accSel.includes(it.id)}
                                 onChange={(e) => setAccSel(e.target.checked ? [...accSel, it.id] : accSel.filter((x) => x !== it.id))} />
                               Select for group{it.group ? " · grouped" : ""}
@@ -1783,7 +1787,7 @@ export default function BoxInspector({ section = false, sectionPlace, outerDefau
                           <CompactTextarea ariaLabel={`Item ${i + 1} CSS`} value={it.css ?? ""} onChange={(v) => onPatch({ items: updateItem(node, it.id, { css: v || undefined }).items })} rows={3} placeholder={"More CSS for this item — change anything:\ntitle { letter-spacing: .02em; }\nicon { color: #f59e0b; }\nmedia { border-radius: 999px; }"} textareaClassName="font-mono text-[0.6875rem]" />
                           <p className="text-[0.625rem] leading-snug text-muted">The controls above cover colour + font. For anything else, plain lines style the whole item; use <code>title</code>, <code>body</code>, <code>icon</code>, <code>meta</code> or <code>media</code> {"{ … }"} to target one part.</p>
                           <div className="flex items-center justify-between">
-                            {isAcc ? <label className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-300"><input type="checkbox" checked={!!it.open} onChange={(e) => onPatch({ items: updateItem(node, it.id, { open: e.target.checked || undefined }).items })} /> Open by default</label> : <span />}
+                            {isAcc ? <label className="pointer-coarse:min-h-11 flex items-center gap-2 text-xs text-gray-600 dark:text-gray-300"><input type="checkbox" checked={!!it.open} onChange={(e) => onPatch({ items: updateItem(node, it.id, { open: e.target.checked || undefined }).items })} /> Open by default</label> : <span />}
                             {isList ? <button onClick={() => onPatch({ items: removeItem(node, it.id).items })} disabled={(node.items?.length ?? 0) <= 1} aria-label={`Remove item ${i + 1}`} className="text-xs text-red-500 hover:text-red-600 disabled:opacity-30">Remove</button> : <span />}
                           </div>
                         </div>
@@ -1923,7 +1927,7 @@ export default function BoxInspector({ section = false, sectionPlace, outerDefau
       {tab === "device" && (
         <div className="space-y-3">
           <p className="text-[0.6875rem] text-gray-400 flex items-start gap-1.5"><MonitorSmartphone className="w-3.5 h-3.5 mt-0.5 shrink-0" /> {breakpoint === "base" ? "Switch the screen-size buttons at the top to Tablet or Mobile to fine-tune those sizes. Text and content stay the same everywhere." : `You're editing ${bpLabel}. Size, spacing and layout you change now only apply here — except a control marked “every screen”.`}</p>
-          <label className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-300"><input type="checkbox" checked={!!node.hidden} onChange={(e) => onPatch({ hidden: e.target.checked || undefined })} /> Hidden {breakpoint === "base" ? "everywhere" : `on ${bpLabel.toLowerCase()}`}</label>
+          <label className="pointer-coarse:min-h-11 flex items-center gap-2 text-xs text-gray-600 dark:text-gray-300"><input type="checkbox" checked={!!node.hidden} onChange={(e) => onPatch({ hidden: e.target.checked || undefined })} /> Hidden {breakpoint === "base" ? "everywhere" : `on ${bpLabel.toLowerCase()}`}</label>
         </div>
       )}
     </div>

@@ -53,7 +53,26 @@ const nextGeneration = (page: Page) => {
  * Nothing is awaited beyond the navigation: what counts as "ready" differs per spec, so each one keeps its
  * own wait rather than inheriting a guess made here.
  */
-export async function seedSite(page: Page, site: unknown, path: string = BUILDER_PATH) {
+/**
+ * A PHONE NOW EDITS ITS OWN SCREEN (E-5a, D1): under 600px the builder opens on Mobile at 1:1. The specs written before that
+ * test the DESKTOP page drawn small on a phone — blocks side by side, shared edges — so they open it the way a person does,
+ * by choosing Full width. A spec about the phone's own screen passes `{ phoneScreen: true }` and keeps the new default.
+ */
+export type OpenOpts = { phoneScreen?: boolean };
+export async function desktopPageOnAPhone(page: Page, path: string = BUILDER_PATH, opts: OpenOpts = {}) {
+  if (opts.phoneScreen || path !== BUILDER_PATH || (page.viewportSize()?.width ?? 1280) >= 600) return;
+  await page.waitForFunction(() => !!document.querySelector("[data-canvas-scale]"), undefined, { timeout: 60_000 });
+  // On a phone the screen sizes live in the bar's More sheet (E5a-16): opened, chosen, put away — as a person does it.
+  const more = page.getByRole("button", { name: "More", exact: true });
+  await more.waitFor({ timeout: 60_000 });
+  await more.click();
+  await page.locator('[role="dialog"][aria-label="More"] button[title="Full width"]').click();
+  await page.waitForFunction(() => document.querySelector('button[title="Full width"]')?.getAttribute("aria-pressed") === "true", undefined, { timeout: 10_000 });
+  await page.keyboard.press("Escape");
+  await page.locator('[role="dialog"][aria-label="More"]').waitFor({ state: "detached", timeout: 10_000 });
+}
+
+export async function seedSite(page: Page, site: unknown, path: string = BUILDER_PATH, opts: OpenOpts = {}) {
   await page.addInitScript(
     ({ site, gen, keys }) => {
       // Strictly greater: an older seed never fires again behind a newer one, and a plain reload fires none.
@@ -66,6 +85,7 @@ export async function seedSite(page: Page, site: unknown, path: string = BUILDER
     { site, gen: nextGeneration(page), keys: { site: SITE_KEY, cleaned: CLEANED_KEY, legacy: LEGACY_KEY, gen: GEN_KEY } },
   );
   await page.goto(path);
+  await desktopPageOnAPhone(page, path, opts);
 }
 
 /**
@@ -75,7 +95,7 @@ export async function seedSite(page: Page, site: unknown, path: string = BUILDER
  * the app's own first save, so on a fast server the clear could land before the app had even written the
  * document being cleared. Wiping before any script runs cannot lose that race, and saves a page load.
  */
-export async function clearSite(page: Page, path: string = BUILDER_PATH) {
+export async function clearSite(page: Page, path: string = BUILDER_PATH, opts: OpenOpts = {}) {
   await page.addInitScript(
     ({ gen, keys }) => {
       if (gen <= Number(sessionStorage.getItem(keys.gen) ?? 0)) return;
@@ -86,6 +106,7 @@ export async function clearSite(page: Page, path: string = BUILDER_PATH) {
     { gen: nextGeneration(page), keys: { cleaned: CLEANED_KEY, gen: GEN_KEY } },
   );
   await page.goto(path);
+  await desktopPageOnAPhone(page, path, opts);
 }
 
 /** The usual shape: one full-width band on the home page, holding `children`. */
@@ -117,4 +138,21 @@ export function sitePage(children: unknown[], rootExtras: Record<string, unknown
 export async function openInspector(page: Page) {
   const tab = page.getByRole("button", { name: "Expand inspector" });
   if (await tab.isVisible().catch(() => false)) { await tab.click(); await page.waitForTimeout(400); }
+}
+
+/**
+ * PRESS A CONTROL OF THE BUILDER'S TOP BAR, as a person reaches it. On a phone the bar is one row and the rest lives in its More
+ * sheet (E5a-16), so a control not on the bar is pressed there, and More is put away again with its own ✕.
+ */
+export async function pressHeader(page: Page, name: string | RegExp) {
+  const exact = typeof name === "string";
+  const direct = page.getByRole("button", { name, exact }).first();
+  const more = page.getByRole("button", { name: "More", exact: true });
+  await direct.or(more).first().waitFor({ timeout: 15_000 }); // the bar settles after a resize before either is there
+  if (await direct.isVisible().catch(() => false)) { await direct.click(); return; }
+  await more.click();
+  const sheet = page.getByRole("dialog", { name: "More" });
+  await sheet.getByRole("button", { name, exact }).first().click();
+  // An ACTION puts More away itself; a setting leaves it open, and it is put away here.
+  if (await sheet.isVisible().catch(() => false)) await sheet.getByRole("button", { name: "Close", exact: true }).click();
 }

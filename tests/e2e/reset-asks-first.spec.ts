@@ -1,4 +1,5 @@
 import { test, expect } from "@playwright/test";
+import { pressHeader } from "./helpers/seed-site";
 
 /**
  * D3-16 — RESET ASKS FIRST AND CAN BE UNDONE. Behaviours: tests/features/components/website/box-builder-site.feature.
@@ -8,10 +9,10 @@ const pages = (page: import("@playwright/test").Page) => page.evaluate(() => JSO
 
 test("Reset asks before starting the site over, and Undo brings every page back", async ({ page }) => {
   await page.goto("/website/box-demo");
-  await page.getByRole("button", { name: "Add page" }).click();
+  await pressHeader(page, "Add page"); // in More on a phone (E5a-16)
   await expect.poll(() => pages(page)).toBe(2);
 
-  await page.getByRole("button", { name: "Reset", exact: true }).click();
+  await pressHeader(page, "Reset");
   // D3-18: announced as a dialog, by its name, with focus on the safe choice
   const dialog = page.getByRole("alertdialog", { name: "Start the whole site over?" });
   await expect(dialog).toBeVisible();
@@ -21,7 +22,7 @@ test("Reset asks before starting the site over, and Undo brings every page back"
   await expect(dialog).toBeHidden();
   expect(await pages(page)).toBe(2);
 
-  await page.getByRole("button", { name: "Reset", exact: true }).click();
+  await pressHeader(page, "Reset");
   await dialog.getByRole("button", { name: "Start over" }).click();
   await expect.poll(() => pages(page)).toBe(1);
 

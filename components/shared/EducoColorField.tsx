@@ -108,16 +108,16 @@ export default function EducoColorField({ label, ariaLabel, value, onChange, con
       {label && <span className={COMPACT_LABEL_CLS}>{label}</span>}
       <div className="flex items-center gap-2 rounded-lg border border-gray-200 dark:border-white/10 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0f1428] purple:bg-purple-900/30 px-2 py-1.5">
         <button ref={btnRef} type="button" onClick={() => setOpen((o) => !o)} aria-label={`${aria} swatch`} aria-haspopup="dialog" aria-expanded={open}
-          className="h-7 w-7 shrink-0 rounded-md ring-1 ring-inset ring-black/10 dark:ring-white/15" style={{ background: isNone ? CHECKER : normalized }} title={isNone ? "No colour" : normalized} />
+          className="h-7 w-7 pointer-coarse:h-11 pointer-coarse:w-11 shrink-0 rounded-md ring-1 ring-inset ring-black/10 dark:ring-white/15" style={{ background: isNone ? CHECKER : normalized }} title={isNone ? "No colour" : normalized} />
         <input id={id} type="text" value={text} onChange={(e) => { setText(e.target.value); pending.current = { onChange }; }} onBlur={(e) => commit(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") commit((e.target as HTMLInputElement).value); }}
           aria-label={`${aria} hex value`} placeholder="#000000"
-          className="w-full min-w-0 bg-transparent font-mono text-sm text-gray-700 dark:text-gray-200 midnight:text-slate-200 purple:text-purple-100 outline-none placeholder:text-gray-400" />
+          className="w-full min-w-0 pointer-coarse:min-h-11 bg-transparent font-mono text-sm text-gray-700 dark:text-gray-200 midnight:text-slate-200 purple:text-purple-100 outline-none placeholder:text-gray-400" />
         {hasEye && (
           <button type="button" onClick={pickEyedropper} aria-label={`Pick ${aria} from screen`} title="Pick from screen"
-            className="shrink-0 rounded-md p-1 text-gray-500 hover:bg-gray-200 dark:text-gray-400 dark:hover:bg-white/10"><Pipette className="h-4 w-4" /></button>
+            className="shrink-0 rounded-md p-1 pointer-coarse:min-w-11 pointer-coarse:min-h-11 grid place-items-center text-gray-500 hover:bg-gray-200 dark:text-gray-400 dark:hover:bg-white/10"><Pipette className="h-4 w-4" /></button>
         )}
         <button type="button" onClick={() => setOpen((o) => !o)} aria-label={`${aria} palette`} title="Open palette"
-          className="shrink-0 rounded-md p-1 text-gray-500 hover:bg-gray-200 dark:text-gray-400 dark:hover:bg-white/10"><PaletteIcon className="h-4 w-4" /></button>
+          className="shrink-0 rounded-md p-1 pointer-coarse:min-w-11 pointer-coarse:min-h-11 grid place-items-center text-gray-500 hover:bg-gray-200 dark:text-gray-400 dark:hover:bg-white/10"><PaletteIcon className="h-4 w-4" /></button>
       </div>
 
       {ratio != null && (
@@ -137,7 +137,7 @@ export default function EducoColorField({ label, ariaLabel, value, onChange, con
           className="z-[10000] overflow-y-auto overscroll-contain rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-[#14171f] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] shadow-2xl ring-1 ring-black/5 p-2 space-y-2">
           {onClear && (
             <button type="button" onClick={() => { onClear(); setOpen(false); }} aria-label={`Clear ${aria} — no colour`}
-              className={`w-full flex items-center gap-2 px-2 py-1.5 text-xs rounded-md ${isNone ? "bg-indigo-600 text-white" : "text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-white/10"}`}>
+              className={`w-full flex items-center gap-2 px-2 py-1.5 pointer-coarse:min-h-11 text-xs rounded-md ${isNone ? "bg-indigo-600 text-white" : "text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-white/10"}`}>
               <span className="h-4 w-4 rounded-[3px] ring-1 ring-inset ring-black/10" style={{ background: CHECKER }} />
               <span className="flex-1 text-left">None (transparent)</span>
             </button>
@@ -146,7 +146,7 @@ export default function EducoColorField({ label, ariaLabel, value, onChange, con
           <div className="flex flex-wrap gap-1">
             {presets.map((p) => (
               <button key={p.name} type="button" title={`${p.name} (${p.patch.primary})`} onClick={() => onChange(p.patch.primary!)}
-                className="h-5 w-5 rounded-md ring-1 ring-inset ring-black/10 dark:ring-white/15" style={{ background: p.patch.primary }} />
+                className="h-5 w-5 pointer-coarse:h-11 pointer-coarse:w-11 rounded-md ring-1 ring-inset ring-black/10 dark:ring-white/15" style={{ background: p.patch.primary }} />
             ))}
           </div>
           <div className="text-[0.5625rem] font-semibold uppercase tracking-wide text-gray-400">Spectrum · OKLCH</div>

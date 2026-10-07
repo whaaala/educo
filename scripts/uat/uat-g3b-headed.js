@@ -273,7 +273,7 @@ SLICES.I = async (page, ok) => {
   await H.panel(page, true);
   for (const t of TILES) { page.__step = `add ${t}`; await P.first(page, t); }
   await H.panel(page, false); await page.keyboard.press('Escape'); await page.keyboard.press('Escape'); await chip(page, DEV.Desktop);
-  const EDITOR_ONLY = /(Upload|Replace|Empty — drag a block in, or click to add|Add a video URL[^\n]*|Paste HTML \/ embed code[^\n]*)/g; // the canvas's editing prompts, never published
+  const EDITOR_ONLY = /(Upload|Replace|Empty — drag a block in, or click to add|Add block here — tap \+|Add a video URL[^\n]*|Paste HTML \/ embed code[^\n]*)/g; // the canvas's editing prompts, never published
   const leaves = await page.evaluate((re) => [...document.querySelectorAll('[data-canvas-scale] [data-box-id]')].filter((e) => !e.querySelector('[data-box-id]'))
     .map((e) => { const r = e.getBoundingClientRect(); const Z = Number(e.closest('[data-canvas-scale]')?.dataset.canvasScale) || 1; return { id: e.getAttribute('data-box-id'), drawn: r.width > 0 && r.height > 0, h: r.height / Z, text: (e.innerText || '').replace(new RegExp(re, 'g'), '').replace(/\s+/g, ' ').trim() }; }), EDITOR_ONLY.source);
   ok(`I the canvas draws every block added (${TILES.length} tiles → ${leaves.length} blocks)`, leaves.length >= TILES.length && leaves.every((l) => l.drawn), leaves.filter((l) => !l.drawn).map((l) => l.id).join(' '));

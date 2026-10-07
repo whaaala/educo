@@ -1,5 +1,5 @@
 import { test, expect, type Page } from "@playwright/test";
-import { seedSite, sitePage, clearSite } from "./helpers/seed-site";
+import { seedSite, sitePage, clearSite, pressHeader } from "./helpers/seed-site";
 
 /**
  * ADDING A PHOTO GALLERY, driven through the REAL builder.
@@ -36,7 +36,7 @@ const asFiles = (urls: string[]) => urls.map((u, i) => ({
 
 async function freshBuilder(page: Page) {
   await clearSite(page);
-  await page.waitForSelector("text=Box Builder", { timeout: 20000 });
+  await page.waitForSelector('[aria-label="Open blocks panel"]', { timeout: 20000 }); // every screen has it; the title is not on a phone's bar (E5a-16)
   await page.waitForTimeout(800);
 }
 
@@ -146,7 +146,7 @@ test.describe("adding a photo gallery", () => {
     });
     // A top-bar action, deliberately: a palette tile with looks to choose opens a menu instead of adding,
     // so the tree would never change and the save would never be attempted.
-    await page.click('button:has-text("Add a band")');
+    await pressHeader(page, "Add a band"); // in More on a phone (E5a-16)
     await page.waitForTimeout(1200);
 
     // Next.js keeps an always-present empty `[role="alert"]` route announcer in the document, so the
@@ -314,7 +314,7 @@ test.describe("the editor's chrome belongs to the block you are working on", () 
     // Close the Blocks panel first — it floats OVER the left of the canvas, so clicks aimed at the first
     // photograph land on the panel instead. (That cost a debugging round: the chain was working the whole
     // time and the clicks were never reaching it.)
-    await page.keyboard.press("b");
+    if (await page.getByRole("dialog", { name: "Blocks" }).isVisible()) await page.keyboard.press("Escape"); // shut only if still open: a phone's sheet puts itself away after the add (E-5a)
     await page.waitForTimeout(400);
 
     const pills = () => page.locator('[data-box-id] button', { hasText: /Replace/ });

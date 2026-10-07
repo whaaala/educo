@@ -19,7 +19,8 @@ cross-referenced.
 [![The top bar at 1280px, on one row: Box Builder, the page tabs, then the icons for Add a band, Undo, Redo, Page check, Preview, Export and Reset, the six device chips, the zoom, Layout guides, Show hidden blocks, Base size and the two theme menus](img/ref-top-bar.webp)](img/ref-top-bar.webp)
 
 On a screen narrower than 1,600px, **Add a band**, **Page check**, **Preview**, **Export** and **Reset** show only
-their icons (+, shield, eye, download, a turning arrow), so the bar stays one row on a 1280px desktop. Each keeps its
+their icons (+, shield, eye, download, a turning arrow), so the bar stays one row on a 1280px desktop. (On a touch screen every button is a finger's size, 44px, so there the bar is
+one row from 1,366px and two rows at 1,280px, with the words from 1,800px.) Each keeps its
 name as a tooltip and for screen readers.
 
 | Control | What it does | Shortcut |

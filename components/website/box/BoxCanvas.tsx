@@ -13,12 +13,12 @@ import { columnFloorRem, dividerThickness, gridLeftoverAt,HAND_FLOOR_REM, isPage
 import { resolvePage } from "@/lib/semantics";
 import { Fragment, useEffect, useLayoutEffect, useMemo, useReducer, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import { createPortal } from "react-dom";
-import { Link2, Plus, ChevronUp, ChevronDown, Copy, Scissors, ClipboardPaste, Trash2, Upload, GripVertical, MoreVertical, Rows3, Columns3, Grid3x3, Type, Heading as HeadingIcon, MousePointerClick, Image as ImageIcon, Layers, BringToFront, SendToBack, Video as VideoIcon, Sparkles, Minus as MinusIcon, List as ListIcon, Code2, Star, Lock, LockOpen, Ungroup } from "lucide-react";
+import { Link2, Plus, ChevronUp, ChevronDown, Copy, Scissors, ClipboardPaste, Trash2, Upload, GripVertical, MoreVertical, Rows3, Columns3, Grid3x3, Type, Heading as HeadingIcon, MousePointerClick, Image as ImageIcon, Layers, BringToFront, SendToBack, Video as VideoIcon, Sparkles, Minus as MinusIcon, List as ListIcon, Code2, Star, Lock, LockOpen, Ungroup, ArrowUp, ArrowDown, ArrowLeft, ArrowRight, ArrowUpToLine, ArrowDownToLine } from "lucide-react";
 import type { SiteTheme } from "@/lib/site-storage";
 import {
   type BoxNode, type BoxType, frameCss, spanAt, setSpan,
   containerStyle, childStyle, marginCSS, leafPaddingCSS, outerSpaceCSS, pageBandInset, pagePinCover, sectionContent, sizeToCSS, u, baseUnit, floatingReserve, floatStacksOnMobile, createContainer, createElement, createComponent,
-  updateBox, deleteBox, insertBox, moveBoxStep, duplicateBox, moveBox, cloneBox, findParent, isAncestor, isContainer, containerLabel, widthPct, stackWithBlock, fitBand, PILL, blockTypography,
+  updateBox, deleteBox, insertBox, moveBlock, canMoveBlock, moveAxis, duplicateBox, moveBox, cloneBox, findParent, isAncestor, isContainer, containerLabel, widthPct, stackWithBlock, fitBand, PILL, blockTypography,
   isFloating, floatBox, unfloatBox, groupBoxes, ungroupBoxes, bringToFront, sendToBack, bringForward, sendBackward, packRowLines, allocateLine, type LineFollower,
   shouldTakeMirrorBox, mirrorFlushSides, hostSizedFor, type MirrorBox, type MirrorChase, fadedPaint, boxOpacity, backgroundCss, treePaintLayerCss, radiusCSS, isClipped, SHADOW_CSS, videoEmbedSrc, sanitizeCssDeclarations, expandScopedCss, ACCORDION_CSS_PARTS, itemOverrideCss, itemHasOverride, itemNumberVars, richBody, componentTextCss, componentBoxCss, bgShowThroughCss, resizeTopEdge, blockContainmentCss, alertToastCss, treeHasToast, treeHasFixedHold, accordionClasses, bandClasses, advancedCssStyle, alertActionsHTML, hugsContent, itemFloatContextCss, COMPONENT_ITEM_SEL, clampContentScale, MIN_CONTENT_SCALE, isMultiItemComponent, comfortableWidth, remLen, rootFontPx, isDefiniteLen, addItemAfter, duplicateItem, duplicateChildItem, removeItem, removeChildItem, moveItem, moveChildItem, updateItem, updateChildItem, ALERT_SEVERITY_ICON, alertPartInline, alertIconInline, collectAlertItemStyles,
   type Breakpoint, resolveResponsive, updateBoxResponsive, treePinArrivalCss, floatHoldCSS, canvasFixedStyle, capturesFixed, imageSizing, fillsRowsAnywhere, fillHostOf, importPhoto, treeItemEffectsCss, itemNeedsClass, floatZIndex, gridPlacementAt, masonryMeasureAttr, masonryMeasurePass, mirrorMeasuresNow, baseUnitParts, pinStackMarker, pinStackGroupMarker, pinStackPass, isPager, pagerStripCss, pagerNavHTML, selectionChain, textLen, typoRole, typoRootVars, typoCascadeCss, bandEdgeCSS, LINK_COLOR_CSS, treeGridQueryCss, TYPE_UNIT_PROPERTY_CSS,
@@ -251,6 +251,10 @@ const HANDLES: { edge: Edge; pos: string; cursor: string; label: string; title: 
   { edge: "se", pos: "-bottom-3.5 -right-3.5 w-3 h-3 rounded-full group-data-[flush~=s]/mirror:bottom-0 group-data-[flush~=e]/mirror:right-0", cursor: "cursor-nwse-resize", label: "bottom-right corner", title: "Drag the bottom-right corner" },
   { edge: "sw", pos: "-bottom-3.5 -left-3.5 w-3 h-3 rounded-full group-data-[flush~=s]/mirror:bottom-0 group-data-[flush~=w]/mirror:left-0", cursor: "cursor-nesw-resize", label: "bottom-left corner", title: "Drag the bottom-left corner" },
 ];
+
+/** A block-toolbar button: compact for a mouse, 44 × 44 for a finger (E-5a, D6 — WCAG 2.5.5 / Apple's 44pt). */
+const TOOL_BTN = "inline-flex items-center justify-center p-1 rounded text-white/90 hover:bg-white/15 disabled:opacity-35 disabled:pointer-events-none pointer-coarse:min-w-11 pointer-coarse:min-h-11";
+const TOOL_ICON = "w-3.5 h-3.5 pointer-coarse:w-5 pointer-coarse:h-5";
 
 /** The caret after the last character, so the user carries on typing rather than overwrites. */
 function caretToEnd(host: HTMLElement) {
@@ -835,6 +839,8 @@ export default function BoxCanvas({
    */
   const soloId = selSet.size === 1 ? [...selSet][0] : null;
   const [toolbarBelow, setToolbarBelow] = useState(false);
+  const [toolbarRight, setToolbarRight] = useState(false);
+  const [toolbarDocked, setToolbarDocked] = useState(false);
   useEffect(() => {
     if (!soloId) return;
     const measure = () => {
@@ -843,7 +849,14 @@ export default function BoxCanvas({
       const canvasTop = document.querySelector(`[data-box-id="${CSS.escape(rootRef.current.id)}"]`)?.getBoundingClientRect().top ?? 0;
       // Within 48px of the canvas top (the bar's 32 + the 16 that clears the handles) there is no room above, so the bar
       // drops BELOW the box rather than sitting over the app header. Only written when it actually changes, so a stable page settles.
-      setToolbarBelow((prev) => { const next = box.getBoundingClientRect().top < canvasTop + 48; return next === prev ? prev : next; });
+      // A FINGER'S BAR IS TALLER (E5a-11): 44px buttons make it 52, so it needs 68 above, not the mouse bar's 32 + 16.
+      const need = window.matchMedia?.("(pointer: coarse)").matches ? 68 : 48;
+      setToolbarBelow((prev) => { const next = box.getBoundingClientRect().top < canvasTop + need; return next === prev ? prev : next; });
+      // A block in the right half hangs its bar from its RIGHT edge (E5a-4): anchored left, the bar — a finger's size since
+      // E-5a — ran 17px off a 393 phone and scrolled the page sideways.
+      const r = box.getBoundingClientRect();
+      setToolbarRight((prev) => { const next = r.left + r.width / 2 > window.innerWidth / 2; return next === prev ? prev : next; });
+      setToolbarDocked((prev) => { const next = !!window.matchMedia?.("(max-width: 37.49em)").matches; return next === prev ? prev : next; });
     };
     measure();
     window.addEventListener("scroll", measure, true);
@@ -1220,10 +1233,11 @@ export default function BoxCanvas({
         }
       }
       else if ((e.key === "Delete" || e.key === "Backspace") && ids.length) { let next = root; for (const d of ids) if (d !== root.id) next = deleteBox(next, d); onChange(next); select(null); e.preventDefault(); } // delete ALL selected
-      else if (e.key === "ArrowUp" && id && !rn.locked) { if (floating) onChange(writeBox(root, id, { top: round1((rn.top ?? 0) - stepPct("y")) })); else onChange(moveBoxStep(root, id, -1)); e.preventDefault(); }
-      else if (e.key === "ArrowDown" && id && !rn.locked) { if (floating) onChange(writeBox(root, id, { top: round1((rn.top ?? 0) + stepPct("y")) })); else onChange(moveBoxStep(root, id, 1)); e.preventDefault(); }
-      else if (e.key === "ArrowLeft" && id && floating && !rn.locked) { onChange(writeBox(root, id, { left: round1((rn.left ?? 0) - stepPct("x")) })); e.preventDefault(); }
-      else if (e.key === "ArrowRight" && id && floating && !rn.locked) { onChange(writeBox(root, id, { left: round1((rn.left ?? 0) + stepPct("x")) })); e.preventDefault(); }
+      // A flowing block moves the way its toolbar arrows do (E-5a, D4): ↑ ↓ where it moves up and down, ← → along a line.
+      else if (e.key === "ArrowUp" && !e.altKey && id && !rn.locked && (floating || moveAxis(root, id) === "vertical")) { if (floating) onChange(writeBox(root, id, { top: round1((rn.top ?? 0) - stepPct("y")) })); else onChange(moveBlock(root, id, -1)); e.preventDefault(); }
+      else if (e.key === "ArrowDown" && !e.altKey && id && !rn.locked && (floating || moveAxis(root, id) === "vertical")) { if (floating) onChange(writeBox(root, id, { top: round1((rn.top ?? 0) + stepPct("y")) })); else onChange(moveBlock(root, id, 1)); e.preventDefault(); }
+      else if (e.key === "ArrowLeft" && !e.altKey && id && !rn.locked && (floating || moveAxis(root, id) === "horizontal")) { if (floating) onChange(writeBox(root, id, { left: round1((rn.left ?? 0) - stepPct("x")) })); else onChange(moveBlock(root, id, -1)); e.preventDefault(); }
+      else if (e.key === "ArrowRight" && !e.altKey && id && !rn.locked && (floating || moveAxis(root, id) === "horizontal")) { if (floating) onChange(writeBox(root, id, { left: round1((rn.left ?? 0) + stepPct("x")) })); else onChange(moveBlock(root, id, 1)); e.preventDefault(); }
       // ── ENTER / F2 BEGINS EDITING — the way IN that Escape's way OUT always implied ──
       // Every other operation on this canvas had a shortcut, but editing the WORDS — the commonest act in a
       // website builder — was mouse-only, so a keyboard user could select a heading and never type into it.
@@ -2252,14 +2266,16 @@ export default function BoxCanvas({
     })();
 
     // Cross-axis anchor: pin alignment + current position/size so a centred/stretched box doesn't jump.
-    let base = root, changed = false;
+    let base = root;
     const anchor: Partial<BoxNode> = {};
     if (prRect) {
       if ((hasE || hasW) && !parentRow) { anchor.alignSelf = "flex-start"; anchor.width = pct(W0); anchor.marginLeft = pxU(rect.left - contentLeftPx); } // width is CROSS (column) → pin horizontal
       if ((hasN || hasS) && parentRow) { anchor.alignSelf = "flex-start"; anchor.minHeight = lay(H0); anchor.marginTop = pxU(rect.top - flowTopPx); } // height is CROSS (row) → un-stretch so the floor governs + pin vertical
     }
-    if (Object.keys(anchor).length) { base = writeBox(base, id, anchor); changed = true; }
-    if (changed) onChange(base, gk);
+    if (Object.keys(anchor).length) base = writeBox(base, id, anchor);
+    // NOT COMMITTED HERE (E5a-8): every move builds on `base`, so the anchor lands with the first one. Committed at the press,
+    // a click that never moved kept it — a handle tapped by mistake left the block a fixed height nobody chose (measured: a
+    // still click on a grid's corner stored minHeight 128, and its empty cells could no longer be dragged smaller).
 
     const bn = resolveResponsive(findByIdLocal(base, id) ?? node, breakpoint); // effective margins at this breakpoint
     const ML0 = bn.marginLeft ?? bn.margin ?? 0; // stored (u) units after anchoring
@@ -3596,10 +3612,10 @@ export default function BoxCanvas({
                   const r = (e.currentTarget as HTMLElement).getBoundingClientRect();
                   setAddInside({ id: node.id, anchor: { top: r.top, bottom: r.bottom, left: r.left, right: r.right } });
                 }}
-                className="pointer-events-auto flex items-center justify-center rounded-full bg-gray-100 dark:bg-white/5 hover:bg-brand/15 hover:text-brand transition-colors"
+                className="pointer-events-auto flex items-center justify-center rounded-full pointer-coarse:min-w-[min(2.75rem,60%)] pointer-coarse:min-h-[min(2.75rem,60%)] bg-gray-100 dark:bg-white/5 hover:bg-brand/15 hover:text-brand transition-colors"
                 style={{ width: u(22), height: u(22) }}
               ><Plus className="w-3.5 h-3.5" /></button>
-              Empty — drag a block in, or click to add
+              <span className="pointer-coarse:hidden">Empty — drag a block in, or click to add</span><span className="hidden pointer-coarse:inline">Add block here — tap +</span>
             </div>
           )}
           {/* THE LEFTOVER COLUMNS OF A ROW, offered as a place to put something.
@@ -3697,14 +3713,17 @@ export default function BoxCanvas({
     // A group of controls needs to say so: without a role and a name a screen-reader user meets a run of
     // loose buttons with no indication they belong to the block that was just selected. The item CRUD bar
     // next door already got this right — this one had nothing.
-    return (
-      <div role="toolbar" aria-label="Block toolbar" style={{ zIndex: CHROME_Z.toolbar, pointerEvents: "auto" }} className={`absolute left-0 w-max max-w-none ${below ? "top-full mt-4" : "bottom-full mb-4"} flex items-center gap-0.5 rounded-xl bg-gray-900/95 dark:bg-gray-800/95 backdrop-blur-sm px-1 py-1 shadow-lg ring-1 ring-white/10`} onClick={(e) => e.stopPropagation()} onMouseDown={(e) => e.stopPropagation()}>
+    // ON A PHONE IT DOCKS AT THE BOTTOM OF THE SCREEN (E5a-14 — the research's WordPress pattern): a finger's bar hanging over the
+    // page covered most of the block under it, so a tap meant for that block landed on the bar. Docked, it covers no block and is
+    // under the thumb; the blocks "+" keeps the bottom-right corner.
+    const bar = (
+      <div role="toolbar" aria-label="Block toolbar" style={{ zIndex: CHROME_Z.toolbar, pointerEvents: "auto" }} className={`${toolbarDocked ? "fixed bottom-4 left-4 max-w-[calc(100vw-5.5rem)] overflow-x-auto" : `absolute ${toolbarRight ? "right-0" : "left-0"} w-max max-w-none ${below ? "top-full mt-4" : "bottom-full mb-4"}`} flex items-center gap-0.5 rounded-xl bg-gray-900/95 dark:bg-gray-800/95 backdrop-blur-sm px-1 py-1 shadow-lg ring-1 ring-white/10`} onClick={(e) => e.stopPropagation()} onMouseDown={(e) => e.stopPropagation()}>
         {!isRoot && !node.locked && (
           <span
             onMouseDown={(e) => startDrag(e, node)}
             title={isFloating(node) ? "Drag to move this floating block freely" : pageGrid && isPageRow(findParent(root, node.id)?.parent) ? "Drag to move (hold Alt to place it free on its line)" : "Drag to move (hold Alt to float it on top)"}
             aria-label="Drag to move"
-            className="cursor-grab active:cursor-grabbing text-white/80 hover:text-white px-0.5"
+            className="cursor-grab active:cursor-grabbing text-white/80 hover:text-white px-0.5 pointer-coarse:hidden" // a finger drags in E-5b; until then the grip is not offered where it cannot work
           ><GripVertical className="w-3.5 h-3.5" /></span>
         )}
         {node.locked && !isRoot && (
@@ -3726,8 +3745,8 @@ export default function BoxCanvas({
             }}
             aria-label="Add a block inside this one"
             title="Add a block inside"
-            className="p-1 rounded text-white/90 hover:bg-white/15"
-          ><Plus className="w-3.5 h-3.5" /></button>
+            className={TOOL_BTN}
+          ><Plus className={TOOL_ICON} /></button>
         )}
         {!isRoot && (
           <button
@@ -3735,9 +3754,19 @@ export default function BoxCanvas({
             aria-label={node.locked ? "Unlock position and size" : "Lock position and size"}
             aria-pressed={!!node.locked}
             title={node.locked ? "Unlock (Ctrl+L) — allow moving & resizing again" : "Lock (Ctrl+L) — freeze position & size"}
-            className="p-1 rounded text-white/90 hover:bg-white/15"
-          >{node.locked ? <LockOpen className="w-3.5 h-3.5" /> : <Lock className="w-3.5 h-3.5" />}</button>
+            className={TOOL_BTN}
+          >{node.locked ? <LockOpen className={TOOL_ICON} /> : <Lock className={TOOL_ICON} />}</button>
         )}
+        {/* THE ARROWS (E-5a, D4 — the user's decision): ↑ ↓ where the block moves up and down, ← → along a line — the
+            route that needs no drag, so a finger, a keyboard and a screen reader can all move a block (WCAG 2.5.7). */}
+        {!isRoot && !node.locked && !isFloating(node) && (() => {
+          const across = moveAxis(root, node.id) === "horizontal";
+          return ([[-1, across ? ArrowLeft : ArrowUp, across ? "Move left" : "Move up"], [1, across ? ArrowRight : ArrowDown, across ? "Move right" : "Move down"]] as const).map(([step, Icon, label]) => (
+            <button key={label} onClick={() => onChange(moveBlock(rootRef.current, node.id, step))} disabled={!canMoveBlock(root, node.id, step)}
+              aria-label={label} title={`${label} (${across ? (step < 0 ? "←" : "→") : (step < 0 ? "↑" : "↓")})`} className={TOOL_BTN}
+            ><Icon className={TOOL_ICON} /></button>
+          ));
+        })()}
         {isFloating(node) && !isRoot && (
           // Clear signal that this block is on the OVERLAY layer (floats above flowing content) — explains why
           // newly-added blocks appear beneath it, and pairs with the front/back order controls in the inspector.
@@ -3753,8 +3782,8 @@ export default function BoxCanvas({
             setMenuFor(node.id);
           }}
           aria-label="Block actions" aria-expanded={open} title="Actions"
-          className="p-1 rounded text-white/90 hover:bg-white/15"
-        ><MoreVertical className="w-3.5 h-3.5" /></button>
+          className={TOOL_BTN}
+        ><MoreVertical className={TOOL_ICON} /></button>
         {open && menuAnchor && (
           <PortalMenu anchor={menuAnchor} onClose={closeMenu} ariaLabel="Block actions" width={200}>
             {node.group && (<>
@@ -3778,8 +3807,15 @@ export default function BoxCanvas({
               <MenuSep />
             </>))}
             {!isRoot && (<>
-              <Item onClick={() => onChange(moveBoxStep(root, node.id, -1))} Icon={ChevronUp} label="Move up" />
-              <Item onClick={() => onChange(moveBoxStep(root, node.id, 1))} Icon={ChevronDown} label="Move down" />
+              {!isFloating(node) && (() => {
+                const across = moveAxis(root, node.id) === "horizontal";
+                return (<>
+                  <Item onClick={() => onChange(moveBlock(root, node.id, -1))} Icon={across ? ArrowLeft : ChevronUp} label={across ? "Move left" : "Move up"} disabled={!canMoveBlock(root, node.id, -1)} hint={across ? "←" : "↑"} />
+                  <Item onClick={() => onChange(moveBlock(root, node.id, 1))} Icon={across ? ArrowRight : ChevronDown} label={across ? "Move right" : "Move down"} disabled={!canMoveBlock(root, node.id, 1)} hint={across ? "→" : "↓"} />
+                  <Item onClick={() => onChange(moveBlock(root, node.id, "first"))} Icon={ArrowUpToLine} label={across ? "Move to the start" : "Move to top"} disabled={!canMoveBlock(root, node.id, "first")} />
+                  <Item onClick={() => onChange(moveBlock(root, node.id, "last"))} Icon={ArrowDownToLine} label={across ? "Move to the end" : "Move to bottom"} disabled={!canMoveBlock(root, node.id, "last")} />
+                </>);
+              })()}
               <Item onClick={() => onChange(duplicateBox(root, node.id))} Icon={Copy} label="Duplicate" hint="Ctrl+D" />
               <Item onClick={() => copyBox(node.id)} Icon={Copy} label="Copy" hint="Ctrl+C" />
               <Item onClick={() => cutBox(node.id)} Icon={Scissors} label="Cut" hint="Ctrl+X" />
@@ -3790,6 +3826,7 @@ export default function BoxCanvas({
         )}
       </div>
     );
+    return toolbarDocked ? createPortal(bar, document.body) : bar;
   }
 
   return (

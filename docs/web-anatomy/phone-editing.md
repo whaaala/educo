@@ -129,3 +129,24 @@ Notion workspaces-on-mobile, writing-and-editing-basics, block-basics, releases 
 basics, overview, using-mobile-view, troubleshooting.
 **Not read:** Webflow breakpoints + Designer intro (403) · Material m2/m3 (render by script; Android help used) · Canva Mobile tabs ·
 Webflow forum thread (redirected).
+
+## 8. The user's sources — the last on-topic links (read 2026-10-06, closes RULE R for them)
+
+Read in full: Wix browser-theme-colour · switching to the new quick action bar · managing a QAB · customizing a QAB · shape
+dividers on mobile · mobile-menu characters (workaround) · mobile-menu drop-down arrow colour · supported browsers and OS · the
+Wix owner app overview. What they ADD:
+
+- **Phone editing, again: content only.** "basic edits—like updating text, images, or links—using the Wix app or from a mobile
+  browser… Advanced site editing is available from a desktop." Apps added on a phone still need "desktop to complete setup".
+- **A per-element link between desktop and phone, three states:** linked (desktop edits flow down) · customised for the phone
+  (desktop edits stop) · deleted on desktop (gone on the phone too). "None" removes it on the phone only. — our per-rung values
+  behave the same (a phone value stops inheriting; the node itself is shared).
+- **Phone-only site features** (for the component work, not the editor): a Quick Action Bar — horizontal at the bottom, or
+  vertical on the left / right with "Closed" and "Open" states; icons only or with labels (labels "can improve… accessibility");
+  custom actions to anchors / URLs. **Traps not to copy:** deleting the bar throws away every action's details; an old and a new
+  bar with no migration between them; the phone menu's submenu "Arrow" colour can match its box and hide the subpages (a contrast
+  check we enforce); special characters misplaced in the phone menu, unfixed since 2022 (test accented and right-to-left labels).
+- **Selection:** in Wix's mobile editor one click selects a strip, a double-click a section — ours already drills inward by clicks.
+- **Tablets get the DESKTOP site in Wix**; only phones get the phone layout. Supported: iOS / iPadOS 16+, Android 10+, features
+  that are Baseline "widely available" (30 months in every core browser). Wix asks editors to keep browser zoom at 100 % — an
+  accessibility weakness we do not copy (rule 16: the editor works at 200 % text).

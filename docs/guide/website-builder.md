@@ -334,7 +334,8 @@ shape of your own, set a **Height** and that is what you get.
 rows** rather than pushing Preview, Export and the device chips off the side. Every control stays on the
 screen at any width. On a desktop it is a single row: below 1,600px wide, **Add a band**, **Page check**,
 **Preview**, **Export** and **Reset** show only their icons. Point at one to see its name; a screen reader
-reads it the same as before.
+reads it the same as before. On a touch screen every button is 44px for a finger, so the bar needs a little more
+room: one row from 1,366px wide, two rows at 1,280px, and the buttons' words appear from 1,800px. Under 600px — a phone — the bar is one row of Pages, Undo, Redo, Preview and More, and everything else is in More.
 
 ---
 

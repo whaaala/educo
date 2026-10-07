@@ -58,7 +58,8 @@ const LEGITIMATE = [
 
 /** Every `<n>px` that is a real, stored size. */
 function storedPixels(css: string): string[] {
-  const found = [...css.matchAll(/(-?\d*\.?\d+)px/g)].map((m) => m[0]);
+  // A whole token only (E5a-19): a block id is base-36 time, and one that read "…263px…" was reported as a stored pixel.
+  const found = [...css.matchAll(/(?<![\w-])(-?\d*\.?\d+)px\b/g)].map((m) => m[0]);
   return [...new Set(found.filter((v) => !LEGITIMATE.some((ok) => ok.test(v))))];
 }
 
@@ -71,12 +72,16 @@ function storedPixels(css: string): string[] {
  * decisions, while a size the BUILDER writes from a user's model is the one Core Rule 16 is about.
  */
 const blockRules = (css: string): string =>
-  [...css.matchAll(/\.bx-[a-zA-Z0-9_-]+\s*\{[^}]*\}/g)].map((m) => m[0]).join("\n")
+  [...css.matchAll(/\.bx-[a-zA-Z0-9_-]+\s*\{([^}]*)\}/g)].map((m) => m[1]).join("\n") // the DECLARATIONS, never the selector (E5a-19)
   // …AND the inline styles a block writes on its own markup. A button's `gap: 8px` and `border-radius: 9999px` lived
   // in its `<a style="…">`, which the rule-only scan never read.
   + "\n" + [...css.matchAll(/style="([^"]*)"/g)].map((m) => m[1]).join("\n");
 
 describe("the unit system reaches the page, and stored pixels do not", () => {
+  it("a block id that happens to read like a pixel is not a stored pixel (E5a-19 — the guard flaked on time-based ids)", () => {
+    expect(storedPixels(blockRules(".bx-box-mux263px-1 { color: red; }"))).toEqual([]);
+    expect(storedPixels(blockRules(".bx-box-mux263-1 { width: 263px; }")), "a real one is still caught").toEqual(["263px"]);
+  });
   it("no block the builder emits carries a stored pixel size", () => {
     const report: Record<string, string[]> = {};
     for (const kind of ALL_KINDS) {

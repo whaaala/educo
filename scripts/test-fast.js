@@ -124,6 +124,7 @@ const INVARIANT_SPECS = [
   "tests/e2e/page-height-is-content.spec.ts",
   "tests/e2e/parity-every-arrangement.spec.ts",
   "tests/e2e/width-round-trip.spec.ts",
+  "tests/e2e/phone-editing.spec.ts",
 ];
 
 const argv = process.argv.slice(2);
