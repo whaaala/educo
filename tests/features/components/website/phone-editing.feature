@@ -7,7 +7,7 @@ Feature: Building a page on a phone (BATCH E-5a)
     Then the canvas shows the Mobile screen drawn 1:1 across my phone, not the desktop page shrunk to fit
     And what I change in the layout there changes the phone only
     And I can still choose Desktop to look at the desktop page
-    But on a tablet, laptop or desktop the canvas opens exactly as before
+    But from a laptop's width (1024px) up the canvas opens exactly as before
 
   Scenario: The blocks panel is a sheet from the bottom on a phone
     Given I am on a phone
@@ -98,3 +98,54 @@ Feature: Building a page on a phone (BATCH E-5a)
     Given a touch screen
     Then the strip that means "above", "below" or "beside" a block is at least 44px, or a third of a smaller block
     But with a mouse the strips keep their size
+
+  # BATCH E-5c — the user's decisions T1 · T2 · T3 (docs/web-anatomy/tablet-and-app-editing.md); headed: scripts/uat/uat-e5c-headed.js
+
+  Scenario Outline: A tablet edits the page at its own width
+    Given I open the builder on a <width> × <height> tablet
+    Then the canvas shows the <screen> screen drawn 1:1 across my tablet
+    And what I change in the layout there changes the <screen> screen only, the desktop page untouched
+    And I can still choose Desktop to look at the desktop page, and back
+    Examples:
+      | width | height | screen |
+      | 601   | 1007   | Tablet |
+      | 601   | 962    | Tablet |
+      | 768   | 1024   | Tablet |
+      | 800   | 1280   | Tablet |
+      | 962   | 601    | Laptop |
+      | 1007  | 601    | Laptop |
+
+  Scenario: Turning the tablet turns the editor
+    Given I have selected a block on a tablet held upright
+    When I turn it sideways, and back
+    Then the screen it edits follows each new width, and my block stays selected
+    And nothing ever scrolls sideways
+    And at 599px it is the phone, from 1024px the desktop page at Fit
+
+  Scenario: The blocks sheet on a tablet
+    Given I am on a tablet (600 to 1023px)
+    When I tap the "+" in the bottom-right corner
+    Then the blocks rise from the bottom in the phone's sheet, no wider than 32rem, centred
+    And Escape puts it away and my focus goes back to the "+"
+
+  Scenario: The Inspector on a tablet (E5c-4, the user 2026-10-07)
+    Given I am on a tablet, upright or sideways (600 to 1023px)
+    Then the Inspector is its tab on the right, and the page keeps the width of the screen
+    When I open it
+    Then it slides over the page, and Escape closes it
+    But from 1024px it is docked beside the page, as before
+
+  Scenario: A tablet's top bar is one row (E5c-2, the user 2026-10-07)
+    Given I am on a tablet (600 to 1023px)
+    Then the bar holds my pages, Undo, Redo, Preview and More, on one row
+    And More rises from the bottom, no wider than 32rem, centred, with the screen sizes and everything else
+
+  Scenario: A finger's toolbar never hides the block above (E5c-5)
+    Given I am on a tablet with a finger, and a Stack under a Heading is selected
+    Then the Stack's toolbar waits at the bottom of the screen, as on a phone
+    And one tap on the Heading selects it
+    But with a mouse in a narrow window the toolbar stays by its block, with its grip
+
+  Scenario: The commonest African tablets are in the Preview
+    When I open the Preview's device menu
+    Then 601 × 1007, 601 × 962 and 962 × 601 are there to choose

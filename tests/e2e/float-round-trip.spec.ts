@@ -1,5 +1,8 @@
 import { test, expect, type Page } from "@playwright/test";
 import { seedSite, sitePage, openInspector } from "./helpers/seed-site";
+import { type BoxNode, normalizeRowBands } from "@/lib/box-model";
+import { blockForKind } from "@/lib/box-presets";
+import { emptyPageRoot, siteFromRoot } from "@/lib/box-site";
 
 /**
  * FLOATING A PARENT — the children come with it, and un-floating puts everything back.
@@ -168,4 +171,78 @@ test.describe("floating a parent and putting it back", () => {
     expect(((await nodeOf(page, "grid")) as Record<string, unknown>).position, "and neither does the grid around them").toBeUndefined();
     expect((await geo(page, "c1")).w, "the sibling is still the width it was").toBe(siblingBefore.w);
   });
+});
+
+/**
+ * A FLOAT NEVER LEAVES THE PAGE (E5c-7). A floating block may hang half over its parent's edge (overlap is a design), but a
+ * floating Heading in the first band was dragged — by a finger in the E-5c headed pass, then by a mouse in a probe — above the
+ * page's top: the published page cut its words off ("New" gone). Drag and the arrow keys now stop at the page's top, left and right.
+ */
+test("a floating block stops at the page's top edge — dragged or arrowed — and the Preview shows all of it (E5c-7)", async ({ page }) => {
+  test.skip(test.info().project.name !== "desktop-chrome", "the mouse and the keyboard; the finger's own pass is uat-e5c-headed.js");
+  // narrow, so it wraps to several lines: half of it is taller than the page's top space (the UI's case: a two-line heading). The
+  // UI-built case — floated from the Inspector inside the palette's padded band, on a tablet — is the headed check "E5c-7 …" in
+  // uat-e5c-headed.js (a seed did not reproduce it, RULE Y)
+  await seedSite(page, sitePage([{ id: "band-h", type: "container", direction: "row", rowBand: true, width: "fill", gap: 0, padding: 0,
+    children: [{ id: "h", type: "heading", text: "Open day results", fontSize: 40, width: "12%", position: "absolute", left: 4, top: 4 }] }]));
+  const h = page.locator('[data-box-id="h"]');
+  await h.waitFor(); await page.waitForTimeout(300);
+  const pageTop = () => page.locator('[data-box-id="root"]').evaluate((e) => e.getBoundingClientRect().top);
+  await h.click({ position: { x: 6, y: 6 } });
+  const grip = page.getByRole("toolbar", { name: "Block toolbar" }).getByLabel("Drag to move");
+  const g = (await grip.boundingBox())!;
+  await page.mouse.move(g.x + g.width / 2, g.y + g.height / 2); await page.mouse.down();
+  await page.mouse.move(g.x + g.width / 2, g.y - 200, { steps: 12 }); await page.mouse.up(); await page.waitForTimeout(300);
+  expect((await h.boundingBox())!.y, "dragged up past the page: it stops at the page's top").toBeGreaterThanOrEqual((await pageTop()) - 1);
+  for (let i = 0; i < 20; i++) await page.keyboard.press("Shift+ArrowUp");
+  await page.waitForTimeout(300);
+  expect((await h.boundingBox())!.y, "arrowed up: it stops there too").toBeGreaterThanOrEqual((await pageTop()) - 1);
+  await page.getByRole("button", { name: "Preview", exact: true }).first().click();
+  const f = page.frameLocator("iframe").first();
+  await expect(f.getByText("Open day results")).toBeVisible();
+  expect(await f.getByText("Open day results").evaluate((e) => e.getBoundingClientRect().top + scrollY), "the visitor sees all of it").toBeGreaterThanOrEqual(-1);
+});
+
+/**
+ * A FLOAT IS PLACED WHERE IT IS DRAWN (E5c-8). The browser places an absolute box from its parent's PADDING box; the float maths
+ * measured from the content box. On the real page (its default inner space), a Heading made Floating jumped ~17px right and ~12px
+ * up, a still press on its grip moved it up again, and the page-edge limit (E5c-7) was 16px off. Found through the UI
+ * (probe-e5c8.js, a mouse at 1280 and a finger at 962); pinned here with the page's real defaults and the palette's Heading.
+ */
+test("a block made Floating stays exactly where it was, a still press on its grip moves nothing, and it stops at the page's top (E5c-8)", async ({ page }) => {
+  test.skip(test.info().project.name !== "desktop-chrome", "the mouse; the finger's own pass is uat-e5c-headed.js");
+  const head = { ...blockForKind("heading"), width: "12%" } as BoxNode; // narrow: two lines, taller than the page's top space
+  await seedSite(page, siteFromRoot(normalizeRowBands({ ...emptyPageRoot(), children: [head] } as BoxNode)));
+  const h = page.locator(`[data-box-id="${head.id}"]`);
+  await h.waitFor(); await page.waitForTimeout(300);
+  const at = async () => { const b = (await h.boundingBox())!; return { x: b.x, y: b.y }; };
+  await h.click({ position: { x: 6, y: 6 } });
+  const a = await at();
+  let fl = page.getByRole("button", { name: "Floating", exact: true }).first();
+  if (!(await fl.isVisible())) { await page.getByRole("button", { name: /^Placement/ }).first().click(); fl = page.getByRole("button", { name: "Floating", exact: true }).first(); }
+  await fl.scrollIntoViewIfNeeded(); await fl.click(); await page.waitForTimeout(400);
+  const b = await at();
+  // up / down not at all; across only by the 2 % inset a float keeps from its parent's edge (floatBox, by design), never outward
+  await expect.poll(async () => Math.abs((await at()).y - a.y), { message: `made Floating, it did not move up or down (${JSON.stringify({ a, b })})` }).toBeLessThan(0.75); // 1.57 before the settle (E5c-8), 0.1 after
+  const pageW = await page.evaluate(() => document.querySelector("[data-canvas-scale] [data-box-id]")!.getBoundingClientRect().width);
+  expect(b.x - a.x, "…and across, only the 2 % inset").toBeGreaterThanOrEqual(-0.5);
+  expect(b.x - a.x, "…and across, only the 2 % inset").toBeLessThanOrEqual(pageW * 0.02 + 1);
+  await h.click({ position: { x: 6, y: 6 } });
+  const grip = page.getByRole("toolbar", { name: "Block toolbar" }).getByLabel("Drag to move");
+  const g = (await grip.boundingBox())!;
+  await page.mouse.move(g.x + g.width / 2, g.y + g.height / 2); await page.mouse.down();
+  await page.mouse.up(); // pressed and let go without moving (a 1px wiggle lets the 6px snap act, by design)
+  await page.waitForTimeout(300);
+  const c = await at();
+  expect(Math.max(Math.abs(c.x - b.x), Math.abs(c.y - b.y)), `a still press on the grip moved nothing (${JSON.stringify({ b, c })})`).toBeLessThan(1.5);
+  // E5c-9: grown by its corner, its top stays — this float sets its page's height itself (the reserve), and its top is a % of it
+  await h.click({ position: { x: 6, y: 6 } });
+  const t0 = (await at()).y, k = (await page.locator('[aria-label="Resize bottom-right corner"]').first().boundingBox())!;
+  await page.mouse.move(k.x + k.width / 2, k.y + k.height / 2); await page.mouse.down();
+  await page.mouse.move(k.x + k.width / 2 - 20, k.y + k.height / 2 + 60, { steps: 10 }); await page.mouse.up(); await page.waitForTimeout(400);
+  expect(Math.abs((await at()).y - t0), "grown by its corner, its top stayed (rule 19)").toBeLessThan(1);
+  await page.mouse.move(g.x + g.width / 2, g.y + g.height / 2); await page.mouse.down();
+  await page.mouse.move(g.x + g.width / 2, g.y - 200, { steps: 12 }); await page.mouse.up(); await page.waitForTimeout(300);
+  const pageTop = await page.locator(`[data-box-id="${(await page.evaluate(() => JSON.parse(localStorage.getItem("educo_box_site_v1")!).pages[0].root.id))}"]`).evaluate((e) => e.getBoundingClientRect().top);
+  expect((await at()).y, "dragged up past the page: it stops at the page's top (E5c-7, on the padded page)").toBeGreaterThanOrEqual(pageTop - 1);
 });

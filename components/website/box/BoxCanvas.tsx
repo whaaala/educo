@@ -181,6 +181,17 @@ export function measureFixedGeom(rootId: string, id: string): { x: number; y: nu
   return { x: Math.round((r.left - pr.left) / z), y: Math.round((r.top - viewTop) / z) };
 }
 
+/**
+ * THE BOX A FLOAT IS PLACED IN — its parent's PADDING box, in screen px (E5c-8). A float's `left` / `top` / `width` are written as
+ * plain percentages, which the browser resolves against the padding box, from its edge; measured from the content box instead, a
+ * block made Floating in the palette's padded band jumped ~17px right and ~12px up, and again on the first touch of its grip.
+ */
+function placedIn(pEl: HTMLElement) {
+  const pr = pEl.getBoundingClientRect(), cs = getComputedStyle(pEl), Z = zoomOf(pEl), b = (s: string) => (parseFloat(s) || 0) * Z;
+  const bl = b(cs.borderLeftWidth), bt = b(cs.borderTopWidth); // the border box less its borders: the padding box
+  return { left: pr.left + bl, top: pr.top + bt, w: Math.max(1, pr.width - bl - b(cs.borderRightWidth)), h: Math.max(1, pr.height - bt - b(cs.borderBottomWidth)) };
+}
+
 export function measureFloatGeom(root: BoxNode, id: string): { parentId: string; left: number; top: number; width: string; height: number } | null {
   if (typeof document === "undefined") return null;
   const el = document.querySelector<HTMLElement>(`[data-box-id="${id}"]`);
@@ -196,11 +207,8 @@ export function measureFloatGeom(root: BoxNode, id: string): { parentId: string;
   }
   const pEl = document.querySelector<HTMLElement>(`[data-box-id="${parentId}"]`);
   if (!pEl) return null;
-  const r = el.getBoundingClientRect(), pr = pEl.getBoundingClientRect();
-  const cs = getComputedStyle(pEl), Z = zoomOf(el); // rects are screen px when the canvas is shrunk to fit; paddings are layout px
-  const padL = (parseFloat(cs.paddingLeft) || 0) * Z, padT = (parseFloat(cs.paddingTop) || 0) * Z;
-  const padR = (parseFloat(cs.paddingRight) || 0) * Z, padB = (parseFloat(cs.paddingBottom) || 0) * Z;
-  const cw = Math.max(1, pr.width - padL - padR), ch = Math.max(1, pr.height - padT - padB);
+  const r = el.getBoundingClientRect(), Z = zoomOf(el); // rects are screen px when the canvas is shrunk to fit
+  const { left: ox, top: oy, w: cw, h: ch } = placedIn(pEl); // the padding box the float will be placed in (E5c-8)
   // Float at the block's CURRENT width so its measured height is the height it will actually have as a card
   // (changing the width on float would change the height and break the parent's reserved space). Resize after.
   // +1px safety margin: the frozen card must never be a hair NARROWER than the content it just measured (sub-pixel
@@ -208,14 +216,14 @@ export function measureFloatGeom(root: BoxNode, id: string): { parentId: string;
   const width = `${round1(((r.width + 1) / cw) * 100)}%`;
   return {
     parentId,
-    left: ((r.left - (pr.left + padL)) / cw) * 100,
-    top: ((r.top - (pr.top + padT)) / ch) * 100,
+    left: ((r.left - ox) / cw) * 100,
+    top: ((r.top - oy) / ch) * 100,
     width,
     height: r.height / Z, // stored as LAYOUT px
   };
 }
 
-/** Bounding box of several selected boxes, as a floating geom (left/top % of the ROOT content box + width % +
+/** Bounding box of several selected boxes, as a floating geom (left/top % of the ROOT padding box + width % +
  *  height px) — where a GROUP wrapping them should sit so it appears exactly over them. Null if <2 measurable. */
 export function measureGroupGeom(root: BoxNode, ids: string[]): { left: number; top: number; width: string; height: number } | null {
   if (typeof document === "undefined") return null;
@@ -223,15 +231,12 @@ export function measureGroupGeom(root: BoxNode, ids: string[]): { left: number; 
   if (picked.length < 2) return null;
   const rootEl = document.querySelector<HTMLElement>(`[data-box-id="${root.id}"]`);
   if (!rootEl) return null;
-  const pr = rootEl.getBoundingClientRect(), cs = getComputedStyle(rootEl), Z = zoomOf(rootEl);
-  const padL = (parseFloat(cs.paddingLeft) || 0) * Z, padT = (parseFloat(cs.paddingTop) || 0) * Z;
-  const cw = Math.max(1, pr.width - padL - (parseFloat(cs.paddingRight) || 0) * Z);
-  const ch = Math.max(1, pr.height - padT - (parseFloat(cs.paddingBottom) || 0) * Z);
+  const Z = zoomOf(rootEl), { left: ox, top: oy, w: cw, h: ch } = placedIn(rootEl); // the padding box (E5c-8)
   const rects = picked.map((id) => document.querySelector<HTMLElement>(`[data-box-id="${id}"]`)?.getBoundingClientRect()).filter(Boolean) as DOMRect[];
   if (rects.length < 2) return null;
   const minL = Math.min(...rects.map((r) => r.left)), minT = Math.min(...rects.map((r) => r.top));
   const maxR = Math.max(...rects.map((r) => r.right)), maxB = Math.max(...rects.map((r) => r.bottom));
-  return { left: ((minL - (pr.left + padL)) / cw) * 100, top: ((minT - (pr.top + padT)) / ch) * 100, width: `${round1(((maxR - minL) / cw) * 100)}%`, height: (maxB - minT) / Z };
+  return { left: ((minL - ox) / cw) * 100, top: ((minT - oy) / ch) * 100, width: `${round1(((maxR - minL) / cw) * 100)}%`, height: (maxB - minT) / Z };
 }
 
 type Edge = "n" | "s" | "e" | "w" | "ne" | "nw" | "se" | "sw";
@@ -905,7 +910,9 @@ export default function BoxCanvas({
       // E-5a — ran 17px off a 393 phone and scrolled the page sideways.
       const r = box.getBoundingClientRect();
       setToolbarRight((prev) => { const next = r.left + r.width / 2 > window.innerWidth / 2; return next === prev ? prev : next; });
-      setToolbarDocked((prev) => { const next = !!window.matchMedia?.("(max-width: 37.49em)").matches; return next === prev ? prev : next; });
+      // A TABLET'S FINGER GETS THE PHONE'S DOCKED BAR (E-5c, research rec. 4; E5c-5): by its block, the 52px bar covered the block
+      // above, and a tap on what showed of it was pulled onto the bar. A mouse in a narrow window keeps the bar and its grip.
+      setToolbarDocked((prev) => { const next = !!window.matchMedia?.("(max-width: 37.49em), (max-width: 63.99em) and (pointer: coarse)").matches; return next === prev ? prev : next; });
     };
     measure();
     window.addEventListener("scroll", measure, true);
@@ -1261,6 +1268,9 @@ export default function BoxCanvas({
         const size = pe ? (axis === "x" ? pe.getBoundingClientRect().width : pe.getBoundingClientRect().height) : 1000;
         return ((e.shiftKey ? 12 : 2) / Math.max(1, size)) * 100;
       };
+      // E5c-7: a float may hang over its parent (overlap), never past the PAGE's top, left or right — the published page cuts that off
+      const pastPage = (dx: number, dy: number) => { const b = id ? document.querySelector(`[data-box-id="${id}"]`)?.getBoundingClientRect() : null, p = document.querySelector(`[data-box-id="${root.id}"]`)?.getBoundingClientRect(); return !!b && !!p && (b.top + dy < p.top - 0.5 || b.left + dx < p.left - 0.5 || b.right + dx > p.right + 0.5); };
+      const stepPx = e.shiftKey ? 12 : 2;
       if (mod && k === "c") { if (id) { copyBox(id); e.preventDefault(); } }
       else if (mod && k === "x") { if (id) { cutBox(id); e.preventDefault(); } }
       else if (mod && k === "v") { if (clip) { pasteBox(id); e.preventDefault(); } }
@@ -1283,10 +1293,10 @@ export default function BoxCanvas({
       }
       else if ((e.key === "Delete" || e.key === "Backspace") && ids.length) { let next = root; for (const d of ids) if (d !== root.id) next = deleteBox(next, d); onChange(next); select(null); e.preventDefault(); } // delete ALL selected
       // A flowing block moves the way its toolbar arrows do (E-5a, D4): ↑ ↓ where it moves up and down, ← → along a line.
-      else if (e.key === "ArrowUp" && !e.altKey && id && !rn.locked && (floating || moveAxis(root, id) === "vertical")) { if (floating) onChange(writeBox(root, id, { top: round1((rn.top ?? 0) - stepPct("y")) })); else onChange(moveBlock(root, id, -1)); e.preventDefault(); }
+      else if (e.key === "ArrowUp" && !e.altKey && id && !rn.locked && (floating || moveAxis(root, id) === "vertical")) { if (floating) { if (!pastPage(0, -stepPx)) onChange(writeBox(root, id, { top: round1((rn.top ?? 0) - stepPct("y")) })); } else onChange(moveBlock(root, id, -1)); e.preventDefault(); }
       else if (e.key === "ArrowDown" && !e.altKey && id && !rn.locked && (floating || moveAxis(root, id) === "vertical")) { if (floating) onChange(writeBox(root, id, { top: round1((rn.top ?? 0) + stepPct("y")) })); else onChange(moveBlock(root, id, 1)); e.preventDefault(); }
-      else if (e.key === "ArrowLeft" && !e.altKey && id && !rn.locked && (floating || moveAxis(root, id) === "horizontal")) { if (floating) onChange(writeBox(root, id, { left: round1((rn.left ?? 0) - stepPct("x")) })); else onChange(moveBlock(root, id, -1)); e.preventDefault(); }
-      else if (e.key === "ArrowRight" && !e.altKey && id && !rn.locked && (floating || moveAxis(root, id) === "horizontal")) { if (floating) onChange(writeBox(root, id, { left: round1((rn.left ?? 0) + stepPct("x")) })); else onChange(moveBlock(root, id, 1)); e.preventDefault(); }
+      else if (e.key === "ArrowLeft" && !e.altKey && id && !rn.locked && (floating || moveAxis(root, id) === "horizontal")) { if (floating) { if (!pastPage(-stepPx, 0)) onChange(writeBox(root, id, { left: round1((rn.left ?? 0) - stepPct("x")) })); } else onChange(moveBlock(root, id, -1)); e.preventDefault(); }
+      else if (e.key === "ArrowRight" && !e.altKey && id && !rn.locked && (floating || moveAxis(root, id) === "horizontal")) { if (floating) { if (!pastPage(stepPx, 0)) onChange(writeBox(root, id, { left: round1((rn.left ?? 0) + stepPct("x")) })); } else onChange(moveBlock(root, id, 1)); e.preventDefault(); }
       // ── ENTER / F2 BEGINS EDITING — the way IN that Escape's way OUT always implied ──
       // Every other operation on this canvas had a shortcut, but editing the WORDS — the commonest act in a
       // website builder — was mouse-only, so a keyboard user could select a heading and never type into it.
@@ -1588,14 +1598,11 @@ export default function BoxCanvas({
     if (lift && !isFloating(node)) onChange(floatBox(rootRef.current, id, g.parentId, g.left, g.top, g.width, g.height), gk); // lift the flow box onto its own layer, exactly where it sits
     const pEl = document.querySelector<HTMLElement>(`[data-box-id="${g.parentId}"]`);
     if (!pEl) return;
-    const pr = pEl.getBoundingClientRect(), cs = getComputedStyle(pEl);
-    // Screen pixels throughout (see `zoomOf`): computed paddings are layout px, so they are scaled on the way in.
-    const Z = zoomOf(el);
-    const padL = (parseFloat(cs.paddingLeft) || 0) * Z, padT = (parseFloat(cs.paddingTop) || 0) * Z, padR = (parseFloat(cs.paddingRight) || 0) * Z, padB = (parseFloat(cs.paddingBottom) || 0) * Z;
-    const ox = pr.left + padL, oy = pr.top + padT;                       // parent content-box origin (viewport)
-    const cw = Math.max(1, pr.width - padL - padR), ch = Math.max(1, pr.height - padT - padB);
+    // Screen pixels throughout (see `zoomOf`), from the padding box the float is placed in (E5c-8)
+    const { left: ox, top: oy, w: cw, h: ch } = placedIn(pEl);
     const r0 = el.getBoundingClientRect(), bw = r0.width, bh = r0.height;
-    const startPxX = (g.left / 100) * cw, startPxY = (g.top / 100) * ch; // current position in content px
+    const startPxX = (g.left / 100) * cw, startPxY = (g.top / 100) * ch; // current position in the parent's padding box, px
+    const page = document.querySelector<HTMLElement>(`[data-box-id="${rootRef.current.id}"]`)?.getBoundingClientRect();
     const startX = e.clientX, startY = e.clientY;
     // Snap targets in content-px: the parent's left/centre/right + top/middle/bottom, plus every sibling's.
     const sibs = directKids(pEl).filter((k) => k.getAttribute("data-box-id") !== id);
@@ -1618,6 +1625,8 @@ export default function BoxCanvas({
       // Keep at least half the box within the parent so it's always grabbable (overhang is allowed for overlap).
       nx = Math.max(-bw / 2, Math.min(cw - bw / 2, nx));
       ny = Math.max(-bh / 2, Math.min(ch - bh / 2, ny));
+      // …but never past the PAGE's top, left or right (E5c-7): the published page cut those words off
+      if (page) { nx = Math.max(page.left - ox, Math.min(page.right - ox - bw, nx)); ny = Math.max(page.top - oy, ny); }
       pending = writeBox(rootRef.current, id, { left: round1((nx / cw) * 100), top: round1((ny / ch) * 100) });
       setSnapLines(guides);
       if (!raf) raf = requestAnimationFrame(flush);
@@ -1873,13 +1882,11 @@ export default function BoxCanvas({
     const pEl = document.querySelector<HTMLElement>(`[data-box-id="${info.parent.id}"]`);
     if (!pEl) return;
     const hasE = edge.includes("e"), hasW = edge.includes("w"), hasS = edge.includes("s"), hasN = edge.includes("n");
-    const pr = pEl.getBoundingClientRect(), cs = getComputedStyle(pEl);
-    // Screen pixels throughout (see `zoomOf`): computed paddings are layout px, so they are scaled on the way in.
-    const Z = zoomOf(el);
-    const padL = (parseFloat(cs.paddingLeft) || 0) * Z, padT = (parseFloat(cs.paddingTop) || 0) * Z, padR = (parseFloat(cs.paddingRight) || 0) * Z, padB = (parseFloat(cs.paddingBottom) || 0) * Z;
-    const cw = Math.max(1, pr.width - padL - padR), ch = Math.max(1, pr.height - padT - padB);
+    // Screen pixels throughout (see `zoomOf`), from the padding box the float is placed in (E5c-8)
+    const Z = zoomOf(el), { left: ox, top: oy, w: cw } = placedIn(pEl); // its height is read live: the float can change it (E5c-9)
     const r = el.getBoundingClientRect();
-    const x0 = r.left - (pr.left + padL), y0 = r.top - (pr.top + padT), bw = r.width, bh = r.height;
+    const x0 = r.left - ox, y0 = r.top - oy, bw = r.width, bh = r.height;
+    let topPx = y0; // where the top is to stay, in px from the padding box (E5c-9)
     const startX = e.clientX, startY = e.clientY;
     setResizeCursor(cursorFor(edge)); setResizing(true);
     let raf = 0, pending: BoxNode | null = null;
@@ -1897,13 +1904,22 @@ export default function BoxCanvas({
       // The BOTTOM is deliberately not capped: the parent reserves height for its floats, so growing down just
       // makes the section (and the page) taller — nothing is ever hidden, unlike growing past the near edges.
       if (hasS) { const h = Math.max(16, bh + dy); patch.height = remLen(Math.round(h / Z), rootFontPx()); patch.minHeight = undefined; }
-      if (hasN) { const h = Math.min(y0 + bh, Math.max(16, bh - dy)); patch.height = remLen(Math.round(h / Z), rootFontPx()); patch.minHeight = undefined; patch.top = round1(((y0 + (bh - h)) / ch) * 100); }
+      // E5c-9: the TOP stays where it is in px. It is a % of the parent's height, and a float low on the page sets that height itself
+      // (its reserve) — so growing it made the parent taller and slid it 8px down. Re-said against the parent's height as it is now.
+      topPx = hasN ? y0 + (bh - Math.min(y0 + bh, Math.max(16, bh - dy))) : y0;
+      patch.top = round1((topPx / placedIn(pEl).h) * 100);
+      if (hasN) { const h = Math.min(y0 + bh, Math.max(16, bh - dy)); patch.height = remLen(Math.round(h / Z), rootFontPx()); patch.minHeight = undefined; }
       pending = writeBox(rootRef.current, id, patch);
       if (!raf) raf = requestAnimationFrame(flush);
     };
     const onUp = () => {
       if (raf) { cancelAnimationFrame(raf); flush(); }
       setResizing(false); setResizeCursor(null);
+      // …and once more after the last frame is drawn: the parent's final height is known only then (E5c-9)
+      requestAnimationFrame(() => {
+        const t = round1((topPx / placedIn(pEl).h) * 100), n = findByIdLocal(rootRef.current, id);
+        if (n && resolveResponsive(n, breakpoint).top !== t) onChange(writeBox(rootRef.current, id, { top: t }), gk);
+      });
       onResized?.(id, (hasS || hasN) && !hasE && !hasW ? "height" : "width");
     };
     followGesture(e, onMove, onUp); // a finger's gesture by pointer events, the mouse's as before (E-5b)
@@ -3853,8 +3869,10 @@ export default function BoxCanvas({
     const bar = (
       <div role="toolbar" aria-label="Block toolbar" style={{ zIndex: CHROME_Z.toolbar, pointerEvents: "auto" }} className={`${toolbarDocked ? "fixed bottom-4 left-4 max-w-[calc(100vw-8.25rem)] overflow-x-auto gap-0 px-0.5" : `absolute ${toolbarRight ? "right-0" : "left-0"} w-max max-w-none ${below ? "top-full mt-4" : "bottom-full mb-4"} gap-0.5 px-1`} flex items-center rounded-xl bg-gray-900/95 dark:bg-gray-800/95 backdrop-blur-sm py-1 shadow-lg ring-1 ring-white/10`} onClick={(e) => e.stopPropagation()} onMouseDown={(e) => e.stopPropagation()} onPointerDown={(e) => e.stopPropagation()}>
         {/* NOT IN THE DOCKED BAR (E5b-8): on a phone a long press is the drag (WordPress's phone editor) and the arrows are the
-            route without one — and with the grip the bar ran under the blocks "+" on a 360 phone, hiding ⋮. */}
-        {!isRoot && !node.locked && !toolbarDocked && (
+            route without one — and with the grip the bar ran under the blocks "+" on a 360 phone, hiding ⋮. A FLOATING block keeps it
+            (E5c-6): a long press moves a block in the flow only, so on a tablet's docked bar a float could not be moved by a finger
+            at all; on a phone floats join the flow. */}
+        {!isRoot && !node.locked && (!toolbarDocked || (isFloating(node) && breakpoint !== "phone")) && (
           <span
             onMouseDown={(e) => startDrag(e, node)}
             onPointerDown={onFingerDown((e) => startDrag(e, node))} // the grip is the explicit route: a finger drags at once (E-5b)

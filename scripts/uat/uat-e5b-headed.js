@@ -8,7 +8,7 @@ const path = require('path'); const fs = require('fs');
 const { chromium } = require('playwright');
 const sharp = require('sharp');
 const { SCREENS } = require('./screens.js');
-const OUT = path.join(__dirname, 'logs', 'uat-e5b'); fs.mkdirSync(OUT, { recursive: true });
+const OUT = process.env.UAT_OUT || path.join(__dirname, 'logs', 'uat-e5b'); fs.mkdirSync(OUT, { recursive: true });
 const IMG = path.join(__dirname, '..', '..', 'docs', 'guide', 'img');
 const BASE = process.env.BASE || 'http://localhost:3100';
 const ONLY = (process.argv.find((a) => a.startsWith('--only=')) || '').slice(7).split(',').filter(Boolean);
@@ -149,11 +149,13 @@ async function U1float(page, ok, w, ids) {
   const b1 = await box(page, ids.head);
   ok(`U1 ${w}: a floating block resizes by finger, its top-left still`, (Math.abs(b1.width - b0.width) > 8 || Math.abs(b1.height - b0.height) > 8) && Math.abs(b1.x - b0.x) < 2 && Math.abs(b1.y - b0.y) < 2, JSON.stringify({ b0, b1 }));
   const grip = page.getByRole('toolbar', { name: 'Block toolbar' }).getByLabel('Drag to move');
+  const where = (n) => JSON.stringify([n.left, n.top, n.responsive]); // a tablet writes its own rung (E-5c)
+  const docked = !(await grip.isVisible().catch(() => false)); // a docked bar has no grip: a long press on the block is the drag (E5c-5)
   const before = flat(await stored(page)).find((x) => x.id === ids.head);
-  const g = mid(await grip.boundingBox());
-  await finger(page, line(g, { x: g.x - 20, y: g.y - 40 }));
+  const g = docked ? mid(await box(page, ids.head)) : mid(await grip.boundingBox());
+  await finger(page, docked ? [g, { x: g.x, y: g.y + 6 }, ...line({ x: g.x, y: g.y + 6 }, { x: g.x + 40, y: g.y + 50 }, 10)] : line(g, { x: g.x - 20, y: g.y - 40 }), { holdMs: docked ? 650 : 0 });
   const after = flat(await stored(page)).find((x) => x.id === ids.head);
-  ok(`U1 ${w}: a floating block moves by its grip under a finger`, after.left !== before.left || after.top !== before.top, JSON.stringify({ before: [before.left, before.top], after: [after.left, after.top] }));
+  ok(`U1 ${w}: a floating block moves ${docked ? 'by a long press' : 'by its grip'} under a finger`, where(after) !== where(before), `${where(before)} → ${where(after)}`);
 }
 
 async function U2grip(page, ok, w, ids) {
@@ -232,7 +234,7 @@ async function U4autoscroll(page, ok, w, ids) {
   // the page made taller than the screen, through the UI: a tablet opens at Fit (the whole page in view), so zoomed in first, as a
   // person working on it would; then Headings added until it scrolls
   let zoomed = 0;
-  for (let i = 0; i < 4; i++) { const zi = page.getByRole('button', { name: 'Zoom canvas in' }).first(); if (await zi.isVisible().catch(() => false) && await zi.isEnabled()) { await press(page, zi); zoomed++; await page.waitForTimeout(300); } }
+  await viaMore(page, async () => { for (let i = 0; i < 4; i++) { const zi = page.getByRole('button', { name: 'Zoom canvas in' }).first(); if (await zi.isVisible().catch(() => false) && await zi.isEnabled()) { await press(page, zi); zoomed++; await page.waitForTimeout(300); } } }); // under 1024 the zoom is in More (E5c-2)
   for (let i = 0; i < 16; i++) { const tall = await page.evaluate(() => { let n = document.querySelector('[data-canvas-scale]'); while (n && !(/(auto|scroll)/.test(getComputedStyle(n).overflowY) && n.scrollHeight > n.clientHeight + 300)) n = n.parentElement; return !!n; }); if (tall) break; await add(page, 'Heading', 'Default'); }
   const sc = await page.evaluate(() => { let n = document.querySelector('[data-canvas-scale]'); while (n && !(/(auto|scroll)/.test(getComputedStyle(n).overflowY) && n.scrollHeight > n.clientHeight)) n = n.parentElement; if (!n) return null; n.scrollTop = 0; const r = n.getBoundingClientRect(); return { top: Math.max(0, r.top), bottom: Math.min(innerHeight, r.bottom) }; });
   if (!sc) return ok(`U4 ${w}: the editor scrolls`, false);
@@ -247,7 +249,7 @@ async function U4autoscroll(page, ok, w, ids) {
   } });
   ok(`U4 ${w}: a finger held near the bottom scrolls the editor down`, down > 60, `${Math.round(down)}px`);
   ok(`U4 ${w}: …and near the top scrolls it back up`, up > 60, `${Math.round(up)}px`);
-  for (let i = 0; i < zoomed; i++) { await press(page, page.getByRole('button', { name: 'Zoom canvas out' }).first()); await page.waitForTimeout(250); } // back to where the run was
+  await viaMore(page, async () => { for (let i = 0; i < zoomed; i++) { await press(page, page.getByRole('button', { name: 'Zoom canvas out' }).first()); await page.waitForTimeout(250); } }); // back to where the run was
 }
 
 async function FG(page, ok, id, w) {
@@ -301,7 +303,7 @@ const RUNS = [
   ['FG-412-Purple', 412, 915, 'Purple Dream', true, true], ['FG-768-Dark', 768, 1024, 'Dark', false, true], ['FG-1024-Purple', 1024, 768, 'Purple Dream', false, true],
   ['FG-360-Light', 360, 640, 'Light', true, true], ['MS-1280-Light', 1280, 800, 'Light', false, false], ['MS-1280-Midnight', 1280, 800, 'Midnight', false, false],
 ];
-(async () => {
+if (require.main === module) (async () => {
   const runs = RUNS.filter(([id]) => !ONLY.length || ONLY.includes(id)); const out = []; let next = 0;
   const lane = async (slot) => { for (let i = next++; i < runs.length; i = next++) {
     const [id, w, h, theme, mobile, touch] = runs[i];
@@ -320,3 +322,5 @@ const RUNS = [
   const fails = out.filter((l) => l.startsWith('FAIL'));
   console.log(`\n${out.length} checks, ${fails.length} failed`); for (const l of fails) console.log(l);
 })();
+// E-5c (uat-e5c-headed.js) drives the same finger on tablets with these
+module.exports = { open, press, viaMore, editorTheme, stored, raw, flat, seq, sheet, add, selectBox, box, handle, mid, line, finger, isTouch, build, U1resize, U1grid, U1float, U2grip, U3lift, U4autoscroll, U5strip, FG, MS, sweep };

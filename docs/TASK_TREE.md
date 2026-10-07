@@ -1015,7 +1015,7 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
     - **E-5a** (below, OPEN) · D1 · D3 · D4 arrows · D5 · D6 — 6 changes
     - **E-5b** (CLOSED 2026-10-07, see below) · D4's long-press drag (a touch path for drag: chip, insertion line, auto-scroll) · touch resize on the
       handles · drop strips ≥ 44px (E4-9)
-    - **E-5c** (QUEUED) · the tablet (600–1023): what it edits at, the sheet or the side panel · then `apps/mobile/` (rule 20: a
+    - **E-5c** (CLOSED 2026-10-07 — the tablet; the app → BATCH E-5d) · the tablet (600–1023): what it edits at, the sheet or the side panel · then `apps/mobile/` (rule 20: a
       webview over the same editor, phone AND tablet)
   - `[x]` **E-5a · Building on a phone** — CLOSED 2026-10-07 (HEADED UAT `scripts/uat/uat-e5a-headed.js`, six windows, real phones (`isMobile`) 360 × 640 · 393 × 851 · 412 × 915 in the four themes + 600 / 768 / 1280 unchanged, **258 checks 0 failed** (`logs/e5a-uat9.out`), the Preview at all 70 screens × 100 / 150 / 200 % text; gate: typecheck 0 · eslint 0 errors (105 warnings, none new) · vitest 4,442 · `test:fast` 3,312 on all four screens · docs:build SUCCESS; ledger E5a-1 … E5a-19, E5a-1 → BATCH E-5b; the user's decisions E5a-7 and E5a-16) — OPENED 2026-10-06 (area: the editor on a phone · 6 changes):
     (1) D1 under 37.5em (the phone rung) the canvas opens on the Mobile device at the PHONE'S OWN WIDTH, 1:1 — no "Fit · 22 %"; the
@@ -1129,7 +1129,7 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
       stays 44px and the top bar takes two rows at 1280, one row (65px) from 1366; with a mouse, one row from 1280 as D3-32 says.
       The question was: D6 (44px on touch) widens the top bar's 23 buttons from 910 to 1,012px, against E-3's "one row from 1280".
       Built: `builder-chrome-fits` asks one row from 1366 (≤ 72px) on touch, from 1280 (≤ 64px) with a mouse.
-  - `[>]` (2) the build the research settles on, web phone first, then `apps/mobile/` (RULE APP) — E-5a CLOSED 2026-10-07; E-5b CLOSED 2026-10-07; E-5c queued below
+  - `[>]` (2) the build the research settles on, web phone first, then `apps/mobile/` (RULE APP) — E-5a CLOSED 2026-10-07; E-5b CLOSED 2026-10-07; E-5c CLOSED 2026-10-07 (the tablet); BATCH E-5d (the app) next
   - `[x]` E4-9 (DONE 2026-10-07 in BATCH E-5b change (5) + E5b-5 / E5b-13: a finger's drag reads strips of ≥ 44px, a third of a smaller block; a mouse keeps its own) (from BATCH E-4): the drop strips are 25 % of a block's DRAWN height — 9px on a 37px block at the phone's 0.22 canvas.
     Is that enough for a finger? The research answers it with the rest of placing on a phone. → BATCH E-5b (strips ≥ 44px, D6)
   - `[x]` E4-14 (DONE 2026-10-07 in E-5a change (1): the phone edits at its own width, 1:1) (from BATCH E-4): the phone canvas opens as the Desktop page at 22 % — blocks a few pixels tall, the toolbar bigger
@@ -1243,12 +1243,14 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
         docked Inspector at 1280, a covered tap point, a corner move under one column, a one-column grid on a phone, floats in
         the flow on a phone by design, the mouse moves by the grip) → E5b-2, -3, -4 found by probe; pass 2 207 / 6; pass 3 153 / 6
         (E5b-6, the zoomed tablet off-screen); pass 4 209 / 0 — screenshots read → E5b-7, E5b-8; pass 5 206 / 0; then the gate's E5b-12 … E5b-15, pass 6 206 / 2 → E5b-16; **pass 7 206 / 0 on the final build** (`logs/e5b-uat7.out`, screenshots read).
-  - `[>]` **BATCH E-5c · The tablet, then the app** — part of BATCH E-5 (one open batch, RULE X) — OPENED 2026-10-07 by the user
+  - `[x]` **BATCH E-5c · The tablet, then the app** — CLOSED 2026-10-07 (the tablet: HEADED 590 / 0 on the final build, 15 runs in six
+    windows; `test:fast` 3,343 + the 2 chrome specs fixed after it, 24 / 24; vitest 4,445; E5c-1 … E5c-9) — THE APP SPLIT OFF TO BATCH
+    E-5d below (its decisions T4–T8 moved there) — part of BATCH E-5 (one open batch, RULE X) — OPENED 2026-10-07 by the user
     ("okay, let's do that"), RESEARCH FIRST (RULE RS: the user's sources and mine, then an "enough" checklist the user signs) — QUEUED
     2026-10-07 (from E-5's research) (area: the editor on a tablet, then the app): what a tablet (600–1023) edits at, the sheet or the
     side panel; then `apps/mobile/` — a webview over the same editor (rule 20), phone AND tablet
-    - `[>]` (1) RESEARCH (RULE MAP) — DONE 2026-10-07, stored in `docs/web-anatomy/tablet-and-app-editing.md` (~45 pages read;
-      every claim cited or marked inference; linked from `phone-editing.md` §6). THE "ENOUGH" CHECKLIST, awaiting the user's signature:
+    - `[x]` (1) RESEARCH (RULE MAP) — DONE 2026-10-07, stored in `docs/web-anatomy/tablet-and-app-editing.md` (~45 pages read;
+      every claim cited or marked inference; linked from `phone-editing.md` §6). THE "ENOUGH" CHECKLIST, signed 2026-10-07:
       - `[x]` axis A · the canvas — own width 1:1 (WordPress, Notion: the only two that BUILD on a tablet) · desktop fitted (ours today;
         touch cannot drive one — Google Sites on iPad) · fitted + pinch (Canva, free-form only) · a tablet breakpoint edited from a
         desktop (Wix Studio) · rotation re-lays the chrome, not the content (Notion). Saturated: the last five products added nothing
@@ -1270,31 +1272,119 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
         T2 the phone / tablet line STAYS at 600px — the commonest African tablet (601 × 1007) edits as a tablet; 601 × 1007,
            601 × 962 and 962 × 601 are added to `lib/preview-devices.ts` and 600 | 601 and 962 are tested ·
         T3 on 600–1023 the blocks panel is the phone's bottom sheet capped at ~32rem and centred; held sideways (≥ 900) the
-           Inspector stays docked at the side (Notion's sidebar); upright it folds to its tab
-      - `[?]` THE APP'S DECISIONS — asked when the app step (BATCH E-5d) starts, the user's words 2026-10-07: "make sure we have that
-        recorded somewhere so … we don't forget it". My recommendation is written beside each (`tablet-and-app-editing.md` §4–§5):
-        - `[?]` T4 add `react-native-webview` 13.15.0 (the Expo SDK 54 pin) to `apps/mobile/` — a new dependency, the user's call
-          (rule 20 already chose a webview). Recommended: yes
-        - `[?]` T5 how the app signs the person into the editor: a one-time code in the URL exchanged for a cookie · a token via
-          `injectedJavaScriptObject` · shared cookies (and whether `expo-secure-store` holds it). Recommended: the one-time code
-        - `[?]` T6 offline in the app: the native cache + the editor's own local save · service workers (iOS App-Bound Domains,
-          ≤ 10 domains). Recommended: the native cache + local save
-        - `[?]` T7 which native piece ships first beside the site (Apple 4.2): deep links into the existing Fees / Messages /
-          Reports screens · push · offline term dates. Recommended: deep links first
-        - `[?]` T8 the app EDITS the school site from day one, or only SHOWS it at first. Recommended: decide with T4–T7
+           Inspector stays docked at the side (Notion's sidebar); upright it folds to its tab — AMENDED BY THE USER 2026-10-07 (E5c-4):
+           the Inspector is its tab on EVERY tablet, docked only from 1024 as before; and (E5c-2) a tablet gets the phone's one-row bar + More
+      - `[x]` THE APP'S DECISIONS T4–T8 — MOVED 2026-10-07 to BATCH E-5d below (asked when it starts), with the batch they belong to
       - `[x]` the user's sources — WAIVED BY THE USER for E-5c only, 2026-10-07: "I will leave you to do the research on this one. The
         other ones, like in the rules, I'll provide my own link" (RULE RS stands for every other area)
-    - `[ ]` (2) THE BUILD (next session, its HEADED checklist first — RULE X; tablets 768 × 1024 · 1024 × 768 · 601 × 1007 ·
+    - `[x]` (2) THE BUILD — DONE 2026-10-07 (its HEADED checklist first — RULE X; tablets 768 × 1024 · 1024 × 768 · 601 × 1007 ·
       601 × 962 · 962 × 601 · 800 × 1280 with touch, four themes; phones and the mouse at 1280 unchanged):
-      - `[ ]` (a) T1 — 600–1023 opens on its own width 1:1 (the tablet-portrait / tablet-landscape rung), like the phone's D1;
-        rotation keeps the edit on the rung for the new width; the device control still shows the desktop page
-      - `[ ]` (b) T2 — the three African tablet sizes in `lib/preview-devices.ts` (and so in `scripts/uat/screens.js`, RULE Z)
-      - `[ ]` (c) T3 — the blocks sheet on 600–1023: the phone's sheet, max ~32rem wide, centred
-      - `[ ]` (d) T3 — the Inspector docked at ≥ 900 (it folds under 1024 today), a tab below 900
-      - `[ ]` (e) the finger on a tablet re-measured on the new canvas: the toolbar by its block, the grip, handles, strips
-      - `[ ]` (f) docs (RULE DOCS): the story's §11 "The editor on a tablet or phone" rewritten for 1:1 tablets
-    - `[ ]` **BATCH E-5d · The app** — QUEUED 2026-10-07 (after E-5c): `apps/mobile/` hosts the editor in a webview, phone AND tablet, with the native
-      layer — starts by asking T4–T8 above
+      - `[x]` (a) T1 — 600–1023 opens on its own width 1:1 (the tablet-portrait / tablet-landscape rung), like the phone's D1;
+        rotation keeps the edit on the rung for the new width; the device control still shows the desktop page (`page.tsx`
+        `screenDevice`: one device that follows the window at 37.5 / 56.25 / 64em, `fitW = room` when it is the screen's own)
+      - `[x]` (b) T2 — the three African tablet sizes in `lib/preview-devices.ts` (and so in `scripts/uat/screens.js`, now 73 screens)
+      - `[x]` (c) T3 — the blocks sheet on 600–1023: the phone's sheet, max 32rem wide, centred (`BlocksPanel`); More the same (E5c-2)
+      - `[x]` (d) T3 — the Inspector docked at ≥ 900 — BUILT, then REVERSED by the user (E5c-4): a tab below 1024, as before
+      - `[x]` (e) the finger on a tablet re-measured on the new canvas: the toolbar docked at the bottom for a finger (rec. 4, E5c-5)
+        with the grip kept for a float (E5c-6), handles, strips, long press, autoscroll — all of E-5b's checks, on every tablet
+      - `[x]` (f) docs (RULE DOCS): the story's §11 rewritten for 1:1 tablets (two new pictures from the builder), the reference
+        table (`website-builder.md`), the research's rec. 3 amended, `phone-editing.feature` (E-5c scenarios)
+      - `[x]` THE HEADED CHECKLIST — HEADED UAT 590 / 0 on the final build (`logs/e5c-uat10.out`, screenshots read) (written 2026-10-07 BEFORE the build, RULE X; `scripts/uat/uat-e5c-headed.js`, six windows, real
+        CDP touch; screens: 599×900 · 600×900 · 601×1007 · 601×962 · 768×1024 · 800×1280 · 899×700 · 900×700 · 962×601 · 1007×601 ·
+        1023×768 · 1024×768 · 375×812 · 360×640 · 1280×800; themes light · dark · midnight · purple). PONYTAIL (RULE M) for the build:
+        rung 2 — the phone's D1 path (a device that follows the window, `fitW = room`) widened to the two tablet rungs; the phone sheet
+        reused with a cap; the Inspector's dock line moved 64em → 56.25em (then back, E5c-4); nothing new added
+        - `[x]` C1 (a) SAW at 601×1007 · 601×962 · 768×1024 · 800×1280 (Tablet) and 962×601 · 1007×601 (Laptop): scale 1, the frame
+          exactly the room's width, nothing sideways; 1024×768 touch: Full width at Fit 47 %, the Inspector docked, as before
+        - `[x]` C2 (a) SAW in RT-601 and RT-768: through 1007×601 · 962×601 · 601×962 · 899 | 900 · 1024×768 · 768×1024 · 1023×768 ·
+          600 · 599 the device followed each width, 1:1 below 1024, the selection held, nothing sideways, the Inspector a tab below 1024
+        - `[x]` C3 (a) SAW on every tablet: ½ wrote `responsive.tabletPortrait` / `tabletLandscape` only, the canvas showed it at half,
+          and on Desktop the Stack was full width
+        - `[x]` C4 (a) SAW: Desktop from More drew the desktop page shrunk (z 0.47–0.66), Tablet / Laptop brought 1:1 back
+        - `[x]` C5 (b) SAW: the three sizes in the Preview's menu and in screens.js (73 screens); the Preview of a page a finger built on
+          a 601 tablet had no sideways scroll at all 73 screens at 100 / 150 / 200 % text
+        - `[x]` C6 (c) SAW on every tablet: the sheet at the bottom, 512px wide, centred (screenshots: 601 Light, 768 Purple); Escape
+          closed it, focus back on "+"; no launcher gutter (32px padding = the room's own); the build went through the sheet
+        - `[x]` C7 (d, as AMENDED by E5c-4) SAW: the Inspector its tab on every tablet, docked from 1024; it never covers the page
+        - `[x]` C8 (e) SAW on every tablet: the bar docked at the bottom, never over a block (E5c-5); a long press drags; handles,
+          strips ≥ 44px; edges and corners resize with only the grabbed edge moving; a float moved by the docked grip (E5c-6),
+          stopped at the page's top (E5c-7), made Floating without moving (E5c-8), and grown by its corner with its top still (E5c-9)
+        - `[x]` C9 SAW: phones 375 · 360 (E-5b's FG, all green) and the mouse at 1280 and 1024 (E-5b's MS, all green) unchanged
+        - `[x]` C10 SAW: Light · Dark · Midnight · Purple Dream across the runs (sheet, More, canvas, docked bar); no console errors
+        - `[x]` C11 (f) the story's §11 rewritten with two new pictures; `npm run docs:build` green
+      - LEDGER E-5c (every bug the moment it is found, RULE V):
+        - `[x]` E5c-1 · MY OWN, found reading the code: the Inspector's "steps down to fit … drawn N across" note measured the row
+          at the device's NOMINAL width (768 / 1024) while a 1:1 canvas is drawn at the room's (656 / 546) — the canvas stacked three
+          columns one a line and the note said nothing. FIXED (`page.tsx`: `w = device === screenDevice ? fitW : …`). HEADED UAT
+          (`uat-e5c-headed.js` FS — three Stacks with words, side by side at ⅓, built with the mouse, the window turned to 768 × 1024
+          and 962 × 601): the mutant build (the one line reverted) FAILED 4 / 4, the fix SAW 4 / 4. Guard: `phone-editing.spec.ts`
+          "E5c-1 …" red on the mutant, green on the fix
+        - `[x]` E5c-3 · NOT A BUG (measured): after 1024 → 768 the frame read 659–660 in a 656 room at +600 ms; its target width was
+          already 656 and the 300 ms width transition (1200 → 656) was finishing — at +1500 ms it is exactly 656 (`probe-e5c.js`). The
+          BUG WAS IN MY TEST (read mid-animation): RT now waits 1.3 s
+        - `[x]` E5c-2 · the top bar on a tablet wraps to three rows at 601 (~170px, 17 % of 1007) and two at 962 × 601 (~120px, 20 %);
+          the phone got a one-row bar + More in E-5a, the tablet did not. THE USER CHOSE 2026-10-07 "One row + More": `compactBar` (every
+          screen under 64em) in `page.tsx`, the More sheet capped at 32rem and centred on a tablet. Guards: `phone-editing.spec.ts` T1 (one row
+          at every tablet width) and "a phone's (and a tablet's) top bar …", `builder-chrome-fits` (768 one row) — red on the earlier build
+        - `[x]` E5c-4 · T1 × T3 pull against each other at 900–1023: the docked Inspector (T3) leaves the 1:1 canvas 484–607px for a
+          rung visitors see at 900–1023px (54–60 % of their width; 768 upright keeps 656 = 85 %). THE USER CHOSE 2026-10-07 "Tab below 1024":
+          the dock line back at 64em (`lg:`). Guards: `builder-chrome-fits` E3-3 (962 × 601 is a tab), `phone-editing.spec.ts` T1 — red on
+          the earlier build
+        - `[x]` E5c-5 · FOUND BY THE HEADED PASS (U2 failed at 800 / 962 / 1007, alone too): on a 1:1 tablet a selected Stack's 52px
+          bar, by its block, covered the Heading above it (bar 128–180 over a heading 113–196); a tap on what showed of the Heading was
+          pulled onto the bar by Chrome's touch adjustment, so it could not be selected and the next grip drag moved the STACK. The research
+          had answered it — rec. 4, signed with "all the recommendation": the phone's toolbar on tablets (I had read change (e) as "by its
+          block"). FIX: the bar docks at the bottom under 64em for a finger (`(max-width: 37.49em), (max-width: 63.99em) and (pointer:
+          coarse)`, BoxCanvas); a mouse in a narrow window keeps the bar and its grip. Guard: `phone-editing.spec.ts` "E5c-5 …" (the
+          palette's Heading and Stack at 962 × 601) — RED on the pre-fix build in all three touch projects
+        - `[x]` E5c-6 · MY OWN, made by the E5c-5 fix, found by the headed pass (U1, every tablet): the docked bar has no grip and a long
+          press moves only a block in the flow, so on a tablet a FLOATING block could not be moved by a finger at all (a mouse could: probe
+          `probe-e5c-float.js`, 1280 on the Tablet screen, wrote `responsive.tabletPortrait.left/top`). FIX: a floating block keeps the grip
+          in the docked bar (not on a phone, where floats join the flow). Guard: `phone-editing.spec.ts` "E5c-6 …" — RED on the pre-fix
+          build. ALSO TWO BUGS IN MY TESTS, fixed: U1float read only the desktop `left/top` (a tablet writes its rung) and U4 looked for the
+          zoom in the bar (under 1024 it is in More, E5c-2) — U4's "not tall enough" at 800 × 1280 was that: scroll 1310 > 1215, measured
+        - `[x]` E5c-7 · FOUND READING THE HEADED PASS'S SCREENSHOT (962 × 601, U1's float dragged up): a floating block could be dragged
+          (and arrowed — no limit at all there) above the PAGE's top edge; the canvas drew it over the app bar and the Preview CUT ITS WORDS
+          OFF (`probe-e5c7.js`: a mouse at 1280, `top: -31.3`, the heading's top at −14.6px in the published page). Older than E-5c — a
+          mouse did it too. The half-box overhang over a PARENT is a design (overlap) and stays. FIX: the drag and the arrow keys stop at the
+          page's top, left and right (BoxCanvas). Guard: `float-round-trip.spec.ts` "… (E5c-7)" — RED on the pre-fix build. THE HEADED
+          PASS THEN SHOWED the finger's float still 16.5px above the page on every tablet: the drag measures from the parent's CONTENT box,
+          the browser places an absolute box from its PADDING box (the palette's band has 16px of inner space). FIX 2: the limit is applied
+          to where the box is DRAWN (the offset read once at drag start). Guard: the headed check "E5c-7 …" in `uat-e5c-headed.js` — RED
+          8 / 8 on the fix-1 build (a seeded band did not reproduce it, so no spec pins it: RULE Y). FIX 2 DID NOTHING (the same 8, the
+          same numbers) — the cause was E5c-8, and fix 2 was deleted again
+        - `[x]` E5c-8 · FOUND CHASING E5c-7, OLDER THAN E-5c, a mouse too (`probe-e5c8.js`, 1280 and 962): a float's `left` / `top` /
+          `width` are plain %, which CSS resolves against the parent's PADDING box from its edge; the float maths (`measureFloatGeom`,
+          `measureGroupGeom`, the move drag, the float resize) measured the CONTENT box. On the real page (its default inner space) a
+          Heading made Floating JUMPED +16.6 / −10.5px, a still press on its grip moved it up 12–17px more, and every page-edge limit was
+          16px off. FIX: one helper, `placedIn` (the padding box, from `clientLeft` / `clientWidth`), in all four; the model's comment
+          corrected (`box-model.ts` `left` / `top`). Saved pages draw exactly as before (the stored % and the CSS are unchanged). Guard:
+          `float-round-trip.spec.ts` "… (E5c-8)" with the page's real defaults and the palette's Heading — RED on the pre-fix build.
+          AFTER IT, MEASURED: made Floating still moved −3.5 / −4px — out of the flow its page shrank 180 → 128px, and a `top` measured as
+          a % of the old height lands higher. FIX 2: the Floating action re-measures once drawn and puts it back, in the same undo step
+          (`page.tsx` `floatSelected`). Now 0 / 0.1px at 1280 and on the 962 tablet (`probe-e5c8.js`). Guard tightened to 0.75px — RED on
+          a mutant with the settle disabled (−1.57px; −4px in the probe), green on the fix. NOT BUGS, measured: +16.6px across on float
+          is `floatBox`'s deliberate 2 % inset from the parent's edge (`box-model.ts:2693`); +3px on a 1px-wiggled press is the drag's 6px
+          snap pulling the box's bottom onto the parent's middle line (60.6 vs 64)
+        - `[x]` E5c-9 · FOUND BY THE HEADED PASS (1024 × 768 touch, deterministic alone, 2 / 2): a floating block resized by its corner
+          slid 8.2px DOWN — rule 19 broken. Its `top` is a % of its parent's height, and a float low on the page SETS that height (the
+          parent reserves room for its floats): growing it grew the parent, and the % landed lower. Older than E-5c in kind; it surfaced
+          once E5c-8 placed floats exactly. FIX: the resize keeps the top in px — re-said against the parent's height as it is now on
+          every frame, and once more after the last frame (BoxCanvas `startResizeAbsolute`). Guard: `float-round-trip.spec.ts` "… (E5c-8)"
+          grows the floated Heading by its corner — RED on the pre-fix build
+  - `[ ]` **BATCH E-5d · The app** — QUEUED 2026-10-07 (after E-5c, which CLOSED 2026-10-07): `apps/mobile/` hosts the editor in a
+    webview, phone AND tablet, with the native layer — STARTS BY ASKING T4–T8 (research: `tablet-and-app-editing.md` §2 E, §3, §4–§5)
+    - `[?]` THE APP'S DECISIONS — asked when this batch starts, the user's words 2026-10-07: "make sure we have that recorded somewhere
+      so … we don't forget it" (moved here from E-5c's research, 2026-10-07). My recommendation beside each:
+      - `[?]` T4 add `react-native-webview` 13.15.0 (the Expo SDK 54 pin) to `apps/mobile/` — a new dependency, the user's call
+        (rule 20 already chose a webview). Recommended: yes
+      - `[?]` T5 how the app signs the person into the editor: a one-time code in the URL exchanged for a cookie · a token via
+        `injectedJavaScriptObject` · shared cookies (and whether `expo-secure-store` holds it). Recommended: the one-time code
+      - `[?]` T6 offline in the app: the native cache + the editor's own local save · service workers (iOS App-Bound Domains,
+        ≤ 10 domains). Recommended: the native cache + local save
+      - `[?]` T7 which native piece ships first beside the site (Apple 4.2): deep links into the existing Fees / Messages /
+        Reports screens · push · offline term dates. Recommended: deep links first
+      - `[?]` T8 the app EDITS the school site from day one, or only SHOWS it at first. Recommended: decide with T4–T7
 - `[x]` **BATCH G-3 · Placing on columns and rows** — CLOSED 2026-10-04 (HEADED UAT `scripts/uat/uat-g3-headed.js`, six windows,
   65 checks 0 failed on the final build (`logs/g3-uat6.out`), Preview at all 70 screens at 100 / 150 / 200 % text; G-2's suite
   re-run as regression 128/0 (`g2-regress-g3c.out`); gate: see the commit) — OPENED 2026-10-04 (session 5da86722, the user's "go") (area: page grid
@@ -3624,7 +3714,7 @@ sent), and my research. Nothing on the layout is done until every line here is c
     falls back into the flow unless placed at that rung; the page audit and Page check warn when it covers words;
     shown as drag on the canvas with the half-lines drawn, a Position panel (start / end, column / row, spill above /
     below) and a gallery of ready-made placements (RULE S / UI). Joins AC-10, ST-5, AC-35 — one build
-    - `[>]` AC-37b ← YOU ARE HERE (NOW: BATCH E-5 — E-5b · A finger drags and resizes CLOSED 2026-10-07 (HEADED 206 / 0; test:fast 3,333; E5b-1 … E5b-16) on `builder/phone-editing` — next: BATCH E-5c — research SIGNED 2026-10-07 (T1–T3; T4–T8 recorded for the app, BATCH E-5d) → change (2) THE BUILD, its HEADED checklist first; handover of session E-5b/E-5c in the SESSION LOG. Before that: research SIGNED 2026-10-06 (D1–D6, `docs/web-anatomy/phone-editing.md`), E-5a · Building on a phone CLOSED 2026-10-07 (HEADED 258 / 0; test:fast 3,312; the user's E5a-7 and E5a-16) on `builder/phone-editing` — next: BATCH E-5b (a finger drags and resizes: E5a-1 + E4-9), then E-5c (the tablet, then the app); handover of session E-4/E-5a in the SESSION LOG. Before that: BATCH E-4 CLOSED 2026-10-06 (HEADED 232 / 0; `test:fast` now runs all four screens, 3,272 / 3,272 in 12.3 min; E4-1 … E4-14, E4-9 and E4-14 → BATCH E-5) — PR #7 MERGED to master 2026-10-06 (`05c66ee`), `builder/editor-small-screens` deleted, `builder/phone-editing` cut from master — next: BATCH E-5, research first (the user's sources and mine). Before that: BATCH E-4 change (1) E3-3 done (`6042e79`); handover of session E-3 in the SESSION LOG. Before that: BATCH E-3 CLOSED 2026-10-06 (297 / 0 headed; E3-1 … E3-11, E3-3 the user's question); the tree audit DONE 2026-10-06 (`4fcf59a`, its true count heads section 1.1) — its checklist first, then spacing-gestures 12 · masonry-builder 10 · canvas-zoom 3 · text-is-reachable 1 · D3-32 the top bar one row from 1280; then E-4, then E-5 (research first). Before that: BATCH E-2 CLOSED 2026-10-06 (174 / 0 headed; 24 ledger lines). Before that: BATCH E-2 in BATCHES, on `builder/editor-small-screens` (cut from master `7494a8e` after PR #6 merged `builder/page-grid` 2026-10-06) — its checklist first, then the 37 failing specs one by one; then E-3, then E-4. Before that: BATCH G-3d CLOSED 2026-10-06 (`ec52b51`); handover of session (G-3d) in the SESSION LOG. Before that: BATCH G-3d (three changes); handover of session 49087f08 in the SESSION LOG; D-3 CLOSED 2026-10-06 (both changes). Before that: handover of session ff5dbc77 in the SESSION LOG; D-2 and D-3 (1) CLOSED 2026-10-06. Earlier: handover of session 22981e0a; BATCH G-3b and BATCH E-1 CLOSED 2026-10-05; MERGE DECIDED by the user 2026-10-05: `builder/layout-uat` pushed, the user opens and merges the pull request, then the branch is deleted and `builder/page-grid` cut from master; next there: BATCH D-2 (the Docusaurus site + the layout documented from the beginning, RULE DOCS), then BATCH G-3d (the user's two decisions), then BATCH E-2 (resizing and dropping on tablets and phones); before the PR: the artifacts and the layout story for the page grid; then its final pass, then BATCH E-1; handover of session 3da81fad in the SESSION LOG; earlier: handover of session 5da86722 in the SESSION LOG — G-3 CLOSED 2026-10-04 (63 headed checks, G3-8 carried to G-3b by the user); earlier: BATCH G-3 · placing on columns AND rows — G-2 CLOSED 2026-10-04 (134 headed checks); P-0 CLOSED 2026-10-04 (R4-1 … R4-5 fixed, 30 headed checks); R-4 SIGNED with D1–D5 (session 9fa0fee9); then G-3, P-1, P-2, G-4, P-3, G-5, G-6. G-1 CLOSED 2026-10-04 (see BATCHES). Plan APPROVED 2026-10-04 with the user's decisions below. Earlier: research R-3 DONE and SIGNED 2026-10-04
+    - `[>]` AC-37b ← YOU ARE HERE (NOW: BATCH E-5 — E-5c · The tablet CLOSED 2026-10-07 (HEADED 590 / 0; test:fast 3,343 + 2 fixed; vitest 4,445; E5c-1 … E5c-9; the user's E5c-2 one-row bar + More and E5c-4 the Inspector a tab below 1024) on `builder/phone-editing` — next: BATCH E-5d · The app — ASK T4–T8 FIRST, never add react-native-webview without the user's yes; handover of session E-5c in the SESSION LOG. Before that: E-5b · A finger drags and resizes CLOSED 2026-10-07 (HEADED 206 / 0; test:fast 3,333; E5b-1 … E5b-16) on `builder/phone-editing` — next: BATCH E-5c — research SIGNED 2026-10-07 (T1–T3; T4–T8 recorded for the app, BATCH E-5d) → change (2) THE BUILD, its HEADED checklist first; handover of session E-5b/E-5c in the SESSION LOG. Before that: research SIGNED 2026-10-06 (D1–D6, `docs/web-anatomy/phone-editing.md`), E-5a · Building on a phone CLOSED 2026-10-07 (HEADED 258 / 0; test:fast 3,312; the user's E5a-7 and E5a-16) on `builder/phone-editing` — next: BATCH E-5b (a finger drags and resizes: E5a-1 + E4-9), then E-5c (the tablet, then the app); handover of session E-4/E-5a in the SESSION LOG. Before that: BATCH E-4 CLOSED 2026-10-06 (HEADED 232 / 0; `test:fast` now runs all four screens, 3,272 / 3,272 in 12.3 min; E4-1 … E4-14, E4-9 and E4-14 → BATCH E-5) — PR #7 MERGED to master 2026-10-06 (`05c66ee`), `builder/editor-small-screens` deleted, `builder/phone-editing` cut from master — next: BATCH E-5, research first (the user's sources and mine). Before that: BATCH E-4 change (1) E3-3 done (`6042e79`); handover of session E-3 in the SESSION LOG. Before that: BATCH E-3 CLOSED 2026-10-06 (297 / 0 headed; E3-1 … E3-11, E3-3 the user's question); the tree audit DONE 2026-10-06 (`4fcf59a`, its true count heads section 1.1) — its checklist first, then spacing-gestures 12 · masonry-builder 10 · canvas-zoom 3 · text-is-reachable 1 · D3-32 the top bar one row from 1280; then E-4, then E-5 (research first). Before that: BATCH E-2 CLOSED 2026-10-06 (174 / 0 headed; 24 ledger lines). Before that: BATCH E-2 in BATCHES, on `builder/editor-small-screens` (cut from master `7494a8e` after PR #6 merged `builder/page-grid` 2026-10-06) — its checklist first, then the 37 failing specs one by one; then E-3, then E-4. Before that: BATCH G-3d CLOSED 2026-10-06 (`ec52b51`); handover of session (G-3d) in the SESSION LOG. Before that: BATCH G-3d (three changes); handover of session 49087f08 in the SESSION LOG; D-3 CLOSED 2026-10-06 (both changes). Before that: handover of session ff5dbc77 in the SESSION LOG; D-2 and D-3 (1) CLOSED 2026-10-06. Earlier: handover of session 22981e0a; BATCH G-3b and BATCH E-1 CLOSED 2026-10-05; MERGE DECIDED by the user 2026-10-05: `builder/layout-uat` pushed, the user opens and merges the pull request, then the branch is deleted and `builder/page-grid` cut from master; next there: BATCH D-2 (the Docusaurus site + the layout documented from the beginning, RULE DOCS), then BATCH G-3d (the user's two decisions), then BATCH E-2 (resizing and dropping on tablets and phones); before the PR: the artifacts and the layout story for the page grid; then its final pass, then BATCH E-1; handover of session 3da81fad in the SESSION LOG; earlier: handover of session 5da86722 in the SESSION LOG — G-3 CLOSED 2026-10-04 (63 headed checks, G3-8 carried to G-3b by the user); earlier: BATCH G-3 · placing on columns AND rows — G-2 CLOSED 2026-10-04 (134 headed checks); P-0 CLOSED 2026-10-04 (R4-1 … R4-5 fixed, 30 headed checks); R-4 SIGNED with D1–D5 (session 9fa0fee9); then G-3, P-1, P-2, G-4, P-3, G-5, G-6. G-1 CLOSED 2026-10-04 (see BATCHES). Plan APPROVED 2026-10-04 with the user's decisions below. Earlier: research R-3 DONE and SIGNED 2026-10-04
       (`ff5c53a`, `4418202`); build to every decision recorded under R-3 below; the mockups settle the open three (row
       snap · the phone gap 11 vs 16 px · panel per site or per page) → the user's approval → build) · **THE PAGE GRID — DECIDED by the user 2026-10-03: done RIGHT AFTER L-4 closes, BEFORE L-5, L-6 and the
       frozen list's placement items** (they are built on it). NAMES (decided): "page grid" in code and docs; the lines a
@@ -4440,6 +4530,20 @@ sent), and my research. Nothing on the layout is done until every line here is c
 
 One entry per session, newest first. Written the moment the user says "new session" (or the context is about to run
 out) — where the session STARTED FROM, where it GOT TO, and where the next one CONTINUES FROM.
+
+### 2026-10-07 · session E-5c (the build) · branch `builder/phone-editing`
+- **Started from:** session E-5b/E-5c's handover (`b71d6eb`), BATCH E-5c (2) THE BUILD (YOU ARE HERE), T1–T3 signed.
+- **Got to:** **E-5c CLOSED** — a tablet (600–1023) edits at its own width 1:1 on its rung, the device following the window (turns
+  included); the three African tablet sizes in the Preview and the UAT screens (73); the blocks sheet and More capped at 32rem and
+  centred; and, by the user's two decisions mid-build, a tablet gets the phone's one-row bar + More (E5c-2) and the Inspector stays a
+  tab below 1024 (E5c-4, reversing T3's "docked at ≥ 900"). The headed pass found five more: the finger's bar covered the block above
+  (E5c-5 → the docked phone bar, research rec. 4), floats lost their grip (E5c-6), a float could leave the page (E5c-7), floats were
+  measured from the content box and jumped (E5c-8, older than E-5c, a mouse too), a float's resize slid its top (E5c-9). HEADED UAT
+  590 / 0 on the final build (`uat-e5c-headed.js`, 15 runs, six windows), test:fast 3,343 + the 2 chrome specs updated after it,
+  vitest 4,445, eslint 0 / 105, docs:build. Docs: story §11, `website-builder.md`, research rec. 3 amended, `phone-editing.feature`.
+- **Continue from:** **BATCH E-5d · The app** — ASK T4–T8 FIRST (under E-5d in BATCHES); no `react-native-webview` without the user's yes.
+  Then its research gaps (none signed for the app's build beyond §2 E) and its HEADED checklist on both emulators (5554 tablet, 5556 phone).
+  The pull request for `builder/phone-editing` is still the user's to open from the compare link when they ask.
 
 ### 2026-10-07 · session E-5b/E-5c · branch `builder/phone-editing` — HANDOVER (both held: the context is genuinely long — the whole of E-5b with 16 ledger lines, seven builds and seven headed passes, then the E-5c research — and the boundary is clean: everything committed, the research signed, nothing running, ports free; the next job, the tablet build, is heavy)
 - **Started from:** session E-4/E-5a's handover (`3763c43`): BATCH E-5b.

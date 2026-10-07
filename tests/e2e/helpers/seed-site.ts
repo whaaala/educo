@@ -54,15 +54,16 @@ const nextGeneration = (page: Page) => {
  * own wait rather than inheriting a guess made here.
  */
 /**
- * A PHONE NOW EDITS ITS OWN SCREEN (E-5a, D1): under 600px the builder opens on Mobile at 1:1. The specs written before that
- * test the DESKTOP page drawn small on a phone — blocks side by side, shared edges — so they open it the way a person does,
- * by choosing Full width. A spec about the phone's own screen passes `{ phoneScreen: true }` and keeps the new default.
+ * A PHONE OR TABLET NOW EDITS ITS OWN SCREEN (E-5a D1, E-5c T1): under 1024px the builder opens on the screen's own device at
+ * 1:1. The specs written before that test the DESKTOP page drawn small — blocks side by side, shared edges — so they open it the
+ * way a person does, by choosing Full width. A spec about the screen's own canvas passes `{ phoneScreen: true }` and keeps it.
  */
 export type OpenOpts = { phoneScreen?: boolean };
 export async function desktopPageOnAPhone(page: Page, path: string = BUILDER_PATH, opts: OpenOpts = {}) {
-  if (opts.phoneScreen || path !== BUILDER_PATH || (page.viewportSize()?.width ?? 1280) >= 600) return;
+  const w = page.viewportSize()?.width ?? 1280;
+  if (opts.phoneScreen || path !== BUILDER_PATH || w >= 1024) return;
   await page.waitForFunction(() => !!document.querySelector("[data-canvas-scale]"), undefined, { timeout: 60_000 });
-  // On a phone the screen sizes live in the bar's More sheet (E5a-16): opened, chosen, put away — as a person does it.
+  // Under 1024 the screen sizes live in the bar's More sheet (E5a-16, E5c-2): opened, chosen, put away — as a person does it.
   const more = page.getByRole("button", { name: "More", exact: true });
   await more.waitFor({ timeout: 60_000 });
   await more.click();

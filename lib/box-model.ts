@@ -456,8 +456,8 @@ export interface BoxNode {
    * apart from the one the builder wrote — theirs is kept, the builder's is undone.
    */
   floatFrom?: { width?: string; height?: string; minHeight?: number; clip?: boolean; sized?: string; sizedMin?: number; /** where it was in the layout, so putting it back is a round trip (E2-19) */ parentId?: string; index?: number };
-  left?: number;            // absolute only: X offset as % of the positioning parent's content box (responsive)
-  top?: number;             // absolute only: Y offset as % of the positioning parent's content box
+  left?: number;            // absolute only: X offset as % of the positioning parent's PADDING box, from its edge — what CSS does (E5c-8) (responsive)
+  top?: number;             // absolute only: Y offset as % of the positioning parent's PADDING box, from its edge (E5c-8)
   zIndex?: number;          // absolute only: stacking order among floating siblings (higher = on top)
   locked?: boolean;         // EDITOR-ONLY: freeze position + size (no drag / no resize / no nudge). Still selectable + content-editable. No effect on the exported site.
   group?: boolean;          // this container is a GROUP (created via "Group") — moves/locks as one unit; ungroup dissolves it.

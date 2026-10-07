@@ -259,7 +259,7 @@ export default function BlocksPanel({ theme, onDragKind, onPick, defaultOpen = f
           role="dialog"
           aria-label="Blocks"
           style={sheet ? { zIndex: CHROME_Z.panel } : { zIndex: CHROME_Z.panel, left: `${LAUNCHER_INSET_REM}rem`, width: `${PANEL_WIDTH_REM}rem` }}
-          className={`${sheet ? "fixed inset-x-0 bottom-0 max-h-[60dvh] rounded-t-2xl border-t" : "absolute top-4 max-w-[calc(100%-1.5rem)] max-h-[calc(100%-2rem)] rounded-2xl border"} flex flex-col border-line bg-surface shadow-2xl shadow-black/10 overflow-hidden transition duration-200 ease-out motion-reduce:transition-none ${shown ? "opacity-100 translate-x-0 translate-y-0 scale-100" : sheet ? "opacity-0 translate-y-4" : "opacity-0 -translate-x-2 scale-[0.98]"}`}
+          className={`${sheet ? "fixed inset-x-0 bottom-0 max-h-[60dvh] rounded-t-2xl border-t min-[37.5em]:mx-auto min-[37.5em]:max-w-[32rem] min-[37.5em]:border-x" : /* on a tablet the phone's sheet, capped and centred (E-5c T3, WordPress's 512) */ "absolute top-4 max-w-[calc(100%-1.5rem)] max-h-[calc(100%-2rem)] rounded-2xl border"} flex flex-col border-line bg-surface shadow-2xl shadow-black/10 overflow-hidden transition duration-200 ease-out motion-reduce:transition-none ${shown ? "opacity-100 translate-x-0 translate-y-0 scale-100" : sheet ? "opacity-0 translate-y-4" : "opacity-0 -translate-x-2 scale-[0.98]"}`}
         >
           {sheet && <span aria-hidden="true" className="mx-auto mt-2 h-1.5 w-10 shrink-0 rounded-full bg-line" />}
           {/* Header */}

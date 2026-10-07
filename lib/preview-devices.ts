@@ -98,6 +98,10 @@ export const PREVIEW_PRESETS: { group: string; items: Preset[] }[] = [
   {
     group: "Tablets",
     items: [
+      // The commonest tablet windows in Nigeria and Ghana (StatCounter, Sept 2026 — E-5c T2): 601 is one pixel over the phone line
+      { id: "tab-a-portrait", label: "Android tablet, Nigeria's commonest (portrait) — 601 × 1007", w: 601, h: 1007 },
+      { id: "tab-a8-portrait", label: "Galaxy Tab A 8″ (portrait) — 601 × 962", w: 601, h: 962 },
+      { id: "tab-a8-landscape", label: "Galaxy Tab A 8″ (landscape) — 962 × 601", w: 962, h: 601 },
       { id: "ipad-mini-a17", label: "iPad mini (A17 Pro) — 744 × 1133", w: 744, h: 1133 },
       { id: "ipad-mini-2019", label: "iPad mini (2019) · iPad 6 — 768 × 1024", w: 768, h: 1024 },
       { id: "galaxy-tab-s9", label: "Galaxy Tab S9 · A9+ · Pixel Tablet · Fire HD 10 — 800 × 1280", w: 800, h: 1280 },

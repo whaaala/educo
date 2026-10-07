@@ -1,5 +1,8 @@
 import { test, expect, type Page, type CDPSession } from "@playwright/test";
 import { seedSite, sitePage } from "./helpers/seed-site";
+import { type BoxNode as BN, createContainer, markPageGrid, normalizeRowBands, makeRowBand } from "@/lib/box-model";
+import { blockForKind } from "@/lib/box-presets";
+import { emptyPageRoot, siteFromRoot } from "@/lib/box-site";
 
 /**
  * BUILDING ON A PHONE — BATCH E-5a, the user's decisions D1 · D3 · D4 · D5 · D6 (research: docs/web-anatomy/phone-editing.md).
@@ -7,6 +10,8 @@ import { seedSite, sitePage } from "./helpers/seed-site";
  * the rest assert that nothing changed for them.
  */
 const phone = (page: Page) => (page.viewportSize()?.width ?? 1280) < 600;
+/** Where the block toolbar docks at the bottom: a phone, and a finger under 1024 (E-5c research rec. 4, E5c-5). */
+const docksBar = (page: Page) => phone(page) || (!!test.info().project.use.hasTouch && (page.viewportSize()?.width ?? 1280) < 1024);
 const stored = (page: Page) => page.evaluate(() => JSON.parse(localStorage.getItem("educo_box_site_v1") || "{}").pages[0].root);
 type N = { id: string; type?: string; text?: string; rowBand?: boolean; children?: N[]; responsive?: Record<string, Record<string, unknown>> };
 const flat = (n: N): N[] => [n, ...(n.children ?? []).flatMap(flat)];
@@ -53,8 +58,17 @@ test.describe("building on a phone (E-5a)", () => {
       await page.getByRole("button", { name: "More", exact: true }).click(); // the screen sizes are in More on a phone (E5a-16)
       await expect(mobile, "the Mobile device is the one being edited").toHaveAttribute("aria-pressed", "true");
       await page.keyboard.press("Escape");
+    } else if (g.vw < 1024) {
+      // E-5c T1: a tablet edits at its own width too, on its rung — Tablet upright, Laptop from 900
+      expect(g.z, "a tablet is drawn at 1:1, not the desktop page shrunk").toBe(1);
+      await page.getByRole("button", { name: "More", exact: true }).click(); // a tablet has the phone's one-row bar too (E5c-2)
+      const own = page.getByRole("button", { name: g.vw < 900 ? /^Tablet/ : /^Laptop/ }).first();
+      await expect(own, "the tablet's own rung is the one being edited").toHaveAttribute("aria-pressed", "true");
+      await expect(mobile, "a tablet does not switch to Mobile").toHaveAttribute("aria-pressed", "false");
+      await page.keyboard.press("Escape");
     } else {
       await expect(mobile, "a larger screen does not switch to Mobile").toHaveAttribute("aria-pressed", "false");
+      await expect(page.getByRole("button", { name: /^Full width/ }).first(), "from 1024 the desktop page, as before").toHaveAttribute("aria-pressed", "true");
     }
   });
 
@@ -72,6 +86,12 @@ test.describe("building on a phone (E-5a)", () => {
       await page.goBack();
       await expect(dialog, "Back puts it away").toBeHidden();
       expect(page.url(), "and does not leave the builder").toContain("box-demo");
+    } else if (vw < 1024) {
+      // E-5c T3: a tablet has the phone's sheet, capped at 32rem and centred
+      expect(Math.round(r.y + r.height), "a tablet's sheet rises from the bottom edge").toBeGreaterThanOrEqual(vh - 1);
+      expect(r.width, "no wider than 32rem").toBeLessThanOrEqual(512.5);
+      await page.keyboard.press("Escape");
+      await expect(dialog).toBeHidden();
     } else {
       expect(r.y, "elsewhere it is today's panel, at the top").toBeLessThan(vh / 3);
       await page.keyboard.press("Escape");
@@ -129,6 +149,11 @@ test.describe("building on a phone (E-5a)", () => {
     const b = flat(await stored(page)).find((n) => n.id === "b") as N & { width?: string };
     if (phone(page)) {
       expect(b.responsive?.phone?.width, "the phone's own width").toBe("50%");
+      expect(b.width, "the desktop untouched").toBe("auto");
+    } else if ((page.viewportSize()?.width ?? 1280) < 1024) {
+      // E-5c T1 (C3): a tablet writes its own rung, and the desktop page is untouched
+      const rung = (page.viewportSize()?.width ?? 0) < 900 ? "tabletPortrait" : "tabletLandscape";
+      expect(b.responsive?.[rung]?.width, `the ${rung} rung's own width`).toBe("50%");
       expect(b.width, "the desktop untouched").toBe("auto");
     } else expect(b.width === "50%" || Object.values(b.responsive ?? {}).some((r) => r.width === "50%"), "written at the screen being edited").toBe(true);
   });
@@ -270,13 +295,13 @@ test("the selected block's toolbar never sticks out above the page", async ({ pa
 
 /**
  * THE PHONE'S BAR IS ONE ROW, THE REST IN "MORE" (E5a-16, the user 2026-10-07). Wrapped, it took four rows — ~250px of a 360 × 640
- * phone — and its tabs and chips were under a finger's size. Elsewhere the bar is what it was, and there is no More.
+ * phone — and its tabs and chips were under a finger's size. A tablet too (E5c-2, the user 2026-10-07); from 1024 the bar is what it was.
  */
-test("a phone's top bar is one row, and More holds the rest", async ({ page }) => {
+test("a phone's (and a tablet's) top bar is one row, and More holds the rest", async ({ page }) => {
   await threeBlocks(page);
   const h = await page.evaluate(() => Math.round(document.querySelector("header")!.getBoundingClientRect().height));
   const more = page.getByRole("button", { name: "More", exact: true });
-  if (!phone(page)) { await expect(more, "no More where the bar has room").toHaveCount(0); return; }
+  if ((page.viewportSize()?.width ?? 1280) >= 1024) { await expect(more, "no More where the bar has room").toHaveCount(0); return; }
   expect(h, "one row (a finger's row is 65px)").toBeLessThanOrEqual(72);
   await more.click();
   const sheet = page.getByRole("dialog", { name: "More" });
@@ -307,7 +332,7 @@ test("on a 360 phone the docked toolbar never runs under the blocks + (E5b-8)", 
   expect(g.menuRight, "⋮ is in sight").toBeLessThanOrEqual(g.plusLeft);
 });
 
-test("on a phone the block toolbar docks at the bottom of the screen", async ({ page }) => {
+test("on a phone (and a finger's tablet) the block toolbar docks at the bottom of the screen", async ({ page }) => {
   await threeBlocks(page);
   await tapBlock(page, "a");
   const g = await page.evaluate(() => {
@@ -315,7 +340,7 @@ test("on a phone the block toolbar docks at the bottom of the screen", async ({ 
     const a = document.querySelector('[data-box-id="a"]')!.getBoundingClientRect();
     return { barBottom: t.bottom, vh: innerHeight, gapToBlock: Math.min(Math.abs(t.bottom - a.top), Math.abs(t.top - a.bottom)) };
   });
-  if (phone(page)) expect(g.barBottom, "docked at the bottom edge").toBeGreaterThan(g.vh - 40);
+  if (docksBar(page)) expect(g.barBottom, "docked at the bottom edge").toBeGreaterThan(g.vh - 40);
   else expect(g.gapToBlock, "by its block, as before").toBeLessThan(40);
 });
 
@@ -366,13 +391,48 @@ test.describe("a finger drags and resizes (E-5b)", () => {
     await threeBlocks(page);
     await tapBlock(page, "a");
     const grip = page.getByRole("toolbar", { name: "Block toolbar" }).getByLabel("Drag to move");
-    if (phone(page)) { await expect(grip, "a phone's docked bar has no grip — a long press is the drag there (E5b-8)").toHaveCount(0); return; }
+    if (docksBar(page)) { await expect(grip, "a docked bar has no grip — a long press is the drag there (E5b-8)").toHaveCount(0); return; }
     await expect(grip, "the grip is offered to a finger").toBeVisible();
     const g = (await grip.boundingBox())!;
     expect(Math.min(g.width, g.height), "at a finger's size").toBeGreaterThanOrEqual(44);
     const c = (await page.locator('[data-box-id="c"]').boundingBox())!;
     await finger(page, line(mid(g), { x: c.x + c.width / 2, y: c.y + c.height - 2 }, 14));
     expect(texts(await stored(page)), "Alpha now under Charlie").toEqual(["Bravo", "Charlie", "Alpha"]);
+  });
+
+  test("E5c-5 — with a block selected, a finger can still tap the block above it: the bar never covers it", async ({ page }) => {
+    // Found through the UI (uat-e5c-headed.js U2 at 800 / 962 / 1007): by its block, a Stack's 52px bar hid the Heading above, and a
+    // tap on what showed of it was pulled onto the bar by Chrome's touch adjustment — the next grip drag moved the Stack instead.
+    // The palette's own Heading and Stack (as the UI adds them), the Stack half wide and tall, at the commonest African tablet sideways.
+    await page.setViewportSize({ width: 962, height: 601 });
+    const stack = { ...blockForKind("container"), width: "50%", minHeight: 208 } as BN;
+    const head = blockForKind("heading") as BN;
+    const root = normalizeRowBands({ ...emptyPageRoot(), children: [head, stack] } as BN);
+    await seedSite(page, siteFromRoot(root), undefined, { phoneScreen: true });
+    const H = page.locator(`[data-box-id="${head.id}"]`), S = page.locator(`[data-box-id="${stack.id}"]`);
+    await S.waitFor(); await page.waitForTimeout(400);
+    await tapBlock(page, stack.id, { x: 16, y: 12 });
+    const h = (await H.boundingBox())!;
+    await page.touchscreen.tap(h.x + Math.min(40, h.width / 2), h.y + h.height / 2); await page.waitForTimeout(300);
+    await expect(H, "one tap on the Heading selects it").toHaveClass(/outline-indigo-500/);
+  });
+
+  test("E5c-6 — on a tablet a finger moves a floating block by the docked bar's grip, on the tablet's own rung", async ({ page }) => {
+    // Found through the UI (uat-e5c-headed.js U1, every tablet): the docked bar (E5c-5) had no grip, and a long press moves only a
+    // block in the flow — a floating block could not be moved by a finger at all. A float keeps the grip in the docked bar.
+    await page.setViewportSize({ width: 962, height: 601 });
+    const head = { ...blockForKind("heading"), position: "absolute", left: 10, top: 10 } as BN;
+    await seedSite(page, siteFromRoot(normalizeRowBands({ ...emptyPageRoot(), children: [head] } as BN)), undefined, { phoneScreen: true });
+    await page.locator(`[data-box-id="${head.id}"]`).waitFor(); await page.waitForTimeout(400);
+    await tapBlock(page, head.id, { x: 8, y: 8 });
+    const grip = page.getByRole("toolbar", { name: "Block toolbar" }).getByLabel("Drag to move");
+    await expect(grip, "the docked bar offers a floating block its grip").toBeVisible();
+    const g = mid((await grip.boundingBox())!);
+    await finger(page, line(g, { x: g.x + 40, y: g.y - 60 }));
+    const n = flat(await stored(page)).find((x) => x.id === head.id) as N & { left?: number; top?: number };
+    const r = n.responsive?.tabletLandscape as { left?: number; top?: number } | undefined;
+    expect(r?.left !== undefined || r?.top !== undefined, `moved on the tablet's own rung: ${JSON.stringify(n.responsive)}`).toBe(true);
+    expect([n.left, n.top], "the desktop page's position untouched").toEqual([10, 10]);
   });
 
   test("a long press lifts a block, its chip above the finger; a short tap and a swipe move nothing", async ({ page }) => {
@@ -456,5 +516,88 @@ test.describe("a finger drags and resizes (E-5b)", () => {
     // Anywhere in R's subtree, not only as its child: a block dropped inside a box is wrapped in a band of its own (E5b-5).
     expect(flat(flat(root).find((n) => n.id === "R")!).some((n) => n.id === "T"), "not dropped INSIDE the green box").toBe(false);
     expect(texts(root)[0], "Tango left the top of the page").not.toBe("Tango");
+  });
+});
+
+/**
+ * THE EDITOR ON A TABLET — BATCH E-5c, the user's decisions T1 · T3 (research: docs/web-anatomy/tablet-and-app-editing.md).
+ * Each test sets its own windows, so it runs once (desktop-chrome); the tablet projects run D1 / D5 above at 768 and 1024.
+ */
+test.describe("the editor on a tablet (E-5c)", () => {
+  test.beforeEach(() => { test.skip(test.info().project.name !== "desktop-chrome", "sets its own windows"); });
+  /** The pressed screen size — in the bar's More sheet under 1024 (E5a-16, E5c-2), opened and put away as a person does. */
+  const pressed = async (page: Page) => {
+    const more = page.getByRole("button", { name: "More", exact: true }), inMore = await more.isVisible();
+    if (inMore) { await more.click(); await page.getByRole("dialog", { name: "More" }).waitFor(); }
+    const d = await page.evaluate(() => (["Mobile", "Tablet", "Laptop", "Desktop", "Full width"] as const).find((t) => document.querySelector(`button[title^="${t}"]`)?.getAttribute("aria-pressed") === "true"));
+    if (inMore) { await page.keyboard.press("Escape"); await expect(page.getByRole("dialog", { name: "More" })).toHaveCount(0); }
+    return d;
+  };
+  const choose = async (page: Page, device: string) => {
+    await page.getByRole("button", { name: "More", exact: true }).click();
+    await page.getByRole("dialog", { name: "More" }).locator(`button[title^="${device}"]`).click();
+    await page.keyboard.press("Escape"); await page.waitForTimeout(350);
+  };
+  const scale = (page: Page) => page.evaluate(() => Number(document.querySelector<HTMLElement>("[data-canvas-scale]")!.dataset.canvasScale));
+  const inspectorDocked = (page: Page) => page.evaluate(() => { const e = document.querySelector('aside[aria-label="Inspector"]'); return !!e && getComputedStyle(e).position === "static"; });
+  const barH = (page: Page) => page.evaluate(() => document.querySelector("header")!.getBoundingClientRect().height);
+
+  test("T1 — the device follows the window at every line, a turned tablet included, and 1:1 below 1024", async ({ page }) => {
+    await page.setViewportSize({ width: 601, height: 1007 });
+    await threeBlocks(page);
+    // [window, the device it edits]: 600 | 601 and 962 are the African tablets (T2). Under 1024 the Inspector is its tab and the
+    // bar one row (E5c-4, E5c-2 — the user 2026-10-07); from 1024 the desktop page, the Inspector docked, the full bar
+    const steps: [number, number, string][] = [[601, 1007, "Tablet"], [1007, 601, "Laptop"], [962, 601, "Laptop"], [899, 700, "Tablet"],
+      [900, 700, "Laptop"], [1024, 768, "Full width"], [768, 1024, "Tablet"], [1023, 768, "Laptop"], [600, 900, "Tablet"], [599, 900, "Mobile"]];
+    for (const [w, h, device] of steps) {
+      await page.setViewportSize({ width: w, height: h }); await page.waitForTimeout(450);
+      expect(await pressed(page), `${w} × ${h} edits ${device}`).toBe(device);
+      if (device !== "Full width") expect(await scale(page), `${w} × ${h} is drawn 1:1`).toBe(1);
+      expect(await inspectorDocked(page), `${w} × ${h}: the Inspector ${w >= 1024 ? "docked" : "a tab"}`).toBe(w >= 1024);
+      if (w < 1024) expect(await barH(page), `${w} × ${h}: the bar is one row`).toBeLessThan(64);
+      expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), `${w} × ${h}: no sideways scroll`).toBe(true);
+    }
+  });
+
+  test("T1 — the device control on a tablet still offers the desktop page, and back to 1:1", async ({ page }) => {
+    await page.setViewportSize({ width: 768, height: 1024 });
+    await threeBlocks(page);
+    await choose(page, "Desktop");
+    expect(await scale(page), "the 1280 desktop page shrunk to fit").toBeLessThan(1);
+    await choose(page, "Tablet");
+    expect(await scale(page), "Tablet again: the tablet's own width").toBe(1);
+  });
+
+  test("T3 — the blocks panel on a tablet is the phone's sheet, capped at 32rem and centred", async ({ page }) => {
+    for (const [w, h] of [[601, 1007], [768, 1024], [962, 601]] as const) {
+      await page.setViewportSize({ width: w, height: h });
+      await threeBlocks(page);
+      await page.getByRole("button", { name: "Open blocks panel" }).click();
+      await page.waitForTimeout(300);
+      const s = (await page.getByRole("dialog", { name: "Blocks" }).boundingBox())!;
+      expect(s.width, `${w}: no wider than 32rem`).toBeLessThanOrEqual(512.5);
+      expect(Math.abs(s.x - (w - s.x - s.width)), `${w}: centred`).toBeLessThan(2);
+      expect(Math.abs(s.y + s.height - h), `${w}: at the bottom of the screen`).toBeLessThan(2);
+      await page.keyboard.press("Escape");
+      await expect(page.getByRole("dialog", { name: "Blocks" })).toHaveCount(0);
+    }
+  });
+
+  test("E5c-1 — the Inspector's 'steps down to fit' reads the width the canvas is drawn at, not the device's nominal width", async ({ page }) => {
+    // Reproduced through the UI first (uat-e5c-headed.js FS: three Stacks with words, side by side at a third): at 768 the 1:1 canvas
+    // is ~656px and draws them one a line, while the note — reading 768 — said nothing. Pinned here with the same shape.
+    const cols = ["33.33%", "33.33%", "33.33%"].map((w) => createContainer("column", { width: w, children: [blockForKind("text")] } as Partial<BN>));
+    const root = markPageGrid(normalizeRowBands({ ...emptyPageRoot(), children: [makeRowBand(cols)] } as BN));
+    await page.setViewportSize({ width: 768, height: 1024 });
+    await seedSite(page, siteFromRoot(root), undefined, { phoneScreen: true });
+    const [a, , c] = cols.map((k) => page.locator(`[data-box-id="${k.id}"]`));
+    await a.waitFor(); await page.waitForTimeout(500);
+    const ra = (await a.boundingBox())!, rc = (await c.boundingBox())!;
+    expect(rc.y, "the 656px canvas draws the row one a line").toBeGreaterThanOrEqual(ra.y + ra.height - 1);
+    await a.click({ position: { x: 4, y: 4 } });
+    await page.getByRole("button", { name: "Expand inspector" }).click(); await page.waitForTimeout(300);
+    const note = page.getByRole("note").filter({ hasText: "steps down to fit" }).first();
+    if (!(await note.isVisible())) { const size = page.getByRole("button", { name: /^Size/ }).first(); await size.scrollIntoViewIfNeeded(); await size.click(); }
+    await expect(note, "…and the Inspector says so").toContainText("on a line of its own");
   });
 });

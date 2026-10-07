@@ -407,29 +407,46 @@ re-measures it.
 
 ## 11. The editor on a tablet or phone
 
-Maya opens the builder on her school's iPad. Below a laptop's width the canvas fills the screen and the Inspector
-waits as a narrow strip on the right edge labelled **INSPECTOR**. She taps a block, then the strip's open button, and
-the Inspector slides over the canvas from the right.
+Maya opens the builder on her school's tablet: an iPad at 768 × 1024, or an Android tablet whose browser window is 601
+pixels wide (the most common tablet window in Nigeria).
 
-[![The editor on a 768px tablet: the page fills the screen, a heading is selected, and the Inspector is a narrow strip on the right](img/story-tablet-editor.webp)](img/story-tablet-editor.webp)
-[![The same tablet with the Inspector open over the right part of the canvas](img/story-tablet-inspector.webp)](img/story-tablet-inspector.webp)
+**The tablet edits at its own width.** The page fills the tablet at its real size, drawn 1:1, the way her visitors will
+see it on that tablet. Held upright, the screen it edits is **Tablet**; held sideways (900 pixels wide or more, up to a
+laptop's 1024), it is **Laptop**. What she changes in the layout here changes that screen only, and the desktop page is
+left as it was. Her words, pictures and links are the same on every screen. When she turns the tablet, the editor turns
+with it: the screen it edits follows the new width, and the block she had selected stays selected.
 
-- **Escape** closes it and returns her to the full-canvas view.
-- When she turns the iPad sideways (or drags a browser window wider than a tablet), the Inspector docks at the side by
-  itself, as it does on a laptop; turned upright again, it goes back to its strip. If she opens or closes it herself, that
-  holds until the next time the screen crosses that width.
-- The blocks panel floats over the canvas. (On a laptop or larger it docks at the side instead, and the page moves
-  over to make room.)
-- A finger does everything a mouse does. Tap to select; drag an edge's handle to size a block; drag the grip in the
-  block's toolbar, or hold a block still for half a second, to move it (both told under "Building on a phone" below).
-  Whatever she drags, with a finger or a mouse, the edge she holds is the only edge that moves.
+[![The editor on a 768px tablet: the page drawn at its own width, a heading selected, and the Inspector a narrow strip on the right](img/story-tablet-editor.webp)](img/story-tablet-editor.webp)
 
-**Full width is the desktop page, on every screen.** On a tablet or larger the editor opens at Full width (on a phone, at
-Mobile; see below), and Full width always draws the
-page as it is on a desktop (1200px wide), shrunk to fit whatever room there is, just as Desktop or Wide would be. So
-on the iPad Maya sees the page she is actually editing: four cards across stay four across, and when she drags a
-card's left edge, that edge follows her finger and the right edge stays put. To change how the page looks on a phone,
-she picks **Mobile** at the top. That draws the phone's own layout, and what she changes there applies to phones.
+**The bar at the top is one row, as on a phone.** It holds her pages, **Undo**, **Redo**, **Preview** and **⋯ More**, so
+the page keeps the height of the screen. More rises from the bottom (no wider than 32rem, centred) with everything else:
+the screen sizes, the zoom, the layout guides, the themes, Page check, Export and the rest.
+
+**The desktop page is one tap away.** In More, **Desktop** draws the desktop page shrunk to fit the tablet, so she can
+check it; **Tablet** (or **Laptop**) brings her own screen back at full size.
+
+**She adds a block from a sheet.** The round **+** waits in the bottom-right corner. Tapped, the blocks rise from the
+bottom, as on a phone, but no wider than 32rem (512 pixels) and centred, so they never stretch across the whole tablet.
+**Add it** at the top says where the block goes (Before, After, Inside, Start or End); Back, Escape or the ✕ puts the
+sheet away. Everything about it is told under "Building on a phone" below.
+
+**The Inspector waits at the side.** On a tablet, upright or sideways, the Inspector is a narrow strip on the right edge
+labelled **INSPECTOR**, so the page keeps the width of the screen. She taps its open button and it slides over the right
+part of the canvas; **Escape** closes it. From a laptop's width (1024 pixels) it is docked beside the page instead. If she
+opens or closes it herself, that holds until the next time the screen crosses that width.
+
+[![The 962 × 601 tablet held sideways: the page at its own width, the Inspector open over its right part](img/story-tablet-inspector.webp)](img/story-tablet-inspector.webp)
+
+**A finger does everything a mouse does.** Tap to select; drag an edge's handle to size a block; hold a block still for
+half a second to move it (told under "Building on a phone" below). As on a phone, the selected block's toolbar waits at the
+bottom of the screen, under her thumb, so it never hides the block above the one she chose; for a block that floats it keeps
+the grip, which she drags to move it. Whatever she drags, with a finger or a mouse,
+the edge she holds is the only edge that moves.
+
+**From a laptop's width (1024 pixels) up, Full width is the desktop page.** On a laptop or larger the editor opens at
+Full width, which draws the page as it is on a desktop (1200px wide), shrunk to fit whatever room there is; the blocks
+panel docks at the side and the page moves over to make room. To change how the page looks on a tablet or a phone from
+there, she picks **Tablet** or **Mobile** at the top.
 
 Every control in the Inspector is reachable by scrolling; Escape closes it.
 

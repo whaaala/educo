@@ -186,7 +186,9 @@ tablets specifically; tablets are under 1 % of traffic, so samples are small.
 2. **Decide by window width, never by device or user agent** — Apple and Android both say size follows the window (Split View,
    Stage Manager, multi-window); Chrome's desktop-mode depends on RAM; iPad Safari claims to be a Mac.
 3. **600–1023: the phone sheet, capped at ~32rem (WordPress's 512) and centred; in landscape (≥ 900) the Inspector may stay
-   docked like Notion's sidebar** — rotation re-lays the chrome, never the content.
+   docked like Notion's sidebar** — rotation re-lays the chrome, never the content. **Amended by the user 2026-10-07 (E5c-4,
+   E5c-2), once built:** docked at 900–1023 it left the 1:1 canvas 484–607px for a layout visitors see at 900–1023px, so the
+   Inspector stays a tab on every tablet (docked from 1024), and a tablet gets the phone's one-row bar + More.
 4. **Keep the phone toolbar and the 44px finger floor on tablets; treat each gesture by `pointerType`** (finger / pen / mouse),
    which E-5b's pointer-events path already reads; hover effects only under `any-hover: hover`, never required.
 5. **Test the African tablet sizes explicitly:** 601×1007, 601×962, 962×601, 800×1280, 1280×800, 768×1024 — add any missing to

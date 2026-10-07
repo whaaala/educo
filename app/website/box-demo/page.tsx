@@ -221,23 +221,28 @@ export default function BoxDemoPage() {
   }, []);
   const panelDocked = blocksOpen && wideScreen;
   /**
-   * A PHONE EDITS AT ITS OWN WIDTH (E-5a, D1 — the user's decision, BATCH E-5 research): under 37.5em — the phone rung — the
-   * canvas opens on the Mobile device drawn 1:1 across the phone, not the 1200px desktop page at 22 %; crossing the line sets
-   * it again, as the Inspector follows 64em (E3-3). The device control still shows any other screen.
+   * A PHONE OR A TABLET EDITS AT ITS OWN WIDTH (E-5a D1, E-5c T1 — the user's decisions): under 64em the canvas opens on the
+   * device for the window's rung — Mobile under 37.5em, Tablet to 56.25em, Laptop to 64em — drawn 1:1 across the screen, not
+   * the 1200px desktop page shrunk to fit; crossing a line (a tablet turned, a window resized) sets it again. From 64em the
+   * desktop page at Fit, as before. The device control still shows any other screen. The window decides, never the device.
    */
-  const [phoneScreen, setPhoneScreen] = useState(false);
+  const [screenDevice, setScreenDevice] = useState<Device | null>(null);
+  // THE ONE-ROW BAR (E-5a, E5a-16) on every screen under 64em — a tablet too (E5c-2, the user 2026-10-07): pages, Undo, Redo, Preview, More
+  const compactBar = screenDevice !== null;
   useEffect(() => {
-    const mq = window.matchMedia("(max-width: 37.49em)");
-    setPhoneScreen(mq.matches);
-    if (mq.matches) setDevice("mobile");
-    const onCross = (e: MediaQueryListEvent) => { setPhoneScreen(e.matches); setDevice(e.matches ? "mobile" : "full"); if (!e.matches) setMoreOpen(false); };
-    mq.addEventListener("change", onCross);
-    return () => mq.removeEventListener("change", onCross);
+    const qs = ["(max-width: 37.49em)", "(max-width: 56.24em)", "(max-width: 63.99em)"].map((q) => window.matchMedia(q));
+    const read = (): Device | null => (qs[0].matches ? "mobile" : qs[1].matches ? "tablet" : qs[2].matches ? "laptop" : null);
+    const first = read();
+    setScreenDevice(first);
+    if (first) setDevice(first);
+    const onCross = () => { const d = read(); setScreenDevice(d); setDevice(d ?? "full"); if (!d) setMoreOpen(false); };
+    qs.forEach((q) => q.addEventListener("change", onCross));
+    return () => qs.forEach((q) => q.removeEventListener("change", onCross));
   }, []);
   /** The phone bar's More sheet (E5a-16): Back and Escape put it away, and focus goes back to More (E5a-13). */
   const [moreOpen, setMoreOpen] = useState(false);
   const moreBtnRef = useRef<HTMLButtonElement>(null);
-  useSheetManners(moreOpen, () => setMoreOpen(false), moreBtnRef, phoneScreen);
+  useSheetManners(moreOpen, () => setMoreOpen(false), moreBtnRef, compactBar);
   useEffect(() => {
     if (!moreOpen) return;
     const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") setMoreOpen(false); };
@@ -246,7 +251,7 @@ export default function BoxDemoPage() {
   }, [moreOpen]);
   /** WHERE THE NEXT BLOCK GOES, as chosen in the panel for THIS selection (E-5a, D3); a new selection starts at its default. */
   const [whereChoice, setWhereChoice] = useState<{ for: string | null; where: InsertWhere } | null>(null);
-  const NARROW = "(max-width: 63.99em)";
+  const NARROW = "(max-width: 63.99em)"; // E5c-4 (the user 2026-10-07): docked from 64em — at 900–1023 a docked Inspector left the 1:1 canvas 484–607px
   const inspectorOpenRef = useRef(inspectorOpen);
   inspectorOpenRef.current = inspectorOpen;
   useEffect(() => {
@@ -644,8 +649,8 @@ export default function BoxDemoPage() {
    * stops at 25 % (ZOOM_MIN), but Fit may go below it, or the desktop page overflowed every phone's room (E2-12: 300px in 274 on
    * a 393 phone, the right edge and its handles scrolled away) — on a 360 phone first (RULE AF). 0.1 only guards a vanishing room.
    */
-  // On a phone the Mobile device takes the phone's own width, 1:1 (E-5a, D1) — never a 375px page shrunk into it.
-  const fitW = device === "full" ? Math.round(75 * rootPx) : device === "mobile" && phoneScreen && roomW ? Math.floor(roomW) : DEVICES.find((d) => d.id === device)!.w;
+  // On a phone or tablet the screen's own device takes the screen's own width, 1:1 (E-5a D1, E-5c T1) — never a page shrunk into it.
+  const fitW = device === "full" ? Math.round(75 * rootPx) : device === screenDevice && roomW ? Math.floor(roomW) : DEVICES.find((d) => d.id === device)!.w;
   const fit = fitW && roomW && roomW < fitW ? Math.max(0.1, Math.floor((roomW / fitW) * 100) / 100) : 1;
   /**
    * THE ZOOM THE USER CHOSE (BATCH Z-1), drawn with the same scale as the fit. A fluid Full width page is given the
@@ -770,7 +775,21 @@ export default function BoxDemoPage() {
     : undefined;
   const addChildSection = () => { if (!selected) return; const tint = SECTION_TINTS[(countSections(selected) + 1) % SECTION_TINTS.length]; const child = makeBlock(tint, "100%"); const pid = selected.id; commitWith((cur) => insertBox(cur, pid, findBox(cur, pid)?.children?.length ?? 0, child)); revealBox(child.id); };
 
-  const floatSelected = () => { if (!selected) return; const g = measureFloatGeom(root, selected.id); if (g) commit(floatBox(root, selected.id, g.parentId, g.left, g.top, g.width, g.height)); };
+  const floatSelected = () => {
+    if (!selected) return;
+    const id = selected.id, at = () => document.querySelector(`[data-box-id="${id}"]`)?.getBoundingClientRect();
+    const g = measureFloatGeom(root, id), before = at(); if (!g || !before) return;
+    const key = `float:${id}:${Date.now()}`, next = floatBox(root, id, g.parentId, g.left, g.top, g.width, g.height);
+    commit(next, key);
+    // E5c-8: out of the flow, its parent is shorter, so a `top` measured as a % of the old height lands higher — once drawn, it is
+    // put back exactly where it was, in the same undo step
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      const now = at(), pEl = document.querySelector(`[data-box-id="${g.parentId}"]`);
+      if (!now || !pEl || Math.abs(now.top - before.top) < 0.5) return;
+      const h = pEl.getBoundingClientRect().height * (pEl.clientHeight / Math.max(1, (pEl as HTMLElement).offsetHeight)); // padding box, screen px
+      commit(updateBox(next, id, { top: Math.round((g.top + ((before.top - now.top) / Math.max(1, h)) * 100) * 10) / 10 }), key);
+    }));
+  };
   const unfloatSelected = () => { if (selected) commit(unfloatBox(root, selected.id)); };
   const LAYER_OPS = { front: bringToFront, forward: bringForward, backward: sendBackward, back: sendToBack };
   const layerSelected = (dir: keyof typeof LAYER_OPS) => { if (selected) commit(LAYER_OPS[dir](root, selected.id)); };
@@ -1218,9 +1237,9 @@ export default function BoxDemoPage() {
         * controls the wide bar shows, words and all. Every control is one piece of JSX, placed in the bar or in the sheet.
         */}
       {(() => {
-        const wide = phoneScreen ? "" : WIDE_LABEL, wider = phoneScreen ? "" : WIDER_LABEL;
+        const wide = compactBar ? "" : WIDE_LABEL, wider = compactBar ? "" : WIDER_LABEL;
         const rightGroup = (
-          <div className={phoneScreen ? "flex flex-wrap items-center gap-2" : "ml-auto flex flex-wrap items-center justify-end gap-1.5 pointer-coarse:gap-1 gap-y-1.5"}>
+          <div className={compactBar ? "flex flex-wrap items-center gap-2" : "ml-auto flex flex-wrap items-center justify-end gap-1.5 pointer-coarse:gap-1 gap-y-1.5"}>
           <Segmented ariaLabel="Preview screen size" value={device} onChange={setDevice} options={DEVICES.map((d) => ({ value: d.id, Icon: d.Icon, title: `${d.label}${d.w ? ` (${d.w}px)` : ""}` }))} />
           <ZoomControls z={canvasZoom.z} user={canvasZoom.user} fit={fit} canSelect={selectedIds.length === 1} onZoom={(v) => canvasZoom.setZoom(v)} onSelection={canvasZoom.toSelection} />
           {/* LAYOUT GUIDES (G-2), as the plan has it: switching them ON draws the page grid and opens its panel; OFF hides both.
@@ -1253,8 +1272,8 @@ export default function BoxDemoPage() {
           </div>
         );
         return (<>
-      <header style={{ zIndex: CHROME_Z.panel }} className={`relative min-h-14 shrink-0 flex ${phoneScreen ? "flex-nowrap" : "flex-wrap"} items-center gap-2 pointer-coarse:gap-1 gap-y-1.5 py-1.5 px-4 border-b border-line bg-surface`}>
-        {!phoneScreen && (<>
+      <header style={{ zIndex: CHROME_Z.panel }} className={`relative min-h-14 shrink-0 flex ${compactBar ? "flex-nowrap" : "flex-wrap"} items-center gap-2 pointer-coarse:gap-1 gap-y-1.5 py-1.5 px-4 border-b border-line bg-surface`}>
+        {!compactBar && (<>
         <span className="text-sm font-bold text-gray-800 dark:text-gray-100 midnight:text-cyan-50 purple:text-pink-50 mr-1 shrink-0 pointer-coarse:max-[1599px]:hidden">Box Builder</span>
         <ToolDivider />
         </>)}
@@ -1262,11 +1281,11 @@ export default function BoxDemoPage() {
         {/* `shrink-0`, for the same reason as `ToolBtn`: at 768px the flex row squeezed this group until the
             home page's name read "Hom". A tab already truncates at 9rem when a NAME is long — being clipped
             because the window is narrow is a different thing, and not one the user can do anything about. */}
-        <div className={`relative flex items-center gap-0.5 rounded-xl bg-gray-100 dark:bg-white/5 p-1 ${phoneScreen ? "min-w-0 flex-1 overflow-x-auto" : "shrink-0"}`} role="group" aria-label="Pages">
+        <div className={`relative flex items-center gap-0.5 rounded-xl bg-gray-100 dark:bg-white/5 p-1 ${compactBar ? "min-w-0 flex-1 overflow-x-auto" : "shrink-0"}`} role="group" aria-label="Pages">
           {site.pages.map((p) => (
             <button key={p.id} onClick={() => switchPage(p.id)} aria-current={p.id === activePage.id} title={p.name} className={`inline-flex items-center gap-1 rounded-lg px-2.5 py-1 pointer-coarse:min-h-11 shrink-0 text-xs font-medium max-w-[9rem] truncate ${p.id === activePage.id ? "bg-white dark:bg-white/15 text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 shadow-sm" : "text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 hover:text-gray-800 dark:hover:text-gray-200 midnight:hover:text-cyan-100 purple:hover:text-pink-100"}`}>{p.id === site.homeId && <Home className="w-3 h-3 shrink-0" />}{p.name}</button>
           ))}
-          {!phoneScreen && (<>
+          {!compactBar && (<>
           <button onClick={onAddPage} aria-label="Add page" title="Add page" className="p-1.5 rounded-lg text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 midnight:hover:text-cyan-100 purple:hover:text-pink-100 hover:bg-white dark:hover:bg-white/10"><Plus className="w-4 h-4" /></button>
           <button onClick={() => setPageMenu((v) => !v)} aria-label="Page settings" aria-expanded={pageMenu} title="Page settings" className="p-1.5 rounded-lg text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 midnight:hover:text-cyan-100 purple:hover:text-pink-100 hover:bg-white dark:hover:bg-white/10"><Settings2 className="w-4 h-4" /></button>
           {pageMenu && (
@@ -1291,7 +1310,7 @@ export default function BoxDemoPage() {
           )}
           </>)}
         </div>
-        {phoneScreen ? (<>
+        {compactBar ? (<>
           {pageMenu && (
             <div className="absolute top-full left-0 mt-2 z-40 w-60 rounded-xl border border-line bg-surface shadow-2xl p-2.5 space-y-2">
               <label className="block"><span className="text-[0.625rem] font-medium text-gray-500">Page name</span>
@@ -1349,9 +1368,9 @@ export default function BoxDemoPage() {
         {rightGroup}
         </>)}
       </header>
-      {phoneScreen && moreOpen && (<>
+      {compactBar && moreOpen && (<>
         <div aria-hidden="true" onClick={() => setMoreOpen(false)} style={{ zIndex: CHROME_Z.drawer }} className="fixed inset-0 bg-black/20" />
-        <div role="dialog" aria-label="More" style={{ zIndex: CHROME_Z.drawer }} className="fixed inset-x-0 bottom-0 max-h-[70dvh] overflow-y-auto rounded-t-2xl border-t border-line bg-surface shadow-2xl p-4 pt-2 space-y-3">
+        <div role="dialog" aria-label="More" style={{ zIndex: CHROME_Z.drawer }} className="fixed inset-x-0 bottom-0 max-h-[70dvh] overflow-y-auto rounded-t-2xl border-t border-line bg-surface shadow-2xl p-4 pt-2 space-y-3 min-[37.5em]:mx-auto min-[37.5em]:max-w-[32rem] min-[37.5em]:border-x">
           <span aria-hidden="true" className="mx-auto block h-1.5 w-10 rounded-full bg-line" />
           <div className="flex items-center justify-between">
             <span className="text-sm font-bold text-ink">More</span>
@@ -1390,7 +1409,7 @@ export default function BoxDemoPage() {
             {/* `mx-auto` on the frame, not `justify-center` on the room: centred while it fits, and when a zoomed page is
                 wider than the room its left edge stays reachable — a centred flex child overflows to BOTH sides and the
                 left part can never be scrolled to (Z-1). */}
-            <div ref={canvasRoomRef} className="relative p-2 sm:p-8 flex min-h-full transition-[padding] duration-200 motion-reduce:transition-none" style={{ paddingLeft: phoneScreen ? undefined : `${panelDocked ? PANEL_GUTTER_REM : LAUNCHER_GUTTER_REM}rem` }}> {/* a phone keeps no launcher gutter: its "+" waits bottom-right (E-5a) */}
+            <div ref={canvasRoomRef} className="relative p-2 sm:p-8 flex min-h-full transition-[padding] duration-200 motion-reduce:transition-none" style={{ paddingLeft: screenDevice ? undefined : `${panelDocked ? PANEL_GUTTER_REM : LAUNCHER_GUTTER_REM}rem` }}> {/* a phone or tablet keeps no launcher gutter: its "+" waits bottom-right (E-5a, E-5c) */}
               <div data-canvas-sizer className={`mx-auto shrink-0 h-fit ${frameW == null ? "w-full max-w-5xl" : ""}`} style={scaled ? { width: frameW * canvasZoom.z, height: frameH * canvasZoom.z } : { width: frameW ?? undefined }}>
                 <div ref={frameRef} data-canvas-scale={scaled ? canvasZoom.z : 1} className="shadow-sm rounded-xl ring-1 ring-black/10 dark:ring-white/10 midnight:ring-white/10 purple:ring-white/10 h-fit transition-[width] duration-300 motion-reduce:transition-none" style={{ width: frameW ?? "100%", transform: scaled ? `scale(${canvasZoom.z})` : undefined, transformOrigin: "0 0", background: renderTheme.background, color: renderTheme.text, fontFamily: renderTheme.bodyFont, containerType: "inline-size" }}>
                   <BoxCanvas root={root} theme={renderTheme} minHeight={PAGE_MIN_H} selectedIds={selectedIds} onSelectIds={selectByUser} onChange={commit} breakpoint={bp} showHidden={showHidden} marqueeRoom={roomEl}
@@ -1405,7 +1424,7 @@ export default function BoxDemoPage() {
               <MenuItem Icon={Settings2} label="Page grid…" onClick={() => { toggleGuides({ on: true }); setGridPanel(true); setCanvasMenu(null); }} />
             </PortalMenu>
           )}
-          <BlocksPanel theme={renderTheme} onPick={insertBlock} docked={wideScreen} onOpenChange={setBlocksOpen} sheet={phoneScreen}
+          <BlocksPanel theme={renderTheme} onPick={insertBlock} docked={wideScreen} onOpenChange={setBlocksOpen} sheet={screenDevice !== null}
             where={whereOptions.length ? { value: whereFor(selected?.id ?? null), options: whereOptions, onChange: (w) => setWhereChoice({ for: selected?.id ?? null, where: w }) } : undefined} />
         </div>
 
@@ -1427,7 +1446,7 @@ export default function BoxDemoPage() {
                   pageSpan={(() => { const c = columnsAt(gridHere, bp), v = spanAt(root, selected.id, c, bp); return v === null ? undefined : { value: v, cols: c }; })()}
                   rowStepRem={root.pageGrid ? gridHere.rowStepRem ?? 1.5 : undefined}
                   onSetSpan={(n) => commit(setSpan(root, selected.id, n, columnsAt(gridHere, bp), bp), `span:${selected.id}`)}
-                  pageLines={(() => { const c = columnsAt(gridHere, bp), l = linesAt(root, selected.id, c, bp); if (!l) return undefined; const w = DEVICES.find((d) => d.id === device)?.w, band = findParent(root, selected.id)?.parent; return { ...l, cols: c, drawnAcross: w && band ? fitStepAt(band, selected.id, w / 16, bp) ?? undefined : undefined }; })()}
+                  pageLines={(() => { const c = columnsAt(gridHere, bp), l = linesAt(root, selected.id, c, bp); if (!l) return undefined; const w = device === screenDevice ? fitW : DEVICES.find((d) => d.id === device)?.w, band = findParent(root, selected.id)?.parent; return { ...l, cols: c, drawnAcross: w && band ? fitStepAt(band, selected.id, w / 16, bp) ?? undefined : undefined }; })()}
                   onSetLines={(want) => commit(want === "full" ? fullWidthAt(root, selected.id, bp) : setLinesAt(root, selected.id, want, columnsAt(gridHere, bp), bp), `lines:${selected.id}`)}
                   onSetFreeInset={linesAt(root, selected.id, columnsAt(gridHere, bp), bp) ? (side, v) => commit(side === "both" ? setFreeInset(setFreeInset(root, selected.id, "left", undefined, bp), selected.id, "right", undefined, bp) : setFreeInset(root, selected.id, side, v, bp), `free:${selected.id}`) : undefined}pinBlockedBy={blockedByLabel(pinBlockedBy(root, selected.id, bp))} fixedBlockedBy={blockedByLabel(fixedBlockedBy(root, selected.id, bp))} pinScope={pinScopeWords(root, selected.id, bp)} node={bp === "base" ? selected : resolveResponsive(selected, bp)} theme={renderTheme} onPatch={onPatch} onAddChild={addChildSection} onFloat={floatSelected} onUnfloat={unfloatSelected} onLayer={layerSelected} onAlignInRow={(j) => commit(alignInRow(root, selected.id, j, bp))} rowJustify={alignInRowOf(root, selected.id, bp)} onSectionWidth={pageBandOf(root, selected.id) ? (v) => commit(setSectionWidth(root, selected.id, v)) : undefined} sectionWidth={sectionWidthOf(root, selected.id)} canFloat={selected.id !== root.id} inGrid={gridTrack !== undefined} inMasonry={parentGrid?.rowFlow === "masonry"} gridTrack={gridTrack} onSetFraction={setFraction} onRetrack={retrackSelected} breakpoint={bp} overridden={hasOverride(selected, bp)} onResetOverride={resetOverride} pages={pageList} currentPageId={activePage.id} />
               ) : (

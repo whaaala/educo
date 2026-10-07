@@ -43,8 +43,8 @@ test.describe("the builder's toolbar fits the screen it is on", () => {
     for (const w of [375, 414, 768, 1024, ...Array.from({ length: 33 }, (_, i) => 1280 + i * 20), 1366, 1536]) {
       await page.setViewportSize({ width: w, height: 900 });
       await page.waitForTimeout(250);
-      // ON A PHONE THE BAR IS ONE ROW and the rest is in its More sheet (E5a-16): the bar must hold these, More the others.
-      const phoneBar = w < 600 ? ["Undo", "Redo", "Preview", "More"] : null;
+      // ON A PHONE OR TABLET THE BAR IS ONE ROW and the rest is in its More sheet (E5a-16; tablets E5c-2, the user 2026-10-07)
+      const phoneBar = w < 1024 ? ["Undo", "Redo", "Preview", "More"] : null;
       const r = await page.evaluate((controls) => {
         const header = document.querySelector("header")!;
         const named = (name: string) => Array.from(header.querySelectorAll("button, input, [role='group']"))
@@ -90,6 +90,7 @@ test.describe("the builder's toolbar fits the screen it is on", () => {
     // …and a phone's bar is ONE row too (E5a-16), its other controls a tap away in More — every one of them there.
     await page.setViewportSize({ width: 375, height: 800 }); await page.waitForTimeout(300);
     expect(heights.find((x) => x.w === 375)!.h, "a phone's bar is one row").toBeLessThanOrEqual(72);
+    expect(heights.find((x) => x.w === 768)!.h, "a tablet's bar is one row (E5c-2)").toBeLessThanOrEqual(72);
     await page.getByRole("button", { name: "More", exact: true }).click();
     const inMore = await page.evaluate((controls) => {
       const sheet = document.querySelector('[role="dialog"][aria-label="More"]')!;
@@ -146,6 +147,8 @@ test.describe("the builder's toolbar fits the screen it is on", () => {
     await page.waitForSelector("header", { timeout: 30000 });
     await page.waitForTimeout(500);
     expect(await docked(), "768: it starts as its tab").toBe(false);
+    await page.setViewportSize({ width: 962, height: 601 }); await page.waitForTimeout(400);
+    expect(await docked(), "962 × 601, a tablet held sideways: still its tab — docked it left the page 546px (E5c-4, the user 2026-10-07)").toBe(false);
     await page.setViewportSize({ width: 1024, height: 1000 }); await page.waitForTimeout(400);
     expect(await docked(), "widened to 1024 (the crossing itself): it docks open").toBe(true);
     await page.setViewportSize({ width: 1023, height: 1000 }); await page.waitForTimeout(400);

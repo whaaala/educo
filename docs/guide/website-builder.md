@@ -30,10 +30,10 @@ Build and maintain your school's public website by dragging blocks onto a page �
 
 | Area | What it does |
 |------|--------------|
-| **Blocks panel** | Everything you can add: Layout, Text, Media, and Components. Open it from the **Blocks** launcher at the canvas's top-left (or press **B**). On a laptop or larger it sits at the side and the page moves over to make room; on a smaller screen it floats over the canvas. **Search** to filter, use the **category tabs** to jump, then click a block to add it (or drag it onto the page). Close it with the ✕, Esc or B (or a click outside it on a small screen). |
+| **Blocks panel** | Everything you can add: Layout, Text, Media, and Components. Open it from the **Blocks** launcher at the canvas's top-left (or press **B**). On a laptop or larger it sits at the side and the page moves over to make room; on a tablet or phone (under 1024px) its **+** waits bottom-right and the blocks rise from the bottom in a sheet (on a tablet no wider than 32rem, centred). **Search** to filter, use the **category tabs** to jump, then click a block to add it (or drag it onto the page). Close it with the ✕, Esc or B (or a click outside it on a small screen). |
 | **Canvas** (middle) | Your page. Click a block to select it; its controls appear on the right. |
-| **Inspector** (right) | Every setting for the selected block, in three tabs: **Design**, **Content**, **Per‑device**. Collapse it (the collapse button in its header) to give the canvas more room, and reopen it from the slim rail on the right. |
-| **Top bar** | Pages, **Add a band**, Undo/Redo, **Preview**, **Export**, **Reset**, the device switcher, and **Base size** (the number box; the words "Base size" show beside it only on very wide screens). |
+| **Inspector** (right) | Every setting for the selected block, in three tabs: **Design**, **Content**, **Per‑device**. Collapse it (the collapse button in its header) to give the canvas more room, and reopen it from the slim rail on the right. Under 1024px it starts as that rail and slides over the page when opened. |
+| **Top bar** | Pages, **Add a band**, Undo/Redo, **Preview**, **Export**, **Reset**, the device switcher, and **Base size** (the number box; the words "Base size" show beside it only on very wide screens). Under 1024px (a tablet or phone) it is one row (pages, Undo, Redo, Preview and **⋯ More**) and everything else is in **More**. |
 
 [![The builder on a laptop: the Blocks panel docked at the left with its Layout, Text, Media and Components tabs, the page moved over beside it, and the Inspector on the right](img/guide-blocks-panel.webp)](img/guide-blocks-panel.webp)
 
