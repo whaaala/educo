@@ -100,6 +100,7 @@ At 22 % a 200px block is ~44px — **every block on our phone canvas is one fing
   quick action bar, back-to-top, phone-only animations, the Hidden list) — most of which our rungs already hold.
 - **Only in mine:** how a phone actually BUILDS (WordPress, Shopify, Notion), the insertion rules, long-press drag, the bottom sheet,
   the finger numbers, and the fact that most builders refuse building on a phone.
+- **The tablet and the app** (the first gap below) are researched in [tablet-and-app-editing.md](tablet-and-app-editing.md) (BATCH E-5c, 2026-10-07).
 - **Missing from both (gaps):** Canva's phone gestures (its Mobile tabs did not load); Webflow's own page (403); how a **tablet**
   (768 / 1024) should edit — between a phone and a desktop; how our editor feels on a real low-cost Android (RULE AF) — measured
   only once it is built; real teachers using it (the pilot, RULE RK).
