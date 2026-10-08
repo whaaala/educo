@@ -128,7 +128,8 @@ export default function BlocksPanel({ theme, onDragKind, onPick, defaultOpen = f
   /** Told whenever the panel opens or closes, so the page can make room for it. */
   onOpenChange?: (open: boolean) => void;
   /**
-   * A PHONE (E-5a, D3 — the user's decision): the panel is a BOTTOM SHEET, at most 60 % of the screen, so the page stays in
+   * A PHONE (E-5a, D3 — the user's decision): the panel is a BOTTOM SHEET, at most 85 % of the screen (60 % until the user's E5d-11,
+   * 2026-10-08: with a block selected it left the list ~140px — a tile's icon or its words, never both), so the page stays in
    * sight above it (NN/g: partial height, a grab bar, Close, Back); its launcher waits bottom-right, where a thumb is.
    */
   sheet?: boolean;
@@ -259,7 +260,7 @@ export default function BlocksPanel({ theme, onDragKind, onPick, defaultOpen = f
           role="dialog"
           aria-label="Blocks"
           style={sheet ? { zIndex: CHROME_Z.panel } : { zIndex: CHROME_Z.panel, left: `${LAUNCHER_INSET_REM}rem`, width: `${PANEL_WIDTH_REM}rem` }}
-          className={`${sheet ? "fixed inset-x-0 bottom-0 max-h-[60dvh] rounded-t-2xl border-t min-[37.5em]:mx-auto min-[37.5em]:max-w-[32rem] min-[37.5em]:border-x" : /* on a tablet the phone's sheet, capped and centred (E-5c T3, WordPress's 512) */ "absolute top-4 max-w-[calc(100%-1.5rem)] max-h-[calc(100%-2rem)] rounded-2xl border"} flex flex-col border-line bg-surface shadow-2xl shadow-black/10 overflow-hidden transition duration-200 ease-out motion-reduce:transition-none ${shown ? "opacity-100 translate-x-0 translate-y-0 scale-100" : sheet ? "opacity-0 translate-y-4" : "opacity-0 -translate-x-2 scale-[0.98]"}`}
+          className={`${sheet ? "fixed inset-x-0 bottom-0 max-h-[85dvh] rounded-t-2xl border-t min-[37.5em]:mx-auto min-[37.5em]:max-w-[32rem] min-[37.5em]:border-x" : /* on a tablet the phone's sheet, capped and centred (E-5c T3, WordPress's 512) */ "absolute top-4 max-w-[calc(100%-1.5rem)] max-h-[calc(100%-2rem)] rounded-2xl border"} flex flex-col border-line bg-surface shadow-2xl shadow-black/10 overflow-hidden transition duration-200 ease-out motion-reduce:transition-none ${shown ? "opacity-100 translate-x-0 translate-y-0 scale-100" : sheet ? "opacity-0 translate-y-4" : "opacity-0 -translate-x-2 scale-[0.98]"}`}
         >
           {sheet && <span aria-hidden="true" className="mx-auto mt-2 h-1.5 w-10 shrink-0 rounded-full bg-line" />}
           {/* Header */}
@@ -300,7 +301,7 @@ export default function BlocksPanel({ theme, onDragKind, onPick, defaultOpen = f
           </div>
 
           {/* Category tabs */}
-          <div className="px-4 pb-3 flex flex-wrap gap-1" role="tablist" aria-label="Block categories">
+          <div className={`px-4 pb-3 flex gap-1 ${sheet ? "overflow-x-auto shrink-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden" : "flex-wrap pointer-coarse:flex-nowrap pointer-coarse:overflow-x-auto pointer-coarse:shrink-0 pointer-coarse:[scrollbar-width:none] pointer-coarse:[&::-webkit-scrollbar]:hidden"}`} role="tablist" aria-label="Block categories"> {/* a sheet, or a finger on the panel: one row that scrolls sideways, so the blocks get the room (E5d-11) */}
             {TABS.map((t) => {
               const on = tab === t.name;
               return (
@@ -310,7 +311,7 @@ export default function BlocksPanel({ theme, onDragKind, onPick, defaultOpen = f
                   role="tab"
                   aria-selected={on}
                   onClick={() => setTab(t.name)}
-                  className={`inline-flex items-center gap-1 px-2 py-1 pointer-coarse:min-h-11 pointer-coarse:px-3 rounded-lg text-[0.75rem] font-semibold transition-colors ${on ? "bg-brand text-brand-fg shadow-sm" : "text-muted hover:text-ink hover:bg-surface-2"}`}
+                  className={`inline-flex shrink-0 whitespace-nowrap items-center gap-1 px-2 py-1 pointer-coarse:min-h-11 pointer-coarse:px-3 rounded-lg text-[0.75rem] font-semibold transition-colors ${on ? "bg-brand text-brand-fg shadow-sm" : "text-muted hover:text-ink hover:bg-surface-2"}`}
                 >
                   <t.Icon className="w-3.5 h-3.5" strokeWidth={2} />
                   {t.name}

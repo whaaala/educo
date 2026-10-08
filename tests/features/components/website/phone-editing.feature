@@ -12,7 +12,7 @@ Feature: Building a page on a phone (BATCH E-5a)
   Scenario: The blocks panel is a sheet from the bottom on a phone
     Given I am on a phone
     When I tap the "+" in the bottom-right corner
-    Then the blocks rise in a sheet from the bottom, no taller than 60% of the screen, the page still showing above
+    Then the blocks rise in a sheet from the bottom, no taller than 85% of the screen (E5d-11), the page still showing above
     And Close, Escape or my phone's Back button puts it away without leaving the builder
 
   Scenario Outline: I choose where the new block goes

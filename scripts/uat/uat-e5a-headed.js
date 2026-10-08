@@ -74,7 +74,7 @@ async function PH(page, ok, id, w) {
   // U2 — the sheet, built through it: a Heading (Default look), then a Stack
   await openSheet(page);
   const r = await sheet(page).boundingBox();
-  ok(`U2 ${w}px: the blocks rise from the bottom, at most 60 % tall, the page showing above`, Math.round(r.y + r.height) >= vh - 1 && r.height <= vh * 0.6 + 1 && r.y > 80, JSON.stringify({ top: Math.round(r.y), h: Math.round(r.height), vh }));
+  ok(`U2 ${w}px: the blocks rise from the bottom, at most 85 % tall, the page showing above`, Math.round(r.y + r.height) >= vh - 1 && r.height <= vh * 0.85 + 1 && r.y > 80, JSON.stringify({ top: Math.round(r.y), h: Math.round(r.height), vh }));
   await page.screenshot({ path: path.join(OUT, `${id}-U2-sheet.png`) });
   await page.getByRole('textbox', { name: 'Search blocks' }).fill('stack'); await page.waitForTimeout(250);
   ok(`U2 ${w}px: search finds Stack`, await page.getByRole('button', { name: /^Add Stack/ }).first().isVisible());

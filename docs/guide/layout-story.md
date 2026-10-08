@@ -465,7 +465,7 @@ words, pictures and links are the same on every screen. (To look at the desktop 
 with its name beside its icon. Back, Escape or the ✕ puts it away, and the page keeps the rest of the screen.
 
 **She adds a block from a sheet.** A round **+** waits in the bottom-right corner, where her thumb is. She taps the
-results heading, then the **+**, and the blocks rise from the bottom of the screen. The sheet covers at most 60% of the
+results heading, then the **+**, and the blocks rise from the bottom of the screen. The sheet covers at most 85% of the
 screen, so the page is still there above it. At its top, **Add it** reads **After**: a new block goes on a line of its
 own just under the heading she selected. She could choose **Before**, **Inside** (for a box that holds blocks), **Start**
 or **End** of the page instead. She taps **Stack**. The sheet closes and the new block is selected, so the next one she

@@ -81,7 +81,7 @@ test.describe("building on a phone (E-5a)", () => {
     const vh = page.viewportSize()!.height, vw = page.viewportSize()!.width;
     if (phone(page)) {
       expect(Math.round(r.y + r.height), "it rises from the bottom edge").toBeGreaterThanOrEqual(vh - 1);
-      expect(r.height, "at most 60 % of the screen, so the page shows above it").toBeLessThanOrEqual(vh * 0.6 + 1);
+      expect(r.height, "at most 85 % of the screen, so the page shows above it (E5d-11; was 60 %)").toBeLessThanOrEqual(vh * 0.85 + 1);
       expect(Math.round(r.width), "the width of the phone").toBeGreaterThanOrEqual(vw - 1);
       await page.goBack();
       await expect(dialog, "Back puts it away").toBeHidden();
@@ -97,6 +97,26 @@ test.describe("building on a phone (E-5a)", () => {
       await page.keyboard.press("Escape");
       await expect(dialog).toBeHidden();
     }
+  });
+
+  test("E5d-11 — with a block selected, the sheet shows whole tiles: each one's icon AND its words", async ({ page }) => {
+    test.skip(!phone(page) && !test.info().project.use.hasTouch, "a finger's: the sheet on a phone and an upright tablet, the panel under a finger on a wide one");
+    await threeBlocks(page);
+    await tapBlock(page, "a"); // a selection adds "Add it: Before · After · Start · End" to the top of the sheet
+    await page.getByRole("button", { name: "Open blocks panel" }).click();
+    const dialog = page.getByRole("dialog", { name: "Blocks" });
+    await expect(dialog).toBeVisible();
+    const tops = await dialog.getByRole("tab").evaluateAll((ts) => ts.map((t) => Math.round(t.getBoundingClientRect().top)));
+    expect(new Set(tops).size, `the categories on one row (tops ${tops.join(", ")})`).toBe(1);
+    // the user, 2026-10-08: "I can't see both the text and the icon together" — measured: the list had ~140px of a 393 × 851 phone
+    const whole = await dialog.evaluate((d) => {
+      const list = [...d.querySelectorAll<HTMLElement>("*")].find((e) => /(auto|scroll)/.test(getComputedStyle(e).overflowY) && e.querySelector('[role="button"][aria-label^="Add "]'))!;
+      const v = list.getBoundingClientRect();
+      return [...list.querySelectorAll<HTMLElement>('[role="button"][aria-label^="Add "]')].filter((b) => {
+        const r = b.getBoundingClientRect(); return r.height > 0 && r.top >= v.top - 1 && r.bottom <= v.bottom + 1;
+      }).length;
+    });
+    expect(whole, "at least two tiles show whole — icon and words together — without scrolling").toBeGreaterThanOrEqual(2);
   });
 
   test("D3 — Before · After · Inside · Start · End put the block where they say", async ({ page }) => {
