@@ -666,7 +666,7 @@ export function isEmptyBox(node: BoxNode): boolean {
 const NO_HEIGHT_OF_ITS_OWN = new Set<BoxType>(["divider"]);
 
 /** A measured rectangle, as the editor's selection chrome mirrors it. */
-export type MirrorBox = { left: number; top: number; width: number; height: number; clipPath?: string; flush?: string };
+export type MirrorBox = { left: number; top: number; width: number; height: number; clipPath?: string; flush?: string; swipe?: string };
 
 /** The room a handle drawn OUTSIDE a block needs: the corner dot (0.75rem) and its 2px clearance, at a 16px root. */
 export const HANDLE_ROOM_PX = 14;
@@ -685,6 +685,25 @@ export function mirrorFlushSides(
     tight(canvas.bottom - block.bottom) && "s",
     tight(canvas.right - block.right) && "e",
     tight(block.left - canvas.left) && "w",
+  ].filter(Boolean).join(" ");
+}
+
+/**
+ * THE SCREEN EDGE IS BACK (E5d-3). Android's back gesture starts within 24dp of either side of the screen (measured on a Pixel
+ * with gesture navigation: a swipe from 23dp went Back and left the editor, from 30dp it did not), and Safari's edge swipe is the
+ * same. A finger's handle whose centre would lie closer than 32px (24 + room for a finger's aim) to the window's edge is NOT
+ * DRAWN on a touch screen — the phone owns that strip; the block resizes from its other edge and the Inspector (the user's
+ * decision 2026-10-08, after a 2.5rem gutter cost a 360 phone 32px and handles inside the block caught its own presses — E5d-10).
+ */
+export const EDGE_SWIPE_PX = 32;
+/** How far a side handle's centre sits outside its block (`-left-3`, 0.625rem wide; a corner's 0.75rem dot lands the same). */
+export const HANDLE_OUTSET_PX = 8;
+
+/** The sides ("w", "e") of a block whose handles would sit in the screen edge's back-swipe strip. */
+export function edgeSwipeSides(block: { left: number; right: number }, windowWidth: number): string {
+  return [
+    windowWidth - (block.right + HANDLE_OUTSET_PX) < EDGE_SWIPE_PX && "e",
+    block.left - HANDLE_OUTSET_PX < EDGE_SWIPE_PX && "w",
   ].filter(Boolean).join(" ");
 }
 
@@ -762,7 +781,7 @@ export function shouldTakeMirrorBox(
   const near = (a: number, b: number) => Math.abs(a - b) < 0.5;
   const same = (a: MirrorBox | null, b: MirrorBox | null) =>
     a && b
-      ? near(a.left, b.left) && near(a.top, b.top) && near(a.width, b.width) && near(a.height, b.height) && a.clipPath === b.clipPath && a.flush === b.flush
+      ? near(a.left, b.left) && near(a.top, b.top) && near(a.width, b.width) && near(a.height, b.height) && a.clipPath === b.clipPath && a.flush === b.flush && a.swipe === b.swipe
       : a === b;
 
   const settled = same(state.seen, next);   // the layout gave the same answer twice running

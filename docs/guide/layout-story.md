@@ -530,6 +530,20 @@ hold of the handle.
 toolbar — is drawn over the Inspector, so every control in it can be reached; what lies behind it comes back when
 she closes it.
 
+## 12. The editor inside the Educo app
+
+Maya's colleague opens the Educo app on her phone, taps **More**, then **Website builder**. It is this same editor, laid
+out exactly as section 11 describes for her screen. Two things are particular to a finger in the app:
+
+- **The edges of the screen are Back.** A swipe that starts in the thin strip down either side leaves the screen. So a
+  handle that would sit in that strip is not drawn; she resizes the block from its other side, or sets its size in the
+  Inspector. This is true in a phone's browser too, not only in the app.
+- **Back walks the editor first.** With the editor's own **More** open, Back closes it; with nothing open, Back returns
+  to the app.
+
+Everything else about the app (photos from the phone, working without signal, links into Fees, Messages and Reports) is
+in [The website builder in the Educo app](website-builder-in-the-app).
+
 ---
 
 ## What comes next

@@ -44,7 +44,8 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
-    const savedTheme = localStorage.getItem("theme") as ThemeId;
+    // `?theme=` lets the Educo app open the editor in the app's theme (BATCH E-5d) — no injected script to race.
+    const savedTheme = (new URLSearchParams(window.location.search).get("theme") ?? localStorage.getItem("theme")) as ThemeId;
     if (savedTheme && THEMES[savedTheme]) {
       applyTheme(savedTheme);
     }

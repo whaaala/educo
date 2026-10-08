@@ -1372,7 +1372,8 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
           once E5c-8 placed floats exactly. FIX: the resize keeps the top in px — re-said against the parent's height as it is now on
           every frame, and once more after the last frame (BoxCanvas `startResizeAbsolute`). Guard: `float-round-trip.spec.ts` "… (E5c-8)"
           grows the floated Heading by its corner — RED on the pre-fix build
-  - `[ ]` **BATCH E-5d · The app** — QUEUED 2026-10-07 (after E-5c, which CLOSED 2026-10-07): `apps/mobile/` hosts the editor in a
+  - `[>]` **BATCH E-5d · The app** — BUILT 2026-10-08, HEADED 69 / 69 on the final build (tablet 35, phone 34); open only on the user's
+    decisions E5d-4 · E5d-7 · E5d-9 and the user's question on the two bars above the canvas (below). Was QUEUED 2026-10-07 (after E-5c): `apps/mobile/` hosts the editor in a
     webview, phone AND tablet, with the native layer — T4–T8 DECIDED 2026-10-07 (below); next: its HEADED checklist on both emulators, then the build (research: `tablet-and-app-editing.md` §2 E, §3, §4–§5)
     - `[x]` THE APP'S DECISIONS — DECIDED BY THE USER 2026-10-07 (all five as recommended), asked as this batch starts — the user's words: "make sure we have that recorded somewhere
       so … we don't forget it" (moved here from E-5c's research, 2026-10-07). My recommendation beside each:
@@ -1385,10 +1386,96 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
       - `[x]` DECIDED "Deep links" · T7 which native piece ships first beside the site (Apple 4.2): deep links into the existing Fees / Messages /
         Reports screens · push · offline term dates. Recommended: deep links first
       - `[x]` DECIDED "Edit from day one" · T8 the app EDITS the school site from day one, or only SHOWS it at first. Recommended: decide with T4–T7
-    - `[ ]` (1) its HEADED checklist FIRST (RULE X): both emulators (tablet 5554, phone 5556) — the editor opens signed in by the
-      one-time code, edits and saves; Back / the app's swipe; the content process killed and reloaded from the saved state; camera-roll
-      upload; offline (cache + local save); deep links into Fees / Messages / Reports; four themes
-    - `[ ]` (2) the build (a webview screen in `apps/mobile/` with `isTablet`, the one-time-code exchange on the server, BackHandler,
+    - `[x]` T5 REVISITED BY THE USER 2026-10-07 (session E-5d): measured first — the web has NO sign-in (no accounts, no session, no
+      protected route; `contexts/UserContext.tsx` is a mock; the editor saves to the device's `localStorage`), so a code exchanged for a
+      cookie would protect nothing. Decided "No sign-in for now": the app ships without it; the one-time-code exchange is built WHEN
+      accounts exist → `[~]` (3) below
+    - `[~]` (3) the one-time-code sign-in (T5) — PARKED 2026-10-07 by the user until the web has real accounts (a new area, research first, RULE RS)
+    - `[ ]` (4) QUEUED AREA, asked by the user 2026-10-07 mid-E-5d: "can we do a website builder, a mobile app builder and a tablet app
+      builder … the layout and components done for all of them together?" — my answer: possible (RULE APP already makes the block model
+      the app model), not built now (rule 20 web first, RULE RK one area); NOW: every layout/component decision stays app-ready (phone +
+      tablet variations); LATER: a new area "App builder (phone + tablet)" — research first (RULE RS): the user's links on AI app
+      builders + mine, an "enough" checklist signed before any build. The user's links (2026-10-07), to be studied INSIDE, the
+      user logging in for me when the area opens (RULE R: every item opened, run, read):
+      - `[ ]` https://app.base44.com/launchpad
+      - `[ ]` https://app.emergent.sh/
+      - `[ ]` https://lovable.dev/
+    - **LEDGER E-5d**
+      - E5d-1 · the handover assumed a server session to hand over (T5) — there is none; NOT A BUG in code, a wrong premise: measured
+        (no `middleware.ts`, no `app/api/auth`, mock `UserContext`), decided by the user (above)
+      - E5d-2 · `apps/mobile/package.json` jest key spelled `setupFilesAfterSetup` (Jest's key is `setupFilesAfterEnv`), so the
+        jest-native matchers were never loaded — a test-config bug. FIXED (`setupFilesAfterEnv`); guard
+        `apps/mobile/__tests__/jest-setup.test.ts` — RED with the old key
+      - E5d-3 · a finger on a phone could not resize a full-width block from its LEFT edge: the handle sat at x≈14dp, inside
+        Android's back-gesture zone (measured on the Pixel: a swipe from ≤ 23dp went Back and LEFT THE EDITOR, from 30dp it did not)
+        — the web editor in Chrome / Safari meets the same edge. FIXED BY THE USER'S DECISION 2026-10-08 ("Hide it in the strip"):
+        on a touch screen a handle whose centre would lie within 32px of the window's edge is not drawn, nor its hit area
+        (`edgeSwipeSides` in box-model → `data-swipe` on the chrome mirror); the block resizes from its other edge and the Inspector.
+        Guards: `phone-editing.spec.ts` "E5d-3 …" — RED on the pre-fix build (left edge at x=13); `tests/unit/edge-swipe.test.ts` —
+        RED with the outset removed
+      - E5d-10 · MY OWN, from the first fix of E5d-3: a 2.5rem left gutter on touch screens cost the phone canvas 32px — test:fast
+        found a header that wrapped on the canvas but not for visitors and two grid-cell edges that changed (3 specs, mobile-chrome);
+        handles moved INSIDE the block instead caught the block's own long press and taps (2 more). Both REVERTED; the user chose
+        among the four measured options (above). Two specs that assumed all 8 handles always show now count the drawn ones
+      - E5d-4 · words typed just before the app is killed in the background were lost (measured: type, Home, force-stop 1s later →
+        gone). Two parts, measured: the WebView never tells the page it is hidden (no visibilitychange / pagehide), so the editor's
+        0.4s typing pause never flushes; and Chromium holds a localStorage write ~0.5–1s before disk (a marker survived a kill at
+        ≥ 1s, not at 0.5s). PART FIXED: the app fires `pagehide` when it leaves the foreground (jest RED without it) — on iOS in time;
+        on Android the command runs only on return (a hidden window draws no frame). OPEN — THE USER'S DECISION: the remaining
+        ~1–1.4s window (every browser has it too) closes only by saving to IndexedDB instead of localStorage
+      - E5d-5 · an `educo://` link inside the editor did nothing: react-native-webview hands any address outside its
+        `originWhitelist` (http/https by default) to `Linking` without asking our routing, and Expo Go cannot open `educo://`
+        (measured: the library's `createOnShouldStartLoadWithRequest`). FIXED: `ORIGIN_WHITELIST` adds `educo://*`; `tel:` /
+        `whatsapp:` still go to the phone. Guard: jest "E5d-5" runs the library's own gate — RED without it; on the phone
+        `educo://messages` from the page opened Chat
+      - E5d-6 · the app's status bar (clock, battery) stayed dark grey on the dark, midnight and purple themes — every screen
+        (seen in the A10 screenshots). FIXED: `ThemedStatusBar` (expo-status-bar, installed, unused until now) in the root chrome.
+        Guard: `__tests__/ui/ThemedStatusBar.test.tsx` — RED with a fixed style
+      - E5d-7 · eight rows in the app's More screen show an arrow and do nothing when tapped (My Profile, My Children, School
+        Calendar, Parent Handbook, Contact School, Help Center, Send Feedback, About: `onPress: () => {}`) — placeholder UI, older
+        than E-5d. OPEN — THE USER'S DECISION: each is a feature of its own (not this batch's area)
+      - E5d-8 · `app/file-preview.tsx` took `SafeAreaView` from `react-native` (deprecated; does nothing on Android under SDK 54's
+        edge-to-edge) — its warning toast covered the tablet's tab bar in development and stopped the headed pass. FIXED: from
+        `react-native-safe-area-context` like every other screen. Guard: `__tests__/no-deprecated-safe-area.test.ts` — RED on the old file
+      - E5d-9 · seen ONCE in the headed pass (`logs/e5d-uat5-phone.out`): right after A4's drag + an Undo tap on the phone, the
+        app showed Home and the WebView was torn down ("isolated not needed" in logcat). NOT reproduced: the same steps replayed
+        by hand, then the whole phone pass again (30 / 30). The phone emulator had just been cold-booted after it shut itself down.
+        OPEN — THE USER'S DECISION: keep watching (every later pass) or dig deeper now
+    - `[x]` (1) its HEADED checklist FIRST (RULE X), written 2026-10-07 before the build — PASSED 2026-10-08 on the final build:
+      `scripts/uat/uat-e5d-headed.js`, tablet 35 / 35 (`logs/e5d-uat7-tablet.out`), phone 34 / 34 (`logs/e5d-uat8-phone.out`), one device
+      at a time (two emulators + the build did not fit in memory: the phone's Android never answered beside the tablet). Both emulators (tablet 5554 = Pixel Tablet,
+      phone 5556 = Pixel), Expo Go 54, the editor served by `next start` on 3100 (adb reverse), each line on BOTH:
+      - `[x]` A1 entry: More → "Website builder" opens the editor screen; a spinner until the page draws; the bottom tab bar is not over it
+      - `[x]` A2 it edits: add a block from the palette, type in it, through the UI (RULE Y); leave and re-open → it is still there
+      - `[x]` A3 phone (411 wide) gets the phone editor; tablet portrait (800) the tablet editor; tablet landscape (1280) the desktop one;
+        turning the tablet re-lays the chrome, keeps the page
+      - `[x]` A4 Back (Android button / gesture): inside the editor's own history it goes back a page; at its start it leaves to More;
+        never closes the app mid-edit; a drag that starts at the screen edge is not taken as Back
+      - `[x]` A5 process killed: app force-stopped mid-edit (`am force-stop`) and relaunched → the editor reloads from the saved state,
+        nothing lost; the renderer gone (`onRenderProcessGone`) → reloads itself, no blank screen
+      - `[x]` A6 camera-roll upload: an Image block's upload opens the Android picker, a photo from the gallery lands on the canvas
+      - `[x]` A7 offline: network off (airplane / `svc wifi disable` + `svc data disable`) → the editor still opens from the cache, says
+        it is offline, edits save on the device; network back → reloads live
+      - `[x]` A8 links: a link off our editor's address opens in the system browser, never inside the editor
+      - `[x]` A9 deep links: `educo://fees`, `educo://messages`, `educo://reports`, `educo://site-editor` (in Expo Go
+        `exp://…/--/<route>`) each open their screen, from cold and from warm
+      - `[x]` A10 four themes: the app's light / dark / midnight / purple → the native chrome AND the editor (`?theme=`) follow; contrast
+        of the offline notice ≥ 4.5:1 in each
+      - `[x]` A11 keyboard (trap 7): typing in a block near the bottom — the keyboard does not hide the words being typed
+      - `[x]` A12 no red screen, Metro "Android Bundled", no console errors in the webview; jest for isTablet true AND false
+      - `[x]` A13 docs: `docs/guide/` page for the app's editor (RULE DOCS), docs:build green
+      - `[x]` A14 (added 2026-10-07, RULE Z's guard asked for it) the Preview of the page built IN THE APP, inside the device's
+        WebView, at every screen of `screens.js` (73) × 100 / 150 / 200 % text — no sideways scroll (CDP device emulation)
+      - `[?]` THE USER ASKED 2026-10-08: "the header is showing outside the canvas — on purpose?" Answered: yes — the app's bar (Back,
+        the only way out on an iPhone) and the editor's toolbar are tools, not the site; the canvas is the white box. (The "header"
+        inside the box was my A6 test photo — a screenshot of the builder.) Offered: fold Back into the editor's bar on a phone to give
+        the page ~48dp back — waiting on the user
+      - NOT DRIVABLE HERE (said, not skipped): iOS (no Mac) — swipe-back off and `onContentProcessDidTerminate` are written to the docs
+        and covered by jest only
+    - `[x]` (2) the build — DONE 2026-10-08 (the one-time code parked by the user, above): `app/site-editor.tsx` + `lib/site-editor.ts`,
+      More → Website builder, the tab bar off it, `ThemedStatusBar`, the web's `?theme=`, the Back strip (E5d-3); jest 121 → 131 (phone AND
+      tablet), docs `website-builder-in-the-app.md` + story §12, `SiteEditor.feature`. Gate: typecheck · eslint 0 / 105 · vitest 4,453 ·
+      test:fast 3,346 (+ the one spec changed after it re-run: 22 + 2 skipped) · mobile jest · docs:build. Was: (the build (a webview screen in `apps/mobile/` with `isTablet`, the one-time-code exchange on the server, BackHandler,
       iOS swipe-back off, `onContentProcessDidTerminate` / `onRenderProcessGone`, the `postMessage` bridge limited to our origin, the
       deep links) with jest for phone AND tablet, then its docs (RULE DOCS)
 - `[x]` **BATCH G-3 · Placing on columns and rows** — CLOSED 2026-10-04 (HEADED UAT `scripts/uat/uat-g3-headed.js`, six windows,
@@ -3720,7 +3807,7 @@ sent), and my research. Nothing on the layout is done until every line here is c
     falls back into the flow unless placed at that rung; the page audit and Page check warn when it covers words;
     shown as drag on the canvas with the half-lines drawn, a Position panel (start / end, column / row, spill above /
     below) and a gallery of ready-made placements (RULE S / UI). Joins AC-10, ST-5, AC-35 — one build
-    - `[>]` AC-37b ← YOU ARE HERE (NOW: BATCH E-5 — E-5c · The tablet CLOSED 2026-10-07 (HEADED 590 / 0; test:fast 3,343 + 2 fixed; vitest 4,445; E5c-1 … E5c-9; the user's E5c-2 one-row bar + More and E5c-4 the Inspector a tab below 1024) on `builder/phone-editing` — next: BATCH E-5d · The app — T4–T8 DECIDED 2026-10-07 (react-native-webview yes · one-time code · native cache + local save · deep links first · edit from day one) → its HEADED checklist first; handover of session E-5c in the SESSION LOG. Before that: E-5b · A finger drags and resizes CLOSED 2026-10-07 (HEADED 206 / 0; test:fast 3,333; E5b-1 … E5b-16) on `builder/phone-editing` — next: BATCH E-5c — research SIGNED 2026-10-07 (T1–T3; T4–T8 recorded for the app, BATCH E-5d) → change (2) THE BUILD, its HEADED checklist first; handover of session E-5b/E-5c in the SESSION LOG. Before that: research SIGNED 2026-10-06 (D1–D6, `docs/web-anatomy/phone-editing.md`), E-5a · Building on a phone CLOSED 2026-10-07 (HEADED 258 / 0; test:fast 3,312; the user's E5a-7 and E5a-16) on `builder/phone-editing` — next: BATCH E-5b (a finger drags and resizes: E5a-1 + E4-9), then E-5c (the tablet, then the app); handover of session E-4/E-5a in the SESSION LOG. Before that: BATCH E-4 CLOSED 2026-10-06 (HEADED 232 / 0; `test:fast` now runs all four screens, 3,272 / 3,272 in 12.3 min; E4-1 … E4-14, E4-9 and E4-14 → BATCH E-5) — PR #7 MERGED to master 2026-10-06 (`05c66ee`), `builder/editor-small-screens` deleted, `builder/phone-editing` cut from master — next: BATCH E-5, research first (the user's sources and mine). Before that: BATCH E-4 change (1) E3-3 done (`6042e79`); handover of session E-3 in the SESSION LOG. Before that: BATCH E-3 CLOSED 2026-10-06 (297 / 0 headed; E3-1 … E3-11, E3-3 the user's question); the tree audit DONE 2026-10-06 (`4fcf59a`, its true count heads section 1.1) — its checklist first, then spacing-gestures 12 · masonry-builder 10 · canvas-zoom 3 · text-is-reachable 1 · D3-32 the top bar one row from 1280; then E-4, then E-5 (research first). Before that: BATCH E-2 CLOSED 2026-10-06 (174 / 0 headed; 24 ledger lines). Before that: BATCH E-2 in BATCHES, on `builder/editor-small-screens` (cut from master `7494a8e` after PR #6 merged `builder/page-grid` 2026-10-06) — its checklist first, then the 37 failing specs one by one; then E-3, then E-4. Before that: BATCH G-3d CLOSED 2026-10-06 (`ec52b51`); handover of session (G-3d) in the SESSION LOG. Before that: BATCH G-3d (three changes); handover of session 49087f08 in the SESSION LOG; D-3 CLOSED 2026-10-06 (both changes). Before that: handover of session ff5dbc77 in the SESSION LOG; D-2 and D-3 (1) CLOSED 2026-10-06. Earlier: handover of session 22981e0a; BATCH G-3b and BATCH E-1 CLOSED 2026-10-05; MERGE DECIDED by the user 2026-10-05: `builder/layout-uat` pushed, the user opens and merges the pull request, then the branch is deleted and `builder/page-grid` cut from master; next there: BATCH D-2 (the Docusaurus site + the layout documented from the beginning, RULE DOCS), then BATCH G-3d (the user's two decisions), then BATCH E-2 (resizing and dropping on tablets and phones); before the PR: the artifacts and the layout story for the page grid; then its final pass, then BATCH E-1; handover of session 3da81fad in the SESSION LOG; earlier: handover of session 5da86722 in the SESSION LOG — G-3 CLOSED 2026-10-04 (63 headed checks, G3-8 carried to G-3b by the user); earlier: BATCH G-3 · placing on columns AND rows — G-2 CLOSED 2026-10-04 (134 headed checks); P-0 CLOSED 2026-10-04 (R4-1 … R4-5 fixed, 30 headed checks); R-4 SIGNED with D1–D5 (session 9fa0fee9); then G-3, P-1, P-2, G-4, P-3, G-5, G-6. G-1 CLOSED 2026-10-04 (see BATCHES). Plan APPROVED 2026-10-04 with the user's decisions below. Earlier: research R-3 DONE and SIGNED 2026-10-04
+    - `[>]` AC-37b ← YOU ARE HERE (NOW: BATCH E-5d · The app BUILT 2026-10-08 on `builder/phone-editing` — HEADED 69 / 69 (tablet 35, phone 34), gate green; waiting on the user's decisions E5d-4 (IndexedDB save) · E5d-7 (More's eight empty rows) · E5d-9 (watch or dig) · the two bars above the canvas; then the pull request. QUEUED AREA: the app builder (phone + tablet), research first with the user's links. Before that: E-5c · The tablet CLOSED 2026-10-07 (HEADED 590 / 0; test:fast 3,343 + 2 fixed; vitest 4,445; E5c-1 … E5c-9; the user's E5c-2 one-row bar + More and E5c-4 the Inspector a tab below 1024) on `builder/phone-editing` — next: BATCH E-5d · The app — T4–T8 DECIDED 2026-10-07 (react-native-webview yes · one-time code · native cache + local save · deep links first · edit from day one) → its HEADED checklist first; handover of session E-5c in the SESSION LOG. Before that: E-5b · A finger drags and resizes CLOSED 2026-10-07 (HEADED 206 / 0; test:fast 3,333; E5b-1 … E5b-16) on `builder/phone-editing` — next: BATCH E-5c — research SIGNED 2026-10-07 (T1–T3; T4–T8 recorded for the app, BATCH E-5d) → change (2) THE BUILD, its HEADED checklist first; handover of session E-5b/E-5c in the SESSION LOG. Before that: research SIGNED 2026-10-06 (D1–D6, `docs/web-anatomy/phone-editing.md`), E-5a · Building on a phone CLOSED 2026-10-07 (HEADED 258 / 0; test:fast 3,312; the user's E5a-7 and E5a-16) on `builder/phone-editing` — next: BATCH E-5b (a finger drags and resizes: E5a-1 + E4-9), then E-5c (the tablet, then the app); handover of session E-4/E-5a in the SESSION LOG. Before that: BATCH E-4 CLOSED 2026-10-06 (HEADED 232 / 0; `test:fast` now runs all four screens, 3,272 / 3,272 in 12.3 min; E4-1 … E4-14, E4-9 and E4-14 → BATCH E-5) — PR #7 MERGED to master 2026-10-06 (`05c66ee`), `builder/editor-small-screens` deleted, `builder/phone-editing` cut from master — next: BATCH E-5, research first (the user's sources and mine). Before that: BATCH E-4 change (1) E3-3 done (`6042e79`); handover of session E-3 in the SESSION LOG. Before that: BATCH E-3 CLOSED 2026-10-06 (297 / 0 headed; E3-1 … E3-11, E3-3 the user's question); the tree audit DONE 2026-10-06 (`4fcf59a`, its true count heads section 1.1) — its checklist first, then spacing-gestures 12 · masonry-builder 10 · canvas-zoom 3 · text-is-reachable 1 · D3-32 the top bar one row from 1280; then E-4, then E-5 (research first). Before that: BATCH E-2 CLOSED 2026-10-06 (174 / 0 headed; 24 ledger lines). Before that: BATCH E-2 in BATCHES, on `builder/editor-small-screens` (cut from master `7494a8e` after PR #6 merged `builder/page-grid` 2026-10-06) — its checklist first, then the 37 failing specs one by one; then E-3, then E-4. Before that: BATCH G-3d CLOSED 2026-10-06 (`ec52b51`); handover of session (G-3d) in the SESSION LOG. Before that: BATCH G-3d (three changes); handover of session 49087f08 in the SESSION LOG; D-3 CLOSED 2026-10-06 (both changes). Before that: handover of session ff5dbc77 in the SESSION LOG; D-2 and D-3 (1) CLOSED 2026-10-06. Earlier: handover of session 22981e0a; BATCH G-3b and BATCH E-1 CLOSED 2026-10-05; MERGE DECIDED by the user 2026-10-05: `builder/layout-uat` pushed, the user opens and merges the pull request, then the branch is deleted and `builder/page-grid` cut from master; next there: BATCH D-2 (the Docusaurus site + the layout documented from the beginning, RULE DOCS), then BATCH G-3d (the user's two decisions), then BATCH E-2 (resizing and dropping on tablets and phones); before the PR: the artifacts and the layout story for the page grid; then its final pass, then BATCH E-1; handover of session 3da81fad in the SESSION LOG; earlier: handover of session 5da86722 in the SESSION LOG — G-3 CLOSED 2026-10-04 (63 headed checks, G3-8 carried to G-3b by the user); earlier: BATCH G-3 · placing on columns AND rows — G-2 CLOSED 2026-10-04 (134 headed checks); P-0 CLOSED 2026-10-04 (R4-1 … R4-5 fixed, 30 headed checks); R-4 SIGNED with D1–D5 (session 9fa0fee9); then G-3, P-1, P-2, G-4, P-3, G-5, G-6. G-1 CLOSED 2026-10-04 (see BATCHES). Plan APPROVED 2026-10-04 with the user's decisions below. Earlier: research R-3 DONE and SIGNED 2026-10-04
       (`ff5c53a`, `4418202`); build to every decision recorded under R-3 below; the mockups settle the open three (row
       snap · the phone gap 11 vs 16 px · panel per site or per page) → the user's approval → build) · **THE PAGE GRID — DECIDED by the user 2026-10-03: done RIGHT AFTER L-4 closes, BEFORE L-5, L-6 and the
       frozen list's placement items** (they are built on it). NAMES (decided): "page grid" in code and docs; the lines a
@@ -4536,6 +4623,16 @@ sent), and my research. Nothing on the layout is done until every line here is c
 
 One entry per session, newest first. Written the moment the user says "new session" (or the context is about to run
 out) — where the session STARTED FROM, where it GOT TO, and where the next one CONTINUES FROM.
+
+### 2026-10-08 · session E-5d (the app) · branch `builder/phone-editing`
+- **Started from:** session E-5c's handover (`af6c542`), BATCH E-5d with T4–T8 decided.
+- **Got to:** E-5d BUILT — the website builder inside the Educo app (`apps/mobile/app/site-editor.tsx`, a WebView over the editor),
+  phone AND tablet; HEADED 69 / 69 on the final build (`scripts/uat/uat-e5d-headed.js`, real touches by adb, the page read over CDP,
+  the Preview swept at 73 screens × 3 text sizes inside the WebView); gate green. The user decided: no sign-in until accounts exist
+  (T5 premise wrong, measured); uninstall HospitalFinder from the Pixel AVD; E5d-3 "hide the handle in the Back strip" (after a
+  gutter and inward handles were both measured and reverted, E5d-10). Ledger E5d-1 … E5d-10. Asked mid-session: one builder for
+  websites, phone apps and tablet apps → queued area (RULE APP), the user's links base44 / emergent / lovable.
+- **Continue from:** the user's answers on E5d-4, E5d-7, E5d-9 and the two bars above the canvas; then close E-5d and open the PR.
 
 ### 2026-10-07 · session E-5c (the build) · branch `builder/phone-editing`
 - **Started from:** session E-5b/E-5c's handover (`b71d6eb`), BATCH E-5c (2) THE BUILD (YOU ARE HERE), T1–T3 signed.

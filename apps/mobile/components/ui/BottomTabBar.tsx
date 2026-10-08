@@ -281,6 +281,8 @@ export default function BottomTabBar() {
 
   const inactiveColor = isDark ? colors.textSecondary : colors.textTertiary;
   const inactiveIconBg = 'transparent';
+  // The website builder needs the whole screen; its own header leads back.
+  if (pathname.startsWith('/site-editor')) return null;
   return (
     <View
       style={[

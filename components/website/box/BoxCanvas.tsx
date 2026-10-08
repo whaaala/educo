@@ -20,7 +20,7 @@ import {
   containerStyle, childStyle, marginCSS, leafPaddingCSS, outerSpaceCSS, pageBandInset, pagePinCover, sectionContent, sizeToCSS, u, baseUnit, floatingReserve, floatStacksOnMobile, createContainer, createElement, createComponent,
   updateBox, deleteBox, insertBox, moveBlock, canMoveBlock, moveAxis, duplicateBox, moveBox, cloneBox, findParent, isAncestor, isContainer, containerLabel, widthPct, stackWithBlock, fitBand, PILL, blockTypography,
   isFloating, floatBox, unfloatBox, groupBoxes, ungroupBoxes, bringToFront, sendToBack, bringForward, sendBackward, packRowLines, allocateLine, type LineFollower,
-  shouldTakeMirrorBox, mirrorFlushSides, hostSizedFor, type MirrorBox, type MirrorChase, fadedPaint, boxOpacity, backgroundCss, treePaintLayerCss, radiusCSS, isClipped, SHADOW_CSS, videoEmbedSrc, sanitizeCssDeclarations, expandScopedCss, ACCORDION_CSS_PARTS, itemOverrideCss, itemHasOverride, itemNumberVars, richBody, componentTextCss, componentBoxCss, bgShowThroughCss, resizeTopEdge, blockContainmentCss, alertToastCss, treeHasToast, treeHasFixedHold, accordionClasses, bandClasses, advancedCssStyle, alertActionsHTML, hugsContent, itemFloatContextCss, COMPONENT_ITEM_SEL, clampContentScale, MIN_CONTENT_SCALE, isMultiItemComponent, comfortableWidth, remLen, rootFontPx, isDefiniteLen, addItemAfter, duplicateItem, duplicateChildItem, removeItem, removeChildItem, moveItem, moveChildItem, updateItem, updateChildItem, ALERT_SEVERITY_ICON, alertPartInline, alertIconInline, collectAlertItemStyles,
+  shouldTakeMirrorBox, mirrorFlushSides, edgeSwipeSides, hostSizedFor, type MirrorBox, type MirrorChase, fadedPaint, boxOpacity, backgroundCss, treePaintLayerCss, radiusCSS, isClipped, SHADOW_CSS, videoEmbedSrc, sanitizeCssDeclarations, expandScopedCss, ACCORDION_CSS_PARTS, itemOverrideCss, itemHasOverride, itemNumberVars, richBody, componentTextCss, componentBoxCss, bgShowThroughCss, resizeTopEdge, blockContainmentCss, alertToastCss, treeHasToast, treeHasFixedHold, accordionClasses, bandClasses, advancedCssStyle, alertActionsHTML, hugsContent, itemFloatContextCss, COMPONENT_ITEM_SEL, clampContentScale, MIN_CONTENT_SCALE, isMultiItemComponent, comfortableWidth, remLen, rootFontPx, isDefiniteLen, addItemAfter, duplicateItem, duplicateChildItem, removeItem, removeChildItem, moveItem, moveChildItem, updateItem, updateChildItem, ALERT_SEVERITY_ICON, alertPartInline, alertIconInline, collectAlertItemStyles,
   type Breakpoint, resolveResponsive, updateBoxResponsive, treePinArrivalCss, floatHoldCSS, canvasFixedStyle, capturesFixed, imageSizing, fillsRowsAnywhere, fillHostOf, importPhoto, treeItemEffectsCss, itemNeedsClass, floatZIndex, gridPlacementAt, masonryMeasureAttr, masonryMeasurePass, mirrorMeasuresNow, baseUnitParts, pinStackMarker, pinStackGroupMarker, pinStackPass, isPager, pagerStripCss, pagerNavHTML, selectionChain, textLen, typoRole, typoRootVars, typoCascadeCss, bandEdgeCSS, LINK_COLOR_CSS, treeGridQueryCss, TYPE_UNIT_PROPERTY_CSS,
 } from "@/lib/box-model";
 import { ICON_SET } from "./icons";
@@ -249,12 +249,12 @@ type Edge = "n" | "s" | "e" | "w" | "ne" | "nw" | "se" | "sw";
 const HANDLES: { edge: Edge; pos: string; cursor: string; label: string; title: string }[] = [
   { edge: "n", pos: "left-1/2 -top-3 -translate-x-1/2 h-2.5 w-9 rounded-full group-data-[flush~=n]/mirror:top-0", cursor: "cursor-ns-resize", label: "top edge", title: "Drag the top edge (bottom stays put)" },
   { edge: "s", pos: "left-1/2 -bottom-3 -translate-x-1/2 h-2.5 w-9 rounded-full group-data-[flush~=s]/mirror:bottom-0", cursor: "cursor-ns-resize", label: "bottom edge", title: "Drag the bottom edge (top stays put)" },
-  { edge: "e", pos: "top-1/2 -right-3 -translate-y-1/2 w-2.5 h-9 rounded-full group-data-[flush~=e]/mirror:right-0", cursor: "cursor-ew-resize", label: "right edge", title: "Drag the right edge (left stays put)" },
-  { edge: "w", pos: "top-1/2 -left-3 -translate-y-1/2 w-2.5 h-9 rounded-full group-data-[flush~=w]/mirror:left-0", cursor: "cursor-ew-resize", label: "left edge", title: "Drag the left edge (right stays put)" },
-  { edge: "ne", pos: "-top-3.5 -right-3.5 w-3 h-3 rounded-full group-data-[flush~=n]/mirror:top-0 group-data-[flush~=e]/mirror:right-0", cursor: "cursor-nesw-resize", label: "top-right corner", title: "Drag the top-right corner" },
-  { edge: "nw", pos: "-top-3.5 -left-3.5 w-3 h-3 rounded-full group-data-[flush~=n]/mirror:top-0 group-data-[flush~=w]/mirror:left-0", cursor: "cursor-nwse-resize", label: "top-left corner", title: "Drag the top-left corner" },
-  { edge: "se", pos: "-bottom-3.5 -right-3.5 w-3 h-3 rounded-full group-data-[flush~=s]/mirror:bottom-0 group-data-[flush~=e]/mirror:right-0", cursor: "cursor-nwse-resize", label: "bottom-right corner", title: "Drag the bottom-right corner" },
-  { edge: "sw", pos: "-bottom-3.5 -left-3.5 w-3 h-3 rounded-full group-data-[flush~=s]/mirror:bottom-0 group-data-[flush~=w]/mirror:left-0", cursor: "cursor-nesw-resize", label: "bottom-left corner", title: "Drag the bottom-left corner" },
+  { edge: "e", pos: "top-1/2 -right-3 -translate-y-1/2 w-2.5 h-9 rounded-full group-data-[flush~=e]/mirror:right-0 group-data-[swipe~=e]/mirror:hidden", cursor: "cursor-ew-resize", label: "right edge", title: "Drag the right edge (left stays put)" },
+  { edge: "w", pos: "top-1/2 -left-3 -translate-y-1/2 w-2.5 h-9 rounded-full group-data-[flush~=w]/mirror:left-0 group-data-[swipe~=w]/mirror:hidden", cursor: "cursor-ew-resize", label: "left edge", title: "Drag the left edge (right stays put)" },
+  { edge: "ne", pos: "-top-3.5 -right-3.5 w-3 h-3 rounded-full group-data-[flush~=n]/mirror:top-0 group-data-[flush~=e]/mirror:right-0 group-data-[swipe~=e]/mirror:hidden", cursor: "cursor-nesw-resize", label: "top-right corner", title: "Drag the top-right corner" },
+  { edge: "nw", pos: "-top-3.5 -left-3.5 w-3 h-3 rounded-full group-data-[flush~=n]/mirror:top-0 group-data-[flush~=w]/mirror:left-0 group-data-[swipe~=w]/mirror:hidden", cursor: "cursor-nwse-resize", label: "top-left corner", title: "Drag the top-left corner" },
+  { edge: "se", pos: "-bottom-3.5 -right-3.5 w-3 h-3 rounded-full group-data-[flush~=s]/mirror:bottom-0 group-data-[flush~=e]/mirror:right-0 group-data-[swipe~=e]/mirror:hidden", cursor: "cursor-nwse-resize", label: "bottom-right corner", title: "Drag the bottom-right corner" },
+  { edge: "sw", pos: "-bottom-3.5 -left-3.5 w-3 h-3 rounded-full group-data-[flush~=s]/mirror:bottom-0 group-data-[flush~=w]/mirror:left-0 group-data-[swipe~=w]/mirror:hidden", cursor: "cursor-nesw-resize", label: "bottom-left corner", title: "Drag the bottom-left corner" },
 ];
 
 /** Where a finger's 44 × 44 hit area sits for each handle: OUTSIDE the block, against its edge or corner (E5b-4, E5b-14). */
@@ -262,6 +262,11 @@ const HIT_POS: Record<Edge, string> = {
   n: "left-1/2 -translate-x-1/2 bottom-full", s: "left-1/2 -translate-x-1/2 top-full",
   e: "top-1/2 -translate-y-1/2 left-full", w: "top-1/2 -translate-y-1/2 right-full",
   ne: "bottom-full left-full", nw: "bottom-full right-full", se: "top-full left-full", sw: "top-full right-full",
+};
+/** In the screen edge's Back strip (`data-swipe`, E5d-3) a side's handle is not drawn: the phone owns that strip. The user's decision. */
+const HIT_SWIPE: Partial<Record<Edge, string>> = {
+  w: "group-data-[swipe~=w]/mirror:hidden", nw: "group-data-[swipe~=w]/mirror:hidden", sw: "group-data-[swipe~=w]/mirror:hidden",
+  e: "group-data-[swipe~=e]/mirror:hidden", ne: "group-data-[swipe~=e]/mirror:hidden", se: "group-data-[swipe~=e]/mirror:hidden",
 };
 
 /** A block-toolbar button: compact for a mouse, 44 × 44 for a finger (E-5a, D6 — WCAG 2.5.5 / Apple's 44pt). */
@@ -713,7 +718,9 @@ function ChromeMirror({ blockId, children }: { blockId: string; children: ReactN
       // c-21: the edge handles are drawn OUTSIDE the block; a side with no room before the canvas edge (the clip
       // above would cut the handle off) keeps its handle just inside instead. See `HANDLES`.
       const flush = r && s ? mirrorFlushSides(r, s) : undefined;
-      const next = r ? { left: r.left, top: r.top, width: r.width, height: r.height, clipPath, flush } : null;
+      // E5d-3: a finger's handle near the window's edge would start the system's Back swipe — not drawn there (the user's decision)
+      const swipe = r && matchMedia("(pointer: coarse)").matches ? edgeSwipeSides(r, window.innerWidth) || undefined : undefined;
+      const next = r ? { left: r.left, top: r.top, width: r.width, height: r.height, clipPath, flush, swipe } : null;
       // The decision itself lives in `shouldTakeMirrorBox` (box-model), pure and unit-tested — the browser
       // condition that triggers the runaway has resisted every attempt to reproduce, so testing the rule is
       // the only honest guard for it.
@@ -743,7 +750,7 @@ function ChromeMirror({ blockId, children }: { blockId: string; children: ReactN
   });
 
   if (!box) return null;
-  const { flush, ...rect } = box;
+  const { flush, swipe, ...rect } = box;
   return createPortal(
     <div
       // NAMED so a drag can move it WITHIN THE FRAME, without a render. A drag paints itself straight onto
@@ -752,6 +759,7 @@ function ChromeMirror({ blockId, children }: { blockId: string; children: ReactN
       // drag began: the handles would come away from the box the moment it started to change.
       data-chrome-mirror={blockId}
       data-flush={flush || undefined}
+      data-swipe={swipe || undefined}
       className="group/mirror"
       style={{ position: "fixed", ...rect, pointerEvents: "none", zIndex: CHROME_Z.handle }}
     >{children}</div>,
@@ -3556,7 +3564,7 @@ export default function BoxCanvas({
             under it, as a handle's does (`caretFallthrough`). `active:` so the browser treats it as a tap target (E5b-2).
             ponytail: a swipe started just outside the SELECTED block's edge resizes it rather than scrolling the page. */}
         {HANDLES.map((h) => (
-          <div key={`hit-${h.edge}`} aria-hidden="true" data-handle-hit={h.edge} onMouseDown={(e) => { caretFallthrough(e, node.id); startResize(e, node.id, h.edge); }} onPointerDown={onFingerDown((e) => { caretFallthrough(e, node.id); startResize(e, node.id, h.edge); })} className={`hidden pointer-coarse:block absolute size-11 ${HIT_POS[h.edge]} touch-none active:opacity-100`} style={{ zIndex: CHROME_Z.handleHit, pointerEvents: "auto" }} />
+          <div key={`hit-${h.edge}`} aria-hidden="true" data-handle-hit={h.edge} onMouseDown={(e) => { caretFallthrough(e, node.id); startResize(e, node.id, h.edge); }} onPointerDown={onFingerDown((e) => { caretFallthrough(e, node.id); startResize(e, node.id, h.edge); })} className={`hidden pointer-coarse:block absolute size-11 ${HIT_POS[h.edge]} ${HIT_SWIPE[h.edge] ?? ""} touch-none active:opacity-100`} style={{ zIndex: CHROME_Z.handleHit, pointerEvents: "auto" }} />
         ))}
       </>
     ) : null;

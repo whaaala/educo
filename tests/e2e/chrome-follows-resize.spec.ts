@@ -173,6 +173,10 @@ test.describe("the selection chrome follows the block it is drawn on", () => {
      */
     await seedOne(page);
     await select(page, "B");
+    // E5d-3 (the user's decision 2026-10-08): on a touch screen a handle in the screen edge's Back strip is not drawn — this
+    // block's left one there. Its bar docks on those screens anyway (asserted by the E-5c specs in phone-editing.spec.ts).
+    test.skip(!!test.info().project.use.hasTouch && !(await page.getByLabel("Resize left edge").first().isVisible()),
+      "the left handle lies in the screen edge's Back strip and is not drawn (E5d-3)");
 
     const before = (await page.locator('[data-box-id="B"]').boundingBox())!;
     await dragSampling(page, { label: "Resize left edge", id: "B", edge: "right", dx: 360, steps: 30, paceMs: 8, sampleEvery: 30 });

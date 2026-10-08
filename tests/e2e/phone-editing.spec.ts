@@ -184,12 +184,16 @@ test("a still click on any handle leaves the page exactly as it was", async ({ p
   const before = await page.evaluate(() => localStorage.getItem("educo_box_site_v1"));
   const r = (await page.locator('[data-box-id="L"]').boundingBox())!;
   await page.mouse.click(r.x + r.width * 0.3, r.y + r.height * 0.3); await page.waitForTimeout(300);
+  let clicked = 0;
   for (const edge of ["top-left corner", "bottom-right corner", "bottom edge", "right edge"]) {
-    const h = (await page.locator(`[aria-label="Resize ${edge}"]`).first().boundingBox())!;
+    const h = await page.locator(`[aria-label="Resize ${edge}"]`).first().boundingBox();
+    if (!h) continue; // a finger's handle in the screen edge's Back strip is not drawn (E5d-3) — the others are clicked
+    clicked += 1;
     await page.mouse.move(h.x + h.width / 2, h.y + h.height / 2);
     await page.mouse.down(); await page.waitForTimeout(80); await page.mouse.up(); await page.waitForTimeout(250);
     expect(await page.evaluate(() => localStorage.getItem("educo_box_site_v1")), `a still click on the ${edge}`).toBe(before);
   }
+  expect(clicked, "at least three handles were there to click").toBeGreaterThanOrEqual(3);
 });
 
 /**
@@ -371,6 +375,24 @@ const band = (id: string, kids: unknown[]) => ({ id, type: "container", directio
 test.describe("a finger drags and resizes (E-5b)", () => {
   test.beforeEach(() => { test.skip(!test.info().project.use.hasTouch, "a finger needs a touch screen; the mouse suites cover the mouse"); });
 
+  test("E5d-3 — no handle a finger can see lies in the screen edge's Back strip; the block still resizes from its other side", async ({ page }) => {
+    test.skip(!test.info().project.use.hasTouch, "a mouse has no edge gesture");
+    await threeBlocks(page);
+    await tapBlock(page, "a");
+    const shown = await page.locator('[aria-label^="Resize "]').evaluateAll((els) => els.filter((e) => e.getBoundingClientRect().width > 0)
+      .map((e) => { const r = e.getBoundingClientRect(); return { l: e.getAttribute("aria-label"), x: Math.round(r.left + r.width / 2) }; }));
+    const vw = page.viewportSize()!.width;
+    // measured on the Pixel (gesture navigation): a swipe from x ≤ 23dp went Back and left the editor; from 30dp it did not.
+    // 32 leaves a finger room to aim. A handle that would sit closer is NOT DRAWN (the user's decision 2026-10-08, E5d-10:
+    // a gutter cost a 360 phone 32px; handles inside the block caught its own presses)
+    for (const h of shown) expect(h.x >= 32 && h.x <= vw - 32, `${h.l} at x=${h.x} of ${vw}`).toBe(true);
+    expect(shown.map((h) => h.l), "the block still resizes: its right edge and its bottom").toEqual(expect.arrayContaining(["Resize right edge", "Resize bottom edge"]));
+    // a hidden handle takes its finger's hit area with it — nothing invisible waits in the strip
+    const hidden = new Set(["w", "nw", "sw", "e", "ne", "se"].filter((e) => !shown.some((h) => h.l === `Resize ${({ w: "left edge", nw: "top-left corner", sw: "bottom-left corner", e: "right edge", ne: "top-right corner", se: "bottom-right corner" } as Record<string, string>)[e]}`)));
+    const hits = await page.locator("[data-handle-hit]").evaluateAll((els) => els.filter((e) => e.getBoundingClientRect().width > 0).map((e) => e.getAttribute("data-handle-hit")));
+    for (const e of hits) expect(hidden.has(e!), `hit area ${e} shows for a hidden handle`).toBe(false);
+  });
+
   test("a finger resizes a block by its bottom handle; its top stays put and the page does not scroll", async ({ page }) => {
     const s = sitePage([]);
     s.pages[0].root.children = [band("band-L", [{ id: "L", type: "container", direction: "column", width: "50%", minHeight: 120, background: "#c7d2fe", children: [] }])];
@@ -488,10 +510,13 @@ test.describe("a finger drags and resizes (E-5b)", () => {
     expect(Math.abs(b1.y + b1.height - (b0.y + b0.height)), "the bottom it was not held by stayed (rule 19)").toBeLessThan(2);
     // Every handle has its hit area, 44 × 44, OUTSIDE the block (E5b-14) and UNDER the handles (E5b-15): a press on any handle's
     // centre is that handle, and a press in the block's middle is the block's.
-    const hit = await page.locator("[data-handle-hit]").evaluateAll((hs) => hs.map((h) => { const r = h.getBoundingClientRect(); return Math.min(r.width, r.height); }));
-    expect(hit.length, "a hit area for each of the 8 handles").toBe(8);
+    // (a handle in the screen edge's Back strip is not drawn, and neither is its hit area — E5d-3)
+    const hit = await page.locator("[data-handle-hit]").evaluateAll((hs) => hs.filter((h) => h.getBoundingClientRect().width > 0).map((h) => { const r = h.getBoundingClientRect(); return Math.min(r.width, r.height); }));
+    const drawn = await page.locator('[aria-label^="Resize "]').evaluateAll((hs) => hs.filter((h) => h.getBoundingClientRect().width > 0).length);
+    expect(hit.length, "a hit area for each handle that is drawn").toBe(drawn);
+    expect(drawn, "most of the 8 handles are drawn").toBeGreaterThanOrEqual(5);
     expect(Math.min(...hit), "every handle's hit area is 44 × 44 for a finger").toBeGreaterThanOrEqual(44);
-    const own = await page.locator('[aria-label^="Resize "]').evaluateAll((hs) => hs.map((h) => { const r = h.getBoundingClientRect(); return document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2) === h; }));
+    const own = await page.locator('[aria-label^="Resize "]').evaluateAll((hs) => hs.filter((h) => h.getBoundingClientRect().width > 0).map((h) => { const r = h.getBoundingClientRect(); return document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2) === h; }));
     expect(own.every(Boolean), "a press on each handle's centre is that handle").toBe(true);
     const inside = await page.locator(`[data-box-id="${L}"]`).evaluate((el) => { const r = el.getBoundingClientRect(); return !!document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2)?.closest("[data-handle-hit]"); });
     expect(inside, "no hit area lies over the block's own middle").toBe(false);
