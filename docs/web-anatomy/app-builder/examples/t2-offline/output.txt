@@ -1,0 +1,13 @@
+PASS  S1a offline: 3 writes saved on the phone, none reached the server  — live region: "form: Saved on this phone — sends when you are back online"
+PASS  S1b reopened online: all 3 flushed, each executed once  — executed=3 requests=3
+PASS  S2 lost response: retried, server replayed the saved answer, no duplicate form  — executed=4 requests=5
+PASS  S3 server errors: retried with backoff, executed once  — requests=8
+PASS  S4 two tabs flushing at once (Web Locks): 3 forms, no duplicates  — forms=3
+PASS  S4 two tabs flushing at once (no Web Locks — idempotency alone): 3 forms, no duplicates  — forms=3
+PASS  S5 conflict: shown to the teacher, not retried, the other teacher's mark kept  — server: {"status":"late","version":2,"by":"teacher-2"}
+PASS  S6 invalid write: marked "Not sent — needs fixing", the next one still sent
+PASS  S7a in the app, no signal: both writes in the NATIVE store, page says "Saved on this phone"
+PASS  S7b native flushed with the page closed, lost answer retried, no duplicate
+PASS  S7c reopened page shows "Sent" from the native store
+
+11/11 passed

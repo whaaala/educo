@@ -283,3 +283,30 @@ What exists was measured in the code (`BoxType` = 13 kinds, no form/input block;
   device default).
 - For us: our rungs 600 / 900 / 1200 / 1800 vs the platforms' 600 / 840 / 1200 / 1600, and we have no height class —
   a decision for the checklist, not a silent change (rule 18 is the user's).
+
+## 6. Research R-APP-1 — the four unknowns (2026-10-08)
+
+Asked by the user: understand data binding, the offline queue, server-side roles and cheap Android on 3G fully,
+before any app-builder build. Each track has its own file in `app-builder/` and a small working spike in
+`app-builder/examples/` (not product code), each mutation-checked.
+
+| Track | Recommendation | Proof | Still owed |
+|---|---|---|---|
+| T1 data binding ([`data-binding.md`](app-builder/data-binding.md)) | Bind at PUBLISH by default: one template per repeater + one ~1.5 KB filler → plain static HTML (no JS, offline-cacheable, SEO). Live/private data re-runs the SAME template + filler on the device (the app hands JSON over the WebView bridge). Canvas uses the same `expand()` → canvas == export by design. | spike 18/18, mutation-proven; three paths give identical markup | no records backend / publish server exists; four exporter spots change structure by value (`lib/semantics.ts:129`, `lib/box-export.ts:109,163,577`) |
+| T2 offline queue ([`offline-queue.md`](app-builder/offline-queue.md)) | HYBRID: in the app a native outbox (expo-sqlite + NetInfo) sends even with the page closed; in a browser IndexedDB; one `enqueue()` API either way; idempotency key per write; outcomes sent / conflict / retry / failed; WhatsApp-style clock → tick, announced to screen readers. No sync framework. | spike 11/11; 3 fail with idempotency off | real device (sqlite, app killed mid-send, iOS storage) |
+| T3 server-side roles ([`server-roles.md`](app-builder/server-roles.md)) | School = tenant, `school_id` on every row, enforced IN THE DATABASE (row-level rules); roles and links (guardian→pupil, teacher→class) in their own tables; the API uses the user's token, never the service key; phone + OTP (WhatsApp first, SMS fallback); the school invites parents, parents never claim a child; admins pick plain-words PRESETS that map to reviewed rule templates — never free-written rules; `visibleTo` on blocks is display only. | spike 9 tests, 6 mutations caught (IDOR refused, teacher limited to class, cross-school refused) | no database for school records; NDPA 2023 / Ghana Act 843 read only via law-firm summaries — needs a lawyer |
+| T4 cheap Android on 3G ([`low-end-3g.md`](app-builder/low-end-3g.md)) | Budgets hold only if fonts are Latin-subset FILES (not embedded) and photos are FILES with `srcset` + lazy loading; the editor in a WebView needs its own diet. | HEADLESS timing run: every exported page 501–530 KB, first text 13.5–14.3 s on Slow 3G + 4x CPU (budget 100 KB / 5 s); with fonts + photos as files 177 KB / 4.2 s | a real itel / Tecno phone; the emulator was not run (memory) |
+
+Facts the market sets (T4, sources in its file): Tecno + Infinix + itel ≈ 42% of Nigerian phones, Android ≈ 84%;
+360px wide ≈ 43% of the top six resolutions; ≈ 21% of Nigerian Android phones on Android ≤ 12; cheap phones 2–4 GB on
+Android Go; 3G is still the region's largest technology to 2027 (GSMA); data ≈ $0.39–0.40 per GB.
+
+Bugs the research found in EXISTING code — ledger RA-1…RA-9 in `docs/TASK_TREE.md` (six security, three weight).
+
+### 6.1 Every decision waiting for the user (one list)
+- Layout: **D1** our rungs vs the platforms' 600/840/1200/1600 + a height class.
+- Order: **D2** data layer next, or layout axes first on sample data · **D3** Lovable (wait / credits / skip).
+- Data binding (T1): where publishing runs · v1 source = the site's own collections? · empty canvas shows sample data? · static detail page per public record, runtime page for private · formatting via `Intl` or server strings · limits (≤ 100 items, one nesting level) · names teachers see.
+- Offline (T2): approve the hybrid + 3 SDK-pinned modules (expo-sqlite, NetInfo, expo-secure-store) · two teachers marking the same pupil: later wins or choose · keep write ids 30 days · reachability checks · ~20 MB cache per school, which records · shared phones: whose queue · photos wait for Wi-Fi?
+- Roles (T3): Supabase (installed; recommended) vs plain Postgres vs Firebase · data residency (Supabase African region UNVERIFIED → cross-border under both Acts) · OTP provider Termii / Africa's Talking / Twilio · pupil accounts none vs school-issued codes · `@supabase/ssr` + `expo-secure-store` (new deps) · RA-1…RA-6: fix now or as the first sign-in batch (RA-5 is cheap and needs no sign-in — recommended now).
+- Weight (T4): RA-7 fonts / RA-8 photos / RA-9 editor — fix now (they break RULE AF on every page today) or first app-builder batch.

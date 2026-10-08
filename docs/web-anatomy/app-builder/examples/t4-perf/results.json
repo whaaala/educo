@@ -1,0 +1,695 @@
+[
+ {
+  "url": "http://localhost:3501/page-0/index.html",
+  "prof": "slow3g",
+  "cpu": 4,
+  "requests": 2,
+  "totalKB": 529.9,
+  "byTypeKB": {
+   "Document": 75.7,
+   "Stylesheet": 454.2
+  },
+  "loadWall": 13886,
+  "fcp": 13536,
+  "lcp": 13536,
+  "dcl": 13880,
+  "load": 13883,
+  "tbt": 219,
+  "longTasks": 4,
+  "docW": 360
+ },
+ {
+  "url": "http://localhost:3501/page-0/index.html",
+  "prof": "slow3g",
+  "cpu": 6,
+  "requests": 2,
+  "totalKB": 529.9,
+  "byTypeKB": {
+   "Document": 75.7,
+   "Stylesheet": 454.2
+  },
+  "loadWall": 14115,
+  "fcp": 13616,
+  "lcp": 13616,
+  "dcl": 14109,
+  "load": 14113,
+  "tbt": 506,
+  "longTasks": 4,
+  "docW": 360
+ },
+ {
+  "url": "http://localhost:3501/page-0/index.html",
+  "prof": "3g",
+  "cpu": 4,
+  "requests": 2,
+  "totalKB": 529.9,
+  "byTypeKB": {
+   "Document": 75.7,
+   "Stylesheet": 454.2
+  },
+  "loadWall": 4172,
+  "fcp": 3928,
+  "lcp": 3928,
+  "dcl": 4168,
+  "load": 4171,
+  "tbt": 204,
+  "longTasks": 3,
+  "docW": 360
+ },
+ {
+  "url": "http://localhost:3501/page-0/index.html",
+  "prof": "lh4g",
+  "cpu": 4,
+  "requests": 2,
+  "totalKB": 529.9,
+  "byTypeKB": {
+   "Document": 75.7,
+   "Stylesheet": 454.2
+  },
+  "loadWall": 3218,
+  "fcp": 2964,
+  "lcp": 2964,
+  "dcl": 3213,
+  "load": 3216,
+  "tbt": 177,
+  "longTasks": 3,
+  "docW": 360
+ },
+ {
+  "url": "http://localhost:3501/page-0-fix/index.html",
+  "prof": "slow3g",
+  "cpu": 4,
+  "requests": 13,
+  "totalKB": 177.1,
+  "byTypeKB": {
+   "Document": 8.5,
+   "Stylesheet": 3.1,
+   "Font": 44.1,
+   "Image": 121.4
+  },
+  "loadWall": 8271,
+  "fcp": 4224,
+  "lcp": 7680,
+  "dcl": 4347,
+  "load": 8269,
+  "tbt": 404,
+  "longTasks": 11,
+  "docW": 360
+ },
+ {
+  "url": "http://localhost:3501/page-0-fix/index.html",
+  "prof": "slow3g",
+  "cpu": 6,
+  "requests": 13,
+  "totalKB": 177.1,
+  "byTypeKB": {
+   "Document": 8.5,
+   "Stylesheet": 3.1,
+   "Font": 44.1,
+   "Image": 121.4
+  },
+  "loadWall": 8322,
+  "fcp": 4316,
+  "lcp": 7692,
+  "dcl": 5716,
+  "load": 8313,
+  "tbt": 4628,
+  "longTasks": 9,
+  "docW": 360
+ },
+ {
+  "url": "http://localhost:3501/page-0-fix/index.html",
+  "prof": "3g",
+  "cpu": 4,
+  "requests": 13,
+  "totalKB": 177.1,
+  "byTypeKB": {
+   "Document": 8.5,
+   "Stylesheet": 3.1,
+   "Font": 44.1,
+   "Image": 121.4
+  },
+  "loadWall": 2401,
+  "fcp": 1308,
+  "lcp": 2236,
+  "dcl": 1406,
+  "load": 2398,
+  "tbt": 330,
+  "longTasks": 8,
+  "docW": 360
+ },
+ {
+  "url": "http://localhost:3501/page-0-fix/index.html",
+  "prof": "lh4g",
+  "cpu": 4,
+  "requests": 10,
+  "totalKB": 136.6,
+  "byTypeKB": {
+   "Document": 8.5,
+   "Stylesheet": 3.1,
+   "Font": 44.1,
+   "Image": 80.9
+  },
+  "loadWall": 1317,
+  "fcp": 464,
+  "lcp": 932,
+  "dcl": 655,
+  "load": 1315,
+  "tbt": 250,
+  "longTasks": 5,
+  "docW": 360
+ },
+ {
+  "url": "http://localhost:3501/page-1/index.html",
+  "prof": "slow3g",
+  "cpu": 4,
+  "requests": 2,
+  "totalKB": 514.5,
+  "byTypeKB": {
+   "Document": 60.3,
+   "Stylesheet": 454.2
+  },
+  "loadWall": 14411,
+  "fcp": 14292,
+  "lcp": 15356,
+  "dcl": 3302,
+  "load": 14407,
+  "tbt": 1578,
+  "longTasks": 3,
+  "docW": 360
+ },
+ {
+  "url": "http://localhost:3501/page-1/index.html",
+  "prof": "slow3g",
+  "cpu": 6,
+  "requests": 2,
+  "totalKB": 514.5,
+  "byTypeKB": {
+   "Document": 60.3,
+   "Stylesheet": 454.2
+  },
+  "loadWall": 17033,
+  "fcp": 15320,
+  "lcp": 19120,
+  "dcl": 3337,
+  "load": 17022,
+  "tbt": 5161,
+  "longTasks": 4,
+  "docW": 360
+ },
+ {
+  "url": "http://localhost:3501/page-1/index.html",
+  "prof": "3g",
+  "cpu": 4,
+  "requests": 2,
+  "totalKB": 514.5,
+  "byTypeKB": {
+   "Document": 60.3,
+   "Stylesheet": 454.2
+  },
+  "loadWall": 4913,
+  "fcp": 4788,
+  "lcp": 5844,
+  "dcl": 948,
+  "load": 4909,
+  "tbt": 1632,
+  "longTasks": 3,
+  "docW": 360
+ },
+ {
+  "url": "http://localhost:3501/page-1/index.html",
+  "prof": "lh4g",
+  "cpu": 4,
+  "requests": 2,
+  "totalKB": 514.5,
+  "byTypeKB": {
+   "Document": 60.3,
+   "Stylesheet": 454.2
+  },
+  "loadWall": 2792,
+  "fcp": 3396,
+  "lcp": 4368,
+  "dcl": 574,
+  "load": 2787,
+  "tbt": 1219,
+  "longTasks": 3,
+  "docW": 360
+ },
+ {
+  "url": "http://localhost:3501/page-13/index.html",
+  "prof": "slow3g",
+  "cpu": 4,
+  "requests": 2,
+  "totalKB": 506.5,
+  "byTypeKB": {
+   "Document": 52.3,
+   "Stylesheet": 454.2
+  },
+  "loadWall": 15160,
+  "fcp": 14144,
+  "lcp": 15152,
+  "dcl": 15154,
+  "load": 15157,
+  "tbt": 1767,
+  "longTasks": 4,
+  "docW": 360
+ },
+ {
+  "url": "http://localhost:3501/page-13/index.html",
+  "prof": "slow3g",
+  "cpu": 6,
+  "requests": 2,
+  "totalKB": 506.5,
+  "byTypeKB": {
+   "Document": 52.3,
+   "Stylesheet": 454.2
+  },
+  "loadWall": 14389,
+  "fcp": 13832,
+  "lcp": 14384,
+  "dcl": 14385,
+  "load": 14387,
+  "tbt": 836,
+  "longTasks": 4,
+  "docW": 360
+ },
+ {
+  "url": "http://localhost:3501/page-13/index.html",
+  "prof": "3g",
+  "cpu": 4,
+  "requests": 2,
+  "totalKB": 506.5,
+  "byTypeKB": {
+   "Document": 52.3,
+   "Stylesheet": 454.2
+  },
+  "loadWall": 4260,
+  "fcp": 4008,
+  "lcp": 4352,
+  "dcl": 4216,
+  "load": 4258,
+  "tbt": 293,
+  "longTasks": 3,
+  "docW": 360
+ },
+ {
+  "url": "http://localhost:3501/page-13/index.html",
+  "prof": "lh4g",
+  "cpu": 4,
+  "requests": 2,
+  "totalKB": 506.5,
+  "byTypeKB": {
+   "Document": 52.3,
+   "Stylesheet": 454.2
+  },
+  "loadWall": 3653,
+  "fcp": 3048,
+  "lcp": 3808,
+  "dcl": 3560,
+  "load": 3651,
+  "tbt": 900,
+  "longTasks": 5,
+  "docW": 360
+ },
+ {
+  "url": "http://localhost:3501/page-13-fix/index.html",
+  "prof": "slow3g",
+  "cpu": 4,
+  "requests": 10,
+  "totalKB": 135.6,
+  "byTypeKB": {
+   "Document": 7.5,
+   "Stylesheet": 3.1,
+   "Font": 44.1,
+   "Image": 80.9
+  },
+  "loadWall": 8332,
+  "fcp": 4404,
+  "lcp": 7912,
+  "dcl": 4471,
+  "load": 8330,
+  "tbt": 323,
+  "longTasks": 6,
+  "docW": 360
+ },
+ {
+  "url": "http://localhost:3501/page-13-fix/index.html",
+  "prof": "slow3g",
+  "cpu": 6,
+  "requests": 10,
+  "totalKB": 135.6,
+  "byTypeKB": {
+   "Document": 7.5,
+   "Stylesheet": 3.1,
+   "Font": 44.1,
+   "Image": 80.9
+  },
+  "loadWall": 8369,
+  "fcp": 4544,
+  "lcp": 8012,
+  "dcl": 4639,
+  "load": 8366,
+  "tbt": 986,
+  "longTasks": 10,
+  "docW": 360
+ },
+ {
+  "url": "http://localhost:3501/page-13-fix/index.html",
+  "prof": "3g",
+  "cpu": 4,
+  "requests": 10,
+  "totalKB": 135.6,
+  "byTypeKB": {
+   "Document": 7.5,
+   "Stylesheet": 3.1,
+   "Font": 44.1,
+   "Image": 80.9
+  },
+  "loadWall": 2663,
+  "fcp": 1440,
+  "lcp": 2420,
+  "dcl": 1497,
+  "load": 2662,
+  "tbt": 408,
+  "longTasks": 6,
+  "docW": 360
+ },
+ {
+  "url": "http://localhost:3501/page-13-fix/index.html",
+  "prof": "lh4g",
+  "cpu": 4,
+  "requests": 8,
+  "totalKB": 108.5,
+  "byTypeKB": {
+   "Document": 7.5,
+   "Stylesheet": 3.1,
+   "Font": 44.1,
+   "Image": 53.9
+  },
+  "loadWall": 1101,
+  "fcp": 584,
+  "lcp": 1080,
+  "dcl": 639,
+  "load": 1099,
+  "tbt": 365,
+  "longTasks": 7,
+  "docW": 360
+ },
+ {
+  "url": "http://localhost:3501/page-32/index.html",
+  "prof": "slow3g",
+  "cpu": 4,
+  "requests": 2,
+  "totalKB": 508.5,
+  "byTypeKB": {
+   "Document": 54.4,
+   "Stylesheet": 454.2
+  },
+  "loadWall": 14085,
+  "fcp": 13720,
+  "lcp": 13720,
+  "dcl": 14010,
+  "load": 14083,
+  "tbt": 517,
+  "longTasks": 4,
+  "docW": 360
+ },
+ {
+  "url": "http://localhost:3501/page-32/index.html",
+  "prof": "slow3g",
+  "cpu": 6,
+  "requests": 2,
+  "totalKB": 508.5,
+  "byTypeKB": {
+   "Document": 54.4,
+   "Stylesheet": 454.2
+  },
+  "loadWall": 15114,
+  "fcp": 14288,
+  "lcp": 14288,
+  "dcl": 15112,
+  "load": 15113,
+  "tbt": 1752,
+  "longTasks": 4,
+  "docW": 360
+ },
+ {
+  "url": "http://localhost:3501/page-32/index.html",
+  "prof": "3g",
+  "cpu": 4,
+  "requests": 2,
+  "totalKB": 508.5,
+  "byTypeKB": {
+   "Document": 54.4,
+   "Stylesheet": 454.2
+  },
+  "loadWall": 4747,
+  "fcp": 4252,
+  "lcp": 4252,
+  "dcl": 4650,
+  "load": 4745,
+  "tbt": 973,
+  "longTasks": 5,
+  "docW": 360
+ },
+ {
+  "url": "http://localhost:3501/page-32/index.html",
+  "prof": "lh4g",
+  "cpu": 4,
+  "requests": 2,
+  "totalKB": 508.5,
+  "byTypeKB": {
+   "Document": 54.4,
+   "Stylesheet": 454.2
+  },
+  "loadWall": 3571,
+  "fcp": 3096,
+  "lcp": 3096,
+  "dcl": 3567,
+  "load": 3569,
+  "tbt": 733,
+  "longTasks": 4,
+  "docW": 360
+ },
+ {
+  "url": "http://localhost:3501/page-38/index.html",
+  "prof": "slow3g",
+  "cpu": 4,
+  "requests": 2,
+  "totalKB": 501.2,
+  "byTypeKB": {
+   "Document": 47,
+   "Stylesheet": 454.1
+  },
+  "loadWall": 14228,
+  "fcp": 13812,
+  "lcp": 14372,
+  "dcl": 14154,
+  "load": 14227,
+  "tbt": 652,
+  "longTasks": 4,
+  "docW": 360
+ },
+ {
+  "url": "http://localhost:3501/page-38/index.html",
+  "prof": "slow3g",
+  "cpu": 6,
+  "requests": 2,
+  "totalKB": 501.2,
+  "byTypeKB": {
+   "Document": 47,
+   "Stylesheet": 454.1
+  },
+  "loadWall": 14442,
+  "fcp": 13884,
+  "lcp": 14440,
+  "dcl": 14438,
+  "load": 14440,
+  "tbt": 928,
+  "longTasks": 4,
+  "docW": 360
+ },
+ {
+  "url": "http://localhost:3501/page-38/index.html",
+  "prof": "3g",
+  "cpu": 4,
+  "requests": 2,
+  "totalKB": 501.2,
+  "byTypeKB": {
+   "Document": 47,
+   "Stylesheet": 454.1
+  },
+  "loadWall": 4552,
+  "fcp": 4172,
+  "lcp": 4548,
+  "dcl": 4548,
+  "load": 4550,
+  "tbt": 567,
+  "longTasks": 4,
+  "docW": 360
+ },
+ {
+  "url": "http://localhost:3501/page-38/index.html",
+  "prof": "lh4g",
+  "cpu": 4,
+  "requests": 2,
+  "totalKB": 501.2,
+  "byTypeKB": {
+   "Document": 47,
+   "Stylesheet": 454.1
+  },
+  "loadWall": 3406,
+  "fcp": 3044,
+  "lcp": 3532,
+  "dcl": 3341,
+  "load": 3403,
+  "tbt": 520,
+  "longTasks": 4,
+  "docW": 360
+ },
+ {
+  "url": "http://localhost:3501/page-40/index.html",
+  "prof": "slow3g",
+  "cpu": 4,
+  "requests": 2,
+  "totalKB": 500.6,
+  "byTypeKB": {
+   "Document": 46.5,
+   "Stylesheet": 454.2
+  },
+  "loadWall": 13783,
+  "fcp": 13560,
+  "lcp": 13560,
+  "dcl": 13778,
+  "load": 13783,
+  "tbt": 189,
+  "longTasks": 3,
+  "docW": 360
+ },
+ {
+  "url": "http://localhost:3501/page-40/index.html",
+  "prof": "slow3g",
+  "cpu": 6,
+  "requests": 2,
+  "totalKB": 500.6,
+  "byTypeKB": {
+   "Document": 46.5,
+   "Stylesheet": 454.2
+  },
+  "loadWall": 13972,
+  "fcp": 13660,
+  "lcp": 13660,
+  "dcl": 13968,
+  "load": 13971,
+  "tbt": 451,
+  "longTasks": 4,
+  "docW": 360
+ },
+ {
+  "url": "http://localhost:3501/page-40/index.html",
+  "prof": "3g",
+  "cpu": 4,
+  "requests": 2,
+  "totalKB": 500.6,
+  "byTypeKB": {
+   "Document": 46.5,
+   "Stylesheet": 454.2
+  },
+  "loadWall": 4114,
+  "fcp": 3952,
+  "lcp": 3952,
+  "dcl": 4111,
+  "load": 4113,
+  "tbt": 168,
+  "longTasks": 4,
+  "docW": 360
+ },
+ {
+  "url": "http://localhost:3501/page-40/index.html",
+  "prof": "lh4g",
+  "cpu": 4,
+  "requests": 2,
+  "totalKB": 500.6,
+  "byTypeKB": {
+   "Document": 46.5,
+   "Stylesheet": 454.2
+  },
+  "loadWall": 3081,
+  "fcp": 2860,
+  "lcp": 2860,
+  "dcl": 3078,
+  "load": 3080,
+  "tbt": 190,
+  "longTasks": 3,
+  "docW": 360
+ },
+ {
+  "url": "http://localhost:3500/website/box-demo?theme=light",
+  "prof": "slow3g",
+  "cpu": 4,
+  "requests": 49,
+  "totalKB": 1094,
+  "byTypeKB": {
+   "Document": 4.5,
+   "Stylesheet": 132.9,
+   "Script": 909,
+   "Image": 1.2,
+   "Fetch": 9.8,
+   "Font": 36.7
+  },
+  "loadWall": 29588,
+  "fcp": 11120,
+  "lcp": 11120,
+  "dcl": 11263,
+  "load": 29586,
+  "tbt": 1426,
+  "longTasks": 9,
+  "docW": 360
+ },
+ {
+  "url": "http://localhost:3500/website/box-demo?theme=light",
+  "prof": "3g",
+  "cpu": 4,
+  "requests": 49,
+  "totalKB": 1094.1,
+  "byTypeKB": {
+   "Document": 4.5,
+   "Stylesheet": 132.9,
+   "Script": 909,
+   "Image": 1.2,
+   "Fetch": 9.8,
+   "Font": 36.7
+  },
+  "loadWall": 9283,
+  "fcp": 3288,
+  "lcp": 3288,
+  "dcl": 3466,
+  "load": 9281,
+  "tbt": 1332,
+  "longTasks": 10,
+  "docW": 360
+ },
+ {
+  "url": "http://localhost:3500/website/box-demo?theme=light",
+  "prof": "lh4g",
+  "cpu": 4,
+  "requests": 49,
+  "totalKB": 1094.1,
+  "byTypeKB": {
+   "Document": 4.5,
+   "Stylesheet": 132.9,
+   "Script": 909,
+   "Image": 1.2,
+   "Fetch": 9.8,
+   "Font": 36.7
+  },
+  "loadWall": 6106,
+  "fcp": 2700,
+  "lcp": 2700,
+  "dcl": 2762,
+  "load": 6105,
+  "tbt": 826,
+  "longTasks": 8,
+  "docW": 360
+ }
+]

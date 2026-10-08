@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Register (T2 spike)</title>
+<style>
+  body { font: 1rem/1.5 system-ui, sans-serif; margin: 1rem; }
+  li { margin: .25rem 0; }
+  .state { font-weight: 600; }
+</style>
+</head>
+<body>
+<h1>Register — Primary 3</h1>
+<form id="mark">
+  <label>Pupil <input name="pupil" value="ada"></label>
+  <label>Status <select name="status"><option>present</option><option>absent</option></select></label>
+  <label>Seen version <input name="base" placeholder="(new)"></label>
+  <button>Mark</button>
+</form>
+<form id="claim">
+  <label>Parent name <input name="name" value="Mrs Okafor"></label>
+  <button>Send payment claim</button>
+</form>
+<p id="live" role="status" aria-live="polite"></p>
+<h2>On this phone</h2>
+<ul id="ops"></ul>
+<script src="/outbox.js"></script>
+<script>
+  // Words, not colour alone (WCAG 1.4.1): each state has a symbol AND a sentence, like WhatsApp's clock / tick.
+  const WORDS = {
+    queued: ['⏱', 'Saved on this phone — sends when you are back online'],
+    sending: ['↻', 'Sending…'],
+    sent: ['✓', 'Sent'],
+    failed: ['!', 'Not sent — needs fixing'],
+    conflict: ['⚠', 'Someone else changed this — choose which to keep'],
+  };
+  const last = new Map();
+  EducoOutbox.subscribe((ops) => {
+    document.getElementById('ops').innerHTML = ops.map((o) =>
+      `<li data-id="${o.id}" data-state="${o.state}"><span aria-hidden="true">${WORDS[o.state][0]}</span> ${o.type} ${o.body.pupil || o.body.name || ''}: <span class="state">${WORDS[o.state][1]}</span></li>`).join('');
+    // Announce only changes a person cares about (not every 'sending' flicker).
+    for (const o of ops) {
+      if (last.get(o.id) !== o.state && o.state !== 'sending') document.getElementById('live').textContent = `${o.type}: ${WORDS[o.state][1]}`;
+      last.set(o.id, o.state);
+    }
+  });
+  document.getElementById('mark').onsubmit = (e) => {
+    e.preventDefault();
+    const f = new FormData(e.target);
+    const body = { pupil: f.get('pupil'), date: '2026-10-08', status: f.get('status'), by: 'teacher-1' };
+    if (f.get('base')) body.baseVersion = Number(f.get('base'));
+    EducoOutbox.enqueue('attendance', body);
+  };
+  document.getElementById('claim').onsubmit = (e) => {
+    e.preventDefault();
+    EducoOutbox.enqueue('form', { name: new FormData(e.target).get('name'), amount: 15000, ref: 'PSK-123' });
+  };
+</script>
+</body>
+</html>
