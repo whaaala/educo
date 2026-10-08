@@ -41,6 +41,10 @@ const clickTile = async (page: Page, text: string) => {
     tile.click();
   }, text);
   await page.waitForTimeout(800);
+  // A tile that asks first is ANSWERED, as a person answers it (E5a-17): the Grid tile opens its layout picker, and left unanswered
+  // no grid was ever added — "Grid in a stack" tested two stacks — while the picker hung open over the panel.
+  const shape = page.locator('[role="menu"][aria-label="Choose a layout"] [aria-label="2 across, 1 down"]');
+  if (await shape.isVisible().catch(() => false)) { await shape.click(); await page.waitForTimeout(800); }
 };
 
 const leaves = (page: Page) => page.evaluate(() => Array.from(document.querySelectorAll<HTMLElement>("[data-box-id]"))

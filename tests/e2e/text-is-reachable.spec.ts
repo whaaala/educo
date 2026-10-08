@@ -1,5 +1,5 @@
 import { test, expect, type Page } from "@playwright/test";
-import { seedSite, sitePage } from "./helpers/seed-site";
+import { seedSite, sitePage, desktopPageOnAPhone } from "./helpers/seed-site";
 import type { BoxNode } from "@/lib/box-model";
 
 /**
@@ -148,7 +148,7 @@ test.describe("the words of a selected block can always be clicked", () => {
     // A phone draws the desktop page at ~0.22: the heading at the top of its section is 9px tall, and the section's top handle — with
     // no room above the page top — lies over the whole of it. Every tap there re-selected the section; the heading was unreachable.
     await page.setViewportSize({ width: 393, height: 851 });
-    await page.reload(); await page.waitForSelector('[data-box-id="h"]'); await page.waitForTimeout(400);
+    await page.reload(); await desktopPageOnAPhone(page); await page.waitForSelector('[data-box-id="h"]'); await page.waitForTimeout(400); // the DESKTOP page on a phone, chosen (E-5a)
     const b = (await page.locator('[data-box-id="h"]').boundingBox())!;
     const x = b.x + b.width * 0.5, y = b.y + b.height * 0.5;
     await page.mouse.click(x, y); await page.waitForTimeout(250);

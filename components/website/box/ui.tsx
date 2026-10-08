@@ -12,8 +12,10 @@ import { ChevronDown, type LucideIcon } from "lucide-react";
 import { CHROME_Z } from "@/lib/educo-ui/stacking";
 
 /** A quiet ghost button (icon and/or text) with an optional active state + tooltip. `primary` = the one CTA. */
-export function ToolBtn({ onClick, title, ariaLabel, active, disabled, primary, compact, children }: {
+export function ToolBtn({ onClick, title, ariaLabel, active, disabled, primary, compact, btnRef, children }: {
   onClick?: () => void; title?: string; ariaLabel?: string; active?: boolean; disabled?: boolean; primary?: boolean;
+  /** The button itself — for a sheet that hands focus back to it when it closes (E5a-13). */
+  btnRef?: React.Ref<HTMLButtonElement>;
   /** An ICON-ONLY button: text padding made it 34px wide where 26px (still over the 24px target) will do — it kept the
    *  builder's bar to one row at 1536px once the zoom controls joined it (Z1-m). */
   compact?: boolean; children: ReactNode;
@@ -26,17 +28,43 @@ export function ToolBtn({ onClick, title, ariaLabel, active, disabled, primary, 
    * shortage by shrinking its children, and text is what gives first — so the label becomes unreadable long
    * before anything runs out of room. A control that cannot be read cannot be used.
    */
-  const base = `inline-flex items-center gap-1.5 rounded-lg ${compact ? "px-1.5" : "px-2.5"} py-1.5 text-xs font-medium whitespace-nowrap shrink-0 transition-colors disabled:opacity-40 disabled:cursor-not-allowed`;
+  const base = `inline-flex items-center gap-1.5 rounded-lg ${compact ? "px-1.5" : "px-2.5"} py-1.5 text-xs font-medium whitespace-nowrap shrink-0 transition-colors disabled:opacity-40 disabled:cursor-not-allowed pointer-coarse:min-h-11 pointer-coarse:min-w-11 pointer-coarse:justify-center`; // 44px for a finger (E-5a, D6)
   const look = primary
     ? "bg-brand text-brand-fg shadow-sm hover:brightness-105"
     : active
       ? "bg-gray-100 dark:bg-white/10 midnight:bg-white/10 purple:bg-white/10 text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50"
       : "text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-100 dark:hover:bg-white/10 midnight:hover:bg-white/10 purple:hover:bg-white/10";
-  return <button onClick={onClick} title={title} aria-label={ariaLabel} aria-pressed={active} disabled={disabled} className={`${base} ${look}`}>{children}</button>;
+  return <button ref={btnRef} onClick={onClick} title={title} aria-label={ariaLabel} aria-pressed={active} disabled={disabled} className={`${base} ${look}`}>{children}</button>;
 }
 
 /** A modal dialog is open: the page's own keys (undo, delete, Escape…) are the dialog's until it closes (E3-10). */
 export const modalOpen = () => !!document.querySelector('[aria-modal="true"]');
+
+/**
+ * A PHONE SHEET, PUT AWAY LIKE ONE (E-5a, D3): Back closes it — one history entry while it is open, taken back when it closes any
+ * other way — and focus goes back to the button that opened it (E5a-13, WCAG 2.4.3). `returnTo` is that button.
+ */
+export function useSheetManners(open: boolean, close: () => void, returnTo: { current: HTMLElement | null }, active = true) {
+  const closeRef = useRef(close);
+  closeRef.current = close;
+  useEffect(() => {
+    if (!open || !active) return;
+    history.pushState({ ...(history.state ?? {}), euSheet: true }, "");
+    const onPop = () => closeRef.current();
+    window.addEventListener("popstate", onPop);
+    return () => {
+      window.removeEventListener("popstate", onPop);
+      if (history.state?.euSheet) history.back();
+      // …unless something else has taken focus since — the question Reset asks, a dialog an action opened (E5a-18): stealing it
+      // back left Cancel unfocused and Escape talking to the wrong thing.
+      requestAnimationFrame(() => {
+        const at = document.activeElement;
+        // eslint-disable-next-line react-hooks/exhaustive-deps -- read LATER on purpose: the button renders only once the sheet has closed
+        if (!at || at === document.body) returnTo.current?.focus();
+      });
+    };
+  }, [open, active, returnTo]);
+}
 
 /** A thin vertical divider between toolbar groups. */
 export const ToolDivider = () => <div aria-hidden className="w-px h-5 bg-line mx-1 shrink-0" />;
@@ -60,7 +88,7 @@ export function Segmented<T extends string>({ value, onChange, options, ariaLabe
           // as the name and are unaffected.
           <button key={o.value} onClick={() => onChange(o.value)} title={o.title ?? o.label}
             aria-label={o.label ? undefined : (o.title ?? o.value)} aria-pressed={on}
-            className={`inline-flex items-center justify-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-medium transition-all ${full ? "flex-1" : ""} ${on ? "bg-surface text-ink shadow-sm" : "text-muted hover:text-ink"}`}>
+            className={`inline-flex items-center justify-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-medium transition-all pointer-coarse:min-h-11 pointer-coarse:min-w-11 ${full ? "flex-1" : ""} ${on ? "bg-surface text-ink shadow-sm" : "text-muted hover:text-ink"}`}>
             {o.Icon && <o.Icon className="w-3.5 h-3.5" />}{o.label && <span>{o.label}</span>}
           </button>
         );
@@ -203,7 +231,7 @@ export function Tabs<T extends string>({ tabs, value, onChange }: { tabs: { id: 
         const on = t.id === value;
         return (
           <button key={t.id} role="tab" aria-selected={on} onClick={() => onChange(t.id)}
-            className={`relative py-2 text-xs font-semibold transition-colors ${on ? "text-ink" : "text-muted hover:text-ink"}`}>
+            className={`relative py-2 pointer-coarse:min-h-11 pointer-coarse:min-w-11 text-xs font-semibold transition-colors ${on ? "text-ink" : "text-muted hover:text-ink"}`}>
             {t.label}
             {on && <span aria-hidden className="absolute left-0 right-0 -bottom-px h-0.5 bg-brand rounded-full" />}
           </button>
@@ -252,12 +280,16 @@ export function PortalMenu({ anchor, onClose, width = 200, ariaLabel, children }
     const onDown = (e: MouseEvent) => { if (ref.current && !ref.current.contains(e.target as Node)) close(); };
     const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") close(); };
     // Close when the PAGE scrolls (the anchor would go stale) — but IGNORE scrolling INSIDE the menu itself.
-    const onScroll = (e: Event) => { if (ref.current && ref.current.contains(e.target as Node)) return; close(); };
+    // …and only a scroll AFTER it opened (E5a-5): the scroll that brought its tile into view — a phone's flick still settling
+    // under the tap — is delivered a frame later and closed the menu the moment it appeared. Armed two frames on.
+    let armed = false;
+    let raf = requestAnimationFrame(() => { raf = requestAnimationFrame(() => { armed = true; }); });
+    const onScroll = (e: Event) => { if (!armed || (ref.current && ref.current.contains(e.target as Node))) return; close(); };
     document.addEventListener("mousedown", onDown);
     document.addEventListener("keydown", onKey);
     window.addEventListener("scroll", onScroll, true);
     window.addEventListener("resize", close);
-    return () => { document.removeEventListener("mousedown", onDown); document.removeEventListener("keydown", onKey); window.removeEventListener("scroll", onScroll, true); window.removeEventListener("resize", close); };
+    return () => { cancelAnimationFrame(raf); document.removeEventListener("mousedown", onDown); document.removeEventListener("keydown", onKey); window.removeEventListener("scroll", onScroll, true); window.removeEventListener("resize", close); };
   }, []);
 
   return createPortal(
@@ -285,7 +317,7 @@ export function MenuItem({ onClick, Icon, label, danger, disabled, hint }: { onC
       role="menuitem"
       disabled={disabled}
       onClick={onClick}
-      className={`w-full flex items-center gap-2.5 px-2 py-1.5 text-xs text-left rounded-lg disabled:opacity-40 disabled:cursor-not-allowed ${danger ? "text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40" : "text-ink hover:bg-surface-2"}`}
+      className={`w-full flex items-center gap-2.5 px-2 py-1.5 text-xs text-left rounded-lg pointer-coarse:min-h-11 disabled:opacity-40 disabled:cursor-not-allowed ${danger ? "text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40" : "text-ink hover:bg-surface-2"}`}
     ><Icon className={`w-3.5 h-3.5 ${danger ? "text-red-400" : "text-muted"}`} /><span className="flex-1">{label}</span>{hint && <kbd aria-hidden="true" className="text-[0.5625rem] font-sans text-muted">{hint}</kbd>}</button>
   );
 }

@@ -54,3 +54,20 @@ describe("ThemeSwitcher", () => {
     expect(screen.getByRole("menuitemradio", { name: /Purple/ })).toHaveAttribute("aria-checked", "false");
   });
 });
+
+describe("ThemeProvider · ?theme= (the Educo app opens the editor in its own theme, BATCH E-5d)", () => {
+  it.each(["dark", "midnight", "purple", "light"])("?theme=%s wins over the saved theme", (id) => {
+    localStorage.setItem("theme", id === "light" ? "dark" : "light");
+    window.history.replaceState(null, "", `/website/box-demo?theme=${id}`);
+    renderSwitcher();
+    expect(localStorage.getItem("theme")).toBe(id);
+    window.history.replaceState(null, "", "/");
+  });
+
+  it("an unknown ?theme= is ignored", () => {
+    window.history.replaceState(null, "", "/?theme=neon");
+    renderSwitcher();
+    expect(document.documentElement.className).toBe("");
+    window.history.replaceState(null, "", "/");
+  });
+});

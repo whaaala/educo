@@ -51,7 +51,7 @@ const heightOf = (page: Page, id: string) =>
  */
 async function selectBox(page: Page, id: string) {
   const b = (await page.locator(`[data-box-id="${id}"]`).boundingBox())!;
-  const x = b.x + b.width * 0.25, y = b.y + b.height * 0.25; // clear of the centred "+" hints (E2-9)
+  const x = b.x + b.width * 0.06, y = b.y + b.height * 0.25; // clear of the centred "+" hints (E2-9), a finger's size on touch (E-5a)
   for (let i = 0; i < 4; i++) {
     const sel = await page.evaluate(() => document.querySelector(".outline-indigo-500")?.getAttribute("data-box-id") ?? null);
     if (sel === id) break;

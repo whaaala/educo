@@ -1,5 +1,5 @@
 import { test, expect, type Page } from "@playwright/test";
-import { seedSite, sitePage } from "./helpers/seed-site";
+import { seedSite, sitePage, pressHeader } from "./helpers/seed-site";
 
 /**
  * A BLOCK HIDDEN ON A DEVICE IS GONE FROM THE CANVAS AT THAT DEVICE (decided with the user 2026-09-28, #132) —
@@ -27,20 +27,20 @@ const box = (page: Page, id: string) => page.locator(`[data-box-id="${id}"]`).bo
 test.describe("hidden on a device → gone from the canvas at that device", () => {
   test("at the Mobile preset the hidden menu has no box, the header keeps one line, and the toggle brings it back faintly", async ({ page }) => {
     await seed(page);
-    await page.getByRole("button", { name: "Mobile (375px)" }).first().click(); await page.waitForTimeout(600);
+    await pressHeader(page, "Mobile (375px)"); await page.waitForTimeout(600);
     expect(await page.locator('[data-box-id="menu"]').count(), "the hidden block is not drawn at all").toBe(0);
     const logo = (await box(page, "logo"))!, cta = (await box(page, "cta"))!;
     expect(Math.abs(logo.y - cta.y), "logo and button share one line — nothing hidden pushed the button down").toBeLessThan(4);
-    await page.getByRole("button", { name: "Show hidden blocks" }).click(); await page.waitForTimeout(400);
+    await pressHeader(page, "Show hidden blocks"); await page.waitForTimeout(400);
     const menu = page.locator('[data-box-id="menu"]');
     expect(await menu.count(), "asked for, the hidden block is drawn").toBe(1);
     expect(parseFloat(await menu.evaluate((e) => getComputedStyle(e).opacity)), "…faintly").toBeLessThan(0.5);
-    await page.getByRole("button", { name: "Show hidden blocks" }).click(); await page.waitForTimeout(300);
+    await pressHeader(page, "Show hidden blocks"); await page.waitForTimeout(300);
     expect(await menu.count(), "and gone again").toBe(0);
   });
   test("at the Desktop preset the same block is simply there", async ({ page }) => {
     await seed(page);
-    await page.getByRole("button", { name: "Desktop (1280px)" }).first().click(); await page.waitForTimeout(600);
+    await pressHeader(page, "Desktop (1280px)"); await page.waitForTimeout(600);
     const menu = page.locator('[data-box-id="menu"]');
     expect(await menu.count()).toBe(1);
     expect(parseFloat(await menu.evaluate((e) => getComputedStyle(e).opacity))).toBe(1);

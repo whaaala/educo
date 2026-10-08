@@ -1,5 +1,5 @@
 import { test, expect, type Page } from "@playwright/test";
-import { seedSite, openInspector } from "./helpers/seed-site";
+import { seedSite, openInspector, pressHeader } from "./helpers/seed-site";
 
 /**
  * MASONRY through the REAL builder — the control, and canvas = export.
@@ -54,7 +54,7 @@ async function seedGallery(page: Page) {
   await page.waitForSelector('[data-box-id="gallery"]', { timeout: 15_000 });
   // A real screen width, so what the editor draws is what a visitor at that width gets.
   await page.setViewportSize({ width: 1800, height: 1000 });
-  await page.locator('[aria-label="Desktop (1280px)"]').click();
+  await pressHeader(page, "Desktop (1280px)");
   await page.waitForTimeout(400);
 }
 
@@ -201,6 +201,9 @@ test.describe("what masonry uncovered on the way", () => {
     // announce or truncate, and that a keyboard user never sees. WCAG 4.1.2, and it is why this very file
     // could not find the chip it needed to click.
     await page.goto("/website/box-demo");
+    await page.waitForSelector('[aria-label="Open blocks panel"]');
+    // On a phone the chips live in the bar's More sheet (E5a-16): opened as a person opens it.
+    if (await page.getByRole("button", { name: "More", exact: true }).isVisible()) await page.getByRole("button", { name: "More", exact: true }).click();
     await page.waitForSelector('[aria-label="Preview screen size"]');
     const named = await page.locator('[aria-label="Preview screen size"] button').evaluateAll((els) =>
       els.map((el) => el.getAttribute("aria-label") || el.textContent?.trim() || ""));

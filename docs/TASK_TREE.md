@@ -968,17 +968,528 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
     1200px Desktop page at **22 %** — an Alert and a Badge a few pixels tall, the block's own toolbar bigger than the block. Correct
     to the model (every invariant holds in page px) and unusable for a finger. How a phone EDITS is the question BATCH E-5 was queued
     to research first (the user, E2-20), so it is answered there, not patched here.
-- `[ ]` **BATCH E-5 · Adding blocks on a phone** — QUEUED 2026-10-06 by the user (E2-20: "queue it, research first") (area: the editor
+- `[>]` **BATCH E-5 · Adding blocks on a phone** — OPEN 2026-10-06 on `builder/phone-editing` (cut from master `05c66ee`), research first — QUEUED 2026-10-06 by the user (E2-20: "queue it, research first") (area: the editor
   on a phone · adding and dropping): the open blocks panel covers the whole canvas on a phone, so a block cannot be dragged beside,
   under or into another. RULE RS FIRST: the user's sources and mine (how phone editors — Wix, Canva, Webflow, Framer — add and place
   blocks: a bottom sheet that leaves the page showing, tap-to-place, a placement target after picking), an "enough" checklist the
   user signs, THEN the build
-  - `[ ]` (1) the research and its signed "enough" checklist
-  - `[ ]` (2) the build the research settles on, web phone first, then `apps/mobile/` (RULE APP)
-  - `[ ]` E4-9 (from BATCH E-4): the drop strips are 25 % of a block's DRAWN height — 9px on a 37px block at the phone's 0.22 canvas.
-    Is that enough for a finger? The research answers it with the rest of placing on a phone.
-  - `[ ]` E4-14 (from BATCH E-4): the phone canvas opens as the Desktop page at 22 % — blocks a few pixels tall, the toolbar bigger
-    than the block. What a phone edits at (its own width? a zoom a finger can use?) is part of this research.
+  - `[>]` (1) the research and its signed "enough" checklist — stored in `docs/web-anatomy/phone-editing.md` (extends
+    `editor-zoom.md` and the touch floor in `components.md`, never redoes them)
+    - `[>]` (1a) THE USER'S SOURCES (2026-10-06), each read completely with its on-topic links (RULE R):
+      https://support.wix.com/en/article/wix-editor-getting-started-with-the-mobile-editor ·
+      https://help.one.com/hc/en-us/articles/360002274197-Using-the-Mobile-view-editor-in-Website-Builder
+    - `[>]` (1b) MY OWN, in parallel: editing ON a phone in Canva · Squarespace · Webflow · Framer · Google Sites · Shopify · WordPress ·
+      Carrd · Notion · the Wix app; WCAG 2.5.8 / 2.5.5, Apple HIG, Material touch targets; the pattern catalogue
+    - `[x]` (1a) and (1b) READ 2026-10-06 — 31 + 50 pages, combined in `docs/web-anatomy/phone-editing.md` (§7 completeness)
+    - `[x]` (1a-open) READ 2026-10-06 (`phone-editing.md` §8) — the user's sources' last on-topic links (RULE R): Wix browser-theme-colour · new quick action bar
+      (switching / managing / customizing) · shape dividers on mobile · mobile-menu characters · drop-down arrow colour · supported
+      browsers · Wix Owner app overview — peripheral to building on a phone; read before E-5's build closes
+    - `[>]` (1c) THE "ENOUGH" CHECKLIST (RULE MAP, `phone-editing.md` §5) — WAITING ON THE USER'S SIGNATURE:
+      - `[x]` the two meanings of "mobile editing" separated: A (a desktop tool for the phone layout — we have it: the rungs) vs
+        B (editing ON a phone — E-5)
+      - `[x]` axis 1 what the phone canvas shows — zoomed desktop (ours) · the phone's own width 1:1 · + pinch — who and how
+      - `[x]` axis 2 what a phone may change — content only · + order and hide · full building — who and how
+      - `[x]` axis 3 which rung an edit lands on — content everywhere, layout on the phone only (our cascade already does it)
+      - `[x]` axis 4 the picker — bottom sheet (partial, search, Close, Back) · full screen · list
+      - `[x]` axis 5 where a new block goes — after the selection · Before / After / Inside / Start / End · "Add block here" in an
+        empty box · at the end · in a list
+      - `[x]` axis 6 moving — arrows (+ to top / bottom, ← → in a row) · long-press drag (chip, insertion line, auto-scroll)
+      - `[x]` axis 7 selecting and settings — tap, contextual toolbar, settings sheet, plain questions
+      - `[x]` axis 8 resizing — none · presets · handles
+      - `[x]` axis 9 finger floor — 24px AA (spaced) · 44px AAA / Apple · 48dp Android · edges 10–12mm, centre most accurate
+      - `[x]` axis 10 the non-drag route for every drag (WCAG 2.5.7)
+      - `[ ]` GAPS, carried to the build: a TABLET (768 / 1024) between phone and desktop · Canva's phone gestures (did not load) ·
+        Webflow's own page (403) · a real low-cost Android (RULE AF) measured once built · teachers using it (the pilot, RULE RK)
+      - `[x]` THE USER'S DECISIONS — SIGNED 2026-10-06 ("go" = my recommendation in each; the checklist above is signed with them):
+        D1 a phone edits the page at the PHONE'S OWN WIDTH, 1:1 — a switch shows the desktop page ·
+        D2 a phone BUILDS: add, place, nest, reorder, hide, edit — content lands on every screen, order / hide / size on the phone only ·
+        D3 "+" opens the picker in a BOTTOM SHEET (partial, search, the page showing); the block goes AFTER the selection, a menu
+           offers Before / After / Inside / Start / End, an empty box shows "Add block here" ·
+        D4 ↑ ↓ (← → in a row) + "Move to top / bottom", always there; long-press drag (a lifted chip, an insertion line) as the
+           second way; every drag has a non-drag route (WCAG 2.5.7) ·
+        D5 width by presets on a phone — Full · ½ · ⅓ · Fit — in the settings sheet; exact sizing stays a desktop job ·
+        D6 every editor control and drop target on a touch screen is ≥ 44 × 44 CSS px
+  - `[x]` (1d) SORTED 2026-10-06 after the code map (canvas `page.tsx` :615-652 / `CanvasZoom.tsx`; adding `insertBlock` :791 →
+    `paletteClickSlot` / `insertBox`; moving `moveBoxStep` / `moveBox`; toolbar `NodeToolbar` BoxCanvas :3677; width
+    `WidthControl` BoxInspector :196; NO touch handling anywhere; resize / drag are mouse-only):
+    - **E-5a** (below, OPEN) · D1 · D3 · D4 arrows · D5 · D6 — 6 changes
+    - **E-5b** (CLOSED 2026-10-07, see below) · D4's long-press drag (a touch path for drag: chip, insertion line, auto-scroll) · touch resize on the
+      handles · drop strips ≥ 44px (E4-9)
+    - **E-5c** (CLOSED 2026-10-07 — the tablet; the app → BATCH E-5d) · the tablet (600–1023): what it edits at, the sheet or the side panel · then `apps/mobile/` (rule 20: a
+      webview over the same editor, phone AND tablet)
+  - `[x]` **E-5a · Building on a phone** — CLOSED 2026-10-07 (HEADED UAT `scripts/uat/uat-e5a-headed.js`, six windows, real phones (`isMobile`) 360 × 640 · 393 × 851 · 412 × 915 in the four themes + 600 / 768 / 1280 unchanged, **258 checks 0 failed** (`logs/e5a-uat9.out`), the Preview at all 70 screens × 100 / 150 / 200 % text; gate: typecheck 0 · eslint 0 errors (105 warnings, none new) · vitest 4,442 · `test:fast` 3,312 on all four screens · docs:build SUCCESS; ledger E5a-1 … E5a-19, E5a-1 → BATCH E-5b; the user's decisions E5a-7 and E5a-16) — OPENED 2026-10-06 (area: the editor on a phone · 6 changes):
+    (1) D1 under 37.5em (the phone rung) the canvas opens on the Mobile device at the PHONE'S OWN WIDTH, 1:1 — no "Fit · 22 %"; the
+        launcher gutter and the rail shrink; the device control still shows the desktop page
+    (2) D3 the blocks panel is a BOTTOM SHEET on a phone: partial height, the page above it, grab bar, Close, Escape, search
+    (3) D3 where it goes: "After" the selection by default, and Before · After · Inside · Start · End in the sheet; an empty box's
+        "Add block here" — one engine function `insertWhere()`, unit-tested
+    (4) D4 ↑ ↓ in the block toolbar (← → inside a row), Move to top / bottom in ⋮ — whole bands step on the page; disabled at the ends
+    (5) D5 width presets Full · ½ · ⅓ · Fit for every block in the Inspector, written at the rung being edited
+    (6) D6 on a touch screen (`pointer: coarse`) every editor control is ≥ 44 × 44 CSS px — the toolbar, the "+", the tiles, the
+        sheet, the handles' hit areas; a mouse keeps today's sizes
+    HEADED UAT CHECKLIST (written before the pass; six windows; fresh production build; touch on, `isMobile`; phones 360 × 640
+    (Tecno / itel class) · 393 × 851 · 412 × 915, and 600 / 768 / 1280 to prove nothing changed above the phone; four themes; built
+    through the UI):
+    - `[x]` U1 (SEEN 2026-10-07, HEADED `e5a-uat9.out` 258 / 0 on the final build, screenshots read) (1) a phone opens on Mobile at 100 %, words readable; an edit made there lands on the phone only (Desktop unchanged);
+      choosing Desktop shows the desktop page; reload keeps it; at 600+ today's behaviour
+    - `[x]` U2 (SEEN 2026-10-07, HEADED `e5a-uat9.out` 258 / 0 on the final build, screenshots read) (2) the launcher opens a bottom sheet — the page still showing above it, search finds a block, Close / Escape / Back
+      close it and focus returns to the launcher
+    - `[x]` U3 (SEEN 2026-10-07, HEADED `e5a-uat9.out` 258 / 0 on the final build, screenshots read) (3) select a block → add with After (default), Before, Inside, Start, End — each lands where it says (seen AND in the
+      stored tree); nothing selected → the end; an empty box's "Add block here"
+    - `[x]` U4 (SEEN 2026-10-07, HEADED `e5a-uat9.out` 258 / 0 on the final build, screenshots read) (4) ↑ ↓ / ← → move a block and a whole band; Move to top / bottom; disabled at the ends; Undo puts it back
+    - `[x]` U5 (SEEN 2026-10-07, HEADED `e5a-uat9.out` 258 / 0 on the final build, screenshots read) (5) Full · ½ · ⅓ · Fit on a phone write the phone only; on desktop, desktop; the Preview at all 70 screens agrees
+    - `[x]` U6 (SEEN 2026-10-07, HEADED `e5a-uat9.out` 258 / 0 on the final build, screenshots read) (6) every control measured ≥ 44 × 44 on touch at every phone size; a mouse at 1280 unchanged
+    - `[x]` U7 (SEEN 2026-10-07, HEADED `e5a-uat9.out` 258 / 0 on the final build, screenshots read) docs (RULE DOCS): "Editing on a phone" in `docs/guide/` + the layout story; screenshots from the real builder
+    LEDGER E-5a (each written the moment it is found):
+    - `[x]` E5a-1 · HANDED ON → BATCH E-5b (its header names it) · REAL BUG, FOUND IN THE CODE MAP (BoxCanvas `startResize` / `startDrag` on `onMouseDown`, document `mousemove`):
+      resizing and dragging a block listen to the MOUSE only — a finger on a real phone or tablet sends no mouse drag, so nothing
+      can be resized or dragged by touch anywhere. E-2's tablet guards drove them with a mouse in a touch-enabled window, so they
+      passed. → BATCH E-5b (the touch path for drag AND resize, by pointer events), which is what E-5b is for.
+    - `[x]` E5a-2 · MY OWN (FIXED 2026-10-07): change (4)'s arrow keys moved a block on Alt+← / → too, where Alt+arrows belong to
+      the column span — caught by `PageGridPanel.test.tsx` "without the page grid nothing happens". The arrows now ignore Alt; the
+      unit guard green.
+    - MEASURED 2026-10-07 (HEADLESS GATE, `test:fast` all four screens, `logs/e5a-testfast1.out`): **3,236 passed · 60 failed** —
+      the phone's new default and the finger sizes met specs written for the old ones; sorted below, re-run `e5a-rerun1/2.out`.
+    - `[x]` E5a-3 (FIXED 2026-10-07; gate green, HEADED 258 / 0) · MY OWN, REAL: the Inspector rail's open button became 44px inside the 44px rail (43 inside its border) — half
+      a pixel over, and every page on a tablet portrait or a phone scrolled SIDEWAYS (probe: scrollWidth 769 of 768, the button at
+      768.5). Fix: the rail is 48px on touch. (~16 "nothing spills sideways" failures)
+    - `[x]` E5a-4 (FIXED 2026-10-07; gate green, HEADED 258 / 0) · REAL: the block toolbar hangs from the block's LEFT edge; a finger's size since change (6), it ran 17px off a
+      393 phone for any block in the right half (probe: bar 175–411 on a 394 screen). Fix: a block in the right half hangs it
+      from its RIGHT edge (`toolbarRight`, measured with `toolbarBelow`).
+    - `[x]` E5a-5 (FIXED 2026-10-07; gate green, HEADED 258 / 0) · REAL: a picker opened from the phone's sheet (Grid's layouts, a block's looks) closed the instant it appeared —
+      the scroll that brought the tile into view arrives a frame late and `PortalMenu` closes on any outside scroll (probe: menu
+      [] ; with the scroll settled first, the menu opens). A finger's flick still settling under a tap does the same. Fix:
+      `PortalMenu` arms its scroll-close two frames after opening. (`add-grid-in-grid` ×3 on the phone)
+    - `[x]` E5a-6 (FIXED 2026-10-07; gate green, HEADED 258 / 0) · BUGS IN THE TESTS (they assumed the old phone default or a mouse's sizes): the specs that test the DESKTOP page
+      on a phone now choose Full width as a person does (`desktopPageOnAPhone` in `helpers/seed-site.ts`, also after a reload in
+      `text-is-reachable` E3-5); `drop-placement` counted the drag grip that is not shown to a finger; `empty-box-height` aimed
+      its select click where a finger-sized "+" now sits.
+    - `[x]` E5a-8 (FIXED 2026-10-07; gate green, HEADED 258 / 0) · REAL BUG, every screen (found as `empty-box-height` "a grid CELL's row shrinks" failing only on the phone;
+      bisected with two builds on 3200 and an instrumented one): pressing a block's resize handle PINNED it (its height,
+      `alignSelf`) and COMMITTED the pin at once — a click that never moved kept it, and for a corner the release never took it
+      back. The spec's second select-click landed on the grid's top-left corner (where it lands depends on the canvas scale —
+      why only the phone's new 0.27 showed it): `minHeight: 128` stored on the grid, its empty cells could no longer be dragged
+      below it. Fix: the pin lands with the first MOVE (every move builds on it); a still click commits nothing. Guard
+      `phone-editing` "a still click on any handle leaves the page exactly as it was" — red on the old build on all four projects.
+    - `[x]` E5a-9 (FIXED 2026-10-07; gate green, HEADED 258 / 0) · REAL (MY OWN, change (6)): an empty box's "+" became 44px on touch even on a ZOOMED canvas — on the phone's
+      desktop page (0.27) a 100px box is drawn 27px tall, so the "+" covered all of it and a tap meant to select the box opened
+      "Add a block inside" instead (probe: three taps → `null`, the menu open). Fix: on touch the "+" is
+      `min(2.75rem, 60%)` of its box — a finger's size wherever the box has room (the phone's own 1:1 view), never the whole of a
+      small box.
+    - `[x]` E5a-10 (FIXED 2026-10-07; gate green, HEADED 258 / 0) · BUGS IN THE TESTS: `add-without-asking` "three Stacks in a row" and `photo-gallery` "the Replace button…"
+      assumed the panel STAYS open after an add (the docked one does); on a phone the sheet puts itself away (D3), so the first
+      tapped a tile no longer shown and the second's "B to close" OPENED it again over the photographs. Both open / close it
+      only as needed.
+    - `[x]` E5a-11 (FIXED 2026-10-07; gate green, HEADED 258 / 0) · REAL (MY OWN, change (6)): the bar goes below a block with no room above it, and "room" was the MOUSE bar's
+      32 + 16px — a finger's bar is 52px, so a block 48–68px down the page hung its bar over the app's header (c-20 again, on
+      touch). Found through `selection-drills-inward`, whose "bare canvas" point was the 52px bar hanging under the page (test
+      fixed to aim below the bar). Fix: on touch the bar needs 68px above. Guard `phone-editing` "the selected block's toolbar
+      never sticks out above the page" — red on the old build on the phone (block 58px down).
+    - HEADED UAT 1 (2026-10-07, `logs/e5a-uat1.out`): 105 checks, 32 failed — sorted below (and the script's own: the 600px
+      launcher check assumed a one-row bar; the NC runs closed the panel with Escape, which also deselected the block; Divider and
+      Spacer open a looks menu the script never answered).
+    - `[x]` E5a-12 (FIXED 2026-10-07; gate green, HEADED 258 / 0) · REAL (a gap in change (6)): on a phone the top bar's page tab (69 × 24), Add page and Page settings (28 × 28)
+      and the device chips (34 wide) are under a finger's size — they are not built from the shared controls the floor reached.
+      The headed passes then listed EVERY control under 44px, screen by screen, and each was fixed AT ITS SOURCE, so every use is
+      covered: `Segmented` icon options (min width) · `CompactSelect` trigger and options · `ThemeSwitcher` trigger ·
+      `COMPACT_INPUT_CLS` (every Inspector text / number field) · `Slider` (a 44px hit band, the 8px track kept by
+      `bg-clip-content`) · the Inspector `Tabs` · the per-side spacing fields · both nine-dot position pickers · "Back to
+      default" and "Reset phone change" · the lock row · every checkbox LABEL row · `EducoColorField` (swatch, hex field,
+      eyedropper, palette, its menu rows and palette swatches). Deliberate limit: the colour menu's OKLCH spectrum grid stays a
+      dense picker (a 44px cell would make it hundreds of px wide) — the palettes and the hex field above it are the finger route.
+    - `[x]` E5a-13 (FIXED 2026-10-07; gate green, HEADED 258 / 0) · REAL: Escape (and ✕) put the sheet away and left focus on nothing — it must go back to the "+" that opened it
+      (WCAG 2.4.3, the U2 line).
+    - `[x]` E5a-14 (FIXED 2026-10-07; gate green, HEADED 258 / 0) · REAL (`PH-393-*-error.png`): on a phone the selected block's toolbar — a finger's size — hangs over the block
+      below it and covers most of its width; a tap meant for that block lands on the bar (the script's tap timed out exactly so).
+      The research's answer (WordPress's phone editor): the block toolbar DOCKS at the bottom of a phone's screen — never over the
+      page, under the thumb.
+    - `[x]` E5a-15 (FIXED 2026-10-07; gate green, HEADED 258 / 0) · REAL (`PH-360-*-error.png`): on a 360 × 640 phone the top bar wraps to FOUR rows (~250px) and the sheet takes
+      60 % — almost none of the page is left in sight. → decided below (E5a-16).
+    - `[x]` E5a-17 (FIXED 2026-10-07; gate green, HEADED 258 / 0) · BUGS IN THE TESTS, from the phone bar and the docked toolbar (`test:fast` 54 failed, `logs/e5a-testfast4.out`):
+      specs waited for the "Box Builder" title (not on a phone's one-row bar), pressed screen sizes / Reset / Show hidden / the
+      chips straight on the bar (in More on a phone — `pressHeader()` in `helpers/seed-site.ts` reaches them as a person does),
+      expected the toolbar by the block (docked on a phone), and `builder-chrome-fits` expected every control in a phone's bar
+      (now: one row there, the rest asserted IN More). And one that never tested what it named: `parity-every-arrangement` "Grid in
+      a stack" never answered the Grid tile's layout picker, so no grid was added — it passed on two stacks while the picker hung
+      open (it only closed by the stray scroll E5a-5 fixed). It now chooses 2 across, as a person does.
+    - `[x]` E5a-18 (FIXED 2026-10-07; gate green, HEADED 258 / 0) · REAL (MY OWN): Reset tapped in More opened its question, More closed, and my "focus back to More" (E5a-13)
+      STOLE focus from the question's Cancel — so Escape and Enter spoke to the wrong thing. Caught by `reset-asks-first` on the
+      phone ("Cancel is focused"). Fix: focus goes back only if nothing else has taken it. With it: More's ACTION row (Add page,
+      Page settings, Add a band, Page check, Export, Reset) puts More away when tapped, as an action sheet does; its settings
+      keep it open. And the touch bar's words appear from 1800 (they wrapped it at 1600); `pressHeader` waits for the bar to
+      settle after a resize (masonry pressed a chip while the bar was still re-rendering).
+    - `[x]` E5a-19 (FIXED 2026-10-07) · BUG IN A TEST — a flaky guard: `units-not-pixels` failed once in the closing vitest
+      ("stat: 263px") and passed alone 3 of 3. It scanned whole CSS RULES, selectors included, and a block id is base-36 time —
+      one that read "…263px…" was a stored pixel to it. Fix: only the declarations, only whole tokens; a check that an id like
+      `box-mux263px-1` is not flagged (red with the old pattern) and a real `263px` still is. vitest 4,442 / 4,442.
+    - `[x]` E5a-16 · DECIDED BY THE USER 2026-10-07 ("One row + More sheet", my recommendation) for E5a-12 + E5a-15: under 600px
+      the top bar is ONE ROW of 44px controls — Pages, Undo, Redo, Preview and ⋯ More; More opens a bottom sheet with everything
+      else (screen size, zoom, guides, theme, page check, export, reset, add a band). Built as part of change (6).
+    - `[x]` E5a-7 · DECIDED BY THE USER 2026-10-07 ("Two rows at 1280 touch", my recommendation): on a TOUCH screen every control
+      stays 44px and the top bar takes two rows at 1280, one row (65px) from 1366; with a mouse, one row from 1280 as D3-32 says.
+      The question was: D6 (44px on touch) widens the top bar's 23 buttons from 910 to 1,012px, against E-3's "one row from 1280".
+      Built: `builder-chrome-fits` asks one row from 1366 (≤ 72px) on touch, from 1280 (≤ 64px) with a mouse.
+  - `[>]` (2) the build the research settles on, web phone first, then `apps/mobile/` (RULE APP) — E-5a CLOSED 2026-10-07; E-5b CLOSED 2026-10-07; E-5c CLOSED 2026-10-07 (the tablet); BATCH E-5d (the app) next
+  - `[x]` E4-9 (DONE 2026-10-07 in BATCH E-5b change (5) + E5b-5 / E5b-13: a finger's drag reads strips of ≥ 44px, a third of a smaller block; a mouse keeps its own) (from BATCH E-4): the drop strips are 25 % of a block's DRAWN height — 9px on a 37px block at the phone's 0.22 canvas.
+    Is that enough for a finger? The research answers it with the rest of placing on a phone. → BATCH E-5b (strips ≥ 44px, D6)
+  - `[x]` E4-14 (DONE 2026-10-07 in E-5a change (1): the phone edits at its own width, 1:1) (from BATCH E-4): the phone canvas opens as the Desktop page at 22 % — blocks a few pixels tall, the toolbar bigger
+    than the block. What a phone edits at (its own width? a zoom a finger can use?) is part of this research. → answered by D1,
+    built in E-5a change (1)
+  - `[x]` **BATCH E-5b · A finger drags and resizes** — CLOSED 2026-10-07 (HEADED UAT `scripts/uat/uat-e5b-headed.js`, six windows, real CDP touch on phones 360 · 393 · 412 (`isMobile`) and tablets 768 · 1024 in the four themes + the mouse at 1280, **206 checks 0 failed** (`logs/e5b-uat7.out`), the Preview at all 70 screens × 100 / 150 / 200 % text; gate: typecheck 0 · eslint 0 errors (105 warnings, none new) · vitest 4,442 · `test:fast` 3,333 on all four screens (`logs/e5b-testfast2.out`) · docs:build SUCCESS; ledger E5b-1 … E5b-16) — part of BATCH E-5 (one open batch, RULE X; E5b-11) — OPENED 2026-10-07 (from E-5's research, D4 · D6; E5a-1; E4-9) (area: the editor
+    on touch screens · 6 changes). MEASURED FIRST (code): `startResize` / `startResizeGridCell` / `startResizeAbsolute` / `startDrag` /
+    `startFreeDrag` / `startSlideFree` and `caretFallthrough` start on `onMouseDown` and follow `document` `mousemove` / `mouseup`; the
+    unit suite (`BoxCanvas.test.tsx`) drives them with `fireEvent.mouseMove(document)`, so the MOUSE path stays on mouse events and a
+    finger gets its own start. Drop strips: `slotFromKids` min(25 %, 48px), `computeDrop` min(22 %, 22px). No auto-scroll anywhere.
+      (1) E5a-1 a FINGER RESIZES: every handle starts the same gesture on a finger's `pointerdown`; a gesture follows the events that
+          started it (a mouse: `mousemove` / `mouseup` as today; a finger or pen: `pointermove` / `pointerup`, `pointercancel` ends it);
+          `touch-action: none` on the handles so the page does not scroll instead; rule 19 unchanged (the held edge is the only one
+          that moves); a still tap on a handle still falls through (E3-5)
+      (2) the GRIP is offered to a finger again (it was `pointer-coarse:hidden`): 44px, a press on it starts the drag at once (it is
+          the explicit route); floating / Alt paths unchanged for the mouse
+      (3) LONG-PRESS (500ms) on a block lifts it — a haptic tick where the phone has one, the chip 32px ABOVE the finger (never
+          under it), the insertion line as today; a short tap still selects; a finger that moves before 500ms scrolls the page; the
+          phone's own long-press menu / text selection does not appear on a lifted block
+      (4) AUTO-SCROLL while a finger drags near the top or bottom of the editor's scrolling area, faster the nearer the edge
+      (5) E4-9 DROP STRIPS on touch ≥ 44px (no more than a third of the block, so before / inside / after all stay reachable)
+      (6) docs (RULE DOCS): "Building on a phone" in the layout story + the guide's phone page — drag, long-press, resize by finger
+      HEADED UAT CHECKLIST (written before the pass; six windows; fresh production build; real phones `isMobile` + `hasTouch`
+      360 × 640 · 393 × 851 · 412 × 915, tablets 768 × 1024 and 1024 × 768 with touch, four themes; 1280 with a MOUSE to prove it
+      unchanged; the state built through the UI; touches sent as real CDP touch events, not mouse):
+      - `[x]` U1 (SEEN 2026-10-07, HEADED `e5b-uat7.out` 206 / 0 on the final build, screenshots read) (1) a finger drags each handle — n · s · e · w and a corner — on a block in a stack, a row, a grid cell and a
+        floating block: the block changes size, the opposite edge stays where it was (rule 19), the page does not scroll; lift
+        mid-way and the size stays; a still tap on a handle selects what is under it
+      - `[x]` U2 (SEEN 2026-10-07, HEADED `e5b-uat7.out` 206 / 0 on the final build, screenshots read) (2) where the toolbar sits by its block (tablets, 600+) the grip shows at 44px on touch; a finger dragging it moves the
+        block and the stored tree agrees; Undo puts it back. On a phone the bar DOCKS, has no grip (a long press is the drag there,
+        E5b-8), and ends before the blocks "+" with nothing scrolled out of sight, a Stack's bar included, at 360
+      - `[x]` U3 (SEEN 2026-10-07, HEADED `e5b-uat7.out` 206 / 0 on the final build, screenshots read) (3) a 600ms press lifts the block (chip above the finger, insertion line), the drop lands where the line said; a
+        200ms tap only selects; a quick swipe scrolls the page and moves nothing; no phone menu or text selection appears
+      - `[x]` U4 (SEEN 2026-10-07, HEADED `e5b-uat7.out` 206 / 0 on the final build, screenshots read) (4) a finger held 20px from the bottom of the editor scrolls it down, and from the top scrolls it up, while lifted;
+        it stops when the finger leaves the edge or lifts
+      - `[x]` U5 (SEEN 2026-10-07, HEADED `e5b-uat7.out` 206 / 0 on the final build, screenshots read) (5) the strips measured ≥ 44px (or a third of a smaller block) on touch; with a mouse at 1280 unchanged (25 % / 48)
+      - `[x]` U6 (SEEN 2026-10-07, HEADED `e5b-uat7.out` 206 / 0 on the final build, screenshots read) the MOUSE at 1280: resize every edge, grip-drag, Alt-drag float, marquee — exactly as before (the mouse suites green)
+      - `[x]` U7 (SEEN 2026-10-07, HEADED `e5b-uat7.out` 206 / 0 on the final build, screenshots read) (6) docs: the story's "Building on a phone" and the guide describe drag, long-press and finger resize, screenshots
+        from the real builder; the Preview at all 70 screens agrees with the canvas after a finger's edits
+      LEDGER E-5b (each written the moment it is found):
+      - `[x]` E5b-1 · BUG IN MY TEST (FIXED 2026-10-07): the finger-resize guard tapped the empty box's centre, where its "+" sits
+        (E5a-9), so it failed on SELECTING, not on resizing — it could not tell a broken resize from a working one. It now taps
+        near the corner (`tapBlock(…, position)`); red on the old build at "the block grew with the finger".
+      - `[x]` E5b-2 · REAL, finger (FIXED 2026-10-07): a finger on a block's TOP handle lying over the block above's words never
+        held it — measured (`probe-e5b.js`): the press's target was the heading's editable span, then `pointercancel`, while
+        `elementFromPoint` said the handle. Chrome's touch adjustment moves a press to the nearest node "a tap is for" — an
+        editable span is one, a bare handle (React's listeners live on the root) was not. Fix: `active:` on the handle (pressed
+        feedback, and it makes the handle a tap target). Guard `phone-editing` "a finger holds a top handle…" (built through the
+        sheet, RULE Y) — red on the old build on the phone.
+      - `[x]` E5b-3 · REAL, every pointer, pre-existing (FIXED 2026-10-07): a still tap on a handle CHANGED THE PAGE after a corner
+        drag (measured: `alignSelf "flex-start" → undefined`, `minHeight 127.998 → 128`). Two faults: (a) a corner drag never
+        released the cross-axis `flex-start` anchor (only a pure top / bottom drag did), so a corner-dragged block stopped
+        following its band for good — the 50px-hole bug the release exists for, on corners; (b) a still press still ran the
+        release's write (E5a-8 had stopped only the anchor at the press). Fix: the release covers any drag with a vertical part,
+        and a press that never moved returns before it. Guard `phone-editing` "a corner drag lets the block follow its band, and a
+        still press on a handle writes nothing" — both halves red on the old build, all four projects.
+      - `[x]` E5b-4 · REAL, a gap in E-5a change (6) / D6 (FIXED 2026-10-07): on touch the resize handles' hit areas were 36 × 10 and
+        12 × 12, not the ≥ 44 × 44 D6 promised (E-5a's size audit looked at buttons only). Fix: a 44 × 44 `::before` on touch.
+        Guarded in the E5b-2 test (every handle's `::before` ≥ 44) — red on the old build.
+      - `[x]` E5b-5 · BUG IN MY TEST (FIXED 2026-10-07): the drop-strip guard asked "is T's parent R?", but a block dropped inside a
+        box is wrapped in a band of its own — so it PASSED on a mutant with no finger strip. Now: T anywhere in R's subtree.
+        Mutation-proven: red 3/3 on the mutant build (`fingerStrip` → the mouse's strip), green on the real one.
+      - `[x]` E5b-6 · NOT A BUG (measured, `probe-undo.js`): after a finger drag, the first tap within ~200ms did nothing (Undo
+        missed on three phones in the headed pass). Logged: `pointerdown` / `pointerup` on Undo, no `mousedown`, no `click`, nothing
+        `preventDefault`ed. Only when the finger LEAVES AT SPEED: a 60ms-step drag, or a 300ms rest before lifting, and the next
+        tap works at 150ms — Chrome's own rule that a tap right after a flick stops the flick. A person rests on the target before
+        letting go; the headed script now does too.
+      - `[x]` E5b-7 · REAL, MY OWN change (3) (FIXED 2026-10-07): a finger's chip was centred on the finger with no clamp — on a phone
+        a wide block's chip ran off the left edge, its grip icon cut (`FG-393-Light-U3-lifted.png`). Kept on the screen now. Guard:
+        the long-press test moves the finger to x = 6 — red on the previous build (3/3 touch projects).
+      - `[x]` E5b-8 · REAL, MY OWN change (2) + E-5a's width (FIXED 2026-10-07; the grip choice DECIDED BY THE USER 2026-10-07 — "I will go whatever you think is best" = my recommendation: no grip in a phone's docked bar, the "+" keeps its corner): on a 360 phone the docked toolbar, with the grip back,
+        ran under the blocks "+" and hid ⋮ (`FG-360-Midnight-U1-resized.png`); its `max-width` also left out the 3rem Inspector rail.
+        Fix: the docked bar (phones) carries no grip — a long press is the drag there, as in the research's WordPress phone editor,
+        and the user's E5a-14 keeps the "+" in its corner — and its widest is the room left of the "+" (8.25rem). Guard
+        `phone-editing` "on a 360 phone the docked toolbar never runs under the blocks +" — red on the previous build.
+      - `[x]` E5b-9 · NOT A BUG (measured): the block toolbar's `dark:bg-gray-800/95` has no `midnight:` / `purple:` variant, but
+        `ThemeContext` (lines 35–37) adds `dark` for every dark-based theme, and the Midnight and Purple screenshots show the bar right.
+      - `[x]` E5b-10 · MY OWN, clean code (FIXED 2026-10-07): `parentOf` defined and never used in `uat-e5b-headed.js` — eslint's one
+        error in the gate. Removed.
+      - `[x]` E5b-11 · MY OWN, the tree (FIXED 2026-10-07): E-5b was opened as a second top-level open batch beside BATCH E-5 —
+        `task-tree-batches` "2 batches open at once". It is part of BATCH E-5, as E-5a was, and now sits inside it.
+      - MEASURED 2026-10-07 (HEADLESS GATE, `test:fast` all four screens, `logs/e5b-testfast1.out`): **3,322 passed · 10 failed**, every
+        one on a touch project — sorted below.
+      - `[x]` E5b-12 · REAL, MY OWN (E5b-4's first fix) (FIXED 2026-10-07): `text-is-reachable` "every plausible aim point… takes the
+        caret" / "typing lands after… the very start of the line" (3 touch projects): the 44px hit areas, centred on the handles as
+        `::before`s, lay over the first word, and a still click peeled at most 4 layers of chrome without reaching it. Fixed by
+        E5b-14's outward areas — nothing of the finger's lies over the block's own words; the existing spec is the guard (red on
+        the previous build).
+      - `[x]` E5b-13 · REAL, MY OWN change (5) (FIXED 2026-10-07): `resize-leaves-no-gap` "the blocks already on the page do not move
+        at all" (3 touch projects): the strip was sized by the DEVICE (`pointer: coarse`), so a mouse's drop on a touch laptop or
+        tablet changed its reading. Now by the DRAG (`dragArm.finger`). The existing spec is the guard (red on the previous build);
+        the finger's strip keeps its own (E5b-5's mutation-proven test).
+      - `[x]` E5b-14 · REAL, MY OWN (E5b-4's first fix) (FIXED 2026-10-07): `add-without-asking` "a container YOU selected gets the
+        block AFTER it…" (phone): on a zoomed canvas (the desktop page on a phone, 0.27) the centred 44px areas covered a small
+        selected block whole, so a tap at its middle no longer reached its "+" — E-5a's build 3 / 3 pass, this one 3 / 3 fail
+        (`--repeat-each=3`, both builds served side by side). Fix: each hit area is its own element, 44 × 44, reaching OUTWARD from
+        the block's edge or corner (`HIT_POS`), never over its own content. Guards: the spec, and `phone-editing` "no hit area lies
+        over the block's own middle".
+      - `[x]` E5b-15 · REAL, MY OWN (E5b-4's first fix) (FIXED 2026-10-07): `chrome-follows-resize` "a press on each handle of a narrow
+        block lands on that handle" (phone): the top-left corner's area took a press aimed at the top edge. The hit areas are now
+        a layer UNDER every handle (`CHROME_Z.handleHit` 9190), so no area covers a handle. Guards: the spec (red on the previous
+        build) and `phone-editing` "a press on each handle's centre is that handle".
+      - `[x]` E5b-16 · REAL, every pointer, pre-existing (FIXED 2026-10-07; found by the headed pass on a 360 phone): while a GRID
+        CELL'S edge was held, the editor jumped (measured with `probe-scroll2.js`: scrollTop 325 → 75 mid-drag, back on release —
+        no script scrolled it, the mouse the same). The live preview wrote every cell's stored `grid-column`, the stored row
+        tracks and an empty `min-height` onto cells the drag had not changed — wiping their courtesy height, so the page got
+        ~250px shorter and the scroll was clamped. Fix: the preview writes only what differs from the tree as the drag began.
+        Guard `phone-editing` "while a grid cell's edge is held, the cells keep their arrangement and the editor does not
+        scroll" (built through the sheet) — red on the previous build.
+      - HEADED UAT (`scripts/uat/uat-e5b-headed.js`, six windows): pass 1 170 / 42 failed (most the script's own assumptions: a
+        docked Inspector at 1280, a covered tap point, a corner move under one column, a one-column grid on a phone, floats in
+        the flow on a phone by design, the mouse moves by the grip) → E5b-2, -3, -4 found by probe; pass 2 207 / 6; pass 3 153 / 6
+        (E5b-6, the zoomed tablet off-screen); pass 4 209 / 0 — screenshots read → E5b-7, E5b-8; pass 5 206 / 0; then the gate's E5b-12 … E5b-15, pass 6 206 / 2 → E5b-16; **pass 7 206 / 0 on the final build** (`logs/e5b-uat7.out`, screenshots read).
+  - `[x]` **BATCH E-5c · The tablet, then the app** — CLOSED 2026-10-07 (the tablet: HEADED 590 / 0 on the final build, 15 runs in six
+    windows; `test:fast` 3,343 + the 2 chrome specs fixed after it, 24 / 24; vitest 4,445; E5c-1 … E5c-9) — THE APP SPLIT OFF TO BATCH
+    E-5d below (its decisions T4–T8 moved there) — part of BATCH E-5 (one open batch, RULE X) — OPENED 2026-10-07 by the user
+    ("okay, let's do that"), RESEARCH FIRST (RULE RS: the user's sources and mine, then an "enough" checklist the user signs) — QUEUED
+    2026-10-07 (from E-5's research) (area: the editor on a tablet, then the app): what a tablet (600–1023) edits at, the sheet or the
+    side panel; then `apps/mobile/` — a webview over the same editor (rule 20), phone AND tablet
+    - `[x]` (1) RESEARCH (RULE MAP) — DONE 2026-10-07, stored in `docs/web-anatomy/tablet-and-app-editing.md` (~45 pages read;
+      every claim cited or marked inference; linked from `phone-editing.md` §6). THE "ENOUGH" CHECKLIST, signed 2026-10-07:
+      - `[x]` axis A · the canvas — own width 1:1 (WordPress, Notion: the only two that BUILD on a tablet) · desktop fitted (ours today;
+        touch cannot drive one — Google Sites on iPad) · fitted + pinch (Canva, free-form only) · a tablet breakpoint edited from a
+        desktop (Wix Studio) · rotation re-lays the chrome, not the content (Notion). Saturated: the last five products added nothing
+      - `[x]` axis B · picker and settings — the phone sheet capped at 512 and centred, 59 % / 96 % tall (WordPress source) · popover
+        instead of full screen (Notion) · a sidebar open in landscape, closed in portrait (Notion) · tabs on the left (Squarespace)
+      - `[x]` axis C · toolbar — no tablet-specific source; the phone toolbar unchanged (inference, same native code)
+      - `[x]` axis D · input — `any-pointer: fine` turns true when a trackpad is PAIRED, `pointer` only when it is USED (WebKit
+        209292): decide by window width, read `pointerType` per gesture (E-5b already does); Pencil = "pen", hover on M2+; Split
+        View / Stage Manager / multi-window: the WINDOW decides (Apple, Android); iPad Safari claims to be a Mac
+      - `[x]` axis E · the app — `react-native-webview` 13.15.0 (SDK-54 pin, NOT installed): load, bridge, camera-roll upload by
+        `<input type=file>`, back, caching all covered, with eight traps; Apple 4.2 / 4.2.6 ("single binary … picker model") / 4.3(a)
+        and Play's webview + minimum-functionality policies quoted
+      - `[x]` axis F · African tablets (StatCounter, Sept 2026) — the commonest Nigerian tablet window is 601 × 1007 (18.6 %), then
+        601 × 962 and 962 × 601; Samsung ~half; 2–4 GB RAM → Chrome's mobile site; Android 9 still 8.5 %. THIN: tablets < 1 % of
+        traffic, no RAM / 3G split
+      - `[x]` THE CHECKLIST SIGNED BY THE USER 2026-10-07 ("I'll go with your recommendation … all the recommendation"):
+        T1 a tablet (600–1023) edits the page at ITS OWN WIDTH, 1:1, on the rung for that width; the device control still offers
+           the desktop page ·
+        T2 the phone / tablet line STAYS at 600px — the commonest African tablet (601 × 1007) edits as a tablet; 601 × 1007,
+           601 × 962 and 962 × 601 are added to `lib/preview-devices.ts` and 600 | 601 and 962 are tested ·
+        T3 on 600–1023 the blocks panel is the phone's bottom sheet capped at ~32rem and centred; held sideways (≥ 900) the
+           Inspector stays docked at the side (Notion's sidebar); upright it folds to its tab — AMENDED BY THE USER 2026-10-07 (E5c-4):
+           the Inspector is its tab on EVERY tablet, docked only from 1024 as before; and (E5c-2) a tablet gets the phone's one-row bar + More
+      - `[x]` THE APP'S DECISIONS T4–T8 — MOVED 2026-10-07 to BATCH E-5d below (asked when it starts), with the batch they belong to
+      - `[x]` the user's sources — WAIVED BY THE USER for E-5c only, 2026-10-07: "I will leave you to do the research on this one. The
+        other ones, like in the rules, I'll provide my own link" (RULE RS stands for every other area)
+    - `[x]` (2) THE BUILD — DONE 2026-10-07 (its HEADED checklist first — RULE X; tablets 768 × 1024 · 1024 × 768 · 601 × 1007 ·
+      601 × 962 · 962 × 601 · 800 × 1280 with touch, four themes; phones and the mouse at 1280 unchanged):
+      - `[x]` (a) T1 — 600–1023 opens on its own width 1:1 (the tablet-portrait / tablet-landscape rung), like the phone's D1;
+        rotation keeps the edit on the rung for the new width; the device control still shows the desktop page (`page.tsx`
+        `screenDevice`: one device that follows the window at 37.5 / 56.25 / 64em, `fitW = room` when it is the screen's own)
+      - `[x]` (b) T2 — the three African tablet sizes in `lib/preview-devices.ts` (and so in `scripts/uat/screens.js`, now 73 screens)
+      - `[x]` (c) T3 — the blocks sheet on 600–1023: the phone's sheet, max 32rem wide, centred (`BlocksPanel`); More the same (E5c-2)
+      - `[x]` (d) T3 — the Inspector docked at ≥ 900 — BUILT, then REVERSED by the user (E5c-4): a tab below 1024, as before
+      - `[x]` (e) the finger on a tablet re-measured on the new canvas: the toolbar docked at the bottom for a finger (rec. 4, E5c-5)
+        with the grip kept for a float (E5c-6), handles, strips, long press, autoscroll — all of E-5b's checks, on every tablet
+      - `[x]` (f) docs (RULE DOCS): the story's §11 rewritten for 1:1 tablets (two new pictures from the builder), the reference
+        table (`website-builder.md`), the research's rec. 3 amended, `phone-editing.feature` (E-5c scenarios)
+      - `[x]` THE HEADED CHECKLIST — HEADED UAT 590 / 0 on the final build (`logs/e5c-uat10.out`, screenshots read) (written 2026-10-07 BEFORE the build, RULE X; `scripts/uat/uat-e5c-headed.js`, six windows, real
+        CDP touch; screens: 599×900 · 600×900 · 601×1007 · 601×962 · 768×1024 · 800×1280 · 899×700 · 900×700 · 962×601 · 1007×601 ·
+        1023×768 · 1024×768 · 375×812 · 360×640 · 1280×800; themes light · dark · midnight · purple). PONYTAIL (RULE M) for the build:
+        rung 2 — the phone's D1 path (a device that follows the window, `fitW = room`) widened to the two tablet rungs; the phone sheet
+        reused with a cap; the Inspector's dock line moved 64em → 56.25em (then back, E5c-4); nothing new added
+        - `[x]` C1 (a) SAW at 601×1007 · 601×962 · 768×1024 · 800×1280 (Tablet) and 962×601 · 1007×601 (Laptop): scale 1, the frame
+          exactly the room's width, nothing sideways; 1024×768 touch: Full width at Fit 47 %, the Inspector docked, as before
+        - `[x]` C2 (a) SAW in RT-601 and RT-768: through 1007×601 · 962×601 · 601×962 · 899 | 900 · 1024×768 · 768×1024 · 1023×768 ·
+          600 · 599 the device followed each width, 1:1 below 1024, the selection held, nothing sideways, the Inspector a tab below 1024
+        - `[x]` C3 (a) SAW on every tablet: ½ wrote `responsive.tabletPortrait` / `tabletLandscape` only, the canvas showed it at half,
+          and on Desktop the Stack was full width
+        - `[x]` C4 (a) SAW: Desktop from More drew the desktop page shrunk (z 0.47–0.66), Tablet / Laptop brought 1:1 back
+        - `[x]` C5 (b) SAW: the three sizes in the Preview's menu and in screens.js (73 screens); the Preview of a page a finger built on
+          a 601 tablet had no sideways scroll at all 73 screens at 100 / 150 / 200 % text
+        - `[x]` C6 (c) SAW on every tablet: the sheet at the bottom, 512px wide, centred (screenshots: 601 Light, 768 Purple); Escape
+          closed it, focus back on "+"; no launcher gutter (32px padding = the room's own); the build went through the sheet
+        - `[x]` C7 (d, as AMENDED by E5c-4) SAW: the Inspector its tab on every tablet, docked from 1024; it never covers the page
+        - `[x]` C8 (e) SAW on every tablet: the bar docked at the bottom, never over a block (E5c-5); a long press drags; handles,
+          strips ≥ 44px; edges and corners resize with only the grabbed edge moving; a float moved by the docked grip (E5c-6),
+          stopped at the page's top (E5c-7), made Floating without moving (E5c-8), and grown by its corner with its top still (E5c-9)
+        - `[x]` C9 SAW: phones 375 · 360 (E-5b's FG, all green) and the mouse at 1280 and 1024 (E-5b's MS, all green) unchanged
+        - `[x]` C10 SAW: Light · Dark · Midnight · Purple Dream across the runs (sheet, More, canvas, docked bar); no console errors
+        - `[x]` C11 (f) the story's §11 rewritten with two new pictures; `npm run docs:build` green
+      - LEDGER E-5c (every bug the moment it is found, RULE V):
+        - `[x]` E5c-1 · MY OWN, found reading the code: the Inspector's "steps down to fit … drawn N across" note measured the row
+          at the device's NOMINAL width (768 / 1024) while a 1:1 canvas is drawn at the room's (656 / 546) — the canvas stacked three
+          columns one a line and the note said nothing. FIXED (`page.tsx`: `w = device === screenDevice ? fitW : …`). HEADED UAT
+          (`uat-e5c-headed.js` FS — three Stacks with words, side by side at ⅓, built with the mouse, the window turned to 768 × 1024
+          and 962 × 601): the mutant build (the one line reverted) FAILED 4 / 4, the fix SAW 4 / 4. Guard: `phone-editing.spec.ts`
+          "E5c-1 …" red on the mutant, green on the fix
+        - `[x]` E5c-3 · NOT A BUG (measured): after 1024 → 768 the frame read 659–660 in a 656 room at +600 ms; its target width was
+          already 656 and the 300 ms width transition (1200 → 656) was finishing — at +1500 ms it is exactly 656 (`probe-e5c.js`). The
+          BUG WAS IN MY TEST (read mid-animation): RT now waits 1.3 s
+        - `[x]` E5c-2 · the top bar on a tablet wraps to three rows at 601 (~170px, 17 % of 1007) and two at 962 × 601 (~120px, 20 %);
+          the phone got a one-row bar + More in E-5a, the tablet did not. THE USER CHOSE 2026-10-07 "One row + More": `compactBar` (every
+          screen under 64em) in `page.tsx`, the More sheet capped at 32rem and centred on a tablet. Guards: `phone-editing.spec.ts` T1 (one row
+          at every tablet width) and "a phone's (and a tablet's) top bar …", `builder-chrome-fits` (768 one row) — red on the earlier build
+        - `[x]` E5c-4 · T1 × T3 pull against each other at 900–1023: the docked Inspector (T3) leaves the 1:1 canvas 484–607px for a
+          rung visitors see at 900–1023px (54–60 % of their width; 768 upright keeps 656 = 85 %). THE USER CHOSE 2026-10-07 "Tab below 1024":
+          the dock line back at 64em (`lg:`). Guards: `builder-chrome-fits` E3-3 (962 × 601 is a tab), `phone-editing.spec.ts` T1 — red on
+          the earlier build
+        - `[x]` E5c-5 · FOUND BY THE HEADED PASS (U2 failed at 800 / 962 / 1007, alone too): on a 1:1 tablet a selected Stack's 52px
+          bar, by its block, covered the Heading above it (bar 128–180 over a heading 113–196); a tap on what showed of the Heading was
+          pulled onto the bar by Chrome's touch adjustment, so it could not be selected and the next grip drag moved the STACK. The research
+          had answered it — rec. 4, signed with "all the recommendation": the phone's toolbar on tablets (I had read change (e) as "by its
+          block"). FIX: the bar docks at the bottom under 64em for a finger (`(max-width: 37.49em), (max-width: 63.99em) and (pointer:
+          coarse)`, BoxCanvas); a mouse in a narrow window keeps the bar and its grip. Guard: `phone-editing.spec.ts` "E5c-5 …" (the
+          palette's Heading and Stack at 962 × 601) — RED on the pre-fix build in all three touch projects
+        - `[x]` E5c-6 · MY OWN, made by the E5c-5 fix, found by the headed pass (U1, every tablet): the docked bar has no grip and a long
+          press moves only a block in the flow, so on a tablet a FLOATING block could not be moved by a finger at all (a mouse could: probe
+          `probe-e5c-float.js`, 1280 on the Tablet screen, wrote `responsive.tabletPortrait.left/top`). FIX: a floating block keeps the grip
+          in the docked bar (not on a phone, where floats join the flow). Guard: `phone-editing.spec.ts` "E5c-6 …" — RED on the pre-fix
+          build. ALSO TWO BUGS IN MY TESTS, fixed: U1float read only the desktop `left/top` (a tablet writes its rung) and U4 looked for the
+          zoom in the bar (under 1024 it is in More, E5c-2) — U4's "not tall enough" at 800 × 1280 was that: scroll 1310 > 1215, measured
+        - `[x]` E5c-7 · FOUND READING THE HEADED PASS'S SCREENSHOT (962 × 601, U1's float dragged up): a floating block could be dragged
+          (and arrowed — no limit at all there) above the PAGE's top edge; the canvas drew it over the app bar and the Preview CUT ITS WORDS
+          OFF (`probe-e5c7.js`: a mouse at 1280, `top: -31.3`, the heading's top at −14.6px in the published page). Older than E-5c — a
+          mouse did it too. The half-box overhang over a PARENT is a design (overlap) and stays. FIX: the drag and the arrow keys stop at the
+          page's top, left and right (BoxCanvas). Guard: `float-round-trip.spec.ts` "… (E5c-7)" — RED on the pre-fix build. THE HEADED
+          PASS THEN SHOWED the finger's float still 16.5px above the page on every tablet: the drag measures from the parent's CONTENT box,
+          the browser places an absolute box from its PADDING box (the palette's band has 16px of inner space). FIX 2: the limit is applied
+          to where the box is DRAWN (the offset read once at drag start). Guard: the headed check "E5c-7 …" in `uat-e5c-headed.js` — RED
+          8 / 8 on the fix-1 build (a seeded band did not reproduce it, so no spec pins it: RULE Y). FIX 2 DID NOTHING (the same 8, the
+          same numbers) — the cause was E5c-8, and fix 2 was deleted again
+        - `[x]` E5c-8 · FOUND CHASING E5c-7, OLDER THAN E-5c, a mouse too (`probe-e5c8.js`, 1280 and 962): a float's `left` / `top` /
+          `width` are plain %, which CSS resolves against the parent's PADDING box from its edge; the float maths (`measureFloatGeom`,
+          `measureGroupGeom`, the move drag, the float resize) measured the CONTENT box. On the real page (its default inner space) a
+          Heading made Floating JUMPED +16.6 / −10.5px, a still press on its grip moved it up 12–17px more, and every page-edge limit was
+          16px off. FIX: one helper, `placedIn` (the padding box, from `clientLeft` / `clientWidth`), in all four; the model's comment
+          corrected (`box-model.ts` `left` / `top`). Saved pages draw exactly as before (the stored % and the CSS are unchanged). Guard:
+          `float-round-trip.spec.ts` "… (E5c-8)" with the page's real defaults and the palette's Heading — RED on the pre-fix build.
+          AFTER IT, MEASURED: made Floating still moved −3.5 / −4px — out of the flow its page shrank 180 → 128px, and a `top` measured as
+          a % of the old height lands higher. FIX 2: the Floating action re-measures once drawn and puts it back, in the same undo step
+          (`page.tsx` `floatSelected`). Now 0 / 0.1px at 1280 and on the 962 tablet (`probe-e5c8.js`). Guard tightened to 0.75px — RED on
+          a mutant with the settle disabled (−1.57px; −4px in the probe), green on the fix. NOT BUGS, measured: +16.6px across on float
+          is `floatBox`'s deliberate 2 % inset from the parent's edge (`box-model.ts:2693`); +3px on a 1px-wiggled press is the drag's 6px
+          snap pulling the box's bottom onto the parent's middle line (60.6 vs 64)
+        - `[x]` E5c-9 · FOUND BY THE HEADED PASS (1024 × 768 touch, deterministic alone, 2 / 2): a floating block resized by its corner
+          slid 8.2px DOWN — rule 19 broken. Its `top` is a % of its parent's height, and a float low on the page SETS that height (the
+          parent reserves room for its floats): growing it grew the parent, and the % landed lower. Older than E-5c in kind; it surfaced
+          once E5c-8 placed floats exactly. FIX: the resize keeps the top in px — re-said against the parent's height as it is now on
+          every frame, and once more after the last frame (BoxCanvas `startResizeAbsolute`). Guard: `float-round-trip.spec.ts` "… (E5c-8)"
+          grows the floated Heading by its corner — RED on the pre-fix build
+  - `[x]` **BATCH E-5d · The app** — CLOSED 2026-10-08: HEADED 69 / 69 (tablet 35, phone 34) + E5d-11 re-measured on both emulators;
+    gate: typecheck · eslint 0 / 105 · vitest 4,453 · test:fast 3,349 / 0 · mobile jest 131 · docs:build. Every ledger line fixed, or
+    parked / recorded by the user's word (E5d-4, E5d-7, E5d-9); the bars kept as recommended. Was QUEUED 2026-10-07 (after E-5c): `apps/mobile/` hosts the editor in a
+    webview, phone AND tablet, with the native layer — T4–T8 DECIDED 2026-10-07 (below); next: its HEADED checklist on both emulators, then the build (research: `tablet-and-app-editing.md` §2 E, §3, §4–§5)
+    - `[x]` THE APP'S DECISIONS — DECIDED BY THE USER 2026-10-07 (all five as recommended), asked as this batch starts — the user's words: "make sure we have that recorded somewhere
+      so … we don't forget it" (moved here from E-5c's research, 2026-10-07). My recommendation beside each:
+      - `[x]` DECIDED "Yes, add it" · T4 add `react-native-webview` 13.15.0 (the Expo SDK 54 pin) to `apps/mobile/` — a new dependency, the user's call
+        (rule 20 already chose a webview). Recommended: yes
+      - `[x]` DECIDED "One-time code" · T5 how the app signs the person into the editor: a one-time code in the URL exchanged for a cookie · a token via
+        `injectedJavaScriptObject` · shared cookies (and whether `expo-secure-store` holds it). Recommended: the one-time code
+      - `[x]` DECIDED "Native cache + local save" · T6 offline in the app: the native cache + the editor's own local save · service workers (iOS App-Bound Domains,
+        ≤ 10 domains). Recommended: the native cache + local save
+      - `[x]` DECIDED "Deep links" · T7 which native piece ships first beside the site (Apple 4.2): deep links into the existing Fees / Messages /
+        Reports screens · push · offline term dates. Recommended: deep links first
+      - `[x]` DECIDED "Edit from day one" · T8 the app EDITS the school site from day one, or only SHOWS it at first. Recommended: decide with T4–T7
+    - `[x]` T5 REVISITED BY THE USER 2026-10-07 (session E-5d): measured first — the web has NO sign-in (no accounts, no session, no
+      protected route; `contexts/UserContext.tsx` is a mock; the editor saves to the device's `localStorage`), so a code exchanged for a
+      cookie would protect nothing. Decided "No sign-in for now": the app ships without it; the one-time-code exchange is built WHEN
+      accounts exist → `[~]` (3) below
+    - `[~]` (3) the one-time-code sign-in (T5) — PARKED 2026-10-07 by the user until the web has real accounts (a new area, research first, RULE RS)
+    - `[ ]` (4) QUEUED AREA, asked by the user 2026-10-07 mid-E-5d: "can we do a website builder, a mobile app builder and a tablet app
+      builder … the layout and components done for all of them together?" — my answer: possible (RULE APP already makes the block model
+      the app model), not built now (rule 20 web first, RULE RK one area); NOW: every layout/component decision stays app-ready (phone +
+      tablet variations); LATER: a new area "App builder (phone + tablet)" — research first (RULE RS): the user's links on AI app
+      builders + mine, an "enough" checklist signed before any build. The user's links (2026-10-07), to be studied INSIDE, the
+      user logging in for me when the area opens (RULE R: every item opened, run, read):
+      - `[ ]` https://app.base44.com/launchpad
+      - `[ ]` https://app.emergent.sh/
+      - `[ ]` https://lovable.dev/
+    - **LEDGER E-5d**
+      - E5d-1 · the handover assumed a server session to hand over (T5) — there is none; NOT A BUG in code, a wrong premise: measured
+        (no `middleware.ts`, no `app/api/auth`, mock `UserContext`), decided by the user (above)
+      - E5d-2 · `apps/mobile/package.json` jest key spelled `setupFilesAfterSetup` (Jest's key is `setupFilesAfterEnv`), so the
+        jest-native matchers were never loaded — a test-config bug. FIXED (`setupFilesAfterEnv`); guard
+        `apps/mobile/__tests__/jest-setup.test.ts` — RED with the old key
+      - E5d-3 · a finger on a phone could not resize a full-width block from its LEFT edge: the handle sat at x≈14dp, inside
+        Android's back-gesture zone (measured on the Pixel: a swipe from ≤ 23dp went Back and LEFT THE EDITOR, from 30dp it did not)
+        — the web editor in Chrome / Safari meets the same edge. FIXED BY THE USER'S DECISION 2026-10-08 ("Hide it in the strip"):
+        on a touch screen a handle whose centre would lie within 32px of the window's edge is not drawn, nor its hit area
+        (`edgeSwipeSides` in box-model → `data-swipe` on the chrome mirror); the block resizes from its other edge and the Inspector.
+        Guards: `phone-editing.spec.ts` "E5d-3 …" — RED on the pre-fix build (left edge at x=13); `tests/unit/edge-swipe.test.ts` —
+        RED with the outset removed
+      - E5d-10 · MY OWN, from the first fix of E5d-3: a 2.5rem left gutter on touch screens cost the phone canvas 32px — test:fast
+        found a header that wrapped on the canvas but not for visitors and two grid-cell edges that changed (3 specs, mobile-chrome);
+        handles moved INSIDE the block instead caught the block's own long press and taps (2 more). Both REVERTED; the user chose
+        among the four measured options (above). Two specs that assumed all 8 handles always show now count the drawn ones
+      - E5d-11 · THE USER FOUND IT 2026-10-08: on a phone the "Add a block" sheet showed a tile's words OR its icon, never both —
+        measured on the Pixel: with a block selected, "Add it" + search + the categories on two lines left the list ~140px of a sheet
+        capped at 60% (E-5a D3). FIXED: the sheet rises to 85% (the user: "moved up a lot more"), the categories stay on one row that
+        scrolls sideways (the sheet, and the side panel under a finger on a wide tablet), no scrollbar (this WebView ignores
+        `scrollbar-width` — the WebKit rule too). Measured on the emulators: phone 4 whole tiles, tablet upright 11, tablet sideways 2
+        + scroll (676px tall). Guard: `phone-editing.spec.ts` "E5d-11 …" — RED on the old build (tabs 532/580, too few whole tiles)
+      - E5d-4 · words typed just before the app is killed in the background were lost (measured: type, Home, force-stop 1s later →
+        gone). Two parts, measured: the WebView never tells the page it is hidden (no visibilitychange / pagehide), so the editor's
+        0.4s typing pause never flushes; and Chromium holds a localStorage write ~0.5–1s before disk (a marker survived a kill at
+        ≥ 1s, not at 0.5s). PART FIXED: the app fires `pagehide` when it leaves the foreground (jest RED without it) — on iOS in time;
+        on Android the command runs only on return (a hidden window draws no frame). The remaining ~1–1.4s window (every browser has
+        it too) closes only by saving to IndexedDB instead of localStorage — `[~]` PARKED BY THE USER 2026-10-08 ("if it's going to
+        take us away from what we're doing, record it in the ledger and move on"): the save, its first load, moving saved sites
+        across and the specs that read the save directly — a batch of its own, for a later session
+      - E5d-5 · an `educo://` link inside the editor did nothing: react-native-webview hands any address outside its
+        `originWhitelist` (http/https by default) to `Linking` without asking our routing, and Expo Go cannot open `educo://`
+        (measured: the library's `createOnShouldStartLoadWithRequest`). FIXED: `ORIGIN_WHITELIST` adds `educo://*`; `tel:` /
+        `whatsapp:` still go to the phone. Guard: jest "E5d-5" runs the library's own gate — RED without it; on the phone
+        `educo://messages` from the page opened Chat
+      - E5d-6 · the app's status bar (clock, battery) stayed dark grey on the dark, midnight and purple themes — every screen
+        (seen in the A10 screenshots). FIXED: `ThemedStatusBar` (expo-status-bar, installed, unused until now) in the root chrome.
+        Guard: `__tests__/ui/ThemedStatusBar.test.tsx` — RED with a fixed style
+      - E5d-7 · eight rows in the app's More screen show an arrow and do nothing when tapped (My Profile, My Children, School
+        Calendar, Parent Handbook, Contact School, Help Center, Send Feedback, About: `onPress: () => {}`) — placeholder UI, older
+        than E-5d. `[~]` PARKED BY THE USER 2026-10-08: "leave them for their own work" — each is a feature of its own
+      - E5d-8 · `app/file-preview.tsx` took `SafeAreaView` from `react-native` (deprecated; does nothing on Android under SDK 54's
+        edge-to-edge) — its warning toast covered the tablet's tab bar in development and stopped the headed pass. FIXED: from
+        `react-native-safe-area-context` like every other screen. Guard: `__tests__/no-deprecated-safe-area.test.ts` — RED on the old file
+      - E5d-9 · seen ONCE in the headed pass (`logs/e5d-uat5-phone.out`): right after A4's drag + an Undo tap on the phone, the
+        app showed Home and the WebView was torn down ("isolated not needed" in logcat). NOT reproduced: the same steps replayed
+        by hand, then the whole phone pass again (30 / 30). The phone emulator had just been cold-booted after it shut itself down.
+        `[~]` RECORDED BY THE USER'S RULE 2026-10-08 ("if it's layout, dig now; if not, record it and move on"): app navigation,
+        not layout — kept here, watched in every later headed pass, picked up later
+    - `[x]` (1) its HEADED checklist FIRST (RULE X), written 2026-10-07 before the build — PASSED 2026-10-08 on the final build:
+      `scripts/uat/uat-e5d-headed.js`, tablet 35 / 35 (`logs/e5d-uat7-tablet.out`), phone 34 / 34 (`logs/e5d-uat8-phone.out`), one device
+      at a time (two emulators + the build did not fit in memory: the phone's Android never answered beside the tablet). Both emulators (tablet 5554 = Pixel Tablet,
+      phone 5556 = Pixel), Expo Go 54, the editor served by `next start` on 3100 (adb reverse), each line on BOTH:
+      - `[x]` A1 entry: More → "Website builder" opens the editor screen; a spinner until the page draws; the bottom tab bar is not over it
+      - `[x]` A2 it edits: add a block from the palette, type in it, through the UI (RULE Y); leave and re-open → it is still there
+      - `[x]` A3 phone (411 wide) gets the phone editor; tablet portrait (800) the tablet editor; tablet landscape (1280) the desktop one;
+        turning the tablet re-lays the chrome, keeps the page
+      - `[x]` A4 Back (Android button / gesture): inside the editor's own history it goes back a page; at its start it leaves to More;
+        never closes the app mid-edit; a drag that starts at the screen edge is not taken as Back
+      - `[x]` A5 process killed: app force-stopped mid-edit (`am force-stop`) and relaunched → the editor reloads from the saved state,
+        nothing lost; the renderer gone (`onRenderProcessGone`) → reloads itself, no blank screen
+      - `[x]` A6 camera-roll upload: an Image block's upload opens the Android picker, a photo from the gallery lands on the canvas
+      - `[x]` A7 offline: network off (airplane / `svc wifi disable` + `svc data disable`) → the editor still opens from the cache, says
+        it is offline, edits save on the device; network back → reloads live
+      - `[x]` A8 links: a link off our editor's address opens in the system browser, never inside the editor
+      - `[x]` A9 deep links: `educo://fees`, `educo://messages`, `educo://reports`, `educo://site-editor` (in Expo Go
+        `exp://…/--/<route>`) each open their screen, from cold and from warm
+      - `[x]` A10 four themes: the app's light / dark / midnight / purple → the native chrome AND the editor (`?theme=`) follow; contrast
+        of the offline notice ≥ 4.5:1 in each
+      - `[x]` A11 keyboard (trap 7): typing in a block near the bottom — the keyboard does not hide the words being typed
+      - `[x]` A12 no red screen, Metro "Android Bundled", no console errors in the webview; jest for isTablet true AND false
+      - `[x]` A13 docs: `docs/guide/` page for the app's editor (RULE DOCS), docs:build green
+      - `[x]` A14 (added 2026-10-07, RULE Z's guard asked for it) the Preview of the page built IN THE APP, inside the device's
+        WebView, at every screen of `screens.js` (73) × 100 / 150 / 200 % text — no sideways scroll (CDP device emulation)
+      - `[?]` THE USER ASKED 2026-10-08: "the header is showing outside the canvas — on purpose?" Answered: yes — the app's bar (Back,
+        the only way out on an iPhone) and the editor's toolbar are tools, not the site; the canvas is the white box. (The "header"
+        inside the box was my A6 test photo — a screenshot of the builder.) Offered: fold Back into the editor's bar on a phone to give
+        the page ~48dp back. The user asked what I recommend (2026-10-08): KEEP THEM — the app's bar is the standard way out of a
+        screen and the only one on an iPhone; folding it costs editor code for one platform, for 48px the taller sheet no longer needs.
+        Kept unless the user says otherwise
+      - NOT DRIVABLE HERE (said, not skipped): iOS (no Mac) — swipe-back off and `onContentProcessDidTerminate` are written to the docs
+        and covered by jest only
+    - `[x]` (2) the build — DONE 2026-10-08 (the one-time code parked by the user, above): `app/site-editor.tsx` + `lib/site-editor.ts`,
+      More → Website builder, the tab bar off it, `ThemedStatusBar`, the web's `?theme=`, the Back strip (E5d-3); jest 121 → 131 (phone AND
+      tablet), docs `website-builder-in-the-app.md` + story §12, `SiteEditor.feature`. Gate: typecheck · eslint 0 / 105 · vitest 4,453 ·
+      test:fast 3,346 (+ the one spec changed after it re-run: 22 + 2 skipped) · mobile jest · docs:build. Was: (the build (a webview screen in `apps/mobile/` with `isTablet`, the one-time-code exchange on the server, BackHandler,
+      iOS swipe-back off, `onContentProcessDidTerminate` / `onRenderProcessGone`, the `postMessage` bridge limited to our origin, the
+      deep links) with jest for phone AND tablet, then its docs (RULE DOCS)
 - `[x]` **BATCH G-3 · Placing on columns and rows** — CLOSED 2026-10-04 (HEADED UAT `scripts/uat/uat-g3-headed.js`, six windows,
   65 checks 0 failed on the final build (`logs/g3-uat6.out`), Preview at all 70 screens at 100 / 150 / 200 % text; G-2's suite
   re-run as regression 128/0 (`g2-regress-g3c.out`); gate: see the commit) — OPENED 2026-10-04 (session 5da86722, the user's "go") (area: page grid
@@ -3308,7 +3819,7 @@ sent), and my research. Nothing on the layout is done until every line here is c
     falls back into the flow unless placed at that rung; the page audit and Page check warn when it covers words;
     shown as drag on the canvas with the half-lines drawn, a Position panel (start / end, column / row, spill above /
     below) and a gallery of ready-made placements (RULE S / UI). Joins AC-10, ST-5, AC-35 — one build
-    - `[>]` AC-37b ← YOU ARE HERE (NOW: BATCH E-4 CLOSED 2026-10-06 (HEADED 232 / 0; `test:fast` now runs all four screens, 3,272 / 3,272 in 12.3 min; E4-1 … E4-14, E4-9 and E4-14 → BATCH E-5) — next: the pull request for `builder/editor-small-screens` (the user opens it from the compare link), then BATCH E-5 (research first: ask the user for their sources). Before that: BATCH E-4 change (1) E3-3 done (`6042e79`); handover of session E-3 in the SESSION LOG. Before that: BATCH E-3 CLOSED 2026-10-06 (297 / 0 headed; E3-1 … E3-11, E3-3 the user's question); the tree audit DONE 2026-10-06 (`4fcf59a`, its true count heads section 1.1) — its checklist first, then spacing-gestures 12 · masonry-builder 10 · canvas-zoom 3 · text-is-reachable 1 · D3-32 the top bar one row from 1280; then E-4, then E-5 (research first). Before that: BATCH E-2 CLOSED 2026-10-06 (174 / 0 headed; 24 ledger lines). Before that: BATCH E-2 in BATCHES, on `builder/editor-small-screens` (cut from master `7494a8e` after PR #6 merged `builder/page-grid` 2026-10-06) — its checklist first, then the 37 failing specs one by one; then E-3, then E-4. Before that: BATCH G-3d CLOSED 2026-10-06 (`ec52b51`); handover of session (G-3d) in the SESSION LOG. Before that: BATCH G-3d (three changes); handover of session 49087f08 in the SESSION LOG; D-3 CLOSED 2026-10-06 (both changes). Before that: handover of session ff5dbc77 in the SESSION LOG; D-2 and D-3 (1) CLOSED 2026-10-06. Earlier: handover of session 22981e0a; BATCH G-3b and BATCH E-1 CLOSED 2026-10-05; MERGE DECIDED by the user 2026-10-05: `builder/layout-uat` pushed, the user opens and merges the pull request, then the branch is deleted and `builder/page-grid` cut from master; next there: BATCH D-2 (the Docusaurus site + the layout documented from the beginning, RULE DOCS), then BATCH G-3d (the user's two decisions), then BATCH E-2 (resizing and dropping on tablets and phones); before the PR: the artifacts and the layout story for the page grid; then its final pass, then BATCH E-1; handover of session 3da81fad in the SESSION LOG; earlier: handover of session 5da86722 in the SESSION LOG — G-3 CLOSED 2026-10-04 (63 headed checks, G3-8 carried to G-3b by the user); earlier: BATCH G-3 · placing on columns AND rows — G-2 CLOSED 2026-10-04 (134 headed checks); P-0 CLOSED 2026-10-04 (R4-1 … R4-5 fixed, 30 headed checks); R-4 SIGNED with D1–D5 (session 9fa0fee9); then G-3, P-1, P-2, G-4, P-3, G-5, G-6. G-1 CLOSED 2026-10-04 (see BATCHES). Plan APPROVED 2026-10-04 with the user's decisions below. Earlier: research R-3 DONE and SIGNED 2026-10-04
+    - `[>]` AC-37b ← YOU ARE HERE (NOW: BATCH E-5d · The app CLOSED 2026-10-08 on `builder/phone-editing` — next: the pull request for `builder/phone-editing` (the user opens it from the compare link), then the next area. Parked by the user: E5d-4 (IndexedDB save), E5d-7 (More's eight empty rows), E5d-9 (watched). QUEUED AREA: the app builder (phone + tablet), research first with the user's links. Before that: E-5c · The tablet CLOSED 2026-10-07 (HEADED 590 / 0; test:fast 3,343 + 2 fixed; vitest 4,445; E5c-1 … E5c-9; the user's E5c-2 one-row bar + More and E5c-4 the Inspector a tab below 1024) on `builder/phone-editing` — next: BATCH E-5d · The app — T4–T8 DECIDED 2026-10-07 (react-native-webview yes · one-time code · native cache + local save · deep links first · edit from day one) → its HEADED checklist first; handover of session E-5c in the SESSION LOG. Before that: E-5b · A finger drags and resizes CLOSED 2026-10-07 (HEADED 206 / 0; test:fast 3,333; E5b-1 … E5b-16) on `builder/phone-editing` — next: BATCH E-5c — research SIGNED 2026-10-07 (T1–T3; T4–T8 recorded for the app, BATCH E-5d) → change (2) THE BUILD, its HEADED checklist first; handover of session E-5b/E-5c in the SESSION LOG. Before that: research SIGNED 2026-10-06 (D1–D6, `docs/web-anatomy/phone-editing.md`), E-5a · Building on a phone CLOSED 2026-10-07 (HEADED 258 / 0; test:fast 3,312; the user's E5a-7 and E5a-16) on `builder/phone-editing` — next: BATCH E-5b (a finger drags and resizes: E5a-1 + E4-9), then E-5c (the tablet, then the app); handover of session E-4/E-5a in the SESSION LOG. Before that: BATCH E-4 CLOSED 2026-10-06 (HEADED 232 / 0; `test:fast` now runs all four screens, 3,272 / 3,272 in 12.3 min; E4-1 … E4-14, E4-9 and E4-14 → BATCH E-5) — PR #7 MERGED to master 2026-10-06 (`05c66ee`), `builder/editor-small-screens` deleted, `builder/phone-editing` cut from master — next: BATCH E-5, research first (the user's sources and mine). Before that: BATCH E-4 change (1) E3-3 done (`6042e79`); handover of session E-3 in the SESSION LOG. Before that: BATCH E-3 CLOSED 2026-10-06 (297 / 0 headed; E3-1 … E3-11, E3-3 the user's question); the tree audit DONE 2026-10-06 (`4fcf59a`, its true count heads section 1.1) — its checklist first, then spacing-gestures 12 · masonry-builder 10 · canvas-zoom 3 · text-is-reachable 1 · D3-32 the top bar one row from 1280; then E-4, then E-5 (research first). Before that: BATCH E-2 CLOSED 2026-10-06 (174 / 0 headed; 24 ledger lines). Before that: BATCH E-2 in BATCHES, on `builder/editor-small-screens` (cut from master `7494a8e` after PR #6 merged `builder/page-grid` 2026-10-06) — its checklist first, then the 37 failing specs one by one; then E-3, then E-4. Before that: BATCH G-3d CLOSED 2026-10-06 (`ec52b51`); handover of session (G-3d) in the SESSION LOG. Before that: BATCH G-3d (three changes); handover of session 49087f08 in the SESSION LOG; D-3 CLOSED 2026-10-06 (both changes). Before that: handover of session ff5dbc77 in the SESSION LOG; D-2 and D-3 (1) CLOSED 2026-10-06. Earlier: handover of session 22981e0a; BATCH G-3b and BATCH E-1 CLOSED 2026-10-05; MERGE DECIDED by the user 2026-10-05: `builder/layout-uat` pushed, the user opens and merges the pull request, then the branch is deleted and `builder/page-grid` cut from master; next there: BATCH D-2 (the Docusaurus site + the layout documented from the beginning, RULE DOCS), then BATCH G-3d (the user's two decisions), then BATCH E-2 (resizing and dropping on tablets and phones); before the PR: the artifacts and the layout story for the page grid; then its final pass, then BATCH E-1; handover of session 3da81fad in the SESSION LOG; earlier: handover of session 5da86722 in the SESSION LOG — G-3 CLOSED 2026-10-04 (63 headed checks, G3-8 carried to G-3b by the user); earlier: BATCH G-3 · placing on columns AND rows — G-2 CLOSED 2026-10-04 (134 headed checks); P-0 CLOSED 2026-10-04 (R4-1 … R4-5 fixed, 30 headed checks); R-4 SIGNED with D1–D5 (session 9fa0fee9); then G-3, P-1, P-2, G-4, P-3, G-5, G-6. G-1 CLOSED 2026-10-04 (see BATCHES). Plan APPROVED 2026-10-04 with the user's decisions below. Earlier: research R-3 DONE and SIGNED 2026-10-04
       (`ff5c53a`, `4418202`); build to every decision recorded under R-3 below; the mockups settle the open three (row
       snap · the phone gap 11 vs 16 px · panel per site or per page) → the user's approval → build) · **THE PAGE GRID — DECIDED by the user 2026-10-03: done RIGHT AFTER L-4 closes, BEFORE L-5, L-6 and the
       frozen list's placement items** (they are built on it). NAMES (decided): "page grid" in code and docs; the lines a
@@ -4124,6 +4635,62 @@ sent), and my research. Nothing on the layout is done until every line here is c
 
 One entry per session, newest first. Written the moment the user says "new session" (or the context is about to run
 out) — where the session STARTED FROM, where it GOT TO, and where the next one CONTINUES FROM.
+
+### 2026-10-08 · session E-5d (the app) · branch `builder/phone-editing`
+- **Started from:** session E-5c's handover (`af6c542`), BATCH E-5d with T4–T8 decided.
+- **Got to:** E-5d BUILT — the website builder inside the Educo app (`apps/mobile/app/site-editor.tsx`, a WebView over the editor),
+  phone AND tablet; HEADED 69 / 69 on the final build (`scripts/uat/uat-e5d-headed.js`, real touches by adb, the page read over CDP,
+  the Preview swept at 73 screens × 3 text sizes inside the WebView); gate green. The user decided: no sign-in until accounts exist
+  (T5 premise wrong, measured); uninstall HospitalFinder from the Pixel AVD; E5d-3 "hide the handle in the Back strip" (after a
+  gutter and inward handles were both measured and reverted, E5d-10). Ledger E5d-1 … E5d-10. Asked mid-session: one builder for
+  websites, phone apps and tablet apps → queued area (RULE APP), the user's links base44 / emergent / lovable.
+- **Then (same session):** the user answered — E5d-4 and E5d-7 parked, E5d-9 recorded (not layout), the bars kept as recommended — and
+  found E5d-11 (the phone's blocks sheet showed a tile's icon or its words, never both): FIXED, sheet 85%, categories one row.
+  E-5d CLOSED.
+- **Continue from:** the pull request for `builder/phone-editing`; then the next area (the user's choice — the queued app builder
+  needs research first, the user's links base44 / emergent / lovable).
+
+### 2026-10-07 · session E-5c (the build) · branch `builder/phone-editing`
+- **Started from:** session E-5b/E-5c's handover (`b71d6eb`), BATCH E-5c (2) THE BUILD (YOU ARE HERE), T1–T3 signed.
+- **Got to:** **E-5c CLOSED** — a tablet (600–1023) edits at its own width 1:1 on its rung, the device following the window (turns
+  included); the three African tablet sizes in the Preview and the UAT screens (73); the blocks sheet and More capped at 32rem and
+  centred; and, by the user's two decisions mid-build, a tablet gets the phone's one-row bar + More (E5c-2) and the Inspector stays a
+  tab below 1024 (E5c-4, reversing T3's "docked at ≥ 900"). The headed pass found five more: the finger's bar covered the block above
+  (E5c-5 → the docked phone bar, research rec. 4), floats lost their grip (E5c-6), a float could leave the page (E5c-7), floats were
+  measured from the content box and jumped (E5c-8, older than E-5c, a mouse too), a float's resize slid its top (E5c-9). HEADED UAT
+  590 / 0 on the final build (`uat-e5c-headed.js`, 15 runs, six windows), test:fast 3,343 + the 2 chrome specs updated after it,
+  vitest 4,445, eslint 0 / 105, docs:build. Docs: story §11, `website-builder.md`, research rec. 3 amended, `phone-editing.feature`.
+- **Continue from:** **BATCH E-5d · The app** — T4–T8 DECIDED by the user at the end of this session (all as recommended: add `react-native-webview` 13.15.0 · a one-time code · native cache + local save · deep links first · edit from day one).
+  Then its research gaps (none signed for the app's build beyond §2 E) and its HEADED checklist on both emulators (5554 tablet, 5556 phone).
+  The pull request for `builder/phone-editing` is still the user's to open from the compare link when they ask.
+
+### 2026-10-07 · session E-5b/E-5c · branch `builder/phone-editing` — HANDOVER (both held: the context is genuinely long — the whole of E-5b with 16 ledger lines, seven builds and seven headed passes, then the E-5c research — and the boundary is clean: everything committed, the research signed, nothing running, ports free; the next job, the tablet build, is heavy)
+- **Started from:** session E-4/E-5a's handover (`3763c43`): BATCH E-5b.
+- **Got to:** (1) **E-5b CLOSED** (`6ae39da`): a finger resizes and drags (`followGesture`: a mouse keeps mouse events, a finger
+  pointer events + `pointercancel`); long-press lift (`armLift`: chip above the finger, kept on screen; `scrollNearEdges`); the grip
+  for a finger where the bar sits by its block (none in a phone's docked bar — the user's decision on E5b-8); finger strips read
+  from the drag; 44px hit areas OUTSIDE the block under every handle (`HIT_POS`, `CHROME_Z.handleHit`); two older bugs fixed
+  (E5b-3 corner anchor + still press; E5b-16 the grid preview shrank the page mid-drag). HEADED 206 / 0 · vitest 4,442 ·
+  test:fast 3,333 · docs:build. (2) **E-5c research SIGNED** (`c8857ee` + this entry): `docs/web-anatomy/tablet-and-app-editing.md`;
+  the user waived their own sources for E-5c only; T1–T3 signed; T4–T8 (the app) recorded as `[?]` under E-5c, asked at E-5d.
+- **Continue from:** **BATCH E-5c → change (2) THE BUILD** (a)–(f): its HEADED checklist first (RULE X), then T1 tablets edit at
+  their own width 1:1 · T2 the three African sizes in `lib/preview-devices.ts` · T3 the capped centred sheet + the Inspector docked
+  ≥ 900 · the finger re-measured on tablets · the story's §11. Then **BATCH E-5d · The app** — ask T4–T8 first.
+
+### 2026-10-07 · session E-4/E-5a · branch `builder/phone-editing` — HANDOVER (the user: "please write a new prompt for the next session"; both held: the context is genuinely long — E-4, the merge, the E-5 research, the whole of E-5a with 19 ledger lines and two decisions — and the boundary is clean: everything committed at `75008d8` + this entry, nothing running, ports free)
+- **Started from:** session E-3's handover (`e510976`): BATCH E-4 change (2).
+- **Got to:** (1) **BATCH E-4 CLOSED** (`0c31896`): the Preview on every screen; `test:fast` runs all FOUR screens at 8 workers
+  (3,272 → now 3,312, ~12.5 min). (2) **PR #7 MERGED** (`05c66ee`), `builder/editor-small-screens` deleted, `builder/phone-editing`
+  cut. (3) **E-5 research SIGNED** (`docs/web-anatomy/phone-editing.md`: the user's Wix + one.com links read completely, mine across
+  ten editors + WCAG / Apple / Android; D1–D6). (4) **E-5a (in BATCH E-5) CLOSED** (`75008d8`): a phone edits at its own width; the blocks
+  sheet with Before / After / Inside / Start / End; ↑ ↓ arrows; ½ ⅓ widths; 44px on touch everywhere; the user's E5a-16 (one-row
+  phone bar + More sheet) and E5a-7 (touch bar two rows at 1280, one from 1366); the toolbar docks at the bottom on a phone.
+  HEADED 258 / 0; gate vitest 4,442 · test:fast 3,312 · docs:build.
+- **Continue from:** **BATCH E-5b · A finger drags and resizes** (QUEUED → open it): E5a-1 — resize and drag listen to the MOUSE
+  only (`BoxCanvas` `startResize` / `startResizeGridCell` / `startResizeAbsolute` / `startDrag`, document `mousemove`/`mouseup`), so
+  a finger can do neither on any touch device; move them to POINTER events (capture, `pointercancel`), long-press to lift a block
+  (500ms, a chip above the finger, an insertion line, auto-scroll), the grip offered to a finger again (it is `pointer-coarse:hidden`
+  now), and E4-9 — drop strips ≥ 44px on touch. Then **BATCH E-5c** (the tablet 600–1023, then `apps/mobile/` as a webview).
 
 ### 2026-10-06 · session E-3 · branch `builder/editor-small-screens` — HANDOVER (the user: "give me the prompt for the new session"; both held: the context is genuinely long — the tree audit, a whole batch with 11 ledger lines, five builds, four headed passes, the new rule — and the boundary is clean: everything committed at `6042e79`, nothing running, ports free)
 - **Started from:** session E-2's handover (`0bb6d77`): the tree audit, then BATCH E-3.

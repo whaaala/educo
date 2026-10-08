@@ -1,5 +1,5 @@
 import { test, expect, type Page, type Frame } from "@playwright/test";
-import { seedSite, sitePage } from "./helpers/seed-site";
+import { seedSite, sitePage, pressHeader } from "./helpers/seed-site";
 
 /**
  * A GRID NARROWS BY ITS OWN BOX (#111) — behaviours in tests/features/components/website/box-builder-columns.feature.
@@ -37,7 +37,7 @@ const measure = (doc: Page | Frame, engine: "canvas" | "preview") => doc.evaluat
   return { outer: tracks("outer"), inner: tracks("inner"), o2: width("o2"), i1: width("i1"), broken, containerType: getComputedStyle(q("ib")).containerType };
 }, engine);
 
-async function preset(page: Page, name: string) { await page.getByRole("button", { name }).first().click(); await page.waitForTimeout(600); }
+async function preset(page: Page, name: string) { await pressHeader(page, name); await page.waitForTimeout(600); }
 
 /** The Preview with exactly `w` px of page — a scrollbar is paid for by widening the window, as scripts/uat does. */
 async function previewAt(page: Page, w: number): Promise<Frame> {

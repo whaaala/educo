@@ -18,6 +18,7 @@ const sidebars = {
       collapsed: false,
       items: [
         'website-builder',
+        'website-builder-in-the-app',
       ],
     },
   ],

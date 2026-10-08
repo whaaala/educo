@@ -30,10 +30,10 @@ Build and maintain your school's public website by dragging blocks onto a page �
 
 | Area | What it does |
 |------|--------------|
-| **Blocks panel** | Everything you can add: Layout, Text, Media, and Components. Open it from the **Blocks** launcher at the canvas's top-left (or press **B**). On a laptop or larger it sits at the side and the page moves over to make room; on a smaller screen it floats over the canvas. **Search** to filter, use the **category tabs** to jump, then click a block to add it (or drag it onto the page). Close it with the ✕, Esc or B (or a click outside it on a small screen). |
+| **Blocks panel** | Everything you can add: Layout, Text, Media, and Components. Open it from the **Blocks** launcher at the canvas's top-left (or press **B**). On a laptop or larger it sits at the side and the page moves over to make room; on a tablet or phone (under 1024px) its **+** waits bottom-right and the blocks rise from the bottom in a sheet (on a tablet no wider than 32rem, centred). **Search** to filter, use the **category tabs** to jump, then click a block to add it (or drag it onto the page). Close it with the ✕, Esc or B (or a click outside it on a small screen). |
 | **Canvas** (middle) | Your page. Click a block to select it; its controls appear on the right. |
-| **Inspector** (right) | Every setting for the selected block, in three tabs: **Design**, **Content**, **Per‑device**. Collapse it (the collapse button in its header) to give the canvas more room, and reopen it from the slim rail on the right. |
-| **Top bar** | Pages, **Add a band**, Undo/Redo, **Preview**, **Export**, **Reset**, the device switcher, and **Base size** (the number box; the words "Base size" show beside it only on very wide screens). |
+| **Inspector** (right) | Every setting for the selected block, in three tabs: **Design**, **Content**, **Per‑device**. Collapse it (the collapse button in its header) to give the canvas more room, and reopen it from the slim rail on the right. Under 1024px it starts as that rail and slides over the page when opened. |
+| **Top bar** | Pages, **Add a band**, Undo/Redo, **Preview**, **Export**, **Reset**, the device switcher, and **Base size** (the number box; the words "Base size" show beside it only on very wide screens). Under 1024px (a tablet or phone) it is one row (pages, Undo, Redo, Preview and **⋯ More**) and everything else is in **More**. |
 
 [![The builder on a laptop: the Blocks panel docked at the left with its Layout, Text, Media and Components tabs, the page moved over beside it, and the Inspector on the right](img/guide-blocks-panel.webp)](img/guide-blocks-panel.webp)
 
@@ -334,7 +334,8 @@ shape of your own, set a **Height** and that is what you get.
 rows** rather than pushing Preview, Export and the device chips off the side. Every control stays on the
 screen at any width. On a desktop it is a single row: below 1,600px wide, **Add a band**, **Page check**,
 **Preview**, **Export** and **Reset** show only their icons. Point at one to see its name; a screen reader
-reads it the same as before.
+reads it the same as before. On a touch screen every button is 44px for a finger, so the bar needs a little more
+room: one row from 1,366px wide, two rows at 1,280px, and the buttons' words appear from 1,800px. Under 600px — a phone — the bar is one row of Pages, Undo, Redo, Preview and More, and everything else is in More.
 
 ---
 

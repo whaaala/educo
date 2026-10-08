@@ -60,7 +60,7 @@ export default function ThemeSwitcher({ compact = false, className = "", align =
         aria-haspopup="menu"
         aria-expanded={open}
         title={`${ariaLabel ?? "Theme"}: ${current.label}`}
-        className="flex items-center gap-1.5 px-2 sm:px-2.5 py-1.5 rounded-lg text-sm font-medium text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 border border-line transition-colors"
+        className="flex items-center justify-center gap-1.5 px-2 sm:px-2.5 py-1.5 pointer-coarse:min-h-11 pointer-coarse:min-w-11 rounded-lg text-sm font-medium text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 border border-line transition-colors"
       >
         <CurrentIcon className="w-4 h-4" />
         {!compact && <span className={labelClassName}>{triggerLabel ?? current.label}</span>}

@@ -43,6 +43,8 @@ test.describe("the builder's toolbar fits the screen it is on", () => {
     for (const w of [375, 414, 768, 1024, ...Array.from({ length: 33 }, (_, i) => 1280 + i * 20), 1366, 1536]) {
       await page.setViewportSize({ width: w, height: 900 });
       await page.waitForTimeout(250);
+      // ON A PHONE OR TABLET THE BAR IS ONE ROW and the rest is in its More sheet (E5a-16; tablets E5c-2, the user 2026-10-07)
+      const phoneBar = w < 1024 ? ["Undo", "Redo", "Preview", "More"] : null;
       const r = await page.evaluate((controls) => {
         const header = document.querySelector("header")!;
         const named = (name: string) => Array.from(header.querySelectorAll("button, input, [role='group']"))
@@ -63,7 +65,7 @@ test.describe("the builder's toolbar fits the screen it is on", () => {
           headerH: Math.round(header.getBoundingClientRect().height),
           sideways: document.documentElement.scrollWidth > window.innerWidth + 1,
         };
-      }, CONTROLS);
+      }, phoneBar ?? CONTROLS);
 
       heights.push({ w, h: r.headerH });
       for (const m of r.missing) failures.push(`${w}px: "${m}" is not in the toolbar`);
@@ -79,19 +81,32 @@ test.describe("the builder's toolbar fits the screen it is on", () => {
      */
     // ONE ROW FROM 1280 (D3-32, the user 2026-10-06): two rows (92px) at 1280 / 1366 / 1440 until the five left-hand words folded to
     // icons below 1600, and the right-hand labels moved from 1700 to 1800 (E3-7)
-    for (const d of heights.filter((x) => x.w >= 1280)) {
-      expect(d.h, `the toolbar takes ${d.h}px on a ${d.w}px screen — it should still be one row`).toBeLessThanOrEqual(64);
+    // …AND ON A TOUCH SCREEN, ONE ROW FROM 1366 (E5a-7, the user 2026-10-07: "two rows at 1280 touch"): every control is 44px for a
+    // finger (D6), which widens the bar's 23 buttons 910 → 1,012px — two rows at 1280, one row of 65px (44px buttons) from 1366.
+    const touch = await page.evaluate(() => matchMedia("(pointer: coarse)").matches);
+    for (const d of heights.filter((x) => x.w >= (touch ? 1366 : 1280))) {
+      expect(d.h, `the toolbar takes ${d.h}px on a ${d.w}px screen — it should still be one row`).toBeLessThanOrEqual(touch ? 72 : 64);
     }
-    const desktop = heights.find((x) => x.w === 1536)!;
-    const phone = heights.find((x) => x.w === 375)!;
-    expect(phone.h, "a phone needs MORE rows, not fewer — if this equals the desktop height nothing wrapped").toBeGreaterThan(desktop.h);
+    // …and a phone's bar is ONE row too (E5a-16), its other controls a tap away in More — every one of them there.
+    await page.setViewportSize({ width: 375, height: 800 }); await page.waitForTimeout(300);
+    expect(heights.find((x) => x.w === 375)!.h, "a phone's bar is one row").toBeLessThanOrEqual(72);
+    expect(heights.find((x) => x.w === 768)!.h, "a tablet's bar is one row (E5c-2)").toBeLessThanOrEqual(72);
+    await page.getByRole("button", { name: "More", exact: true }).click();
+    const inMore = await page.evaluate((controls) => {
+      const sheet = document.querySelector('[role="dialog"][aria-label="More"]')!;
+      const names = Array.from(sheet.querySelectorAll("button, input, [role='group']")).map((e) => (e.getAttribute("aria-label") || e.textContent || "").trim());
+      return controls.filter((c) => !["Undo", "Redo", "Preview"].includes(c) && !names.includes(c));
+    }, CONTROLS);
+    expect(inMore, "every control not on a phone's bar is in More").toEqual([]);
   });
 
   test("below 1600px the five words fold to icons, each keeping its name and its tooltip (D3-32)", async ({ page }) => {
     await page.goto("/website/box-demo");
     await page.waitForSelector("header", { timeout: 30000 });
     const WORDS = ["Add a band", "Page check", "Preview", "Export", "Reset"];
-    for (const [w, shown] of [[1599, false], [1600, true]] as const) {
+    // ON TOUCH THE WORDS COME AT 1800 (E5a-7 / E5a-16): a finger's bar is wider, and at 1600 the words wrapped it to two rows.
+    const from = (await page.evaluate(() => matchMedia("(pointer: coarse)").matches)) ? 1800 : 1600;
+    for (const [w, shown] of [[from - 1, false], [from, true]] as const) {
       await page.setViewportSize({ width: w, height: 900 });
       await page.waitForTimeout(250);
       for (const name of WORDS) {
@@ -132,6 +147,8 @@ test.describe("the builder's toolbar fits the screen it is on", () => {
     await page.waitForSelector("header", { timeout: 30000 });
     await page.waitForTimeout(500);
     expect(await docked(), "768: it starts as its tab").toBe(false);
+    await page.setViewportSize({ width: 962, height: 601 }); await page.waitForTimeout(400);
+    expect(await docked(), "962 × 601, a tablet held sideways: still its tab — docked it left the page 546px (E5c-4, the user 2026-10-07)").toBe(false);
     await page.setViewportSize({ width: 1024, height: 1000 }); await page.waitForTimeout(400);
     expect(await docked(), "widened to 1024 (the crossing itself): it docks open").toBe(true);
     await page.setViewportSize({ width: 1023, height: 1000 }); await page.waitForTimeout(400);

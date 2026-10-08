@@ -456,8 +456,8 @@ export interface BoxNode {
    * apart from the one the builder wrote — theirs is kept, the builder's is undone.
    */
   floatFrom?: { width?: string; height?: string; minHeight?: number; clip?: boolean; sized?: string; sizedMin?: number; /** where it was in the layout, so putting it back is a round trip (E2-19) */ parentId?: string; index?: number };
-  left?: number;            // absolute only: X offset as % of the positioning parent's content box (responsive)
-  top?: number;             // absolute only: Y offset as % of the positioning parent's content box
+  left?: number;            // absolute only: X offset as % of the positioning parent's PADDING box, from its edge — what CSS does (E5c-8) (responsive)
+  top?: number;             // absolute only: Y offset as % of the positioning parent's PADDING box, from its edge (E5c-8)
   zIndex?: number;          // absolute only: stacking order among floating siblings (higher = on top)
   locked?: boolean;         // EDITOR-ONLY: freeze position + size (no drag / no resize / no nudge). Still selectable + content-editable. No effect on the exported site.
   group?: boolean;          // this container is a GROUP (created via "Group") — moves/locks as one unit; ungroup dissolves it.
@@ -666,7 +666,7 @@ export function isEmptyBox(node: BoxNode): boolean {
 const NO_HEIGHT_OF_ITS_OWN = new Set<BoxType>(["divider"]);
 
 /** A measured rectangle, as the editor's selection chrome mirrors it. */
-export type MirrorBox = { left: number; top: number; width: number; height: number; clipPath?: string; flush?: string };
+export type MirrorBox = { left: number; top: number; width: number; height: number; clipPath?: string; flush?: string; swipe?: string };
 
 /** The room a handle drawn OUTSIDE a block needs: the corner dot (0.75rem) and its 2px clearance, at a 16px root. */
 export const HANDLE_ROOM_PX = 14;
@@ -685,6 +685,25 @@ export function mirrorFlushSides(
     tight(canvas.bottom - block.bottom) && "s",
     tight(canvas.right - block.right) && "e",
     tight(block.left - canvas.left) && "w",
+  ].filter(Boolean).join(" ");
+}
+
+/**
+ * THE SCREEN EDGE IS BACK (E5d-3). Android's back gesture starts within 24dp of either side of the screen (measured on a Pixel
+ * with gesture navigation: a swipe from 23dp went Back and left the editor, from 30dp it did not), and Safari's edge swipe is the
+ * same. A finger's handle whose centre would lie closer than 32px (24 + room for a finger's aim) to the window's edge is NOT
+ * DRAWN on a touch screen — the phone owns that strip; the block resizes from its other edge and the Inspector (the user's
+ * decision 2026-10-08, after a 2.5rem gutter cost a 360 phone 32px and handles inside the block caught its own presses — E5d-10).
+ */
+export const EDGE_SWIPE_PX = 32;
+/** How far a side handle's centre sits outside its block (`-left-3`, 0.625rem wide; a corner's 0.75rem dot lands the same). */
+export const HANDLE_OUTSET_PX = 8;
+
+/** The sides ("w", "e") of a block whose handles would sit in the screen edge's back-swipe strip. */
+export function edgeSwipeSides(block: { left: number; right: number }, windowWidth: number): string {
+  return [
+    windowWidth - (block.right + HANDLE_OUTSET_PX) < EDGE_SWIPE_PX && "e",
+    block.left - HANDLE_OUTSET_PX < EDGE_SWIPE_PX && "w",
   ].filter(Boolean).join(" ");
 }
 
@@ -762,7 +781,7 @@ export function shouldTakeMirrorBox(
   const near = (a: number, b: number) => Math.abs(a - b) < 0.5;
   const same = (a: MirrorBox | null, b: MirrorBox | null) =>
     a && b
-      ? near(a.left, b.left) && near(a.top, b.top) && near(a.width, b.width) && near(a.height, b.height) && a.clipPath === b.clipPath && a.flush === b.flush
+      ? near(a.left, b.left) && near(a.top, b.top) && near(a.width, b.width) && near(a.height, b.height) && a.clipPath === b.clipPath && a.flush === b.flush && a.swipe === b.swipe
       : a === b;
 
   const settled = same(state.seen, next);   // the layout gave the same answer twice running
@@ -2190,6 +2209,28 @@ export function paletteClickSlot(root: BoxNode, selectedId: string | null): { pa
   return at ? { parentId: at.parent.id, index: at.index + 1 } : { parentId: root.id, index: root.children?.length ?? 0 };
 }
 
+/**
+ * WHERE A NEW BLOCK GOES, CHOSEN BY NAME (E-5a, D3 — the user's decision; WordPress's "Add Block Before / After…").
+ * Before / After are siblings of the selection, stepping out of a row band as `paletteClickSlot` does so the newcomer gets
+ * a line of its own; Inside is the end of the selection when it is a container (After otherwise); Start / End are the page's.
+ */
+export type InsertWhere = "before" | "after" | "inside" | "start" | "end";
+export function insertSlot(root: BoxNode, selectedId: string | null, where: InsertWhere): { parentId: string; index: number } {
+  const selected = selectedId ? findBox(root, selectedId) : null;
+  if (where === "start") return { parentId: root.id, index: 0 };
+  if (!selected || where === "end") return { parentId: root.id, index: root.children?.length ?? 0 };
+  if (where === "inside" && isContainer(selected)) return { parentId: selected.id, index: selected.children?.length ?? 0 };
+  const here = findParent(root, selected.id);
+  const at = (here?.parent.rowBand ? findParent(root, here.parent.id) : null) ?? here;
+  if (!at) return { parentId: root.id, index: root.children?.length ?? 0 };
+  return { parentId: at.parent.id, index: at.index + (where === "before" ? 0 : 1) };
+}
+/** The choice a plain click makes — `paletteClickSlot`'s rule, named, so the menu shows what WILL happen. */
+export function defaultWhere(root: BoxNode, selectedId: string | null): InsertWhere {
+  if (!selectedId || !findBox(root, selectedId)) return "end";
+  return paletteClickSlot(root, selectedId).parentId === selectedId ? "inside" : "after";
+}
+
 /** Insert `node` into `parentId` at `index` (clamped). No-op if the parent is missing. */
 export function insertBox(root: BoxNode, parentId: string, index: number, node: BoxNode): BoxNode {
   if (root.id === parentId) {
@@ -2279,6 +2320,47 @@ export function moveBoxStep(root: BoxNode, id: string, dir: -1 | 1): BoxNode {
   const next = [...kids];
   [next[index], next[j]] = [next[j], next[index]];
   return updateBox(root, parent.id, { children: next });
+}
+
+/**
+ * THE ARROWS ON A BLOCK (E-5a, D4 — the user's decision): what moves, along which axis, and where it may go.
+ * A block ALONE on its line moves the LINE (its row band) up and down the page — the band is scaffolding nobody selects;
+ * a block SHARING a line (a band of several, a row, a grid) moves along it, left and right. "first" / "last" are Move to
+ * top / bottom (start / end of the line). Every move is a non-drag route for what a drag does (WCAG 2.5.7).
+ */
+export type MoveStep = -1 | 1 | "first" | "last";
+function moveUnit(root: BoxNode, id: string): { id: string; parent: BoxNode; index: number } | null {
+  const p = findParent(root, id);
+  if (!p) return null;
+  if (p.parent.rowBand && (p.parent.children?.length ?? 0) === 1) {
+    const band = findParent(root, p.parent.id);
+    return band ? { id: p.parent.id, ...band } : null;
+  }
+  return { id, ...p };
+}
+export function moveAxis(root: BoxNode, id: string): "vertical" | "horizontal" {
+  const p = findParent(root, id);
+  if (!p) return "vertical";
+  const along = p.parent.rowBand ? (p.parent.children?.length ?? 0) > 1 : p.parent.direction === "row" || p.parent.layout === "grid";
+  return along ? "horizontal" : "vertical";
+}
+const stepTo = (u: { index: number; parent: BoxNode }, step: MoveStep) => {
+  const n = u.parent.children?.length ?? 0;
+  return step === "first" ? 0 : step === "last" ? n - 1 : u.index + step;
+};
+export function canMoveBlock(root: BoxNode, id: string, step: MoveStep): boolean {
+  const u = moveUnit(root, id);
+  if (!u) return false;
+  const j = stepTo(u, step);
+  return j >= 0 && j < (u.parent.children?.length ?? 0) && j !== u.index;
+}
+export function moveBlock(root: BoxNode, id: string, step: MoveStep): BoxNode {
+  const u = moveUnit(root, id);
+  if (!u || !canMoveBlock(root, id, step)) return root;
+  const kids = [...u.parent.children!];
+  const [m] = kids.splice(u.index, 1);
+  kids.splice(stepTo(u, step), 0, m);
+  return updateBox(root, u.parent.id, { children: kids });
 }
 
 /**

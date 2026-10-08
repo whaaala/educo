@@ -20,11 +20,11 @@ import {
   PanelTopOpen, LayoutGrid, MessageSquareQuote, Hash, BadgeCheck, Star, BellRing,
   Blocks, LayoutTemplate, Type, Images, Component, Search, X, Plus, Sparkles, ChevronDown, type LucideIcon,
 } from "lucide-react";
-import type { BoxNode } from "@/lib/box-model";
+import type { BoxNode, InsertWhere } from "@/lib/box-model";
 import type { SiteTheme } from "@/lib/site-storage";
 import { getAddChoices, nodeForPhotos, PHOTO_SETUP } from "@/lib/box-presets";
 import { COMPONENT_CATALOGUE } from "@/lib/component-catalogue";
-import { PortalMenu, MenuItem, MenuHeader } from "./ui";
+import { PortalMenu, MenuItem, MenuHeader, Segmented, useSheetManners } from "./ui";
 import GridLayoutMenu from "./GridLayoutMenu";
 import GallerySetupMenu from "./GallerySetupMenu";
 import { CHROME_Z } from "@/lib/educo-ui/stacking";
@@ -112,7 +112,9 @@ const TABS: { name: string; Icon: LucideIcon }[] = [
 
 type Anchor = { top: number; left: number; bottom: number; right: number };
 
-export default function BlocksPanel({ theme, onDragKind, onPick, defaultOpen = false, docked = false, onOpenChange }: {
+const WHERE_LABEL: Record<InsertWhere, string> = { before: "Before", after: "After", inside: "Inside", start: "Start", end: "End" };
+
+export default function BlocksPanel({ theme, onDragKind, onPick, defaultOpen = false, docked = false, onOpenChange, sheet = false, where }: {
   theme?: SiteTheme;
   onDragKind?: (kind: string | null) => void;
   onPick?: (kind: string, patch?: Partial<BoxNode>) => void; // click-to-add with an optional style variation
@@ -125,6 +127,14 @@ export default function BlocksPanel({ theme, onDragKind, onPick, defaultOpen = f
   docked?: boolean;
   /** Told whenever the panel opens or closes, so the page can make room for it. */
   onOpenChange?: (open: boolean) => void;
+  /**
+   * A PHONE (E-5a, D3 — the user's decision): the panel is a BOTTOM SHEET, at most 85 % of the screen (60 % until the user's E5d-11,
+   * 2026-10-08: with a block selected it left the list ~140px — a tile's icon or its words, never both), so the page stays in
+   * sight above it (NN/g: partial height, a grab bar, Close, Back); its launcher waits bottom-right, where a thumb is.
+   */
+  sheet?: boolean;
+  /** WHERE the block goes, for what is selected: Before · After · Inside · Start · End (E-5a, D3). Absent with no selection. */
+  where?: { value: InsertWhere; options: InsertWhere[]; onChange: (w: InsertWhere) => void };
 }) {
   const [open, setOpen] = useState(defaultOpen);
   useEffect(() => { onOpenChange?.(open); }, [open]);
@@ -142,6 +152,10 @@ export default function BlocksPanel({ theme, onDragKind, onPick, defaultOpen = f
     const id = requestAnimationFrame(() => setShown(true));
     return () => cancelAnimationFrame(id);
   }, [open]);
+
+  // BACK CLOSES THE SHEET, and focus goes back to the "+" (E-5a, D3 · E5a-13) — the manners every phone sheet here shares.
+  const launcherRef = useRef<HTMLButtonElement>(null);
+  useSheetManners(open, () => setOpen(false), launcherRef, sheet);
 
   // Click-outside closes (the panel floats over the canvas). Skipped while the portaled variation picker is open.
   useEffect(() => {
@@ -177,6 +191,8 @@ export default function BlocksPanel({ theme, onDragKind, onPick, defaultOpen = f
       .filter((g) => g.blocks.length > 0);
   }, [q, tab]);
   const showHeaders = tab === "All";
+  /** Adds the block. A SHEET then gets out of the way so the person sees what landed (WordPress's inserter does the same). */
+  const pick = (kind: string, patch?: Partial<BoxNode>) => { if (patch === undefined) onPick?.(kind); else onPick?.(kind, patch); if (sheet) setOpen(false); };
 
   const Tile = (b: Block) => {
     const hasVariations = OPENS_A_PICKER.has(b.kind) || (!!theme && getAddChoices(b.kind, theme).length > 0);
@@ -189,7 +205,7 @@ export default function BlocksPanel({ theme, onDragKind, onPick, defaultOpen = f
         onDragEnd={() => onDragKind?.(null)}
         onClick={(e) => {
           if (hasVariations && onPick) { const r = (e.currentTarget as HTMLElement).getBoundingClientRect(); setMenu((m) => (m?.kind === b.kind ? null : { kind: b.kind, label: b.label, anchor: { top: r.top, left: r.left, bottom: r.bottom, right: r.right } })); }
-          else onPick?.(b.kind);
+          else pick(b.kind);
         }}
         title={hasVariations ? `${b.hint} — click to choose` : b.hint}
         role="button"
@@ -225,12 +241,13 @@ export default function BlocksPanel({ theme, onDragKind, onPick, defaultOpen = f
         <button
           type="button"
           onClick={() => setOpen(true)}
+          ref={launcherRef}
           aria-label="Open blocks panel"
           aria-expanded={false}
           title="Add blocks (B)"
           /* Geometry inline so it is the SAME value the canvas reserves as a gutter; colour stays in classes. */
-          style={{ zIndex: CHROME_Z.panel, left: `${LAUNCHER_INSET_REM}rem`, width: `${LAUNCHER_SIZE_REM}rem`, height: `${LAUNCHER_SIZE_REM}rem` }}
-          className="absolute top-4 grid place-items-center rounded-2xl bg-gradient-to-br from-brand to-brand-600 text-brand-fg shadow-lg ring-1 ring-black/5 hover:shadow-xl hover:scale-105 transition"
+          style={{ zIndex: CHROME_Z.panel, ...(sheet ? {} : { left: `${LAUNCHER_INSET_REM}rem` }), width: `${LAUNCHER_SIZE_REM}rem`, height: `${LAUNCHER_SIZE_REM}rem` }}
+          className={`absolute ${sheet ? "bottom-4 right-4" : "top-4"} grid place-items-center rounded-2xl bg-gradient-to-br from-brand to-brand-600 text-brand-fg shadow-lg ring-1 ring-black/5 hover:shadow-xl hover:scale-105 transition`}
         >
           <Blocks className="w-5 h-5" strokeWidth={1.9} />
         </button>
@@ -242,18 +259,28 @@ export default function BlocksPanel({ theme, onDragKind, onPick, defaultOpen = f
           ref={panelRef}
           role="dialog"
           aria-label="Blocks"
-          style={{ zIndex: CHROME_Z.panel, left: `${LAUNCHER_INSET_REM}rem`, width: `${PANEL_WIDTH_REM}rem` }}
-          className={`absolute top-4 flex max-w-[calc(100%-1.5rem)] max-h-[calc(100%-2rem)] flex-col rounded-2xl border border-line bg-surface shadow-2xl shadow-black/10 overflow-hidden transition duration-200 ease-out motion-reduce:transition-none ${shown ? "opacity-100 translate-x-0 scale-100" : "opacity-0 -translate-x-2 scale-[0.98]"}`}
+          style={sheet ? { zIndex: CHROME_Z.panel } : { zIndex: CHROME_Z.panel, left: `${LAUNCHER_INSET_REM}rem`, width: `${PANEL_WIDTH_REM}rem` }}
+          className={`${sheet ? "fixed inset-x-0 bottom-0 max-h-[85dvh] rounded-t-2xl border-t min-[37.5em]:mx-auto min-[37.5em]:max-w-[32rem] min-[37.5em]:border-x" : /* on a tablet the phone's sheet, capped and centred (E-5c T3, WordPress's 512) */ "absolute top-4 max-w-[calc(100%-1.5rem)] max-h-[calc(100%-2rem)] rounded-2xl border"} flex flex-col border-line bg-surface shadow-2xl shadow-black/10 overflow-hidden transition duration-200 ease-out motion-reduce:transition-none ${shown ? "opacity-100 translate-x-0 translate-y-0 scale-100" : sheet ? "opacity-0 translate-y-4" : "opacity-0 -translate-x-2 scale-[0.98]"}`}
         >
+          {sheet && <span aria-hidden="true" className="mx-auto mt-2 h-1.5 w-10 shrink-0 rounded-full bg-line" />}
           {/* Header */}
           <div className="flex items-center gap-2.5 px-4 pt-3.5 pb-3">
             <span className="grid place-items-center w-8 h-8 rounded-xl bg-gradient-to-br from-brand to-brand-600 text-brand-fg shadow-sm"><Blocks className="w-[1.05rem] h-[1.05rem]" strokeWidth={1.9} /></span>
             <div className="flex-1 min-w-0">
               <div className="text-sm font-bold text-ink leading-tight">Add a block</div>
-              <div className="text-[0.6875rem] text-muted leading-tight">Drag onto the page, or click to pick a style</div>
+              <div className="text-[0.6875rem] text-muted leading-tight">{sheet ? "Tap a block to add it" : "Drag onto the page, or click to pick a style"}</div>
             </div>
-            <button type="button" onClick={() => setOpen(false)} aria-label="Close blocks panel" title="Close (Esc)" className="shrink-0 p-1.5 rounded-lg text-muted hover:text-ink hover:bg-surface-2 transition-colors"><X className="w-4 h-4" /></button>
+            <button type="button" onClick={() => setOpen(false)} aria-label="Close blocks panel" title="Close (Esc)" className="shrink-0 p-1.5 rounded-lg pointer-coarse:min-w-11 pointer-coarse:min-h-11 grid place-items-center text-muted hover:text-ink hover:bg-surface-2 transition-colors"><X className="w-4 h-4" /></button>
           </div>
+
+          {/* WHERE IT GOES (E-5a, D3): shown for what is selected, set to what a plain tap does, and changed in one tap. */}
+          {where && (
+            <div className="px-4 pb-3 space-y-1">
+              <span className="block text-[0.625rem] font-bold uppercase tracking-wider text-muted">Add it</span>
+              <Segmented full ariaLabel="Where the block goes" value={where.value} onChange={where.onChange}
+                options={where.options.map((w) => ({ value: w, label: WHERE_LABEL[w], title: w === "start" || w === "end" ? `At the ${w} of the page` : `${WHERE_LABEL[w]} the selected block` }))} />
+            </div>
+          )}
 
           {/* Search */}
           <div className="px-4 pb-3">
@@ -266,7 +293,7 @@ export default function BlocksPanel({ theme, onDragKind, onPick, defaultOpen = f
                 type="text"
                 placeholder="Search blocks…"
                 aria-label="Search blocks"
-                className="w-full pr-8 py-2 rounded-xl text-[0.8125rem] text-ink bg-surface-2 border border-transparent focus:border-brand focus:bg-surface outline-none transition placeholder:text-muted"
+                className="w-full pr-8 py-2 pointer-coarse:py-3 rounded-xl text-[0.8125rem] text-ink bg-surface-2 border border-transparent focus:border-brand focus:bg-surface outline-none transition placeholder:text-muted"
                 style={{ paddingLeft: "2.125rem" }}
               />
               {q && <button type="button" onClick={() => { setQ(""); searchRef.current?.focus(); }} aria-label="Clear search" className="absolute right-2 top-1/2 -translate-y-1/2 p-0.5 rounded-md text-muted hover:text-ink hover:bg-surface transition-colors"><X className="w-3.5 h-3.5" /></button>}
@@ -274,7 +301,7 @@ export default function BlocksPanel({ theme, onDragKind, onPick, defaultOpen = f
           </div>
 
           {/* Category tabs */}
-          <div className="px-4 pb-3 flex flex-wrap gap-1" role="tablist" aria-label="Block categories">
+          <div className={`px-4 pb-3 flex gap-1 ${sheet ? "overflow-x-auto shrink-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden" : "flex-wrap pointer-coarse:flex-nowrap pointer-coarse:overflow-x-auto pointer-coarse:shrink-0 pointer-coarse:[scrollbar-width:none] pointer-coarse:[&::-webkit-scrollbar]:hidden"}`} role="tablist" aria-label="Block categories"> {/* a sheet, or a finger on the panel: one row that scrolls sideways, so the blocks get the room (E5d-11) */}
             {TABS.map((t) => {
               const on = tab === t.name;
               return (
@@ -284,7 +311,7 @@ export default function BlocksPanel({ theme, onDragKind, onPick, defaultOpen = f
                   role="tab"
                   aria-selected={on}
                   onClick={() => setTab(t.name)}
-                  className={`inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[0.75rem] font-semibold transition-colors ${on ? "bg-brand text-brand-fg shadow-sm" : "text-muted hover:text-ink hover:bg-surface-2"}`}
+                  className={`inline-flex shrink-0 whitespace-nowrap items-center gap-1 px-2 py-1 pointer-coarse:min-h-11 pointer-coarse:px-3 rounded-lg text-[0.75rem] font-semibold transition-colors ${on ? "bg-brand text-brand-fg shadow-sm" : "text-muted hover:text-ink hover:bg-surface-2"}`}
                 >
                   <t.Icon className="w-3.5 h-3.5" strokeWidth={2} />
                   {t.name}
@@ -320,7 +347,7 @@ export default function BlocksPanel({ theme, onDragKind, onPick, defaultOpen = f
           onto the page, so the two routes to adding a grid cannot drift apart again (they already did once:
           clicking asked for a shape while dragging silently chose two equal cells). */}
       {menu && menu.kind === "grid" && (
-        <GridLayoutMenu anchor={menu.anchor} onClose={() => setMenu(null)} onPick={(patch) => onPick?.("grid", patch)} />
+        <GridLayoutMenu anchor={menu.anchor} onClose={() => setMenu(null)} onPick={(patch) => pick("grid", patch)} />
       )}
       {/* Everything else picks a LOOK from the list. Portaled so the panel's scroll area can never clip it. */}
       {menu && PHOTO_SETUP[menu.kind] && (
@@ -328,14 +355,14 @@ export default function BlocksPanel({ theme, onDragKind, onPick, defaultOpen = f
           anchor={menu.anchor}
           mode={PHOTO_SETUP[menu.kind]}
           onClose={() => setMenu(null)}
-          onPick={(photos, opts) => onPick?.(menu.kind, nodeForPhotos(menu.kind, photos, opts))}
+          onPick={(photos, opts) => pick(menu.kind, nodeForPhotos(menu.kind, photos, opts))}
         />
       )}
       {menu && menu.kind !== "grid" && !PHOTO_SETUP[menu.kind] && variations.length > 0 && (
         <PortalMenu anchor={menu.anchor} onClose={() => setMenu(null)} width={184} ariaLabel={`Add ${menu.label}`}>
           <MenuHeader>Add {menu.label} as…</MenuHeader>
-          <MenuItem onClick={() => { onPick?.(menu.kind); setMenu(null); }} Icon={Plus} label="Default" />
-          {variations.map((p) => <MenuItem key={p.id} onClick={() => { onPick?.(menu.kind, p.patch); setMenu(null); }} Icon={Sparkles} label={p.label} />)}
+          <MenuItem onClick={() => { pick(menu.kind); setMenu(null); }} Icon={Plus} label="Default" />
+          {variations.map((p) => <MenuItem key={p.id} onClick={() => { pick(menu.kind, p.patch); setMenu(null); }} Icon={Sparkles} label={p.label} />)}
         </PortalMenu>
       )}
     </>

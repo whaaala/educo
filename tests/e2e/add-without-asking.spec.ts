@@ -1,5 +1,5 @@
 import { test, expect, type Page } from "@playwright/test";
-import { clearSite, BUILDER_PATH, openInspector } from "./helpers/seed-site";
+import { clearSite, BUILDER_PATH, openInspector, pressHeader } from "./helpers/seed-site";
 
 /**
  * ADDING A BLOCK — what interrupts you, and what does not.
@@ -12,7 +12,7 @@ import { clearSite, BUILDER_PATH, openInspector } from "./helpers/seed-site";
 
 async function freshBuilder(page: Page) {
   await clearSite(page);
-  await page.waitForSelector("text=Box Builder", { timeout: 20000 });
+  await page.waitForSelector('[aria-label="Open blocks panel"]', { timeout: 20000 }); // every screen has it; the title is not on a phone's bar (E5a-16)
   await page.waitForTimeout(600);
   await page.keyboard.press("b");
   await page.waitForTimeout(600);
@@ -27,7 +27,7 @@ async function freshBuilder(page: Page) {
 test("a first visit's page survives its first reload — an empty block is not taken for old starter chrome (E2-21)", async ({ page }) => {
   await page.addInitScript(() => { try { if (!sessionStorage.getItem("e2-21")) { localStorage.clear(); sessionStorage.setItem("e2-21", "1"); } } catch { /* private mode */ } });
   await page.goto(BUILDER_PATH);
-  await page.waitForSelector("text=Box Builder", { timeout: 20000 });
+  await page.waitForSelector('[aria-label="Open blocks panel"]', { timeout: 20000 }); // every screen has it; the title is not on a phone's bar (E5a-16)
   await page.waitForTimeout(600);
   await page.keyboard.press("b");
   await page.waitForTimeout(600);
@@ -36,7 +36,7 @@ test("a first visit's page survives its first reload — an empty block is not t
   const before = await nodeCount(page);
   expect(before, "the precondition: a Stack landed").toBeGreaterThan(1);
   await page.reload();
-  await page.waitForSelector("text=Box Builder", { timeout: 20000 });
+  await page.waitForSelector('[aria-label="Open blocks panel"]', { timeout: 20000 }); // every screen has it; the title is not on a phone's bar (E5a-16)
   await page.waitForTimeout(900);
   expect(await nodeCount(page), "the Stack added on the first visit is still there after the reload").toBe(before);
 });
@@ -193,6 +193,9 @@ test.describe("adding a block never moves your insertion point", () => {
   test("three Stacks in a row become three blocks DOWN THE PAGE, not three nested", async ({ page }) => {
     await freshBuilder(page);
     for (let i = 0; i < 3; i++) {
+      // On a phone the blocks SHEET puts itself away after each add (E-5a, D3), so a person opens it again; the docked panel stays.
+      const launcher = page.getByRole("button", { name: "Open blocks panel" });
+      if (await launcher.isVisible()) { await launcher.click(); await page.waitForTimeout(400); }
       await tile(page, "Stack").click();
       await page.waitForTimeout(900);
     }
@@ -316,7 +319,7 @@ test.describe("the page is exactly as tall as what is on it", () => {
     await page.keyboard.press("b"); // close the palette so it cannot cover the top bar
     await page.waitForTimeout(400);
     for (let i = 0; i < 3; i++) {
-      await page.locator("button", { hasText: "Add a band" }).first().click();
+      await pressHeader(page, "Add a band"); // in More on a phone (E5a-16)
       await page.waitForTimeout(800);
     }
     const root = await pageRootBox(page);

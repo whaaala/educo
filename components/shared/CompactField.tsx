@@ -11,7 +11,7 @@ import { useId, type ReactNode } from "react";
 
 // Filled, token-driven controls — one clean look that re-skins with every theme (Light/Dark/Midnight/Purple).
 export const COMPACT_INPUT_CLS =
-  "w-full text-sm px-3 py-2 rounded-xl border border-transparent bg-surface-2 text-ink placeholder:text-muted focus:border-brand focus:bg-surface outline-none transition-colors";
+  "w-full text-sm px-3 py-2 pointer-coarse:min-h-11 rounded-xl border border-transparent bg-surface-2 text-ink placeholder:text-muted focus:border-brand focus:bg-surface outline-none transition-colors"; // 44px for a finger (E-5a, D6)
 export const COMPACT_LABEL_CLS =
   "text-[0.6875rem] font-semibold text-muted";
 

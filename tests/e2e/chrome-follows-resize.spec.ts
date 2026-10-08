@@ -1,5 +1,5 @@
 import { test, expect, type Page } from "@playwright/test";
-import { seedSite, sitePage } from "./helpers/seed-site";
+import { seedSite, sitePage, pressHeader } from "./helpers/seed-site";
 
 /**
  * THE HANDLES STAY ON THE BLOCK — THROUGHOUT A DRAG, NOT JUST AT THE END.
@@ -173,6 +173,10 @@ test.describe("the selection chrome follows the block it is drawn on", () => {
      */
     await seedOne(page);
     await select(page, "B");
+    // E5d-3 (the user's decision 2026-10-08): on a touch screen a handle in the screen edge's Back strip is not drawn — this
+    // block's left one there. Its bar docks on those screens anyway (asserted by the E-5c specs in phone-editing.spec.ts).
+    test.skip(!!test.info().project.use.hasTouch && !(await page.getByLabel("Resize left edge").first().isVisible()),
+      "the left handle lies in the screen edge's Back strip and is not drawn (E5d-3)");
 
     const before = (await page.locator('[data-box-id="B"]').boundingBox())!;
     await dragSampling(page, { label: "Resize left edge", id: "B", edge: "right", dx: 360, steps: 30, paceMs: 8, sampleEvery: 30 });
@@ -183,7 +187,12 @@ test.describe("the selection chrome follows the block it is drawn on", () => {
     // The TOOLBAR, not a button inside it: the bar is `absolute left-0` within the mirror, so its own left
     // is the mirror's left. A button is inset past the drag grip and would answer a different question.
     const bar = (await page.locator('[role="toolbar"][aria-label="Block toolbar"]').boundingBox())!;
-    expect(Math.abs(bar.x - b.x), "the toolbar sits on the block's left edge, wherever that now is").toBeLessThan(6);
+    const vp = page.viewportSize()!;
+    // ON A PHONE, AND UNDER A FINGER ON A TABLET, THE BAR DOCKS at the bottom of the screen (E5a-14; E5c-5) — it rides with nothing,
+    // so it can float over nothing
+    const docks = vp.width < 600 || (!!test.info().project.use.hasTouch && vp.width < 1024);
+    if (docks) expect(bar.y + bar.height, "a docked bar sits at the bottom edge").toBeGreaterThan(vp.height - 40);
+    else expect(Math.abs(bar.x - b.x), "the toolbar sits on the block's left edge, wherever that now is").toBeLessThan(6);
   });
   /**
    * CHOOSING ANOTHER SCREEN SIZE MOVES THE BLOCK TOO — by a 300ms transition of the page frame, and with no render.
@@ -202,7 +211,7 @@ test.describe("the selection chrome follows the block it is drawn on", () => {
     let moved = 0;
     const seen: string[] = [];
     for (const preset of presets) {
-      await page.getByRole("button", { name: preset }).first().click();
+      await pressHeader(page, preset);
       await page.waitForTimeout(700); // the frame's transition is 300ms
       const b = (await page.locator('[data-box-id="B"]').boundingBox())!;
       seen.push(`${preset} ${Math.round(b.x)}+${Math.round(b.width)}×${Math.round(b.height)}`);
@@ -219,7 +228,8 @@ test.describe("the selection chrome follows the block it is drawn on", () => {
       expect(await gapToEdge(page, "Resize right edge", "B", "right"), `${preset}: the right handle is on the right edge`).toBeLessThan(4);
       expect(await gapToEdge(page, "Resize bottom edge", "B", "bottom"), `${preset}: the bottom handle is on the bottom edge`).toBeLessThan(4);
       const bar = (await page.locator('[role="toolbar"][aria-label="Block toolbar"]').boundingBox())!;
-      expect(Math.abs(bar.x - b.x), `${preset}: the toolbar sits on the block's left edge`).toBeLessThan(6);
+      const w = page.viewportSize()?.width ?? 1280; // docked on a phone (E5a-14) and under a finger below 1024 (E5c-5)
+      if (!(w < 600 || (!!test.info().project.use.hasTouch && w < 1024))) expect(Math.abs(bar.x - b.x), `${preset}: the toolbar sits on the block's left edge`).toBeLessThan(6);
     }
     expect(moved, `the block really did move, at most of the changes — or this proved nothing (${seen.join(" · ")})`).toBeGreaterThanOrEqual(5);
   });

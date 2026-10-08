@@ -150,6 +150,15 @@ export default function MoreScreen() {
           showArrow: true,
         },
         {
+          id: 'website',
+          icon: 'globe-outline' as const,
+          label: 'Website builder',
+          subtitle: "Edit the school's website",
+          color: colors.info,
+          onPress: () => router.push('/site-editor'),
+          showArrow: true,
+        },
+        {
           id: 'calendar',
           icon: 'calendar-outline' as const,
           label: 'School Calendar',
