@@ -12,6 +12,7 @@ import { useId, useRef, useState, useLayoutEffect, useEffect, type ReactNode } f
 import { createPortal } from "react-dom";
 import { ChevronDown, Check } from "lucide-react";
 import { COMPACT_INPUT_CLS, COMPACT_LABEL_CLS } from "./CompactField";
+import { closeOnScrollAway } from "@/lib/scroll-away";
 
 export interface CompactSelectOption { value: string; label: string }
 export interface CompactSelectGroup { group: string; items: CompactSelectOption[] }
@@ -53,7 +54,7 @@ export default function CompactSelect({ label, ariaLabel, value, onChange, optio
     if (!open) return;
     const onDown = (e: MouseEvent) => { if (!menuRef.current?.contains(e.target as Node) && !btnRef.current?.contains(e.target as Node)) setOpen(false); };
     const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") setOpen(false); };
-    const onScroll = (e: Event) => { if (menuRef.current?.contains(e.target as Node)) return; setOpen(false); };
+    const onScroll = closeOnScrollAway(() => btnRef.current, () => menuRef.current, () => setOpen(false)); // A1-5
     const onResize = () => setOpen(false);
     document.addEventListener("mousedown", onDown);
     document.addEventListener("keydown", onKey);

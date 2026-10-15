@@ -326,4 +326,17 @@ test.describe("the page is exactly as tall as what is on it", () => {
     const scale = await page.locator("[data-box-id]").first().evaluate((el) => Number(el.closest<HTMLElement>("[data-canvas-scale]")?.dataset.canvasScale) || 1);
     expect(root.height / scale, "three bands make a page taller than the empty-page floor (page px)").toBeGreaterThan(300);
   });
+
+  test("A1-4: the band you add is selected, so its Background is right there", async ({ page }) => {
+    // It was not: the Inspector said "Click a block to edit it" and the band had to be found and clicked first —
+    // unlike every block added from the palette, which is selected the moment it lands.
+    await freshBuilder(page);
+    await page.keyboard.press("b");
+    await page.waitForTimeout(400);
+    await pressHeader(page, "Add a band");
+    await page.waitForTimeout(800);
+    await openInspector(page);
+    await expect(page.locator('input[aria-label="Upload background image"]'), "the band's Background section is open").toHaveCount(1);
+    await expect(page.getByText("Click a block to edit it")).toHaveCount(0);
+  });
 });

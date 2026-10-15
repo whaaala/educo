@@ -1543,6 +1543,20 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
       files the page's letters need — an English page still gets the ~44 KB Latin files, a Yoruba page also gets the one with ẹ ọ
     - `[ ]` A1-3 (FIXED IN CODE 2026-10-15, change (1): ids and types only, guard mutation-proven; closes on the HEADED pass U1) · the WhatsApp webhook logs every inbound payload in full (`route.ts:54`) — parents' phone numbers, names and
       message text land in the server log — and logs the verify token it was sent (`:23`). FIX in change (1): log ids and types only
+      — HEADED/production U1 2026-10-15: 14 / 14 (`scripts/uat/uat-a1-webhook.js` against `next start` with and without the
+      secrets; the server log holds no number, name, message text, token or secret) → closes with the batch's pass
+    - `[ ]` A1-4 (FIXED IN CODE 2026-10-15; closes on the HEADED pass U3) · "Add a band" did not select the band it added
+      (`page.tsx` `addSection`) — the Inspector said "Click a block to edit it", so giving a new band its background meant finding
+      and clicking it first, unlike every palette block (`revealBox`). Found by the U3 harness. FIX: `revealBox(sec.id)` (one line;
+      the band still lands at page level, the next palette block beside it). Guard: `add-without-asking.spec.ts` "A1-4", RED on the
+      pre-fix build in all 4 device projects, 68 / 68 green on the fixed build
+    - `[ ]` A1-5 (FIXED IN CODE 2026-10-15; closes on the HEADED pass U2) · the Inspector's Font picker (and every picker that
+      "closes on any scroll") lost the click that opened it when the control had to scroll into view: the scroll's event arrives a
+      frame after the click and closed the list — measured, first click nothing, second click opens; what a screen reader does
+      (scroll to a control and activate it at once). Found by the U2 harness. FIX: one helper `lib/scroll-away.ts`
+      (`closeOnScrollAway` — close only when a scroll MOVED the button) used by CompactSelect, BackgroundPicker, IconPicker,
+      EducoColorField and FeeActionsDropdown (PortalMenu already waits two frames, E5a-5). Guards: `scroll-away.test.ts` 3 / 3 and
+      CompactControls "A1-5", 5 mutations red
   - CHANGES:
     - `[x]` (1) RA-5 · THE WEBHOOK REFUSES WHAT IT CANNOT VERIFY (CODE DONE 2026-10-15: `route.ts` + `.env.example`; unit 10 / 10 `tests/unit/communication/whatsapp-webhook.test.ts` from `whatsapp-webhook.feature`, 4 mutations red — signature skipped · fallback token back · payload logged · prefix match; typecheck 0, eslint 0; seen running in U1 of the pass) (rung 3: Node `crypto` HMAC + `timingSafeEqual`, no dependency) —
       GET answers Meta's challenge only when `WHATSAPP_WEBHOOK_VERIFY_TOKEN` is SET and matches (no fallback string); POST reads the

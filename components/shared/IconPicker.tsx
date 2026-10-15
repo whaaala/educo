@@ -13,6 +13,7 @@ import { useState, useRef, useLayoutEffect, useEffect, useMemo, useReducer } fro
 import { createPortal } from "react-dom";
 import { ChevronDown, Search, X, Sparkles } from "lucide-react";
 import { iconSvg, ALL_ICON_NAMES, onIconsLoaded, warmIcons, iconSourceOf, type IconSource } from "@/lib/educo-ui/icon-svg";
+import { closeOnScrollAway } from "@/lib/scroll-away";
 
 const CAP = 300; // max tiles rendered at once (search narrows to what you need)
 
@@ -94,7 +95,7 @@ export default function IconPicker({ value, onChange, ariaLabel = "Icon", allowC
     searchRef.current?.focus();
     const onDown = (e: MouseEvent) => { if (!popRef.current?.contains(e.target as Node) && !btnRef.current?.contains(e.target as Node)) setOpen(false); };
     const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") { setOpen(false); btnRef.current?.focus(); } };
-    const onScroll = (e: Event) => { if (!popRef.current?.contains(e.target as Node)) setOpen(false); };
+    const onScroll = closeOnScrollAway(() => btnRef.current, () => popRef.current, () => setOpen(false)); // A1-5
     window.addEventListener("mousedown", onDown);
     window.addEventListener("keydown", onKey);
     window.addEventListener("scroll", onScroll, true);

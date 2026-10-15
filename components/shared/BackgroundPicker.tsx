@@ -15,6 +15,7 @@ import { createPortal } from "react-dom";
 import { ChevronDown, Search, X, Paintbrush, Check, Image as ImageIcon } from "lucide-react";
 import { BG_PRESETS, BG_CATEGORIES, type BgPreset } from "@/lib/educo-ui/backgrounds";
 import { searchStockPhotos, hasUnsplashKey, setUnsplashKey, PHOTO_TOPICS, type StockPhoto } from "@/lib/educo-ui/stock-photos";
+import { closeOnScrollAway } from "@/lib/scroll-away";
 
 /** Inline preview style for a swatch (patterns tile + need a strong currentColor; gradients/mesh just fill). */
 export function bgPreviewStyle(p: BgPreset): React.CSSProperties {
@@ -89,7 +90,7 @@ export default function BackgroundPicker({ value, onSelect, onSelectPhoto, onCle
     searchRef.current?.focus();
     const onDown = (e: MouseEvent) => { if (!popRef.current?.contains(e.target as Node) && !btnRef.current?.contains(e.target as Node)) setOpen(false); };
     const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") { setOpen(false); btnRef.current?.focus(); } };
-    const onScroll = (e: Event) => { if (!popRef.current?.contains(e.target as Node)) setOpen(false); };
+    const onScroll = closeOnScrollAway(() => btnRef.current, () => popRef.current, () => setOpen(false)); // A1-5
     window.addEventListener("mousedown", onDown);
     window.addEventListener("keydown", onKey);
     window.addEventListener("scroll", onScroll, true);

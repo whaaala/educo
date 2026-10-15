@@ -31,7 +31,7 @@ name as a tooltip and for screen readers.
 | **Redo** | Re-applies the last undone change. | Ctrl / Cmd Y, or Ctrl / Cmd Shift Z |
 | **Page check** | Lists what to fix before publishing: pictures missing a description, heading levels out of order, lines too tight for their words. The badge counts them. | — |
 | **Preview** | Opens the real published page. Close it with **Exit preview**; **H** hides the Preview's own controls. | — |
-| **Export** | Downloads `site.zip`: one HTML file per page and a shared `styles.css`, with your fonts and uploaded pictures inside them. | — |
+| **Export** | Downloads `site.zip`: one HTML file per page, a shared `styles.css`, your fonts in `fonts/` and your uploaded pictures in `images/` (with smaller copies for phones). | — |
 | **Reset** | Starts the whole site over — every page replaced by one blank page. It asks first, and Undo puts the site back. | — |
 | **Device chips** (Mobile 375 · Tablet 768 · Laptop 1024 · Desktop 1280 · Wide 1920 · Full width) | Switches the canvas to that screen. At Desktop or Full width you edit the base design (Full width draws the desktop page, 1200px wide, shrunk to fit the room, so what you see is what you edit on any screen); a change at Mobile, Tablet or Laptop applies from that screen down; Wide keeps its own. | — |
 | **Zoom** (− · Fit · +) | Zooms the canvas; **Fit** fits the whole page width in the window. | — |

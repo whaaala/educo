@@ -737,7 +737,8 @@ export default function BoxDemoPage() {
   // "This page uses its own grid": it starts as a copy of the site's, so nothing moves until a number is changed.
   const setOwnGrid = (own: boolean) => pushSite(setPageGrid(site, own ? { ...site.pageGrid } : undefined, activePage.id));
 
-  const addSection = () => { const sec = makeSection(SECTION_TINTS[countSections(root) % SECTION_TINTS.length]); sec.width = "100%"; commit(insertBox(root, root.id, root.children?.length ?? 0, makeRow([sec]))); };
+  // A1-4: the new band is SELECTED, as every added block is (`revealBox`), so its Background is the next thing to hand.
+  const addSection = () => { const sec = makeSection(SECTION_TINTS[countSections(root) % SECTION_TINTS.length]); sec.width = "100%"; commit(insertBox(root, root.id, root.children?.length ?? 0, makeRow([sec]))); revealBox(sec.id); };
   // The merge key is the block plus the FIELDS being written, so "drag the spacing slider" coalesces while
   // "set the spacing, then the colour" does not — no control had to be told about any of this.
   const onPatch = (patch: Partial<BoxNode>) => {
