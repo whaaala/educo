@@ -5,6 +5,8 @@
  * here; SIZE = the token scale; weight = the ladder below.
  */
 
+import coverage from "./font-coverage.json";
+
 export type FontCategory = "Sans" | "Serif" | "Display" | "Handwriting" | "Mono";
 
 export interface FontFamily {
@@ -76,7 +78,40 @@ export const FONT_SIZES: FontSizeToken[] = [
   { name: "6xl", rem: "3.75rem", px: 60 },
 ];
 
-/** Options for a family picker: value = full stack, label = family name (searchable). */
-export function familyOptions(): { value: string; label: string }[] {
-  return FONT_FAMILIES.map((f) => ({ value: f.stack, label: `${f.name} · ${f.category}` }));
+/** The region's languages a school writes in (RULE AF), in the order a picker names them. */
+export const REGION_LANGUAGES = ["Yoruba", "Igbo", "Hausa", "Twi / Ga / Ewe"] as const;
+const LETTERS: Record<string, string> = coverage.letters;
+const WRITES: Record<string, string[]> = coverage.writes;
+
+/** The first family of a CSS font stack, unquoted: "'DM Sans', sans-serif" → "DM Sans". */
+export const familyOf = (stack: string): string => stack.split(",")[0].trim().replace(/^['"]|['"]$/g, "");
+
+/** Which of the region's languages a font can write, as measured by `scripts/uat/a1-font-coverage.js`;
+ *  undefined for a family that was never measured (a stack typed by hand). */
+export function regionLanguages(stack: string): string[] | undefined {
+  const w = WRITES[familyOf(stack)];
+  return w && REGION_LANGUAGES.filter((l) => w.includes(l));
+}
+
+/** The letters of the region's languages that appear in `text` but that the font cannot draw (each once).
+ *  ponytail: precomposed letters only — a dot below typed as e + U+0323 is not checked. */
+export function missingLetters(text: string, stack: string): string[] {
+  const w = WRITES[familyOf(stack)];
+  if (!w) return [];
+  const has = new Set([...w.flatMap((l) => [...(LETTERS[l] ?? "")])]);
+  const needed = new Set(REGION_LANGUAGES.flatMap((l) => [...LETTERS[l]]));
+  return [...new Set([...text].filter((c) => needed.has(c) && !has.has(c)))];
+}
+
+/** "Yoruba · Igbo · Hausa · Twi / Ga / Ewe", "Yoruba · Igbo only", or "none of Yoruba, Igbo, Hausa, Twi" — in words. */
+export function languagesLabel(stack: string): string | undefined {
+  const l = regionLanguages(stack);
+  if (!l) return undefined;
+  if (!l.length) return "none of Yoruba, Igbo, Hausa, Twi";
+  return l.length === REGION_LANGUAGES.length ? l.join(" · ") : `${l.join(" · ")} only`;
+}
+
+/** Options for a family picker: value = full stack, label = family name (searchable), hint = the languages it writes. */
+export function familyOptions(): { value: string; label: string; hint: string }[] {
+  return FONT_FAMILIES.map((f) => ({ value: f.stack, label: `${f.name} · ${f.category}`, hint: `Writes ${languagesLabel(f.stack) ?? "— not measured"}` }));
 }

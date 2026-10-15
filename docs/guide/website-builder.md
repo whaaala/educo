@@ -396,7 +396,35 @@ room: one row from 1,366px wide, two rows at 1,280px, and the buttons' words app
 
 ![A page made in the builder, downloaded, and opened on an Android phone: the heading in the school's font, a line of Yoruba and Twi — Ẹ kú àárọ̀, ọmọ wa ṣe dáadáa, Ɛte sɛn — with every letter in the chosen typeface, and the photo below](img/guide-export-phone.webp)
 
-**Choose a font that can write your language.** Not every typeface has every letter. If your pages use Yoruba, Igbo, Hausa, Twi, Ga or Ewe, pick a font that has their letters (ẹ ọ ṣ, ị ụ, ɓ ɗ ƙ, ɛ ɔ ŋ), or those letters will appear in a different font in the middle of a word. Fonts in the list that have all of them: **Inter, Montserrat, Merriweather, EB Garamond, Noto Serif, Anton** and **Great Vibes**.
+### Fonts that write your language
+
+Not every typeface has every letter. A word in Yoruba, Igbo, Hausa, Twi, Ga or Ewe uses letters such as ẹ ọ ṣ, ị ụ,
+ɓ ɗ ƙ and ɛ ɔ ŋ. When a font lacks one, the browser borrows that letter from another font, so it looks different from
+the rest of the word.
+
+**A new site starts with fonts that have them all:** **Montserrat** for headings and **Inter** for words. A site saved
+before 15 October 2026 keeps the fonts it already had (Poppins and DM Sans) until you choose others.
+
+**The site's fonts are in Page settings.** Open the page's menu (the settings button beside the page name) and find
+**Site fonts**:
+
+| Control | What it does |
+|---|---|
+| **Headings** | The font of every heading that has no font of its own. |
+| **Words** | The font of every other block's words that has no font of its own. |
+
+Each font in the list says which of the region's languages it writes, in words, for example *Writes Yoruba · Igbo ·
+Hausa · Twi / Ga / Ewe*, *Writes Yoruba · Igbo only* or *Writes none of Yoruba, Igbo, Hausa, Twi*. The line under each
+field says it for the font you chose. A block with a font of its own keeps it. One **Undo** puts back the last change.
+**Esc**, or a click anywhere outside it, closes Page settings.
+
+[![Page settings with Site fonts: Headings Montserrat and Words Inter, each saying "Writes Yoruba · Igbo · Hausa · Twi / Ga / Ewe"](img/guide-site-fonts.webp)](img/guide-site-fonts.webp)
+
+Every other font picker in the builder says the same thing under each font's name: a block's **Text style**, a box's
+**Text style (everything inside)** and a component's **Typography**.
+
+The fonts that write all four: **Inter, Montserrat, Merriweather, EB Garamond, Libre Baskerville, Noto Serif, Anton**
+and **Great Vibes**. If your words use a letter the font lacks, the **Page check** says so (§14b).
 
 ---
 
@@ -766,8 +794,14 @@ Your page is published as proper HTML5, however you built it — you do not need
   that skips a level (one click: **Make it level N**) and words too tight to sit side by side on a narrow screen —
   those three are suggestions; it won't stop you publishing. Every item has **Show me**, which takes you to the block.
   Everything else is fixed for you and listed under *Fixed for you*.
+- **Letters the font lacks.** When a block's words use a letter its font cannot draw, the Page check names the font,
+  the letters and a font of the same kind that has them: *"DM Sans has no ẹ ọ ṣ … Inter has them."* One click, **Use
+  Inter for this block**, changes that block's font. To change it everywhere, use **Site fonts** in Page settings. This
+  one is a suggestion too.
 
 [![The Page check: "Needs your words (2)", two pictures each asking "What does the picture show?" with Save description, It's only decoration and Show me](img/guide-page-check.webp)](img/guide-page-check.webp)
+
+[![The Page check naming letters a font lacks: "DM Sans has no Ẹ ọ ṣ Ụ ụ ị Ɓ ɗ ƙ Ɛ ɛ ɔ ŋ … Inter has them", with Use Inter for this block and Show me](img/guide-page-check-fonts.webp)](img/guide-page-check-fonts.webp)
 
 ## 14c. Sizing columns, and working on a smaller screen
 

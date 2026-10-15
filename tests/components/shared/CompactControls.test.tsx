@@ -45,6 +45,29 @@ describe("Compact inspector atoms", () => {
     expect(screen.queryByRole("listbox")).toBeNull();
   });
 
+  it("A-1b: an option's hint is a second line in the menu (read with its name), never in the trigger", () => {
+    render(<CompactSelect label="Font" value="m" onChange={() => {}} options={[{ value: "m", label: "Montserrat · Sans", hint: "Writes Yoruba · Igbo · Hausa · Twi / Ga / Ewe" }, { value: "p", label: "Poppins · Sans", hint: "Writes none of Yoruba, Igbo, Hausa, Twi" }]} />);
+    const trigger = screen.getByRole("button", { name: "Font" });
+    expect(trigger).toHaveTextContent(/^Montserrat · Sans$/);
+    fireEvent.click(trigger);
+    expect(screen.getByRole("option", { name: "Poppins · Sans Writes none of Yoruba, Igbo, Hausa, Twi" })).toBeInTheDocument();
+  });
+
+  it("A1b-8: Esc closes the open menu ONLY — the page's own Esc (step out of the block) never hears it — and focus returns to the button", () => {
+    const pageEsc = vi.fn(); window.addEventListener("keydown", pageEsc);
+    render(<CompactSelect label="Font" value="a" onChange={() => {}} options={[{ value: "a", label: "A" }, { value: "b", label: "B" }]} />);
+    const trigger = screen.getByRole("button", { name: "Font" });
+    fireEvent.click(trigger);
+    expect(screen.getByRole("listbox")).toBeInTheDocument();
+    fireEvent.keyDown(screen.getByRole("listbox"), { key: "Escape" });
+    expect(screen.queryByRole("listbox")).toBeNull();
+    expect(pageEsc).not.toHaveBeenCalled();
+    expect(trigger).toHaveFocus();
+    fireEvent.keyDown(trigger, { key: "Escape" }); // closed: Esc is the page's again
+    expect(pageEsc).toHaveBeenCalledTimes(1);
+    window.removeEventListener("keydown", pageEsc);
+  });
+
   it("CompactSelect renders grouped options with headers", () => {
     const onChange = vi.fn();
     render(<CompactSelect label="Design" value="" onChange={onChange} optionGroups={[{ group: "G1", items: [{ value: "", label: "Boxed" }, { value: "--panel", label: "Panel" }] }]} />);

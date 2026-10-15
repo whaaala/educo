@@ -6,6 +6,8 @@
 
 import { type PageGridSettings, resolvePageGrid, gridSpaceOf } from "@/lib/page-grid";
 import { type BoxNode, newBoxId, createContainer, makeRowBand, normalizeRowBands, markPageGrid, withGridSpace } from "@/lib/box-model";
+import { DEFAULT_THEME } from "@/lib/site-storage";
+import type { SiteFonts } from "@/lib/semantics";
 
 export interface BoxPage {
   id: string;
@@ -20,6 +22,17 @@ export interface BoxSite {
   homeId: string; // which page is the landing page
   themeId?: string; // the WEBSITE's theme (light | dark | midnight | purple) — drives the canvas + content + export
   pageGrid?: PageGridSettings; // the site's page grid (AC-37b) — read through `resolvePageGrid(site.pageGrid, page.grid)`
+  fonts?: SiteFonts; // the site's heading + body fonts (A-1b) — read through `siteFonts(site)`
+}
+
+/** A-1b: a site saved before sites stored their fonts reads the pair it was drawn in then (the user: saved pages keep theirs). */
+export const SAVED_SITE_FONTS: SiteFonts = { heading: DEFAULT_THEME.headingFont, body: DEFAULT_THEME.bodyFont };
+/** A-1b (the user, 2026-10-15): a new site starts with a pair that writes Yoruba, Igbo, Hausa and Twi / Ga / Ewe. */
+export const NEW_SITE_FONTS: SiteFonts = { heading: "Montserrat, sans-serif", body: "Inter, sans-serif" };
+export const siteFonts = (site: BoxSite): SiteFonts => site.fonts ?? SAVED_SITE_FONTS;
+/** Set the site's heading and / or body font (Page settings → Site fonts). Returns a new site. */
+export function setSiteFonts(site: BoxSite, patch: Partial<SiteFonts>): BoxSite {
+  return { ...site, fonts: { ...siteFonts(site), ...patch } };
 }
 
 /** Slugify a page name into a URL-safe path ("About Us" → "about-us"). */
@@ -44,6 +57,11 @@ export function emptyPageRoot(section?: BoxNode): BoxNode {
 
 export function makeBoxPage(name: string, root: BoxNode, path?: string): BoxPage {
   return { id: newBoxId(), name, path: path ?? slugify(name), root };
+}
+
+/** A NEW site (a first visit, or Reset): one page around `root`, with the new-site fonts. */
+export function freshSite(root: BoxNode): BoxSite {
+  return { ...siteFromRoot(root), fonts: NEW_SITE_FONTS };
 }
 
 /** A one-page site around an existing box tree (used to migrate the old single-tree document). */

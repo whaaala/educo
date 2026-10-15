@@ -16,6 +16,7 @@
  * Pure: no React, no DOM (engine-stays-portable).
  */
 import { type BoxNode, type Breakpoint, BP_ORDER, isBare, isPageRow, resolveResponsive, baseUnitParts, pageRowCells, pageRowTracks, rowSide, bandGutter, longestWordRem } from "./box-model";
+import { FONT_FAMILIES, familyOf, missingLetters } from "./educo-ui/fonts";
 
 /** The elements a container may be. `div` is the neutral default. */
 export type SemanticTag = "div" | "header" | "nav" | "main" | "section" | "article" | "aside" | "footer" | "ul" | "ol" | "figure" | "address";
@@ -204,7 +205,17 @@ export function resolvePage(root: BoxNode): PageSemantics {
 }
 
 /** Something only the user can fix — plain words, what to do, and whether it stops publishing. */
-export type PageIssue = { id: string; kind: "image-description" | "button-words" | "link-words" | "heading-jump" | "picture-missing" | "words-too-tight" | "words-at-edge"; blocks: boolean; message: string; fix?: { level?: number; sideSpace?: number } };
+export type PageIssue = { id: string; kind: "image-description" | "button-words" | "link-words" | "heading-jump" | "picture-missing" | "words-too-tight" | "words-at-edge" | "font-letters"; blocks: boolean; message: string; fix?: { level?: number; sideSpace?: number; font?: string } };
+
+/** The site's heading + body fonts (CSS stacks) — what a block draws in when nothing above it sets a font. */
+export type SiteFonts = { heading: string; body: string };
+
+/** A-1b (3): a font that draws `text` whole — of the same kind as `stack` (a serif for a serif) when one exists. */
+function fontThatWrites(text: string, stack: string): string | undefined {
+  const kind = FONT_FAMILIES.find((f) => f.name === familyOf(stack))?.category;
+  const ok = FONT_FAMILIES.filter((f) => !missingLetters(text, f.stack).length);
+  return (ok.find((f) => f.category === kind) ?? ok[0])?.stack;
+}
 
 /** The narrowest screen of each kind, in rem — what a row set for that screen has to fit (G3b-11). 360px is the low-cost phone (RULE AF). */
 const NARROWEST_REM: Record<Breakpoint, number> = { phone: 22.5, tabletPortrait: 37.5, tabletLandscape: 56.25, base: 75, wide: 112.5 };
@@ -242,12 +253,24 @@ export function wordsAtEdge(root: BoxNode): string | null {
   return null;
 }
 
-export function pageCheck(root: BoxNode, sem: PageSemantics = resolvePage(root)): PageIssue[] {
+export function pageCheck(root: BoxNode, sem: PageSemantics = resolvePage(root), fonts?: SiteFonts): PageIssue[] {
   const out: PageIssue[] = [];
   let lastLevel = 0;
-  const visit = (n: BoxNode) => {
+  // `font`: the nearest font set above — a block's own font sets its headings and words alike, as the canvas draws it
+  const visit = (n: BoxNode, font?: string) => {
     for (const c of n.children ?? []) {
       if (c.hidden) continue;
+      const own = c.fontFamily ?? font;
+      // A-1b (3): words whose letters the font they are drawn in does not have (another font fills them in, mid-word)
+      if (fonts && hasText(c)) {
+        const words = (c.text ?? "").replace(/<[^>]*>/g, ""), drawn = own ?? (c.type === "heading" ? fonts.heading : fonts.body);
+        const lacks = missingLetters(words, drawn);
+        if (lacks.length) {
+          const better = fontThatWrites(words, drawn);
+          out.push({ id: c.id, kind: "font-letters", blocks: false, fix: better ? { font: better } : undefined,
+            message: `${familyOf(drawn)} has no ${lacks.join(" ")}, so ${lacks.length > 1 ? "those letters are" : "that letter is"} drawn in another font in the middle of these words.${better ? ` ${familyOf(better)} has them.` : ""}` });
+        }
+      }
       // G3b-12 (the user 2026-10-04): an empty picture keeps its place as a soft box on the page — so say it is still missing
       if (c.type === "image" && !c.src)
         out.push({ id: c.id, kind: "picture-missing", blocks: false, message: "This picture has no image yet — visitors see an empty box. Upload one, or delete the block." });
@@ -264,10 +287,10 @@ export function pageCheck(root: BoxNode, sem: PageSemantics = resolvePage(root))
           out.push({ id: c.id, kind: "heading-jump", blocks: false, message: `This heading jumps from level ${lastLevel} to ${r.level}. Make it level ${lastLevel + 1}.`, fix: { level: lastLevel + 1 } });
         lastLevel = r.level;
       }
-      visit(c);
+      visit(c, own);
     }
   };
-  visit(root);
+  visit(root, root.fontFamily);
   const edge = wordsAtEdge(root);
   if (edge) out.push({ id: edge, kind: "words-at-edge", blocks: false, message: "Words on this page touch its left or right edge, which makes them hard to read — on a phone most of all. Add space at the sides; you can change it any time in Layout guides.", fix: { sideSpace: EDGE_SPACE } });
   // G3b-11 (the user 2026-10-04: "your setting wins"): a row of the page set by hand for a screen is drawn as set there, so say when

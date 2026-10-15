@@ -25,7 +25,7 @@ name as a tooltip and for screen readers.
 
 | Control | What it does | Shortcut |
 |---------|-------------|---------|
-| **Page tabs** (Home · **+** Add page · Page settings) | Switch between the site's pages, add one, rename or delete one. The page's menu also has **Line up with the grid** (every block of this page to the nearest whole column, on the screen you are editing; blocks placed free stay put; one Undo) and **Page grid…** | — |
+| **Page tabs** (Home · **+** Add page · Page settings) | Switch between the site's pages, add one, rename or delete one. The page's menu also has **Line up with the grid** (every block of this page to the nearest whole column, on the screen you are editing; blocks placed free stay put; one Undo), **Page grid…** and **Site fonts** (Headings · Words, each font saying which of Yoruba, Igbo, Hausa and Twi / Ga / Ewe it writes — see the Website Builder guide) | **Esc** closes it |
 | **+ Add a band** | Adds a full-width band at the bottom of the page; you can drag it to any position after. | — |
 | **Undo** | Reverses the last change. | Ctrl / Cmd Z |
 | **Redo** | Re-applies the last undone change. | Ctrl / Cmd Y, or Ctrl / Cmd Shift Z |

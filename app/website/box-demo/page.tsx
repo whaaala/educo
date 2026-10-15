@@ -22,7 +22,7 @@ import {
 } from "@/lib/box-model";
 import { blockForKind } from "@/lib/box-presets";
 import {
-  type BoxSite, siteFromRoot, coerceSite, normalizeSite, setPageRoot, addPage, deletePage, renamePage, setHomePage, duplicatePage, emptyPageRoot, setSiteTheme, setPageGrid,
+  type BoxSite, freshSite, siteFonts, setSiteFonts, SAVED_SITE_FONTS, coerceSite, normalizeSite, setPageRoot, addPage, deletePage, renamePage, setHomePage, duplicatePage, emptyPageRoot, setSiteTheme, setPageGrid,
 } from "@/lib/box-site";
 import { columnsAt, resolvePageGrid, type PageGridSettings } from "@/lib/page-grid";
 import PageGridPanel from "@/components/website/box/PageGridPanel";
@@ -41,6 +41,7 @@ import PageLoader from "@/components/shared/PageLoader";
 import CompactSelect from "@/components/shared/CompactSelect";
 import DeleteConfirmationModal from "@/components/shared/DeleteConfirmationModal";
 import PageCheck, { pageCheckCount } from "@/components/website/box/PageCheck";
+import SiteFontsFields from "@/components/website/box/SiteFontsFields";
 import { useCanvasZoom, ZoomControls } from "@/components/website/box/CanvasZoom";
 
 const KEY = "educo_box_site_v1"; // multi-page site
@@ -172,6 +173,15 @@ export default function BoxDemoPage() {
     return () => window.removeEventListener("keydown", onKey);
   }, [toggleGuides]);
   const [pageMenu, setPageMenu] = useState(false); // page-settings popover open
+  // A1b-10: Page settings closes on Esc (focus back on its button) and on a press outside it — never on one inside its own
+  // font menu, which is drawn outside the panel; Esc while that menu is open closes only the menu (CompactSelect stops it)
+  useEffect(() => {
+    if (!pageMenu) return;
+    const onKey = (e: KeyboardEvent) => { if (e.key !== "Escape") return; e.stopPropagation(); setPageMenu(false); document.querySelector<HTMLElement>("button[data-page-menu]")?.focus(); };
+    const onDown = (e: PointerEvent) => { if (!(e.target as Element).closest?.('[data-page-menu], [role="listbox"]')) setPageMenu(false); };
+    document.addEventListener("keydown", onKey); document.addEventListener("pointerdown", onDown);
+    return () => { document.removeEventListener("keydown", onKey); document.removeEventListener("pointerdown", onDown); };
+  }, [pageMenu]);
   const [confirmDeletePage, setConfirmDeletePage] = useState(false); // delete-page confirmation modal
   const [confirmReset, setConfirmReset] = useState(false); // start-over confirmation modal (D3-16)
   const [pageCheckOpen, setPageCheckOpen] = useState(false); // the Page check (semantics C1)
@@ -289,7 +299,7 @@ export default function BoxDemoPage() {
         localStorage.setItem(CLEANED_KEY, "1");
       }
     } catch { /* ignore */ }
-    const s = normalizeSite(loaded ?? siteFromRoot(starter()));
+    const s = normalizeSite(loaded ?? freshSite(starter()));
     setHist({ present: s, past: [], future: [] });
     setActivePageId(s.homeId);
   }, []);
@@ -397,7 +407,9 @@ export default function BoxDemoPage() {
   // The WEBSITE's theme (saved with the site) drives the canvas + content + export — independent of the editor's
   // own appearance. Defaults to Light for a fresh site.
   const siteThemeId = site?.themeId ?? "light";
-  const renderTheme = useMemo(() => resolveSiteTheme(DEFAULT_THEME, siteThemeId), [siteThemeId]);
+  // A-1b: the site's own heading + body fonts — the canvas, the Preview, the download and the fonts it ships all read this
+  const fonts = site ? siteFonts(site) : SAVED_SITE_FONTS;
+  const renderTheme = useMemo(() => ({ ...resolveSiteTheme(DEFAULT_THEME, siteThemeId), headingFont: fonts.heading, bodyFont: fonts.body }), [siteThemeId, fonts.heading, fonts.body]);
   const setWebsiteTheme = (id: string) => setHist((h) => (h ? { present: setSiteTheme(h.present, id), past: [...h.past, h.present].slice(-HIST_CAP), future: [] } : h));
 
   // ── Isolated preview (Phase 0.4): render the ACTUAL export HTML in a sandboxed iframe, so the
@@ -1284,7 +1296,7 @@ export default function BoxDemoPage() {
         return (<>
       <header style={{ zIndex: CHROME_Z.panel }} className={`relative min-h-14 shrink-0 flex ${compactBar ? "flex-nowrap" : "flex-wrap"} items-center gap-2 pointer-coarse:gap-1 gap-y-1.5 py-1.5 px-4 border-b border-line bg-surface`}>
         {!compactBar && (<>
-        <span className="text-sm font-bold text-gray-800 dark:text-gray-100 midnight:text-cyan-50 purple:text-pink-50 mr-1 shrink-0 pointer-coarse:max-[1599px]:hidden">Box Builder</span>
+        <span className="text-sm font-bold text-gray-800 dark:text-gray-100 midnight:text-cyan-50 purple:text-pink-50 mr-1 shrink-0 pointer-coarse:max-[1599px]:hidden max-[23em]:hidden">Box Builder</span>
         <ToolDivider />
         </>)}
         {/* Page tabs */}
@@ -1297,9 +1309,9 @@ export default function BoxDemoPage() {
           ))}
           {!compactBar && (<>
           <button onClick={onAddPage} aria-label="Add page" title="Add page" className="p-1.5 rounded-lg text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 midnight:hover:text-cyan-100 purple:hover:text-pink-100 hover:bg-white dark:hover:bg-white/10"><Plus className="w-4 h-4" /></button>
-          <button onClick={() => setPageMenu((v) => !v)} aria-label="Page settings" aria-expanded={pageMenu} title="Page settings" className="p-1.5 rounded-lg text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 midnight:hover:text-cyan-100 purple:hover:text-pink-100 hover:bg-white dark:hover:bg-white/10"><Settings2 className="w-4 h-4" /></button>
+          <button data-page-menu onClick={() => setPageMenu((v) => !v)} aria-label="Page settings" aria-expanded={pageMenu} title="Page settings" className="p-1.5 rounded-lg text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 midnight:hover:text-cyan-100 purple:hover:text-pink-100 hover:bg-white dark:hover:bg-white/10"><Settings2 className="w-4 h-4" /></button>
           {pageMenu && (
-            <div className="absolute top-full left-0 mt-2 z-40 w-60 rounded-xl border border-line bg-surface shadow-2xl p-2.5 space-y-2">
+            <div data-page-menu className="absolute top-full left-0 mt-2 z-40 w-60 max-w-[calc(100vw-1rem)] rounded-xl border border-line bg-surface shadow-2xl p-2.5 space-y-2">
               <label className="block"><span className="text-[0.625rem] font-medium text-gray-500">Page name</span>
                 <input value={activePage.name} onChange={(e) => onRenamePage(e.target.value)} aria-label="Page name" className="w-full text-sm px-2.5 py-1.5 rounded-lg border border-line bg-transparent outline-none focus:ring-2 focus:ring-indigo-500 mt-0.5" />
               </label>
@@ -1315,6 +1327,7 @@ export default function BoxDemoPage() {
                 className="w-full flex items-center justify-center gap-1 text-xs px-2 py-1.5 rounded-lg border border-line text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-100 dark:hover:bg-white/10"><LayoutGrid className="w-3.5 h-3.5" aria-hidden="true" /> Line up with the grid</button>
               <p role="status" className="text-[0.625rem] text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 min-h-0">{lineUpSaid}</p>
               <button onClick={() => { setPageMenu(false); toggleGuides({ on: true }); setGridPanel(true); }} className="w-full flex items-center justify-center gap-1 text-xs px-2 py-1.5 rounded-lg border border-line text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-100 dark:hover:bg-white/10"><LayoutGrid className="w-3.5 h-3.5" aria-hidden="true" /> Page grid…</button>
+              <SiteFontsFields fonts={fonts} onChange={(p) => pushSite(setSiteFonts(site, p))} />
               <button onClick={() => { setPageMenu(false); setConfirmDeletePage(true); }} disabled={site.pages.length <= 1} title={site.pages.length <= 1 ? "A site needs at least one page" : "Delete this page"} className="w-full flex items-center justify-center gap-1 text-xs px-2 py-1.5 rounded-lg border border-red-200 dark:border-red-900/50 text-red-600 dark:text-red-400 midnight:text-red-400 purple:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40 disabled:opacity-40"><Trash2 className="w-3.5 h-3.5" /> Delete page</button>
             </div>
           )}
@@ -1322,7 +1335,7 @@ export default function BoxDemoPage() {
         </div>
         {compactBar ? (<>
           {pageMenu && (
-            <div className="absolute top-full left-0 mt-2 z-40 w-60 rounded-xl border border-line bg-surface shadow-2xl p-2.5 space-y-2">
+            <div data-page-menu className="absolute top-full left-0 mt-2 z-40 w-60 max-w-[calc(100vw-1rem)] rounded-xl border border-line bg-surface shadow-2xl p-2.5 space-y-2">
               <label className="block"><span className="text-[0.625rem] font-medium text-gray-500">Page name</span>
                 <input value={activePage.name} onChange={(e) => onRenamePage(e.target.value)} aria-label="Page name" className="w-full text-sm px-2.5 py-1.5 rounded-lg border border-line bg-transparent outline-none focus:ring-2 focus:ring-indigo-500 mt-0.5" />
               </label>
@@ -1338,6 +1351,7 @@ export default function BoxDemoPage() {
                 className="w-full flex items-center justify-center gap-1 text-xs px-2 py-1.5 rounded-lg border border-line text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-100 dark:hover:bg-white/10"><LayoutGrid className="w-3.5 h-3.5" aria-hidden="true" /> Line up with the grid</button>
               <p role="status" className="text-[0.625rem] text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 min-h-0">{lineUpSaid}</p>
               <button onClick={() => { setPageMenu(false); toggleGuides({ on: true }); setGridPanel(true); }} className="w-full flex items-center justify-center gap-1 text-xs px-2 py-1.5 rounded-lg border border-line text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-100 dark:hover:bg-white/10"><LayoutGrid className="w-3.5 h-3.5" aria-hidden="true" /> Page grid…</button>
+              <SiteFontsFields fonts={fonts} onChange={(p) => pushSite(setSiteFonts(site, p))} />
               <button onClick={() => { setPageMenu(false); setConfirmDeletePage(true); }} disabled={site.pages.length <= 1} title={site.pages.length <= 1 ? "A site needs at least one page" : "Delete this page"} className="w-full flex items-center justify-center gap-1 text-xs px-2 py-1.5 rounded-lg border border-red-200 dark:border-red-900/50 text-red-600 dark:text-red-400 midnight:text-red-400 purple:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40 disabled:opacity-40"><Trash2 className="w-3.5 h-3.5" /> Delete page</button>
             </div>
           )}
@@ -1346,7 +1360,8 @@ export default function BoxDemoPage() {
           <ToolBtn onClick={undo} disabled={!canUndo} ariaLabel="Undo" title="Undo (Ctrl+Z)"><Undo2 className="w-4 h-4" /></ToolBtn>
           <ToolBtn onClick={redo} disabled={!canRedo} ariaLabel="Redo" title="Redo (Ctrl+Y)"><Redo2 className="w-4 h-4" /></ToolBtn>
         </div>
-        <ToolBtn onClick={() => setPreview(true)} title="See it as a visitor" ariaLabel="Preview"><Eye className="w-3.5 h-3.5" aria-hidden="true" /><span className={wide}>Preview</span></ToolBtn>
+        {/* A1b-9: a 375 screen at 200 % text is under 23em — the one-row bar keeps its icons, the words go (the name stays its label) */}
+        <ToolBtn onClick={() => setPreview(true)} title="See it as a visitor" ariaLabel="Preview"><Eye className="w-3.5 h-3.5" aria-hidden="true" /><span className="max-[23em]:sr-only">Preview</span></ToolBtn>
             <ToolBtn btnRef={moreBtnRef} onClick={() => setMoreOpen(true)} ariaLabel="More" title="More: pages, screen size, zoom, guides, theme, export…" active={moreOpen}><MoreHorizontal className="w-4 h-4" aria-hidden="true" /></ToolBtn>
           </div>
         </>) : (<>
@@ -1363,7 +1378,7 @@ export default function BoxDemoPage() {
           <ToolBtn onClick={redo} disabled={!canRedo} ariaLabel="Redo" title="Redo (Ctrl+Y)"><Redo2 className="w-4 h-4" /></ToolBtn>
         </div>
         <ToolDivider />
-        {(() => { const n = pageCheckCount(root); return (
+        {(() => { const n = pageCheckCount(root, fonts); return (
           <ToolBtn onClick={() => setPageCheckOpen(true)} title={n ? `${n} thing${n === 1 ? "" : "s"} on this page need${n === 1 ? "s" : ""} your words` : "Everyone can use this page"} ariaLabel={`Page check${n ? `, ${n} to do` : ""}`}>
             <ShieldCheck className="w-3.5 h-3.5" aria-hidden="true" /><span className={wide}>Page check</span>{n ? <span className="ml-1 rounded-full bg-amber-500 px-1.5 text-[0.625rem] font-bold text-white">{n}</span> : null}
           </ToolBtn>
@@ -1392,7 +1407,7 @@ export default function BoxDemoPage() {
             <ToolBtn onClick={() => { onAddPage(); setMoreOpen(false); }} ariaLabel="Add page" title="Add page"><Plus className="w-4 h-4" aria-hidden="true" /><span>Add page</span></ToolBtn>
             <ToolBtn onClick={() => { setMoreOpen(false); setPageMenu(true); }} ariaLabel="Page settings" title="Page settings"><Settings2 className="w-4 h-4" aria-hidden="true" /><span>Page settings</span></ToolBtn>
         <ToolBtn onClick={addSection} primary title="Add a full-width, tinted band across the page" ariaLabel="Add a band"><Plus className="w-3.5 h-3.5" aria-hidden="true" /><span className={wide}>Add a band</span></ToolBtn>
-        {(() => { const n = pageCheckCount(root); return (
+        {(() => { const n = pageCheckCount(root, fonts); return (
           <ToolBtn onClick={() => setPageCheckOpen(true)} title={n ? `${n} thing${n === 1 ? "" : "s"} on this page need${n === 1 ? "s" : ""} your words` : "Everyone can use this page"} ariaLabel={`Page check${n ? `, ${n} to do` : ""}`}>
             <ShieldCheck className="w-3.5 h-3.5" aria-hidden="true" /><span className={wide}>Page check</span>{n ? <span className="ml-1 rounded-full bg-amber-500 px-1.5 text-[0.625rem] font-bold text-white">{n}</span> : null}
           </ToolBtn>
@@ -1474,7 +1489,7 @@ export default function BoxDemoPage() {
           </aside>
       </div>
 
-      <PageCheck root={root} isOpen={pageCheckOpen} onClose={() => setPageCheckOpen(false)}
+      <PageCheck root={root} fonts={fonts} isOpen={pageCheckOpen} onClose={() => setPageCheckOpen(false)}
         onShow={(id) => { setPageCheckOpen(false); revealBox(id); }}
         onPatch={(id, patch) => commit(updateBox(root, id, patch))} onSideSpace={(v) => setGrid({ ...gridStored, sideSpace: v })} />
       <DeleteConfirmationModal
@@ -1490,7 +1505,7 @@ export default function BoxDemoPage() {
       <DeleteConfirmationModal
         isOpen={confirmReset}
         onClose={() => setConfirmReset(false)}
-        onConfirm={() => { setConfirmReset(false); resetSite(siteFromRoot(starter())); }}
+        onConfirm={() => { setConfirmReset(false); resetSite(freshSite(starter())); }}
         title="Start the whole site over?"
         confirmButtonText="Start over"
         warningMessage="Every page of this site is replaced by one starter page. You can Undo (Ctrl+Z) right after."
