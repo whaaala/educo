@@ -1531,8 +1531,8 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
   - `[x]` https://app.emergent.sh/ — STUDIED INSIDE 2026-10-08: Mobile app mode, 5 questions (Paystack first), Expo Router route groups per role, Expo Go preview, Testing Agent; phone/tablet measured (split ≥768, tabs never become a rail, detail has no URL, test data leaked) → §2
   - `[x]` https://lovable.dev/ — STUDIED INSIDE 2026-10-08 up to the plan: 4 questions (the only offline one), the best plan (tablet: "bottom tabs become a side rail", list/detail routes), then OUT OF FREE CREDITS before any screen (5 free credits in 15 h; adding credits is the user's call) → §3. Its built app NOT seen — SKIPPED by the user 2026-10-15 (decision 4)
 - `[>]` **BATCH A-1 · Pages light enough for a 3G phone, and the WhatsApp door locked** — OPENED 2026-10-15 on `app-builder/research`
-  (area: the exported page's weight + one webhook · 5 changes) — the user's decisions 23, 25, 26. Nested under the app-builder area
-  as E-5b…d were under E-5 (the area hangs under BATCH E-5, still open for it). RULE M ladder per change below.
+  (area: the exported page's weight + one webhook · 5 changes) — the user's decisions 23, 25, 26. The first batch of AREA APP (above);
+  top level so the batch guard counts it. RULE M ladder per change below.
   - **BUG LEDGER A-1** (opened 2026-10-15)
     - `[x]` A1-1 · the tree still read BATCH E-5's research (1)/(1a)/(1b)/(1c) and build (2) as in progress, (1c) "waiting on the
       user's signature" — signed 2026-10-06, built and closed by 2026-10-08 — FIXED 2026-10-15: ticked, and its GAPS line routed
@@ -1541,10 +1541,10 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
       U+1ECD — Google's `vietnamese` subset), ṣ (U+1E63) and Hausa ɓ ɗ ƙ, Twi / Ga / Ewe ɛ ɔ (`latin-ext`) would draw in the fallback
       font mid-word. FIX in change (2): keep EVERY subset as its own file with its `unicode-range`, so the browser fetches only the
       files the page's letters need — an English page still gets the ~44 KB Latin files, a Yoruba page also gets the one with ẹ ọ
-    - `[ ]` A1-3 · the WhatsApp webhook logs every inbound payload in full (`route.ts:54`) — parents' phone numbers, names and
+    - `[ ]` A1-3 (FIXED IN CODE 2026-10-15, change (1): ids and types only, guard mutation-proven; closes on the HEADED pass U1) · the WhatsApp webhook logs every inbound payload in full (`route.ts:54`) — parents' phone numbers, names and
       message text land in the server log — and logs the verify token it was sent (`:23`). FIX in change (1): log ids and types only
   - CHANGES:
-    - `[ ]` (1) RA-5 · THE WEBHOOK REFUSES WHAT IT CANNOT VERIFY (rung 3: Node `crypto` HMAC + `timingSafeEqual`, no dependency) —
+    - `[x]` (1) RA-5 · THE WEBHOOK REFUSES WHAT IT CANNOT VERIFY (CODE DONE 2026-10-15: `route.ts` + `.env.example`; unit 10 / 10 `tests/unit/communication/whatsapp-webhook.test.ts` from `whatsapp-webhook.feature`, 4 mutations red — signature skipped · fallback token back · payload logged · prefix match; typecheck 0, eslint 0; seen running in U1 of the pass) (rung 3: Node `crypto` HMAC + `timingSafeEqual`, no dependency) —
       GET answers Meta's challenge only when `WHATSAPP_WEBHOOK_VERIFY_TOKEN` is SET and matches (no fallback string); POST reads the
       raw body, checks `X-Hub-Signature-256` = HMAC-SHA256(body, `WHATSAPP_APP_SECRET`) and refuses (401) when the header, the
       secret or the match is missing — before parsing anything; A1-3's logging fixed; `.env.example` names both variables
