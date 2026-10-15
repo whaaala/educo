@@ -3529,8 +3529,84 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
     175 / 175. So E-6 (2) is: new blocks arrive with 0 padding / margin / gap (saved pages keep theirs); the spacing the user
     adds is drawn and dragged on the canvas (the overlay, designed properly); `space-by-default.test.ts`, the page audit's
     gutter floor and `component-breathing` / `page-audit-whitespace` specs rewritten to the new rule
-  - `[ ]` E6-1 · THE USER FOUND IT (2026-10-15): adding a BACKGROUND COLOUR to a stack makes its space disappear — space must
-    never depend on whether a box has a background. Reproduce through the UI first, measure, fix, guard (E-6)
+  - `[>]` RESEARCH (RULE RS) — mine DONE 2026-10-15: `docs/web-anatomy/spacing-overlay.md` (Webflow · Figma · Framer · Wix
+    Studio · DevTools, 10 axes, a recommendation per axis, ~40 sources). Gaps it could not close from documentation: exact
+    colours / handle sizes, readability over photos, Framer's and Wix's empty stack — a headed look inside each tool would.
+    WAITING ON THE USER: their own sources; sign-off of the "enough" checklist; Shift = bigger step (Figma/Framer) or all
+    four sides (Webflow); does "no space" include the PAGE's frame (G-3c) for new pages?
+  - `[>]` E6-1 · THE USER FOUND IT (2026-10-15): adding a BACKGROUND COLOUR to a stack makes its space disappear — space must
+    never depend on whether a box has a background. REPRODUCED THROUGH THE UI 2026-10-15 (`scripts/uat/probe-e6-1.js`,
+    HEADED, 1280, "Stack" and "Side by side" tiles): background #1e3a8a → the page's padding above and below (17.6px, the
+    G-3c frame) goes to 0 and the stack jumps 100 → 88px, while its own inner padding grows 17.6 → 26.4px. Two default rules
+    key on `hasVisibleEdge`: `pageFrameEnds` (a coloured first/last section "bleeds") and `spaceDefaults`' `inner`. The
+    no-default-space build removes both for new blocks; the guard asserts a background never changes space.
+    FIXED 2026-10-15 by change (1) (uncommitted — the gate waits on the audit decision below): HEADED re-run on a FRESH build,
+    both tiles: padding / margin / gap 0 before AND after the background, the stack stays at y 88 (screenshots
+    `scripts/uat/e6-out/`). Closes on the batch's HEADED UAT pass
+  - `[>]` E-6 change (1) · NO SPACE UNLESS ADDED — BUILT 2026-10-15 at the user's word ("please fix this so it doesn't have that
+    space"): new blocks carry `bare` → every unset space reads `SPACE_NONE` (0): padding, gap, section space, the page frame,
+    the band gutter (`spaceFor`, `frameCss`, `frameRemAt`, `pageFrameEnds`); a new section on a SAVED page brings no frame;
+    the page grid panel and the photo gallery setup start at 0. Guard `space-by-default.test.ts` enumerates palette +
+    catalogue × {none, background, picture, border} × {deep, section, column, page grid}; mutation-proven 5 ways (M1–M5).
+    vitest 4,506 / 4,506; typecheck 0; eslint 0 errors; spacing / empty-box browser specs 512 pass, 32 fail = the audit below
+    - `[x]` E6-2 · MY OWN (found reading page-grid.test): a row band is scaffolding the editor makes on SAVED pages too —
+      marked `bare` it would strip a saved page's column gutter. `isBare` reads a band's content; guarded, M4
+    - `[x]` E6-3 · MY OWN PROBE: with no gap a new 2-column row stopped being a ROW OF THE PAGE (`gridBandOwnsGutter` needed a
+      gutter > 0) → flex band, spans / picture fill / fit steps lost (narrowing 30.8rem → 8.4rem). A new row is a page row
+      whatever its gap; saved rows unchanged; guarded, M5
+    - `[ ]` E6-4 · MY OWN (HEADED screenshot): the old empty-box hint is grey on a dark background — unreadable → change (3)
+    - `[x]` E6-6 · MY OWN (HEADED, `probe-e6-5.js`): the Page grid panel read "Side space · Default · 1–1.25rem" on a page whose
+      default is now 0 (hard-coded). Reads "Default · 0rem" on a page made now; `PageGridPanel.test.tsx`, mutation-proven (M6)
+  - `[>]` E6-5 · THE USER FOUND IT (2026-10-15): the Page grid panel's sliders "do not show up on the canvas straight away… I
+    don't exactly know what I'm doing". MEASURED THROUGH THE UI (`scripts/uat/probe-e6-5.js`, HEADED, 1897 wide): every slider
+    IS live during the drag — but on a page of full-width blocks (the user's) "Space between columns" and "Space between rows"
+    move NOTHING (no columns side by side; the page's own rows are not spaced by it — the root's gap is a stored 0), and
+    "Side space" pushes every block 64px DOWN (the G-3c frame, all four edges) while its side part is padding INSIDE the
+    boxes, invisible in an empty one. With two columns, the columns slider moves them apart live (536 → 515px each).
+    PROPOSED: (a) while a slider is dragged or focused, the space it controls is SHADED on the canvas
+    with its size — the frame strips, every gap between columns, every gap between rows — the spacing overlay's own look;
+    (b) "Space between rows" also spaces the page's own rows on a page made now (saved pages unchanged).
+    APPROVED by the user 2026-10-15 ("yes please") — BUILT (uncommitted): (a) `SpaceShade` in `BoxCanvas.tsx`, measured from
+    the drawn blocks after every change, hatched + labelled in rem, `aria-hidden`, never published; the panel reports the
+    slider held / focused (`onSpaceFocus`), a press anywhere else lets it go; (b) `gapCSS` on a bare page-grid root = the
+    rows gap. HEADED (`probe-e6-5.js`, 1897): the user's two Stacks → Side space 4 strips "3.99rem", rows 1 strip "2.68rem"
+    and the Stacks 43px apart; two columns → 1 strip "2.68rem". Guards: `space-by-default.test.ts` (rows, M7),
+    `PageGridPanel.test.tsx` (focus M8, press-elsewhere M9), `tests/e2e/page-grid-panel.spec.ts`. Closes on the HEADED UAT
+    - `[x]` E6-7 · MY OWN (HEADED screenshot): the Page grid panel lay over the RIGHT of the page — the right side strip and
+      every block near that edge hidden while their slider moved. It sits at the window's right edge, over the Inspector:
+      covers 0 of the page at 1024 · 1280 · 1366 · 1440 · 1536 · 1897 (`probe-e6-7.js`, six headed windows); spec
+      `page-grid-panel.spec.ts` mutation-proven (6 / 6 fail with the old placement)
+    - `[x]` E6-9 · THE USER FOUND IT (2026-10-15): "Columns on …" − / + "doesn't show me straight away". MEASURED (`probe-e6-9.js`,
+      HEADED, 1916): on the screen the canvas shows it IS live (12 → 14 → 9); a screen TAB picked in the panel (Phone, Tablet…)
+      changed that screen's columns while the canvas stayed on Desktop — nothing to see. A tab picked now switches the canvas
+      to that screen (and the panel follows the canvas): Phone 375 5→6 · Tablet 768 9→10 · Laptop 1024 · Wide · Desktop, each
+      live. `PageGridPanel.test.tsx` mutation-proven (M10)
+    - `[x]` E6-10 · THE USER (2026-10-15): "I can't choose how many rows I want to see on this canvas". DECIDED by the user
+      2026-10-15 ("go with your recommendation… I should be able to do this for how many rows"): "Row step" renamed "Row
+      height", and "Rows on this page" − / number / + divides the page as tall as it is now (the height follows); either turns
+      the row lines on. HEADED (`probe-e6-11.js`): 4 rows → 2rem, drawn at once. `PageGridPanel.test.tsx` (M11)
+    - `[x]` E6-11 · MY OWN (HEADED, `probe-e6-11.js`, the real cause of E6-9): the column and row LINES a person sees are drawn by
+      `GuideLines`, which re-measured only on scroll / resize — 15 columns in the page, 12 drawn; a new row height, the old rows.
+      A MutationObserver on the guides re-draws them on every grid change: 13 → 16 lines, rows 5 → 16 → 4, no scroll.
+      `page-grid-panel.spec.ts` "the lines a person SEES", mutation-proven (fails without it)
+    - `[x]` E6-12 · MY OWN (the full gate, `float-round-trip.spec` E5c-8): a block at its parent's very top made Floating was put
+      back 2 % ABOVE where it was (1.1px; through the UI 0.55px, `probe-e6-12.js`) — the settle corrected from the MEASURED top,
+      not the stored one with `floatBox`'s 2 % inset. Pre-existing, exposed by no default space. Settles from the stored top;
+      the spec red before, green after
+    - `[x]` E6-13 · THE PAGE CHECK (the user's "go with your recommendation", 2026-10-15): on a page made now with no side space,
+      words at the page's left / right edge are a SUGGESTION ("words-at-edge", `wordsAtEdge` in `lib/semantics.ts`) with "Add
+      space at the sides" (the site's side space 23 = ≥ 1rem on a 360 phone). `semantics.test.ts` + `PageCheck.test.tsx` (M12);
+      `page-audit-whitespace.spec` rewritten: a page made now → W7a said; a page saved before → nothing
+    - `[ ]` OWED at the batch's close (RULE DOCS): `docs/guide/layout-reference.md` written for the new panel 2026-10-15 — its
+      screenshot `img/ref-page-grid-panel.webp` is still the old panel; retake from the real builder
+    - `[x]` E6-8 · MY OWN (HEADED, pre-existing): on a phone and a tablet the panel, in the More sheet, hung off the screen's LEFT
+      edge (−52px at 375, −102px at 768) — and my first E6-7 fix pinned it below the sheet. It stays in the sheet, slid on
+      screen: 8 → 328px at both; same spec, same mutation
+    - `[?]` WAITING ON THE USER: the page audit (RULE D, W7a/W7b) flags words touching the page edge — a page at the new
+      defaults does that, so `page-audit-whitespace.spec` fails 32 / 32 "a page at its defaults: nothing to report".
+      Recommended: keep the warning (the deck's whitespace rule) as a Page-check hint with a one-click "add space", and
+      change the spec to "a page at its defaults: the audit SAYS words touch the edge". And: Card / Quote / Stat / Badge /
+      Rating keep the padding their DESIGN stores (a Card's 24) — kept as part of the chosen design, like its radius?
   - L4-r · (found in L-4's headed pass, `uat-l4/A-1280.png`; moved here by the user 2026-10-03) a selected block's floating
     toolbar, flipped BELOW it, sits over the first words of the block underneath ("…ck to edit")
 - `[ ]` **BATCH L-5 · Resize round trips** (area: resize · 6 changes, queued — after the page grid AC-37b, the user 2026-10-03)

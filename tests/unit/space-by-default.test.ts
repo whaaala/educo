@@ -1,16 +1,28 @@
 import { describe, it, expect } from "vitest";
 import type { CSSProperties } from "react";
 import type { BoxNode } from "@/lib/box-model";
-import { createContainer, createGrid, makeRowBand, createRoot, childStyle, paddingCSS, gapCSS, leafPaddingCSS, spaceDefaults, gapOf, SPACE_DEFAULT, u, padSide, isSectionContentIn, outerDefaults, outerSpaceCSS, isContainer, bandGutter } from "@/lib/box-model";
-import { blockForKind } from "@/lib/box-presets";
+import { createContainer as newContainer, createGrid as newGrid, makeRowBand as newRowBand, createRoot as newRoot, childStyle, paddingCSS, gapCSS, leafPaddingCSS, spaceDefaults, gapOf, SPACE_DEFAULT, u, padSide, isSectionContentIn, outerDefaults, outerSpaceCSS, isContainer, bandGutter, pageFrameEnds, markPageGrid, outerSpaceDefaults, isPageRow } from "@/lib/box-model";
+import { blockForKind as newBlock } from "@/lib/box-presets";
 import { COMPONENT_CATALOGUE } from "@/lib/component-catalogue";
 
 import { DEFAULT_THEME } from "@/lib/site-storage";
 import { renderPageHTML } from "@/lib/box-export";
 /**
- * SPACE BY DEFAULT — words never touch an edge (CLAUDE.md rule 3; tests/features/components/website/box-builder-spacing.feature).
- * Enumerates the palette and the component catalogue, so a block added later is covered the day it appears.
+ * NO SPACE UNLESS YOU ADD IT (CLAUDE.md rule 3, the user 2026-10-15; tests/features/components/website/box-builder-spacing.feature).
+ * A block made from now on carries no padding, margin, gap, section space or page frame that nobody set — enumerated over the
+ * palette and the component catalogue, so a block added later is covered the day it appears.
+ *
+ * SPACE BY DEFAULT (2026-09-29 → 2026-10-15) is now what a SAVED page has: its blocks are `spaced` but not `bare`, and they keep
+ * every default they were drawn with. The suites below it build such saved blocks (`saved`), and must keep passing unchanged.
  */
+
+/** A block as a page saved before 2026-10-15 holds it: made under space-by-default, without the `bare` mark. */
+const saved = <T extends BoxNode>(n: T): T => { const { bare: _bare, ...rest } = n; return { ...rest, ...(n.children ? { children: n.children.map(saved) } : {}) } as T; };
+const createContainer = (...a: Parameters<typeof newContainer>) => saved(newContainer(...a));
+const createGrid = (...a: Parameters<typeof newGrid>) => saved(newGrid(...a));
+const makeRowBand = (...a: Parameters<typeof newRowBand>) => saved(newRowBand(...a));
+const createRoot = () => saved(newRoot());
+const blockForKind = (...a: Parameters<typeof newBlock>) => saved(newBlock(...a));
 
 const PRIMITIVES = ["container", "row", "grid", "heading", "text", "button", "list", "image", "video", "divider", "spacer", "icon", "embed"];
 const ALL_KINDS = [...PRIMITIVES, ...COMPONENT_CATALOGUE.map((c) => c.name)];
@@ -18,8 +30,80 @@ const ALL_KINDS = [...PRIMITIVES, ...COMPONENT_CATALOGUE.map((c) => c.name)];
 /** Every node in a subtree. */
 const all = (n: BoxNode): BoxNode[] => [n, ...(n.children ?? []).flatMap(all)];
 
-describe("every block added from now on carries the defaults", () => {
-  it.each(ALL_KINDS)("%s is born spaced, with its spacing left unset", (kind) => {
+/** Every space a block draws that nobody set, in every place it can sit: deep, a section on the page, a column of a band. */
+const unsetSpace = (n: BoxNode): string[] => {
+  const out: string[] = [];
+  for (const section of [false, true, "gridBand"] as const) {
+    if (spaceDefaults(n, section).pad.some(Boolean)) out.push(`padding (${section}) ${spaceDefaults(n, section).pad}`);
+    for (const place of ["page", "band"] as const) if (outerDefaults(n, place).some(Boolean)) out.push(`margin (${place}) ${outerDefaults(n, place)}`);
+  }
+  const g = gapOf(n); if (n.gap === undefined && n.gapX === undefined && n.gapY === undefined && (g.x || g.y)) out.push(`gap ${g.x}/${g.y}`);
+  return out;
+};
+
+describe("NO SPACE UNLESS YOU ADD IT — every block added from now on (the user, 2026-10-15)", () => {
+  // Spacing a component's DESIGN carries (a Card's own padding, chosen with the Card) is stored on it and is the design's;
+  // what is guarded here is space nobody set at all.
+  it.each(ALL_KINDS)("%s arrives with no space — and a background, a picture or a border adds none (E6-1)", (kind) => {
+    for (const n of all(newBlock(kind))) {
+      expect(n.bare, `${kind} → ${n.type} ${n.id}`).toBe(true);
+      for (const look of [{}, { background: "#1e3a8a" }, { bgImage: "url(x)" }, { borderWidth: 1 }]) {
+        const m = { ...n, ...look } as BoxNode;
+        expect(unsetSpace(m), `${kind} → ${n.type} ${JSON.stringify(look)}`).toEqual([]);
+        expect(unsetSpace({ ...m, onPageGrid: true }), `${kind} on the page grid`).toEqual([]);
+        // …and the CSS says so too: a section's sides on a page-grid page are the page's FRAME (`frameCss`), not a number
+        const stored = ["padding", "paddingTop", "paddingRight", "paddingBottom", "paddingLeft"].some((k) => m[k as keyof BoxNode] !== undefined); // a design's own (a Card's 24)
+        for (const onPageGrid of [false, true]) if (!stored && (isContainer(m) || leafPaddingCSS(m, true).paddingTop !== undefined)) expect(Object.values(paddingCSS({ ...m, onPageGrid }, true)), `${kind} CSS`).toEqual(Array(4).fill(u(0)));
+      }
+    }
+  });
+
+  it("a page made now has no frame, and a section added to a page saved before brings none (the user's screenshot, 2026-10-15)", () => {
+    const fresh = markPageGrid({ ...newRoot(), pageGrid: true, children: [newRowBand([newContainer("column")])] });
+    expect(pageFrameEnds(fresh)).toEqual({});
+    // a saved page keeps its frame around its own sections…
+    const old = markPageGrid({ ...createRoot(), pageGrid: true, children: [makeRowBand([createContainer("column")])] });
+    expect(Object.keys(pageFrameEnds(old))).toEqual(["paddingTop", "paddingBottom"]);
+    // …and a section added to it now, first on the page, has nothing above it
+    const added = markPageGrid({ ...old, children: [newRowBand([newContainer("column")]), ...old.children!] });
+    expect(pageFrameEnds(added).paddingTop).toBeUndefined();
+    // the side space the user SETS for the site is drawn as set
+    expect(pageFrameEnds(markPageGrid({ ...fresh, gridSpace: { gutter: 20 } })).paddingTop).toBe(u(20));
+  });
+
+  it("columns made now sit edge to edge — no gutter, no section space — until the user sets one", () => {
+    const band = newRowBand([newContainer("column"), newContainer("column")]);
+    expect(bandGutter(band)).toBe(0);
+    const root = markPageGrid({ ...newRoot(), pageGrid: true, children: [band] });
+    const id = root.children![0].children![0].id;
+    expect(outerSpaceDefaults(root, id)).toEqual([0, 0, 0, 0]);
+    // …and with no gap it is still a ROW OF THE PAGE, on the page's lines, spans and all (E-6 #3: it fell back to a flex band)
+    expect(isPageRow(root.children![0])).toBe(true);
+    expect(Object.values(paddingCSS(root.children![0].children![0], "gridBand"))).toEqual(Array(4).fill(u(0)));
+  });
+
+  it("a band the editor makes around a SAVED page's columns keeps their gutter — it is scaffolding, it reads its content", () => {
+    const old = () => saved(newContainer("column", { children: [newBlock("text")] }));
+    expect(bandGutter(newRowBand([old(), old()]))).toBe(SPACE_DEFAULT.columns);
+    expect(bandGutter(newRowBand([old(), newContainer("column")]))).toBe(SPACE_DEFAULT.columns); // mixed: the saved page's
+  });
+
+  it("the page's own rows are spaced by the page grid's \"Space between rows\" on a page made now; a saved page keeps its gap (E6-5 (b))", () => {
+    const fresh = { ...newRoot(), pageGrid: true };
+    expect(gapCSS(fresh)).toEqual({ gap: u(0) }); // nothing until it is set
+    expect(gapCSS({ ...fresh, gridSpace: { gapY: 24 } })).toEqual({ gap: u(24) });
+    expect(gapCSS({ ...fresh, gridSpace: { gap: 12 } })).toEqual({ gap: u(12) }); // G-2's one gap, both ways
+    expect(gapCSS({ ...createRoot(), pageGrid: true, gridSpace: { gapY: 24 } })).toEqual({ gap: u(0) }); // saved: its stored 0
+  });
+
+  it("what the user sets is drawn exactly — 0 included", () => {
+    expect(paddingCSS(newContainer("column", { padding: 24 }), true)).toEqual(Object.fromEntries(["Top", "Right", "Bottom", "Left"].map((k) => [`padding${k}`, u(24)])));
+    expect(gapOf(newContainer("column", { gap: 12 }))).toEqual({ x: 12, y: 12 });
+  });
+});
+
+describe("a page saved before 2026-10-15 keeps its space by default", () => {
+  it.each(ALL_KINDS)("%s as saved is spaced, with its spacing left unset", (kind) => {
     const block = blockForKind(kind);
     for (const n of all(block)) {
       if (n.rowBand) continue; // scaffolding: its space belongs to the blocks inside it

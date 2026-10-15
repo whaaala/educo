@@ -71,7 +71,7 @@ describe("c-8: a grid narrows by the longest word it holds", () => {
     g.children![0].children = [blockForKind("stat")];
     const n = gridNarrowsAt(g)!;
     expect(n.two).toBeNull();
-    expect(n.one).toBeGreaterThan(longestWordRem(blockForKind("stat")) * 6); // its share is a sixth of the line
+    expect(n.one).toBeGreaterThanOrEqual(longestWordRem(blockForKind("stat")) * 6); // its share is a sixth of the line (exactly, with no gap — 2026-10-15)
   });
 });
 

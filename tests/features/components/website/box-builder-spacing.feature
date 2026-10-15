@@ -1,4 +1,4 @@
-Feature: Space by default — words never touch an edge
+Feature: Spacing — none unless I add it (since 2026-10-15); a saved page keeps its space by default
   As a teacher building a page
   I want every section, block and coloured box to arrive with sensible space around it
   So that my words never sit against an edge, and I only touch spacing when I want something different
@@ -9,9 +9,96 @@ Feature: Space by default — words never touch an edge
   # real rem. Columns side by side keep a 1rem GUTTER across and 1rem down (S1-a): each gives up one gap from its share.
   # Every default comes from the spacing tokens, in rem with a fluid term, from ONE emitter for canvas and export.
 
+  # SUPERSEDED FOR NEW BLOCKS 2026-10-15 (the user: "no spaces at all unless I add it myself"; BATCH E-6). Everything below
+  # the next section is what a page SAVED before 2026-10-15 still does; a block or page made from now on starts with none.
+
   Background:
     Given the website builder is open on an empty page
     And the blocks panel is open
+
+  # ── No space unless I add it (E-6, the user 2026-10-15) ──
+
+  Scenario Outline: A new <block> arrives with no space, and a background adds none
+    When I add a "<block>" from the blocks panel
+    Then it has no padding, no margin and no gap
+    And there is no space between it and the page's edges
+    When I give it a background colour
+    Then it has still no padding, no margin and no gap, and it has not moved
+    Examples:
+      | block        |
+      | Stack        |
+      | Side by side |
+      | Grid         |
+      | Heading      |
+      | Text         |
+
+  Scenario: A block added to a page saved before keeps no space either
+    Given a page saved before 2026-10-15 with its own spacing
+    When I add a "Stack" as its first section
+    Then the new Stack has no space above it, and the saved blocks keep theirs
+
+  Scenario: Columns made now sit edge to edge, still on the page's lines
+    When I drop a "Stack" beside another "Stack"
+    Then there is no gap between them
+    And they are still a row of the page grid, so their spans and the fit rule still apply
+
+  Scenario Outline: The page grid's <slider> shows the space it moves while I move it
+    Given two Stacks one under the other and two Stacks side by side
+    And the layout guides are on
+    When I hold the "<slider>" slider and move it
+    Then the space it changes is hatched on the page with its size in rem
+    And the blocks move as I move it, not after I let go
+    When I press anywhere else
+    Then the hatching goes
+    Examples:
+      | slider                |
+      | Side space (padding)  |
+      | Space between columns |
+      | Space between rows    |
+
+  Scenario: I choose how many rows, as I choose columns, and see them at once
+    Given the layout guides are on
+    When I set "Rows on this page" to 4
+    Then the page is drawn in 4 rows straight away, and "Row height" shows their height
+    When I set "Columns on Desktop" one more three times
+    Then three more column lines are drawn straight away, without scrolling
+
+  Scenario Outline: Picking <screen> in the page grid panel shows that screen on the canvas
+    When I pick "<screen>" in the page grid panel
+    Then the canvas shows the <screen> screen
+    And changing its columns changes the lines I see
+    Examples:
+      | screen  |
+      | Phone   |
+      | Tablet  |
+      | Laptop  |
+      | Desktop |
+      | Wide    |
+
+  Scenario: The page check says when words touch the page's edge, and adds the space
+    Given a page made now with a Text block and no side space
+    When I open Page check
+    Then it suggests adding space at the sides, and it does not stop me publishing
+    When I press "Add space at the sides"
+    Then the words are at least 1rem from the page's edge on a phone
+
+  Scenario: Space between rows spaces the page's own rows on a new page
+    Given two Stacks one under the other on a page made now
+    When I move "Space between rows" to 1.5rem
+    Then the two Stacks are 1.5rem apart
+
+  Scenario Outline: The page grid panel never hides the page it changes at <width>px
+    When I open the layout guides
+    Then the whole panel is on the screen
+    And it covers none of the page wherever the screen has room beside the page
+    Examples:
+      | width |
+      | 375   |
+      | 768   |
+      | 1024  |
+      | 1280  |
+      | 1536  |
+      | 1897  |
 
   # ── The side gutter ──
 

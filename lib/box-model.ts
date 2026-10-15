@@ -361,6 +361,7 @@ export interface BoxNode {
   clip?: boolean;           // allow sizing SMALLER than content (min:0) and hide overflow; default off = hug content
   baseFont?: number;        // page root only: the global base unit in px (default 10); rendered as rem so it scales with the browser font size (WCAG)
   spaced?: boolean;         // made under SPACE BY DEFAULT (2026-09-30): unset spacing reads `spaceDefaults`; saved pages lack it and keep theirs
+  bare?: boolean;           // made under NO SPACE UNLESS ADDED (the user, 2026-10-15): every unset space is 0 (`SPACE_NONE`); saved blocks lack it and keep theirs
   pageGrid?: boolean;       // page root only: laid out on the PAGE GRID (AC-37b, 2026-10-04) — every page made from now; saved pages lack it
   onPageGrid?: boolean;     // a block of a page-grid page (`markPageGrid`): its unset spacing reads `SPACE_GRID`
   pageRow?: boolean;        // a row band straight on a page-grid page (`markPageGrid`): drawn as a CSS grid on the page's lines (G-3b, `isPageRow`)
@@ -932,6 +933,7 @@ export function createContainer(direction: FlexDir = "column", overrides: Partia
     layout: "flex",
     direction,
     spaced: true,
+    bare: true,
     align: "stretch",
     justify: "start",
     wrap: direction === "row",
@@ -956,7 +958,7 @@ export function createGrid(columns = 3, overrides: Partial<BoxNode> = {}): BoxNo
 }
 
 export function createElement(type: Exclude<BoxType, "container">, overrides: Partial<BoxNode> = {}): BoxNode {
-  const base: BoxNode = { id: newBoxId(), type, width: "auto", spaced: true };
+  const base: BoxNode = { id: newBoxId(), type, width: "auto", spaced: true, bare: true };
   switch (type) {
     case "heading": return { ...base, text: "New heading", fontSize: 32, bold: true, ...overrides };
     case "button": return { ...base, text: "Button", href: "#", ...overrides };
@@ -1009,7 +1011,7 @@ export function defaultAccordionItems(): ComponentItem[] {
  *  registry, so ADDING a future component needs no change here — just a registry entry + its CSS. */
 export function createComponent(component: string, overrides: Partial<BoxNode> = {}): BoxNode {
   // F-1: a newly added component fills its line unless it hugs by nature (`defaultComponentWidth`). Hug/Custom stay opt-in.
-  const base: BoxNode = { id: newBoxId(), type: "component", component, variant: "", width: defaultComponentWidth(component), spaced: true };
+  const base: BoxNode = { id: newBoxId(), type: "component", component, variant: "", width: defaultComponentWidth(component), spaced: true, bare: true };
   if (component === "accordion") return { ...base, items: defaultAccordionItems(), accMultiOpen: false, ...overrides };
   if (component === "alert") return { ...base, items: defaultAlertItems(), alertSeverity: "info", alertForm: "inline", alertDismiss: false, ...overrides };
   if (isRegistryComponent(component)) return { ...base, width: defaultComponentWidth(component), componentFields: defaultComponentFields(component), ...overrides };
@@ -5115,6 +5117,9 @@ export function t(px: number): string {
  * them — which is the commonest grid there is: cards with air between the columns and less between the rows.
  */
 export function gapCSS(node: BoxNode): CSSProperties {
+  // THE PAGE'S OWN ROWS (E6-5 (b), the user 2026-10-15): on a page made now, the page grid's "Space between rows" spaces the
+  // rows of the page too, so it does something on a page of full-width blocks. A saved page keeps its stored gap.
+  if (node.pageGrid && isBare(node)) { const g = node.gridSpace; return { gap: u(g?.gapY ?? g?.gap ?? 0) }; }
   const d = spaceDefaults(node);
   const base = node.gap;
   const x = node.gapX ?? base ?? d.gapX, y = node.gapY ?? base ?? d.gapY;
@@ -5155,18 +5160,20 @@ export const SPACE_GRID = { ...SPACE_DEFAULT, gutter: 16, columns: 17 } as const
  * where the arithmetic has to be exact at a width, `frameRemAt` gives it.
  */
 export const FRAME_CSS = "clamp(1rem, calc(var(--box-u, 0.625rem) * 1.6), 1.25rem)";
-/** The frame as CSS for a block of a page-grid page — the ONE emitter of the side space there. */
-export const frameCss = (node: BoxNode): string => (node.gridSpace?.gutter !== undefined ? u(node.gridSpace.gutter) : FRAME_CSS);
+/** The frame as CSS for a block of a page-grid page — the ONE emitter of the side space there. A block made since 2026-10-15
+ *  (`bare`) has none until the site sets its side space. */
+export const frameCss = (node: BoxNode): string => (node.gridSpace?.gutter !== undefined ? u(node.gridSpace.gutter) : isBare(node) ? u(0) : FRAME_CSS);
 /**
  * THE FRAME AT THE PAGE'S TOP AND BOTTOM (G-3c (1), the user: "do the same thing for the bottom"). A page-grid page keeps the frame
  * above its first section and below its last — except where that section is coloured or a picture, which still reaches the edge
  * (its words keep their space inside it). Saved pages (no `pageGrid`) are untouched.
  */
 export function pageFrameEnds(root: BoxNode): CSSProperties {
-  if (!root.pageGrid) return {};
+  if (!root.pageGrid || (root.bare && root.gridSpace?.gutter === undefined)) return {}; // no frame nobody set (2026-10-15)
   const bands = (root.children ?? []).filter((b) => !b.hidden && !isFloating(b));
   const bleeds = (band?: BoxNode) => !!band && (hasVisibleEdge(band) || (band.children ?? []).filter((c) => !isFloating(c)).every((c) => (!selfPaints(c) && !c.preset && hasVisibleEdge(c)) || BLEEDS.has(c.type))); // a Card or a Button keeps its frame outside its box (G3c-2)
-  return { ...(bleeds(bands[0]) ? {} : { paddingTop: frameCss(root) }), ...(bleeds(bands[bands.length - 1]) ? {} : { paddingBottom: frameCss(root) }) };
+  const none = (band?: BoxNode) => !!band && isBare(band) && root.gridSpace?.gutter === undefined; // a section added since 2026-10-15 brings no frame
+  return { ...(bleeds(bands[0]) || none(bands[0]) ? {} : { paddingTop: frameCss(root) }), ...(bleeds(bands[bands.length - 1]) || none(bands[bands.length - 1]) ? {} : { paddingBottom: frameCss(root) }) };
 }
 /**
  * WHAT A VALUE OF THE FLUID UNIT REALLY IS, phone → wide (G3c-1, G3c-10; the user 2026-10-05: "phone → wide range"). Spacing and sizes
@@ -5180,19 +5187,30 @@ export function fluidRemRange(v: number): string {
 /** The fluid unit in rem on a page `w` rem wide (`--box-u`). */
 const unitRemAt = (w: number) => { const { loRem, hiRem, remHalf, cqwHalf } = baseUnitParts(); return Math.min(hiRem, Math.max(loRem, remHalf + (cqwHalf * w) / 100)); };
 /** The frame in rem on a page `w` rem wide — exactly what `frameCss` draws there. */
-export const frameRemAt = (node: BoxNode, w: number): number => (node.gridSpace?.gutter !== undefined ? (node.gridSpace.gutter / 10) * unitRemAt(w) : Math.min(1.25, Math.max(1, 1.6 * unitRemAt(w))));
+export const frameRemAt = (node: BoxNode, w: number): number => (node.gridSpace?.gutter !== undefined ? (node.gridSpace.gutter / 10) * unitRemAt(w) : isBare(node) ? 0 : Math.min(1.25, Math.max(1, 1.6 * unitRemAt(w))));
 
 /** A page grid's own side space (`gutter`) and gap between blocks (`gap`), set in its panel (G-2) — stored fluid units. */
 export interface GridSpace { gutter?: number; gap?: number; gapX?: number; gapY?: number; cols?: Partial<Record<Breakpoint, number>> } // `gapX` / `gapY`: across / down when they differ (G-3b (5)); `cols`: columns per screen, when not the default (G-3b)
 
+/**
+ * NO SPACE UNLESS YOU ADD IT (the user, 2026-10-15 — reverses SPACE BY DEFAULT): a block made from now on (`bare`) has no
+ * padding, margin, gap, section space or frame of its own. Only what the user sets — on the block, or the site's side space
+ * and gaps in the page grid panel — is drawn. Saved blocks (no `bare`) keep the defaults they were made with.
+ */
+export const SPACE_NONE = { gutter: 0, section: 0, bar: 0, stack: 0, columns: 0, inner: 0 } as const;
+/** Is unset space 0 here? A row band is scaffolding the editor makes whenever it restructures — on a saved page too — so it
+ *  reads its CONTENT: bare only when every block in it is, or a saved page's columns would lose their gutter. */
+export const isBare = (node: BoxNode): boolean => node.rowBand && node.children?.length ? node.children.every(isBare) : !!node.bare;
+
 /** The defaults a block reads: the page grid's on a page-grid page (with the site's own side space and gap), else the
  *  ones it was made with. The ONE place both the canvas and the export read them. */
-const spaceFor = (node: BoxNode) => {
-  if (!node.onPageGrid) return SPACE_DEFAULT;
+const spaceFor = (node: BoxNode): Record<keyof typeof SPACE_DEFAULT, number> => {
+  const base = isBare(node) ? SPACE_NONE : node.onPageGrid ? SPACE_GRID : SPACE_DEFAULT;
+  if (!node.onPageGrid) return base;
   const g = node.gridSpace;
-  if (!g) return SPACE_GRID;
+  if (!g) return base;
   const x = g.gapX ?? g.gap, y = g.gapY ?? g.gap; // "Space between columns" / "…rows" (G-3b (5))
-  return { ...SPACE_GRID, ...(g.gutter !== undefined ? { gutter: g.gutter } : {}), ...(x !== undefined ? { columns: x } : {}), ...(y !== undefined ? { stack: y } : {}) };
+  return { ...base, ...(g.gutter !== undefined ? { gutter: g.gutter } : {}), ...(x !== undefined ? { columns: x } : {}), ...(y !== undefined ? { stack: y } : {}) };
 };
 
 /** The side space a page's sections keep by default — what the layout guides draw as padding (G-2). Stored fluid units. */
@@ -5424,7 +5442,8 @@ export type SectionFlag = boolean | "gridBand";
  *  columns sit one gap apart instead of two side spaces and a gap — 80px apart against 30px to the edge, seen at 1536
  *  in the HEADED UAT. It stays when the columns stack, because it is the row's, not the columns'. */
 export function gridBandOwnsGutter(band: BoxNode): boolean {
-  return !!band.onPageGrid && !!band.rowBand && bandGutter(band) > 0;
+  // a row made since 2026-10-15 has no gap until one is set, and is still a row of the page (E-6 #3): its columns are counted
+  return !!band.onPageGrid && !!band.rowBand && (bandGutter(band) > 0 || (isBare(band) && bandColumns(band) >= 2 && !isMenuLine(band)));
 }
 
 /**
@@ -6490,9 +6509,10 @@ export function bandGutter(band: BoxNode): number {
   // column's give-back `calc(100% - gut)` change nothing you can see, but each rounds to the browser's 1/64px, and in a
   // menu that hugs its links the column came out one unit short of them — "Contact" wrapped on the PUBLISHED page at
   // 1024 · 1280 · 1366 · 1440 · 1550 · 1650 · 1750 (7 of 20 widths measured), and on the canvas at Wide.
-  const columns = (band.children ?? []).filter((k) => !isFloating(k) && !k.hidden).length;
-  return band.rowBand && columns >= 2 && !isMenuLine(band) ? gapOf(band).x : 0;
+  return band.rowBand && bandColumns(band) >= 2 && !isMenuLine(band) ? gapOf(band).x : 0;
 }
+/** The columns of a band: what sits in it, less what floats or is hidden. */
+const bandColumns = (band: BoxNode) => (band.children ?? []).filter((k) => !isFloating(k) && !k.hidden).length;
 
 /**
  * COLUMNS SIDE BY SIDE KEEP A GAP, AND THE LINE STILL FITS (S1-a; the user, 2026-09-30: 1rem, the widths give way).

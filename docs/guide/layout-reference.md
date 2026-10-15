@@ -234,15 +234,22 @@ Opened by the **Layout guides** button in the top bar (the grid icon), or right-
 
 | Control | What it does | Notes |
 |---------|-------------|-------|
-| **Phone · Tablet · Laptop · Desktop · Wide** | Which screen the settings below are for. | — |
-| **Columns on …** (− / number / +) | The number of columns on that screen. Default 12 from a tablet up, 6 on a phone. Every block keeps its share (half stays half); Undo puts it back. | Per screen |
-| **Row lines in the guides** | Draws the row lines as well as the column lines. | — |
-| **Row step** | The height of one grid row (default 1.5rem) — what **Rows tall** counts in. | — |
-| **Side space (padding)** | Breathing room on all four page edges. Default 1–1.25rem (1rem on a phone, growing to 1.25rem wide). 0 puts every block against the page edge. | All four sides |
-| **Space between columns** | Gap between blocks side by side (across). Default about 0.75–1.5rem. | Per screen |
-| **Space between rows** | Gap between wrapped lines (down). Default about 0.7–1.4rem. | Per screen |
+| **Phone · Tablet · Laptop · Desktop · Wide** | Which screen the settings below are for — and the canvas switches to that screen, so you see what you change. | — |
+| **Columns on …** (− / number / +) | The number of columns on that screen. Default 12 from a tablet up, 6 on a phone. Every block keeps its share (half stays half); Undo puts it back. The lines on the canvas change as you click. | Per screen |
+| **Row lines in the guides** | Draws the row lines as well as the column lines. Changing the rows or the row height turns them on. | — |
+| **Rows on this page** (− / number / +) | Divides the page, as tall as it is now, into that many rows; the row height follows. A page grows with what is on it, so the count changes as you add blocks. | — |
+| **Row height** | The height of one grid row (default 1.5rem) — what **Rows tall** counts in. Set it, and the row count follows. | — |
+| **Side space (padding)** | Room at the page's four edges. A page made since 15 October 2026 has none until you add it; pages made before keep 1–1.25rem. While you hold the slider the space is shaded on the page with its size. | All four sides |
+| **Space between columns** | Gap between blocks side by side (across). None until you add it on a new page. Shaded on the page, with its size, while you hold the slider. | Per screen |
+| **Space between rows** | Gap between blocks one under another — the page's own rows on a new page, and lines that wrap. None until you add it. Shaded while you hold the slider. | Per screen |
 | **This page uses its own grid** | The settings above apply to this page only; unticked, they are shared by every page of the site. | — |
 | **Reset to default** | Puts every setting in the panel back to its default. | — |
+
+The panel sits at the right of the window, over the Inspector, so it never covers the page you are changing; on a phone or a
+tablet it opens inside **More**.
+
+**Words at the edge.** On a page with no side space, words can sit right on the page's edge. **Page check** says so (a
+suggestion — it never stops you publishing) and its **Add space at the sides** button sets the side space to about 1rem on a phone.
 
 Each setting reads "At the default" or "Follows the default" until you change it.
 

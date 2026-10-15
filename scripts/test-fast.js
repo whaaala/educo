@@ -97,6 +97,7 @@ const INVARIANT_SPECS = [
   "tests/e2e/masonry.spec.ts",
   "tests/e2e/masonry-builder.spec.ts",
   "tests/e2e/spacing-gestures.spec.ts",
+  "tests/e2e/page-grid-panel.spec.ts",
   "tests/e2e/photo-gallery.spec.ts",
   "tests/e2e/pager-hero.spec.ts",
   "tests/e2e/add-without-asking.spec.ts",

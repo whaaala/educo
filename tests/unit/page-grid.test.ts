@@ -1,12 +1,23 @@
 import { describe, it, expect } from "vitest";
-import { type BoxNode, type Breakpoint, SPACE_DEFAULT, SPACE_GRID, spaceDefaults, outerDefaults, gapOf, insertBox, normalizeRowBands, markPageGrid, u, createContainer, makeRowBand, sectionContent, gridBandOwnsGutter, pageBandInset, rowNarrowsAt, rowQueryCss, childStyle, tabletPlaces, rowSide, outerSpaceDefaults, spanAt, setSpan, resolveResponsive, lineUpWithGrid, isPageRow, containerStyle, pageRowCells, pageRowTracks, pageRowSlot, linesAt, setLinesAt, fullWidthAt, updateBoxResponsive, setFreeInset, slideFreeAt, fitStepAt, FRAME_CSS, frameRemAt, frameCss, pageFrameEnds, outerSpaceCSS, paddingCSS, rowSideRemAt } from "@/lib/box-model";
-import { blockForKind } from "@/lib/box-presets";
+import { type BoxNode, type Breakpoint, SPACE_DEFAULT, SPACE_GRID, spaceDefaults, outerDefaults, gapOf, insertBox, normalizeRowBands, markPageGrid, u, createContainer as newContainer, makeRowBand as newRowBand, sectionContent, gridBandOwnsGutter, pageBandInset, rowNarrowsAt, rowQueryCss, childStyle, tabletPlaces, rowSide, outerSpaceDefaults, spanAt, setSpan, resolveResponsive, lineUpWithGrid, isPageRow, containerStyle, pageRowCells, pageRowTracks, pageRowSlot, linesAt, setLinesAt, fullWidthAt, updateBoxResponsive, setFreeInset, slideFreeAt, fitStepAt, FRAME_CSS, frameRemAt, frameCss, pageFrameEnds, outerSpaceCSS, paddingCSS, rowSideRemAt } from "@/lib/box-model";
+import { blockForKind as newBlock } from "@/lib/box-presets";
 import { COMPONENT_CATALOGUE } from "@/lib/component-catalogue";
-import { emptyPageRoot, siteFromRoot, setPageGrid, applyPageGrid, addPage } from "@/lib/box-site";
+import { emptyPageRoot as newPageRoot, siteFromRoot, setPageGrid, applyPageGrid, addPage } from "@/lib/box-site";
 import { renderSitePage, SKIP_LINK_CSS } from "@/lib/box-export";
 import { DEFAULT_THEME } from "@/lib/site-storage";
 import { pageCheck } from "@/lib/semantics";
 import { PAGE_GRID_DEFAULT, columnsAt, spanOf, snapShare, spanLabel, spanText, resolvePageGrid, gridSpaceOf, gridTemplate, spanOfWidth, spanOfRect, snapEdgePx, rowsToMinHeight, rowsOf, rowTrackCount } from "@/lib/page-grid";
+
+/**
+ * These suites hold the page grid's SPACING ARITHMETIC (side space, gaps, the fit rule), which is what a page SAVED before
+ * 2026-10-15 still draws. A block made now carries no space until the user adds it (`bare`; tests/unit/space-by-default.test.ts),
+ * so the blocks here are built as a saved page holds them.
+ */
+const saved = <T extends BoxNode>(n: T): T => { const { bare: _bare, ...rest } = n; return { ...rest, ...(n.children ? { children: n.children.map(saved) } : {}) } as T; };
+const createContainer = (...a: Parameters<typeof newContainer>) => saved(newContainer(...a));
+const makeRowBand = (...a: Parameters<typeof newRowBand>) => saved(newRowBand(...a));
+const blockForKind = (...a: Parameters<typeof newBlock>) => saved(newBlock(...a));
+const emptyPageRoot = (...a: Parameters<typeof newPageRoot>) => saved(newPageRoot(...a));
 
 /**
  * THE PAGE GRID IN THE ENGINE (AC-37b, BATCH G-1). Scenarios: tests/features/components/website/page-grid.feature.

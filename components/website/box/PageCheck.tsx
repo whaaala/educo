@@ -19,13 +19,15 @@ export function pageCheckCount(root: BoxNode): number {
   return pageCheck(root).length;
 }
 
-export default function PageCheck({ root, isOpen, onClose, onShow, onPatch }: {
+export default function PageCheck({ root, isOpen, onClose, onShow, onPatch, onSideSpace }: {
   root: BoxNode;
   isOpen: boolean;
   onClose: () => void;
   /** Select the block on the canvas (and close). */
   onShow: (id: string) => void;
   onPatch: (id: string, patch: Partial<BoxNode>) => void;
+  /** Set the site's side space (Layout guides' "Side space") — the fix for words at the page's edge. */
+  onSideSpace?: (value: number) => void;
 }) {
   const sem = resolvePage(root);
   const issues = pageCheck(root, sem);
@@ -56,6 +58,9 @@ export default function PageCheck({ root, isOpen, onClose, onShow, onPatch }: {
                 )}
                 {i.kind === "heading-jump" && i.fix?.level && (
                   <Button size="sm" onClick={() => onPatch(i.id, { level: i.fix!.level })}>Make it level {i.fix.level}</Button>
+                )}
+                {i.kind === "words-at-edge" && i.fix?.sideSpace !== undefined && onSideSpace && (
+                  <Button size="sm" onClick={() => onSideSpace(i.fix!.sideSpace!)}>Add space at the sides</Button>
                 )}
                 <Button size="sm" variant="ghost" onClick={() => onShow(i.id)}>Show me</Button>
               </li>

@@ -505,6 +505,66 @@ function LayoutGuides({ view, side, unit, color }: { view: LayoutGuidesView; sid
   );
 }
 
+/** Which of the page grid's spaces is being changed in its panel — shaded on the canvas while its slider is held or focused. */
+export type SpaceShadeKind = "side" | "columnGap" | "rowGap";
+
+/**
+ * YOU SEE THE SPACE YOU ARE CHANGING (E6-5, the user 2026-10-15: "I don't exactly know what I'm doing… I don't see it straight
+ * away on the canvas"). While a page grid slider is held or focused, the space it moves is hatched over the page with its size:
+ * the page's frame (Side space), every gap between blocks side by side (columns), every gap between blocks one under another
+ * (rows). Measured from the drawn blocks after every change, so it moves with the slider. Never published, never clickable.
+ * ponytail: gaps a block set for itself are shaded too — they sit in the same places, and the label says their size.
+ */
+function SpaceShade({ kind, side, unit, color }: { kind: SpaceShadeKind; side: string; unit: string; color: string }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [shades, setShades] = useState<{ x: number; y: number; w: number; h: number; label: string }[]>([]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- re-measured after EVERY render on purpose: any change to the page moves what it shades; `setShades` bails out when nothing moved
+  useLayoutEffect(() => {
+    const me = ref.current; const page = me?.parentElement; if (!me || !page) return;
+    const box = me.getBoundingClientRect(); const zoom = box.width / (me.offsetWidth || 1) || 1;
+    const rem = parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
+    const at = (l: number, t: number, r: number, b: number) => ({ x: (l - box.left) / zoom, y: (t - box.top) / zoom, w: (r - l) / zoom, h: (b - t) / zoom,
+      label: `${+(((kind === "rowGap" ? b - t : r - l) / zoom) / rem).toFixed(2)}rem` });
+    const out: ReturnType<typeof at>[] = [];
+    if (kind === "side") {
+      // the frame at the top and bottom is the page root's padding; at the sides it is `side` (drawn by CSS, so measured off a probe)
+      const pr = page.querySelector<HTMLElement>("[data-box-id]"); const cs = pr && getComputedStyle(pr);
+      const probe = me.querySelector<HTMLElement>("[data-side-probe]"); const sw = (probe?.getBoundingClientRect().width ?? 0);
+      if (sw >= 1) { out.push(at(box.left, box.top, box.left + sw, box.bottom), at(box.right - sw, box.top, box.right, box.bottom)); }
+      const pt = parseFloat(cs?.paddingTop ?? "0") * zoom, pb = parseFloat(cs?.paddingBottom ?? "0") * zoom;
+      if (pt >= 1) out.push({ ...at(box.left, box.top, box.right, box.top + pt), label: `${+(pt / zoom / rem).toFixed(2)}rem` });
+      if (pb >= 1) out.push({ ...at(box.left, box.bottom - pb, box.right, box.bottom), label: `${+(pb / zoom / rem).toFixed(2)}rem` });
+    } else {
+      for (const host of page.querySelectorAll<HTMLElement>("[data-box-id]")) {
+        const kids = [...host.querySelectorAll<HTMLElement>("[data-box-id]")]
+          .filter((k) => k.parentElement?.closest("[data-box-id]") === host && !["absolute", "fixed"].includes(getComputedStyle(k).position))
+          .map((k) => k.getBoundingClientRect()).filter((r) => r.width > 0 && r.height > 0);
+        for (let i = 0; i < kids.length; i++) for (let j = 0; j < kids.length; j++) {
+          const a = kids[i], b = kids[j]; if (i === j) continue;
+          const overlapY = Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top), overlapX = Math.min(a.right, b.right) - Math.max(a.left, b.left);
+          // the NEAREST neighbour on each side only, so a gap is shaded once
+          if (kind === "columnGap" && overlapY > 0 && b.left - a.right >= 1 && !kids.some((c) => c !== a && c !== b && c.left >= a.right - 0.5 && c.right <= b.left + 0.5 && Math.min(c.bottom, a.bottom) > Math.max(c.top, a.top)))
+            out.push(at(a.right, Math.max(a.top, b.top), b.left, Math.min(a.bottom, b.bottom)));
+          if (kind === "rowGap" && overlapX > 0 && b.top - a.bottom >= 1 && !kids.some((c) => c !== a && c !== b && c.top >= a.bottom - 0.5 && c.bottom <= b.top + 0.5 && Math.min(c.right, a.right) > Math.max(c.left, a.left)))
+            out.push(at(Math.max(a.left, b.left), a.bottom, Math.min(a.right, b.right), b.top));
+        }
+      }
+    }
+    setShades((prev) => (JSON.stringify(prev) === JSON.stringify(out) ? prev : out));
+  });
+  const fill = `repeating-linear-gradient(45deg, color-mix(in oklch, ${color} 45%, transparent) 0 0.125rem, color-mix(in oklch, ${color} 15%, transparent) 0.125rem 0.375rem)`;
+  return (
+    <div ref={ref} aria-hidden="true" data-space-shade={kind} style={{ ["--box-u" as string]: unit, position: "absolute", inset: 0, pointerEvents: "none", zIndex: CHROME_Z.guides }}>
+      <div data-side-probe style={{ position: "absolute", width: side, height: 0, visibility: "hidden" }} />
+      {shades.map((s, i) => (
+        <div key={i} data-shade style={{ position: "absolute", left: s.x, top: s.y, width: s.w, height: s.h, backgroundImage: fill, outline: `1px solid color-mix(in oklch, ${color} 70%, transparent)`, outlineOffset: "-1px", display: "grid", placeItems: "center", overflow: "visible" }}>
+          <span style={{ background: color, color: guideInk(color), font: "500 0.6875rem/1 ui-monospace, monospace", padding: "0.2rem 0.35rem", borderRadius: "0.1875rem", whiteSpace: "nowrap" }}>{s.label}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 /**
  * THE GUIDES' LINES, IN SCREEN SPACE (G3-7). Drawn inside the zoomed page, a line one screen pixel wide falls BETWEEN pixels
  * wherever the zoom puts it there, and the browser smears it lighter across two — at a 61 % fit some lines looked darker than
@@ -535,8 +595,11 @@ function GuideLines({ color, rows }: { color: string; rows: boolean }) {
     const soon = () => { cancelAnimationFrame(raf); raf = requestAnimationFrame(measure); };
     measure();
     const ro = new ResizeObserver(soon); const g = document.querySelector("[data-layout-guides]"); if (g) ro.observe(g);
+    // …and a change of the GRID itself (E6-11, the user 2026-10-15: "it doesn't show me straight away"): more columns or another row
+    // height leave the guides' box the same size, so nothing re-measured and the lines stayed as they were until the page scrolled
+    const mo = new MutationObserver(soon); if (g) mo.observe(g, { attributes: true, childList: true });
     window.addEventListener("scroll", soon, true); window.addEventListener("resize", soon); window.addEventListener("transitionend", soon, true);
-    return () => { cancelAnimationFrame(raf); ro.disconnect(); window.removeEventListener("scroll", soon, true); window.removeEventListener("resize", soon); window.removeEventListener("transitionend", soon, true); };
+    return () => { cancelAnimationFrame(raf); ro.disconnect(); mo.disconnect(); window.removeEventListener("scroll", soon, true); window.removeEventListener("resize", soon); window.removeEventListener("transitionend", soon, true); };
   }, []); // once: a ResizeObserver, scroll, resize and the transition re-measure it (measuring every render would loop on its own state)
   if (!m) return null;
   const { clip } = m, from = Math.max(m.top, clip.top), to = Math.min(m.bottom, clip.bottom);
@@ -768,7 +831,7 @@ function ChromeMirror({ blockId, children }: { blockId: string; children: ReactN
 }
 
 export default function BoxCanvas({
-  root, theme, editable = true, selectedId, onSelectId, selectedIds, onSelectIds, onChange, onResized, minHeight = 600, breakpoint = "base", showHidden = false, marqueeRoom, guides = null, pageGrid,
+  root, theme, editable = true, selectedId, onSelectId, selectedIds, onSelectIds, onChange, onResized, minHeight = 600, breakpoint = "base", showHidden = false, marqueeRoom, guides = null, pageGrid, spaceShade = null,
 }: {
   root: BoxNode;
   theme: SiteTheme;
@@ -787,6 +850,7 @@ export default function BoxCanvas({
   showHidden?: boolean;    // draw blocks hidden at this breakpoint faintly (off: they are gone, as on the published page)
   guides?: LayoutGuidesView | null; // the layout guides (G-2): the page grid drawn over the canvas while on; never published
   pageGrid?: PageGridSettings;      // the page grid in force (resolved) — a page row's resized edge snaps to its lines (G-3 (2))
+  spaceShade?: SpaceShadeKind | null; // the page grid space being changed in its panel, hatched over the page (E6-5)
 }) {
   const guideHue = guideColor(theme.background);
   const [menuFor, setMenuFor] = useState<string | null>(null); // which box's actions dropdown is open
@@ -4093,6 +4157,7 @@ export default function BoxCanvas({
       )}
       {editable && guides && <LayoutGuides view={guides} side={frameCss(root)} unit={baseUnit(root.baseFont ?? 10)} color={guideHue} />}
       {editable && guides && <GuideLines color={guideHue} rows={guides.rows} />}
+      {editable && spaceShade && <SpaceShade kind={spaceShade} side={frameCss(root)} unit={baseUnit(root.baseFont ?? 10)} color={guideHue} />}
       {/* Marquee (rubber-band) selection rectangle. Portaled so it's never clipped. */}
       {marquee && createPortal(
         <div aria-hidden="true" style={{ position: "fixed", left: Math.min(marquee.x0, marquee.x), top: Math.min(marquee.y0, marquee.y), width: Math.abs(marquee.x - marquee.x0), height: Math.abs(marquee.y - marquee.y0), pointerEvents: "none", zIndex: CHROME_Z.marquee }} className="border-2 border-dashed border-indigo-500 bg-indigo-500/10 rounded" />,
