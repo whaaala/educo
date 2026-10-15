@@ -9,12 +9,17 @@ const config = {
 
   future: {
     v4: true,
+    // The site is published as a multi-file Artifact at an address we do not control (BATCH D-4): the hash
+    // router builds ONE index.html with relative asset paths, so it works under any path, even file://.
+    experimental_router: 'hash',
   },
 
   url: 'https://educo.app',
   baseUrl: '/',
 
   onBrokenLinks: 'throw',
+
+  clientModules: ['./src/clientModules/escClosesMenu.js'],
 
   i18n: {
     defaultLocale: 'en',

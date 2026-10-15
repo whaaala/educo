@@ -157,4 +157,20 @@ describe("docs-guard", () => {
     const css = readFileSync(join(__dirname, "../../docs-site/src/css/custom.css"), "utf8").replace(/\r\n/g, "\n");
     expect(css).not.toMatch(/font-size:\s*var\(--ifm-font-size-base\)/);
   });
+
+  // D-4: the published guide is this build, served at an address we do not control — only the hash router's relative
+  // `./assets/…` loads there (the browser router asks for `/assets/…` at the host's root)
+  it("the site builds with the hash router, so the published guide loads at any address", () => {
+    const config = readFileSync(join(__dirname, "../../docs-site/docusaurus.config.js"), "utf8").replace(/\r\n/g, "\n");
+    expect(config).toMatch(/experimental_router:\s*'hash'/);
+  });
+
+  // D4-6: the Artifact host wraps the page in a skeleton with body{color:#000;background:#fff}; Infima colours html only,
+  // so unless body restates the theme, dark mode is black words on white
+  it("body restates the theme's colours over the host's skeleton", () => {
+    const css = readFileSync(join(__dirname, "../../docs-site/src/css/custom.css"), "utf8").replace(/\r\n/g, "\n").replace(/\/\*[\s\S]*?\*\//g, "");
+    const body = /(^|\n)body\s*\{([^}]*)\}/.exec(css)?.[2] ?? "";
+    expect(body).toMatch(/(^|[;\s])color:\s*var\(--ifm-font-color-base\)/);
+    expect(body).toMatch(/background-color:\s*var\(--ifm-background-color\)/);
+  });
 });
