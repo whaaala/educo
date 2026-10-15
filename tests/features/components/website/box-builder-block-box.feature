@@ -111,7 +111,7 @@ Feature: A block IS the box — clean selection, sizing and content position
   # hint and not content; a box with content shrinks to whatever that content permits, and no further.
 
   Scenario: An empty box shrinks to almost nothing
-    Given an empty section showing the "Empty — drag a block in" hint
+    Given an empty section showing the "Drop a block here" hint
     When I drag its bottom edge all the way up
     Then it shrinks to a few pixels
     Because the hint is editor chrome, not content, and must never set the floor

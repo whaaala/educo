@@ -17,7 +17,7 @@ import { BREAKPOINTS_EM } from "@/lib/educo-ui/base";
 import { RUNG_MEASURE, RUNG_PX, type RungName } from "@/lib/educo-ui/layout";
 import { hasItemEffects, itemEffectsCss, revealEffect, REVEAL_DUR, REVEAL_EASE, REVEAL_VIEW_RANGE } from "@/lib/interactions";
 import { PAGE_Z, clampPageZ } from "@/lib/educo-ui/stacking";
-import { remLen, SHADOW_SCALE } from "@/lib/educo-ui/tokens";
+import { remLen, SHADOW_SCALE, SPACE_STEPS } from "@/lib/educo-ui/tokens";
 import { contrastRatio, hexToRgb, oklchToRgb, rgbToHex, rgbToOklch } from "@/lib/educo-ui/color";
 import { colorToCSS } from "@/components/shared/ColorPalettePicker";
 import { PAGE_GRID_DEFAULT, columnsAt, gridTemplate, rowTrackCount } from "@/lib/page-grid";
@@ -5392,6 +5392,34 @@ export function padSide(node: BoxNode, side: "Top" | "Right" | "Bottom" | "Left"
 export function gapOf(node: BoxNode): { x: number; y: number } {
   const d = spaceDefaults(node);
   return { x: node.gapX ?? node.gap ?? d.gapX, y: node.gapY ?? node.gap ?? d.gapY };
+}
+
+/**
+ * THE SPACING HANDLES ON THE CANVAS (E-6 (3), the user 2026-10-15: "make sure we can adjust it"). A dragged space lands on the
+ * spacing scale (`SPACE_STEPS`, 0 → 96); Shift takes every other step (the user's pick: a bigger step), and nothing goes below 0.
+ */
+export function snapSpace(v: number, big = false): number {
+  const steps = big ? SPACE_STEPS.filter((_, i) => i % 2 === 0) : SPACE_STEPS;
+  const c = Math.max(0, Math.min(steps[steps.length - 1], v));
+  return steps.reduce((a, b) => (Math.abs(b - c) < Math.abs(a - c) ? b : a));
+}
+/** One step up or down the scale from `v` (an arrow key on a focused handle); with Shift two (E6-15: one step of the coarse
+ *  scale was 4 → 8, no bigger than a plain step). */
+export function stepSpace(v: number, dir: 1 | -1, big = false): number {
+  const one = (x: number) => (dir > 0 ? SPACE_STEPS.find((s) => s > x + 0.01) : [...SPACE_STEPS].reverse().find((s) => s < x - 0.01)) ?? (dir > 0 ? SPACE_STEPS[SPACE_STEPS.length - 1] : 0);
+  return big ? one(one(v)) : one(v);
+}
+export type SpaceSide = "Top" | "Right" | "Bottom" | "Left";
+const OPPOSITE: Record<SpaceSide, SpaceSide> = { Top: "Bottom", Bottom: "Top", Left: "Right", Right: "Left" };
+/** What a spacing handle writes: its side; with Alt the opposite side too; with Alt + Shift all four (Figma · Webflow). */
+export function spacePatch(kind: "padding" | "margin", side: SpaceSide, v: number, { alt = false, all = false } = {}): Partial<BoxNode> {
+  const sides: SpaceSide[] = all ? ["Top", "Right", "Bottom", "Left"] : alt ? [side, OPPOSITE[side]] : [side];
+  return Object.fromEntries(sides.map((s) => [`${kind}${s}`, v])) as Partial<BoxNode>;
+}
+/** What a gap handle writes: the one shared `gap` while the box spaces one way only and has no per-axis value, else that axis. */
+export function gapPatch(node: BoxNode, axis: "x" | "y", v: number, bothAxes: boolean): Partial<BoxNode> {
+  const key = axis === "x" ? "gapX" : "gapY";
+  return bothAxes || node[key] !== undefined ? { [key]: v } : { gap: v };
 }
 
 /** Per-side padding CSS (responsive rem): a side override falls back to the general `padding`, then the default. */

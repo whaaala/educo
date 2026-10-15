@@ -451,7 +451,7 @@ Dragging the **bottom** edge sets that **whole row's height**, so the row grows 
 
 ### How small a box can go
 
-**An empty box shrinks to almost nothing.** The *"Empty — drag a block in"* message is a hint for you, not content on the page, so it never sets a floor — drag the bottom edge all the way up and the box follows.
+**An empty box shrinks to almost nothing.** The *"Drop a block here"* message is a hint for you, not content on the page, so it never sets a floor — drag the bottom edge all the way up and the box follows.
 
 A box you haven't sized yet stands about **8rem** tall so you can see it, click it and drop into it — the same height the published page gives an empty coloured box. That's an offer, not a rule: the moment you set a height, your height is what you get, on the canvas and in the published page.
 

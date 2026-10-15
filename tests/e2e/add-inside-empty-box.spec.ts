@@ -42,12 +42,62 @@ const pageBox = (page: Page, id: string) => page.locator(`[data-box-id="${id}"]`
   return { width: r.width / Z, height: r.height / Z };
 }).catch(() => null);
 
-const addButton = (page: Page) => page.locator(`[data-box-id="A"] button[aria-label="Choose a block to add inside"]`);
+const plus = (page: Page) => page.locator(`[data-box-id="A"] button[aria-label="Choose a block to add inside"]`);
+/** The + is on the SELECTED empty box only (E-6 (4)): a person clicks the box, then its +. */
+const addButton = (page: Page) => ({
+  click: async () => {
+    const a = (await page.locator('[data-box-id="A"]').boundingBox())!;
+    await page.mouse.click(a.x + a.width * 0.2, a.y + a.height * 0.8);
+    await page.waitForTimeout(300);
+    await plus(page).click();
+  },
+});
 
 test.describe("the + inside an empty box", () => {
+  test("an empty box that is NOT selected offers no button, and its words are quiet (E-6 (4))", async ({ page }) => {
+    // The user, 2026-10-03: "do we actually need that in the center… that doesn't make the user click on it by mistake".
+    await seedEmptyStack(page);
+    expect(await plus(page).count(), "no + until the box is selected").toBe(0);
+    const words = page.locator('[data-box-id="A"] [data-ph-words]');
+    await expect(words).toHaveText("Drop a block here");
+    expect(await words.getAttribute("aria-hidden"), "a screen reader skips the hint").toBe("true");
+    expect(await words.evaluate((el) => getComputedStyle(el).pointerEvents), "the words are not a click target").toBe("none");
+  });
+
+  test("its words read on a box coloured dark (E6-4, E6-22)", async ({ page }) => {
+    // measured 3.7:1 in the Light editor on #1e3a8a, the chip letting the blue through — every background under them composited
+    await seedSite(page, sitePage([{ id: "A", type: "container", direction: "column", padding: 0, gap: 0, width: "60%", minHeight: 180, background: "#1e3a8a", children: [] }]));
+    await page.waitForSelector('[data-box-id="A"]', { timeout: 15000 });
+    // in EVERY editor theme (E6-23: a class run together read in Light and broke in Dark), chosen the way a person does
+    for (const theme of ["Light", "Dark", "Midnight", "Purple"]) {
+      if (theme !== "Light") {
+        const sw = page.getByRole("button", { name: "Change theme" }).first();
+        const inMore = !(await sw.isVisible().catch(() => false));
+        if (inMore) await page.getByRole("button", { name: "More", exact: true }).first().click();
+        await sw.click(); await page.getByRole("menuitemradio", { name: new RegExp(theme) }).first().click(); await page.waitForTimeout(300);
+        if (inMore) await page.keyboard.press("Escape");
+      }
+      const cr = await page.locator('[data-box-id="A"] [data-ph-words]').evaluate((el) => {
+        const cv = document.createElement("canvas"); cv.width = cv.height = 1; const x = cv.getContext("2d", { willReadFrequently: true })!;
+        x.fillStyle = "#fff"; x.fillRect(0, 0, 1, 1);
+        const chain: Element[] = []; for (let n: Element | null = el; n; n = n.parentElement) chain.unshift(n);
+        for (const n of chain) { x.fillStyle = getComputedStyle(n).backgroundColor; x.fillRect(0, 0, 1, 1); }
+        const under = [...x.getImageData(0, 0, 1, 1).data].slice(0, 3);
+        x.fillStyle = getComputedStyle(el).color; x.fillRect(0, 0, 1, 1); const ink = [...x.getImageData(0, 0, 1, 1).data].slice(0, 3);
+        const lum = ([r, g, b]: number[]) => { const f = (v: number) => { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); }; return 0.2126 * f(r) + 0.7152 * f(g) + 0.0722 * f(b); };
+        const a = lum(ink), b = lum(under); return (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05);
+      });
+      expect(cr, `${theme}: the hint's words against what is really under them`).toBeGreaterThanOrEqual(4.5);
+    }
+  });
+
   test("is a real button, not a picture of one", async ({ page }) => {
     await seedEmptyStack(page);
-    expect(await addButton(page).count(), "the empty box has an add control").toBe(1);
+    const a = (await page.locator('[data-box-id="A"]').boundingBox())!;
+    await page.mouse.click(a.x + a.width * 0.2, a.y + a.height * 0.8);
+    await page.waitForTimeout(300);
+    const addButton = plus;
+    expect(await addButton(page).count(), "the selected empty box has an add control").toBe(1);
     // The hint around it is deliberately `pointer-events: none`, so the button has to opt back in or it is
     // unclickable however real it looks — which is precisely what it was.
     const clickable = await addButton(page).evaluate((el) => getComputedStyle(el).pointerEvents !== "none");

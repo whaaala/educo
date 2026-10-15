@@ -3509,32 +3509,34 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
       the tile entry point is B's
     - `[x]` L4-j · MY OWN PROBE: the "cut off" check compared the picker with the wrong box and said CLEAN with it cut —
       it now measures against the nearest scrolling box's client width, frame AND squares; proven RED on the 360 build
-- `[ ]` **BATCH E-6 · The empty-box hint is not a button** (RENAMED from E-1 by the tree audit 2026-10-06 — the id clashed with the closed E-1 · The editor on tablets and phones) (area: editor chrome · 3 changes after the user's 2026-10-15 decision — NEXT after A-1, before D-4 — queued, asked by the user
+- `[>]` **BATCH E-6 · The empty-box hint is not a button** (RENAMED from E-1 by the tree audit 2026-10-06 — the id clashed with the closed E-1 · The editor on tablets and phones) (area: editor chrome · 3 changes after the user's 2026-10-15 decision — NEXT after A-1, before D-4 — queued, asked by the user
   2026-10-03: "do we actually need that in the center… that doesn't make the user click on it by mistake"): every empty box
   draws a large centred "+  Empty — drag a block in, or click to add" that is one big click target. PROPOSED (the user to
   confirm when it opens): a faint dashed outline and a quiet, NOT clickable "Drop a block here"; the "+" only on the
   SELECTED empty box, small; "Add a block inside" stays in the toolbar and the Inspector, with a keyboard shortcut — as
   Webflow / Wix Studio do. Every theme, every rung, keyboard and screen reader (the hint is `aria-hidden`, the button named)
-  - `[ ]` DECIDED by the user 2026-10-15 (looking at two stacks side by side on the A-1 build): (1) the empty-box design as
+  - `[x]` (BUILT: (1) as change (4); (2) superseded minutes later by the line below, built as changes (1) + (3)) DECIDED by the user 2026-10-15 (looking at two stacks side by side on the A-1 build): (1) the empty-box design as
     PROPOSED above, AND (2) NEW — the default space stays (rule of 2026-09-29, measured: 1.1rem section space above / below,
     1.1rem inner spacing, 1.2rem gap between columns) but is SHOWN: when a block is selected its padding, margin and gap are
     drawn as shaded bands labelled with their size, dragged smaller / bigger like Webflow / Figma, double-click → 0, one Undo
     each; the user's words: "the spaces are not there unless I add it… why is it there automatically" — the space read as a
     mistake because nothing said it was space. ORDER (the user): this batch NEXT after A-1 closes, BEFORE D-4. RULE RS: the
     spacing overlay is new UI — its research (how Webflow, Figma, Framer, Wix Studio draw and drag spacing) comes first
-  - `[ ]` CHANGED by the user 2026-10-15, minutes later — (2) becomes: **NO space at all unless the user adds it** ("make sure
+  - `[x]` (BUILT as changes (1) and (3), HEADED UAT U1 + U3 2026-10-15) CHANGED by the user 2026-10-15, minutes later — (2) becomes: **NO space at all unless the user adds it** ("make sure
     there are no spaces at all unless I add it myself… make sure it doesn't look like the space is added… make sure we can
     adjust it… design that thing a lot better"). REVERSES the 2026-09-29 "Space by default" rule — CLAUDE.md rewritten the
     same day ("No space unless you add it — and every space is visible and adjustable"), guard `claude-md-rules.test.ts`
     175 / 175. So E-6 (2) is: new blocks arrive with 0 padding / margin / gap (saved pages keep theirs); the spacing the user
     adds is drawn and dragged on the canvas (the overlay, designed properly); `space-by-default.test.ts`, the page audit's
     gutter floor and `component-breathing` / `page-audit-whitespace` specs rewritten to the new rule
-  - `[>]` RESEARCH (RULE RS) — mine DONE 2026-10-15: `docs/web-anatomy/spacing-overlay.md` (Webflow · Figma · Framer · Wix
+  - `[x]` (SIGNED by the user 2026-10-15, "go with your recommendation": the overlay as recommended, Shift = a bigger step, no
+    frame on a new page; no sources of the user's own were given) RESEARCH (RULE RS) — mine DONE 2026-10-15: `docs/web-anatomy/spacing-overlay.md` (Webflow · Figma · Framer · Wix
     Studio · DevTools, 10 axes, a recommendation per axis, ~40 sources). Gaps it could not close from documentation: exact
     colours / handle sizes, readability over photos, Framer's and Wix's empty stack — a headed look inside each tool would.
     WAITING ON THE USER: their own sources; sign-off of the "enough" checklist; Shift = bigger step (Figma/Framer) or all
     four sides (Webflow); does "no space" include the PAGE's frame (G-3c) for new pages?
-  - `[>]` E6-1 · THE USER FOUND IT (2026-10-15): adding a BACKGROUND COLOUR to a stack makes its space disappear — space must
+  - `[x]` (CLOSED on the HEADED UAT 2026-10-15, U1: 1280 Light and 768 Dark — a background on the Stack, y and height unchanged to
+    the pixel, padding / margin 0) E6-1 · THE USER FOUND IT (2026-10-15): adding a BACKGROUND COLOUR to a stack makes its space disappear — space must
     never depend on whether a box has a background. REPRODUCED THROUGH THE UI 2026-10-15 (`scripts/uat/probe-e6-1.js`,
     HEADED, 1280, "Stack" and "Side by side" tiles): background #1e3a8a → the page's padding above and below (17.6px, the
     G-3c frame) goes to 0 and the stack jumps 100 → 88px, while its own inner padding grows 17.6 → 26.4px. Two default rules
@@ -3543,7 +3545,7 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
     FIXED 2026-10-15 by change (1) (uncommitted — the gate waits on the audit decision below): HEADED re-run on a FRESH build,
     both tiles: padding / margin / gap 0 before AND after the background, the stack stays at y 88 (screenshots
     `scripts/uat/e6-out/`). Closes on the batch's HEADED UAT pass
-  - `[>]` E-6 change (1) · NO SPACE UNLESS ADDED — BUILT 2026-10-15 at the user's word ("please fix this so it doesn't have that
+  - `[x]` (committed `f351a07`; HEADED UAT U1 2026-10-15: all seven tiles 0 / 0 / 0 at 1280 and 768) E-6 change (1) · NO SPACE UNLESS ADDED — BUILT 2026-10-15 at the user's word ("please fix this so it doesn't have that
     space"): new blocks carry `bare` → every unset space reads `SPACE_NONE` (0): padding, gap, section space, the page frame,
     the band gutter (`spaceFor`, `frameCss`, `frameRemAt`, `pageFrameEnds`); a new section on a SAVED page brings no frame;
     the page grid panel and the photo gallery setup start at 0. Guard `space-by-default.test.ts` enumerates palette +
@@ -3554,10 +3556,12 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
     - `[x]` E6-3 · MY OWN PROBE: with no gap a new 2-column row stopped being a ROW OF THE PAGE (`gridBandOwnsGutter` needed a
       gutter > 0) → flex band, spans / picture fill / fit steps lost (narrowing 30.8rem → 8.4rem). A new row is a page row
       whatever its gap; saved rows unchanged; guarded, M5
-    - `[ ]` E6-4 · MY OWN (HEADED screenshot): the old empty-box hint is grey on a dark background — unreadable → change (3)
+    - `[x]` E6-4 · MY OWN (HEADED screenshot): the old empty-box hint is grey on a dark background — unreadable → change (4). CLOSED
+      on the HEADED UAT U7: on #1e3a8a the words read 6.94 · 11.44 · 12.87 · 10.74 : 1 in Light · Dark · Midnight · Purple Dream
     - `[x]` E6-6 · MY OWN (HEADED, `probe-e6-5.js`): the Page grid panel read "Side space · Default · 1–1.25rem" on a page whose
       default is now 0 (hard-coded). Reads "Default · 0rem" on a page made now; `PageGridPanel.test.tsx`, mutation-proven (M6)
-  - `[>]` E6-5 · THE USER FOUND IT (2026-10-15): the Page grid panel's sliders "do not show up on the canvas straight away… I
+  - `[x]` (CLOSED on the HEADED UAT 2026-10-15, U2 Dark 1600: Side space 4 strips "3.99rem", rows "2.68rem"; the tabs show
+    Phone 375 · Tablet 768 · Desktop 1280; "Rows on this page" 4 → 4 row lines at once) E6-5 · THE USER FOUND IT (2026-10-15): the Page grid panel's sliders "do not show up on the canvas straight away… I
     don't exactly know what I'm doing". MEASURED THROUGH THE UI (`scripts/uat/probe-e6-5.js`, HEADED, 1897 wide): every slider
     IS live during the drag — but on a page of full-width blocks (the user's) "Space between columns" and "Space between rows"
     move NOTHING (no columns side by side; the page's own rows are not spaced by it — the root's gap is a stored 0), and
@@ -3597,16 +3601,90 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
       words at the page's left / right edge are a SUGGESTION ("words-at-edge", `wordsAtEdge` in `lib/semantics.ts`) with "Add
       space at the sides" (the site's side space 23 = ≥ 1rem on a 360 phone). `semantics.test.ts` + `PageCheck.test.tsx` (M12);
       `page-audit-whitespace.spec` rewritten: a page made now → W7a said; a page saved before → nothing
-    - `[ ]` OWED at the batch's close (RULE DOCS): `docs/guide/layout-reference.md` written for the new panel 2026-10-15 — its
+  - `[x]` (HEADED UAT U3 · U4 · U5 · U6 · U8 2026-10-15, 0 failed) E-6 change (3) · THE BLOCK SPACING OVERLAY — BUILT 2026-10-15 (session E-6b): `SpaceBands` in `BoxCanvas.tsx` (inside the
+    selected block's `ChromeMirror`): inner space a green band, outer an orange band, the gap a hatch in the guides' colour (`spaceColors`
+    in `lib/page-grid.ts`), each labelled in rem; a handle per side (padding mid-edge inside, margin ¾ along outside, ¼ or past the toolbar where it
+    lies over ¾ (E6-18) — clear of the resize handles; 24px hit, 44 on touch) and one per gap axis; snaps to `SPACE_STEPS` (the token scale, `lib/educo-ui/tokens.ts`),
+    Shift bigger, Alt opposite side, Alt+Shift all four, double-click → 0, one Undo per drag (`gesture:` merge key), written per
+    screen (`writeBox`); handles are `role=slider` (arrows, Shift = two steps, Home → 0). Engine: `snapSpace` · `stepSpace` ·
+    `spacePatch` · `gapPatch` (`tests/unit/space-handles.test.ts`). HEADED `probe-e6-3.js` (Stack + 2 Texts built through the UI)
+    - `[x]` E6-14 · MY OWN (HEADED, `probe-e6-3.js`): a Stack holding one line of text (~30px) showed NO inner-space handle — the room
+      test asked for 3 handle-depths. Top and bottom now need only not to meet (2 depths), sides their length; 7 handles on that Stack
+    - `[x]` E6-15 · MY OWN (HEADED, `probe-e6-3.js`): Shift+Arrow on a handle went 4 → 8 — one step of a coarser scale, no bigger than a
+      plain step. Shift now takes two steps of the scale (4 → 12); `space-handles.test.ts`. Closes on the re-run probe
+    - `[x]` E6-16 · MY OWN (HEADED screenshot `e6-3-1280-all.png`): band labels sat under their handles (the gap's size hidden by its
+      pill; the side labels wider than their band, over the words). Labels sit ¾ along the band, only where the band holds them
+    - `[x]` E6-17 · MY OWN (my tool use): a PowerShell `Get-Content -Raw` → `WriteAllText` re-wrote `BoxCanvas.tsx` double-encoded —
+      every non-ASCII character (— → … ≥, 728 runs) turned to mojibake, user-visible strings included. Repaired run by run (cp1252 →
+      UTF-8, `scratchpad/unmojibake.js`); `git diff` against HEAD holds only the intended 20 removed lines. Closes on the HEADED re-run
+    - `[x]` E6-18 · MY OWN (HEADED screenshot `e6-3-768-all.png`): the outer handles ¼ along an edge lay under the block toolbar (at
+      the left) on any block narrower than ~600px. Outer handles ¾ along, labels ¼
+    - `[x]` E6-19 · MY OWN (`text-is-reachable.spec`, 8 fails): the inner handles lie over a block's first words, so a click on them
+      could not select the heading or place the caret (c-21). A still press now falls through to the words (`caretFallthrough`, as
+      the resize handles do); a double-click on a space already 0 writes nothing. `space-handles.spec` "a still click on the words"
+    - `[x]` E6-20 · MY OWN (`add-inside-empty-box.spec` on mobile-chrome, 5 fails): on a phone the finger-sized top inner handle covered
+      the selected empty box's + — unreachable. An empty box shows no inner handles (nothing to space; the Inspector still sets it).
+      `space-handles.spec` "an empty box's + is never under a handle"
+    - `[x]` E6-21 · MY OWN (`text-is-reachable.spec` E3-5 on a phone): the handle and its pill were two more layers over a heading's
+      words, so the still tap's fall-through (`caretFallthrough`, 4 layers) never reached them. The pill and the live chip take no
+      pointer; mutation-proven (the pill taking the pointer fails E3-5). A deeper peel (8) was tried and REMOVED: its mutation failed
+      nothing (RULE M)
+    - `[x]` E6-22 · THE HEADED UAT (U7, Light): "Drop a block here" on a box coloured #1e3a8a read 3.7:1 — the 85 % white chip let the
+      blue through. 95 % white, grey-600. `add-inside-empty-box.spec` "its words read on a box coloured dark", mutation-proven
+    - `[x]` E6-23 · MY OWN (my edit): the chip's classes ran together (`text-gray-600dark:bg-…`) — both lost, so in Dark the words were
+      light grey on white. The space back; the same test now runs in all four editor themes, mutation-proven (fails in Dark)
+    - `[x]` NOT A BUG (measured): `space-handles.spec` read a 16 gap on a seeded `bare` Stack — the seed lacked `spaced`, which every
+      block the UI makes carries (`spaceDefaults` gives a block without it, a page saved before 2026-09-30, its old 16). Seed fixed
+    - `[x]` MY OWN TEST BUG: `image-intrinsic.spec` clicked `[data-box-id="band"]`, which `sitePage` also uses for its own band — two
+      matches. Aimed at the seeded box inside it
+  - `[x]` (HEADED UAT U7 2026-10-15, all four themes + a touch window) E-6 change (4) · THE EMPTY BOX — BUILT 2026-10-15: faint dashed outline; "Drop a block here" on its own small chip
+    (`data-ph-words`, `aria-hidden`, no pointer) so it reads on a box coloured dark (E6-4); the + only on the SELECTED empty box. Specs
+    `add-inside-empty-box` (a new test: no + until selected, words quiet), `drop-into-empty`, `text-is-reachable`, `image-intrinsic`
+    select the box first; features `box-builder-block-box`, `phone-editing`; guide `layout-story.md`, `website-builder.md`
+  - `[x]` (PASSED 2026-10-15 — run 1: 81 / 88, the 7 = E6-22 and six of the script's own locators; run 2 after the fixes, FRESH
+    build: 104 checks, 0 failed; screenshots `scripts/uat/logs/uat-e6/`, read) E-6 HEADED UAT CHECKLIST (written 2026-10-15 BEFORE the pass; `scripts/uat/uat-e6-headed.js`, six headed windows refilled
+    as each slice ends, a FRESH production build, everything built through the UI)
+    - `[x]` SEEN (7 tiles × 2: 0.0 each; the background: y 618.49 → 618.49, h unchanged) U1 (1) no space: every palette tile added arrives with padding / margin / gap 0; a background on the Stack changes no
+      space (E6-1) — 1280 Light and 768 Dark
+    - `[x]` SEEN (see E6-5 above; screenshots U2-*.png) U2 (2) the Page grid panel: each slider held → its space hatched with its size; the screen tabs switch the canvas;
+      "Rows on this page" 4 draws 4 rows at once (E6-5, E6-9, E6-10, E6-11) — Dark
+    - `[x]` SEEN (all three windows: paddingTop 64 / 48 / 64 on a step, one Undo → {}, Alt 48|48, all four, Shift gap 40 / 24, keys 4,12,0) U3 (3) the overlay's gestures, the probe's matrix: bands + rem labels, each handle kind, Shift / Alt / Alt+Shift,
+      double-click → 0, keyboard, one Undo (E6-14 … E6-20) — 1280 Light · 1536 Midnight · 768 Purple Dream
+    - `[x]` SEEN (phone 28px, desktop 0px, stored `responsive.phone.paddingTop` 40, base untouched) U4 (3) per screen: a drag with the canvas on Phone changes the Phone only — the Desktop canvas keeps its space
+    - `[x]` SEEN (labels 5.68 · 6.16 · 5.43 : 1 in all four themes; U5-*.png read) U5 (3) readable: the bands and labels on a box coloured dark, in all four editor themes — labels ≥ 4.5:1 measured,
+      the screenshots read
+    - `[x]` SEEN (all 73 screens clean; at 1280 canvas 45.6px = Preview 45.6px) U6 (3)+(4) the Preview at EVERY screen of `screens.js`: no handle, band or hint in it; no sideways scroll; the space
+      set with the handles is there; at 1280 the canvas and the Preview draw the same padding
+    - `[x]` SEEN (all four themes as E6-4 above; plain 4.84 · 7.73 · 9.44 · 7.52 : 1; touch: + 0 → 1 after the tap, 44 × 44, adds) U7 (4) the empty box (E6-4): not selected — dashed outline, "Drop a block here" on its chip, no +, `aria-hidden`, no
+      pointer; selected — a small + that opens the menu and adds; on a box coloured dark the words ≥ 4.5:1; all four themes;
+      a touch window (393 × 851): a tap selects, then the + adds
+    - `[x]` SEEN (9 sliders reached from the toolbar in each theme, "Inner space, top: 3.3rem", focus ring drawn) U8 keyboard: Tab reaches a selected block's handles, each a named slider with its value, focus visible, all themes
+    - `[x]` SEEN: no page error in any of the 17 windows. U9 no page error in any window
+    - `[x]` (DONE 2026-10-15: the image retaken from the real builder by `scripts/uat/shots-e6.js`; story §6½ rewritten for no space
+      + the overlay + the empty box, reference "Spacing on the canvas" + its keys, two new pictures) OWED at the batch's close (RULE DOCS): `docs/guide/layout-reference.md` written for the new panel 2026-10-15 — its
       screenshot `img/ref-page-grid-panel.webp` is still the old panel; retake from the real builder
     - `[x]` E6-8 · MY OWN (HEADED, pre-existing): on a phone and a tablet the panel, in the More sheet, hung off the screen's LEFT
       edge (−52px at 375, −102px at 768) — and my first E6-7 fix pinned it below the sheet. It stays in the sheet, slid on
       screen: 8 → 328px at both; same spec, same mutation
-    - `[?]` WAITING ON THE USER: the page audit (RULE D, W7a/W7b) flags words touching the page edge — a page at the new
+    - `[x]` (ANSWERED 2026-10-15 "go with your recommendation": the Page check hint, built as E6-13; Cards keep their design
+      padding, the overlay leaves their inner space alone) WAITING ON THE USER: the page audit (RULE D, W7a/W7b) flags words touching the page edge — a page at the new
       defaults does that, so `page-audit-whitespace.spec` fails 32 / 32 "a page at its defaults: nothing to report".
       Recommended: keep the warning (the deck's whitespace rule) as a Page-check hint with a one-click "add space", and
       change the spec to "a page at its defaults: the audit SAYS words touch the edge". And: Card / Quote / Stat / Badge /
       Rating keep the padding their DESIGN stores (a Card's 24) — kept as part of the chosen design, like its radius?
+  - `[>]` CLOSE-OUT (rule 9): the full gate green at the commit (typecheck · eslint · vitest · test:fast · docs:build), committed,
+    pushed, the PR from `builder/spacing` into master. The gate's first vitest run found E6-24 … E6-26:
+    - `[x]` E6-24 · MY OWN (`stacking.test`): the spacing handles carried a bare `zIndex: 1`. A ladder rung `CHROME_Z.spaceHandle`
+      (9150: over the bands, under the resize handles and their finger areas, so the resize wins where they meet)
+    - `[x]` E6-25 · MY OWN (`docs-guard.test`): the reference's new table named "Green band + handle…" — no such words in the
+      builder. Named by the handles' own names (Inner space · Outer space · Space between columns · Space between rows)
+    - `[x]` E6-26 · MY OWN (`task-tree-batches.test`): E6-5 stayed `[>]` with every child done. Closed with its UAT evidence
+    - `[x]` E6-27 · MY OWN TEST BUG (the full `test:fast`, 3,411 passed / 1 failed; failed alone 3 of 3): `phone-editing.spec`'s
+      `scrolled()` joined EVERY element's `scrollTop` by position, so a block grown tall enough for its side spacing handles read as
+      "scrolled" with nothing scrolled (measured: no element had a scrollTop, before or after). Now the window and only the elements
+      that ARE scrolled, each named; mutation-proven (a scrolled canvas fails it: "DIV[data-canvas-scroller] 25"); the spec 77 / 77
+    - `[ ]` the commit, the push and the PR (gate: typecheck 0 · eslint 0 errors / 106 warnings as before · vitest 4,526 / 4,526 ·
+      test:fast 3,411 + the fixed spec re-run in full 77 / 77 on the same build · docs:build)
   - L4-r · (found in L-4's headed pass, `uat-l4/A-1280.png`; moved here by the user 2026-10-03) a selected block's floating
     toolbar, flipped BELOW it, sits over the first words of the block underneath ("…ck to edit")
 - `[ ]` **BATCH L-5 · Resize round trips** (area: resize · 6 changes, queued — after the page grid AC-37b, the user 2026-10-03)
@@ -4075,7 +4153,7 @@ sent), and my research. Nothing on the layout is done until every line here is c
     falls back into the flow unless placed at that rung; the page audit and Page check warn when it covers words;
     shown as drag on the canvas with the half-lines drawn, a Position panel (start / end, column / row, spill above /
     below) and a gallery of ready-made placements (RULE S / UI). Joins AC-10, ST-5, AC-35 — one build
-    - `[>]` AC-37b ← YOU ARE HERE (NOW: BATCH E-6 OPEN on `builder/spacing` — changes (1) NO SPACE UNLESS ADDED and (2) THE PAGE GRID PANEL SHOWS WHAT IT CHANGES committed `f351a07` (gate green: vitest 4,517 · test:fast 3,382 / 0 failed); the user's decisions 2026-10-15 "go with your recommendation": the Page check hint (built), Cards keep their design's padding, the spacing overlay as `docs/web-anatomy/spacing-overlay.md` recommends with Shift = a bigger step. NEXT: change (3) THE BLOCK SPACING OVERLAY (padding / margin / gap drawn and dragged on a selected block, double-click → 0, one Undo per drag), then (4) the empty-box redesign (+ E6-4), then the batch's HEADED UAT pass, the guide screenshot, the PR. Before that: on `builder/spacing` (cut from master `42ec68d` after PR #9 MERGED 2026-10-15, `app-builder/research` deleted) — BATCH E-6 · how a box looks while you build — open it, RESEARCH FIRST (RULE RS: how Webflow, Figma, Framer, Wix Studio draw and drag spacing; the empty-box hint), then its checklist; the user's 2026-10-15 decisions: NO space unless the user adds it (CLAUDE.md rewritten), every space drawn + dragged on the canvas, the empty-box redesign, E6-1 a background makes the space disappear. Then D-4 (the docs site at the guide link), A-1b (fonts that write the region's languages), A-2 (the app layout). Before that: BATCH A-1 CLOSED 2026-10-15 — R-APP-1 and the "enough" checklist SIGNED by the user 2026-10-15, all 28 decisions as recommended (decision 28: the TCL 505 — emulators now, an APK for the TCL later). Before that: the user's SIGN-OFF of R-APP-1: 28 numbered decisions (the list in session app-builder-research's handover in the SESSION LOG; source `docs/web-anatomy/app-builder.md` §6.1) and ledger RA-1…RA-9; then the first batch. Before that: research R-APP-1 DONE `da926a3`, the three tools studied `68bc5bf`. Earlier: the APP BUILDER area (phone + tablet), RESEARCH FIRST (RULE RS / RULE MAP), on `app-builder/research` cut from master `ea6a0cd` — PR #8 MERGED 2026-10-08 (`builder/phone-editing`, E-5a…E-5d), branch deleted. First: the user's links base44 / emergent / lovable studied INSIDE (the user logs in), plus my own research, then the area's "enough" checklist for the user to sign. Before that: BATCH E-5d · The app CLOSED 2026-10-08. Parked by the user: E5d-4 (IndexedDB save), E5d-7 (More's eight empty rows), E5d-9 (watched). QUEUED AREA: the app builder (phone + tablet), research first with the user's links. Before that: E-5c · The tablet CLOSED 2026-10-07 (HEADED 590 / 0; test:fast 3,343 + 2 fixed; vitest 4,445; E5c-1 … E5c-9; the user's E5c-2 one-row bar + More and E5c-4 the Inspector a tab below 1024) on `builder/phone-editing` — next: BATCH E-5d · The app — T4–T8 DECIDED 2026-10-07 (react-native-webview yes · one-time code · native cache + local save · deep links first · edit from day one) → its HEADED checklist first; handover of session E-5c in the SESSION LOG. Before that: E-5b · A finger drags and resizes CLOSED 2026-10-07 (HEADED 206 / 0; test:fast 3,333; E5b-1 … E5b-16) on `builder/phone-editing` — next: BATCH E-5c — research SIGNED 2026-10-07 (T1–T3; T4–T8 recorded for the app, BATCH E-5d) → change (2) THE BUILD, its HEADED checklist first; handover of session E-5b/E-5c in the SESSION LOG. Before that: research SIGNED 2026-10-06 (D1–D6, `docs/web-anatomy/phone-editing.md`), E-5a · Building on a phone CLOSED 2026-10-07 (HEADED 258 / 0; test:fast 3,312; the user's E5a-7 and E5a-16) on `builder/phone-editing` — next: BATCH E-5b (a finger drags and resizes: E5a-1 + E4-9), then E-5c (the tablet, then the app); handover of session E-4/E-5a in the SESSION LOG. Before that: BATCH E-4 CLOSED 2026-10-06 (HEADED 232 / 0; `test:fast` now runs all four screens, 3,272 / 3,272 in 12.3 min; E4-1 … E4-14, E4-9 and E4-14 went to BATCH E-5 and were done there) — PR #7 MERGED to master 2026-10-06 (`05c66ee`), `builder/editor-small-screens` deleted, `builder/phone-editing` cut from master — next: BATCH E-5, research first (the user's sources and mine). Before that: BATCH E-4 change (1) E3-3 done (`6042e79`); handover of session E-3 in the SESSION LOG. Before that: BATCH E-3 CLOSED 2026-10-06 (297 / 0 headed; E3-1 … E3-11, E3-3 the user's question); the tree audit DONE 2026-10-06 (`4fcf59a`, its true count heads section 1.1) — its checklist first, then spacing-gestures 12 · masonry-builder 10 · canvas-zoom 3 · text-is-reachable 1 · D3-32 the top bar one row from 1280; then E-4, then E-5 (research first). Before that: BATCH E-2 CLOSED 2026-10-06 (174 / 0 headed; 24 ledger lines). Before that: BATCH E-2 in BATCHES, on `builder/editor-small-screens` (cut from master `7494a8e` after PR #6 merged `builder/page-grid` 2026-10-06) — its checklist first, then the 37 failing specs one by one; then E-3, then E-4. Before that: BATCH G-3d CLOSED 2026-10-06 (`ec52b51`); handover of session (G-3d) in the SESSION LOG. Before that: BATCH G-3d (three changes); handover of session 49087f08 in the SESSION LOG; D-3 CLOSED 2026-10-06 (both changes). Before that: handover of session ff5dbc77 in the SESSION LOG; D-2 and D-3 (1) CLOSED 2026-10-06. Earlier: handover of session 22981e0a; BATCH G-3b and BATCH E-1 CLOSED 2026-10-05; MERGE DECIDED by the user 2026-10-05: `builder/layout-uat` pushed, the user opens and merges the pull request, then the branch is deleted and `builder/page-grid` cut from master; next there: BATCH D-2 (the Docusaurus site + the layout documented from the beginning, RULE DOCS), then BATCH G-3d (the user's two decisions), then BATCH E-2 (resizing and dropping on tablets and phones); before the PR: the artifacts and the layout story for the page grid; then its final pass, then BATCH E-1; handover of session 3da81fad in the SESSION LOG; earlier: handover of session 5da86722 in the SESSION LOG — G-3 CLOSED 2026-10-04 (63 headed checks, G3-8 carried to G-3b by the user); earlier: BATCH G-3 · placing on columns AND rows — G-2 CLOSED 2026-10-04 (134 headed checks); P-0 CLOSED 2026-10-04 (R4-1 … R4-5 fixed, 30 headed checks); R-4 SIGNED with D1–D5 (session 9fa0fee9); then G-3, P-1, P-2, G-4, P-3, G-5, G-6. G-1 CLOSED 2026-10-04 (see BATCHES). Plan APPROVED 2026-10-04 with the user's decisions below. Earlier: research R-3 DONE and SIGNED 2026-10-04
+    - `[>]` AC-37b ← YOU ARE HERE (NOW: BATCH E-6 in its CLOSE-OUT on `builder/spacing` — all four changes BUILT: (1) + (2) in `f351a07`, (3) THE BLOCK SPACING OVERLAY and (4) THE QUIET EMPTY BOX in session E-6b; HEADED UAT 104 checks / 0 failed; ledger E6-14 … E6-27 closed; gate: typecheck 0 · eslint 0 errors · vitest 4,526 / 4,526 · test:fast 3,411 + the fixed spec 77 / 77 · docs:build. NEXT: the commit, the push, the PR into master; after the merge, BATCH D-4, then A-1b, A-2. Before that: on `builder/spacing` (cut from master `42ec68d` after PR #9 MERGED 2026-10-15, `app-builder/research` deleted) — BATCH E-6 · how a box looks while you build — open it, RESEARCH FIRST (RULE RS: how Webflow, Figma, Framer, Wix Studio draw and drag spacing; the empty-box hint), then its checklist; the user's 2026-10-15 decisions: NO space unless the user adds it (CLAUDE.md rewritten), every space drawn + dragged on the canvas, the empty-box redesign, E6-1 a background makes the space disappear. Then D-4 (the docs site at the guide link), A-1b (fonts that write the region's languages), A-2 (the app layout). Before that: BATCH A-1 CLOSED 2026-10-15 — R-APP-1 and the "enough" checklist SIGNED by the user 2026-10-15, all 28 decisions as recommended (decision 28: the TCL 505 — emulators now, an APK for the TCL later). Before that: the user's SIGN-OFF of R-APP-1: 28 numbered decisions (the list in session app-builder-research's handover in the SESSION LOG; source `docs/web-anatomy/app-builder.md` §6.1) and ledger RA-1…RA-9; then the first batch. Before that: research R-APP-1 DONE `da926a3`, the three tools studied `68bc5bf`. Earlier: the APP BUILDER area (phone + tablet), RESEARCH FIRST (RULE RS / RULE MAP), on `app-builder/research` cut from master `ea6a0cd` — PR #8 MERGED 2026-10-08 (`builder/phone-editing`, E-5a…E-5d), branch deleted. First: the user's links base44 / emergent / lovable studied INSIDE (the user logs in), plus my own research, then the area's "enough" checklist for the user to sign. Before that: BATCH E-5d · The app CLOSED 2026-10-08. Parked by the user: E5d-4 (IndexedDB save), E5d-7 (More's eight empty rows), E5d-9 (watched). QUEUED AREA: the app builder (phone + tablet), research first with the user's links. Before that: E-5c · The tablet CLOSED 2026-10-07 (HEADED 590 / 0; test:fast 3,343 + 2 fixed; vitest 4,445; E5c-1 … E5c-9; the user's E5c-2 one-row bar + More and E5c-4 the Inspector a tab below 1024) on `builder/phone-editing` — next: BATCH E-5d · The app — T4–T8 DECIDED 2026-10-07 (react-native-webview yes · one-time code · native cache + local save · deep links first · edit from day one) → its HEADED checklist first; handover of session E-5c in the SESSION LOG. Before that: E-5b · A finger drags and resizes CLOSED 2026-10-07 (HEADED 206 / 0; test:fast 3,333; E5b-1 … E5b-16) on `builder/phone-editing` — next: BATCH E-5c — research SIGNED 2026-10-07 (T1–T3; T4–T8 recorded for the app, BATCH E-5d) → change (2) THE BUILD, its HEADED checklist first; handover of session E-5b/E-5c in the SESSION LOG. Before that: research SIGNED 2026-10-06 (D1–D6, `docs/web-anatomy/phone-editing.md`), E-5a · Building on a phone CLOSED 2026-10-07 (HEADED 258 / 0; test:fast 3,312; the user's E5a-7 and E5a-16) on `builder/phone-editing` — next: BATCH E-5b (a finger drags and resizes: E5a-1 + E4-9), then E-5c (the tablet, then the app); handover of session E-4/E-5a in the SESSION LOG. Before that: BATCH E-4 CLOSED 2026-10-06 (HEADED 232 / 0; `test:fast` now runs all four screens, 3,272 / 3,272 in 12.3 min; E4-1 … E4-14, E4-9 and E4-14 went to BATCH E-5 and were done there) — PR #7 MERGED to master 2026-10-06 (`05c66ee`), `builder/editor-small-screens` deleted, `builder/phone-editing` cut from master — next: BATCH E-5, research first (the user's sources and mine). Before that: BATCH E-4 change (1) E3-3 done (`6042e79`); handover of session E-3 in the SESSION LOG. Before that: BATCH E-3 CLOSED 2026-10-06 (297 / 0 headed; E3-1 … E3-11, E3-3 the user's question); the tree audit DONE 2026-10-06 (`4fcf59a`, its true count heads section 1.1) — its checklist first, then spacing-gestures 12 · masonry-builder 10 · canvas-zoom 3 · text-is-reachable 1 · D3-32 the top bar one row from 1280; then E-4, then E-5 (research first). Before that: BATCH E-2 CLOSED 2026-10-06 (174 / 0 headed; 24 ledger lines). Before that: BATCH E-2 in BATCHES, on `builder/editor-small-screens` (cut from master `7494a8e` after PR #6 merged `builder/page-grid` 2026-10-06) — its checklist first, then the 37 failing specs one by one; then E-3, then E-4. Before that: BATCH G-3d CLOSED 2026-10-06 (`ec52b51`); handover of session (G-3d) in the SESSION LOG. Before that: BATCH G-3d (three changes); handover of session 49087f08 in the SESSION LOG; D-3 CLOSED 2026-10-06 (both changes). Before that: handover of session ff5dbc77 in the SESSION LOG; D-2 and D-3 (1) CLOSED 2026-10-06. Earlier: handover of session 22981e0a; BATCH G-3b and BATCH E-1 CLOSED 2026-10-05; MERGE DECIDED by the user 2026-10-05: `builder/layout-uat` pushed, the user opens and merges the pull request, then the branch is deleted and `builder/page-grid` cut from master; next there: BATCH D-2 (the Docusaurus site + the layout documented from the beginning, RULE DOCS), then BATCH G-3d (the user's two decisions), then BATCH E-2 (resizing and dropping on tablets and phones); before the PR: the artifacts and the layout story for the page grid; then its final pass, then BATCH E-1; handover of session 3da81fad in the SESSION LOG; earlier: handover of session 5da86722 in the SESSION LOG — G-3 CLOSED 2026-10-04 (63 headed checks, G3-8 carried to G-3b by the user); earlier: BATCH G-3 · placing on columns AND rows — G-2 CLOSED 2026-10-04 (134 headed checks); P-0 CLOSED 2026-10-04 (R4-1 … R4-5 fixed, 30 headed checks); R-4 SIGNED with D1–D5 (session 9fa0fee9); then G-3, P-1, P-2, G-4, P-3, G-5, G-6. G-1 CLOSED 2026-10-04 (see BATCHES). Plan APPROVED 2026-10-04 with the user's decisions below. Earlier: research R-3 DONE and SIGNED 2026-10-04
       (`ff5c53a`, `4418202`); build to every decision recorded under R-3 below; the mockups settle the open three (row
       snap · the phone gap 11 vs 16 px · panel per site or per page) → the user's approval → build) · **THE PAGE GRID — DECIDED by the user 2026-10-03: done RIGHT AFTER L-4 closes, BEFORE L-5, L-6 and the
       frozen list's placement items** (they are built on it). NAMES (decided): "page grid" in code and docs; the lines a
@@ -4891,6 +4969,15 @@ sent), and my research. Nothing on the layout is done until every line here is c
 
 One entry per session, newest first. Written the moment the user says "new session" (or the context is about to run
 out) — where the session STARTED FROM, where it GOT TO, and where the next one CONTINUES FROM.
+
+### 2026-10-15 · session E-6b
+- **Started from:** `ffbfd46` on `builder/spacing`, BATCH E-6 change (3) next (the E-6a handover).
+- **Got to:** change (3) the block spacing overlay (`SpaceBands`, `snapSpace` / `stepSpace` / `spacePatch` / `gapPatch`,
+  `SPACE_STEPS`, `spaceColors`, `CHROME_Z.spaceHandle`) and change (4) the quiet empty box, both through the UI first
+  (`probe-e6-3.js`); guards `space-handles.test.ts` + `space-handles.spec.ts` + `add-inside-empty-box.spec`, every one
+  mutation-proven; the HEADED UAT `uat-e6-headed.js` 104 / 0; ledger E6-14 … E6-27 closed (E6-17 and E6-23 were my own tool
+  slips, E6-27 a test bug); the guide's story §6½ + reference "Spacing on the canvas" + three pictures from the real builder.
+- **Continue from:** the commit, push and PR of BATCH E-6; after the merge, cut the next branch from master for BATCH D-4.
 
 ### 2026-10-15 · session E-6a · HANDOVER (both held: the context is genuinely long — seven production builds, two full 13-minute
 gates, eight user rounds — and the boundary is clean: `f351a07` committed with the gate green; the next job, the block spacing

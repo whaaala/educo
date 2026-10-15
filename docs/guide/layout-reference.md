@@ -166,15 +166,35 @@ inside.
 
 | Control | What it does | Notes |
 |---------|-------------|-------|
-| **Space between blocks** | The space between the blocks inside this container, across and down at once. A slider. Default is about 1rem. | Per screen |
+| **Space between blocks** | The space between the blocks inside this container, across and down at once. A slider. None on a block made since 15 October 2026; about 1rem on one saved before. | Per screen |
 | **Space across** · **Space down** | The same space, across and down separately — "same as above" until you move one. | Per screen |
 | **Space between columns** (page-grid rows) | The gap between blocks side by side in a page-grid row (across). | Per screen |
 | **Space between rows** (page-grid rows) | The gap between wrapped lines of a page-grid row (down). | Per screen |
 | **Inner spacing** (padding) | Space between the block's edge and its content, all sides at once or each side separately. Shows "Default · …rem" and a **Back to default** button. | Per screen |
 | **Outer spacing** (margin) | Space outside the block's edge, all sides at once or each side separately. Shows "Default · …rem" and a **Back to default** button. | Per screen |
 
-*Every spacing control that shows "Default · …rem" means the value is the builder's default and can be returned to it
-with **Back to default**. The default is never zero unless you set it to zero.*
+*A block made since 15 October 2026 has no space until you add it — every control starts at 0. A block saved before keeps
+the default it was made with; its controls show "Default · …rem" and **Back to default** returns to it.*
+
+### Spacing on the canvas
+
+When one block is selected, its space is drawn on it and dragged there. Nothing here is published.
+
+| On the canvas | What it does | Notes |
+|---------------|-------------|-------|
+| **Inner space** (a green band and handle inside each edge) | The padding on that side. Drag the handle — or the band — inward to add, outward to take away. The band shows its size in rem. | Not on a Button or a component, which keep their design's inner space; not on an empty box (its + is there) |
+| **Outer space** (an orange band and handle outside each edge) | The margin on that side. | Not on a floating block; a side shorter than about 4.5rem on screen has no handle (use the Inspector) |
+| **Space between columns · Space between rows** (a pink hatch and handle between the blocks inside) | The space between them, across and down. | Writes "Space between blocks", or the across / down value once they differ |
+| **Steps** | Every drag lands on the spacing scale: 0 · 0.25 · 0.5 · 0.75 · 1 · 1.25 · 1.5 · 2 · 2.5 · 3 · 4 · 5 · 6 rem. | — |
+| **Shift** while dragging | Bigger steps (every other one of the scale). | — |
+| **Alt** while dragging | The opposite side moves too (top + bottom, left + right). | — |
+| **Alt + Shift** while dragging | All four sides move together. | — |
+| **Double-click** a band or handle | That space back to none. | — |
+| **Undo** | One Undo takes back a whole drag. | — |
+| **Keyboard** | Each handle is a slider ("Inner space, top: 1rem"). **↑ / →** one step more, **↓ / ←** one fewer, **Shift** two steps, **Home** none, **End** the most. | Tab reaches them after the block toolbar |
+
+*A drag changes the screen the canvas is showing, as the Inspector does. A click on a handle that does not move goes to the
+words under it — so a handle lying over a block's first letters never stops you typing there.*
 
 ### Background
 
@@ -230,7 +250,7 @@ with **Back to default**. The default is never zero unless you set it to zero.*
 
 Opened by the **Layout guides** button in the top bar (the grid icon), or right-click the canvas → **Page grid…**.
 
-[![The Page grid panel: screen tabs, Columns on Desktop 12, Row lines in the guides, Row step, Side space, Space between columns, Space between rows, This page uses its own grid, Reset to default](img/ref-page-grid-panel.webp)](img/ref-page-grid-panel.webp)
+[![The Page grid panel: screen tabs, Columns on Desktop 12, Row lines in the guides, Rows on this page, Row height, Side space, Space between columns, Space between rows, This page uses its own grid, Reset to default](img/ref-page-grid-panel.webp)](img/ref-page-grid-panel.webp)
 
 | Control | What it does | Notes |
 |---------|-------------|-------|
@@ -278,6 +298,9 @@ Each setting reads "At the default" or "Follows the default" until you change it
 | **Alt + drop / drag edge** | Free-position inside columns (page-grid rows) |
 | **↑ / ↓** (block selected) | Move a block in the layout one place earlier / later |
 | **↑ ↓ ← →** (floating block) | Nudge it 2px (12px with Shift) |
+| **↑ → / ↓ ←** (a spacing handle focused) | That space one step more / fewer (Shift: two); **Home** none, **End** the most |
+| **Shift / Alt / Alt + Shift** + drag a spacing handle | Bigger steps · the opposite side too · all four sides |
+| **Double-click** a spacing band | That space back to none |
 | **H** (in Preview) | Hide or show the Preview's own controls |
 
 ---

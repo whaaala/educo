@@ -30,13 +30,14 @@ test("carrying a block over an empty box's \"+\", the pointer is on the box, nev
   const tile = page.locator('[draggable="true"]').filter({ hasText: /^\s*Text/ }).first();
   await tile.scrollIntoViewIfNeeded();
   const t = (await tile.boundingBox())!;
-  const plus = (await page.locator('[data-box-id="empty"] button[aria-label="Choose a block to add inside"]').boundingBox())!;
+  // over the hint's words (E-6 (4): the "+" shows only on a selected empty box, so the words are what lies under a carried block)
+  const plus = (await page.locator('[data-box-id="empty"] [data-ph-words]').boundingBox())!;
   const x = plus.x + plus.width / 2, y = plus.y + plus.height / 2;
   await page.mouse.move(t.x + t.width / 2, t.y + t.height / 2); await page.mouse.down();
   for (let i = 1; i <= 16; i++) { await page.mouse.move(t.x + t.width / 2 + ((x - t.x - t.width / 2) * i) / 16, t.y + t.height / 2 + ((y - t.y - t.height / 2) * i) / 16); await page.waitForTimeout(15); }
   await page.waitForTimeout(150);
   // HELD STILL over the "+": what the browser would hit-test there is the empty box itself, not the editor's hint
-  const under = await page.evaluate(([x, y]) => { const e = document.elementFromPoint(x, y)!; return { box: e.closest("[data-box-id]")?.getAttribute("data-box-id"), hint: !!e.closest("[data-ph] button, [data-gridghost]"), tag: e.tagName.toLowerCase() }; }, [x, y]);
+  const under = await page.evaluate(([x, y]) => { const e = document.elementFromPoint(x, y)!; return { box: e.closest("[data-box-id]")?.getAttribute("data-box-id"), hint: !!e.closest("[data-ph], [data-gridghost]"), tag: e.tagName.toLowerCase() }; }, [x, y]);
   expect(under.hint, `the pointer is on the empty box's hint (<${under.tag}>) while a block is carried — L1-7`).toBe(false);
   expect(under.box).toBe("empty");
   await page.mouse.up(); await page.waitForTimeout(700);

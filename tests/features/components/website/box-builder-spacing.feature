@@ -42,6 +42,66 @@ Feature: Spacing — none unless I add it (since 2026-10-15); a saved page keeps
     Then there is no gap between them
     And they are still a row of the page grid, so their spans and the fit rule still apply
 
+  # ── The selected block's space, drawn and dragged on the canvas (E-6 (3), docs/web-anatomy/spacing-overlay.md) ──
+
+  Scenario: A selected block shows its space as labelled bands
+    Given a Stack holding two Texts, with inner space, outer space and a gap that I set
+    When I select the Stack
+    Then its inner space is a green band inside its edge, its outer space an orange band outside it, and its gap a hatch
+    And each band says its size in rem
+    And a block with no space shows only small handles on its edges, which I can still grab
+
+  Scenario Outline: I drag the <space> handle to change it
+    Given a Stack holding two Texts one under the other
+    When I select the Stack and drag its "<handle>" handle by 3rem
+    Then its <space> grows to the nearest step of the spacing scale, and the canvas shows it while I drag
+    And one Undo takes the whole drag back
+    Examples:
+      | handle                | space              |
+      | Inner space, top      | inner space at the top |
+      | Inner space, left     | inner space at the left |
+      | Outer space, bottom   | outer space below  |
+      | Space between rows    | gap between the Texts |
+
+  Scenario Outline: A key held while dragging changes what moves (<key>)
+    Given a selected Stack
+    When I drag its "Inner space, top" handle holding <key>
+    Then <what>
+    Examples:
+      | key       | what                                            |
+      | nothing   | only the top changes, in steps of the scale      |
+      | Shift     | only the top changes, in bigger steps            |
+      | Alt       | the top and the bottom change together           |
+      | Alt+Shift | all four sides change together                   |
+
+  Scenario: A double-click takes a space back to none
+    Given a selected Stack with 2rem of inner space at the top
+    When I double-click its top inner band
+    Then its inner space at the top is 0 and the band is gone, and its handle is still there
+
+  Scenario: Every handle works from the keyboard
+    Given a selected Stack
+    When I Tab to its "Inner space, top" handle
+    Then a screen reader hears "Inner space, top" as a slider with its size
+    When I press Arrow Up, then Shift+Arrow Up, then Home
+    Then the space steps up one step, then a bigger step, then goes to 0
+    And the selected block does not move
+
+  Scenario: A button and a component keep the inner space their design stores
+    When I select a Button, or a Card
+    Then it shows its outer space handles but no inner space handles
+
+  Scenario Outline: The bands and handles at <screen>, in every theme
+    Given a selected Stack with space on every side
+    When the canvas shows <screen>
+    Then every band and handle is drawn where its space is, readable on light and dark pages, and the Preview shows the same space
+    And a drag on <screen> changes that screen only
+    Examples:
+      | screen  |
+      | Phone   |
+      | Tablet  |
+      | Desktop |
+
   Scenario Outline: The page grid's <slider> shows the space it moves while I move it
     Given two Stacks one under the other and two Stacks side by side
     And the layout guides are on

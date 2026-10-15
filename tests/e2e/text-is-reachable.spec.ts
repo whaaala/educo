@@ -240,6 +240,7 @@ test.describe("text can be reached without a mouse", () => {
   async function addHeading(page: Page) {
     await seedSite(page, emptyPage());
     await page.waitForSelector('[data-box-id="sec"]', { timeout: 30000 });
+    await page.locator('[data-box-id="sec"]').click(); // the + is on the SELECTED empty box only (E-6 (4))
     await page.locator('button[aria-label="Choose a block to add inside"]').first().click();
     await page.waitForTimeout(500);
     await page.locator("button").filter({ hasText: /^Heading$/ }).first().click({ force: true });
