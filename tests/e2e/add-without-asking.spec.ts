@@ -290,11 +290,11 @@ test.describe("the page is exactly as tall as what is on it", () => {
     const root = await pageRootBox(page);
     // The deepest block on the page — the Stack itself, not the band around it.
     const last = await page.locator("[data-box-id]").last().evaluate((el) => Math.round(el.getBoundingClientRect().bottom));
-    // G-3c (the user, 2026-10-04: "do the same thing for the bottom"): a page-grid page keeps its FRAME below its last block — a
-    // space somebody chose, and "Side space" takes it to 0. Nothing MORE than that: no floor nobody can remove (the 32px this guards).
+    // NO SPACE UNLESS YOU ADD IT (the user, 2026-10-15): a page made now has no frame below its last block until "Side space" is
+    // set (G-3c's frame, 2026-10-04, is a page SAVED before). Nothing more either: no floor nobody can remove (the 32px this guards).
     // In PAGE px (E3-6): the padding is a page length, the boxes are screen px — divided by the scale (a tablet draws the page at ~0.26)
     const { frame, z } = await page.locator("[data-box-id]").first().evaluate((el) => ({ frame: parseFloat(getComputedStyle(el).paddingBottom) || 0, z: Number(el.closest<HTMLElement>("[data-canvas-scale]")?.dataset.canvasScale) || 1 }));
-    expect(frame, "the page's bottom frame is there, 1 – 1.25 rem").toBeGreaterThan(14);
+    expect(frame, "a page made now has no bottom frame nobody set").toBe(0);
     expect(Math.abs(root.bottom - last - frame * z), "the page must end its frame below its content, not 32px later").toBeLessThanOrEqual(2); // whole screen px
   });
 

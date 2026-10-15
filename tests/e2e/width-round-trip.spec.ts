@@ -260,8 +260,8 @@ test.describe("width round trips come back, and nothing leaves a hole", () => {
       expect(onFirstLine.length, `${n} blocks: only ${onFirstLine.length} fit on the line`).toBe(n);
       for (const k of row.kids) expect(Math.abs(k.w - row.inner / n), `${n} blocks: ${JSON.stringify(row.kids)}`).toBeLessThanOrEqual(2);
       expect(rowProblems(row)).toEqual([]);
-      // …and the columns themselves never touch: a 1rem gap is drawn between them (S1-a)
-      expect(row.gap ?? 0, `${n} blocks: no gap drawn between the columns`).toBeGreaterThanOrEqual(10);
+      // …and no gap nobody set (the user, 2026-10-15: no space unless added — S1-a's 1rem gap is a page saved before): edge to edge
+      expect(row.gap ?? 0, `${n} blocks: a gap nobody set`).toBeLessThanOrEqual(0.5);
     });
   }
 });

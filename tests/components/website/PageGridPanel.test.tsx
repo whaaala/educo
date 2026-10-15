@@ -41,6 +41,35 @@ describe("the page-grid panel", () => {
     expect(screen.getByText(`Default · ${+(SPACE_GRID.columns / 10 * 0.4375).toFixed(2)}–${+(SPACE_GRID.columns / 10 * 0.875).toFixed(2)}rem`)).toBeInTheDocument(); // the gap across, never "value / 16"
     fireEvent.change(screen.getByLabelText("Side space (padding)"), { target: { value: "0" } });
     expect(p.onChange).toHaveBeenCalledWith({ sideSpace: 0 }, "pagegrid:side");
+  });
+
+  it("a space slider held or focused tells the canvas which space to shade, and lets go on blur (E6-5)", () => {
+    const onSpaceFocus = vi.fn(); panel({ onSpaceFocus });
+    for (const [label, kind] of [["Side space (padding)", "side"], ["Space between columns", "columnGap"], ["Space between rows", "rowGap"]] as const) {
+      fireEvent.focus(screen.getByLabelText(label)); expect(onSpaceFocus).toHaveBeenLastCalledWith(kind);
+      fireEvent.blur(screen.getByLabelText(label)); expect(onSpaceFocus).toHaveBeenLastCalledWith(null);
+    }
+  });
+
+  it("picking a screen asks the canvas to show that screen, so its columns are seen (E6-9)", () => {
+    const onScreen = vi.fn(); panel({ onScreen });
+    fireEvent.click(screen.getByRole("button", { name: "Tablet" }));
+    expect(onScreen).toHaveBeenLastCalledWith("tabletPortrait");
+    fireEvent.click(screen.getByRole("button", { name: "Wide" }));
+    expect(onScreen).toHaveBeenLastCalledWith("wide");
+  });
+
+  it("a press anywhere but on a space slider lets the shade go — the canvas keeps focus where it was (E6-5)", () => {
+    const onSpaceFocus = vi.fn(); panel({ onSpaceFocus });
+    fireEvent.focus(screen.getByLabelText("Space between rows")); expect(onSpaceFocus).toHaveBeenLastCalledWith("rowGap");
+    fireEvent.pointerDown(screen.getByLabelText("Space between rows")); expect(onSpaceFocus).toHaveBeenLastCalledWith("rowGap"); // its own slider: kept
+    fireEvent.pointerDown(document.body); expect(onSpaceFocus).toHaveBeenLastCalledWith(null);
+  });
+
+  it("on a page made now every default reads 0 — no space unless you add it (E6-6, 2026-10-15)", () => {
+    panel({ bare: true });
+    expect(screen.getAllByText("Default · 0rem")).toHaveLength(3); // the side space and both gaps
+    expect(screen.queryByText("Default · 1–1.25rem")).toBeNull();
     expect(screen.getAllByRole("button", { name: "At the default" })).toHaveLength(1);
     expect(screen.getByRole("button", { name: "Space between columns — at the default" })).toBeDisabled();
     expect(screen.getByRole("button", { name: "Space between rows — at the default" })).toBeDisabled();
@@ -76,11 +105,27 @@ describe("the page-grid panel", () => {
     expect(p.onClose).toHaveBeenCalled();
   });
 
-  it("row lines are a viewing choice; the row step shows only with them", () => {
-    const p = panel();
-    expect(screen.queryByLabelText("Row step")).toBeNull();
+  it("row lines are a viewing choice; changing the row height turns them on, so the change is seen (E6-10)", () => {
+    const onRows = vi.fn(); const p = panel({ onRows });
     fireEvent.click(screen.getByLabelText("Row lines in the guides"));
-    expect(p.onRows).toHaveBeenCalledWith(true);
+    expect(onRows).toHaveBeenCalledWith(true);
+    onRows.mockClear();
+    fireEvent.change(screen.getByLabelText("Row height"), { target: { value: "2" } });
+    expect(onRows).toHaveBeenCalledWith(true);
+    expect(p.onChange).toHaveBeenLastCalledWith({ rowStepRem: 2 }, "pagegrid:rows");
+  });
+
+  it("rows are chosen like columns: a number of rows divides the page as it is now (E6-10)", () => {
+    const g = document.createElement("div"); g.setAttribute("data-layout-guides", "12"); document.body.appendChild(g);
+    Object.defineProperty(g, "offsetHeight", { value: 480 }); // a 30rem page
+    try {
+      const p = panel({ rows: true });
+      expect(screen.getByLabelText("Rows on this page")).toHaveValue(20); // 30rem ÷ 1.5rem
+      fireEvent.click(screen.getByLabelText("Rows on this page: one fewer"));
+      expect(p.onChange).toHaveBeenLastCalledWith({ rowStepRem: 1.58 }, "pagegrid:rows"); // 30 ÷ 19
+      fireEvent.change(screen.getByLabelText("Rows on this page"), { target: { value: "5" } });
+      expect(p.onChange).toHaveBeenLastCalledWith({ rowStepRem: 6 }, "pagegrid:rows"); // five rows of 6rem — past the slider's end, still kept
+    } finally { g.remove(); }
   });
 });
 
@@ -93,7 +138,10 @@ describe("the layout guides on the canvas", () => {
     expect(g.querySelectorAll("[data-guide-col]")).toHaveLength(cols);
     expect(g.style.gridTemplateColumns).toBe(`repeat(${cols}, minmax(0, 1fr))`);
     expect(g.style.paddingInline).toBe(""); // the columns run to the page's edges
-    expect(g.style.backgroundImage).toContain(`0 ${FRAME_CSS}`); // …and the default margin is drawn inside them
+    expect(g.style.backgroundImage).toContain(`0 ${u(0)}`); // …and a page made now has no side space until it is set (2026-10-15)
+    // a page saved before keeps its frame, and the guides draw it
+    const old = canvas({ cols, rowStepRem: 1.5, rows: false }, { ...emptyPageRoot(), bare: undefined }).querySelector<HTMLElement>("[data-layout-guides]")!;
+    expect(old.style.backgroundImage).toContain(`0 ${FRAME_CSS}`);
     expect(g.getAttribute("aria-hidden")).toBe("true");
     expect(g.style.pointerEvents).toBe("none");
   });

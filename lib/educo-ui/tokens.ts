@@ -44,6 +44,9 @@ const SPACE: Record<string, string> = {
   "0": "0", "1": "0.25rem", "2": "0.5rem", "3": "0.75rem", "4": "1rem", "5": "1.25rem",
   "6": "1.5rem", "8": "2rem", "10": "2.5rem", "12": "3rem", "16": "4rem", "20": "5rem", "24": "6rem",
 };
+/** The spacing scale as the stored numbers a block's spacing is written in (rem × 16: 0, 4, 8 … 96) — what the canvas's
+ *  spacing handles snap to (E-6 (3)), so a dragged space always lands on a token. */
+export const SPACE_STEPS: readonly number[] = Object.values(SPACE).map((v) => parseFloat(v) * 16);
 const DURATION: Record<string, string> = { fast: "120ms", base: "200ms", slow: "320ms", slower: "500ms" };
 // Named easings (see easings.net): standard for most UI, in/out for enter/exit, spring-ish for playful.
 const EASING: Record<string, string> = {

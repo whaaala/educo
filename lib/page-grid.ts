@@ -114,6 +114,12 @@ export function guideColor(background: string): string {
   return nearestAccessibleColor(oklchToHex({ L: 0.55, C: 0.2, h: 350 }), background, 3);
 }
 
+/** The selected block's spacing bands (E-6 (3)): inside green, outside orange — the colours DevTools draws padding and
+ *  margin in — each held to ≥ 3:1 against the page like the guides; the gap is hatched in the guides' own colour. */
+export function spaceColors(background: string): { padding: string; margin: string } {
+  return { padding: nearestAccessibleColor(oklchToHex({ L: 0.6, C: 0.15, h: 150 }), background, 3), margin: nearestAccessibleColor(oklchToHex({ L: 0.65, C: 0.16, h: 55 }), background, 3) };
+}
+
 /** Words on a guide-coloured chip ("6 of 12"): white or black, whichever reads at ≥ 4.5:1. */
 export function guideInk(guide: string): string {
   return contrastRatio("#ffffff", guide) >= 4.5 ? "#ffffff" : "#000000";

@@ -31,7 +31,7 @@ import { renderSitePage, renderSiteFiles, siteFileMap, downloadSite, fontFamilie
 import { embedFontCss, fontFiles } from "@/lib/educo-ui/font-embed";
 import { photosAsFiles } from "@/lib/export-photos";
 import { warmIcons, hasIcon } from "@/lib/educo-ui/icon-svg";
-import BoxCanvas, { measureFloatGeom, measureFixedGeom, measureGroupGeom } from "@/components/website/box/BoxCanvas";
+import BoxCanvas, { measureFloatGeom, measureFixedGeom, measureGroupGeom, type SpaceShadeKind } from "@/components/website/box/BoxCanvas";
 import BoxInspector from "@/components/website/box/BoxInspector";
 import BulkInspector from "@/components/website/box/BulkInspector";
 import BlocksPanel, { LAUNCHER_GUTTER_REM, PANEL_GUTTER_REM } from "@/components/website/box/BlocksPanel";
@@ -80,6 +80,8 @@ const DEVICES: { id: Device; label: string; w: number | null; Icon: typeof Smart
 ];
 
 import { PREVIEW_PRESETS, PRESETS_FLAT } from "@/lib/preview-devices";
+/** The canvas preset that shows each screen of the page grid panel (E6-9: a screen picked there is the screen you see). */
+const SCREEN_DEVICE: Record<Breakpoint, Device> = { phone: "mobile", tabletPortrait: "tablet", tabletLandscape: "laptop", base: "desktop", wide: "wide" };
 
 /** Zoom steps, matching what a browser's device mode offers. `fit` shrinks to whatever room there is. */
 const ZOOMS = [
@@ -152,6 +154,7 @@ export default function BoxDemoPage() {
   const [lineUpSaid, setLineUpSaid] = useState(""); // "3 blocks moved to the grid on Desktop" — G-3 (5)
   const [canvasMenu, setCanvasMenu] = useState<{ x: number; y: number } | null>(null);
   const guidesBtnRef = useRef<HTMLButtonElement>(null);
+  const [spaceShade, setSpaceShade] = useState<SpaceShadeKind | null>(null); // the page grid space being changed, shaded on the canvas (E6-5)
   useEffect(() => { try { const v = JSON.parse(localStorage.getItem(GUIDES_KEY) ?? "null"); if (v && typeof v.on === "boolean") setGuides({ on: v.on, rows: v.rows !== false }); } catch { /* no storage: the default */ } }, []);
   const toggleGuides = useCallback((patch?: Partial<{ on: boolean; rows: boolean }>) => setGuides((g) => {
     const next = { ...g, ...(patch ?? { on: !g.on }) };
@@ -789,7 +792,10 @@ export default function BoxDemoPage() {
       const now = at(), pEl = document.querySelector(`[data-box-id="${g.parentId}"]`);
       if (!now || !pEl || Math.abs(now.top - before.top) < 0.5) return;
       const h = pEl.getBoundingClientRect().height * (pEl.clientHeight / Math.max(1, (pEl as HTMLElement).offsetHeight)); // padding box, screen px
-      commit(updateBox(next, id, { top: Math.round((g.top + ((before.top - now.top) / Math.max(1, h)) * 100) * 10) / 10 }), key);
+      // from the top it was STORED with (E6-12): `floatBox` keeps a float 2 % in from its parent's edge, so from the measured `g.top` a
+      // block at its parent's very top was put back 2 % ABOVE it (1.1px on a page with no space, the E5c-8 spec)
+      const stored = Number(findBox(next, id)?.top ?? g.top);
+      commit(updateBox(next, id, { top: Math.round((stored + ((before.top - now.top) / Math.max(1, h)) * 100) * 10) / 10 }), key);
     }));
   };
   const unfloatSelected = () => { if (selected) commit(unfloatBox(root, selected.id)); };
@@ -1254,8 +1260,8 @@ export default function BoxDemoPage() {
               className={`inline-flex items-center gap-1 rounded-lg border px-2 py-1 pointer-coarse:min-h-11 pointer-coarse:min-w-11 justify-center text-[0.6875rem] ${guides.on ? "border-indigo-400 bg-indigo-50 text-indigo-700 dark:bg-indigo-950/40 dark:text-indigo-300 midnight:bg-indigo-950/40 midnight:text-indigo-300 purple:bg-indigo-950/40 purple:text-indigo-300" : "border-gray-200 text-gray-500 dark:border-gray-700 dark:text-gray-400 midnight:border-gray-700 midnight:text-gray-400 purple:border-gray-700 purple:text-gray-400"}`}>
               <LayoutGrid className="w-3.5 h-3.5" aria-hidden="true" /><span className={wider}>Guides</span>
             </button>
-            {gridPanel && <PageGridPanel grid={gridStored} ownPage={ownGrid} breakpoint={bp} rows={guides.rows} onRows={(rows) => toggleGuides({ rows })}
-              onChange={setGrid} onOwnPage={setOwnGrid} onClose={() => { setGridPanel(false); guidesBtnRef.current?.focus(); }} />}
+            {gridPanel && <PageGridPanel grid={gridStored} bare={!!root?.bare} ownPage={ownGrid} breakpoint={bp} rows={guides.rows} onRows={(rows) => toggleGuides({ rows })}
+              onChange={setGrid} onOwnPage={setOwnGrid} onSpaceFocus={setSpaceShade} onScreen={(s) => { if (s !== bp) setDevice(SCREEN_DEVICE[s]); }} onClose={() => { setGridPanel(false); guidesBtnRef.current?.focus(); }} />}
           </div>
           {/* A block hidden on this device is GONE from the canvas, as it is from the published page (#132). This brings
               the hidden ones back faintly, so one can be selected and un-hidden. */}
@@ -1417,7 +1423,7 @@ export default function BoxDemoPage() {
               <div data-canvas-sizer className={`mx-auto shrink-0 h-fit ${frameW == null ? "w-full max-w-5xl" : ""}`} style={scaled ? { width: frameW * canvasZoom.z, height: frameH * canvasZoom.z } : { width: frameW ?? undefined }}>
                 <div ref={frameRef} data-canvas-scale={scaled ? canvasZoom.z : 1} className="shadow-sm rounded-xl ring-1 ring-black/10 dark:ring-white/10 midnight:ring-white/10 purple:ring-white/10 h-fit transition-[width] duration-300 motion-reduce:transition-none" style={{ width: frameW ?? "100%", transform: scaled ? `scale(${canvasZoom.z})` : undefined, transformOrigin: "0 0", background: renderTheme.background, color: renderTheme.text, fontFamily: renderTheme.bodyFont, containerType: "inline-size" }}>
                   <BoxCanvas root={root} theme={renderTheme} minHeight={PAGE_MIN_H} selectedIds={selectedIds} onSelectIds={selectByUser} onChange={commit} breakpoint={bp} showHidden={showHidden} marqueeRoom={roomEl}
-                    pageGrid={gridHere} guides={guides.on ? { cols: columnsAt(gridHere, bp), rowStepRem: gridHere.rowStepRem ?? 1.5, rows: guides.rows } : null} />
+                    pageGrid={gridHere} spaceShade={gridPanel ? spaceShade : null} guides={guides.on ? { cols: columnsAt(gridHere, bp), rowStepRem: gridHere.rowStepRem ?? 1.5, rows: guides.rows } : null} />
                 </div>
               </div>
             </div>
@@ -1470,7 +1476,7 @@ export default function BoxDemoPage() {
 
       <PageCheck root={root} isOpen={pageCheckOpen} onClose={() => setPageCheckOpen(false)}
         onShow={(id) => { setPageCheckOpen(false); revealBox(id); }}
-        onPatch={(id, patch) => commit(updateBox(root, id, patch))} />
+        onPatch={(id, patch) => commit(updateBox(root, id, patch))} onSideSpace={(v) => setGrid({ ...gridStored, sideSpace: v })} />
       <DeleteConfirmationModal
         isOpen={confirmDeletePage}
         onClose={() => setConfirmDeletePage(false)}

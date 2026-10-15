@@ -59,7 +59,7 @@ describe("the space between links", () => {
 });
 
 describe("…and the published page carries it", () => {
-  it("links dropped side by side STRAIGHT ON THE PAGE are one section: the line keeps the gutter, the links none (F1-d)", async () => {
+  it("links dropped side by side STRAIGHT ON THE PAGE are one section: the line has the space, the links none (F1-d)", async () => {
     const { siteFromRoot } = await import("@/lib/box-site");
     const { renderSitePage } = await import("@/lib/box-export");
     const { DEFAULT_THEME } = await import("@/lib/site-storage");
@@ -69,8 +69,12 @@ describe("…and the published page carries it", () => {
     const html = renderSitePage(siteFromRoot(root, "P"), DEFAULT_THEME, "P", { inlineShared: true });
     const rule = (id: string) => [...html.matchAll(new RegExp(`\\.bx-${id}\\{([^}]*)\\}`, "g"))].map((m) => m[1]).join(";");
     for (let i = 0; i < 4; i++) expect(rule(`l${i}`), `link ${i} carries the page gutter as its own padding`).not.toMatch(/padding-left:calc/);
-    expect(rule("line")).toContain(`padding-left:${u(SPACE_DEFAULT.gutter)}`);
-    expect(pageBandInset(line, true)).toMatchObject({ paddingTop: u(SPACE_DEFAULT.section), paddingBottom: u(SPACE_DEFAULT.section) });
+    // a line made now has NO space until the user adds it (2026-10-15)…
+    expect(rule("line")).toContain(`padding-left:${u(0)}`);
+    expect(pageBandInset(line, true)).toMatchObject({ paddingTop: u(0), paddingBottom: u(0) });
+    // …and a line of links SAVED before keeps the page gutter and the section space it had
+    const old = { ...line, children: line.children!.map((l) => ({ ...l, bare: undefined })) } as BoxNode;
+    expect(pageBandInset(old, true)).toMatchObject({ paddingLeft: u(SPACE_DEFAULT.gutter), paddingTop: u(SPACE_DEFAULT.section), paddingBottom: u(SPACE_DEFAULT.section) });
     expect(isSectionContentIn(root, "l0"), "the inspector must agree: a menu link is not a page section").toBe(false);
   });
   it("the exported menu line has 1rem across on a phone, 2rem from a tablet up, 0.75rem down, and the chosen value once set", async () => {

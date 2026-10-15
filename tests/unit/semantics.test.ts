@@ -196,3 +196,39 @@ describe("the EXPORT publishes the resolved semantics", () => {
     expect(catalogueEntry("quote")!.build().tag).toBe("figure");
   });
 });
+
+/**
+ * WORDS AT THE PAGE'S EDGE (E-6, the user 2026-10-15): with no space unless it is added, a new page's words sit on its edge — the
+ * deck's whitespace rule says they should not, so the Page check SAYS so, as a suggestion, with "Add space at the sides".
+ */
+import { wordsAtEdge, EDGE_SPACE } from "@/lib/semantics";
+import { createContainer as mkStack, makeRowBand as mkBand, markPageGrid as mark } from "@/lib/box-model";
+import { blockForKind as mkBlock } from "@/lib/box-presets";
+import { emptyPageRoot as mkPage } from "@/lib/box-site";
+describe("words at the page's edge (E-6)", () => {
+  const words = () => mkBlock("text", { text: "Welcome to our school" } as Partial<BoxNode>);
+  const page = (bands: BoxNode[], over: Partial<BoxNode> = {}) => mark({ ...mkPage(), ...over, children: bands });
+  const old = (n: BoxNode): BoxNode => ({ ...n, bare: undefined, children: n.children?.map(old) });
+
+  it("a page made now with words and no side space: one suggestion, with the fix", () => {
+    const p = page([mkBand([mkStack("column", { children: [words()] })])]);
+    expect(wordsAtEdge(p)).toBe(p.children![0].children![0].id);
+    const issue = pageCheck(p).find((i) => i.kind === "words-at-edge")!;
+    expect(issue).toMatchObject({ blocks: false, fix: { sideSpace: EDGE_SPACE } });
+  });
+  it("…not once the site's side space is set, or the block has its own, or the words are in from the edge", () => {
+    const band = () => mkBand([mkStack("column", { children: [words()] })]);
+    expect(wordsAtEdge(page([band()], { gridSpace: { gutter: 20 } }))).toBeNull();
+    expect(wordsAtEdge(page([mkBand([mkStack("column", { paddingLeft: 12, paddingRight: 12, children: [words()] })])]))).toBeNull();
+    expect(wordsAtEdge(page([mkBand([mkStack("column", { children: [mkStack("column", { padding: 8, children: [words()] })] })])]))).toBeNull();
+  });
+  it("only the outer blocks of a row reach the edge: words in the middle column alone are fine", () => {
+    const pic = () => mkBlock("image");
+    expect(wordsAtEdge(page([mkBand([mkStack("column", { children: [pic()] }), mkStack("column", { children: [words()] }), mkStack("column", { children: [pic()] })])]))).toBeNull();
+    expect(wordsAtEdge(page([mkBand([mkStack("column", { children: [pic()] }), mkStack("column", { children: [words()] })])]))).not.toBeNull(); // the last: the right edge
+  });
+  it("a page with no words, and a page saved before, are never asked", () => {
+    expect(wordsAtEdge(page([mkBand([mkStack("column")])]))).toBeNull();
+    expect(wordsAtEdge(old(page([mkBand([mkStack("column", { children: [words()] })])])))).toBeNull();
+  });
+});

@@ -15,7 +15,7 @@
  *
  * Pure: no React, no DOM (engine-stays-portable).
  */
-import { type BoxNode, type Breakpoint, BP_ORDER, isPageRow, resolveResponsive, baseUnitParts, pageRowCells, pageRowTracks, rowSide, bandGutter, longestWordRem } from "./box-model";
+import { type BoxNode, type Breakpoint, BP_ORDER, isBare, isPageRow, resolveResponsive, baseUnitParts, pageRowCells, pageRowTracks, rowSide, bandGutter, longestWordRem } from "./box-model";
 
 /** The elements a container may be. `div` is the neutral default. */
 export type SemanticTag = "div" | "header" | "nav" | "main" | "section" | "article" | "aside" | "footer" | "ul" | "ol" | "figure" | "address";
@@ -204,13 +204,44 @@ export function resolvePage(root: BoxNode): PageSemantics {
 }
 
 /** Something only the user can fix — plain words, what to do, and whether it stops publishing. */
-export type PageIssue = { id: string; kind: "image-description" | "button-words" | "link-words" | "heading-jump" | "picture-missing" | "words-too-tight"; blocks: boolean; message: string; fix?: { level?: number } };
+export type PageIssue = { id: string; kind: "image-description" | "button-words" | "link-words" | "heading-jump" | "picture-missing" | "words-too-tight" | "words-at-edge"; blocks: boolean; message: string; fix?: { level?: number; sideSpace?: number } };
 
 /** The narrowest screen of each kind, in rem — what a row set for that screen has to fit (G3b-11). 360px is the low-cost phone (RULE AF). */
 const NARROWEST_REM: Record<Breakpoint, number> = { phone: 22.5, tabletPortrait: 37.5, tabletLandscape: 56.25, base: 75, wide: 112.5 };
 const SCREEN_WORDS: Record<Breakpoint, string> = { phone: "phones", tabletPortrait: "tablets held upright", tabletLandscape: "tablets held sideways", base: "desktops", wide: "wide screens" };
 
 /** C1: the Page check — ONLY what needs a person. Everything else was corrected by `resolvePage`. */
+/**
+ * WORDS AT THE PAGE'S EDGE (E-6, the user 2026-10-15: no space unless you add it — and the deck's whitespace rule says words never
+ * touch the edge). On a page made now with no side space set, the first block whose words sit at the left or right edge of the
+ * page: nothing between them and it — no padding or margin on the way down, and the block is the first / last of its row. A page
+ * saved before keeps its space by default and is never asked. ponytail: inner spacing only — a block's own colour is not checked.
+ */
+/** The side space "Add space at the sides" sets, in the fluid unit: 23 is ≥ 1 rem on a 360 phone (the audit's floor), ≈ 2 rem wide. */
+export const EDGE_SPACE = 23;
+export function wordsAtEdge(root: BoxNode): string | null {
+  if (!root.pageGrid || !isBare(root) || root.gridSpace?.gutter) return null;
+  const side = (n: BoxNode, k: "Left" | "Right") => (n[`padding${k}`] ?? n.padding ?? 0) + (n[`margin${k}`] ?? n.margin ?? 0);
+  // does a word sit `k` of this block with no space on the way down to it?
+  const touches = (n: BoxNode, k: "Left" | "Right"): boolean => {
+    if (n.hidden || side(n, k) > 0) return false;
+    if (hasText(n)) return true;
+    const kids = (n.children ?? []).filter((c) => !c.hidden);
+    if (!kids.length) return false;
+    // across a row only its first / last block reaches that side; down a stack every block does
+    const across = n.layout === "grid" || (n.direction ?? "column") === "row";
+    return across ? touches(k === "Left" ? kids[0] : kids[kids.length - 1], k) : kids.some((c) => touches(c, k));
+  };
+  for (const band of root.children ?? []) {
+    if (band.hidden) continue;
+    const blocks = band.rowBand ? (band.children ?? []).filter((c) => !c.hidden) : [band];
+    if (!blocks.length) continue;
+    if (touches(blocks[0], "Left")) return blocks[0].id;
+    if (touches(blocks[blocks.length - 1], "Right")) return blocks[blocks.length - 1].id;
+  }
+  return null;
+}
+
 export function pageCheck(root: BoxNode, sem: PageSemantics = resolvePage(root)): PageIssue[] {
   const out: PageIssue[] = [];
   let lastLevel = 0;
@@ -237,6 +268,8 @@ export function pageCheck(root: BoxNode, sem: PageSemantics = resolvePage(root))
     }
   };
   visit(root);
+  const edge = wordsAtEdge(root);
+  if (edge) out.push({ id: edge, kind: "words-at-edge", blocks: false, message: "Words on this page touch its left or right edge, which makes them hard to read — on a phone most of all. Add space at the sides; you can change it any time in Layout guides.", fix: { sideSpace: EDGE_SPACE } });
   // G3b-11 (the user 2026-10-04: "your setting wins"): a row of the page set by hand for a screen is drawn as set there, so say when
   // a WORD would not fit its block on the narrowest such screen — the longest word at the type size it has there, against the room
   // its share leaves after its part of the side space and gaps (G3b-13: not the fit rule's 14 rem readable floor, which breaks no word).

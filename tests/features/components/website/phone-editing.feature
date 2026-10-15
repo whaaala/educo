@@ -30,7 +30,9 @@ Feature: Building a page on a phone (BATCH E-5a)
 
   Scenario: An empty box says where to add
     Given an empty box on a touch screen
-    Then it shows "Add block here — tap +" and a "+" a finger can hit
+    Then it shows a quiet "Drop a block here" that is not a button
+    When I tap the box to select it
+    Then a "+" a finger can hit appears in it
 
   Scenario: The arrows move a block without dragging
     Given I have selected a block alone on its line

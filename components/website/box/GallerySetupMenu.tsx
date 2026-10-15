@@ -17,7 +17,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ImagePlus, Loader2, X } from "lucide-react";
-import { importPhoto, SPACE_DEFAULT } from "@/lib/box-model";
+import { importPhoto } from "@/lib/box-model";
 import { TWELFTHS_COLUMNS, type GalleryPhoto } from "@/lib/box-presets";
 import type { PagerNav } from "@/lib/box-model";
 import { PortalMenu } from "./ui";
@@ -59,7 +59,7 @@ export default function GallerySetupMenu({ anchor, onClose, onPick, mode = "gall
   const [busy, setBusy] = useState(0);
   const [across, setAcross] = useState(3);
   const [stagger, setStagger] = useState(false);
-  const [gap, setGap] = useState<number>(SPACE_DEFAULT.columns); // rule 3: space by default, down to 0 if you want
+  const [gap, setGap] = useState<number>(0); // rule 3: no space unless you add it (2026-10-15)
   const [nav, setNav] = useState<PagerNav>("dots");
   const [auto, setAuto] = useState(0); // movement nobody asked for is what this most easily gets wrong
   const [headline, setHeadline] = useState("Welcome to our school");

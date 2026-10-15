@@ -389,7 +389,10 @@ async function finger(page: Page, path: Pt[], { holdMs = 0, stepMs = 16 } = {}) 
 /** A straight line in `n` steps — a finger's drag, not a jump. */
 const line = (a: Pt, b: Pt, n = 10): Pt[] => Array.from({ length: n + 1 }, (_, i) => ({ x: a.x + ((b.x - a.x) * i) / n, y: a.y + ((b.y - a.y) * i) / n }));
 const mid = (r: { x: number; y: number; width: number; height: number }): Pt => ({ x: r.x + r.width / 2, y: r.y + r.height / 2 });
-const scrolled = (page: Page) => page.evaluate(() => [scrollY, ...Array.from(document.querySelectorAll("*")).map((e) => e.scrollTop)].join());
+// the window and every element that IS scrolled, each named — never a list by position, or an element the gesture adds (a block grown
+// tall enough for its side spacing handles, E6-27) reads as "scrolled" with nothing having moved
+const scrolled = (page: Page) => page.evaluate(() => [`window ${scrollY}`, ...Array.from(document.querySelectorAll("*")).filter((e) => e.scrollTop)
+  .map((e) => `${e.tagName}${e.id ? "#" + e.id : ""}${Array.from(e.attributes).filter((a) => a.name.startsWith("data-")).map((a) => `[${a.name}]`).join("")} ${e.scrollTop}`)].join(" · "));
 const band = (id: string, kids: unknown[]) => ({ id, type: "container", direction: "row", rowBand: true, width: "fill", gap: 0, padding: 0, children: kids });
 
 test.describe("a finger drags and resizes (E-5b)", () => {

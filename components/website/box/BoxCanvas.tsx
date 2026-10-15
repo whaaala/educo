@@ -10,8 +10,9 @@
 
 import { measureCss } from "@/lib/educo-ui/base";
 import { columnFloorRem, dividerThickness, gridLeftoverAt,HAND_FLOOR_REM, isPageRow, LIST_ITEM_GAP, linesAt, pageRowSlot, restForDrag, setFreeInset, slideFreeAt, tabletPlaces }from "@/lib/box-model";
+import { gapPatch, snapSpace, spacePatch, stepSpace, type SpaceSide } from "@/lib/box-model";
 import { resolvePage } from "@/lib/semantics";
-import { Fragment, useEffect, useLayoutEffect, useMemo, useReducer, useRef, useState, type CSSProperties, type ReactNode } from "react";
+import { Fragment, useCallback, useEffect, useLayoutEffect, useMemo, useReducer, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { Link2, Plus, ChevronUp, ChevronDown, Copy, Scissors, ClipboardPaste, Trash2, Upload, GripVertical, MoreVertical, Rows3, Columns3, Grid3x3, Type, Heading as HeadingIcon, MousePointerClick, Image as ImageIcon, Layers, BringToFront, SendToBack, Video as VideoIcon, Sparkles, Minus as MinusIcon, List as ListIcon, Code2, Star, Lock, LockOpen, Ungroup, ArrowUp, ArrowDown, ArrowLeft, ArrowRight, ArrowUpToLine, ArrowDownToLine } from "lucide-react";
 import type { SiteTheme } from "@/lib/site-storage";
@@ -39,7 +40,7 @@ import { isRegistryComponent, renderComponent } from "@/lib/educo-ui/registry";
 import { EditableText, ImageBox } from "@/components/website/sections/SectionKit";
 import ItemCrudLayer, { type SelectedItem } from "@/components/website/box/ItemCrudLayer";
 import { zoomOf } from "@/lib/canvas-zoom";
-import { gridTemplate, guideColor, guideInk, spanOfRect, columnsAt, spanLabel, snapEdgePx, spanText, type PageGridSettings } from "@/lib/page-grid";
+import { gridTemplate, guideColor, guideInk, spaceColors, spanOfRect, columnsAt, spanLabel, snapEdgePx, spanText, type PageGridSettings } from "@/lib/page-grid";
 
 /** Layered background CSS: base fill (colour/gradient) → image → overlay; content renders above. */
 function backgroundStyle(node: BoxNode): React.CSSProperties {
@@ -505,6 +506,226 @@ function LayoutGuides({ view, side, unit, color }: { view: LayoutGuidesView; sid
   );
 }
 
+/** The gaps between a box's flow children, in screen px — the NEAREST neighbour on each side only, so each gap is found once.
+ *  Children that touch count too (a gap of 0), so a gap can be grabbed before it has any size. */
+function gapsIn(host: HTMLElement): { axis: "x" | "y"; l: number; t: number; r: number; b: number }[] {
+  const kids = [...host.querySelectorAll<HTMLElement>("[data-box-id]")]
+    .filter((k) => k.parentElement?.closest("[data-box-id]") === host && !["absolute", "fixed"].includes(getComputedStyle(k).position))
+    .map((k) => k.getBoundingClientRect()).filter((r) => r.width > 0 && r.height > 0);
+  const out: { axis: "x" | "y"; l: number; t: number; r: number; b: number }[] = [];
+  for (let i = 0; i < kids.length; i++) for (let j = 0; j < kids.length; j++) {
+    const a = kids[i], b = kids[j]; if (i === j) continue;
+    const overlapY = Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top), overlapX = Math.min(a.right, b.right) - Math.max(a.left, b.left);
+    if (overlapY > 0 && b.left - a.right >= -0.5 && !kids.some((c) => c !== a && c !== b && c.left >= a.right - 0.5 && c.right <= b.left + 0.5 && Math.min(c.bottom, a.bottom) > Math.max(c.top, a.top)))
+      out.push({ axis: "x", l: a.right, t: Math.max(a.top, b.top), r: Math.max(a.right, b.left), b: Math.min(a.bottom, b.bottom) });
+    if (overlapX > 0 && b.top - a.bottom >= -0.5 && !kids.some((c) => c !== a && c !== b && c.top >= a.bottom - 0.5 && c.bottom <= b.top + 0.5 && Math.min(c.right, a.right) > Math.max(c.left, a.left)))
+      out.push({ axis: "y", l: Math.max(a.left, b.left), t: a.bottom, r: Math.min(a.right, b.right), b: Math.max(a.bottom, b.top) });
+  }
+  return out;
+}
+
+type SpaceHandle = { key: string; kind: "padding" | "margin" | "gap"; side?: SpaceSide; axis?: "x" | "y"; css: number; dir: [number, number]; label: string; name: string;
+  band: { x: number; y: number; w: number; h: number }[]; hit: { x: number; y: number; w: number; h: number }; across: boolean };
+const SIDE_WORD: Record<SpaceSide, string> = { Top: "top", Right: "right", Bottom: "bottom", Left: "left" };
+
+/**
+ * THE SELECTED BLOCK'S SPACE, DRAWN AND DRAGGED ON THE CANVAS (E-6 (3), the user 2026-10-15: "make sure it doesn't look like the
+ * space is added… make sure we can adjust it"; the design is `docs/web-anatomy/spacing-overlay.md` §Recommendation). Inner space
+ * is a green band inside the edge, outer space an orange band outside it, the gap between children a hatch — each labelled with
+ * its size. A handle on every side (a pill; at 0 it sits on the edge and can still be grabbed) drags it: it lands on the spacing
+ * scale, Shift takes bigger steps, Alt moves the opposite side too, Alt + Shift all four; double-click → 0; one Undo per drag.
+ * Each handle is a keyboard slider (arrows step, Shift bigger, Home → 0); the Inspector is the path without dragging.
+ * ponytail: a handle whose side is too short to hold it beside the resize handles (a one-line text's top) is left to the Inspector.
+ */
+function SpaceBands({ blockId, node, baseFont, colors, gapColor, pad, margin, gap, spaceFrom }: {
+  blockId: string; node: BoxNode; baseFont: number; colors: { padding: string; margin: string }; gapColor: string;
+  pad: boolean; margin: boolean; gap: boolean; spaceFrom: () => (patch: Partial<BoxNode>, mergeKey?: string) => void;
+}) {
+  type M = { w: number; h: number; zoom: number; rem: number; unit: number; coarse: boolean; pad: number[]; mar: number[]; gapCss: { x: number; y: number };
+    gaps: { axis: "x" | "y"; l: number; t: number; r: number; b: number }[]; tb: { l: number; t: number; r: number; b: number } | null };
+  const [m, setM] = useState<M | null>(null);
+  const [live, setLive] = useState<string | null>(null); // the handle held or focused: its size is shown beside it
+  const measure = useCallback(() => {
+    const el = document.querySelector<HTMLElement>(`[data-box-id="${CSS.escape(blockId)}"]`);
+    if (!el) { setM(null); return; }
+    const r = el.getBoundingClientRect(), cs = getComputedStyle(el), zoom = r.width / (el.offsetWidth || 1) || 1;
+    const px = (v: string) => Math.max(0, parseFloat(v) || 0);
+    const next: M = { w: r.width, h: r.height, zoom, rem: parseFloat(getComputedStyle(document.documentElement).fontSize) || 16, unit: measureBoxU(el, baseFont),
+      coarse: matchMedia("(pointer: coarse)").matches,
+      pad: [cs.paddingTop, cs.paddingRight, cs.paddingBottom, cs.paddingLeft].map(px), mar: [cs.marginTop, cs.marginRight, cs.marginBottom, cs.marginLeft].map(px),
+      gapCss: { x: px(cs.columnGap), y: px(cs.rowGap) },
+      gaps: gap ? gapsIn(el).map((g) => ({ ...g, l: g.l - r.left, r: g.r - r.left, t: g.t - r.top, b: g.b - r.top })) : [],
+      // where the block's toolbar sits (left or right, above or below): an outer handle must not lie under it (E6-18)
+      tb: ((t) => (t ? { l: t.left - r.left, r: t.right - r.left, t: t.top - r.top, b: t.bottom - r.top } : null))(document.querySelector(`[data-chrome-mirror="${CSS.escape(blockId)}"] [role="toolbar"]`)?.getBoundingClientRect()) };
+    setM((prev) => (JSON.stringify(prev) === JSON.stringify(next) ? prev : next));
+  }, [blockId, baseFont, gap]);
+  // re-measured after EVERY render on purpose: any change to the page moves the bands; `setM` bails out when nothing moved
+  useLayoutEffect(() => { measure(); });
+  useEffect(() => {
+    // a resize or a drag paints straight onto the page with no render here: follow the pointer while a button is down
+    let raf = 0; const soon = () => { cancelAnimationFrame(raf); raf = requestAnimationFrame(measure); };
+    const onMove = (e: PointerEvent) => { if (e.buttons) soon(); };
+    window.addEventListener("pointermove", onMove, true); window.addEventListener("pointerup", soon, true); window.addEventListener("transitionend", soon, true);
+    return () => { cancelAnimationFrame(raf); window.removeEventListener("pointermove", onMove, true); window.removeEventListener("pointerup", soon, true); window.removeEventListener("transitionend", soon, true); };
+  }, [measure]);
+  if (!m) return null;
+
+  const { w, h, zoom } = m, along = m.coarse ? 44 : 24, across = m.coarse ? 22 : 12;
+  const rem = (css: number) => `${+(css / m.rem).toFixed(2)}rem`;
+  const handles: SpaceHandle[] = [];
+  const sides: SpaceSide[] = ["Top", "Right", "Bottom", "Left"];
+  if (pad) sides.forEach((s, i) => {
+    const css = m.pad[i], t = m.pad[0] * zoom, rt = m.pad[1] * zoom, b = m.pad[2] * zoom, l = m.pad[3] * zoom, v = css * zoom;
+    const vert = s === "Top" || s === "Bottom";
+    // E6-14: a one-line block (~18px on the fitted canvas) still holds its top and bottom handle — each takes at most half of it
+    // (6px at least), and a side handle at most its height (12px at least); smaller than that is left to the Inspector
+    const deep = Math.min(across, Math.floor((vert ? h : w) / 2) - 1), long = Math.min(along, (vert ? w : h) - 2);
+    if (deep < 6 || long < 12) return;
+    const band = s === "Top" ? { x: 0, y: 0, w, h: t } : s === "Bottom" ? { x: 0, y: h - b, w, h: b } : s === "Left" ? { x: 0, y: t, w: l, h: h - t - b } : { x: w - rt, y: t, w: rt, h: h - t - b };
+    const hit = s === "Top" ? { x: w / 2 - long / 2, y: v, w: long, h: deep } : s === "Bottom" ? { x: w / 2 - long / 2, y: h - v - deep, w: long, h: deep }
+      : s === "Left" ? { x: v, y: h / 2 - long / 2, w: deep, h: long } : { x: w - v - deep, y: h / 2 - long / 2, w: deep, h: long };
+    handles.push({ key: `padding${s}`, kind: "padding", side: s, css, dir: s === "Top" ? [0, 1] : s === "Bottom" ? [0, -1] : s === "Left" ? [1, 0] : [-1, 0],
+      label: rem(css), name: `Inner space, ${SIDE_WORD[s]}`, band: [band], hit, across: vert });
+  });
+  if (margin) sides.forEach((s, i) => {
+    const css = m.mar[i], v = css * zoom, vert = s === "Top" || s === "Bottom";
+    if ((vert ? w : h) < 72) return; // ¾ along (E6-18: ¼ lay under the block toolbar, at the left) must clear the corner and middle resize handles
+    const band = s === "Top" ? { x: 0, y: -v, w, h: v } : s === "Bottom" ? { x: 0, y: h, w, h: v } : s === "Left" ? { x: -v, y: 0, w: v, h } : { x: w, y: 0, w: v, h };
+    // ¾ along; ¼ where the toolbar (left or right, above or below) lies over ¾; the middle where it covers both (a narrow block — and
+    // then the outer space is wide enough to reach the toolbar, so the handle is well clear of the resize handle on the edge)
+    const under = (x: number, y: number) => !!m.tb && x < m.tb.r && x + along > m.tb.l && y < m.tb.b && y + across > m.tb.t;
+    const across3 = (y: number) => [0.75, 0.25, 0.5].map((f) => w * f - along / 2).find((x) => !under(x, y));
+    // …and where it covers all three (a finger's toolbar is wider than a narrow block) the handle goes out PAST the toolbar: a drag
+    // reads how far the pointer moves, not where it started, so it changes the space just the same
+    const past = (y: number, out: -1 | 1) => (across3(y) !== undefined ? { x: across3(y)!, y } : { x: (w * 3) / 4 - along / 2, y: out < 0 ? Math.min(y, m.tb!.t - across - 2) : Math.max(y, m.tb!.b + 2) });
+    const hit = s === "Top" ? { ...past(-v - across, -1), w: along, h: across } : s === "Bottom" ? { ...past(h + v, 1), w: along, h: across }
+      : s === "Left" ? { x: -v - across, y: (h * 3) / 4 - along / 2, w: across, h: along } : { x: w + v, y: (h * 3) / 4 - along / 2, w: across, h: along };
+    handles.push({ key: `margin${s}`, kind: "margin", side: s, css, dir: s === "Top" ? [0, -1] : s === "Bottom" ? [0, 1] : s === "Left" ? [-1, 0] : [1, 0],
+      label: rem(css), name: `Outer space, ${SIDE_WORD[s]}`, band: [band], hit, across: vert });
+  });
+  const both = new Set(m.gaps.map((g) => g.axis)).size > 1;
+  for (const axis of ["x", "y"] as const) {
+    const gs = m.gaps.filter((g) => g.axis === axis); if (!gs.length) continue;
+    const g = gs[0], css = axis === "x" ? m.gapCss.x : m.gapCss.y, cx = (g.l + g.r) / 2, cy = (g.t + g.b) / 2;
+    handles.push({ key: `gap${axis}`, kind: "gap", axis, css, dir: axis === "x" ? [1, 0] : [0, 1], label: rem(css), name: axis === "x" ? "Space between columns" : "Space between rows",
+      band: gs.map((b) => ({ x: b.l, y: b.t, w: b.r - b.l, h: b.b - b.t })),
+      hit: axis === "x" ? { x: cx - across / 2, y: cy - along / 2, w: across, h: along } : { x: cx - along / 2, y: cy - across / 2, w: along, h: across }, across: axis === "y" });
+  }
+
+  const patchFor = (hd: SpaceHandle, v: number, alt: boolean, shift: boolean): Partial<BoxNode> =>
+    hd.kind === "gap" ? gapPatch(node, hd.axis!, v, both) : spacePatch(hd.kind, hd.side!, v, { alt: alt && !shift, all: alt && shift });
+  const stored = (hd: SpaceHandle) => (hd.css / m.unit) * 10;
+  const start = (e: React.MouseEvent | React.PointerEvent, hd: SpaceHandle) => {
+    // E6-19: an inner handle lies over the block's first words (c-21's problem) — a press that never moves is the words' click
+    caretFallthrough(e, blockId);
+    e.preventDefault(); e.stopPropagation();
+    const write = spaceFrom(), key = `gesture:space:${blockId}:${hd.key}:${Date.now()}`, x0 = e.clientX, y0 = e.clientY, from = stored(hd);
+    let last = "", moved = false;
+    setLive(hd.key);
+    followGesture(e, (ev) => {
+      const dx = ev.clientX - x0, dy = ev.clientY - y0;
+      if (!moved && Math.hypot(dx, dy) < 3) return; // a press that does not move changes nothing (a double-click is two of them)
+      moved = true;
+      const css = (hd.dir[0] * dx + hd.dir[1] * dy) / zoom;
+      const v = snapSpace(from + (css / m.unit) * 10, ev.shiftKey && !ev.altKey);
+      const at = `${v}${ev.altKey}${ev.shiftKey}`; if (at === last) return; last = at;
+      write(patchFor(hd, v, ev.altKey, ev.shiftKey), key);
+    }, () => setLive(null));
+  };
+  const onKey = (e: React.KeyboardEvent, hd: SpaceHandle) => {
+    const up = e.key === "ArrowUp" || e.key === "ArrowRight", down = e.key === "ArrowDown" || e.key === "ArrowLeft";
+    if (!up && !down && e.key !== "Home" && e.key !== "End") return;
+    e.preventDefault(); e.stopPropagation();
+    const v = e.key === "Home" ? 0 : e.key === "End" ? snapSpace(Infinity) : stepSpace(stored(hd), up ? 1 : -1, e.shiftKey);
+    spaceFrom()(patchFor(hd, v, e.altKey, false), `space:${blockId}:${hd.key}`);
+  };
+  const toZero = (hd: SpaceHandle) => { if (hd.css > 0) spaceFrom()(patchFor(hd, 0, false, false)); }; // already none: nothing to write, nothing to undo
+  const tint = (hd: SpaceHandle) => (hd.kind === "gap" ? gapColor : colors[hd.kind]);
+  const chip = (c: string): React.CSSProperties => ({ background: c, color: guideInk(c), font: "500 0.6875rem/1 ui-monospace, monospace", padding: "0.2rem 0.35rem", borderRadius: "0.1875rem", whiteSpace: "nowrap" });
+  return (
+    <>
+      {handles.map((hd) => hd.band.filter((b) => b.w >= 1 && b.h >= 1).map((b, i) => {
+        const c = tint(hd);
+        const fill = hd.kind === "gap" ? `repeating-linear-gradient(45deg, color-mix(in oklch, ${c} 45%, transparent) 0 0.125rem, color-mix(in oklch, ${c} 15%, transparent) 0.125rem 0.375rem)` : `color-mix(in oklch, ${c} 22%, transparent)`;
+        // E6-16: the label sits ¼ along the band, clear of its handle (½) and the outer one (¾), and only where the band holds it
+        const fits = hd.across ? b.h >= 16 && b.w >= 60 : b.w >= 56 && b.h >= 24;
+        return (
+          <div key={`${hd.key}-${i}`} aria-hidden="true" data-space-band={hd.key} onMouseDown={(e) => start(e, hd)} onPointerDown={onFingerDown((e) => start(e, hd))} onDoubleClick={() => toZero(hd)}
+            className="touch-none" style={{ position: "absolute", left: b.x, top: b.y, width: b.w, height: b.h, background: fill,
+              outline: `1px solid color-mix(in oklch, ${c} 70%, transparent)`, outlineOffset: "-1px", pointerEvents: "auto", cursor: hd.across ? "ns-resize" : "ew-resize" }}>
+            {fits && i === 0 && <span style={{ ...chip(c), position: "absolute", left: hd.across ? "25%" : "50%", top: hd.across ? "50%" : "25%", transform: "translate(-50%, -50%)" }}>{hd.label}</span>}
+          </div>
+        );
+      }))}
+      {handles.map((hd) => {
+        const c = tint(hd);
+        return (
+          <div key={hd.key} role="slider" tabIndex={0} aria-label={hd.name} aria-orientation={hd.across ? "vertical" : "horizontal"}
+            aria-valuemin={0} aria-valuemax={snapSpace(Infinity)} aria-valuenow={Math.round(stored(hd))} aria-valuetext={`${hd.name}: ${hd.label}`}
+            title={`${hd.name} — drag · Shift bigger steps · Alt both sides · Alt+Shift all sides · double-click for none`}
+            data-space-handle={hd.key} onMouseDown={(e) => start(e, hd)} onPointerDown={onFingerDown((e) => start(e, hd))} onDoubleClick={() => toZero(hd)}
+            onKeyDown={(e) => onKey(e, hd)} onFocus={() => setLive(hd.key)} onBlur={() => setLive((k) => (k === hd.key ? null : k))}
+            className="touch-none grid place-items-center rounded-sm focus-visible:outline-2 focus-visible:outline-offset-1"
+            style={{ position: "absolute", left: hd.hit.x, top: hd.hit.y, width: hd.hit.w, height: hd.hit.h, pointerEvents: "auto", outlineColor: c, cursor: hd.across ? "ns-resize" : "ew-resize", zIndex: CHROME_Z.spaceHandle }}>
+            {/* no pointer of their own (E6-21): every layer here is one more for a still tap to peel before it reaches the words */}
+            <span aria-hidden="true" className="block rounded-full ring-1 ring-white shadow pointer-events-none" style={{ width: hd.across ? Math.min(20, hd.hit.w) : 5, height: hd.across ? 5 : Math.min(20, hd.hit.h), background: c }} />
+            {live === hd.key && <span aria-hidden="true" data-space-live style={{ ...chip(c), position: "absolute", left: "100%", top: "100%", pointerEvents: "none" }}>{hd.label}</span>}
+          </div>
+        );
+      })}
+    </>
+  );
+}
+
+/** Which of the page grid's spaces is being changed in its panel — shaded on the canvas while its slider is held or focused. */
+export type SpaceShadeKind = "side" | "columnGap" | "rowGap";
+
+/**
+ * YOU SEE THE SPACE YOU ARE CHANGING (E6-5, the user 2026-10-15: "I don't exactly know what I'm doing… I don't see it straight
+ * away on the canvas"). While a page grid slider is held or focused, the space it moves is hatched over the page with its size:
+ * the page's frame (Side space), every gap between blocks side by side (columns), every gap between blocks one under another
+ * (rows). Measured from the drawn blocks after every change, so it moves with the slider. Never published, never clickable.
+ * ponytail: gaps a block set for itself are shaded too — they sit in the same places, and the label says their size.
+ */
+function SpaceShade({ kind, side, unit, color }: { kind: SpaceShadeKind; side: string; unit: string; color: string }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [shades, setShades] = useState<{ x: number; y: number; w: number; h: number; label: string }[]>([]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- re-measured after EVERY render on purpose: any change to the page moves what it shades; `setShades` bails out when nothing moved
+  useLayoutEffect(() => {
+    const me = ref.current; const page = me?.parentElement; if (!me || !page) return;
+    const box = me.getBoundingClientRect(); const zoom = box.width / (me.offsetWidth || 1) || 1;
+    const rem = parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
+    const at = (l: number, t: number, r: number, b: number) => ({ x: (l - box.left) / zoom, y: (t - box.top) / zoom, w: (r - l) / zoom, h: (b - t) / zoom,
+      label: `${+(((kind === "rowGap" ? b - t : r - l) / zoom) / rem).toFixed(2)}rem` });
+    const out: ReturnType<typeof at>[] = [];
+    if (kind === "side") {
+      // the frame at the top and bottom is the page root's padding; at the sides it is `side` (drawn by CSS, so measured off a probe)
+      const pr = page.querySelector<HTMLElement>("[data-box-id]"); const cs = pr && getComputedStyle(pr);
+      const probe = me.querySelector<HTMLElement>("[data-side-probe]"); const sw = (probe?.getBoundingClientRect().width ?? 0);
+      if (sw >= 1) { out.push(at(box.left, box.top, box.left + sw, box.bottom), at(box.right - sw, box.top, box.right, box.bottom)); }
+      const pt = parseFloat(cs?.paddingTop ?? "0") * zoom, pb = parseFloat(cs?.paddingBottom ?? "0") * zoom;
+      if (pt >= 1) out.push({ ...at(box.left, box.top, box.right, box.top + pt), label: `${+(pt / zoom / rem).toFixed(2)}rem` });
+      if (pb >= 1) out.push({ ...at(box.left, box.bottom - pb, box.right, box.bottom), label: `${+(pb / zoom / rem).toFixed(2)}rem` });
+    } else {
+      const axis = kind === "columnGap" ? "x" : "y";
+      for (const host of page.querySelectorAll<HTMLElement>("[data-box-id]"))
+        for (const g of gapsIn(host)) if (g.axis === axis && (axis === "x" ? g.r - g.l : g.b - g.t) >= 1) out.push(at(g.l, g.t, g.r, g.b));
+    }
+    setShades((prev) => (JSON.stringify(prev) === JSON.stringify(out) ? prev : out));
+  });
+  const fill = `repeating-linear-gradient(45deg, color-mix(in oklch, ${color} 45%, transparent) 0 0.125rem, color-mix(in oklch, ${color} 15%, transparent) 0.125rem 0.375rem)`;
+  return (
+    <div ref={ref} aria-hidden="true" data-space-shade={kind} style={{ ["--box-u" as string]: unit, position: "absolute", inset: 0, pointerEvents: "none", zIndex: CHROME_Z.guides }}>
+      <div data-side-probe style={{ position: "absolute", width: side, height: 0, visibility: "hidden" }} />
+      {shades.map((s, i) => (
+        <div key={i} data-shade style={{ position: "absolute", left: s.x, top: s.y, width: s.w, height: s.h, backgroundImage: fill, outline: `1px solid color-mix(in oklch, ${color} 70%, transparent)`, outlineOffset: "-1px", display: "grid", placeItems: "center", overflow: "visible" }}>
+          <span style={{ background: color, color: guideInk(color), font: "500 0.6875rem/1 ui-monospace, monospace", padding: "0.2rem 0.35rem", borderRadius: "0.1875rem", whiteSpace: "nowrap" }}>{s.label}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 /**
  * THE GUIDES' LINES, IN SCREEN SPACE (G3-7). Drawn inside the zoomed page, a line one screen pixel wide falls BETWEEN pixels
  * wherever the zoom puts it there, and the browser smears it lighter across two — at a 61 % fit some lines looked darker than
@@ -535,8 +756,11 @@ function GuideLines({ color, rows }: { color: string; rows: boolean }) {
     const soon = () => { cancelAnimationFrame(raf); raf = requestAnimationFrame(measure); };
     measure();
     const ro = new ResizeObserver(soon); const g = document.querySelector("[data-layout-guides]"); if (g) ro.observe(g);
+    // …and a change of the GRID itself (E6-11, the user 2026-10-15: "it doesn't show me straight away"): more columns or another row
+    // height leave the guides' box the same size, so nothing re-measured and the lines stayed as they were until the page scrolled
+    const mo = new MutationObserver(soon); if (g) mo.observe(g, { attributes: true, childList: true });
     window.addEventListener("scroll", soon, true); window.addEventListener("resize", soon); window.addEventListener("transitionend", soon, true);
-    return () => { cancelAnimationFrame(raf); ro.disconnect(); window.removeEventListener("scroll", soon, true); window.removeEventListener("resize", soon); window.removeEventListener("transitionend", soon, true); };
+    return () => { cancelAnimationFrame(raf); ro.disconnect(); mo.disconnect(); window.removeEventListener("scroll", soon, true); window.removeEventListener("resize", soon); window.removeEventListener("transitionend", soon, true); };
   }, []); // once: a ResizeObserver, scroll, resize and the transition re-measure it (measuring every render would loop on its own state)
   if (!m) return null;
   const { clip } = m, from = Math.max(m.top, clip.top), to = Math.min(m.bottom, clip.bottom);
@@ -768,7 +992,7 @@ function ChromeMirror({ blockId, children }: { blockId: string; children: ReactN
 }
 
 export default function BoxCanvas({
-  root, theme, editable = true, selectedId, onSelectId, selectedIds, onSelectIds, onChange, onResized, minHeight = 600, breakpoint = "base", showHidden = false, marqueeRoom, guides = null, pageGrid,
+  root, theme, editable = true, selectedId, onSelectId, selectedIds, onSelectIds, onChange, onResized, minHeight = 600, breakpoint = "base", showHidden = false, marqueeRoom, guides = null, pageGrid, spaceShade = null,
 }: {
   root: BoxNode;
   theme: SiteTheme;
@@ -787,8 +1011,10 @@ export default function BoxCanvas({
   showHidden?: boolean;    // draw blocks hidden at this breakpoint faintly (off: they are gone, as on the published page)
   guides?: LayoutGuidesView | null; // the layout guides (G-2): the page grid drawn over the canvas while on; never published
   pageGrid?: PageGridSettings;      // the page grid in force (resolved) — a page row's resized edge snaps to its lines (G-3 (2))
+  spaceShade?: SpaceShadeKind | null; // the page grid space being changed in its panel, hatched over the page (E6-5)
 }) {
   const guideHue = guideColor(theme.background);
+  const spaceHues = spaceColors(theme.background);
   const [menuFor, setMenuFor] = useState<string | null>(null); // which box's actions dropdown is open
   // The "add a block inside" menu an EMPTY box's own + opens. Separate from `menuFor`, which is the whole
   // actions dropdown: this one offers only the thing the empty box is asking for.
@@ -3568,6 +3794,13 @@ export default function BoxCanvas({
         ))}
       </>
     ) : null;
+    // E-6 (3): its space, drawn and dragged. A Button or a component keeps the inner space its design stores (the user, 2026-10-15).
+    const spaceBands = isSolo && editable && !isRoot && !node.locked ? (
+      <SpaceBands blockId={node.id} node={node} baseFont={root.baseFont ?? 10} colors={spaceHues} gapColor={guideHue}
+        // E6-20: an EMPTY box has nothing inside to space yet, and its centre is its + — on a phone a finger's handle covered it
+        pad={!selfPaint && !(isContainer(node) && !(node.children ?? []).length)} margin={!floating} gap={isContainer(node)}
+        spaceFrom={() => { const base = rootRef.current; return (p, k) => onChange(writeBox(base, node.id, p), k); }} />
+    ) : null;
 
     // Select on mousedown (fires before the inline editor's click-guard) and stop propagation so the
     // DEEPEST box under the pointer wins and the canvas-background deselect doesn't also fire. Also arm a
@@ -3744,7 +3977,11 @@ export default function BoxCanvas({
             // CENTRED, WITH ROOM AT THE SIDES. A narrowed stack (224px, its reflow floor) held the whole sentence
             // on one 221px line flush against the dashes, so "Empty" lost its E under the border and the resize
             // handle; narrower still it wrapped left-aligned. Found by the RULE Q sweep, 2026-09-26.
-            <div data-ph className="absolute inset-0 flex flex-col items-center justify-center gap-1.5 overflow-hidden text-center text-gray-400 dark:text-gray-500 border border-dashed border-gray-300/80 dark:border-white/15 pointer-events-none" style={{ fontSize: u(11), paddingInline: u(12), borderRadius: "inherit" }}>
+            // QUIET, AND NOT A BUTTON (E-6 (4), the user 2026-10-03: "do we actually need that in the center… that doesn't make the
+            // user click on it by mistake"; Webflow / Wix Studio): a faint dashed outline and a small "Drop a block here" that a
+            // screen reader skips (the box is named by its own toolbar); the + only on the SELECTED empty box. The words sit on
+            // their own chip (E6-4: grey on a box the user had coloured dark could not be read).
+            <div data-ph className="absolute inset-0 flex flex-col items-center justify-center gap-1.5 overflow-hidden text-center border border-dashed border-gray-300/70 dark:border-white/15 midnight:border-white/15 purple:border-white/15 pointer-events-none" style={{ fontSize: u(11), paddingInline: u(12), borderRadius: "inherit" }}>
               {/* A REAL BUTTON, because the line under it says "click to add" and nothing did.
                   The pill was a `<span>` inside a `pointer-events-none` hint, so an empty box contained
                   exactly zero buttons: measured three clicks on one, no menu, no child, nothing but the box
@@ -3753,7 +3990,7 @@ export default function BoxCanvas({
                   than a side effect of the palette, so the empty box is exactly where someone looks for it.
                   `pointer-events-auto` because the hint around it deliberately has none: clicking the BOX
                   still just selects it, and only the pill adds. */}
-              <button
+              {isSolo && <button
                 type="button"
                 // A DISTINCT NAME from the inspector's "Add a block inside" button. They do different things —
                 // this one opens a menu to choose from, that one adds straight away — and giving two
@@ -3767,10 +4004,10 @@ export default function BoxCanvas({
                   const r = (e.currentTarget as HTMLElement).getBoundingClientRect();
                   setAddInside({ id: node.id, anchor: { top: r.top, bottom: r.bottom, left: r.left, right: r.right } });
                 }}
-                className="pointer-events-auto flex items-center justify-center rounded-full pointer-coarse:min-w-[min(2.75rem,60%)] pointer-coarse:min-h-[min(2.75rem,60%)] bg-gray-100 dark:bg-white/5 hover:bg-brand/15 hover:text-brand transition-colors"
+                className="pointer-events-auto flex items-center justify-center rounded-full pointer-coarse:min-w-[min(2.75rem,60%)] pointer-coarse:min-h-[min(2.75rem,60%)] bg-white/85 text-gray-600 dark:bg-gray-900/85 dark:text-gray-300 midnight:bg-slate-950/85 midnight:text-slate-300 purple:bg-purple-950/85 purple:text-purple-200 hover:bg-brand/15 hover:text-brand transition-colors"
                 style={{ width: u(22), height: u(22) }}
-              ><Plus className="w-3.5 h-3.5" /></button>
-              <span className="pointer-coarse:hidden">Empty — drag a block in, or click to add</span><span className="hidden pointer-coarse:inline">Add block here — tap +</span>
+              ><Plus className="w-3.5 h-3.5" /></button>}
+              <span aria-hidden="true" data-ph-words className="rounded px-1.5 py-0.5 bg-white/95 text-gray-600 dark:bg-gray-900/85 dark:text-gray-300 midnight:bg-slate-950/85 midnight:text-slate-300 purple:bg-purple-950/85 purple:text-purple-200">Drop a block here</span>
             </div>
           )}
           {/* THE LEFTOVER COLUMNS OF A ROW, offered as a place to put something.
@@ -3805,7 +4042,7 @@ export default function BoxCanvas({
               </button>
             );
           })()}
-          {isSolo && <ChromeMirror blockId={node.id}><NodeToolbar node={node} isRoot={isRoot} />{resizeHandles}{guides && !isRoot && <SpanChip blockId={node.id} cols={guides.cols} color={guideHue} />}</ChromeMirror>}
+          {isSolo && <ChromeMirror blockId={node.id}><NodeToolbar node={node} isRoot={isRoot} />{resizeHandles}{spaceBands}{guides && !isRoot && <SpanChip blockId={node.id} cols={guides.cols} color={guideHue} />}</ChromeMirror>}
         </Tag>
       );
     }
@@ -3840,7 +4077,7 @@ export default function BoxCanvas({
         className={`${isSel ? "outline outline-2 outline-indigo-500 outline-offset-[-2px]" : editable ? "hover:outline hover:outline-1 hover:outline-indigo-300/70 hover:outline-offset-[-1px]" : ""}`}
       >
         <ElementView node={node} headingLevel={semR?.level} theme={theme} editable={editable} selected={isSel} breakpoint={breakpoint} fill={fillsRowsAnywhere(fillHostOf(parent, grand))} onText={(v) => onChange(updateBox(root, node.id, { text: v }))} onSrc={(v) => onChange(updateBox(root, node.id, { src: v }))} onPatchNode={(patch) => onChange(updateBox(root, node.id, patch))} itemSel={itemSel} setItemSel={setItemSel} />
-        {isSolo && <ChromeMirror blockId={node.id}><NodeToolbar node={node} isRoot={isRoot} />{resizeHandles}{guides && !isRoot && <SpanChip blockId={node.id} cols={guides.cols} color={guideHue} />}</ChromeMirror>}
+        {isSolo && <ChromeMirror blockId={node.id}><NodeToolbar node={node} isRoot={isRoot} />{resizeHandles}{spaceBands}{guides && !isRoot && <SpanChip blockId={node.id} cols={guides.cols} color={guideHue} />}</ChromeMirror>}
       </Tag>
     );
   };
@@ -4093,6 +4330,7 @@ export default function BoxCanvas({
       )}
       {editable && guides && <LayoutGuides view={guides} side={frameCss(root)} unit={baseUnit(root.baseFont ?? 10)} color={guideHue} />}
       {editable && guides && <GuideLines color={guideHue} rows={guides.rows} />}
+      {editable && spaceShade && <SpaceShade kind={spaceShade} side={frameCss(root)} unit={baseUnit(root.baseFont ?? 10)} color={guideHue} />}
       {/* Marquee (rubber-band) selection rectangle. Portaled so it's never clipped. */}
       {marquee && createPortal(
         <div aria-hidden="true" style={{ position: "fixed", left: Math.min(marquee.x0, marquee.x), top: Math.min(marquee.y0, marquee.y), width: Math.abs(marquee.x - marquee.x0), height: Math.abs(marquee.y - marquee.y0), pointerEvents: "none", zIndex: CHROME_Z.marquee }} className="border-2 border-dashed border-indigo-500 bg-indigo-500/10 rounded" />,

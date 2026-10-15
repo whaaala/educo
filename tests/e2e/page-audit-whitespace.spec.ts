@@ -11,8 +11,10 @@ const { auditDoc } = require("../../scripts/uat/page-audit.js") as { auditDoc: (
  * The audit is the sweep's critic, so it is tested like code (docs/RISKS.md R5): it must say NOTHING about a page at its
  * defaults, and it must flag each way the space can be taken away. Pages go through the shipping export.
  */
-const auditOf = async (page: Page, blocks: BoxNode[], width: number) => {
-  const root = emptyPageRoot(); root.children = blocks; // the app's own page root — the test helper `createRoot` has a 600px floor no page has
+/** A block as a page saved before 2026-10-15 holds it — made under space by default, without the `bare` mark. */
+const saved = (n: BoxNode): BoxNode => { const { bare: _bare, ...rest } = n; return { ...rest, ...(n.children ? { children: n.children.map(saved) } : {}) } as BoxNode; };
+const auditOf = async (page: Page, blocks: BoxNode[], width: number, old = false) => {
+  const root = old ? saved(emptyPageRoot()) : emptyPageRoot(); root.children = old ? blocks.map(saved) : blocks; // the app's own page root — the test helper `createRoot` has a 600px floor no page has
   const site = siteFromRoot(root);
   await page.setViewportSize({ width, height: 900 });
   await page.setContent(renderSitePage(site, DEFAULT_THEME, site.homeId, { inlineShared: true }), { waitUntil: "domcontentloaded" });
@@ -23,12 +25,19 @@ const section = (patch: Partial<BoxNode>, kids: BoxNode[]) => blockForKind("cont
 
 for (const width of [375, 768, 1280, 1920]) {
   test.describe(`at ${width}`, () => {
-    test("a page at its defaults: nothing to report", async ({ page }) => {
-      expect(await auditOf(page, [
-        blockForKind("heading"), text(),
-        section({ background: "var(--eu-color-primary-50)" }, [text()]), section({ background: "var(--eu-color-surface)" }, [text()]),
-        blockForKind("card"), blockForKind("button"), blockForKind("stat"), blockForKind("alert"),
-      ], width)).toEqual([]);
+    const defaults = () => [
+      blockForKind("heading"), text(),
+      section({ background: "var(--eu-color-primary-50)" }, [text()]), section({ background: "var(--eu-color-surface)" }, [text()]),
+      blockForKind("card"), blockForKind("button"), blockForKind("stat"), blockForKind("alert"),
+    ];
+    test("a page saved with space by default: nothing to report", async ({ page }) => {
+      expect(await auditOf(page, defaults(), width, true)).toEqual([]);
+    });
+
+    // NO SPACE UNLESS YOU ADD IT (the user, 2026-10-15): a page made now has its words at the page edge until space is added —
+    // and the audit, the deck's whitespace rule (RULE D), SAYS so: it is the hint the Page check gives, with "Add space".
+    test("a page made now, with no space added: the audit says its words touch the page edge (W7a)", async ({ page }) => {
+      expect((await auditOf(page, defaults(), width)).join("\n")).toMatch(/^W7a \d+ runs of words closer than 1rem to the page edge/m);
     });
 
     test("a section with its gutter set to 0: words closer than 1rem to the page edge (W7a)", async ({ page }) => {
@@ -43,7 +52,7 @@ for (const width of [375, 768, 1280, 1920]) {
 
     test("a pager's slides waiting off screen are not words near the page edge (L3-c)", async ({ page }) => {
       const slide = (n: number) => section({}, [text({ text: `Welcome to our school ${n}` })]);
-      expect(await auditOf(page, [section({ pager: true }, [slide(1), slide(2), slide(3)])], width)).toEqual([]);
+      expect(await auditOf(page, [section({ pager: true }, [slide(1), slide(2), slide(3)])], width, true)).toEqual([]); // spaced, so only the slides could be reported
     });
 
     test("two sections with their space set to 0: words closer than 1rem (W7b)", async ({ page }) => {

@@ -160,20 +160,48 @@ The **eye** beside the device chips (*Show hidden blocks*) draws hidden blocks f
 click it again and they are gone.
 :::
 
-## 6½. "My words never touch an edge" — space by default
+## 6½. "No space unless I add it" — and I can see every space I add
 
-I drop a Heading on an empty page. Its words sit a gutter in from both edges (about 2rem; a little less on a phone),
-with a little space above and below — I never set any of it. I drop three Stacks beside each other and colour them: a
-**1rem gap** runs between them, the first still starts at the page's left edge and the last ends at its right, and all
-three stay on one line.
+I drop a Stack on an empty page, then two Texts into it. Nothing has any space: the Stack sits against the page's edges,
+the two lines sit against each other. Giving the Stack a background colour changes none of that — colour never adds or
+takes away space. Space is something I add, so it never looks like a mistake.
 
-Every one of these is mine to change, down to zero: select the block, open **Spacing**, and each control says
-"Default ·" and its value until I move it, with **Back to default** to undo my change. A heading's own default is 0 —
-its gutter belongs to the section around it, so that is where it is changed.
+**I select the Stack and its space is drawn on it.** Small handles sit on its edges: a green one just inside each side
+(its **inner space**), an orange one just outside its edges (its **outer space**; a short block has them at the top and bottom only), and a pink one between the two
+lines (the **space between** them). Each is there even at 0, so I can grab it.
 
-A page I saved before these defaults existed opens exactly as it was.
+**I drag the top green handle down.** A green band opens at the top, the words move down with it, and the band says its
+size — "2rem". It moves in steps of the spacing scale (0 · ¼ · ½ · ¾ · 1 · 1¼ · 1½ · 2 · 2½ · 3 · 4 · 5 · 6 rem), so
+everything I add lines up with everything else. One **Undo** takes the whole drag back.
 
-[![The Inspector's Spacing section for a heading: Inner spacing and Outer spacing, each reading Default · 0rem, with a box per side](img/story-spacing-default.webp)](img/story-spacing-default.webp)
+- **Shift** while I drag takes bigger steps.
+- **Alt** moves the opposite side with it — top and bottom, or left and right, together.
+- **Alt + Shift** moves all four sides at once.
+- A **double-click** on a band takes that space back to none.
+
+The outer space below the Stack is an orange band outside its edge; the space between the two lines is a pink hatch. A
+**Button** or a ready-made component (a Card, a Quote…) keeps the inner space its design comes with, so it shows only its
+outer handles.
+
+**With the keyboard:** I press Tab from the block's toolbar and reach each handle; a screen reader says "Inner space, top:
+0rem". **↑ / →** add a step, **↓ / ←** take one away, **Shift** makes it two steps, **Home** goes to none. The block itself
+stays where it is.
+
+**Per screen:** with the canvas on **Phone**, a drag changes the phone only — the desktop keeps its space, exactly like the
+Inspector's controls. The bands, handles and labels are never published.
+
+The same spaces are in the Inspector under **Spacing** (Inner spacing, Outer spacing, Space between blocks), for anyone who
+would rather type or slide than drag.
+
+A page I saved before 15 October 2026 opens exactly as it was, with the space it had.
+
+[![A selected Stack holding two lines of text: green bands at its top, bottom and sides labelled 2.2rem, a pink hatch between the two lines, an orange band below it labelled 2.2rem, and a small handle on every edge](img/story-spacing-overlay.webp)](img/story-spacing-overlay.webp)
+
+**An empty box says where to add, quietly.** A box with nothing in it has a faint dashed outline and the words **Drop a
+block here** on a small chip that reads on any colour I give the box — not a button, so a stray click never adds anything.
+I select it and a small **+** appears in it; **Add a block inside** on its toolbar does the same.
+
+[![An empty box, selected: a faint dashed outline, a small + and "Drop a block here" in the middle, its resize handles and outer-space handles around it](img/story-empty-box.webp)](img/story-empty-box.webp)
 
 ---
 
@@ -473,8 +501,9 @@ adds goes after it. Back, Escape or the ✕ puts the sheet away without leaving 
 
 [![The builder on a 393px phone: the page at full size, and the blocks sheet risen from the bottom with "Add it: After"](img/story-phone-sheet.webp)](img/story-phone-sheet.webp)
 
-**An empty box says where to add.** On a touch screen an empty box reads **Add block here — tap +**, and its **+** is a
-finger's size.
+**An empty box says where to add, quietly.** An empty box has a faint dashed outline and the words **Drop a block here** —
+not a button, so a stray tap never adds anything. Tap the box to select it and a small **+** appears in it, a finger's
+size; **Add a block inside** on its toolbar does the same.
 
 **She moves blocks with arrows.** On a phone the selected block's toolbar waits at the bottom of the
 screen, under her thumb, instead of hanging over the page, so it never covers the block below the one she chose. It has

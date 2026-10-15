@@ -147,7 +147,8 @@ test.describe("an image that knows its own shape", () => {
     ]));
     await page.waitForSelector('[data-box-id="band"]', { timeout: 20000 });
 
-    // The empty box's own affordance, then the block type — no fixture writes the height here.
+    // The empty box's own affordance, then the block type — no fixture writes the height here. Its + shows once it is selected (E-6 (4)).
+    await page.locator('[data-box-id="band"] [data-box-id="band"]').click(); // the seeded box, inside `sitePage`'s own "band"
     await page.locator('button[aria-label="Choose a block to add inside"]').first().click();
     await page.locator("button").filter({ hasText: /^Image$/ }).first().click();
     // `attached`, not visible: the real control is a hidden file input that a styled button clicks for it.
