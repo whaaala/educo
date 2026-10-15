@@ -32,6 +32,19 @@ describe("Compact inspector atoms", () => {
     expect(onChange).toHaveBeenCalledWith("700");
   });
 
+  it("A1-5: the scroll that brought the button into view does not close the list it just opened; a scroll that moves it does", () => {
+    render(<CompactSelect label="Font" value="" onChange={vi.fn()} options={[{ value: "", label: "Theme default" }, { value: "lora", label: "Lora · Serif" }]} />);
+    const trigger = screen.getByLabelText("Font");
+    let top = 400;
+    trigger.getBoundingClientRect = () => ({ top, bottom: top + 32, left: 0, right: 200, width: 200, height: 32, x: 0, y: top, toJSON: () => ({}) });
+    fireEvent.click(trigger);
+    fireEvent.scroll(document); // arrives after the click, button where it was when the list opened
+    expect(screen.queryByRole("listbox")).not.toBeNull();
+    top = 300; // the person scrolls the Inspector: the button moves away from its list
+    fireEvent.scroll(document);
+    expect(screen.queryByRole("listbox")).toBeNull();
+  });
+
   it("CompactSelect renders grouped options with headers", () => {
     const onChange = vi.fn();
     render(<CompactSelect label="Design" value="" onChange={onChange} optionGroups={[{ group: "G1", items: [{ value: "", label: "Boxed" }, { value: "--panel", label: "Panel" }] }]} />);

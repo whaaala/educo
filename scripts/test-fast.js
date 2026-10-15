@@ -100,6 +100,7 @@ const INVARIANT_SPECS = [
   "tests/e2e/photo-gallery.spec.ts",
   "tests/e2e/pager-hero.spec.ts",
   "tests/e2e/add-without-asking.spec.ts",
+  "tests/e2e/upload-resized.spec.ts",
   "tests/e2e/side-by-side-drop.spec.ts",
   "tests/e2e/empty-block-floor.spec.ts",
   // These three are builder invariants that were on disk but in NEITHER list, so `test:fast` never ran them

@@ -15,6 +15,7 @@ import { Pipette, Palette as PaletteIcon, Wand2 } from "lucide-react";
 import { SPECTRUM, PALETTES } from "@/lib/educo-ui/palettes";
 import { rampFromHex, contrastRatio, nearestAccessibleColor, type Shade } from "@/lib/educo-ui/color";
 import { COMPACT_LABEL_CLS } from "./CompactField";
+import { closeOnScrollAway } from "@/lib/scroll-away";
 
 const GRID_SHADES: Shade[] = [75, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950];
 const NEUTRALS = ["#ffffff", "#f3f4f6", "#d1d5db", "#9ca3af", "#6b7280", "#374151", "#111827", "#000000"];
@@ -73,7 +74,7 @@ export default function EducoColorField({ label, ariaLabel, value, onChange, con
     if (!open) return;
     const onDown = (e: MouseEvent) => { if (!popRef.current?.contains(e.target as Node) && !btnRef.current?.contains(e.target as Node)) setOpen(false); };
     const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") setOpen(false); };
-    const onScroll = (e: Event) => { if (popRef.current?.contains(e.target as Node)) return; setOpen(false); };
+    const onScroll = closeOnScrollAway(() => btnRef.current, () => popRef.current, () => setOpen(false)); // A1-5
     const onResize = () => setOpen(false);
     document.addEventListener("mousedown", onDown);
     document.addEventListener("keydown", onKey);

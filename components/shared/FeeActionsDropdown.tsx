@@ -16,6 +16,7 @@ import {
   Send,
   Clock,
 } from "lucide-react";
+import { closeOnScrollAway } from "@/lib/scroll-away";
 
 interface FeeActionsDropdownProps {
   onEdit?: () => void;
@@ -132,9 +133,7 @@ export default function FeeActionsDropdown({
   useEffect(() => {
     if (!isOpen) return;
 
-    const handleScroll = () => {
-      setIsOpen(false);
-    };
+    const handleScroll = closeOnScrollAway(() => buttonRef.current, () => dropdownRef.current, () => setIsOpen(false)); // A1-5
 
     // Listen on window and any scrollable parent
     window.addEventListener("scroll", handleScroll, true);

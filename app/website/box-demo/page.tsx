@@ -28,7 +28,8 @@ import { columnsAt, resolvePageGrid, type PageGridSettings } from "@/lib/page-gr
 import PageGridPanel from "@/components/website/box/PageGridPanel";
 import { CHROME_Z } from "@/lib/educo-ui/stacking";
 import { renderSitePage, renderSiteFiles, siteFileMap, downloadSite, fontFamiliesInSite } from "@/lib/box-export";
-import { embedFontCss } from "@/lib/educo-ui/font-embed";
+import { embedFontCss, fontFiles } from "@/lib/educo-ui/font-embed";
+import { photosAsFiles } from "@/lib/export-photos";
 import { warmIcons, hasIcon } from "@/lib/educo-ui/icon-svg";
 import BoxCanvas, { measureFloatGeom, measureFixedGeom, measureGroupGeom } from "@/components/website/box/BoxCanvas";
 import BoxInspector from "@/components/website/box/BoxInspector";
@@ -736,7 +737,8 @@ export default function BoxDemoPage() {
   // "This page uses its own grid": it starts as a copy of the site's, so nothing moves until a number is changed.
   const setOwnGrid = (own: boolean) => pushSite(setPageGrid(site, own ? { ...site.pageGrid } : undefined, activePage.id));
 
-  const addSection = () => { const sec = makeSection(SECTION_TINTS[countSections(root) % SECTION_TINTS.length]); sec.width = "100%"; commit(insertBox(root, root.id, root.children?.length ?? 0, makeRow([sec]))); };
+  // A1-4: the new band is SELECTED, as every added block is (`revealBox`), so its Background is the next thing to hand.
+  const addSection = () => { const sec = makeSection(SECTION_TINTS[countSections(root) % SECTION_TINTS.length]); sec.width = "100%"; commit(insertBox(root, root.id, root.children?.length ?? 0, makeRow([sec]))); revealBox(sec.id); };
   // The merge key is the block plus the FIELDS being written, so "drag the spacing slider" coalesces while
   // "set the spacing, then the colour" does not — no control had to be told about any of this.
   const onPatch = (patch: Partial<BoxNode>) => {
@@ -827,13 +829,15 @@ export default function BoxDemoPage() {
     };
     walk(site);
     await warmIcons(names);
-    // Fonts are embedded into the stylesheet rather than linked, so the exported site renders in the typeface
+    // Fonts are self-hosted in the download rather than linked, so the exported site renders in the typeface
     // the school chose without asking their visitors' browsers to call a third party. If this cannot be
     // fetched the export still goes ahead — the font stack's fallback applies — so a download never fails
     // over a typeface.
-    const fontCss = await embedFontCss(fontFamiliesInSite(site, renderTheme));
+    // RA-7: as FILES under fonts/, so a visitor downloads only the faces whose letters the page uses.
+    const fonts = await fontFiles(fontFamiliesInSite(site, renderTheme));
     // A multi-page site is several files, so it arrives as a ZIP to unzip and upload.
-    downloadSite(renderSiteFiles(site, renderTheme, fontCss), "site.zip");
+    // RA-8: photos as files with narrower copies for phones, instead of data: URIs inside the pages.
+    downloadSite({ ...(await photosAsFiles(renderSiteFiles(site, renderTheme, fonts.css))), ...fonts.files }, "site.zip");
   };
 
   // Click-to-add from the palette: insert into the selected container (or the page) with an optional style.

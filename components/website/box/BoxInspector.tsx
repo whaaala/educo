@@ -12,7 +12,7 @@ import { Plus, X, Tags, Rows3, Columns3, Upload, ArrowRight, AlignLeft, AlignCen
 import type { SiteTheme } from "@/lib/site-storage";
 import type { BoxNode, FlexAlign, FlexJustify, AccPartStyle, Breakpoint, PagerNav, PinScopeWords, SectionFlag } from "@/lib/box-model";
 import { RUNG_LABEL } from "@/lib/educo-ui/layout";
-import { type ItemAction, TOAST_CORNERS, fluidRemRange, isContainer, containerLabel, isFloating, isCssBg, addItem, removeItem, moveItem, updateItem, addChildItem, updateChildItem, removeChildItem, moveChildItem , isMultiItemComponent, hasIntrinsicSize, sizeToCSS, typedLength, GRID_MAX, COLUMN_FRACTIONS, columnFractionOf, canSetColumnFraction, gridColumns, bandEdgeCSS, PIN_ARRIVALS, PIN_ARRIVAL_AFTER, pinArrivalHasEffect, linkLineGap, LINK_GAP_ACROSS, LINK_GAP_ACROSS_PHONE, spaceDefaults, outerDefaults, type SectionPlace, gapOf } from "@/lib/box-model";
+import { type ItemAction, TOAST_CORNERS, fluidRemRange, isContainer, containerLabel, isFloating, isCssBg, addItem, removeItem, moveItem, updateItem, addChildItem, updateChildItem, removeChildItem, moveChildItem , isMultiItemComponent, hasIntrinsicSize, sizeToCSS, typedLength, GRID_MAX, COLUMN_FRACTIONS, columnFractionOf, canSetColumnFraction, gridColumns, bandEdgeCSS, PIN_ARRIVALS, PIN_ARRIVAL_AFTER, pinArrivalHasEffect, linkLineGap, LINK_GAP_ACROSS, LINK_GAP_ACROSS_PHONE, spaceDefaults, outerDefaults, type SectionPlace, gapOf, importPhoto } from "@/lib/box-model";
 import { remLen } from "@/lib/educo-ui/tokens";
 import { ACCORDION_DESIGNS, ACCORDION_DESIGN_COUNT, ACCORDION_AXES } from "@/lib/educo-ui/accordions";
 import { ALERT_DESIGNS, ALERT_DESIGN_COUNT, ALERT_AXES } from "@/lib/educo-ui/alerts";
@@ -1343,9 +1343,9 @@ export default function BoxInspector({ section = false, sectionPlace, outerDefau
                 onClear={() => onPatch({ bgImage: undefined, bgTile: undefined, bgOverlay: undefined })} />
             </div>
             {/* Photo: paste a URL or upload (data URL) */}
-            <CompactField ariaLabel="Background image URL" value={node.bgImage && /^(https?:|data:)/.test(node.bgImage) ? node.bgImage : ""} placeholder="Paste an image URL…" onChange={(v) => onPatch({ bgImage: v || undefined, bgTile: undefined })} />
+            <CompactField ariaLabel="Background image URL" value={node.bgImage && /^https?:/.test(node.bgImage) ? node.bgImage : ""} placeholder={node.bgImage?.startsWith("data:") ? "Uploaded picture — or paste a URL" : "Paste an image URL…"} onChange={(v) => onPatch({ bgImage: v || undefined, bgTile: undefined })} />
             <button onClick={() => fileRef.current?.click()} className="w-full flex items-center justify-center gap-2 text-sm px-3 py-2 pointer-coarse:min-h-11 rounded-lg border border-dashed border-gray-300 dark:border-white/15 hover:bg-gray-50 dark:hover:bg-white/5 text-gray-700 dark:text-gray-200"><Upload className="w-3.5 h-3.5" /> {node.bgImage ? "Replace with an upload" : "Upload an image"}</button>
-            <input ref={fileRef} type="file" accept="image/*" className="hidden" aria-label="Upload background image" onChange={(e) => { const f = e.target.files?.[0]; if (!f) return; const r = new FileReader(); r.onload = () => onPatch({ bgImage: String(r.result), bgTile: undefined }); r.readAsDataURL(f); e.target.value = ""; }} />
+            <input ref={fileRef} type="file" accept="image/*" className="hidden" aria-label="Upload background image" onChange={async (e) => { const f = e.target.files?.[0]; if (!f) return; e.target.value = ""; /* A1-12: resized to 1600px like every other upload, never the raw file */ const { src } = await importPhoto(f); if (src) onPatch({ bgImage: src, bgTile: undefined }); }} />
             {node.bgImage && (
               <>
                 {/* Fit / position / repeat — how the background sits on the block. Applies to a photo/URL
@@ -1672,8 +1672,11 @@ export default function BoxInspector({ section = false, sectionPlace, outerDefau
                           <CompactTextarea ariaLabel={`Item ${i + 1} body`} value={it.body} onChange={(v) => onPatch({ items: updateItem(node, it.id, { body: v }).items })} rows={2} placeholder="Answer / body — supports **bold**, *italic*, [links](https://…), and - bullet lists" />
                           <div className="grid grid-cols-2 gap-1">
                             <CompactField ariaLabel={`Item ${i + 1} meta`} value={it.meta ?? ""} onChange={(v) => onPatch({ items: updateItem(node, it.id, { meta: v || undefined }).items })} placeholder="Meta (e.g. $10)" />
-                            <CompactField ariaLabel={`Item ${i + 1} image`} value={it.media ?? ""} onChange={(v) => onPatch({ items: updateItem(node, it.id, { media: v || undefined }).items })} placeholder="Image URL" />
+                            <CompactField ariaLabel={`Item ${i + 1} image`} value={it.media?.startsWith("data:") ? "" : it.media ?? ""} onChange={(v) => onPatch({ items: updateItem(node, it.id, { media: v || undefined }).items })} placeholder={it.media ? "Uploaded picture — or paste a URL" : "Image URL"} />
                           </div>
+                          {/* A1-10: a picture from the device, resized like every upload — not only a URL */}
+                          <button type="button" onClick={(e) => (e.currentTarget.nextElementSibling as HTMLInputElement | null)?.click()} className="w-full text-xs px-2 py-1.5 pointer-coarse:min-h-11 rounded-lg border border-dashed border-gray-300 dark:border-white/15 midnight:border-white/15 purple:border-white/15 hover:bg-gray-50 dark:hover:bg-white/5 midnight:hover:bg-white/5 purple:hover:bg-white/5 text-gray-600 dark:text-gray-300 midnight:text-gray-300 purple:text-gray-300">{it.media ? `Replace item ${i + 1} picture` : `Upload item ${i + 1} picture`}</button>
+                          <input type="file" accept="image/*" className="hidden" aria-label={`Upload item ${i + 1} image`} onChange={async (e) => { const f = e.target.files?.[0]; if (!f) return; e.target.value = ""; const { src } = await importPhoto(f); if (src) onPatch({ items: updateItem(node, it.id, { media: src }).items }); }} />
                           {it.media ? <CompactField ariaLabel={`Item ${i + 1} image alt text`} value={it.mediaAlt ?? ""} onChange={(v) => onPatch({ items: updateItem(node, it.id, { mediaAlt: v || undefined }).items })} placeholder="Image alt text (describe it for accessibility / SEO; leave blank if decorative)" /> : null}
                           <IconPicker ariaLabel={`Item ${i + 1} icon`} value={it.icon} onChange={(v) => onPatch({ items: updateItem(node, it.id, { icon: v }).items })} />
                           {it.icon && (

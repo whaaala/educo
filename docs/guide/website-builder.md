@@ -375,7 +375,7 @@ room: one row from 1,366px wide, two rows at 1,280px, and the buttons' words app
 - **Previewing changes nothing.** Choosing a screen to look at doesn't touch your canvas or which per‑device layer you're editing; that stays with the editor's own device switcher in the top bar. Looking is not editing.
 - **The size you pick is the size the page really gets.** Choose *Wide* and the page is laid out at a genuine 1920 × 1080, so it picks the layout a 1920px screen gets — even when your own screen is smaller. It's scaled down to fit and the bar states both numbers (e.g. `1920 px · 73%`). It's never cut off, and never quietly re-laid out at your screen's size instead.
 - **Nothing is added on top of your page.** The preview shows what you designed and only that. Earlier versions prepended a navigation bar of their own; it's gone, from the preview *and* the exported site. To let visitors move between pages, build your own header and set a block's link to **another page** — it resolves to the right file when you export. While you're in the preview, the page tabs in the toolbar walk you around the site without touching the design.
-- **Export:** downloads your site as a **ZIP of real pages** — `index.html` for the home page and one `.html` per page, plus a shared `styles.css` (each page also carries its own few styles inside it).
+- **Export:** downloads your site as a **ZIP of real pages** — `index.html` for the home page and one `.html` per page, a shared `styles.css` (each page also carries its own few styles inside it), and two folders: `fonts/` for your typefaces and `images/` for your photos.
 
 ### What you get in the ZIP, and why it's built that way
 
@@ -386,8 +386,17 @@ room: one row from 1,366px wide, two rows at 1,280px, and the buttons' words app
 | **One shared `styles.css`** | A visitor downloads it once, then it is cached — every page after the first arrives faster. |
 | **Each page carries only the styles it uses** | A term‑dates page of text and a table doesn't download the accordion, the alert or the rating — and a page with one accordion doesn't download the other twenty‑eight accordion designs either. A page of text ends up around 1.4 KB; a busy page with an alert, an accordion, a card and a photo, around 10 KB. |
 | **The next page is already on its way** | While a visitor reads one page, the browser quietly fetches the others in the background. Clicking a link then feels instant. |
+| **Photos are their own files, in `images/`** | The words of a page arrive first and the photos follow, so a parent on a slow connection can start reading straight away. A photo used on several pages is one file, downloaded once. A photo lower down the page isn't downloaded until the visitor scrolls to it. |
+| **A phone gets a phone-sized photo** | Every photo wider than 480 pixels also comes in a 480 and a 960 pixel copy. A phone downloads the copy that fits its screen, not the full 1600 pixels a large monitor needs. |
+| **Fonts are their own files, in `fonts/`** | A visitor only downloads the letters the page uses. An English page needs the basic Latin letters, about 44 KB. A page with Yoruba ẹ ọ ṣ, Hausa ɓ ɗ ƙ or Twi ɛ ɔ downloads one more small file, so those letters appear in your typeface too, never in a different font halfway through a word. |
 
-**Your fonts travel with the site.** The typefaces you chose are built into `styles.css` itself, so the published site looks exactly like the one you designed. They are *not* loaded from Google: that would mean every visitor's IP address is sent to a third party, which is a data-protection question no school should be handed without being asked. Nothing is loaded from a third party for fonts or tracking. The few small scripts some blocks need are built into the pages themselves, and pictures you uploaded travel inside the pages too. Stock photos and embedded videos still load from where they live, so those need a connection.
+**Your fonts travel with the site.** The typefaces you chose are inside the ZIP, in `fonts/`, so the published site looks exactly like the one you designed. They are *not* loaded from Google: that would mean every visitor's IP address is sent to a third party, which is a data-protection question no school should be handed without being asked. Nothing is loaded from a third party for fonts or tracking. The few small scripts some blocks need are built into the pages themselves, and the pictures you uploaded travel in `images/`. Stock photos and embedded videos still load from where they live, so those need a connection.
+
+**Why it's built this way: a parent on a 3G phone.** Before this change a typical school page weighed about 500 KB, because every font and photo was packed inside the page. On a slow 3G connection the first words took about 14 seconds to appear. With fonts and photos as separate files, the first words arrive in about 4 to 5 seconds — measured on six pages built in the builder, each now around 100 KB.
+
+![A page made in the builder, downloaded, and opened on an Android phone: the heading in the school's font, a line of Yoruba and Twi — Ẹ kú àárọ̀, ọmọ wa ṣe dáadáa, Ɛte sɛn — with every letter in the chosen typeface, and the photo below](img/guide-export-phone.webp)
+
+**Choose a font that can write your language.** Not every typeface has every letter. If your pages use Yoruba, Igbo, Hausa, Twi, Ga or Ewe, pick a font that has their letters (ẹ ọ ṣ, ị ụ, ɓ ɗ ƙ, ɛ ɔ ŋ), or those letters will appear in a different font in the middle of a word. Fonts in the list that have all of them: **Inter, Montserrat, Merriweather, EB Garamond, Noto Serif, Anton** and **Great Vibes**.
 
 ---
 
@@ -622,7 +631,7 @@ The panel shows **how many you've changed** and gives you one **Reset** to put t
 
 ### Everything else
 
-**Full CRUD on every item.** Title, Body, optional Meta (a right‑aligned price or badge), an Image thumbnail, a Number/badge, and **Open by default**. Add, duplicate, remove and reorder (▲/▼) any item — the last one can't be removed, so it's never empty. Click a panel's title or body **directly on the canvas** to edit in place.
+**Full CRUD on every item.** Title, Body, optional Meta (a right‑aligned price or badge), an Image thumbnail, a Number/badge, and **Open by default**. Add, duplicate, remove and reorder (▲/▼) any item — the last one can't be removed, so it's never empty. Click a panel's title or body **directly on the canvas** to edit in place. **An item's picture** can be pasted as a web address or uploaded from your device with **Upload item 1 picture** (it becomes **Replace…** once there is one); like every picture you upload, it is resized to 1600 pixels, and the address box then says *Uploaded picture — or paste a URL* rather than showing the picture as text.
 
 **Numbers you control.** Numbered designs count `01, 02, 03…` automatically; type your own value in an item's **Number/badge** field to override just that one.
 

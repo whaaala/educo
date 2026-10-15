@@ -1,3 +1,4 @@
+import { createHmac, timingSafeEqual } from "node:crypto";
 import { NextRequest, NextResponse } from "next/server";
 
 // WhatsApp Webhook Handler
@@ -6,9 +7,21 @@ import { NextRequest, NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
 
-// Verify token - should match what you set in Meta Developer Dashboard
-// In production, use environment variables
-const VERIFY_TOKEN = process.env.WHATSAPP_WEBHOOK_VERIFY_TOKEN || "educo_whatsapp_webhook";
+/** Constant-time string compare; unequal lengths are simply unequal. */
+function sameSecret(a: string, b: string): boolean {
+  const x = Buffer.from(a), y = Buffer.from(b);
+  return x.length === y.length && timingSafeEqual(x, y);
+}
+
+/**
+ * RA-5: Meta signs every POST with the app secret (`X-Hub-Signature-256: sha256=<hex HMAC of the raw body>`).
+ * No secret configured → nothing can be verified → everything is refused; there is no fallback.
+ */
+function signatureValid(rawBody: string, header: string | null): boolean {
+  const secret = process.env.WHATSAPP_APP_SECRET;
+  if (!secret || !header) return false;
+  return sameSecret(header, `sha256=${createHmac("sha256", secret).update(rawBody).digest("hex")}`);
+}
 
 // GET - Webhook verification (used by Meta to verify endpoint)
 export async function GET(request: NextRequest) {
@@ -19,11 +32,13 @@ export async function GET(request: NextRequest) {
     const mode = searchParams.get("hub.mode");
     const token = searchParams.get("hub.verify_token");
     const challenge = searchParams.get("hub.challenge");
+    // Read per request, and never defaulted: a hard-coded fallback let anyone who read this file register the endpoint.
+    const verifyToken = process.env.WHATSAPP_WEBHOOK_VERIFY_TOKEN;
 
-    console.log("[WhatsApp Webhook] Verification request:", { mode, token, challenge });
+    console.log("[WhatsApp Webhook] Verification request:", { mode });
 
     // Verify the request is from Meta
-    if (mode === "subscribe" && token === VERIFY_TOKEN) {
+    if (mode === "subscribe" && verifyToken && token && sameSecret(token, verifyToken)) {
       console.log("[WhatsApp Webhook] Verification successful");
       // Return the challenge to confirm subscription
       return new NextResponse(challenge, {
@@ -48,10 +63,17 @@ export async function GET(request: NextRequest) {
 
 // POST - Receive incoming messages and status updates
 export async function POST(request: NextRequest) {
+  // The signature covers the exact bytes Meta sent, so it is checked on the raw body before anything is parsed.
+  const rawBody = await request.text();
+  if (!signatureValid(rawBody, request.headers.get("x-hub-signature-256"))) {
+    console.log("[WhatsApp Webhook] Refused POST: missing or invalid signature");
+    return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
+  }
   try {
-    const payload = await request.json();
+    const payload = JSON.parse(rawBody);
 
-    console.log("[WhatsApp Webhook] Received payload:", JSON.stringify(payload, null, 2));
+    // A1-3: no payload dump — it carries parents' numbers, names and message text. Log ids and types only.
+    console.log("[WhatsApp Webhook] Received payload:", { object: payload.object, entries: payload.entry?.length ?? 0 });
 
     // Verify this is a WhatsApp Business Account message
     if (payload.object !== "whatsapp_business_account") {
@@ -71,7 +93,6 @@ export async function POST(request: NextRequest) {
 
         console.log("[WhatsApp Webhook] Processing change:", {
           phoneNumberId: metadata?.phone_number_id,
-          displayPhone: metadata?.display_phone_number,
         });
 
         // Handle incoming messages
@@ -110,16 +131,12 @@ export async function POST(request: NextRequest) {
 // Handle incoming messages
 async function handleIncomingMessage(
   message: WhatsAppIncomingMessage,
-  contacts: WhatsAppContact[],
+  _contacts: WhatsAppContact[],
   _metadata: WhatsAppMetadata
 ) {
-  const contact = contacts?.find((c) => c.wa_id === message.from);
-
   console.log("[WhatsApp Webhook] Incoming message:", {
     id: message.id,
-    from: message.from,
     type: message.type,
-    contactName: contact?.profile?.name,
     timestamp: message.timestamp,
   });
 
@@ -197,7 +214,7 @@ async function handleIncomingMessage(
   // });
 
   console.log("[WhatsApp Webhook] Message processed:", {
-    content: content.substring(0, 50),
+    length: content.length,
     mediaId,
   });
 }
@@ -209,7 +226,6 @@ async function handleStatusUpdate(
 ) {
   console.log("[WhatsApp Webhook] Status update:", {
     messageId: status.id,
-    recipientId: status.recipient_id,
     status: status.status,
     timestamp: status.timestamp,
   });

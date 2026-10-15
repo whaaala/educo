@@ -94,23 +94,23 @@ Run through this checklist BEFORE telling the user it's done:
   - A new component is held to this by `tests/unit/corner-radius.test.ts`, which **enumerates the palette and
     the component catalogue** rather than listing cases — so a component added later is covered the day it
     appears, instead of relying on someone remembering to write a test for it.
-- **Space by default, always overridable — words never touch an edge (MANDATORY — the user, 2026-09-29; this
-  REVERSES "spacing is a decision, never a default").** It applies to EVERY element, every component, and
-  everything added to a layout — the ones we have and every future one.
-  - **There by default:** a side gutter for a section's content even when its background runs edge to edge (only
-    pictures and backgrounds bleed) · space above and below a section · a gap between stacked blocks, columns and
-    grid cells · inner padding in any box with a background or a border. A header's logo and links are content:
-    they keep the gutter like any other words.
-  - **Always the user's to change, down to zero:** every block has **inner spacing (padding) and outer spacing
-    (margin), all sides at once and each side alone**, and every container has its gap (across/down separately).
-    A control shows when it is at its default and can be put back to it.
+- **No space unless you add it — and every space is visible and adjustable (MANDATORY — the user, 2026-10-15:
+  "make sure there are no spaces at all unless I add it myself… and make sure we can adjust it"; this REVERSES
+  "Space by default" of 2026-09-29).** It applies to EVERY element, every component, and everything added to a
+  layout — the ones we have and every future one.
+  - **Nothing by default:** a new block, stack, row, grid or section arrives with no padding, no margin and no gap.
+    Adding a background or a border never adds or removes space by itself (measured 2026-10-15: adding a background
+    made the space disappear — the bug this line exists for).
+  - **Always the user's to add, and to change back to zero:** every block has **inner spacing (padding) and outer
+    spacing (margin), all sides at once and each side alone**, and every container has its gap (across/down
+    separately). When a block is selected its spacing is DRAWN on the canvas as shaded bands labelled with their size,
+    and dragged there (BATCH E-6) — a space never looks like a mistake.
   - **From the spacing tokens, by ONE emitter** for the canvas and the export, in `rem` with a fluid term (rule 16)
     — never a pixel, never written by hand in a component.
-  - **Pages already saved keep the spacing they have**; the defaults are for what is added from now on.
-  - **Measured, not assumed:** the page audit checks, on every page at every size, that no words are closer than
-    the gutter floor to the page edge or to the edge of the coloured box they sit in, and that no two sections are
-    closer than the section floor. A guard **enumerates the palette and the component catalogue**, so a component
-    added later is covered the day it appears. Scenarios: `tests/features/components/website/box-builder-spacing.feature`.
+  - **Pages already saved keep the spacing they have**; the change is for what is added from now on.
+  - **Measured, not assumed:** a guard **enumerates the palette and the component catalogue** and fails on any
+    space a newly added block carries that the user did not set, so a component added later is covered the day it
+    appears. Scenarios: `tests/features/components/website/box-builder-spacing.feature`.
 - **No `alert()`, `window.confirm()`, `window.prompt()`** — use EditorDialog (desktop) or Modal (mobile)
 - Every interactive element MUST perform its intended action and persist state
 - Follow existing patterns: lucide-react icons on desktop, Ionicons on mobile, Inter fonts, ThemeContext colors
