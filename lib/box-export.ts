@@ -852,9 +852,9 @@ export function renderSiteFiles(site: BoxSite, theme: SiteTheme, fontCss = ""): 
   // The SHARED sheet is only what is identical everywhere — tokens, base, site chrome. The component
   // library is deliberately absent: 65 KB of which a page uses a fraction, so it is subsetted into each
   // page instead. What remains here is small, and it is the part worth caching.
-  // Fonts go FIRST, so a face is defined before any rule asks for it. They are embedded as data: URIs by the
-  // caller, which is the only asynchronous part of an export — see lib/educo-ui/font-embed.ts for why they are
-  // self-hosted rather than linked. An empty string here is a deliberate, survivable outcome: the stack's
+  // Fonts go FIRST, so a face is defined before any rule asks for it. The caller fetches them — the only
+  // asynchronous part of an export — as files under fonts/ that this CSS points at (RA-7, `fontFiles`); see
+  // lib/educo-ui/font-embed.ts for why they are self-hosted rather than linked to Google. An empty string here is a deliberate, survivable outcome: the stack's
   // fallback still applies, so the page reads in a near-enough typeface instead of failing to download.
   out[SHARED_STYLESHEET] = [fontCss, sharedCss(theme), SITE_CHROME_CSS].filter(Boolean).join("\n");
   return out;
@@ -960,12 +960,13 @@ ${pageCss ? `<style>${pageCss}</style>` : ""}
  * archive the school unzips and uploads. This is the most visible change to how a site is received, which is
  * why the guide has to say so.
  */
-export function downloadSite(files: SiteFiles, filename = "site.zip"): void {
+export function downloadSite(files: Record<string, string | Uint8Array>, filename = "site.zip"): void {
   // `document` alone is not enough: jsdom and some SSR shims provide a document but no object-URL support,
   // and calling through then throws. The old single-file download checked all three; dropping two of them
   // when this replaced it is what the no-op test caught.
   if (typeof document === "undefined" || typeof URL === "undefined" || !URL.createObjectURL) return;
-  const zipped = zipSync(Object.fromEntries(Object.entries(files).map(([name, text]) => [name, strToU8(text)])));
+  // Text files are encoded; font and photo files (RA-7, RA-8) are already bytes.
+  const zipped = zipSync(Object.fromEntries(Object.entries(files).map(([name, body]) => [name, typeof body === "string" ? strToU8(body) : body])));
   // Copy into a plain ArrayBuffer — a Uint8Array view can be a slice of a larger buffer, and Blob would then
   // carry bytes that are not part of this archive.
   const blob = new Blob([zipped.slice().buffer as ArrayBuffer], { type: "application/zip" });

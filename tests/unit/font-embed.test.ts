@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { primaryFamily, familiesInUse, googleCssUrl, fontUrls, embedFontCss, type Fetcher } from "@/lib/educo-ui/font-embed";
+import { primaryFamily, familiesInUse, googleCssUrl, fontUrls, embedFontCss, fontFiles, fontFileName, type Fetcher } from "@/lib/educo-ui/font-embed";
 import { fontStacksInSite, fontFamiliesInSite, renderSiteFiles } from "@/lib/box-export";
 import { DEFAULT_THEME } from "@/lib/site-storage";
 import type { BoxSite } from "@/lib/box-site";
@@ -98,6 +98,48 @@ describe("embedding", () => {
     let called = false;
     await embedFontCss([], (async () => { called = true; return ok(""); }) as Fetcher);
     expect(called).toBe(false);
+  });
+});
+
+describe("fonts as files for the download (RA-7, A1-2)", () => {
+  // What Google returns: one @font-face per subset, each with its own unicode-range.
+  const SUBSETS = `/* vietnamese */
+@font-face{font-family:'Poppins';font-weight:400;src:url(https://fonts.gstatic.com/s/poppins/v22/viet.woff2) format('woff2');unicode-range:U+0102-0103,U+1EA0-1EF9}
+/* latin-ext */
+@font-face{font-family:'Poppins';font-weight:400;src:url(https://fonts.gstatic.com/s/poppins/v22/ext.woff2) format('woff2');unicode-range:U+0100-02BA,U+1E00-1E9F}
+/* latin */
+@font-face{font-family:'Poppins';font-weight:400;src:url(https://fonts.gstatic.com/s/poppins/v22/latin.woff2) format('woff2');unicode-range:U+0000-00FF}`;
+  const google = (async (u: string) => ({
+    ok: true,
+    text: async () => (u.includes("googleapis") ? SUBSETS : ""),
+    arrayBuffer: async () => new TextEncoder().encode(u).buffer,
+  } as unknown as Response)) as Fetcher;
+
+  it("names each face fonts/<family>-<Google's file>", () => {
+    expect(fontFileName("https://fonts.gstatic.com/s/poppins/v22/pxiEyp8kv8JHgFVrJJfecg.woff2")).toBe("fonts/poppins-pxiEyp8kv8JHgFVrJJfecg.woff2");
+  });
+
+  it("writes every face as a file and points the CSS at it — no bytes inside the CSS", async () => {
+    const { css, files } = await fontFiles(["Poppins"], google);
+    expect(Object.keys(files).sort()).toEqual(["fonts/poppins-ext.woff2", "fonts/poppins-latin.woff2", "fonts/poppins-viet.woff2"]);
+    expect(new TextDecoder().decode(files["fonts/poppins-latin.woff2"])).toBe("https://fonts.gstatic.com/s/poppins/v22/latin.woff2");
+    expect(css).toContain("url(fonts/poppins-latin.woff2)");
+    expect(css).not.toContain("data:");
+    expect(fontUrls(css), "no external URL may survive").toEqual([]);
+  });
+
+  it("keeps EVERY subset with its unicode-range, so Yoruba ẹ ọ and Twi ɛ ɔ are not dropped (A1-2)", async () => {
+    const { css } = await fontFiles(["Poppins"], google);
+    // ẹ U+1EB9 and ọ U+1ECD live in the vietnamese range; ɛ U+025B and ɔ U+0254 in latin-ext.
+    expect(css).toContain("U+1EA0-1EF9");
+    expect(css).toContain("U+0100-02BA");
+    expect(css.match(/unicode-range/g)).toHaveLength(3);
+  });
+
+  it("gives nothing, never an error, when the fonts cannot be fetched", async () => {
+    const failing = (async () => ({ ok: false, status: 503 } as unknown as Response)) as Fetcher;
+    expect(await fontFiles(["Poppins"], failing)).toEqual({ css: "", files: {} });
+    expect(await fontFiles([], google)).toEqual({ css: "", files: {} });
   });
 });
 

@@ -28,7 +28,7 @@ import { columnsAt, resolvePageGrid, type PageGridSettings } from "@/lib/page-gr
 import PageGridPanel from "@/components/website/box/PageGridPanel";
 import { CHROME_Z } from "@/lib/educo-ui/stacking";
 import { renderSitePage, renderSiteFiles, siteFileMap, downloadSite, fontFamiliesInSite } from "@/lib/box-export";
-import { embedFontCss } from "@/lib/educo-ui/font-embed";
+import { embedFontCss, fontFiles } from "@/lib/educo-ui/font-embed";
 import { warmIcons, hasIcon } from "@/lib/educo-ui/icon-svg";
 import BoxCanvas, { measureFloatGeom, measureFixedGeom, measureGroupGeom } from "@/components/website/box/BoxCanvas";
 import BoxInspector from "@/components/website/box/BoxInspector";
@@ -827,13 +827,14 @@ export default function BoxDemoPage() {
     };
     walk(site);
     await warmIcons(names);
-    // Fonts are embedded into the stylesheet rather than linked, so the exported site renders in the typeface
+    // Fonts are self-hosted in the download rather than linked, so the exported site renders in the typeface
     // the school chose without asking their visitors' browsers to call a third party. If this cannot be
     // fetched the export still goes ahead — the font stack's fallback applies — so a download never fails
     // over a typeface.
-    const fontCss = await embedFontCss(fontFamiliesInSite(site, renderTheme));
+    // RA-7: as FILES under fonts/, so a visitor downloads only the faces whose letters the page uses.
+    const fonts = await fontFiles(fontFamiliesInSite(site, renderTheme));
     // A multi-page site is several files, so it arrives as a ZIP to unzip and upload.
-    downloadSite(renderSiteFiles(site, renderTheme, fontCss), "site.zip");
+    downloadSite({ ...renderSiteFiles(site, renderTheme, fonts.css), ...fonts.files }, "site.zip");
   };
 
   // Click-to-add from the palette: insert into the selected container (or the page) with an optional style.

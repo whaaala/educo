@@ -1537,7 +1537,7 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
     - `[x]` A1-1 · the tree still read BATCH E-5's research (1)/(1a)/(1b)/(1c) and build (2) as in progress, (1c) "waiting on the
       user's signature" — signed 2026-10-06, built and closed by 2026-10-08 — FIXED 2026-10-15: ticked, and its GAPS line routed
       (tablet done in E-5c · real Android → decision 28 · teachers → the pilot · Canva/Webflow still unread); tree guard 18 / 18
-    - `[ ]` A1-2 · my own recommendation 25, "fonts as LATIN-subset files", would drop letters RULE AF promises: Yoruba ẹ ọ (U+1EB9,
+    - `[ ]` A1-2 (FIXED IN CODE 2026-10-15, change (2): every subset kept with its unicode-range, guard mutation-proven; closes on the HEADED pass U2) · my own recommendation 25, "fonts as LATIN-subset files", would drop letters RULE AF promises: Yoruba ẹ ọ (U+1EB9,
       U+1ECD — Google's `vietnamese` subset), ṣ (U+1E63) and Hausa ɓ ɗ ƙ, Twi / Ga / Ewe ɛ ɔ (`latin-ext`) would draw in the fallback
       font mid-word. FIX in change (2): keep EVERY subset as its own file with its `unicode-range`, so the browser fetches only the
       files the page's letters need — an English page still gets the ~44 KB Latin files, a Yoruba page also gets the one with ẹ ọ
@@ -1548,7 +1548,7 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
       GET answers Meta's challenge only when `WHATSAPP_WEBHOOK_VERIFY_TOKEN` is SET and matches (no fallback string); POST reads the
       raw body, checks `X-Hub-Signature-256` = HMAC-SHA256(body, `WHATSAPP_APP_SECRET`) and refuses (401) when the header, the
       secret or the match is missing — before parsing anything; A1-3's logging fixed; `.env.example` names both variables
-    - `[ ]` (2) RA-7 · FONTS AS FILES (rung 4: CSS `unicode-range` — the browser already fetches only the subsets it needs) — the
+    - `[x]` (2) RA-7 · FONTS AS FILES (CODE DONE 2026-10-15: `fontFiles` + `fontFileName` in `font-embed.ts`, the download zips bytes, the Preview keeps `embedFontCss`; unit 16 / 16 `font-embed.test.ts` from `box-builder-site.feature`, 3 mutations red — data URIs back · subsets dropped · folder dropped; typecheck 0, eslint 0 errors; seen in U2) (rung 4: CSS `unicode-range` — the browser already fetches only the subsets it needs) — the
       export writes each face to `fonts/<family>-<style>-<weight>-<subset>.woff2` and `styles.css` points at it; SiteFiles carries
       bytes as well as text; the Preview (a srcdoc frame, nothing to fetch from) keeps data URIs; A1-2 fixed here
     - `[ ]` (3) RA-8 · PHOTOS AS FILES, SIZED TO THE SCREEN (rung 4: `srcset` + `sizes="auto"` on lazy images, a native browser
