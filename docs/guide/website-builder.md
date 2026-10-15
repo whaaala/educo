@@ -392,7 +392,11 @@ room: one row from 1,366px wide, two rows at 1,280px, and the buttons' words app
 
 **Your fonts travel with the site.** The typefaces you chose are inside the ZIP, in `fonts/`, so the published site looks exactly like the one you designed. They are *not* loaded from Google: that would mean every visitor's IP address is sent to a third party, which is a data-protection question no school should be handed without being asked. Nothing is loaded from a third party for fonts or tracking. The few small scripts some blocks need are built into the pages themselves, and the pictures you uploaded travel in `images/`. Stock photos and embedded videos still load from where they live, so those need a connection.
 
-**Why it's built this way: a parent on a 3G phone.** Before this change a typical school page weighed about 500 KB, because every font and photo was packed inside the page. On a slow 3G connection the first words took about 14 seconds to appear. With fonts and photos as separate files, the first words arrive within about 4 seconds.
+**Why it's built this way: a parent on a 3G phone.** Before this change a typical school page weighed about 500 KB, because every font and photo was packed inside the page. On a slow 3G connection the first words took about 14 seconds to appear. With fonts and photos as separate files, the first words arrive in about 4 to 5 seconds — measured on six pages built in the builder, each now around 100 KB.
+
+![A page made in the builder, downloaded, and opened on an Android phone: the heading in the school's font, a line of Yoruba and Twi — Ẹ kú àárọ̀, ọmọ wa ṣe dáadáa, Ɛte sɛn — with every letter in the chosen typeface, and the photo below](img/guide-export-phone.webp)
+
+**Choose a font that can write your language.** Not every typeface has every letter. If your pages use Yoruba, Igbo, Hausa, Twi, Ga or Ewe, pick a font that has their letters (ẹ ọ ṣ, ị ụ, ɓ ɗ ƙ, ɛ ɔ ŋ), or those letters will appear in a different font in the middle of a word. Fonts in the list that have all of them: **Inter, Montserrat, Merriweather, EB Garamond, Noto Serif, Anton** and **Great Vibes**.
 
 ---
 

@@ -112,7 +112,7 @@
         });
         body = await res.json().catch(() => null);
         verdict = classify(res.status, body);
-      } catch (e) {
+      } catch {
         verdict = 'retry'; // no answer: maybe it never left, maybe the answer was lost — the same key makes both safe
         body = { code: 'network' };
       }

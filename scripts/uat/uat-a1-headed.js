@@ -14,7 +14,7 @@ const OUT = path.join(__dirname, 'a1-out'); fs.rmSync(OUT, { recursive: true, fo
 const SITES = path.join(OUT, 'sites');
 const results = []; const ok = (name, cond, saw) => { results.push({ name, pass: !!cond, saw }); console.log(`${cond ? 'PASS' : 'FAIL'}  ${name}${saw !== undefined ? ' — ' + (typeof saw === 'string' ? saw : JSON.stringify(saw)) : ''}`); };
 const YORUBA = 'Ẹ kú àárọ̀ — ọmọ wa ṣe dáadáa.'; const TWI = 'Ɛte sɛn? Ɔdɔ wɔ hɔ.';
-const LONG = Array.from({ length: 60 }, (_, i) => `Our pupils learn, play and grow together in a caring community, line ${i + 1}.`).join(' ');
+const LONG = Array.from({ length: 160 }, (_, i) => `Our pupils learn, play and grow together in a caring community, line ${i + 1}.`).join(' ');
 
 // ── photos: real-looking JPEGs (noise compresses like a photograph does), wider than every copy we make ──
 async function photo(name, w, h, tint) {
@@ -62,7 +62,7 @@ async function siteA(pos) {
   const { browser, page, errs } = await H.open({ headed: true, w: 1280, h: 900, pos });
   const p1 = await photo('a.jpg', 2400, 1500, [90, 120, 150]);
   await add(page, 'Heading'); await setText(page, 'Oakfield Primary School');
-  await add(page, 'Text'); await setText(page, `${YORUBA} ${TWI}`); await setFont(page, 'Lora');
+  await add(page, 'Text'); await setText(page, `${YORUBA} ${TWI}`); await setFont(page, 'Noto Serif'); // A1-6: a family that HAS every letter, so a miss is the export's fault
   await add(page, 'Image'); await page.locator('input[aria-label="Upload image"]').last().setInputFiles(p1); await page.waitForTimeout(2500);
   await page.getByRole('button', { name: 'Add page' }).first().click(); await page.waitForTimeout(1200);
   await add(page, 'Heading'); await setText(page, 'About us');
@@ -77,7 +77,7 @@ async function siteA(pos) {
   const prev = await fr.evaluate(async (t) => { await document.fonts.ready; const e = [...document.querySelectorAll('body *')].find((x) => x.children.length === 0 && x.textContent.includes(t)); const img = document.querySelector('img');
     return { font: e && getComputedStyle(e).fontFamily, imgSrc: img && img.getAttribute('src').slice(0, 15), imgOk: !!img && img.complete && img.naturalWidth > 0 }; }, 'ọmọ');
   await page.screenshot({ path: path.join(OUT, 'A-preview-1280.png') });
-  ok('U4 canvas == Preview: the Yoruba line is set in Lora on both', /Lora/.test(canvasFont || '') && /Lora/.test(prev.font || ''), { canvasFont, preview: prev.font });
+  ok('U4 canvas == Preview: the Yoruba line is set in Noto Serif on both', /Noto Serif/.test(canvasFont || '') && /Noto Serif/.test(prev.font || ''), { canvasFont, preview: prev.font });
   ok('U3 the Preview still shows the photo (it keeps data: URIs, it has no folder)', prev.imgOk && prev.imgSrc.startsWith('data:image'), prev);
   await page.getByRole('button', { name: /Exit preview/ }).click(); await page.waitForTimeout(800);
   const site = await exportSite(page, 'site-a'); site.page2 = site.names.find((n) => n.endsWith('.html') && n !== 'index.html');
@@ -204,17 +204,17 @@ async function screenCheck(browser, site, page, s, subsets) {
   const yor = good.filter((x) => x.site === 'site-a' && x.page === 'index.html');
   ok('U2 the Yoruba + Twi page also fetches the vietnamese (ẹ ọ) and latin-ext (ṣ ɛ ɔ) files', yor.every((x) => x.r.fontsAsked.includes('vietnamese') && x.r.fontsAsked.includes('latin-ext')), [...new Set(yor.flatMap((x) => x.r.fontsAsked))]);
 
-  // The letters themselves: drawn in Lora, not a fallback (a canvas measures Lora against the bare fallback)
+  // The letters themselves, drawn in the chosen family: a letter it HAS is the same width whichever fallback follows it
   const gb = await chromium.launch({ headless: false, args: ['--force-device-scale-factor=1'] });
   const gp = await (await gb.newContext({ viewport: { width: 1280, height: 800 } })).newPage();
   await gp.goto(`${HOST}/site-a/index.html`, { waitUntil: 'load' }); await gp.waitForTimeout(1500);
   const glyphs = await gp.evaluate(async () => { await document.fonts.ready; const c = document.createElement('canvas').getContext('2d');
     const w = (font, t) => { c.font = font; return c.measureText(t).width; };
-    return Object.fromEntries(['ẹ', 'ọ', 'ṣ', 'ɛ', 'ɔ', 'a'].map((g) => [g, Math.abs(w('40px Lora, monospace', g.repeat(8)) - w('40px monospace', g.repeat(8))) > 0.5])); });
+    return Object.fromEntries(['ẹ', 'ọ', 'ṣ', 'ɛ', 'ɔ', 'a'].map((g) => [g, Math.abs(w('40px "Noto Serif", serif', g.repeat(8)) - w('40px "Noto Serif", monospace', g.repeat(8))) < 0.5])); });
   const line = gp.locator('text=ọmọ').first(); await line.scrollIntoViewIfNeeded(); await line.screenshot({ path: path.join(OUT, 'A-yoruba-line.png') }).catch(() => {});
   await gb.close();
-  ok('U2 Yoruba ẹ ọ ṣ draw in Lora, not the fallback', glyphs['ẹ'] && glyphs['ọ'] && glyphs['ṣ'], glyphs);
-  ok('U2 Twi ɛ ɔ draw in Lora, not the fallback (needs the typeface to have them)', glyphs['ɛ'] && glyphs['ɔ'], glyphs);
+  ok('U2 Yoruba ẹ ọ ṣ draw in the chosen Noto Serif, not a fallback', glyphs['ẹ'] && glyphs['ọ'] && glyphs['ṣ'], glyphs);
+  ok('U2 Twi ɛ ɔ draw in the chosen Noto Serif, not a fallback', glyphs['ɛ'] && glyphs['ɔ'], glyphs);
 
   fs.writeFileSync(path.join(OUT, 'rows.json'), JSON.stringify(rows, null, 1));
   server.close();

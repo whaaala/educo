@@ -175,6 +175,29 @@ measurement that *would* add something is **on a real 2–4 GB Tecno / itel** (W
 editor at 909 KB JS) — named as the real-world pass in §4 (RULE MAP step 5). Recipe kept for whoever has the memory:
 `emulator -avd Pixel_2 -netspeed umts -netdelay umts`, then `chrome://inspect` → the WebView → Performance panel.
 
+### 2.6 After BATCH A-1 — fonts and photos as files (re-measured 2026-10-15)
+
+RA-7 (`fontFiles`: every subset a file under `fonts/`, each `@font-face` keeping its `unicode-range`) and RA-8
+(`photosToFiles` + `addSrcset`: each photo one file under `images/`, 480 / 960 copies with `srcset`, `sizes="auto"` when
+lazy). Same six dressed pages, same harness (`export-sites.ts --files`, then `measure.js`), HEADLESS timing; the copies
+need a canvas, so this run ships originals only — an UPPER bound on photo bytes.
+
+| | before (§2.2) | after A-1 |
+|---|---|---|
+| total on the wire, 360 × 640 @2× | 501–530 KB | 96–135 KB |
+| HTML + CSS + JS + fonts | 500 KB+ (fonts inside `styles.css`) | 55–95 KB |
+| first text, Slow 3G + 4× CPU | 13.5–14.3 s | 4.2–5.1 s (one 5.07 s run; 12 re-runs of the two heaviest pages 4.18–4.92 s) |
+| first text, 3G / Lighthouse 4G | — | 1.24–1.44 s / 0.42–0.59 s |
+
+Both RULE AF budgets now hold on all six pages (≤ 100 KB HTML + CSS + JS; first text ≤ 5 s on Slow 3G). The emulator was
+run this time (2.6 GB free, one AVD): `scripts/uat/uat-a1-emulator.js`, the export downloaded through the UI opened in
+the Pixel emulator's Chrome 148 (411 px @2.625×) — 9 / 9 (no sideways scroll, the right `srcset` copy, lazy holds, Yoruba
+and Twi letters drawn). Still owed: the user's TCL 505 (Helio G36, 360 × 800), an APK for it (R-APP-1 decision 28).
+
+**Found while proving it (A1-6, open, the user's decision):** of the 52 families in the font picker only 7 can write all
+of Yoruba, Igbo, Hausa and Twi / Ga / Ewe (Inter, Montserrat, Merriweather, EB Garamond, Noto Serif, Anton, Great Vibes);
+the default theme's Poppins and DM Sans write none of them — `scripts/uat/a1-font-coverage.js`, `a1-out/font-coverage.json`.
+
 ---
 
 ## 3. RULE MAP — the axes, the values, and what the builder must do (HOW in our engine)

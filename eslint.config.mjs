@@ -70,8 +70,9 @@ const eslintConfig = defineConfig([
   {
     // ── Node CommonJS tooling ──
     // Build scripts, Metro and Tailwind configs run in Node as CommonJS. `require` is not a legacy import
-    // there, it is the module system, and `import` would not work at all.
-    files: ["scripts/**", "**/*.cjs", "**/*.config.js", "**/*.config.cjs"],
+    // there, it is the module system, and `import` would not work at all. The research spikes under
+    // docs/**/examples/ are the same kind of Node script (run with `node`, never bundled) — A1-9.
+    files: ["scripts/**", "docs/**/examples/**/*.js", "**/*.cjs", "**/*.config.js", "**/*.config.cjs"],
     rules: { "@typescript-eslint/no-require-imports": "off" },
   },
   {
