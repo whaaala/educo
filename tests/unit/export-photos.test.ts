@@ -73,6 +73,10 @@ describe("srcset — a phone fetches the copy its screen needs", () => {
   it("keeps the picture's alt, width, height and loading", () => {
     expect(out).toContain(`alt="a" width="1600" height="900" loading="lazy"`);
   });
+  it("A1-13: an <img> whose src is not its first attribute (an accordion's picture) gets its srcset too", () => {
+    const acc = addSrcset({ "index.html": `<img class="eu-accordion__media" src="images/x.jpg" alt="" loading="lazy" decoding="async" />` }, copies)["index.html"];
+    expect(acc).toBe(`<img class="eu-accordion__media" src="images/x.jpg" srcset="images/x-480.jpg 480w, images/x-960.jpg 960w, images/x.jpg 1600w" sizes="auto, 100vw" alt="" loading="lazy" decoding="async" />`);
+  });
   it("leaves a photo with no narrower copy, and the stylesheet, alone", () => {
     const one = addSrcset({ "index.html": html, "styles.css": "a{}" }, { "images/x.jpg": [{ w: 400, file: "images/x.jpg" }] });
     expect(one["index.html"]).toBe(html);

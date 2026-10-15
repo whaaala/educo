@@ -1530,33 +1530,72 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
   - `[x]` https://app.base44.com/launchpad — STUDIED INSIDE 2026-10-08: the school brief built end to end (Plan mode, 3 questions + 4 live style mock-ups, entities + RLS, back office, self-test); phone/tablet measured (split only ≥1024, phone opens on item 1) → `docs/web-anatomy/app-builder.md` §1 · public docs → `app-builder/three-tools-public-docs.md`
   - `[x]` https://app.emergent.sh/ — STUDIED INSIDE 2026-10-08: Mobile app mode, 5 questions (Paystack first), Expo Router route groups per role, Expo Go preview, Testing Agent; phone/tablet measured (split ≥768, tabs never become a rail, detail has no URL, test data leaked) → §2
   - `[x]` https://lovable.dev/ — STUDIED INSIDE 2026-10-08 up to the plan: 4 questions (the only offline one), the best plan (tablet: "bottom tabs become a side rail", list/detail routes), then OUT OF FREE CREDITS before any screen (5 free credits in 15 h; adding credits is the user's call) → §3. Its built app NOT seen — SKIPPED by the user 2026-10-15 (decision 4)
-- `[>]` **BATCH A-1 · Pages light enough for a 3G phone, and the WhatsApp door locked** — OPENED 2026-10-15 on `app-builder/research`
-  (area: the exported page's weight + one webhook · 5 changes) — the user's decisions 23, 25, 26. The first batch of AREA APP (above);
+- `[x]` **BATCH A-1 · Pages light enough for a 3G phone, and the WhatsApp door locked** — CLOSED 2026-10-15 (HEADED: U2–U4 32 / 32, U8 11 / 11, docs 36 / 36; webhook 14 / 14; emulator 9 / 9; first text 4.2–5.1 s on Slow 3G, was 14 s; ledger A1-1 … A1-14) — OPENED 2026-10-15 on `app-builder/research`
+  (area: the exported page's weight + one webhook · 6 changes — (6) added 2026-10-15 by the user's decision on A1-10) — the user's decisions 23, 25, 26. The first batch of AREA APP (above);
   top level so the batch guard counts it. RULE M ladder per change below.
   - **BUG LEDGER A-1** (opened 2026-10-15)
     - `[x]` A1-1 · the tree still read BATCH E-5's research (1)/(1a)/(1b)/(1c) and build (2) as in progress, (1c) "waiting on the
       user's signature" — signed 2026-10-06, built and closed by 2026-10-08 — FIXED 2026-10-15: ticked, and its GAPS line routed
       (tablet done in E-5c · real Android → decision 28 · teachers → the pilot · Canva/Webflow still unread); tree guard 18 / 18
-    - `[ ]` A1-2 (FIXED IN CODE 2026-10-15, change (2): every subset kept with its unicode-range, guard mutation-proven; closes on the HEADED pass U2) · my own recommendation 25, "fonts as LATIN-subset files", would drop letters RULE AF promises: Yoruba ẹ ọ (U+1EB9,
+    - `[x]` A1-2 (CLOSED 2026-10-15 on HEADED U2: ẹ ọ ṣ ɛ ɔ drawn in the chosen family on the served export and on the emulator; 2026-10-15, change (2): every subset kept with its unicode-range, guard mutation-proven; closes on the HEADED pass U2) · my own recommendation 25, "fonts as LATIN-subset files", would drop letters RULE AF promises: Yoruba ẹ ọ (U+1EB9,
       U+1ECD — Google's `vietnamese` subset), ṣ (U+1E63) and Hausa ɓ ɗ ƙ, Twi / Ga / Ewe ɛ ɔ (`latin-ext`) would draw in the fallback
       font mid-word. FIX in change (2): keep EVERY subset as its own file with its `unicode-range`, so the browser fetches only the
       files the page's letters need — an English page still gets the ~44 KB Latin files, a Yoruba page also gets the one with ẹ ọ
-    - `[ ]` A1-3 (FIXED IN CODE 2026-10-15, change (1): ids and types only, guard mutation-proven; closes on the HEADED pass U1) · the WhatsApp webhook logs every inbound payload in full (`route.ts:54`) — parents' phone numbers, names and
+    - `[x]` A1-3 (CLOSED 2026-10-15 on U1 14 / 14 against `next start`; 2026-10-15, change (1): ids and types only, guard mutation-proven; closes on the HEADED pass U1) · the WhatsApp webhook logs every inbound payload in full (`route.ts:54`) — parents' phone numbers, names and
       message text land in the server log — and logs the verify token it was sent (`:23`). FIX in change (1): log ids and types only
       — HEADED/production U1 2026-10-15: 14 / 14 (`scripts/uat/uat-a1-webhook.js` against `next start` with and without the
       secrets; the server log holds no number, name, message text, token or secret) → closes with the batch's pass
-    - `[ ]` A1-4 (FIXED IN CODE 2026-10-15; closes on the HEADED pass U3) · "Add a band" did not select the band it added
+    - `[x]` A1-4 (CLOSED 2026-10-15 on HEADED U3: site C's band got its photo through the Inspector with no extra click; 2026-10-15; closes on the HEADED pass U3) · "Add a band" did not select the band it added
       (`page.tsx` `addSection`) — the Inspector said "Click a block to edit it", so giving a new band its background meant finding
       and clicking it first, unlike every palette block (`revealBox`). Found by the U3 harness. FIX: `revealBox(sec.id)` (one line;
       the band still lands at page level, the next palette block beside it). Guard: `add-without-asking.spec.ts` "A1-4", RED on the
       pre-fix build in all 4 device projects, 68 / 68 green on the fixed build
-    - `[ ]` A1-5 (FIXED IN CODE 2026-10-15; closes on the HEADED pass U2) · the Inspector's Font picker (and every picker that
+    - `[x]` A1-5 (CLOSED 2026-10-15 on HEADED U2 and `probe-a1-font2.js`: first click opens in all 3 cases, was 0 / 3; 2026-10-15; closes on the HEADED pass U2) · the Inspector's Font picker (and every picker that
       "closes on any scroll") lost the click that opened it when the control had to scroll into view: the scroll's event arrives a
       frame after the click and closed the list — measured, first click nothing, second click opens; what a screen reader does
       (scroll to a control and activate it at once). Found by the U2 harness. FIX: one helper `lib/scroll-away.ts`
       (`closeOnScrollAway` — close only when a scroll MOVED the button) used by CompactSelect, BackgroundPicker, IconPicker,
       EducoColorField and FeeActionsDropdown (PortalMenu already waits two frames, E5a-5). Guards: `scroll-away.test.ts` 3 / 3 and
       CompactControls "A1-5", 5 mutations red
+    - `[x]` A1-6 HANDED to BATCH A-1b by the user (open there) → (DECIDED by the user 2026-10-15: "go with your recommendation" = (a) AND (b), saved pages keep their fonts) · found proving A1-2: of the 52 families in the font picker only 7 can write all of
+      Yoruba, Igbo, Hausa and Twi / Ga / Ewe (Inter, Montserrat, Merriweather, EB Garamond, Noto Serif, Anton, Great Vibes) —
+      the default theme's Poppins and DM Sans write NONE of them, so every school page today draws ẹ ọ ṣ ɓ ɗ ƙ ɛ ɔ in a
+      fallback font mid-word (RULE AF "languages are content"). Measured: `scripts/uat/a1-font-coverage.js` (each family's
+      own Google files, every letter measured against two fallbacks), `a1-out/font-coverage.json`. Not mine to choose: it
+      changes how sites look. Options put to the user: (a) the picker marks which fonts write which language and the Page
+      check warns when a page's words use letters its font lacks; (b) new sites default to a pair that writes them all;
+      (c) both. Guide already tells teachers which fonts to choose (change (4))
+    - `[x]` A1-7 · NOT A BUG (measured 2026-10-15, `probe-a1-previewtop.js`): in Preview the control bar covers the page's
+      first 27–40px at 1280 / 1536 / 768 / 390 (seen in `A-preview-1280.png`) — deliberate and written down at
+      `page.tsx:578-591`: the bar floats so it costs no height; Hide or H gives the unobstructed top
+    - `[x]` A1-8 · MY OWN: the two probe scripts I wrote failed eslint (unused expressions, an unused variable) — FIXED;
+      `npx eslint .` 0 errors
+    - `[x]` A1-9 · the R-APP-1 spikes (`docs/web-anatomy/app-builder/examples/**/*.js`, commit `da926a3`) were committed with
+      16 eslint errors — rule 11's gate was red on the branch. FIXED: they are Node scripts like `scripts/**`, so they join that
+      CommonJS override in `eslint.config.mjs` (with its reason); `outbox.js`'s unused `catch (e)` → `catch`; the offline spike
+      still 11 / 11; `npx eslint .` 0 errors
+    - `[x]` A1-10 (FIXED in change (6), CLOSED on HEADED U8 11 / 11; DECIDED by the user 2026-10-15: fix now, change (6)) · (found by the U3 harness, 2026-10-15): an accordion item's picture can only be given by
+      URL (Content → Items → "Item N image") — there is no Upload, unlike a Picture block or a background (RULE UI: a
+      capability a person cannot reach easily is a gap). U3 was therefore driven with a Picture block, a band background
+      and a gallery, not an accordion. Options: fix in A-1 as change (6) (an upload beside the URL field, the same
+      `importPhoto`), or hand it to BATCH U-1 (surface what is already built)
+    - `[x]` A1-11 HANDED to BATCH D-4 by the user (open there) → (DECIDED by the user 2026-10-15: "your proposal" — the docs site's own build at the same link) · THE USER FOUND IT (2026-10-15, looking at the Website Builder Guide Artifact v29): the published guide is
+      still the OLD hand-written HTML page — old fonts, small text, no pictures, a narrow column — while the redesigned
+      documentation (D-2 / D-3: the Docusaurus site in `docs-site/`, the deck's typography, screenshots) only runs locally
+      (`npm run docs:start`). The Artifact is a second, hand-kept copy, which RULE DOC forbids ("the Markdown is the single
+      source; the site never becomes a second copy"), and every batch has been updating the old copy by hand. Proposed:
+      publish the docs site's OWN build at that same link (so the link the user has shows the new design, made from the same
+      Markdown), and stop hand-editing the old page. Waiting on the user's word
+    - `[x]` A1-12 (CLOSED 2026-10-15: gate green + HEADED U8) · the band background upload stored the RAW
+      file (a FileReader, never `importPhoto`): measured on the pre-fix build, a 3000px photo stored at 3000px — one phone photo
+      in the browser's ~5 MB store and shipped full size. FIX: `importPhoto`, like every other upload. Guard:
+      `upload-resized.spec.ts` "A1-12" (RED 3000 ≠ 1600 on the old build, green 4 projects)
+    - `[x]` A1-13 · MY OWN (CLOSED on HEADED U8) (found writing U8, FIXED IN CODE 2026-10-15) · `addSrcset` matched only `<img src=…>` with src first —
+      an accordion's `<img class="eu-accordion__media" src=…>` got no srcset in the download. FIX: any attribute order. Guard:
+      `export-photos.test.ts` "A1-13", the old pattern RED. HEADED U8: the downloaded accordion picture has its srcset
+    - `[x]` A1-14 (CLOSED on HEADED U8: the field shows "Uploaded picture — or paste a URL") · after an upload, the "Item N image" and "Background image URL" fields showed the
+      picture as ~700 KB of base64 text (seen in `a1-out/u8/canvas.png`). FIX: they show "Uploaded picture — or paste a URL" and
+      still take a URL. Guard: `upload-resized.spec.ts` (RED on the old build: the field held the data URI) + U8
   - CHANGES:
     - `[x]` (1) RA-5 · THE WEBHOOK REFUSES WHAT IT CANNOT VERIFY (CODE DONE 2026-10-15: `route.ts` + `.env.example`; unit 10 / 10 `tests/unit/communication/whatsapp-webhook.test.ts` from `whatsapp-webhook.feature`, 4 mutations red — signature skipped · fallback token back · payload logged · prefix match; typecheck 0, eslint 0; seen running in U1 of the pass) (rung 3: Node `crypto` HMAC + `timingSafeEqual`, no dependency) —
       GET answers Meta's challenge only when `WHATSAPP_WEBHOOK_VERIFY_TOKEN` is SET and matches (no fallback string); POST reads the
@@ -1570,31 +1609,46 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
       `images/<hash>.<ext>` per site (a photo on two pages is downloaded once and cached); an `<img>` gets a `srcset` of 480 / 960 /
       its own width with `sizes="auto, 100vw"` (lazy) or `100vw` (eager); backgrounds become files without srcset (`ponytail:`);
       the Preview unchanged
-    - `[ ]` (4) RULE DOCS · the guide's "Download your site" page says what the zip holds now (pages, `styles.css`, `fonts/`,
+    - `[x]` (4) RULE DOCS · (DONE 2026-10-15: `website-builder.md` + `layout-reference.md`, the phone screenshot `img/guide-export-phone.webp` from the export downloaded through the builder, "Choose a font that can write your language"; the Website Builder Guide Artifact v29; docs:build green, docs-guard 7 / 7) the guide's "Download your site" page says what the zip holds now (pages, `styles.css`, `fonts/`,
       `images/`) and why a phone on 3G opens it faster, with a screenshot from the real builder
-    - `[ ]` (5) RULE AF · T4 RE-MEASURED on the fresh build: the six UI-built dressed pages, HTML + CSS + JS ≤ 100 KB compressed and
+    - `[x]` (5) RULE AF · (DONE 2026-10-15, HEADLESS timing as T4: 96–135 KB, HTML+CSS+JS+fonts 55–95 KB, first text 4.2–5.1 s Slow 3G + 4× CPU (12 re-runs of the heaviest 4.18–4.92 s) vs 501–530 KB / 13.5–14.3 s before; written in `low-end-3g.md` §2.6; the emulator half is U5) T4 RE-MEASURED on the fresh build: the six UI-built dressed pages, HTML + CSS + JS ≤ 100 KB compressed and
       first text ≤ 5 s on Slow 3G + 4× CPU at 360 × 800 (the TCL 505's size); then the same pages in the phone emulator's (5556)
       WebView. The numbers written into `low-end-3g.md` and here
+    - `[x]` (6) A1-10 · AN ACCORDION ITEM'S PICTURE CAN BE UPLOADED (CODE DONE 2026-10-15: `BoxInspector.tsx` an Upload / Replace button + `importPhoto`; also A1-12, A1-13, A1-14; guide `website-builder.md` accordion items; `upload-resized.spec.ts` 8 / 8 on 4 projects, RED on the old build; HEADED U8 10 / 10 before A1-14) (rung 2: the same `importPhoto` the Picture block uses) — an
+      Upload button beside "Item N image" in Content → Items; the URL field stays. Checklist line U8 below
   - **HEADED UAT CHECKLIST A-1** (written BEFORE the pass; RULE X / Y / Z — every state built THROUGH THE UI, six windows,
     fresh production build, `scripts/uat/uat-a1-headed.js` using `scripts/uat/screens.js`):
-    - `[ ]` U1 webhook (a request script against `next start`, every case): no env token → GET refused · wrong token → 403 · right
+    - `[x]` U1 webhook — HEADED/production 2026-10-15: 14 / 14 (`uat-a1-webhook.js`, logs `a1-u1.out`) (a request script against `next start`, every case): no env token → GET refused · wrong token → 403 · right
       token → the challenge echoed · POST with no signature / a wrong one / no app secret set → 401 and nothing logged · a correctly
       signed POST → 200 · a signed body changed by one byte → 401 · the server log holds no phone number, name or message text
-    - `[ ]` U2 fonts: a page built through the UI with a chosen heading + body font, downloaded with the builder's own Download
+    - `[x]` U2 fonts: — HEADED UAT 2026-10-15 (`uat-a1-headed.js`, six windows, fresh build `Tb2iYLeg0I34QFHGWzKfv`): fonts/ present and no data:font · English page fetches only latin · the Yoruba + Twi page also latin-ext + vietnamese · ẹ ọ ṣ ɛ ɔ drawn in the chosen Noto Serif (Lora lacks ṣ ɛ ɔ itself → A1-6) · site B in all four website themes · fonts unreachable → the download still arrives · no "system fonts only" theme exists to build (the unit guard covers no families). Screenshots read a page built through the UI with a chosen heading + body font, downloaded with the builder's own Download
       button, unzipped and served — `fonts/` present, `styles.css` has no `data:font`, an English page fetches only Latin files
       (network log), a page with a Yoruba line (ẹ ọ ṣ) and a Twi line (ɛ ɔ) fetches the one extra subset and draws them in the
       chosen font (screenshot read), a site with only system fonts has no `fonts/` folder, the font server unreachable → the download
       still arrives and reads in the fallback
-    - `[ ]` U3 photos: uploaded through the UI into a Picture block, a band background, an accordion with media, a gallery, and the
+    - `[x]` U3 photos: — HEADED UAT 2026-10-15: Picture block, band background (A1-4), gallery of 3, the same photo on two pages = ONE file + its 480 / 960 copies; no data:image left; srcset/sizes/width/height on every img; every screen gets the copy its width × density needs (360 × 800 @2× → 960, 1920 → original); a photo 3,000px down not fetched before the scroll on 67 screens; site B has no images/. Accordion media NOT driven — no upload exists (A1-10) uploaded through the UI into a Picture block, a band background, an accordion with media, a gallery, and the
       SAME photo on two pages — `images/` holds it once, no `data:image` left in any file, each `<img>` has `srcset`/`sizes`, width
       and height; at 360 / 768 / 1280 / 1920 the browser picks the right width (network log); a below-the-fold photo is not fetched
       until scrolled to; a site with no photos has no `images/` folder
-    - `[ ]` U4 canvas == Preview == served export: the same pages at every screen in `screens.js` (every device preset + both sides
+    - `[x]` U4 canvas == Preview — HEADED UAT 2026-10-15: 219 = 73 screens × 3 served pages, 0 sideways overflow at 100 % and 150 % text, 150 % grows every page; canvas == Preview typeface ("Noto Serif" on both); the Preview keeps data: URIs and shows the photo. Screenshots read (360 × 800, 1280, Preview) == served export: the same pages at every screen in `screens.js` (every device preset + both sides
       of every breakpoint), the four themes, and 150 % browser text — no sideways overflow, same typeface, same picture crop
-    - `[ ]` U5 the numbers of change (5), and the phone emulator's WebView opens the served export with fonts and photos
-    - `[ ]` U6 the guide page of change (4) reads cleanly in the docs site at phone / tablet / laptop / desktop, light and dark
-    - `[ ]` U7 regression: `npm run typecheck` 0 · `npx eslint .` 0 errors · `npx vitest run` · `npm run test:fast` — the export,
+    - `[x]` U5 the numbers — 2026-10-15: the numbers in change (5); the export downloaded through the UI opened in the Pixel emulator (5556, Android 16, Chrome 148, 411px @2.625×) over CDP: 9 / 9 (`uat-a1-emulator.js`) — Chrome rather than the app's WebView (same Blink; the app would need Metro, and memory was 2.6 GB). Emulator stopped after of change (5), and the phone emulator's WebView opens the served export with fonts and photos
+    - `[x]` U6 the guide page — HEADED 2026-10-15: `uat-d3-docs-headed.js` 36 / 36 (375 / 768 / 1280 / 1536, light + dark, 200 % text, every screen; the page now 7 pictures, 0 broken); 375 dark screenshot read of change (4) reads cleanly in the docs site at phone / tablet / laptop / desktop, light and dark
+    - `[x]` U8 (change (6)) an accordion added through the UI, a photo uploaded into item 1 with the new button: the canvas, the — HEADED 2026-10-15 on the gate's build `qzEx4ukqnjz0hzjIIq6BJ`: 11 / 11 (`uat-a1-u8-headed.js`; the served download at all 73 screens)
+      Preview and the downloaded export show it; the export holds it as a file under images/ with its srcset; Undo removes it
+    - `[x]` U7 regression: `npm run typecheck` 0 · `npx eslint .` 0 errors · `npx vitest run` · `npm run test:fast` — the export, — 2026-10-15 on the final source: typecheck 0 · eslint 0 errors · vitest 4,482 / 4,482 · test:fast 3,359 passed, 0 failed (37 skipped by design: one-device specs)
       font and parity specs (`export-fonts`, `exported-site`, `canvas-scale-parity`, `multipage-export`, `perf-budget`) green
+- `[ ]` **BATCH D-4 · The published guide IS the documentation site** (area: documentation · 1 change, queued 2026-10-15 by the
+  user's decision on A1-11; AFTER BATCH E-6, the user 2026-10-15) — the Website Builder Guide link (https://claude.ai/artifact/XSga5SRiwNEAAwXr8Rr4ZJ) shows the
+  `docs-site/` build itself, made from the same Markdown, instead of the old hand-written page; docs-site configured to work
+  under that address (relative assets); every page, picture, search and the light / dark switch checked HEADED at phone ·
+  tablet · laptop · desktop; the old hand-kept page retired (RULE DOC: one source). Its checklist is written when it opens
+- `[ ]` **BATCH A-1b · Fonts that write the region's languages** (area: typography · 3 changes, queued 2026-10-15 by the
+  user's decision on A1-6) — (1) new sites default to a heading + body pair that writes Yoruba, Igbo, Hausa and Twi / Ga /
+  Ewe (from the 7 measured: Inter, Montserrat, Merriweather, EB Garamond, Noto Serif, Anton, Great Vibes; RULE P picks the
+  pair); saved pages keep theirs · (2) the font picker shows which languages each font writes (the coverage measured, stored
+  as data, re-measured by `a1-font-coverage.js`) · (3) the Page check warns when a page's words use letters its font lacks.
+  Its checklist is written when it opens
 - `[ ]` **BATCH A-2 · The app's layout: breakpoints, a height class, tabs and list-detail** (area: app layout · queued 2026-10-15 —
   the user's decisions 1–3) — rule 18's rungs move to 600 / 840 / 1200 / 1600 (CLAUDE.md, the engine, saved pages still read) +
   a height class for short screens; then on SAMPLE data: the navigation shell as data per role (tab bar → rail → sidebar) and the
@@ -3455,12 +3509,28 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
       the tile entry point is B's
     - `[x]` L4-j · MY OWN PROBE: the "cut off" check compared the picker with the wrong box and said CLEAN with it cut —
       it now measures against the nearest scrolling box's client width, frame AND squares; proven RED on the 360 build
-- `[ ]` **BATCH E-6 · The empty-box hint is not a button** (RENAMED from E-1 by the tree audit 2026-10-06 — the id clashed with the closed E-1 · The editor on tablets and phones) (area: editor chrome · 2 changes, queued — asked by the user
+- `[ ]` **BATCH E-6 · The empty-box hint is not a button** (RENAMED from E-1 by the tree audit 2026-10-06 — the id clashed with the closed E-1 · The editor on tablets and phones) (area: editor chrome · 3 changes after the user's 2026-10-15 decision — NEXT after A-1, before D-4 — queued, asked by the user
   2026-10-03: "do we actually need that in the center… that doesn't make the user click on it by mistake"): every empty box
   draws a large centred "+  Empty — drag a block in, or click to add" that is one big click target. PROPOSED (the user to
   confirm when it opens): a faint dashed outline and a quiet, NOT clickable "Drop a block here"; the "+" only on the
   SELECTED empty box, small; "Add a block inside" stays in the toolbar and the Inspector, with a keyboard shortcut — as
   Webflow / Wix Studio do. Every theme, every rung, keyboard and screen reader (the hint is `aria-hidden`, the button named)
+  - `[ ]` DECIDED by the user 2026-10-15 (looking at two stacks side by side on the A-1 build): (1) the empty-box design as
+    PROPOSED above, AND (2) NEW — the default space stays (rule of 2026-09-29, measured: 1.1rem section space above / below,
+    1.1rem inner spacing, 1.2rem gap between columns) but is SHOWN: when a block is selected its padding, margin and gap are
+    drawn as shaded bands labelled with their size, dragged smaller / bigger like Webflow / Figma, double-click → 0, one Undo
+    each; the user's words: "the spaces are not there unless I add it… why is it there automatically" — the space read as a
+    mistake because nothing said it was space. ORDER (the user): this batch NEXT after A-1 closes, BEFORE D-4. RULE RS: the
+    spacing overlay is new UI — its research (how Webflow, Figma, Framer, Wix Studio draw and drag spacing) comes first
+  - `[ ]` CHANGED by the user 2026-10-15, minutes later — (2) becomes: **NO space at all unless the user adds it** ("make sure
+    there are no spaces at all unless I add it myself… make sure it doesn't look like the space is added… make sure we can
+    adjust it… design that thing a lot better"). REVERSES the 2026-09-29 "Space by default" rule — CLAUDE.md rewritten the
+    same day ("No space unless you add it — and every space is visible and adjustable"), guard `claude-md-rules.test.ts`
+    175 / 175. So E-6 (2) is: new blocks arrive with 0 padding / margin / gap (saved pages keep theirs); the spacing the user
+    adds is drawn and dragged on the canvas (the overlay, designed properly); `space-by-default.test.ts`, the page audit's
+    gutter floor and `component-breathing` / `page-audit-whitespace` specs rewritten to the new rule
+  - `[ ]` E6-1 · THE USER FOUND IT (2026-10-15): adding a BACKGROUND COLOUR to a stack makes its space disappear — space must
+    never depend on whether a box has a background. Reproduce through the UI first, measure, fix, guard (E-6)
   - L4-r · (found in L-4's headed pass, `uat-l4/A-1280.png`; moved here by the user 2026-10-03) a selected block's floating
     toolbar, flipped BELOW it, sits over the first words of the block underneath ("…ck to edit")
 - `[ ]` **BATCH L-5 · Resize round trips** (area: resize · 6 changes, queued — after the page grid AC-37b, the user 2026-10-03)
@@ -3929,7 +3999,7 @@ sent), and my research. Nothing on the layout is done until every line here is c
     falls back into the flow unless placed at that rung; the page audit and Page check warn when it covers words;
     shown as drag on the canvas with the half-lines drawn, a Position panel (start / end, column / row, spill above /
     below) and a gallery of ready-made placements (RULE S / UI). Joins AC-10, ST-5, AC-35 — one build
-    - `[>]` AC-37b ← YOU ARE HERE (NOW: AREA APP → BATCH A-1 · change (1) RA-5 the WhatsApp webhook, then (2) fonts as files, (3) photos as files, (4) the guide, (5) T4 re-measured, then its HEADED checklist U1–U7 — R-APP-1 and the "enough" checklist SIGNED by the user 2026-10-15, all 28 decisions as recommended (decision 28: the TCL 505 — emulators now, an APK for the TCL later). Before that: the user's SIGN-OFF of R-APP-1: 28 numbered decisions (the list in session app-builder-research's handover in the SESSION LOG; source `docs/web-anatomy/app-builder.md` §6.1) and ledger RA-1…RA-9; then the first batch. Before that: research R-APP-1 DONE `da926a3`, the three tools studied `68bc5bf`. Earlier: the APP BUILDER area (phone + tablet), RESEARCH FIRST (RULE RS / RULE MAP), on `app-builder/research` cut from master `ea6a0cd` — PR #8 MERGED 2026-10-08 (`builder/phone-editing`, E-5a…E-5d), branch deleted. First: the user's links base44 / emergent / lovable studied INSIDE (the user logs in), plus my own research, then the area's "enough" checklist for the user to sign. Before that: BATCH E-5d · The app CLOSED 2026-10-08. Parked by the user: E5d-4 (IndexedDB save), E5d-7 (More's eight empty rows), E5d-9 (watched). QUEUED AREA: the app builder (phone + tablet), research first with the user's links. Before that: E-5c · The tablet CLOSED 2026-10-07 (HEADED 590 / 0; test:fast 3,343 + 2 fixed; vitest 4,445; E5c-1 … E5c-9; the user's E5c-2 one-row bar + More and E5c-4 the Inspector a tab below 1024) on `builder/phone-editing` — next: BATCH E-5d · The app — T4–T8 DECIDED 2026-10-07 (react-native-webview yes · one-time code · native cache + local save · deep links first · edit from day one) → its HEADED checklist first; handover of session E-5c in the SESSION LOG. Before that: E-5b · A finger drags and resizes CLOSED 2026-10-07 (HEADED 206 / 0; test:fast 3,333; E5b-1 … E5b-16) on `builder/phone-editing` — next: BATCH E-5c — research SIGNED 2026-10-07 (T1–T3; T4–T8 recorded for the app, BATCH E-5d) → change (2) THE BUILD, its HEADED checklist first; handover of session E-5b/E-5c in the SESSION LOG. Before that: research SIGNED 2026-10-06 (D1–D6, `docs/web-anatomy/phone-editing.md`), E-5a · Building on a phone CLOSED 2026-10-07 (HEADED 258 / 0; test:fast 3,312; the user's E5a-7 and E5a-16) on `builder/phone-editing` — next: BATCH E-5b (a finger drags and resizes: E5a-1 + E4-9), then E-5c (the tablet, then the app); handover of session E-4/E-5a in the SESSION LOG. Before that: BATCH E-4 CLOSED 2026-10-06 (HEADED 232 / 0; `test:fast` now runs all four screens, 3,272 / 3,272 in 12.3 min; E4-1 … E4-14, E4-9 and E4-14 went to BATCH E-5 and were done there) — PR #7 MERGED to master 2026-10-06 (`05c66ee`), `builder/editor-small-screens` deleted, `builder/phone-editing` cut from master — next: BATCH E-5, research first (the user's sources and mine). Before that: BATCH E-4 change (1) E3-3 done (`6042e79`); handover of session E-3 in the SESSION LOG. Before that: BATCH E-3 CLOSED 2026-10-06 (297 / 0 headed; E3-1 … E3-11, E3-3 the user's question); the tree audit DONE 2026-10-06 (`4fcf59a`, its true count heads section 1.1) — its checklist first, then spacing-gestures 12 · masonry-builder 10 · canvas-zoom 3 · text-is-reachable 1 · D3-32 the top bar one row from 1280; then E-4, then E-5 (research first). Before that: BATCH E-2 CLOSED 2026-10-06 (174 / 0 headed; 24 ledger lines). Before that: BATCH E-2 in BATCHES, on `builder/editor-small-screens` (cut from master `7494a8e` after PR #6 merged `builder/page-grid` 2026-10-06) — its checklist first, then the 37 failing specs one by one; then E-3, then E-4. Before that: BATCH G-3d CLOSED 2026-10-06 (`ec52b51`); handover of session (G-3d) in the SESSION LOG. Before that: BATCH G-3d (three changes); handover of session 49087f08 in the SESSION LOG; D-3 CLOSED 2026-10-06 (both changes). Before that: handover of session ff5dbc77 in the SESSION LOG; D-2 and D-3 (1) CLOSED 2026-10-06. Earlier: handover of session 22981e0a; BATCH G-3b and BATCH E-1 CLOSED 2026-10-05; MERGE DECIDED by the user 2026-10-05: `builder/layout-uat` pushed, the user opens and merges the pull request, then the branch is deleted and `builder/page-grid` cut from master; next there: BATCH D-2 (the Docusaurus site + the layout documented from the beginning, RULE DOCS), then BATCH G-3d (the user's two decisions), then BATCH E-2 (resizing and dropping on tablets and phones); before the PR: the artifacts and the layout story for the page grid; then its final pass, then BATCH E-1; handover of session 3da81fad in the SESSION LOG; earlier: handover of session 5da86722 in the SESSION LOG — G-3 CLOSED 2026-10-04 (63 headed checks, G3-8 carried to G-3b by the user); earlier: BATCH G-3 · placing on columns AND rows — G-2 CLOSED 2026-10-04 (134 headed checks); P-0 CLOSED 2026-10-04 (R4-1 … R4-5 fixed, 30 headed checks); R-4 SIGNED with D1–D5 (session 9fa0fee9); then G-3, P-1, P-2, G-4, P-3, G-5, G-6. G-1 CLOSED 2026-10-04 (see BATCHES). Plan APPROVED 2026-10-04 with the user's decisions below. Earlier: research R-3 DONE and SIGNED 2026-10-04
+    - `[>]` AC-37b ← YOU ARE HERE (NOW: BATCH E-6 · how a box looks while you build — open it, RESEARCH FIRST (RULE RS: how Webflow, Figma, Framer, Wix Studio draw and drag spacing; the empty-box hint), then its checklist; the user's 2026-10-15 decisions: NO space unless the user adds it (CLAUDE.md rewritten), every space drawn + dragged on the canvas, the empty-box redesign, E6-1 a background makes the space disappear. Then D-4 (the docs site at the guide link), A-1b (fonts that write the region's languages), A-2 (the app layout). Before that: BATCH A-1 CLOSED 2026-10-15 — R-APP-1 and the "enough" checklist SIGNED by the user 2026-10-15, all 28 decisions as recommended (decision 28: the TCL 505 — emulators now, an APK for the TCL later). Before that: the user's SIGN-OFF of R-APP-1: 28 numbered decisions (the list in session app-builder-research's handover in the SESSION LOG; source `docs/web-anatomy/app-builder.md` §6.1) and ledger RA-1…RA-9; then the first batch. Before that: research R-APP-1 DONE `da926a3`, the three tools studied `68bc5bf`. Earlier: the APP BUILDER area (phone + tablet), RESEARCH FIRST (RULE RS / RULE MAP), on `app-builder/research` cut from master `ea6a0cd` — PR #8 MERGED 2026-10-08 (`builder/phone-editing`, E-5a…E-5d), branch deleted. First: the user's links base44 / emergent / lovable studied INSIDE (the user logs in), plus my own research, then the area's "enough" checklist for the user to sign. Before that: BATCH E-5d · The app CLOSED 2026-10-08. Parked by the user: E5d-4 (IndexedDB save), E5d-7 (More's eight empty rows), E5d-9 (watched). QUEUED AREA: the app builder (phone + tablet), research first with the user's links. Before that: E-5c · The tablet CLOSED 2026-10-07 (HEADED 590 / 0; test:fast 3,343 + 2 fixed; vitest 4,445; E5c-1 … E5c-9; the user's E5c-2 one-row bar + More and E5c-4 the Inspector a tab below 1024) on `builder/phone-editing` — next: BATCH E-5d · The app — T4–T8 DECIDED 2026-10-07 (react-native-webview yes · one-time code · native cache + local save · deep links first · edit from day one) → its HEADED checklist first; handover of session E-5c in the SESSION LOG. Before that: E-5b · A finger drags and resizes CLOSED 2026-10-07 (HEADED 206 / 0; test:fast 3,333; E5b-1 … E5b-16) on `builder/phone-editing` — next: BATCH E-5c — research SIGNED 2026-10-07 (T1–T3; T4–T8 recorded for the app, BATCH E-5d) → change (2) THE BUILD, its HEADED checklist first; handover of session E-5b/E-5c in the SESSION LOG. Before that: research SIGNED 2026-10-06 (D1–D6, `docs/web-anatomy/phone-editing.md`), E-5a · Building on a phone CLOSED 2026-10-07 (HEADED 258 / 0; test:fast 3,312; the user's E5a-7 and E5a-16) on `builder/phone-editing` — next: BATCH E-5b (a finger drags and resizes: E5a-1 + E4-9), then E-5c (the tablet, then the app); handover of session E-4/E-5a in the SESSION LOG. Before that: BATCH E-4 CLOSED 2026-10-06 (HEADED 232 / 0; `test:fast` now runs all four screens, 3,272 / 3,272 in 12.3 min; E4-1 … E4-14, E4-9 and E4-14 went to BATCH E-5 and were done there) — PR #7 MERGED to master 2026-10-06 (`05c66ee`), `builder/editor-small-screens` deleted, `builder/phone-editing` cut from master — next: BATCH E-5, research first (the user's sources and mine). Before that: BATCH E-4 change (1) E3-3 done (`6042e79`); handover of session E-3 in the SESSION LOG. Before that: BATCH E-3 CLOSED 2026-10-06 (297 / 0 headed; E3-1 … E3-11, E3-3 the user's question); the tree audit DONE 2026-10-06 (`4fcf59a`, its true count heads section 1.1) — its checklist first, then spacing-gestures 12 · masonry-builder 10 · canvas-zoom 3 · text-is-reachable 1 · D3-32 the top bar one row from 1280; then E-4, then E-5 (research first). Before that: BATCH E-2 CLOSED 2026-10-06 (174 / 0 headed; 24 ledger lines). Before that: BATCH E-2 in BATCHES, on `builder/editor-small-screens` (cut from master `7494a8e` after PR #6 merged `builder/page-grid` 2026-10-06) — its checklist first, then the 37 failing specs one by one; then E-3, then E-4. Before that: BATCH G-3d CLOSED 2026-10-06 (`ec52b51`); handover of session (G-3d) in the SESSION LOG. Before that: BATCH G-3d (three changes); handover of session 49087f08 in the SESSION LOG; D-3 CLOSED 2026-10-06 (both changes). Before that: handover of session ff5dbc77 in the SESSION LOG; D-2 and D-3 (1) CLOSED 2026-10-06. Earlier: handover of session 22981e0a; BATCH G-3b and BATCH E-1 CLOSED 2026-10-05; MERGE DECIDED by the user 2026-10-05: `builder/layout-uat` pushed, the user opens and merges the pull request, then the branch is deleted and `builder/page-grid` cut from master; next there: BATCH D-2 (the Docusaurus site + the layout documented from the beginning, RULE DOCS), then BATCH G-3d (the user's two decisions), then BATCH E-2 (resizing and dropping on tablets and phones); before the PR: the artifacts and the layout story for the page grid; then its final pass, then BATCH E-1; handover of session 3da81fad in the SESSION LOG; earlier: handover of session 5da86722 in the SESSION LOG — G-3 CLOSED 2026-10-04 (63 headed checks, G3-8 carried to G-3b by the user); earlier: BATCH G-3 · placing on columns AND rows — G-2 CLOSED 2026-10-04 (134 headed checks); P-0 CLOSED 2026-10-04 (R4-1 … R4-5 fixed, 30 headed checks); R-4 SIGNED with D1–D5 (session 9fa0fee9); then G-3, P-1, P-2, G-4, P-3, G-5, G-6. G-1 CLOSED 2026-10-04 (see BATCHES). Plan APPROVED 2026-10-04 with the user's decisions below. Earlier: research R-3 DONE and SIGNED 2026-10-04
       (`ff5c53a`, `4418202`); build to every decision recorded under R-3 below; the mockups settle the open three (row
       snap · the phone gap 11 vs 16 px · panel per site or per page) → the user's approval → build) · **THE PAGE GRID — DECIDED by the user 2026-10-03: done RIGHT AFTER L-4 closes, BEFORE L-5, L-6 and the
       frozen list's placement items** (they are built on it). NAMES (decided): "page grid" in code and docs; the lines a
@@ -4745,6 +4815,18 @@ sent), and my research. Nothing on the layout is done until every line here is c
 
 One entry per session, newest first. Written the moment the user says "new session" (or the context is about to run
 out) — where the session STARTED FROM, where it GOT TO, and where the next one CONTINUES FROM.
+
+### 2026-10-15 · session A-1 · HANDOVER (both held: the context is genuinely long — the 28 decisions, the whole of A-1 with 14
+ledger lines, the spacing rule reversed, four production builds and two full gates — and the boundary is clean: A-1 closed and
+committed, nothing of this session running, ports checked free; the next job, E-6, starts with research)
+- **Started from:** `4270deb` on `app-builder/research`, YOU ARE HERE at the user's sign-off of R-APP-1 (28 decisions).
+- **Got to:** all 28 decisions answered (as recommended; 28 = the user's TCL 505 / T509K — emulators now, an APK later);
+  AREA APP lifted out of the closed E-5; BATCH A-1 CLOSED: RA-5 webhook, RA-7 fonts as files (every subset, unicode-range),
+  RA-8 photos as files + srcset, guide + phone screenshot + the guide Artifact v29, T4 re-measured (96–135 KB, 4.2–5.1 s on
+  Slow 3G, was ~500 KB / 14 s), the accordion picture upload; ledger A1-1 … A1-14 (A1-6 → A-1b, A1-11 → D-4 by the user).
+  The user then reversed the spacing rule: NO space unless they add it, every space visible and adjustable (CLAUDE.md,
+  its guard and memory rewritten) → BATCH E-6 next, then D-4, A-1b, A-2.
+- **Continue from:** BATCH E-6 — research first (RULE RS), then its checklist, then the build; reproduce E6-1 through the UI.
 
 ### 2026-10-15 · session app-builder-research · HANDOVER (both held: the context is genuinely long — three tools built inside, eight
 research agents, two commits — and the boundary is clean: everything committed, the study browser closed, every server the

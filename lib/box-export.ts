@@ -1003,12 +1003,13 @@ export const PHOTO_WIDTHS = [480, 960];
 export function addSrcset(files: SiteFiles, copies: Record<string, { w: number; file: string }[]>): SiteFiles {
   const out: SiteFiles = {};
   for (const [name, text] of Object.entries(files)) {
-    out[name] = text.replace(/<img src="(images\/[^"]+)"([^>]*)>/g, (tag, file: string, rest: string) => {
+    // `src` need not come first: an accordion's picture is `<img class="eu-accordion__media" src=…>` (A1-13).
+    out[name] = text.replace(/<img ([^>]*?)src="(images\/[^"]+)"([^>]*)>/g, (tag, before: string, file: string, rest: string) => {
       const list = copies[file];
       if (!list || list.length < 2) return tag;
       const srcset = list.map((c) => `${c.file} ${c.w}w`).join(", ");
-      const sizes = /loading="lazy"/.test(rest) ? "auto, 100vw" : "100vw";
-      return `<img src="${file}" srcset="${srcset}" sizes="${sizes}"${rest}>`;
+      const sizes = /loading="lazy"/.test(before + rest) ? "auto, 100vw" : "100vw";
+      return `<img ${before}src="${file}" srcset="${srcset}" sizes="${sizes}"${rest}>`;
     });
   }
   return out;

@@ -631,7 +631,7 @@ The panel shows **how many you've changed** and gives you one **Reset** to put t
 
 ### Everything else
 
-**Full CRUD on every item.** Title, Body, optional Meta (a right‑aligned price or badge), an Image thumbnail, a Number/badge, and **Open by default**. Add, duplicate, remove and reorder (▲/▼) any item — the last one can't be removed, so it's never empty. Click a panel's title or body **directly on the canvas** to edit in place.
+**Full CRUD on every item.** Title, Body, optional Meta (a right‑aligned price or badge), an Image thumbnail, a Number/badge, and **Open by default**. Add, duplicate, remove and reorder (▲/▼) any item — the last one can't be removed, so it's never empty. Click a panel's title or body **directly on the canvas** to edit in place. **An item's picture** can be pasted as a web address or uploaded from your device with **Upload item 1 picture** (it becomes **Replace…** once there is one); like every picture you upload, it is resized to 1600 pixels, and the address box then says *Uploaded picture — or paste a URL* rather than showing the picture as text.
 
 **Numbers you control.** Numbered designs count `01, 02, 03…` automatically; type your own value in an item's **Number/badge** field to override just that one.
 
