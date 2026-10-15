@@ -1695,7 +1695,38 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
   Ewe (from the 7 measured: Inter, Montserrat, Merriweather, EB Garamond, Noto Serif, Anton, Great Vibes; RULE P picks the
   pair); saved pages keep theirs · (2) the font picker shows which languages each font writes (the coverage measured, stored
   as data, re-measured by `a1-font-coverage.js`) · (3) the Page check warns when a page's words use letters its font lacks.
-  Its checklist is written when it opens
+  MEASURED FIRST (code, 2026-10-15): the box builder has NO site-level font pair — `app/website/box-demo/page.tsx:400` renders
+  every site with `resolveSiteTheme(DEFAULT_THEME, …)`, so headings / words come from `DEFAULT_THEME` (Poppins + DM Sans,
+  `lib/site-storage.ts:53`) unless a block sets its own `fontFamily`. Changing the default would restyle every saved page
+  (→ A1b-1); a person cannot change the pair anywhere (→ A1b-2).
+  CHANGES:
+  - `[ ]` (1) THE PAIR IS THE SITE'S: a stored heading + body pair per site; a NEW site gets Montserrat (headings) + Inter
+    (words) — both write all four languages, both sans like today's pair so the look moves least (RULE P: plain / neutral
+    base); a site saved WITHOUT a pair reads Poppins + DM Sans exactly as now; canvas == Preview == export
+  - `[ ]` (2) THE PICKER SAYS WHICH LANGUAGES: the coverage measured by `a1-font-coverage.js` stored as data beside
+    `FONT_FAMILIES`; every font picker shows "Writes Yoruba · Igbo · Hausa · Twi / Ga / Ewe" (or which it lacks) in words,
+    not colour alone
+  - `[ ]` (3) THE PAGE CHECK WARNS: a page whose words use ẹ ọ ṣ ị ụ ɓ ɗ ƙ ɛ ɔ ŋ… in a font that lacks them gets a Page check
+    line naming the letters, the block and a font that has them; one click to go to the block
+  - `[?]` (4) — only on the user's word (A1b-2): "Site fonts" (heading + words) in Page settings, the picker of (2) inside it
+  HEADED UAT CHECKLIST (written before the pass; six windows; fresh production build; built through the UI; Preview at every
+  screen of `screens.js`; the editor's four themes; Yoruba · Igbo · Hausa · Twi words typed in):
+  - `[ ]` U1 a NEW site: headings Montserrat, words Inter, on the canvas, the Preview and the downloaded export; ẹ ọ ṣ ị ụ ɓ ɗ ƙ
+    ɛ ɔ ŋ drawn in those fonts (not a fallback), measured per letter
+  - `[ ]` U2 a site saved BEFORE (seeded only to pin the old shape, RULE Y — then edited through the UI): still Poppins + DM Sans
+    on canvas, Preview, export; after a reload; after an edit and Undo
+  - `[ ]` U3 every font picker (block Text style, section "Text style (everything inside)", component Typography): every family
+    shows its languages; the words are read by a screen reader (not colour); the four themes; 375 / 768 / 1280
+  - `[ ]` U4 the Page check: a Yoruba paragraph in Poppins → the warning names ṣ / ẹ / ọ, the block and a font that writes them;
+    the button goes to the block; switch the font → the warning goes; an English page → no warning
+  - `[ ]` U5 every screen + 200 % text: no sideways scroll in the picker or the Page check
+  - `[ ]` U6 regression: typecheck 0 · eslint 0 errors · vitest · test:fast (export-fonts, exported-site, canvas-scale-parity,
+    perf-budget) · the guide page updated (RULE DOCS) and republished per `docs/DOCUSAURUS.md` § Republishing
+  LEDGER:
+  - `[ ]` A1b-1 · changing `DEFAULT_THEME`'s fonts would restyle every saved page (they store no pair) — the user decided saved
+    pages keep theirs → change (1) stores the pair and reads a missing one as Poppins + DM Sans
+  - `[?]` A1b-2 · a person cannot choose the site's heading + body fonts anywhere in the box builder (only per block) — a RULE UI
+    gap; proposed as change (4), waiting on the user's word
 - `[ ]` **BATCH A-2 · The app's layout: breakpoints, a height class, tabs and list-detail** (area: app layout · queued 2026-10-15 —
   the user's decisions 1–3) — rule 18's rungs move to 600 / 840 / 1200 / 1600 (CLAUDE.md, the engine, saved pages still read) +
   a height class for short screens; then on SAMPLE data: the navigation shell as data per role (tab bar → rail → sidebar) and the
