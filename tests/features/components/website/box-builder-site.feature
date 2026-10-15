@@ -291,6 +291,18 @@ Feature: Box Builder — multi-page site, preview & export
     And a site using only the device's own fonts has no "fonts/" folder
     And when the fonts cannot be fetched the download still arrives, in the fallback font
 
+  # tests/unit/export-photos.test.ts · BATCH A-1 change (3), RA-8
+  Scenario: Photos arrive as files, sized to the screen
+    Given a site with an uploaded photo in a Picture block, a band background, an accordion and a gallery
+    And the same photo on two pages
+    When I click Export
+    Then the ZIP holds each photo once under "images/", and no page or stylesheet carries photo bytes inside it
+    And a photo wider than 480px also has narrower copies, and its picture lists them in a "srcset"
+    And a phone downloads the narrow copy, a wide screen the original
+    And a picture below the fold is not downloaded until the visitor scrolls to it
+    And a site with no photos has no "images/" folder
+    And the Preview, which has no folder to fetch from, shows the same photos as before
+
   Scenario: Nothing is injected above an exported page
     Then each page is exactly what the user designed, with no builder navigation prepended
     And a block whose destination is "page:<id>" resolves to that page's relative filename

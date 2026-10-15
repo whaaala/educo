@@ -954,6 +954,67 @@ ${pageCss ? `<style>${pageCss}</style>` : ""}
 }
 
 /**
+ * PHOTOS AS FILES (RA-8). An upload is stored as a `data:` URI, and the export used to publish it that way: the
+ * bytes rode inside the page or `styles.css`, so the first words waited behind every picture, nothing could be
+ * fetched lazily, a photo on two pages was sent twice, and nothing was cached between pages (T4: ~500 KB, 14 s
+ * to first text on Slow 3G). Each distinct photo becomes ONE file, named by its content, so a repeat is free.
+ *
+ * Only base64 raster images: an SVG data URI is a small pattern or icon and stays where it is (`ponytail:`).
+ */
+const DATA_PHOTO = /data:image\/(png|jpeg|webp|gif|avif);base64,[A-Za-z0-9+/]+=*/g;
+const PHOTO_EXT: Record<string, string> = { png: "png", jpeg: "jpg", webp: "webp", gif: "gif", avif: "avif" };
+
+/** cyrb53 — a fast 53-bit string hash; a name for a photo's bytes, not a security boundary. */
+function hash53(s: string): string {
+  let h1 = 0xdeadbeef, h2 = 0x41c6ce57;
+  for (let i = 0; i < s.length; i++) {
+    const c = s.charCodeAt(i);
+    h1 = Math.imul(h1 ^ c, 2654435761);
+    h2 = Math.imul(h2 ^ c, 1597334677);
+  }
+  h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909);
+  h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909);
+  return (4294967296 * (2097151 & h2) + (h1 >>> 0)).toString(36);
+}
+
+/** Every photo in the site's files moved out to `images/<hash>.<ext>`; `photos` maps each file name to its data URI. */
+export function photosToFiles(files: SiteFiles): { files: SiteFiles; photos: Record<string, string> } {
+  const photos: Record<string, string> = {};
+  const out: SiteFiles = {};
+  for (const [name, text] of Object.entries(files)) {
+    out[name] = text.replace(DATA_PHOTO, (uri, type: string) => {
+      const file = `images/${hash53(uri)}.${PHOTO_EXT[type]}`;
+      photos[file] = uri;
+      return file;
+    });
+  }
+  return { files: out, photos };
+}
+
+/** The narrower copies the export makes of each photo, for phones (360–412 CSS px at 1–2× density). */
+export const PHOTO_WIDTHS = [480, 960];
+
+/**
+ * Give every `<img>` of a photo with narrower copies a `srcset`, so a phone fetches the copy its screen needs
+ * instead of the 1600px original. `copies` maps a photo's file to its widths, widest (the original) last.
+ * A lazy picture says `sizes="auto"` — the browser measures the box it actually lays out (Chrome 126+, so
+ * every updated Android WebView); anything else falls back to the window's width.
+ */
+export function addSrcset(files: SiteFiles, copies: Record<string, { w: number; file: string }[]>): SiteFiles {
+  const out: SiteFiles = {};
+  for (const [name, text] of Object.entries(files)) {
+    out[name] = text.replace(/<img src="(images\/[^"]+)"([^>]*)>/g, (tag, file: string, rest: string) => {
+      const list = copies[file];
+      if (!list || list.length < 2) return tag;
+      const srcset = list.map((c) => `${c.file} ${c.w}w`).join(", ");
+      const sizes = /loading="lazy"/.test(rest) ? "auto, 100vw" : "100vw";
+      return `<img src="${file}" srcset="${srcset}" sizes="${sizes}"${rest}>`;
+    });
+  }
+  return out;
+}
+
+/**
  * Download a whole site as a ZIP.
  *
  * A multi-page export is several files, and a browser cannot hand over a folder — so the site arrives as one

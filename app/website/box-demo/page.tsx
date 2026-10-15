@@ -29,6 +29,7 @@ import PageGridPanel from "@/components/website/box/PageGridPanel";
 import { CHROME_Z } from "@/lib/educo-ui/stacking";
 import { renderSitePage, renderSiteFiles, siteFileMap, downloadSite, fontFamiliesInSite } from "@/lib/box-export";
 import { embedFontCss, fontFiles } from "@/lib/educo-ui/font-embed";
+import { photosAsFiles } from "@/lib/export-photos";
 import { warmIcons, hasIcon } from "@/lib/educo-ui/icon-svg";
 import BoxCanvas, { measureFloatGeom, measureFixedGeom, measureGroupGeom } from "@/components/website/box/BoxCanvas";
 import BoxInspector from "@/components/website/box/BoxInspector";
@@ -834,7 +835,8 @@ export default function BoxDemoPage() {
     // RA-7: as FILES under fonts/, so a visitor downloads only the faces whose letters the page uses.
     const fonts = await fontFiles(fontFamiliesInSite(site, renderTheme));
     // A multi-page site is several files, so it arrives as a ZIP to unzip and upload.
-    downloadSite({ ...renderSiteFiles(site, renderTheme, fonts.css), ...fonts.files }, "site.zip");
+    // RA-8: photos as files with narrower copies for phones, instead of data: URIs inside the pages.
+    downloadSite({ ...(await photosAsFiles(renderSiteFiles(site, renderTheme, fonts.css))), ...fonts.files }, "site.zip");
   };
 
   // Click-to-add from the palette: insert into the selected container (or the page) with an optional style.
