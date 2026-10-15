@@ -76,6 +76,10 @@ body {
   line-height: var(--ifm-line-height-base);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  /* The Artifact host wraps the page in a skeleton with body{color:#000;background:#fff}: restate them from the theme,
+     or dark mode is black words on white (D4-6) */
+  color: var(--ifm-font-color-base);
+  background-color: var(--ifm-background-color);
 }
 
 /* ─── Heading scale — fluid ─────────────────────────────────────────────────── */
