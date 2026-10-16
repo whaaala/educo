@@ -1855,18 +1855,34 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
   - `[ ]` (GUARD WRITTEN 2026-10-16 — `tests/unit/layout-config.test.ts`: em forms of every edge in all code, px width checks
     in the builder + app + their tests and scripts; mutation-proven: a planted `52.49em` and `w < 840` in `lib/` both fail it,
     removed → passes; the shell half is added with change (3); closes on HEADED U5) A2-6 · nothing guards "no hard-coded rung / shell" — the guard is written in this batch (U5)
-  - `[ ]` A2-7 · the web `components/layout/Sidebar.tsx:412` switches to its phone overlay at `innerWidth <= 1023` (Tailwind
+  - `[ ]` (FIRST HALF FIXED 2026-10-16: the overlay switches below `WEB_SCREEN_PX.lg`, the same line as its `lg:` classes;
+    the teacher menu is measured with change (3)) A2-7 · the web `components/layout/Sidebar.tsx:412` switches to its phone overlay at `innerWidth <= 1023` (Tailwind
     `lg`), not the ladder; and a teacher gets no menu of their own (`:884` picks admin or parent only) — to measure what a
     teacher sees, then fix or ask
-  - `[?]` A2-8 · FOUND by the guard: 11 Educo web-app pages (`app/admin/parents/add`, `…/fees/add`, `…/fees/[id]/edit`,
+  - `[ ]` (DECIDED by the user 2026-10-16: "it's a rule that we must fix everything we find… don't leave nothing unfixed" →
+    fixed IN THIS BATCH; FIXED 2026-10-16, closes on the HEADED pass: the 11 forms read `WEB_SCREEN_PX.lg` from `webApp.screens`
+    in `config/layout.json`, and Tailwind's own `lg:` (and sm / md / xl / 2xl / xs) now come from the SAME numbers through
+    `tailwind.config.mjs` + `@config` in both `globals.css` — measured by compiling the real `app/globals.css`: `lg:` = 64rem,
+    `md:` = 48rem, `xs:` = 26.25rem; the four `matchMedia("(max-width: 767px)")` + one `innerWidth < 768` in the document editor read
+    `mediaBelow(WEB_SCREEN_PX.md)` (an em query now, as Tailwind's md: is, rule 16); the guard fails on ANY typed width in the web
+    app's code — mutation-proven with a planted `min-[700px]:`, `innerWidth >= 900`, `matchMedia("(max-width: 500px)")`) A2-8 · FOUND by the guard: 11 Educo web-app pages (`app/admin/parents/add`, `…/fees/add`, `…/fees/[id]/edit`,
     `app/classes/add`, `app/staff/add`, `app/staff/edit/[id]`, `app/staff/[id]/edit`, `app/students/add`, `app/students/edit/[id]`,
     `app/teachers/add`, `app/teachers/[id]/edit`) each type `window.innerWidth >= 1024` (Tailwind's `lg`) by hand — RULE CFG
     says config; the value is also baked into their `lg:` classes, so a config value alone would lie. Outside the app-layout
     area → THE USER'S CALL: in this batch, or its own batch with A2-9
-  - `[?]` A2-9 · the editor's top-bar words show from Tailwind classes typed in box-demo (`WIDE_LABEL` `min-[1600px]` /
+  - `[ ]` (DECIDED by the user 2026-10-16: fix in this batch; FIXED 2026-10-16, closes on the HEADED pass: `editor.labelsFrom`
+    1600 · `labelsWideFrom` 1800 · `brandFrom` 368 · `sheetWidth` 512 in the config → Tailwind lines `labels:` / `labels-wide:` /
+    `brand:` / `sheet:` + `max-w-sheet` (compiled: 100rem / 112.5rem / 23rem / 32rem); box-demo's `WIDE_LABEL`, `WIDER_LABEL`, the
+    brand name, the Preview word (`max-[23em]:sr-only`, found by the guard, missed by the grep) and both sheets use them; the
+    messages page's `min-[420px]:` is `xs:`; `uat-e3-headed.js` reads `editor.labelsFrom`) A2-9 · the editor's top-bar words show from Tailwind classes typed in box-demo (`WIDE_LABEL` `min-[1600px]` /
     `min-[1800px]`, `WIDER_LABEL`) — not configurable; the fix is Tailwind reading `config/layout.json` (an `@config` file
     giving named breakpoints) so every `min-[…]` becomes a named, configured one; `uat-e3-headed.js` names its copy
     `LABELS_FROM` with a `ponytail:` pointing here → THE USER'S CALL (with A2-8)
+  - `[ ]` (FIXED 2026-10-16 — `@source not` docs / docs-site / scripts / tests / apps/mobile in `app/globals.css`; measured
+    2,031,871 → 2,016,760 characters of compiled CSS, every configured class still there; closes on the HEADED pass) A2-11 ·
+    FOUND compiling the real CSS: Tailwind scanned `docs/` (the task tree, research JSON), `scripts/`, `tests/` and the RN app
+    as if they were pages, so their class-like words became ~15 KB of CSS the editor never uses (RULE AF: nothing loaded that
+    is not used)
   - `[ ]` (FIXED 2026-10-16 — block comments keep their newlines; measured: an edge on line 5 under a 4-line comment was reported as line 2, now 5) A2-10 · MY OWN, in the new guard: stripping block comments
     whole shifted the line numbers it reports
 - `[x]` **BATCH G-3 · Placing on columns and rows** — CLOSED 2026-10-04 (HEADED UAT `scripts/uat/uat-g3-headed.js`, six windows,

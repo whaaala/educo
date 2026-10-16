@@ -21,6 +21,7 @@ import dynamic from "next/dynamic";
 import { getExtendedStudentDataById } from "@/lib/mockStudents";
 import { emptyStudentForm, type StudentFormData } from "@/components/students/form-sections/types";
 import type { FormFieldSetter } from "@/components/shared/form-section-types";
+import { WEB_SCREEN_PX } from "@/lib/educo-ui/layout";
 
 const ValidationErrorsModal = dynamic(
   () => import("@/components/shared/ValidationErrorsModal"),
@@ -46,7 +47,7 @@ export default function EditStudentPage() {
   // Handle responsive layout
   useEffect(() => {
     const checkScreenSize = () => {
-      setIsLargeScreen(window.innerWidth >= 1024);
+      setIsLargeScreen(window.innerWidth >= WEB_SCREEN_PX.lg);
     };
 
     checkScreenSize();

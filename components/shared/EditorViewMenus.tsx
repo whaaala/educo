@@ -10,6 +10,7 @@
 import { useState, useRef, useEffect, useLayoutEffect, useContext, useMemo, createContext } from "react";
 import { createPortal } from "react-dom";
 import { ChevronRight, Check } from "lucide-react";
+import { WEB_SCREEN_PX, mediaBelow } from "@/lib/educo-ui/layout";
 
 // ── Contexts ──
 export const MenuCloseContext = createContext<(() => void) | null>(null);
@@ -97,7 +98,7 @@ export function SubmenuPanel({ children, className = "" }: { children: React.Rea
 export function ViewMenuPanel({ children }: { children: React.ReactNode }) {
   const [isMobile, setIsMobile] = useState(false);
   useEffect(() => {
-    const mq = window.matchMedia("(max-width: 767px)");
+    const mq = window.matchMedia(mediaBelow(WEB_SCREEN_PX.md));
     setIsMobile(mq.matches);
     const handler = (e: MediaQueryListEvent) => setIsMobile(e.matches);
     mq.addEventListener("change", handler);

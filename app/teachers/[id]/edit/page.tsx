@@ -12,6 +12,7 @@ import { useSchoolSettings } from "@/contexts/SchoolSettingsContext";
 import { getTeacherById } from "@/lib/mockTeachers";
 import { emptyTeacherForm, type TeacherFormData } from "@/components/teachers/form-sections/types";
 import type { FormFieldSetter } from "@/components/shared/form-section-types";
+import { WEB_SCREEN_PX } from "@/lib/educo-ui/layout";
 
 export default function EditTeacherPage() {
   const params = useParams();
@@ -33,7 +34,7 @@ export default function EditTeacherPage() {
   // Handle responsive layout
   useEffect(() => {
     const checkScreenSize = () => {
-      setIsLargeScreen(window.innerWidth >= 1024);
+      setIsLargeScreen(window.innerWidth >= WEB_SCREEN_PX.lg);
     };
 
     checkScreenSize();

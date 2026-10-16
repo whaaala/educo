@@ -51,8 +51,8 @@ const KEY = "educo_box_site_v1"; // multi-page site
 const LEGACY_KEY = "educo_box_demo_v9"; // old single-tree document (migrated on load)
 const CLEANED_KEY = "educo_box_site_cleaned_v1"; // one-time flag: empty-section chrome already pruned
 const PAGE_MIN_H = 160;
-const WIDE_LABEL = "hidden min-[1600px]:inline pointer-coarse:min-[1600px]:hidden pointer-coarse:min-[1800px]:inline"; // a top-bar button's words, shown where one row holds them (D3-32; measured one row from 1560, E3-7)
-const WIDER_LABEL = "hidden min-[1800px]:inline"; // the right-hand group's labels: from 1700 the bar wrapped until ~1750 (E3-7)
+const WIDE_LABEL = "hidden labels:inline pointer-coarse:labels:hidden pointer-coarse:labels-wide:inline"; // a top-bar button's words, shown where one row holds them (D3-32; measured one row from 1560, E3-7)
+const WIDER_LABEL = "hidden labels-wide:inline"; // the right-hand group's labels: from 1700 the bar wrapped until ~1750 (E3-7)
 const SECTION_TINTS = ["#eef2ff", "#faf5ff", "#ecfeff", "#fef2f2", "#f0fdf4", "#fffbeb"];
 
 type Device = "mobile" | "tablet" | "laptop" | "desktop" | "wide" | "full";
@@ -1298,7 +1298,7 @@ export default function BoxDemoPage() {
         return (<>
       <header style={{ zIndex: CHROME_Z.panel }} className={`relative min-h-14 shrink-0 flex ${compactBar ? "flex-nowrap" : "flex-wrap"} items-center gap-2 pointer-coarse:gap-1 gap-y-1.5 py-1.5 px-4 border-b border-line bg-surface`}>
         {!compactBar && (<>
-        <span className="text-sm font-bold text-gray-800 dark:text-gray-100 midnight:text-cyan-50 purple:text-pink-50 mr-1 shrink-0 pointer-coarse:max-[1599px]:hidden max-[23em]:hidden">Box Builder</span>
+        <span className="text-sm font-bold text-gray-800 dark:text-gray-100 midnight:text-cyan-50 purple:text-pink-50 mr-1 shrink-0 pointer-coarse:max-labels:hidden max-brand:hidden">Box Builder</span>
         <ToolDivider />
         </>)}
         {/* Page tabs */}
@@ -1363,7 +1363,7 @@ export default function BoxDemoPage() {
           <ToolBtn onClick={redo} disabled={!canRedo} ariaLabel="Redo" title="Redo (Ctrl+Y)"><Redo2 className="w-4 h-4" /></ToolBtn>
         </div>
         {/* A1b-9: a 375 screen at 200 % text is under 23em — the one-row bar keeps its icons, the words go (the name stays its label) */}
-        <ToolBtn onClick={() => setPreview(true)} title="See it as a visitor" ariaLabel="Preview"><Eye className="w-3.5 h-3.5" aria-hidden="true" /><span className="max-[23em]:sr-only">Preview</span></ToolBtn>
+        <ToolBtn onClick={() => setPreview(true)} title="See it as a visitor" ariaLabel="Preview"><Eye className="w-3.5 h-3.5" aria-hidden="true" /><span className="max-brand:sr-only">Preview</span></ToolBtn>
             <ToolBtn btnRef={moreBtnRef} onClick={() => setMoreOpen(true)} ariaLabel="More" title="More: pages, screen size, zoom, guides, theme, export…" active={moreOpen}><MoreHorizontal className="w-4 h-4" aria-hidden="true" /></ToolBtn>
           </div>
         </>) : (<>
@@ -1397,7 +1397,7 @@ export default function BoxDemoPage() {
       </header>
       {compactBar && moreOpen && (<>
         <div aria-hidden="true" onClick={() => setMoreOpen(false)} style={{ zIndex: CHROME_Z.drawer }} className="fixed inset-0 bg-black/20" />
-        <div role="dialog" aria-label="More" style={{ zIndex: CHROME_Z.drawer }} className="fixed inset-x-0 bottom-0 max-h-[70dvh] overflow-y-auto rounded-t-2xl border-t border-line bg-surface shadow-2xl p-4 pt-2 space-y-3 mx-auto max-w-[32rem] min-[32rem]:border-x">
+        <div role="dialog" aria-label="More" style={{ zIndex: CHROME_Z.drawer }} className="fixed inset-x-0 bottom-0 max-h-[70dvh] overflow-y-auto rounded-t-2xl border-t border-line bg-surface shadow-2xl p-4 pt-2 space-y-3 mx-auto max-w-sheet sheet:border-x">
           <span aria-hidden="true" className="mx-auto block h-1.5 w-10 rounded-full bg-line" />
           <div className="flex items-center justify-between">
             <span className="text-sm font-bold text-ink">More</span>

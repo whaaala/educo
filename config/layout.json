@@ -1,5 +1,5 @@
 {
-  "$comment": "THE LAYOUT, AS DATA (RULE CFG). Every screen edge the builder, the export, the Educo app, the UAT scripts and the tests use is read from here. Change a number here and nowhere else. Rungs: 'from' is the first CSS px of the rung (the cascade runs mobile-first); keep them in ascending order. 'measure' caps a contained column on that rung; 'words' is how the Page check names its screens. narrowestPhone is the low-cost phone a row must still fit (RULE AF). editor.dockFrom is the editor's own chrome line (panels dock from it), not a rung. uat.edgeHeight is the window height the UAT uses for a rung's edge.",
+  "$comment": "THE LAYOUT, AS DATA (RULE CFG). Every screen edge the builder, the export, the Educo app, the UAT scripts and the tests use is read from here. Change a number here and nowhere else. Rungs: 'from' is the first CSS px of the rung (the cascade runs mobile-first); keep them in ascending order. 'measure' caps a contained column on that rung; 'words' is how the Page check names its screens. narrowestPhone is the low-cost phone a row must still fit (RULE AF). editor.dockFrom is the editor's own chrome line (panels dock from it), not a rung; labelsFrom / labelsWideFrom are where the top bar's buttons show their words (wide: under a finger, and the right-hand group); brandFrom is where the 'Box Builder' name shows; sheetWidth caps a bottom sheet. webApp.screens are the Educo web app's breakpoints (Tailwind's sm / md / lg… and xs). Tailwind reads all of these through tailwind.config.mjs, so a class says lg: or labels: and never a typed width. uat.edgeHeight is the window height the UAT uses for a rung's edge.",
   "rungs": {
     "phone":           { "from": 0,    "label": "Phone",            "words": "phones",                 "measure": null },
     "tabletPortrait":  { "from": 600,  "label": "Tablet portrait",  "words": "tablets held upright",   "measure": "34rem" },
@@ -8,6 +8,7 @@
     "wide":            { "from": 1600, "label": "Big desktop",      "words": "wide screens",           "measure": "76rem" }
   },
   "narrowestPhone": 360,
-  "editor": { "dockFrom": 1024 },
+  "editor": { "dockFrom": 1024, "labelsFrom": 1600, "labelsWideFrom": 1800, "brandFrom": 368, "sheetWidth": 512 },
+  "webApp": { "screens": { "xs": 420, "sm": 640, "md": 768, "lg": 1024, "xl": 1280, "2xl": 1536 } },
   "uat": { "edgeHeight": 900 }
 }

@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@config "../../../tailwind.config.mjs"; /* breakpoints from config/layout.json (RULE CFG) */
 
 @source "../../../components/**/*.tsx";
 @source "../../../contexts/**/*.tsx";

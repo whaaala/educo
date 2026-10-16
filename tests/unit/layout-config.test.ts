@@ -10,7 +10,7 @@ import LAYOUT from "@/config/layout.json";
  * or a width check takes — so a copy is caught the day it appears (A2-1, A2-6).
  */
 const ROOT = process.cwd();
-const SCAN = ["lib", "app", "components", "apps/mobile/app", "apps/mobile/components", "apps/mobile/hooks", "tests/unit", "tests/e2e", "scripts/uat"];
+const SCAN = ["lib", "app", "components", "contexts", "hooks", "apps/admin/app", "apps/admin/components", "apps/mobile/app", "apps/mobile/components", "apps/mobile/hooks", "tests/unit", "tests/e2e", "scripts/uat"];
 const SKIP = /\.generated\.|node_modules|[\\/](logs|[\w-]+-out)[\\/]|layout-config\.test\.ts$/; // generated files and saved run output are not code
 const files = (dir: string): string[] => {
   const abs = join(ROOT, dir);
@@ -31,17 +31,23 @@ const emForms = edges.flatMap((px) => [
 ]);
 const widthChecks = edges.map((px) => new RegExp(`(?:innerWidth|width|vw|\\bw|px)\\)?\\s*[<>]=?\\s*${px}\\b`));
 /**
- * A width check in px is an edge only in the BUILDER and the app (and their tests and scripts). ponytail: the rest of the Educo
- * web app (`app/admin`, `app/students`…) has its own Tailwind `lg` 1024 typed by hand — ledger A2-8, a separate area.
+ * A width check in px against one of the rung / dock numbers is an edge in the builder and the app, their tests and scripts.
  */
 const BUILDER = /^(lib|app[\\/]website|components[\\/]website|apps[\\/]mobile|tests[\\/]e2e|scripts[\\/]uat)[\\/]/;
+/**
+ * In the WEB APP's own code (A2-8 / A2-9) a typed screen width in ANY form is an edge: a Tailwind class `min-[1600px]:` /
+ * `max-[23em]:` (Tailwind reads named lines from the config — `lg:`, `labels:`, `sheet:`), an `innerWidth` compared with a
+ * number, a `matchMedia` with a number in it.
+ */
+const WEB = /^(app|components|contexts|hooks|apps[\\/]admin)[\\/]/;
+const webForms = [/\b(?:min|max)-\[[\d.]+(?:px|em|rem)\]:/, /innerWidth\s*[<>]=?\s*\d/, /matchMedia\(\s*["'`][^"'`]*\d+(?:px|em|rem)/];
 // Comments may name an edge. A block comment keeps its newlines, so a reported line number is the file's own (A2-10).
 const codeOnly = (src: string) => src.replace(/\/\*[\s\S]*?\*\//g, (c) => c.replace(/[^\n]/g, "")).replace(/(^|[^:])\/\/.*$/gm, "$1");
 
 export function hardCodedEdges(): string[] {
   return SCAN.flatMap(files).flatMap((f) => {
     const lines = codeOnly(readFileSync(join(ROOT, f), "utf8").replace(/\r\n/g, "\n")).split("\n");
-    const patterns = BUILDER.test(f) ? [...emForms, ...widthChecks] : emForms;
+    const patterns = [...emForms, ...(BUILDER.test(f) ? widthChecks : []), ...(WEB.test(f) ? webForms : [])];
     return lines.flatMap((l, i) => (patterns.some((p) => p.test(l)) ? [`${relative(ROOT, join(ROOT, f))}:${i + 1}: ${l.trim().slice(0, 120)}`] : []));
   });
 }

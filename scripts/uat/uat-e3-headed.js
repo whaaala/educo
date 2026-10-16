@@ -13,7 +13,7 @@ const path = require('path'); const fs = require('fs');
 const { chromium } = require('playwright');
 const H = require('./h.js'); const P = require('./pages.js').helpers;
 const { SCREENS, EDGE } = require('./screens.js');
-const LABELS_FROM = 1600; // ponytail: the top bar's words show from Tailwind's min-[1600px] in box-demo (WIDE_LABEL) — a typed class until Tailwind reads config/layout.json (ledger A2-9); not a rung
+const LABELS_FROM = require('../../config/layout.json').editor.labelsFrom; // the top bar's words show from here (Tailwind's labels: line, RULE CFG)
 const OUT = path.join(__dirname, 'logs', 'uat-e3'); fs.mkdirSync(OUT, { recursive: true });
 const BASE = process.env.BASE || 'http://localhost:3100';
 const ONLY = (process.argv.find((a) => a.startsWith('--only=')) || '').slice(7).split(',').filter(Boolean);

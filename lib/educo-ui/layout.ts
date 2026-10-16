@@ -38,6 +38,8 @@ Object.values(RUNG_PX).forEach((px, i, all) => {
 export const NARROWEST_PHONE_PX: number = LAYOUT.narrowestPhone;
 /** The editor's own chrome line: from here its panels dock beside the canvas. Not a rung. */
 export const EDITOR_DOCK_PX: number = LAYOUT.editor.dockFrom;
+/** The Educo web app's breakpoints (Tailwind's xs / sm / md / lg / xl / 2xl), in px — the same numbers its classes use. */
+export const WEB_SCREEN_PX: Readonly<Record<keyof typeof LAYOUT.webApp.screens, number>> = LAYOUT.webApp.screens;
 /** How the Page check names each rung's screens. */
 export const RUNG_WORDS = Object.fromEntries(Object.entries(RUNGS).map(([k, r]) => [k, r.words])) as { [K in RungName]: string };
 

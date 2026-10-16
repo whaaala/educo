@@ -8,6 +8,7 @@
 import React, { useState, useRef, useEffect, useCallback, useLayoutEffect, createContext, useContext, useMemo } from "react";
 import { createPortal } from "react-dom";
 import { ChevronRight, Check } from "lucide-react";
+import { WEB_SCREEN_PX, mediaBelow } from "@/lib/educo-ui/layout";
 /**
  * One menu's panel, lazily loaded.
  *
@@ -491,7 +492,7 @@ export const MENU_DIVIDER: EditorMenuItem = { label: "", divider: true };
 export function ViewMenuPanel({ children }: { children: React.ReactNode }) {
   const [isMobile, setIsMobile] = useState(false);
   useEffect(() => {
-    const mq = window.matchMedia("(max-width: 767px)");
+    const mq = window.matchMedia(mediaBelow(WEB_SCREEN_PX.md));
     setIsMobile(mq.matches);
     const handler = (e: MediaQueryListEvent) => setIsMobile(e.matches);
     mq.addEventListener("change", handler);
