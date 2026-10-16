@@ -171,7 +171,7 @@ by side, half each; a third makes thirds. The edge between them drags like any o
 [![Two "Side by side" blocks filled with "Add a block inside": two halves above, three thirds below, then two rows of two](img/story-side-by-side-shares.webp)](img/story-side-by-side-shares.webp)
 
 *Not yet:* a **Button**'s corner still scales its words as it is dragged in, and does not come back exactly when dragged
-out again — it is being decided whether to settle that now or with the Button's own rebuild.
+out again — that is settled when the Button is rebuilt as a component, after the layout.
 
 ## 6. Hiding something on one device
 
