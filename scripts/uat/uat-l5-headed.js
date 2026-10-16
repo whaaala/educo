@@ -269,9 +269,7 @@ const SLICES = {
       await sel(page, ids[1]); await drag(page, 'left edge', -60, 0); const a1 = await rect(page, ids[0]);
       if (!(a0.w - a1.w > 40)) bad(`F row of ${ids.length}: the left edge did not squeeze the hand-sized label column (${a0.w.toFixed(0)} → ${a1.w.toFixed(0)})`); else ck(`F row of ${ids.length}: the left edge squeezes the hand-sized column (${a0.w.toFixed(0)} → ${a1.w.toFixed(0)})`);
       await sel(page, ids[1]); await drag(page, 'left edge', -400, 0); const a2 = await rect(page, ids[0]), b2 = await rect(page, ids[1]);
-      const floor = await page.evaluate((id) => { const e = document.querySelector(`[data-box-id="${id}"]`); const s = Number(e.closest('[data-canvas-scale]').dataset.canvasScale); const w = Array.from(e.querySelectorAll('*')).reduce((m, x) => Math.max(m, x.scrollWidth), 0); return Math.max(48, w / 1); }, ids[0]);
       if (a2.w < 47 || !near(b2.r, bR0, 1)) bad(`F row of ${ids.length}: pulled past the floor — the column ${a2.w.toFixed(0)} wide, the far edge moved ${(b2.r - bR0).toFixed(1)}`); else ck(`F row of ${ids.length}: pulled past it, the column stops at its own floor (${a2.w.toFixed(0)} ≥ 3rem) and the far edge stays`);
-      void floor;
     }
     for (const d of [25, 30, 40]) {
       const r0 = await rect(page, head), n0 = picked(await nodeOf(page, head));

@@ -15,6 +15,8 @@ async function open({ headed = process.argv.includes('--headed'), w = 1600, h = 
   const errs = []; page.__errDetails = [];
   page.on('pageerror', (e) => { errs.push(e.message.split('\n')[0]); page.__errDetails.push({ msg: e.message, stack: e.stack || '', step: page.__step || null }); });
   await page.addInitScript(() => { try { if (!sessionStorage.getItem('kept')) { localStorage.clear(); sessionStorage.setItem('kept', '1'); } } catch {} });
+  // CPU_SLOW=4: the editor on a CPU four times slower (Chrome's throttling) — a slow phone, or the load of six windows, on purpose (L6-10)
+  if (process.env.CPU_SLOW) { const cdp = await page.context().newCDPSession(page); await cdp.send('Emulation.setCPUThrottlingRate', { rate: +process.env.CPU_SLOW }); }
   await page.goto((process.env.BASE || 'http://localhost:3100') + '/website/box-demo', { waitUntil: 'load' });
   await page.waitForFunction(() => { const b = Array.from(document.querySelectorAll('button')).find((x) => x.getAttribute('aria-label') === 'Open blocks panel'); return !!b && Object.keys(b).some((k) => k.startsWith('__reactProps')); }, null, { timeout: 60000 });
   await page.waitForTimeout(1200);
