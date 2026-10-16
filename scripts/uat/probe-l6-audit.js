@@ -13,5 +13,13 @@ const page4 = (display) => `<!doctype html><body style="margin:0"><div class="bx
     const got = a.err.some((m) => m.startsWith('L6 tablet'));
     console.log(`${pageGrid ? 'page-grid page' : 'page without the grid'}: L6 tablet ${got ? 'FLAGGED' : 'not flagged'} — ${got === want ? 'as it should' : 'WRONG'}`); ok = ok && got === want;
   }
+  // L6-8: on a phone, words beside a cell of ONE ICON is kept on purpose (G-3b (4)); words beside a 57px cell of WORDS is still squeezed
+  const phone = (second) => `<!doctype html><body style="margin:0"><div class="bx-row" style="display:flex"><div class="bx-a" style="width:85%"><p class="bx-t">Our pupils learn in small classes where every teacher knows every child.</p></div><div class="bx-b" style="width:15%">${second}</div></div></body>`;
+  await p.setViewportSize({ width: 375, height: 800 });
+  for (const [name, second, want] of [['an icon cell', '<span class="bx-i"><svg aria-hidden="true" width="24" height="24"><circle cx="12" cy="12" r="10"/></svg></span>', false], ['a cell of words', '<p class="bx-w">More words</p>', true]]) {
+    await p.setContent(phone(second));
+    const got = (await p.evaluate(auditDoc, { rowBands: true, rungs })).err.some((m) => m.startsWith('L5 phone'));
+    console.log(`phone, words beside ${name}: L5 ${got ? 'FLAGGED' : 'not flagged'} — ${got === want ? 'as it should' : 'WRONG'}`); ok = ok && got === want;
+  }
   await b.close(); console.log(ok ? 'RESULT ok' : 'RESULT FAILED'); process.exit(ok ? 0 : 1);
 })();

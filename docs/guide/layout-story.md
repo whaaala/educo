@@ -461,6 +461,25 @@ that follow the page; a skip link for keyboard users. The canvas and the publish
 a pixel at every size — that is a rule with tests behind it, not an aspiration, and every sweep of real pages
 re-measures it.
 
+### Light enough for a cheap phone on a slow connection
+
+Maya's parents mostly visit on low-cost Android phones, often on 3G, paying for data by the megabyte. So every page the
+builder publishes is held to a budget, measured on the files **Export** gives her, the way a visitor's phone receives
+them:
+
+| What | Budget |
+|------|--------|
+| The page's HTML, CSS and scripts, compressed | 100 KB at most |
+| Everything a 360px-wide phone downloads for the first screen — pictures and fonts included | 500 KB at most |
+| Typefaces | two families at most, and words show straight away while the font arrives |
+| Pictures | sized to the box they are shown in, with their width and height set so the page does not jump, and loaded only when the visitor scrolls near them |
+| On a slow 3G connection | the first content painted within 5 seconds, and the page not shifting about as the rest arrives |
+
+A typical school home page — a header with the crest, a large photo, three sections and a footer — comes in at about
+12 KB of page and 165 KB for the first screen, and paints in about 4 seconds on slow 3G. The one thing Maya chooses
+herself: a picture at the very top of the page (the crest, a hero photo) can be set to **Load straight away** in its
+Content tab; everything below the first screen waits until it is needed.
+
 ---
 
 ## 11. The editor on a tablet or phone
