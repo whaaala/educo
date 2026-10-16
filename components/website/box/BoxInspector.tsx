@@ -1901,18 +1901,6 @@ export default function BoxInspector({ section = false, sectionPlace, outerDefau
                 </Accordion>
               )}
 
-              {node.type === "component" && (
-                <Accordion title="Advanced CSS" icon={Sparkles} defaultOpen={false}>
-                  <CompactTextarea label="Custom CSS declarations" ariaLabel="Advanced CSS" value={node.advancedCss ?? ""} onChange={(v) => onPatch({ advancedCss: v || undefined })} rows={4}
-                    placeholder={node.component === "accordion"
-                      ? "Applies to EVERY item — change anything:\nborder-radius: 14px;\ntitle { color: #4338ca; }\nbody { background: #f5f3ff; }\nicon { color: #6366f1; }"
-                      : "letter-spacing: .02em;\nbackdrop-filter: blur(6px);"}
-                    textareaClassName="font-mono text-[0.6875rem]"
-                    helpText={node.component === "accordion"
-                      ? <>Plain lines style the accordion. Use <code>title</code>, <code>body</code>, <code>icon</code>, <code>meta</code> or <code>media</code> {"{ … }"} to restyle that part of every item. Sanitised on export.</>
-                      : <>One <code>property: value;</code> per line. Applied to the component; sanitised on export (no selectors, @-rules, or remote URLs).</>} />
-                </Accordion>
-              )}
 
               {/* A CONTAINER gets these too, and that is the point: what a box is told here, everything inside
                   it follows — headings, paragraphs, lists, buttons and components alike — while any one of
@@ -1923,6 +1911,17 @@ export default function BoxInspector({ section = false, sectionPlace, outerDefau
               {textual && <TextStyle />}
             </>
           )}
+          {/* every block: the canvas and the export apply it to all of them, so the field is offered on all (A2-12, RULE UI) */}
+          <Accordion title="Advanced CSS" icon={Sparkles} defaultOpen={false}>
+            <CompactTextarea label="Custom CSS declarations" ariaLabel="Advanced CSS" value={node.advancedCss ?? ""} onChange={(v) => onPatch({ advancedCss: v || undefined })} rows={4}
+              placeholder={node.component === "accordion"
+                ? "Applies to EVERY item — change anything:\nborder-radius: 14px;\ntitle { color: #4338ca; }\nbody { background: #f5f3ff; }\nicon { color: #6366f1; }"
+                : "letter-spacing: .02em;\nbackdrop-filter: blur(6px);"}
+              textareaClassName="font-mono text-[0.6875rem]"
+              helpText={node.component === "accordion"
+                ? <>Plain lines style the accordion. Use <code>title</code>, <code>body</code>, <code>icon</code>, <code>meta</code> or <code>media</code> {"{ … }"} to restyle that part of every item. Sanitised on export.</>
+                : <>One <code>property: value;</code> per line. Applied to this block; sanitised on export (no selectors, @-rules, or remote URLs).</>} />
+          </Accordion>
         </div>
       )}
 

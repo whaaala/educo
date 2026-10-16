@@ -1808,6 +1808,11 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
   - `[ ]` (5) THE GUIDE: the app layout's page in `docs/guide/` (story + reference, pictures from this pass; the rung move told
     for saved pages) + layout-story's rung table; republished per `docs/DOCUSAURUS.md` § Republishing (every build file, the stale
     nulled, read back, `uat-d4-docs-headed.js`)
+  EARLY HEADED CHECK (the user, 2026-10-16: "should we check the test from the browser?" — after change (1) + A2-8 / A2-9, a
+  risky cross-app change, before stacking (2)–(4)): `scripts/uat/uat-a2a-headed.js`, six windows, fresh build (FRESH
+  `b-n_r2pbhyatfueG22-wM`), state built through the UI — 70 / 0 (`logs/a2a-uat2.out`) + the R slice with the measured canvas
+  12 / 0 (`a2a-uat3.out`) + C / A re-run 61 / 0 (`a2a-uat4.out`); screenshots read. Found A2-12 and A2-13 (both fixed). The
+  batch's full pass below still runs after (4).
   HEADED UAT CHECKLIST (written before the build; six windows; fresh production build; built through the UI; Preview at every
   screen of `screens.js`; the four themes; the emulators 5556 phone + 5554 tablet, one at a time):
   - `[ ]` U1 rungs: a page built through the UI with an override at every rung → each takes effect at exactly 600 / 840 / 1200 /
@@ -1878,6 +1883,15 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
     `min-[1800px]`, `WIDER_LABEL`) — not configurable; the fix is Tailwind reading `config/layout.json` (an `@config` file
     giving named breakpoints) so every `min-[…]` becomes a named, configured one; `uat-e3-headed.js` names its copy
     `LABELS_FROM` with a `ponytail:` pointing here → THE USER'S CALL (with A2-8)
+  - `[ ]` (FIXED 2026-10-16 — the Advanced CSS accordion moved into the Content tab's shared area (beside Bookmark's), so every
+    block offers it; `BoxInspector.test.tsx` "Advanced CSS on EVERY block" (text · heading · stack · accordion), mutation-proven:
+    the old `node.type === "component"` back → 3 fail; HEADED in the early check: typed at Tablet / Laptop / Wide on Text blocks
+    through the UI → canvas and Preview right; closes on the batch's HEADED pass) A2-12 · FOUND by the early HEADED check: the
+    canvas (`advancedCssStyle`) and the export (`box-export.ts:300`) apply Advanced CSS to EVERY block, but the Inspector offered
+    the field on components only — a text, heading or section could not be given it (RULE UI: a capability with no control)
+  - `[ ]` (FIXED 2026-10-16) A2-13 · MY OWN, in `uat-a2a-headed.js`: two checks that could not fail — the messages heading passed
+    when NO `xs:` element was on the page (it now opens a message as a parent would, and none found is a FAIL), and "canvas at
+    Tablet / Laptop / Wide" was a bare `ok(…, true)` (it now measures each block at each chip)
   - `[ ]` (FIXED 2026-10-16 — `@source not` docs / docs-site / scripts / tests / apps/mobile in `app/globals.css`; measured
     2,031,871 → 2,016,760 characters of compiled CSS, every configured class still there; closes on the HEADED pass) A2-11 ·
     FOUND compiling the real CSS: Tailwind scanned `docs/` (the task tree, research JSON), `scripts/`, `tests/` and the RN app
