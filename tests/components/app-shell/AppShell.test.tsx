@@ -10,14 +10,14 @@ import { ROLES, BAR_MAX, MORE_LABEL, LISTS, LIST_WORDS, WORDS } from "@/lib/app-
  */
 const push = vi.fn();
 vi.mock("next/navigation", () => ({ useRouter: () => ({ push }) }));
-let cls: WindowClass = { width: "phone", height: "medium", shell: "bar", panes: 1 };
+let cls: WindowClass = { width: "phone", height: "medium", shell: "bar", panes: 1, barFits: BAR_MAX };
 vi.mock("@/hooks/useWindowClass", () => ({ useWindowClass: () => cls }));
 import AppShell, { placeHref } from "@/components/app-shell/AppShell";
 import ListDetail from "@/components/app-shell/ListDetail";
 
 beforeEach(() => { cleanup(); push.mockReset(); });
 const teacher = ROLES.teacher.items;
-const shellAs = (shell: WindowClass["shell"], path = "/") => { cls = { ...cls, shell, panes: shell === "bar" ? 1 : 2 }; return render(<AppShell role="teacher" path={path}><p>content</p></AppShell>); };
+const shellAs = (shell: WindowClass["shell"], path = "/", barFits = BAR_MAX) => { cls = { ...cls, shell, panes: shell === "bar" ? 1 : 2, barFits }; return render(<AppShell role="teacher" path={path}><p>content</p></AppShell>); };
 
 describe("AppShell", () => {
   it("a bar: the first barMax − 1 places, and More holding the rest", () => {
@@ -29,6 +29,12 @@ describe("AppShell", () => {
     expect(screen.getAllByRole("menuitem").map((m) => m.textContent)).toEqual(teacher.slice(BAR_MAX - 1).map((p) => p.label));
     fireEvent.click(screen.getByRole("menuitem", { name: teacher[BAR_MAX].label }));
     expect(push).toHaveBeenCalledWith(placeHref("teacher", teacher[BAR_MAX].href));
+  });
+  it("enlarged text: the bar holds only the places that fit (barFits), the rest under More — nothing lost", () => {
+    shellAs("bar", "/", 3);
+    expect(screen.getAllByRole("link").map((a) => a.textContent)).toEqual(teacher.slice(0, 2).map((p) => p.label));
+    act(() => { fireEvent.click(screen.getByRole("button", { name: MORE_LABEL })); });
+    expect(screen.getAllByRole("menuitem")).toHaveLength(teacher.length - 2);
   });
   it.each(["rail", "sidebar"] as const)("a %s: every place, no More", (shell) => {
     shellAs(shell);

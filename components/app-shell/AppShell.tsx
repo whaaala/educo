@@ -44,7 +44,7 @@ export default function AppShell({ role, path, children }: { role: RoleId; path:
   const router = useRouter();
   if (!cls) return <PageLoader isLoading />;
   const r = ROLES[role];
-  const { shown, more } = shellPlaces(r.items, cls.shell);
+  const { shown, more } = shellPlaces(r.items, cls.shell, cls.barFits);
   const active = activePlace(r.items, path);
   const vertical = cls.shell !== "bar", wide = cls.shell === "sidebar";
   const link = (p: Place) => {
@@ -54,7 +54,9 @@ export default function AppShell({ role, path, children }: { role: RoleId; path:
       <Link href={placeHref(role, p.href)} aria-current={on ? "page" : undefined}
         className={`flex items-center ${look} min-h-11 font-medium outline-none focus-visible:ring-2 focus-visible:ring-brand ${on ? "text-brand bg-brand/10" : "text-muted hover:text-ink hover:bg-surface-2"}`}>
         <Icon aria-hidden="true" className="w-5 h-5 shrink-0" />
-        <span className={wide ? "truncate" : "max-w-full truncate px-1"}>{p.label}</span>
+        {/* A2-22: a word is never cut ("Dashb…") nor split ("Dashboar d") — a place wraps between words, two lines at most; one that
+            cannot fit is caught by the UAT, and the bar holds fewer places as the text grows (barFits) */}
+        <span className={wide ? "min-w-0 break-words" : "max-w-full text-center leading-tight line-clamp-2 hyphens-auto"}>{p.label}</span>
       </Link>
     );
   };
@@ -62,7 +64,7 @@ export default function AppShell({ role, path, children }: { role: RoleId; path:
     <nav aria-label="Main" data-shell={cls.shell}
       className={vertical ? `${wide ? "w-sidebar" : "w-rail"} shrink-0 sticky top-0 h-dvh overflow-y-auto border-r border-line bg-surface py-3`
         : "fixed inset-x-0 bottom-0 z-40 border-t border-line bg-surface pb-[env(safe-area-inset-bottom)]"}>
-      <ul onKeyDown={walk(vertical)} className={vertical ? "flex flex-col gap-1 px-2" : "flex"}>
+      <ul onKeyDown={walk(vertical)} className={vertical ? "flex flex-col gap-1 px-1" : "flex"}>
         {shown.map((p) => <li key={p.id} className={vertical ? "" : "flex-1 min-w-0"}>{link(p)}</li>)}
         {more.length > 0 && (
           <li className="flex-1 min-w-0">

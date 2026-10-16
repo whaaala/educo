@@ -22,8 +22,13 @@ export default function ListDetail({ role, place, openId, panes }: { role: RoleI
   const list = LISTS[place.list!];
   const base = placeHref(role, place.href);
   const v = listView(list, openId, panes);
-  // back on the one-pane list: to where it was when the row was opened
-  useEffect(() => { if (v.show === "list" && scrolled.has(base)) window.scrollTo(0, scrolled.get(base)!); }, [v.show, base]);
+  // the list-detail owns its scroll (A2-19 — Next scrolled after the restore and left the list 36px off): a detail opens at its
+  // top; back on the one-pane list returns to where it was when the row was opened
+  // "instant": putting a list back where it was is not a movement to watch (the page scrolls smoothly otherwise)
+  useEffect(() => {
+    const to = (top: number) => window.scrollTo({ top, behavior: "instant" });
+    if (v.show === "detail") to(0); else if (v.show === "list" && scrolled.has(base)) to(scrolled.get(base)!);
+  }, [v.show, base]);
 
   const listPane = (
     <section aria-label={list.label} className={panes === 2 ? "w-list-pane shrink-0 border-r border-line overflow-y-auto" : ""}>
@@ -34,12 +39,15 @@ export default function ListDetail({ role, place, openId, panes }: { role: RoleI
             const on = panes === 2 && v.row?.id === row.id;
             return (
               <li key={row.id}>
-                <Link href={`${base}/${row.id}`} scroll={panes === 1} aria-current={on ? "true" : undefined}
-                  onClick={() => scrolled.set(base, window.scrollY)}
+                <Link href={`${base}/${row.id}`} scroll={false} aria-current={on ? "true" : undefined}
+                  // saved BEFORE the press focuses the row (A2-19: the browser scrolls a half-hidden row into view on mouse-down);
+                  // a keyboard Enter (detail 0) has no such scroll, so it saves on the click
+                  onPointerDown={() => scrolled.set(base, window.scrollY)}
+                  onClick={(e) => { if (e.detail === 0) scrolled.set(base, window.scrollY); }}
                   className={`flex items-start gap-3 px-4 py-3 min-h-11 outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand ${on ? "bg-brand/10" : "hover:bg-surface-2"}`}>
                   <span className="min-w-0 flex-1">
-                    <span className={`block truncate font-medium ${on ? "text-brand" : "text-ink"}`}>{row.title}</span>
-                    <span className="block truncate text-sm text-muted">{row.subtitle}</span>
+                    <span className={`block break-words font-medium ${on ? "text-brand" : "text-ink"}`}>{row.title}</span>
+                    <span className="block break-words text-sm text-muted">{row.subtitle}</span>
                   </span>
                   <SampleBadge />
                 </Link>

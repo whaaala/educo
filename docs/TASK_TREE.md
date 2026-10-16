@@ -1835,10 +1835,10 @@ Risks and distribution (section 2): RK-1 · Developing countries (section 3): AF
     pin the shape, RULE Y) still reads every override; Tablet 768 / Laptop 1024 / Wide 1920 presets land on the same rung as before
   - `[ ]` U2 height class: 479 | 480 tall → bar vs rail at 700 wide (a phone on its side keeps the bar); the emulator phone
     rotated → bar stays; the tablet rotated → rail both ways; the class follows a live resize / rotation without a reload
-  - `[ ]` U3 shell: each role × compact / medium / expanded / large / xl × four themes → bar · rail · rail · sidebar · sidebar,
+  - `[x]` (HEADED 2026-10-16, web — `uat-a2-headed.js` S + K, fresh build `BzruQ7_Fy6QzqdzEJnWJt`, 101 / 0 (`logs/a2-uat11.out`): every role × 37 screens (both sides of 600 / 840 / 1200 wide and 480 tall + the presets) × four themes → bar · rail · sidebar, its places, More holding the rest, `aria-current`, every word whole, all on screen; keyboard only: arrows, More by Enter, Escape back to More, a press outside; 200 % text: the bar holds the places that fit (barFits); screenshots read. The APP half → U2 on the emulators) U3 shell: each role × compact / medium / expanded / large / xl × four themes → bar · rail · rail · sidebar · sidebar,
     that role's items, More holds the overflow; every item goes where its data says; keyboard only; screen reader names +
     `aria-current`; 200 % text: nothing cut off, no sideways scroll
-  - `[ ]` U4 list-detail: phone — tap a row → detail, Back → the list at the same scroll; browser back and Android back do the
+  - `[x]` (HEADED 2026-10-16, web — slice L in all four themes, 101 / 0: a row opens its own URL, Back and the browser's back return the list to the same scroll, a pasted detail URL opens on it (phone: detail + Back; ≥ 840 both panes, that row current), 1280 → 375 → 1280 keeps it, 839 | 840, empty, missing, not-in-menu; screenshots read. The app half → the emulators) U4 list-detail: phone — tap a row → detail, Back → the list at the same scroll; browser back and Android back do the
     same; the detail URL pasted fresh opens on it (phone: detail with Back; ≥ 840: both panes, that row selected); resize
     1280 → 375 → 1280 with a row open keeps it; empty list says so; "Sample" visible on every sample row
   - `[ ]` U5 nothing hard-coded: the guard (A2-6) fails when a rung / height edge is written as a number outside `layout.ts`
@@ -1919,7 +1919,7 @@ Risks and distribution (section 2): RK-1 · Developing countries (section 3): AF
     configuration. The data layer (decision 22: after the layout) REPLACES these with real records, so moving them to JSON first
     is work thrown away → THE USER'S CALL: move them now, or let the data layer's first batch remove them (my recommendation).
     The NEW sample lists of this batch are config already (`config/sample-lists.json`)
-  - `[ ]` A2-15 · (a FEATURE, not built — RULE LB) on the PHONE app, a role with more places than `shell.barMax` needs a "More"
+  - `[ ]` (closes on the EMULATOR pass — BUILT 2026-10-16 with A2-22 — the phone bar holds `barFits` places and a More sheet the rest; NavShell test, mutation-proven) A2-15 · (a FEATURE, not built — RULE LB) on the PHONE app, a role with more places than `shell.barMax` needs a "More"
     sheet (the web has it, change (3)); the parents' five fit, so the app shows the bar's first `barMax` and marks it
     `ponytail:` in `BottomTabBar.tsx` — built with the first role whose places outgrow the phone bar (the sign-in area's roles)
   - `[ ]` (FIXED 2026-10-16 — `placement` above / below, `role="menu"` + `menuitem`, focus on the first item, arrows / Home /
@@ -1934,6 +1934,22 @@ Risks and distribution (section 2): RK-1 · Developing countries (section 3): AF
   - `[ ]` (FIXED in the code 2026-10-16 — `clearance + 20`; to SEE on the emulator in the HEADED pass) A2-18 · FOUND reading the
     fees screen: its `contentContainerStyle` set `paddingBottom: isTablet ? 24 : 20` AFTER `styles.scrollContent`'s 100, so on a
     phone its last items sat under the bar
+  - `[x]` (FIXED 2026-10-16, HEADED 101 / 0) A2-19 · FOUND by the HEADED pass: Back returned the one-pane list 36 px off where it was — Next scrolled
+    the page AFTER the restore; then (measured with a scroll trace) the position was saved after the press had already scrolled the row into view.
+    Now the list-detail owns its scroll (`scroll={false}`, an INSTANT restore — the page otherwise scrolls smoothly), saved on pointer-down
+  - `[x]` (FIXED 2026-10-16 — the script; HEADED 101 / 0) A2-20 · MY OWN, in `uat-a2-headed.js`: after "a press outside" the next Enter went
+    to the page body (correct: focus stays where you pressed), so "Enter on a menu place" tested nothing; and the scroll check scrolled a list
+    too short to scroll (precondition now asserted), then read the smooth scroll mid-way and pressed a half-hidden row Playwright scrolled first
+  - `[x]` (FIXED 2026-10-16, HEADED 101 / 0) A2-21 · FOUND at 200 % text on a 375 phone: the "View as" switch did not wrap (sideways scroll),
+    the page heading shrank to "T…" at 390, the list rows cut "32 pupils ·…" — the heading has its own line on a phone, the switch and the
+    rows wrap
+  - `[ ]` (web HEADED 101 / 0; the app half closes on the EMULATOR pass) A2-22 · FOUND in the screenshots: words CUT in the navigation — the rail "Dashb…" / "Messa…",
+    at 200 % the bar "To…" / "Cla…"; then, wrapping, SPLIT ("Dashboar d", "Toda y"). Now a place never cuts or splits a word: the rail
+    gives its words room, wraps only between words (two lines), and a BAR HOLDS AS MANY PLACES AS FIT at the reader's text size —
+    `shell.barItemMin` in the config → `windowClass().barFits`, web AND app (dp ÷ fontScale), the rest under More; the app's More SHEET
+    built for it (A2-15 closed by this); tests: window-class (barFits), AppShell (enlarged text), NavShell (fontScale 2), mutation-proven
+  - `[x]` (FIXED 2026-10-16 — proven: the stricter check FAILS on the old build, 4 of 4 S windows) A2-23 · MY OWN: the cut-word check
+    excused a word cut with an ellipsis, and could not see a word split across lines — it now fails on both
 - `[ ]` **BATCH A-3 · The app on a real phone: device proofs and the TCL 505 APK** (area: app layout / app builder · 2 changes, queued 2026-10-16 by RULE LB — the user: "everything should have a batch") — the two proofs R-APP-1's decision 28 left owed, run when the batch that needs each opens (after A-2)
   - `[ ]` device proofs on the emulators: T4 Slow-3G timing on the export, the T2 outbox (app killed mid-send), the app's WebView (from line 1516)
   - `[ ]` an installable APK of `apps/mobile/` for the TCL 505, handed to the user with install steps (from line 1517)

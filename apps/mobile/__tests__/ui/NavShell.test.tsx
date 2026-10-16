@@ -15,11 +15,14 @@ jest.mock('../../contexts/ThemeContext', () => ({
   useTheme: () => ({ theme: 'light', isDark: false, colors: { background: '#fff', backgroundSecondary: '#fafafa', surface: '#fff', surfaceHover: '#eee', border: '#ddd', primary: '#00f', textSecondary: '#555', textTertiary: '#777' } }),
 }));
 jest.mock('expo-linear-gradient', () => ({ LinearGradient: () => null }));
+let mockDims = { width: 390, height: 844, scale: 1, fontScale: 1 };
+jest.mock('react-native/Libraries/Utilities/useWindowDimensions', () => ({ __esModule: true, default: () => mockDims }));
 
 import NavRail from '../../components/ui/NavRail';
 import BottomTabBar, { APP_PLACES, TAB_ICONS } from '../../components/ui/BottomTabBar';
+import { MORE_LABEL } from '@core/app-shell';
 
-beforeEach(() => { mockPush.mockReset(); mockPath = '/'; });
+beforeEach(() => { mockPush.mockReset(); mockPath = '/'; mockDims = { width: 390, height: 844, scale: 1, fontScale: 1 }; });
 
 describe('the app shell reads its places from config/app-shell.json', () => {
   it('every place has a drawing and a screen to go to', () => {
@@ -45,6 +48,17 @@ describe('the app shell reads its places from config/app-shell.json', () => {
     for (const p of APP_PLACES) expect(r.getByText(p.label)).toBeTruthy();
     fireEvent.press(r.getByText('Children'));
     expect(mockPush).toHaveBeenCalledWith('/children');
+  });
+
+  it('large text on a phone: the bar holds the places that fit, a More sheet holds the rest, and each goes where it says (A2-15, A2-22)', () => {
+    mockDims = { width: 390, height: 844, scale: 1, fontScale: 2 };
+    const r = render(<BottomTabBar />);
+    expect(r.getByText(APP_PLACES[0].label)).toBeTruthy();
+    expect(r.queryByText(APP_PLACES[2].label)).toBeNull();
+    fireEvent.press(r.getAllByText(MORE_LABEL)[0]);
+    for (const p of APP_PLACES.slice(1)) expect(r.getByLabelText(p.label)).toBeTruthy();
+    fireEvent.press(r.getByLabelText(APP_PLACES[2].label));
+    expect(mockPush).toHaveBeenCalledWith(APP_PLACES[2].href);
   });
 
   it('neither shows over the website builder, which needs the whole screen', () => {

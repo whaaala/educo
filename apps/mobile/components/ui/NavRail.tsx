@@ -40,7 +40,7 @@ export default function NavRail({ expanded }: { expanded: boolean }) {
               <Icon color={tint} size={22} filled={on} />
               {expanded && <Text style={[styles.label, styles.labelExpanded, { color: tint }]} numberOfLines={1}>{p.label}</Text>}
             </View>
-            {!expanded && <Text style={[styles.label, { color: tint }]} numberOfLines={1}>{p.label}</Text>}
+            {!expanded && <Text style={[styles.label, styles.labelRail, { color: tint }]} numberOfLines={2}>{p.label}</Text>}
           </Pressable>
         );
       })}
@@ -56,4 +56,5 @@ const styles = StyleSheet.create({
   pillExpanded: { width: 'auto', height: 48, borderRadius: 24, flexDirection: 'row', justifyContent: 'flex-start', paddingHorizontal: 16, gap: 12 },
   label: { fontFamily: 'Inter_500Medium', fontSize: 12, marginTop: 4 },
   labelExpanded: { fontSize: 15, marginTop: 0 },
+  labelRail: { textAlign: 'center', paddingHorizontal: 4 }, // A2-22: two lines before a word is cut
 });

@@ -51,3 +51,12 @@ describe("app-layout.feature — every row of its table", () => {
   it("has its rows", () => expect(examples.length).toBeGreaterThanOrEqual(9));
   it.each(examples)("%i × %i → a %s, %i pane(s)", (w, h, shell, panes) => expect(windowClass(w, h)).toMatchObject({ shell, panes }));
 });
+
+describe("windowClass — how many places a bar holds (barFits)", () => {
+  it("a 375 phone holds five at normal text, two at 200 % (the CSS sees 187 px); never under two or over barMax", () => {
+    expect(windowClass(375, 812).barFits).toBe(5);
+    expect(windowClass(187, 406).barFits).toBe(2);
+    expect(windowClass(100, 400).barFits).toBe(2);
+    expect(windowClass(3000, 2000).barFits).toBe(5);
+  });
+});

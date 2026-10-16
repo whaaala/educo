@@ -29,8 +29,8 @@ function PlaceView({ role, path }: { role: RoleId; path: string }) {
   return (
     <div>
       <header className="flex flex-wrap items-center gap-3 border-b border-line bg-surface px-4 py-3">
-        <h1 className="min-w-0 flex-1 truncate text-lg font-semibold text-ink">{place?.label ?? r.label}</h1>
-        <nav aria-label={WORDS.viewAs} className="flex items-center gap-1">
+        <h1 className="w-full sm:w-auto sm:min-w-0 sm:flex-1 text-lg font-semibold text-ink break-words">{place?.label ?? r.label}</h1>
+        <nav aria-label={WORDS.viewAs} className="flex flex-wrap items-center gap-1">
           <span className="text-sm text-muted">{WORDS.viewAs}</span>
           {ROLE_IDS.map((id) => (
             <Link key={id} href={placeHref(id, "/")} aria-current={id === role ? "page" : undefined}

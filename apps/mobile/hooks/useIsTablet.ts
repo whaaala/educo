@@ -8,8 +8,9 @@ import { BAR_CLEARANCE } from '@core/app-shell';
  * rotation, split-screen and fold, so nothing reads the screen once and keeps a stale value (A2-4).
  */
 export function useWindowClass(): WindowClass {
-  const { width, height } = useWindowDimensions();
-  return windowClass(width, height);
+  // in the unit the CSS rungs use: dp at the reader's text size (a phone set to large text gets the narrower class, as the web does)
+  const { width, height, fontScale } = useWindowDimensions();
+  return windowClass(width / (fontScale || 1), height / (fontScale || 1));
 }
 
 /**

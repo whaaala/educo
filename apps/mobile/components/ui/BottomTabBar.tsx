@@ -12,7 +12,9 @@ import { useRouter, usePathname } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '../../contexts/ThemeContext';
 import Svg, { Path, Circle, Rect } from 'react-native-svg';
-import { ROLES, activePlace, shellPlaces } from '@core/app-shell';
+import { MORE_LABEL, ROLES, activePlace, shellPlaces } from '@core/app-shell';
+import { useWindowClass } from '@/hooks/useIsTablet';
+import { Modal } from './Modal';
 
 
 const FONTS = {
@@ -153,24 +155,31 @@ export const TAB_ICONS: Record<string, typeof HomeIcon> = { home: HomeIcon, chil
 
 /** The app's places: the parent role — the Educo app is the parents' app today (A-2 change 3, A2-5: was a typed list). */
 export const APP_PLACES = ROLES.parent.items;
-// ponytail: a phone bar shows the first barMax places; an overflow "More" sheet on the phone comes with the first role whose
-// places outgrow the bar there (the parents' five fit) — tracked in BATCH A-2's ledger (A2-15).
-const TABS = shellPlaces(APP_PLACES, 'bar').shown.map((p) => ({ name: p.id, route: p.href as Extract<Href, string>, label: p.label, icon: TAB_ICONS[p.icon] }));
+/** The overflow tab's name — never a place id (ids come from the data). */
+const MORE_TAB = '__more';
 
 export default function BottomTabBar() {
   const router = useRouter();
   const pathname = usePathname();
   const { colors, isDark, theme } = useTheme();
+  // As many places as are legible at this text size; the rest go under a More sheet (A2-15, A2-22 — the web's rule)
+  const { barFits } = useWindowClass();
+  const { shown, more } = shellPlaces(APP_PLACES, 'bar', barFits);
+  const [sheetOpen, setSheetOpen] = useState(false);
+  const TABS = [
+    ...shown.map((p) => ({ name: p.id, route: p.href as Extract<Href, string> | null, label: p.label, icon: TAB_ICONS[p.icon] })),
+    ...(more.length ? [{ name: MORE_TAB, route: null, label: MORE_LABEL, icon: MoreIcon }] : []),
+  ];
 
-  // Animation refs for each tab
-  const scaleAnims = useRef(TABS.map(() => new Animated.Value(1))).current;
-  const translateYAnims = useRef(TABS.map(() => new Animated.Value(0))).current;
+  // Animation refs for each tab (one per place + More, so a change in how many fit never runs past the end)
+  const scaleAnims = useRef(Array.from({ length: APP_PLACES.length + 1 }, () => new Animated.Value(1))).current;
+  const translateYAnims = useRef(Array.from({ length: APP_PLACES.length + 1 }, () => new Animated.Value(0))).current;
 
   // Figure out which tab matches the current URL (if any).
   // For non-tab pages (e.g. /term-progress), we keep the last matched tab highlighted.
   // Which tab the URL is in (if any) — the shared rule; on a non-tab page (e.g. /term-progress) none, and the last one is kept.
   const hit = activePlace(APP_PLACES, pathname);
-  const hitIndex = hit ? TABS.findIndex((t) => t.name === hit.id) : -1;
+  const hitIndex = hit ? TABS.findIndex((t) => t.name === (more.some((p) => p.id === hit.id) ? MORE_TAB : hit.id)) : -1;
   const matchedTabIndex = hitIndex >= 0 ? hitIndex : null;
   const [lastTabIndex, setLastTabIndex] = useState<number>(() => matchedTabIndex ?? 0);
 
@@ -203,9 +212,9 @@ export default function BottomTabBar() {
         }),
       ]).start();
     });
-  }, [activeIndex]);
+  }, [activeIndex, TABS.length]);
 
-  const handlePress = (route: string, index: number) => {
+  const handlePress = (route: Extract<Href, string> | null, index: number) => {
     // Bounce animation on press
     Animated.sequence([
       Animated.timing(scaleAnims[index], {
@@ -222,7 +231,7 @@ export default function BottomTabBar() {
     ]).start();
 
     setLastTabIndex(index);
-    router.push(route);
+    if (route) router.push(route); else setSheetOpen(true); // the More tab opens the sheet of the places that did not fit
   };
 
   // Get gradient colors based on theme
@@ -366,11 +375,27 @@ export default function BottomTabBar() {
           );
         })}
       </View>
+
+      {/* the places that did not fit the bar (A2-15): the same places, the same routes */}
+      <Modal visible={sheetOpen} onClose={() => setSheetOpen(false)} title={MORE_LABEL}>
+        {more.map((p) => {
+          const Icon = TAB_ICONS[p.icon];
+          return (
+            <Pressable key={p.id} accessibilityRole="button" accessibilityLabel={p.label} onPress={() => { setSheetOpen(false); router.push(p.href as Extract<Href, string>); }}
+              style={({ pressed }) => [styles.sheetRow, { borderBottomColor: colors.border, opacity: pressed ? 0.7 : 1 }]}>
+              <Icon color={hit?.id === p.id ? activeGradient[0] : inactiveColor} size={22} filled={hit?.id === p.id} />
+              <Text style={[styles.sheetLabel, { color: colors.text }]}>{p.label}</Text>
+            </Pressable>
+          );
+        })}
+      </Modal>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
+  sheetRow: { flexDirection: 'row', alignItems: 'center', gap: 14, minHeight: 52, borderBottomWidth: StyleSheet.hairlineWidth },
+  sheetLabel: { fontFamily: FONTS.medium, fontSize: 16 },
   container: {
     position: 'absolute',
     bottom: 0,
