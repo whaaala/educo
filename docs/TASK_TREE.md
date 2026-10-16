@@ -4030,6 +4030,16 @@ P-1 · P-2 · G-4 · P-3 · G-5 · G-6 existed only as text inside R-4 and now h
 - **After the layout (1.3 on):** everything except the documentation site (built early: D-2 `f437b5c`, D-3 `af533ac`).
 
 - `[>]` **1.1.1 · TASK 1 — the layout** (grew from "width round trips"; branch `builder/layout-uat`) — AUDIT 2026-10-06: the batches closed nearly every line below — what is left is L-5 · L-6 · L-7 · L-8 · L-9, the whole-tier re-sweep, the story and the artifacts; `builder/layout-uat` merged early as PR #5 (`1541d98`)
+  - `[x]` DECIDED by the user 2026-10-16: "I want to make sure that the page layout is completed completely, so we don't have to
+    come back to it" — finish A-2 first, then the WHOLE layout (every open line below, not only the bugs), then components.
+  - `[ ]` THE LAYOUT AUDIT 2026-10-16 (read-only, every non-`[x]` line in this file): **88 layout lines open — 12 BUG · 52 FEATURE
+    · 22 CHECK · 2 DOC**: L-5 6 · L-6 5 · S-3 2 · L-7 1 · L-8 1 · L-9 2 · P-1 6 · P-2 4 · G-4 6 · P-3 5 · G-5 9 · G-6 1 · M-1 1 ·
+    close-out 4 (re-sweep · story · artifacts · gate + PR) · 1.2 queue 4 · 1.1.5 frozen list UNBATCHED 31 (12 smaller features,
+    9 headed checks owed, 10 sticky / fixed incl. the bug SP-4). Also found: 12 STALE lines (work done, not ticked — 4464 / 4466
+    G-2 / G-3, 4593, 4646–4648, 274, 4427, 4017–4025, 3999, the double id S-2), lines handed to a batch that never listed them
+    (the dresser's "Centred column" → L-6, #144 → L-9, the stale `alignSelf` → L-5 already at 6), and two lines written before
+    "no space unless you add it" (P-2 (4), S-3 (1)) that need re-deciding. → the close-out plan: batch the 31 unbatched lines,
+    tick the stale ones, then the batches in order; nothing moves to components while one of the 88 is open
   - `[x]` Width round trips in stored percentages — `2de0ef2`
   - `[x]` Semantic pages, real-screen editing, resize that comes home — `5345e80`
   - `[x]` Link blocks, band colour schemes, dressed pages (RULE E) — `c3e99cf`
