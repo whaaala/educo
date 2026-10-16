@@ -15,6 +15,7 @@ import { useSchoolSettings } from "@/contexts/SchoolSettingsContext";
 import type { EducationLevel } from "@/utils/educationLevel";
 import type { ClassFormData } from "@/components/classes/form-sections/types";
 import type { FormFieldSetter } from "@/components/shared/form-section-types";
+import { WEB_SCREEN_PX } from "@/lib/educo-ui/layout";
 
 export default function AddClassPage() {
   const router = useRouter();
@@ -30,7 +31,7 @@ export default function AddClassPage() {
   // Handle responsive layout
   useEffect(() => {
     const checkScreenSize = () => {
-      setIsLargeScreen(window.innerWidth >= 1024);
+      setIsLargeScreen(window.innerWidth >= WEB_SCREEN_PX.lg);
     };
 
     checkScreenSize();

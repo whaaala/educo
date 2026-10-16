@@ -869,11 +869,11 @@ export default function ParentMessagesPage() {
                             Sent Message
                           </div>
                         )}
-                        <h2 className="text-base min-[420px]:text-lg lg:text-xl font-bold text-ink mb-3 leading-tight break-words">
+                        <h2 className="text-base xs:text-lg lg:text-xl font-bold text-ink mb-3 leading-tight break-words">
                           {selectedMessage.subject}
                         </h2>
 
-                        <div className="flex flex-col min-[420px]:flex-row min-[420px]:items-center gap-4">
+                        <div className="flex flex-col xs:flex-row xs:items-center gap-4">
                           <div className="relative">
                             <div className={`w-12 h-12 rounded-full overflow-hidden bg-gradient-to-br ${isSentMessage ? "from-emerald-200 to-emerald-300 dark:from-emerald-600 dark:to-emerald-700" : "from-gray-200 to-gray-300 dark:from-gray-600 dark:to-gray-700"} ring-2 ring-white dark:ring-gray-700 midnight:ring-cyan-500/20 purple:ring-pink-500/20 shadow-md`}>
                               {viewDisplayAvatar ? (

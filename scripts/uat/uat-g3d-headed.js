@@ -11,7 +11,7 @@
 //   NODE_PATH=node_modules node scripts/uat/uat-g3d-headed.js [--only=A1,E-Dark]
 const path = require('path'); const fs = require('fs');
 const H = require('./h.js'); const P = require('./pages.js').helpers; const I = require('./inspector.js');
-const { SCREENS } = require('./screens.js');
+const { SCREENS, EDGE } = require('./screens.js');
 const OUT = path.join(__dirname, 'logs', 'uat-g3d'); fs.mkdirSync(OUT, { recursive: true });
 const ONLY = (process.argv.find((a) => a.startsWith('--only=')) || '').slice(7).split(',').filter(Boolean);
 const KEY = 'educo_box_site_v1';
@@ -91,8 +91,8 @@ for (const [key, second, w, what] of [['A1', 'Image', ['60%', '40%'], 'photo 40 
   ok(`U1 canvas Desktop · the ${what} beside the words`, Math.abs(rb.t - ra.t) < 1 && rb.l > ra.r - 1, `b at ${rb.l.toFixed(0)},${rb.t.toFixed(0)}`);
   await sweep(page, ok, `U1 ${what}`, async (f, w) => {
     const [pa, pb] = [await pubRect(f, a), await pubRect(f, b)];
-    if (w < 600 && !(pb.t >= pa.b - 0.5)) return `${what} beside at ${w} (b.t ${pb.t.toFixed(0)} < a.b ${pa.b.toFixed(0)}, b ${pb.w.toFixed(0)}px wide)`;
-    if (w >= 1200 && !(Math.abs(pb.t - pa.t) < 1)) return `${what} not beside at ${w}`;
+    if (w < EDGE.TP && !(pb.t >= pa.b - 0.5)) return `${what} beside at ${w} (b.t ${pb.t.toFixed(0)} < a.b ${pa.b.toFixed(0)}, b ${pb.w.toFixed(0)}px wide)`;
+    if (w >= EDGE.DT && !(Math.abs(pb.t - pa.t) < 1)) return `${what} not beside at ${w}`;
     return null;
   });
 };
@@ -105,13 +105,13 @@ SLICES.B1 = async (page, ok) => {
   await chip(page, 'Mobile'); const rs = await Promise.all(ids.map((id) => rectOf(page, id)));
   ok('U2 canvas Mobile (375) · four Stats two across, two lines', Math.abs(rs[0].t - rs[1].t) < 1 && rs[2].t > rs[0].t + 1 && Math.abs(rs[2].t - rs[3].t) < 1, rs.map((r) => `${r.l.toFixed(0)},${r.t.toFixed(0)}`).join(' '));
   await page.screenshot({ path: path.join(OUT, 'B1-Mobile.png') });
-  await sweep(page, ok, 'U2 four Stats', async (f, w) => { const n = await acrossIn(f, ids); return w < 600 && n !== 2 ? `${n} across at ${w}` : null; });
+  await sweep(page, ok, 'U2 four Stats', async (f, w) => { const n = await acrossIn(f, ids); return w < EDGE.TP && n !== 2 ? `${n} across at ${w}` : null; });
 };
 SLICES.B2 = async (page, ok) => {
   await H.panel(page, true);
   const ids = [await P.first(page, 'Image')]; for (let i = 0; i < 5; i++) ids.push(await P.beside(page, ids[i], 'Image'));
   await H.panel(page, false); await H.fillImages(page);
-  const want = (w) => (w < 480 ? 2 : w < 600 ? 3 : 6);
+  const want = (w) => (w < 480 ? 2 : w < EDGE.TP ? 3 : 6);
   await chip(page, 'Mobile'); const rs = await Promise.all(ids.map((id) => rectOf(page, id)));
   ok('U2 canvas Mobile (375) · six logos two across', rs.filter((r) => Math.abs(r.t - rs[0].t) < 1).length === 2, rs.map((r) => `${r.l.toFixed(0)},${r.t.toFixed(0)}`).join(' '));
   await chip(page, 'Tablet'); const rt = await Promise.all(ids.map((id) => rectOf(page, id)));
@@ -153,8 +153,8 @@ SLICES.D = async (page, ok) => {
   await sweep(page, ok, 'U4 lone block', async (f, w) => {
     // G3d-4: measured against the PAGE, not the first block (at 599 the two halves still fit side by side)
     const p2 = await pubRect(f, c); const page = await f.evaluate(() => document.documentElement.clientWidth);
-    if (w < 600 && p2.w < page - 2 * 20 - 1) return `third ${p2.w.toFixed(0)}px of a ${page}px page — not the whole line`;
-    if (w >= 600 && p2.w > page * 0.55) return `third ${p2.w.toFixed(0)}px of ${page} — widened off the phone`;
+    if (w < EDGE.TP && p2.w < page - 2 * 20 - 1) return `third ${p2.w.toFixed(0)}px of a ${page}px page — not the whole line`;
+    if (w >= EDGE.TP && p2.w > page * 0.55) return `third ${p2.w.toFixed(0)}px of ${page} — widened off the phone`;
     return null;
   });
   // U5: "To line" 4 of 6 at Mobile — the phone's own setting wins; Undo; reload

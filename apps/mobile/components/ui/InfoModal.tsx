@@ -1,21 +1,16 @@
 import type { ReactNode } from 'react';
-import { useState } from 'react';
 import {
   Modal as RNModal,
   View,
   Text,
   Pressable,
   StyleSheet,
-  Dimensions,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '../../contexts/ThemeContext';
+import { useIsTablet } from '@/hooks/useIsTablet';
 
-function useIsTablet() {
-  const [isTablet] = useState(() => Dimensions.get('window').width >= 768);
-  return isTablet;
-}
 
 // Shared fonts
 const FONTS = {

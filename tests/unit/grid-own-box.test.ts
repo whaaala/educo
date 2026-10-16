@@ -3,6 +3,7 @@ import { createContainer, createElement, makeRowBand, normalizeRowBands, gridNar
 import { tableGrid } from "@/lib/box-presets";
 import { renderPageHTML } from "@/lib/box-export";
 import { DEFAULT_THEME } from "@/lib/site-storage";
+import { RUNG_EM } from "@/lib/educo-ui/layout";
 
 /**
  * A GRID NARROWS BY ITS OWN BOX (#111) — behaviours in tests/features/components/website/box-builder-columns.feature.
@@ -13,7 +14,7 @@ import { DEFAULT_THEME } from "@/lib/site-storage";
  */
 const quoteGrid = (): BoxNode => { const g = tableGrid(3, 1); for (const c of g.children ?? []) c.children = [createElement("text", { text: "“This changed everything for us.”", width: "100%" })]; return g; };
 const scope = (id: string) => `.bx-${id}`;
-const aboveThePhone = (css: string) => `@media (min-width:37.5em){${css}}`;
+const aboveThePhone = (css: string) => `@media (min-width:${RUNG_EM.tabletPortrait}em){${css}}`;
 
 describe("a grid narrows by its own box, not only by the screen", () => {
   it("three cells of four: two across below 36rem, one below 24rem — the ladder's own 12rem cell floor", () => {
@@ -34,7 +35,7 @@ describe("a grid narrows by its own box, not only by the screen", () => {
   it("the two-across rule is wrapped by the engine's 'above the phone' guard; the one-across rule is not", () => {
     const g = quoteGrid();
     const css = gridQueryCss(scope(g.id), g, scope, aboveThePhone);
-    expect(css.startsWith("@media (min-width:37.5em){@container")).toBe(true);
+    expect(css.startsWith(`@media (min-width:${RUNG_EM.tabletPortrait}em){@container`)).toBe(true);
     expect(css.indexOf("@media")).toBe(css.lastIndexOf("@media")); // exactly one guard — the one-across rule agrees with every rung
     // …and the canvas at its phone preset leaves the two-across rule out entirely
     const phone = gridQueryCss(scope(g.id), g, scope, () => "");
@@ -87,10 +88,10 @@ describe("the box holding such a grid is its query container — in both engines
     const root = normalizeRowBands(createContainer("column", { id: "page", width: "fill", children: [createContainer("column", { width: "100%", children: [g] })] }));
     const html = renderPageHTML(root, DEFAULT_THEME);
     const style = html.match(/<style[^>]*>([\s\S]*?)<\/style>/g)!.join("");
-    expect(style).toContain(`@media (min-width:37.5em){@container (max-width:${3 * CELL_MIN_REM - 0.01}rem){.bx-${g.id}{grid-template-columns:repeat(2,minmax(0,1fr)) !important}`);
+    expect(style).toContain(`@media (min-width:${RUNG_EM.tabletPortrait}em){@container (max-width:${3 * CELL_MIN_REM - 0.01}rem){.bx-${g.id}{grid-template-columns:repeat(2,minmax(0,1fr)) !important}`);
     expect(style).toContain(`@container (max-width:${2 * CELL_MIN_REM - 0.01}rem){.bx-${g.id}{grid-template-columns:repeat(1,minmax(0,1fr)) !important}`);
     // the query rules come AFTER the widest rung's media block, so they win every tie
-    expect(style.lastIndexOf("@container")).toBeGreaterThan(style.lastIndexOf("@media (min-width:112.5em)"));
+    expect(style.lastIndexOf("@container")).toBeGreaterThan(style.lastIndexOf(`@media (min-width:${RUNG_EM.wide}em)`));
     expect(style).toContain("container-type:inline-size");
   });
   it("the canvas's per-tree stylesheet walks every grid, nested ones included", () => {

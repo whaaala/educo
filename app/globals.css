@@ -1,4 +1,11 @@
 @import "tailwindcss";
+@config "../tailwind.config.mjs"; /* breakpoints from config/layout.json (RULE CFG) */
+/* Not web pages: their class-like words made ~15 KB of CSS nobody uses (A2-11, measured 2,031,871 → 2,016,760 chars). */
+@source not "../docs";
+@source not "../docs-site";
+@source not "../scripts";
+@source not "../tests";
+@source not "../apps/mobile";
 
 @theme {
   --color-background: #ffffff;

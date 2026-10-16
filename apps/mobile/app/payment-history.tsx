@@ -6,7 +6,6 @@ import {
   TouchableOpacity,
   StyleSheet,
   ScrollView,
-  Dimensions,
   TextInput,
   LayoutAnimation,
   Platform,
@@ -21,6 +20,7 @@ import { ProfileAvatar } from '../components/ui/ProfileAvatar';
 import { ChildSwitcher, type ChildData } from '../components/ui/ChildSwitcher';
 import { ViewReceiptModal } from '../components/modals/ViewReceiptModal';
 import type { ThemeColors } from "@/contexts/ThemeContext";
+import { useIsTablet } from '@/hooks/useIsTablet';
 
 // Enable LayoutAnimation on Android
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
@@ -254,10 +254,6 @@ const MOCK_CHILDREN: ChildData[] = [
   { id: 'child-002', name: 'Chukwuemeka Okonkwo', classLevel: 'SS 1', avatarUri: 'https://i.pravatar.cc/150?u=chukwuemeka' },
 ];
 
-function useIsTablet() {
-  const [isTablet] = useState(() => Dimensions.get('window').width >= 768);
-  return isTablet;
-}
 
 function getStatusConfig(status: PaymentHistoryItem['status'], colors: ThemeColors) {
   switch (status) {

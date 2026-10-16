@@ -212,7 +212,7 @@ describe("ViewMenuPanel", () => {
   });
 
   it("uses matchMedia for responsive behavior (source code check)", () => {
-    expect(SOURCE_CODE).toContain('window.matchMedia("(max-width: 767px)")');
+    expect(SOURCE_CODE).toContain('window.matchMedia(mediaBelow(WEB_SCREEN_PX.md))'); // the md line from config/layout.json (RULE CFG)
   });
 
   it("renders as glassmorphism dropdown on desktop (viewport > 767px)", () => {

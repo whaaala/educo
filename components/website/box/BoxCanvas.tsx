@@ -32,7 +32,7 @@ import { blockForKind, nodeForPhotos, photoGallery, PHOTO_SETUP, type GalleryPho
 import { treeHoverCss, treeRevealCss } from "@/lib/interactions";
 import { colorToCSS } from "@/components/shared/ColorPalettePicker";
 import { COMPONENT_CSS } from "@/lib/educo-ui/components";
-import { layoutCss, RUNG_MEASURE } from "@/lib/educo-ui/layout";
+import { EDITOR_DOCK_PX, layoutCss, mediaBelow, RUNG_MEASURE, RUNG_PX } from "@/lib/educo-ui/layout";
 import { CHROME_Z } from "@/lib/educo-ui/stacking";
 import { iconSvg, onIconsLoaded, warmIcons, hasIcon } from "@/lib/educo-ui/icon-svg";
 import { tokensFromTheme, tokensToCss } from "@/lib/educo-ui/tokens";
@@ -1146,7 +1146,7 @@ export default function BoxCanvas({
       setToolbarRight((prev) => { const next = r.left + r.width / 2 > window.innerWidth / 2; return next === prev ? prev : next; });
       // A TABLET'S FINGER GETS THE PHONE'S DOCKED BAR (E-5c, research rec. 4; E5c-5): by its block, the 52px bar covered the block
       // above, and a tap on what showed of it was pulled onto the bar. A mouse in a narrow window keeps the bar and its grip.
-      setToolbarDocked((prev) => { const next = !!window.matchMedia?.("(max-width: 37.49em), (max-width: 63.99em) and (pointer: coarse)").matches; return next === prev ? prev : next; });
+      setToolbarDocked((prev) => { const next = !!window.matchMedia?.(`${mediaBelow(RUNG_PX.tabletPortrait)}, ${mediaBelow(EDITOR_DOCK_PX)} and (pointer: coarse)`).matches; return next === prev ? prev : next; });
     };
     measure();
     window.addEventListener("scroll", measure, true);

@@ -5,7 +5,6 @@ import {
   Pressable,
   StyleSheet,
   ScrollView,
-  Dimensions,
   Image,
   Share,
   Alert,
@@ -19,6 +18,7 @@ import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing';
 import { useTheme } from '../contexts/ThemeContext';
 import type { ThemeColors } from "@/contexts/ThemeContext";
+import { useIsTablet } from '@/hooks/useIsTablet';
 
 const FONTS = {
   regular: 'Inter_400Regular',
@@ -27,10 +27,6 @@ const FONTS = {
   bold: 'Inter_700Bold',
 };
 
-function useIsTablet() {
-  const [isTablet] = useState(() => Dimensions.get('window').width >= 768);
-  return isTablet;
-}
 
 // Subject result interface
 interface SubjectResult {

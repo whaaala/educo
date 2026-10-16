@@ -2,7 +2,6 @@ import { useState, useMemo, useCallback } from 'react';
 import {
   View,
   StyleSheet,
-  Dimensions,
   Alert,
 } from 'react-native';
 import { useRouter } from 'expo-router';
@@ -38,11 +37,8 @@ import { DriveActionSheet } from './DriveActionSheet';
 import { DriveNewFolderModal } from './DriveNewFolderModal';
 import { DriveRenameModal } from './DriveRenameModal';
 import { DriveMoveModal } from './DriveMoveModal';
+import { useIsTablet } from '@/hooks/useIsTablet';
 
-function useIsTablet() {
-  const [isTablet] = useState(() => Dimensions.get('window').width >= 768);
-  return isTablet;
-}
 
 function getRootFolderForSection(section: DriveSection): string {
   switch (section) {

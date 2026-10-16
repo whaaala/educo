@@ -8,7 +8,7 @@ const fs = require('fs');
 const path = require('path');
 const u = require('./adb-ui.js');
 const { editorPage, touch, webviewBox } = require('./e5d-lib.js');
-const { SCREENS } = require('./screens.js'); // A14: the Preview of the page built in the app, at every screen (RULE Z)
+const { SCREENS, EDGE } = require('./screens.js'); // A14: the Preview of the page built in the app, at every screen (RULE Z)
 
 const OUT = path.join(__dirname, 'shots', 'e5d');
 fs.mkdirSync(OUT, { recursive: true });
@@ -73,7 +73,7 @@ async function run({ d, port, name }) {
   // A3 the editor the width calls for
   const vw = await page.evaluate(() => innerWidth);
   const compact = await page.getByRole('button', { name: 'More', exact: true }).isVisible().catch(() => false);
-  ok('A3 the editor lays out for this width', vw < 1024 ? compact : !compact, `innerWidth ${vw}, one-row bar + More: ${compact}`);
+  ok('A3 the editor lays out for this width', vw < EDGE.DOCK ? compact : !compact, `innerWidth ${vw}, one-row bar + More: ${compact}`);
 
   // A2 it edits, through the UI
   const n0 = await blocks(page);
@@ -229,7 +229,7 @@ async function run({ d, port, name }) {
   for (const scale of [1, 1.5, 2]) {
     const bad = [];
     for (const { w, h } of SCREENS) {
-      await cdp13.send('Emulation.setDeviceMetricsOverride', { width: w, height: h, deviceScaleFactor: 0, mobile: w < 1024 });
+      await cdp13.send('Emulation.setDeviceMetricsOverride', { width: w, height: h, deviceScaleFactor: 0, mobile: w < EDGE.DOCK });
       await u.sleep(120);
       const f = await (await page.$('iframe')).contentFrame();
       if (scale !== 1) await f.evaluate((sc) => { document.documentElement.style.fontSize = `${sc * 100}%`; }, scale);

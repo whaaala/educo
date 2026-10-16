@@ -16,6 +16,7 @@ import {
   ViewMenuItem, ViewMenuDivider, ViewMenuToggle, SubmenuPanel, MenuCloseContext,
 } from "@/components/shared/EditorViewMenus";
 import { ZoomIn, Maximize, Maximize2, Minimize2 } from "lucide-react";
+import { WEB_SCREEN_PX, mediaBelow } from "@/lib/educo-ui/layout";
 
 // ══════════════════════════════════════════════════
 // Types
@@ -146,7 +147,7 @@ export function EditorViewMenuPanel({ config, onClose, anchorRef }: EditorViewMe
 
   // Detect mobile
   useEffect(() => {
-    const mq = window.matchMedia("(max-width: 767px)");
+    const mq = window.matchMedia(mediaBelow(WEB_SCREEN_PX.md));
     setIsMobile(mq.matches);
     const handler = (e: MediaQueryListEvent) => setIsMobile(e.matches);
     mq.addEventListener("change", handler);

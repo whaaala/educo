@@ -1,0 +1,50 @@
+{
+  "$comment": "THE APP'S NAVIGATION, AS DATA (RULE CFG, BATCH A-2 change 3). Each role has its places, in order: id (unique in the role), label (what a person reads), icon (a key each platform maps to its own drawing — web: lucide, app: the tab bar's icons), href (the app route; the web sample page serves it under /app-preview/<role>). 'sample': true marks a role that is SAMPLE DATA (decision 7: shown as samples, never as a school's real menu) — the parent role is the Educo app's real tab bar today. 'list' names the sample list a place opens as a list-detail (change 4). moreLabel is the bar's overflow place when a role has more than shell.barMax (config/layout.json).",
+  "moreLabel": "More",
+  "words": {
+    "sample": "Sample",
+    "sampleNote": "Sample data — not a school's real records.",
+    "viewAs": "View as",
+    "notInMenu": "This place is not in this menu.",
+    "backHome": "Go to the first place"
+  },
+  "roles": {
+    "parent": {
+      "label": "Parent",
+      "sample": false,
+      "items": [
+        { "id": "home", "label": "Home", "icon": "home", "href": "/" },
+        { "id": "children", "label": "Children", "icon": "children", "href": "/children", "list": "children" },
+        { "id": "fees", "label": "Fees", "icon": "fees", "href": "/fees" },
+        { "id": "messages", "label": "Chat", "icon": "chat", "href": "/messages" },
+        { "id": "more", "label": "More", "icon": "more", "href": "/more" }
+      ]
+    },
+    "teacher": {
+      "label": "Teacher",
+      "sample": true,
+      "items": [
+        { "id": "home", "label": "Today", "icon": "home", "href": "/" },
+        { "id": "classes", "label": "Classes", "icon": "classes", "href": "/classes", "list": "classes" },
+        { "id": "attendance", "label": "Attendance", "icon": "attendance", "href": "/attendance" },
+        { "id": "marks", "label": "Marks", "icon": "marks", "href": "/marks" },
+        { "id": "messages", "label": "Messages", "icon": "chat", "href": "/messages", "list": "messages" },
+        { "id": "timetable", "label": "Timetable", "icon": "timetable", "href": "/timetable" },
+        { "id": "notices", "label": "Notices", "icon": "notices", "href": "/notices", "list": "empty" }
+      ]
+    },
+    "admin": {
+      "label": "School admin",
+      "sample": true,
+      "items": [
+        { "id": "home", "label": "Dashboard", "icon": "dashboard", "href": "/" },
+        { "id": "pupils", "label": "Pupils", "icon": "children", "href": "/pupils", "list": "pupils" },
+        { "id": "staff", "label": "Staff", "icon": "staff", "href": "/staff" },
+        { "id": "fees", "label": "Fees", "icon": "fees", "href": "/fees" },
+        { "id": "messages", "label": "Messages", "icon": "chat", "href": "/messages", "list": "messages" },
+        { "id": "reports", "label": "Reports", "icon": "reports", "href": "/reports" },
+        { "id": "settings", "label": "Settings", "icon": "settings", "href": "/settings" }
+      ]
+    }
+  }
+}

@@ -1,4 +1,6 @@
 import type { Page } from "@playwright/test";
+import LAYOUT from "../../../config/layout.json";
+const DOCK = LAYOUT.editor.dockFrom; // the editor docks its panels from here (config/layout.json, RULE CFG)
 
 /**
  * SEEDING THE BUILDER, without a race.
@@ -61,7 +63,7 @@ const nextGeneration = (page: Page) => {
 export type OpenOpts = { phoneScreen?: boolean };
 export async function desktopPageOnAPhone(page: Page, path: string = BUILDER_PATH, opts: OpenOpts = {}) {
   const w = page.viewportSize()?.width ?? 1280;
-  if (opts.phoneScreen || path !== BUILDER_PATH || w >= 1024) return;
+  if (opts.phoneScreen || path !== BUILDER_PATH || w >= DOCK) return;
   await page.waitForFunction(() => !!document.querySelector("[data-canvas-scale]"), undefined, { timeout: 60_000 });
   // Under 1024 the screen sizes live in the bar's More sheet (E5a-16, E5c-2): opened, chosen, put away — as a person does it.
   const more = page.getByRole("button", { name: "More", exact: true });

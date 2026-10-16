@@ -1,11 +1,9 @@
 import type { ComponentProps } from "react";
-import { useState } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   ScrollView,
-  Dimensions,
 } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -13,6 +11,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../contexts/ThemeContext';
 import { PageHeader } from '../components/ui/PageHeader';
 import { getItem, getFileTypeConfig, formatFileSize, timeAgo } from '../components/drive/driveMockData';
+import { useBarClearance, useIsTablet } from '@/hooks/useIsTablet';
 
 /** Ionicons' own set of icon names. A name outside it renders nothing, so it is worth checking. */
 type IoniconName = ComponentProps<typeof Ionicons>["name"];
@@ -24,10 +23,6 @@ const FONTS = {
   bold: 'Inter_700Bold',
 };
 
-function useIsTablet() {
-  const [isTablet] = useState(() => Dimensions.get('window').width >= 768);
-  return isTablet;
-}
 
 // Mock content for different file types
 function getDocumentContent(name: string): string {
@@ -67,6 +62,7 @@ export default function FilePreviewScreen() {
   const { colors } = useTheme();
   const { id } = useLocalSearchParams<{ id: string }>();
   const isTablet = useIsTablet();
+  const clearance = useBarClearance(); // room for the phone's bar, none beside a rail (A2-17)
 
   const item = id ? getItem(id) : null;
   if (!item) {
@@ -192,7 +188,7 @@ export default function FilePreviewScreen() {
       {/* Content */}
       <ScrollView
         style={s.scroll}
-        contentContainerStyle={[s.scrollContent, isTablet && s.scrollContentTablet]}
+        contentContainerStyle={[s.scrollContent, isTablet && s.scrollContentTablet, { paddingBottom: 16 + clearance }]}
         showsVerticalScrollIndicator={false}
       >
         {renderContent()}
@@ -213,7 +209,7 @@ const s = StyleSheet.create({
   infoType: { fontSize: 13, fontFamily: FONTS.semiBold },
   infoMeta: { fontSize: 12, fontFamily: FONTS.regular },
   scroll: { flex: 1 },
-  scrollContent: { padding: 16, paddingBottom: 100 },
+  scrollContent: { padding: 16 },
   scrollContentTablet: { paddingHorizontal: 32 },
 
   // Document

@@ -43,6 +43,7 @@ import TenantSwitcher from "@/components/admin/TenantSwitcher";
 import { useUser } from "@/contexts/UserContext";
 import CurrencyIcon from "@/components/shared/CurrencyIcon";
 import { cn } from "@/lib/utils";
+import { WEB_SCREEN_PX } from "@/lib/educo-ui/layout";
 
 interface MenuItem {
   id: string;
@@ -409,7 +410,7 @@ function Sidebar({ isCollapsed, setIsCollapsed, isMobileSidebarOpen, setIsMobile
   useEffect(() => {
     const checkMobile = () => {
       // Use the same breakpoint as Tailwind's lg (1024px)
-      const mobile = window.innerWidth <= 1023;
+      const mobile = window.innerWidth < WEB_SCREEN_PX.lg;
       setIsMobile(mobile);
       if (!mobile) {
         setIsMobileSidebarOpen(false);

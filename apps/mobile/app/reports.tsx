@@ -5,11 +5,11 @@ import {
   Pressable,
   StyleSheet,
   ScrollView,
-  Dimensions,
   TextInput,
   LayoutAnimation,
   Platform,
   UIManager,
+  useWindowDimensions,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -19,13 +19,13 @@ import { useTheme } from '../contexts/ThemeContext';
 import { ProfileAvatar } from '../components/ui/ProfileAvatar';
 import { ChildSwitcher, type ChildData } from '../components/ui/ChildSwitcher';
 import type { ThemeColors } from "@/contexts/ThemeContext";
+import { useIsTablet } from '@/hooks/useIsTablet';
 
 // Enable LayoutAnimation on Android
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
   UIManager.setLayoutAnimationEnabledExperimental(true);
 }
 
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 // Shared fonts
 const FONTS = {
@@ -149,10 +149,6 @@ const MOCK_CHILDREN: ChildData[] = [
   { id: 'child-002', name: 'Chukwuemeka Okonkwo', classLevel: 'SS 1', avatarUri: 'https://i.pravatar.cc/150?u=chukwuemeka' },
 ];
 
-function useIsTablet() {
-  const [isTablet] = useState(() => Dimensions.get('window').width >= 768);
-  return isTablet;
-}
 
 function getScoreGradient(percentage: number): readonly [string, string] {
   if (percentage >= 70) return ['#10b981', '#059669'] as const;
@@ -259,6 +255,7 @@ export default function ReportsHistoryScreen() {
   const router = useRouter();
   const params = useLocalSearchParams();
   const isTablet = useIsTablet();
+  const { width: SCREEN_WIDTH } = useWindowDimensions(); // live — a turned or split screen re-lays out (A2-4)
 
   // Get selected child from params or default to first child
   const initialChildId = (params.childId as string) || MOCK_CHILDREN[0]?.id || '';
@@ -920,7 +917,7 @@ export default function ReportsHistoryScreen() {
                     style={[
                       styles.reportCard,
                       { backgroundColor: colors.surface, borderColor: colors.border },
-                      isTablet && styles.reportCardTablet,
+                      isTablet && { width: (SCREEN_WIDTH - 48 - 16) / 2 },
                     ]}
                     onPress={() => handleViewReport(report)}
                   >
@@ -1656,9 +1653,6 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     borderWidth: 1,
     overflow: 'hidden',
-  },
-  reportCardTablet: {
-    width: (SCREEN_WIDTH - 48 - 16) / 2,
   },
   reportCardHeader: {
     flexDirection: 'row',

@@ -3,6 +3,7 @@ import { View, Text, Pressable, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../../contexts/ThemeContext';
 import { type DriveSection, SIDEBAR_SECTIONS } from './driveMockData';
+import { useBarClearance } from '@/hooks/useIsTablet';
 
 /** Ionicons' own set of icon names. A name outside it renders nothing, so it is worth checking. */
 type IoniconName = ComponentProps<typeof Ionicons>["name"];
@@ -28,6 +29,7 @@ const UTILITY_SECTIONS = SIDEBAR_SECTIONS.filter(s => ['recent', 'starred', 'bin
 
 export function DriveSidebar({ activeSection, onSectionChange }: DriveSidebarProps) {
   const { colors } = useTheme();
+  const clearance = useBarClearance(); // room for the phone's bar, none beside a rail (A2-17)
   const storagePercent = (STORAGE_USED_MB / STORAGE_TOTAL_MB) * 100;
 
   const renderSection = (section: typeof SIDEBAR_SECTIONS[0]) => {
@@ -68,7 +70,7 @@ export function DriveSidebar({ activeSection, onSectionChange }: DriveSidebarPro
   };
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.backgroundSecondary, borderRightColor: colors.border }]}>
+    <View style={[styles.container, { paddingBottom: 16 + clearance, backgroundColor: colors.backgroundSecondary, borderRightColor: colors.border }]}>
       <View>
         {/* Drive title */}
         <View style={styles.titleRow}>
@@ -119,7 +121,6 @@ const styles = StyleSheet.create({
     width: 250,
     borderRightWidth: 1,
     paddingTop: 48,
-    paddingBottom: 100,
     justifyContent: 'space-between',
   },
   // Title

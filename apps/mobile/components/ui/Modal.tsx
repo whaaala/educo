@@ -1,12 +1,10 @@
 import type { ReactNode, RefObject } from 'react';
-import { useState } from 'react';
 import {
   Modal as RNModal,
   View,
   Text,
   Pressable,
   StyleSheet,
-  Dimensions,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -15,13 +13,9 @@ import type { ScrollView as ScrollViewType } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '../../contexts/ThemeContext';
+import { useIsTablet } from '@/hooks/useIsTablet';
 
-const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
-function useIsTablet() {
-  const [isTablet] = useState(() => Dimensions.get('window').width >= 768);
-  return isTablet;
-}
 
 // Shared fonts
 const FONTS = {
@@ -191,7 +185,7 @@ const styles = StyleSheet.create({
   },
   modalContent: {
     borderRadius: 24,
-    maxHeight: SCREEN_HEIGHT * 0.8,
+    maxHeight: '80%', // of the full-screen overlay = of the window, and it follows a turn (A2-4)
     shadowColor: '#000',
     shadowOffset: { width: 0, height: -4 },
     shadowOpacity: 0.15,
@@ -216,7 +210,7 @@ const styles = StyleSheet.create({
   modalContentTablet: {
     width: '100%',
     borderRadius: 20,
-    maxHeight: SCREEN_HEIGHT * 0.75,
+    maxHeight: '75%', // of the full-screen overlay (A2-4)
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.2,

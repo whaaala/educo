@@ -13,6 +13,7 @@ import ParentStudentSelectionSection from "@/components/admin/parents/fees/form-
 import FeeDetailsSection from "@/components/admin/parents/fees/form-sections/FeeDetailsSection";
 import dynamic from "next/dynamic";
 import { FileText } from "lucide-react";
+import { WEB_SCREEN_PX } from "@/lib/educo-ui/layout";
 
 const ValidationErrorsModal = dynamic(
   () => import("@/components/shared/ValidationErrorsModal"),
@@ -72,7 +73,7 @@ export default function AddFeeRecordPage() {
   // Handle responsive layout
   useEffect(() => {
     const checkScreenSize = () => {
-      setIsLargeScreen(window.innerWidth >= 1024);
+      setIsLargeScreen(window.innerWidth >= WEB_SCREEN_PX.lg);
     };
 
     checkScreenSize();

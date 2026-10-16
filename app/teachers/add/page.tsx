@@ -19,6 +19,7 @@ import { teacherFormValidationRules } from "@/lib/teacherFormValidation";
 import dynamic from "next/dynamic";
 import { emptyTeacherForm, type TeacherFormData } from "@/components/teachers/form-sections/types";
 import type { FormFieldSetter } from "@/components/shared/form-section-types";
+import { WEB_SCREEN_PX } from "@/lib/educo-ui/layout";
 
 const ValidationErrorsModal = dynamic(
   () => import("@/components/shared/ValidationErrorsModal"),
@@ -44,7 +45,7 @@ export default function AddTeacherPage() {
   // Handle responsive layout
   useEffect(() => {
     const checkScreenSize = () => {
-      setIsLargeScreen(window.innerWidth >= 1024);
+      setIsLargeScreen(window.innerWidth >= WEB_SCREEN_PX.lg);
     };
 
     checkScreenSize();

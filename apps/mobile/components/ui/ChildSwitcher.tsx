@@ -5,7 +5,6 @@ import {
   Pressable,
   StyleSheet,
   Image,
-  Dimensions,
   LayoutAnimation,
   Platform,
   UIManager,
@@ -14,6 +13,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '../../contexts/ThemeContext';
+import { useIsTablet } from '@/hooks/useIsTablet';
 
 // Enable LayoutAnimation on Android
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
@@ -44,10 +44,6 @@ interface ChildSwitcherProps {
   showClass?: boolean;
 }
 
-function useIsTablet() {
-  const [isTablet] = useState(() => Dimensions.get('window').width >= 768);
-  return isTablet;
-}
 
 export function ChildSwitcher({
   childList,

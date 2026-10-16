@@ -316,10 +316,10 @@ function overridesCss(node: BoxNode): string {
 // past the phone gets its own `min-width` query, in `em`, straight off the documented ladder — this table is
 // the only place that correspondence is stated.
 const RUNG_MIN_EM: Record<Exclude<Breakpoint, "phone">, number> = {
-  tabletPortrait: BREAKPOINTS_EM.tabletPortrait, // 600px
-  tabletLandscape: BREAKPOINTS_EM.tabletLandscape, // 900px
-  base: BREAKPOINTS_EM.desktop, // 1200px — `base` IS the desktop rung
-  wide: BREAKPOINTS_EM.wide, // 1800px
+  tabletPortrait: BREAKPOINTS_EM.tabletPortrait, // config/layout.json
+  tabletLandscape: BREAKPOINTS_EM.tabletLandscape, // config/layout.json
+  base: BREAKPOINTS_EM.desktop, // `base` IS the desktop rung
+  wide: BREAKPOINTS_EM.wide,
 };
 /** `css` held to the widths of `screens` (G3b-11): one media range per run of neighbouring screens, as `overridesByRung` writes them. */
 function onlyOnScreens(css: string, screens: Breakpoint[]): string {

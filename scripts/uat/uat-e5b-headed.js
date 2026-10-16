@@ -261,7 +261,7 @@ async function FG(page, ok, id, w) {
   await U5strip(page, ok, w, ids);
   await U1grid(page, ok, w);
   await U4autoscroll(page, ok, w, ids);
-  if (page.viewportSize().width >= 600) await U1float(page, ok, w, ids); // a float drops back into the flow on a phone, by design
+  if (page.viewportSize().width >= require('../../config/layout.json').rungs.tabletPortrait.from) await U1float(page, ok, w, ids); // a float drops back into the flow on a phone, by design
   await page.screenshot({ path: path.join(OUT, `${id}-end.png`) });
 }
 

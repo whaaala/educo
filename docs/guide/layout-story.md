@@ -81,7 +81,7 @@ up.
 [![The editor on a desktop: "Our clubs" above three cards side by side, each with a picture, a title, words and a Learn more button](img/story-cards-desktop.webp)](img/story-cards-desktop.webp)
 
 - **Desktop, laptop:** three across.
-- **Tablet (600–900px):** still three across — three cards at 250px each are perfectly readable, so the builder leaves
+- **Tablet (600–840px):** still three across — three cards at 250px each are perfectly readable, so the builder leaves
   them. (Four or more across *would* be rearranged to at most three a line on a tablet, as evenly as they can: 4 → 2 + 2,
   6 → 3 + 3.)
 - **Phone:** one under another.
@@ -226,10 +226,10 @@ The builder gives every screen its own column count:
 | Screen | Default columns |
 |--------|----------------|
 | Phone (< 600px) | 6 |
-| Tablet (600–900px) | 12 |
-| Laptop (900–1200px) | 12 |
-| Desktop (1200–1800px) | 12 |
-| Wide (≥ 1800px) | 12 |
+| Tablet (600–840px) | 12 |
+| Laptop (840–1200px) | 12 |
+| Desktop (1200–1600px) | 12 |
+| Wide (≥ 1600px) | 12 |
 
 I can change any of these in the **Page grid** panel (the Layout guides button in the top bar, or right-click the
 canvas → *Page grid…*). Adding more columns — say 16 for a fine
@@ -439,7 +439,7 @@ Maya opens the builder on her school's tablet: an iPad at 768 × 1024, or an And
 pixels wide (the most common tablet window in Nigeria).
 
 **The tablet edits at its own width.** The page fills the tablet at its real size, drawn 1:1, the way her visitors will
-see it on that tablet. Held upright, the screen it edits is **Tablet**; held sideways (900 pixels wide or more, up to a
+see it on that tablet. Held upright, the screen it edits is **Tablet**; held sideways (840 pixels wide or more, up to a
 laptop's 1024), it is **Laptop**. What she changes in the layout here changes that screen only, and the desktop page is
 left as it was. Her words, pictures and links are the same on every screen. When she turns the tablet, the editor turns
 with it: the screen it edits follows the new width, and the block she had selected stays selected.

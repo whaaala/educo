@@ -3,7 +3,7 @@
 // Built through the UI the way a person does it on that screen: the Inspector opened from its tab where it starts closed.
 const path = require('path'); const fs = require('fs');
 const { chromium } = require('playwright');
-const { SCREENS } = require('./screens.js');
+const { SCREENS, EDGE } = require('./screens.js');
 const OUT = path.join(__dirname, 'logs', 'uat-e1'); fs.mkdirSync(OUT, { recursive: true });
 const BASE = process.env.BASE || 'http://localhost:3100';
 const SIZES = { landscape: { width: 1024, height: 768 }, portrait: { width: 768, height: 1024 }, phone: { width: 393, height: 851, isMobile: true } };
@@ -26,7 +26,7 @@ async function contrastOf(loc) {
 }
 async function run(page, size, theme, ok) {
   const tag = size + '-' + theme.replace(/\s/g, ''); const shot = (n) => page.screenshot({ path: path.join(OUT, `E-${tag}-${n}.png`) });
-  const narrow = SIZES[size].width < 1024;
+  const narrow = SIZES[size].width < EDGE.DOCK;
   // E1 — an empty page is a box you can aim at, and a first block lands in it
   await fresh(page); await editorTheme(page, theme); await page.keyboard.press('b'); await page.waitForTimeout(600);
   const floor = await page.locator('[data-box-id]').first().evaluate((el) => el.getBoundingClientRect().height / (Number(el.closest('[data-canvas-scale]')?.dataset.canvasScale) || 1));

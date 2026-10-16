@@ -10,11 +10,16 @@ Run through this checklist BEFORE writing any code:
 
 - [ ] **READ THE TASK TREE** — [docs/TASK_TREE.md](docs/TASK_TREE.md) holds everything any session has said it will do, as one tree. Find **YOU ARE HERE** before doing anything else, and put every new promise into it the moment it is made.
 - [ ] **Open a BUG LEDGER** — from this point on, every bug you find gets written into your reply as a numbered line the moment you find it, BEFORE deciding anything about it. See [docs/FIX_WHAT_YOU_FIND.md](docs/FIX_WHAT_YOU_FIND.md).
+- [ ] **⛔ RULE LB — EVERY LINE GETS A BATCH OF ITS AREA** — anything written into the tree (task, bug, check, doc) goes into a batch
+  of its area AT ONCE (`→ BATCH X-n`), and the area's AREA MAP shows it. Nothing open lives outside a batch.
 - [ ] **⛔ RULE M — PONYTAIL, EVERY TIME, FOR EVERYTHING** (https://github.com/dietrichgebert/ponytail, `docs/PONYTAIL.md`; the
   user, 2026-10-05: "this must be followed every single time you do anything") — before any code, doc, test, script or tool call,
   find out EXACTLY what is needed and climb the ladder: (1) does it need to exist — no → skip it (YAGNI; nothing added that was
   not asked for) · (2) already in this codebase → reuse · (3) standard library · (4) native platform feature · (5) an installed
   dependency (never add one) · (6) one line · (7) only then the minimum that works. Write down which rung was taken.
+- [ ] **⛔ RULE CFG — NOTHING HARD-CODED: DATA IN CONFIGURATION, NEVER IN CODE** (the user, 2026-10-16) — every value that
+  could ever change (breakpoints, sizes, menus, roles, labels, lists, limits, thresholds, sample data) is read from a
+  configuration file; changing it never means touching code. Name the config file each new value goes in.
 - [ ] **Check existing shared components** — search `components/shared/` for `Button`, `FormDropdown`, `CustomDropdown`, `FormInput`, `Modal`, `EditorDialog`, `ColorPickerPopover`, `DataTable`, etc. NEVER duplicate what exists.
 - [ ] **IMPLEMENT for ALL platforms AND screen sizes** — web (desktop 1280px+, tablet 768px, mobile 375px) AND React Native mobile/tablet app (`apps/mobile/`). Every feature MUST be built for BOTH web responsive AND the native mobile/tablet app. Neither is optional.
 - [ ] **Plan for ALL themes** — check `lib/theme-config.ts` for available themes. Every UI element must work in ALL of them.
@@ -161,6 +166,14 @@ Run through this checklist BEFORE telling the user it's done:
     under the work that found it. Work that is interrupted stays in the tree as in progress, never dropped.
   - **End of a session:** move **YOU ARE HERE**, mark what closed with its commit or measurement, and commit the file.
   - Nothing is deleted from it. A branch closes only when its children are closed or the user decides otherwise.
+  - **RULE LB — EVERY LINE HAS A BATCH, GROUPED BY AREA (MANDATORY — the user, 2026-10-16: "everything should have a batch…
+    make that a rule going forward so nothing is missed in the ledger… grouped to the area… everything is mapped so nothing is
+    forgotten for each section").** Every open line of the tree — a task, a ledger bug, a check, a doc owed — belongs to a
+    batch of its AREA the moment it is written: inside the batch in BATCHES, or carrying `→ BATCH X-n` with that batch listing
+    it. The **AREA MAP** at the top of BATCHES lists every area's batches in order, so an area's whole remaining work is seen
+    in one place, and an area is finished only when every batch on its map is closed. Measured, 2026-10-16: the layout audit
+    found 31 frozen-list lines and three hand-offs no batch held — work that would have been forgotten. **Guarded:**
+    `unbatchedLines()` in `tests/unit/task-tree-batches.test.ts` fails on any open leaf with no batch.
   - **DONE IS DONE EVERYWHERE (the user, 2026-10-06: "make sure that this mistake doesn't happen again… anybody that picks it up
     would understand this is ticked, this is done").** The same work is often written in more than one place — a ledger line in
     section 1 and its fix in a batch, a question and its decision, a parent and its children. **Closing work ticks EVERY line that
@@ -304,7 +317,7 @@ Run through this checklist BEFORE telling the user it's done:
     all of the devices… all of the breakpoints… all of the view widths… that must be a rule… for all of our UAT
     testing").** Every UAT's Preview pass runs through ALL of `scripts/uat/screens.js`: every device of the Preview's own
     menu (`lib/preview-devices.ts`, at real width × height — phones incl. Tecno / Infinix / itel, tablets, laptops,
-    monitors, the user's 1536 × 864) and both sides of every breakpoint (599 | 600, 899 | 900, 1199 | 1200, 1799 | 1800).
+    monitors, the user's 1536 × 864) and both sides of every breakpoint (599 | 600, 839 | 840, 1199 | 1200, 1599 | 1600 — read from `config/layout.json`).
     A device or size we need that is missing is ADDED to `lib/preview-devices.ts` (then every UAT checks it). Guarded by
     `tests/unit/uat-screens.test.ts`: the list must hold every preset and every breakpoint, and every new headed UAT
     script must use it. A pass that checked one size is not a pass.
@@ -653,6 +666,21 @@ Run through this checklist BEFORE telling the user it's done:
     `docs/TASK_TREE.md` audits the whole engine against the builder's controls and surfaces each one it finds.
   - **Checked through the UI** (RULE Y): a feature is done only when a person has selected it, changed it and made their
     own in the builder, and seen the same thing in the Preview.
+- **RULE CFG — NOTHING HARD-CODED: THE DATA IS DETACHED FROM THE CODE (MANDATORY — the user, 2026-10-16: "I don't want
+  anything hard-coded… when we need to change something, then we'll just change in the configuration file. And that goes for
+  everything… moving forward").**
+  - **What is data:** every value a person might ever want different — breakpoints and height classes, sizes and thresholds,
+    menus and which role sees what, labels and wording, lists and their limits, currencies, providers, feature switches,
+    sample rows. It lives in a configuration file (JSON in `config/`, one file per area, e.g. `config/layout.json`), read by
+    the code; the code holds only the logic that USES it. One value, one place: the canvas, the export, the web app, the
+    `apps/mobile/` app, the scripts and the tests all read the same file — a test never re-types a number the config holds.
+  - **What is not:** the logic itself, and the design tokens, which already ARE configuration (rule 17).
+  - **Changing it is a config edit only:** if changing a value means editing a component, a script or a test, that is a bug in
+    the ledger (RULE V). A config value is validated where it is read (RULE M: validation at trust boundaries is never cut).
+  - **Applies from now on, to everything:** new and changed code complies the day it is written; hard-coded values found in
+    the area being worked are ledger lines and moved to configuration in that batch.
+  - **Guarded:** each area's config has a unit guard that fails when one of its values appears as a literal outside the
+    config (mutation-proven), so a value copied back into code is caught the day it appears.
 - **STATUS, ALWAYS (the user, 2026-09-28).** Every reply ends with where the work is and what comes next — one line, a
   pointer the user can act on — so the user never has to ask "where are you?".
 - **RULE P — WEBSITE PERSONALITY AND TONE ARE FOLLOWED (MANDATORY — from 2026-09-27).** The Website Personalities
@@ -748,7 +776,9 @@ Every content item and component, existing and future, across the whole app:
 ### 18. The five-rung responsive model (this project's ladder)
 - **`base` IS desktop.** The cascade runs to NARROWER screens; `wide` branches off.
 - Legacy `tablet` / `mobile` slots are still read, so no saved page migrates.
-- Rungs: phone · tablet portrait (600) · tablet landscape (900) · desktop (1200) · big desktop (1800), in `em`.
+- Rungs: phone · tablet portrait (600) · tablet landscape (840) · desktop (1200) · big desktop (1600), in `em` — the
+  platforms' own lines (M3 / Apple; the user's decision 1, 2026-10-15), stored ONLY in `config/layout.json` (RULE CFG,
+  guarded by `tests/unit/layout-config.test.ts`). Saved pages store overrides by rung NAME, so moving a width migrates nothing.
 
 ### 19. Edge-anchored resize (broken on three separate occasions — never again)
 - **The edge you grab is the ONLY one that moves; the opposite edge stays fixed.** All four sides, every layout, every depth.

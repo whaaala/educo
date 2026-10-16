@@ -6,6 +6,7 @@ import { emptyPageRoot as newPageRoot, siteFromRoot, setPageGrid, applyPageGrid,
 import { renderSitePage, SKIP_LINK_CSS } from "@/lib/box-export";
 import { DEFAULT_THEME } from "@/lib/site-storage";
 import { pageCheck } from "@/lib/semantics";
+import { RUNG_PX } from "@/lib/educo-ui/layout";
 import { PAGE_GRID_DEFAULT, columnsAt, spanOf, snapShare, spanLabel, spanText, resolvePageGrid, gridSpaceOf, gridTemplate, spanOfWidth, spanOfRect, snapEdgePx, rowsToMinHeight, rowsOf, rowTrackCount } from "@/lib/page-grid";
 
 /**
@@ -1082,7 +1083,7 @@ describe("G-3d (3) · on a phone no block of a page row has columns narrower tha
     const root = { ...emptyPageRoot(), children: [makeRowBand(kids)] } as BoxNode; if (!marked) delete root.pageGrid;
     return markPageGrid(normalizeRowBands(root)).children![0];
   };
-  const across = (band: BoxNode, i: number, px: number) => fitStepAt(band, band.children![i].id, px / 16, px < 600 ? "phone" : "tabletPortrait") ?? band.children!.length;
+  const across = (band: BoxNode, i: number, px: number) => fitStepAt(band, band.children![i].id, px / 16, px < RUNG_PX.tabletPortrait ? "phone" : "tabletPortrait") ?? band.children!.length;
 
   it.each([true, false])("a photo 40 %% wide beside a paragraph goes under it at 375 (photo in a column: %s)", (col) => {
     const band = rowOf([["text", "60%", col], ["image", "40%", col]]);
@@ -1105,7 +1106,7 @@ describe("G-3d (3) · on a phone no block of a page row has columns narrower tha
   it("the floor never steps a row at the tablet rung or wider, however narrow its blocks", () => {
     for (const n of [2, 3, 4, 6, 12]) {
       const band = rowOf(Array.from({ length: n }, () => ["image", `${100 / n}%`] as [string, string]));
-      for (const g of rowNarrowsAt(band, true) ?? []) for (const s of g.steps) expect(s.below, `${n} blocks`).toBeLessThanOrEqual(600 / 16);
+      for (const g of rowNarrowsAt(band, true) ?? []) for (const s of g.steps) expect(s.below, `${n} blocks`).toBeLessThanOrEqual(RUNG_PX.tabletPortrait / 16);
     }
   });
   it("a page saved before the page grid: a photo beside a paragraph is left as it was", () => {

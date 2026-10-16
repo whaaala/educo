@@ -3,6 +3,7 @@ import {
   RUNG_PX, RUNG_EM, RUNG_MEASURE, RUNG_LABEL, RUNG_ORDER, LAYOUT_CSS, mediaFrom, atRung,
 } from "@/lib/educo-ui/layout";
 import { BASE_CSS } from "@/lib/educo-ui/base";
+import LAYOUT from "@/config/layout.json";
 import { renderSiteFiles } from "@/lib/box-export";
 import { stripComments } from "@/lib/educo-ui/subset";
 import { DEFAULT_THEME } from "@/lib/site-storage";
@@ -35,8 +36,8 @@ describe("the rung ladder", () => {
 
   it("is expressed in em, derived from px, so the two can never drift apart", () => {
     for (const r of RUNG_ORDER) expect(RUNG_EM[r]).toBe(RUNG_PX[r] / 16);
-    expect(RUNG_EM.tabletPortrait).toBe(37.5);
-    expect(RUNG_EM.desktop).toBe(75);
+    for (const r of RUNG_ORDER) expect(RUNG_PX[r], `${r} is read from config/layout.json (RULE CFG)`).toBe(LAYOUT.rungs[r].from);
+    for (const r of RUNG_ORDER) expect(RUNG_LABEL[r]).toBe(LAYOUT.rungs[r].label);
   });
 
   it("emits em queries, never px — a px breakpoint ignores a reader who enlarged their font", () => {
@@ -55,7 +56,7 @@ describe("the rung ladder", () => {
 
   it("atRung wraps at every rung but the phone", () => {
     expect(atRung("phone", ".x{color:red}")).toBe(".x{color:red}");
-    expect(atRung("desktop", ".x{color:red}")).toContain("@media (min-width: 75em)");
+    expect(atRung("desktop", ".x{color:red}")).toContain(`@media (min-width: ${RUNG_EM.desktop}em)`);
   });
 });
 

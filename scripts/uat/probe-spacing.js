@@ -4,6 +4,7 @@
 // rung, in the chosen theme, and the inspector's spacing controls driven (default shown, 0, one side, back to default, undo).
 //   NODE_PATH=node_modules node scripts/uat/probe-spacing.js [--theme=Light] [--pos=0,0]
 const fs = require('fs'); const path = require('path');
+const { EDGE } = require('./screens.js'); // rung + dock edges from config/layout.json (RULE CFG)
 const H = require('./h.js'); const P = require('./pages.js').helpers; const I = require('./inspector.js');
 const arg = (k, d) => { const a = process.argv.find((x) => x.startsWith(`--${k}=`)); return a ? a.split('=')[1] : d; };
 const THEME = arg('theme', 'Light');
@@ -36,7 +37,7 @@ const measure = ([engine, ids]) => {
 };
 
 const check = (where, w, m) => {
-  const G = w < 600 ? 14 : 20; // the gutter floor the audit will use: a phone ~22px, never under 14; wider screens more
+  const G = w < EDGE.TP ? 14 : 20; // the gutter floor the audit will use: a phone ~22px, never under 14; wider screens more
   for (const k of ['logo', 'link4', 'head', 'text', 'colText', 'col1', 'col3', 'footText', 'plainText']) {
     const x = m[k]; if (!x || x.missing || !x.words) continue;
     if (x.words.l < G - 0.5) bad(`${where} ${w}: "${k}" words ${x.words.l.toFixed(1)}px from the page's LEFT edge (floor ${G})`);
@@ -48,7 +49,7 @@ const check = (where, w, m) => {
   const st = m.stack; if (st && !st.missing) { if (!(m.text.t - m.head.b >= 10)) bad(`${where} ${w}: stack gap Heading→Text ${(m.text.t - m.head.b).toFixed(1)}px`); else ok(`${where} ${w}: stack gap ${(m.text.t - m.head.b).toFixed(1)}px`); }
   if (m.col1 && m.col2 && m.col3 && !m.col1.missing) {
     const oneLine = Math.abs(m.col1.t - m.col3.t) < 2; const gap = m.col2.l - (m.col1.l + m.col1.w);
-    if (w >= 1024 && !oneLine) bad(`${where} ${w}: the row of three is NOT on one line`);
+    if (w >= EDGE.DOCK && !oneLine) bad(`${where} ${w}: the row of three is NOT on one line`);
     if (oneLine && gap < 12) bad(`${where} ${w}: column gap ${gap.toFixed(1)}px`); else if (oneLine) ok(`${where} ${w}: columns on one line, gap ${gap.toFixed(1)}px`);
     // S1-a: the coloured columns still reach the page's edges (the gap is a gutter BETWEEN them, never outside them)
     if (oneLine && (m.col1.l > 1.5 || m.col3.r > 1.5)) bad(`${where} ${w}: the outer columns do not meet the page edges (${m.col1.l.toFixed(1)} / ${m.col3.r.toFixed(1)}px in)`);

@@ -14,7 +14,8 @@ const repoRoot = path.resolve(projectRoot, "../..");
 const config = getDefaultConfig(projectRoot);
 
 // 1. Watch the shared core so edits to lib/ hot-reload in the app.
-config.watchFolders = [path.resolve(repoRoot, "lib")];
+// config/ too: lib/educo-ui/layout.ts reads config/layout.json (RULE CFG, A-2).
+config.watchFolders = [path.resolve(repoRoot, "lib"), path.resolve(repoRoot, "config")];
 
 // 2. Resolve "@core/*" to the repo-root lib/*, while keeping this app's own node_modules first.
 config.resolver.extraNodeModules = {

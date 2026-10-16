@@ -36,6 +36,10 @@ export interface ActionMenuDropdownProps {
   className?: string;
   /** Width of the dropdown menu */
   width?: string;
+  /** Where the menu opens: under the trigger (default), or over it — a menu opened from a bar along the bottom (A2-16) */
+  placement?: "below" | "above";
+  /** The menu's name for a screen reader */
+  ariaLabel?: string;
 }
 
 function isDivider(entry: ActionMenuEntry): entry is ActionMenuDivider {
@@ -50,9 +54,23 @@ export default function ActionMenuDropdown({
   align = "left",
   className = "",
   width = "w-[240px]",
+  placement = "below",
+  ariaLabel,
 }: ActionMenuDropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+  /** Put the menu away and give focus back to what opened it (A2-16: Escape left focus nowhere). */
+  const close = () => { setIsOpen(false); dropdownRef.current?.querySelector<HTMLElement>("button, a, [tabindex]")?.focus(); };
+  const items$ = () => [...(menuRef.current?.querySelectorAll<HTMLElement>('[role="menuitem"]') ?? [])];
+  // Opening moves focus to the first item, so the arrows work at once
+  useEffect(() => { if (isOpen) items$()[0]?.focus(); }, [isOpen]);
+  const onMenuKey = (e: React.KeyboardEvent) => {
+    const all = items$(); const i = all.indexOf(document.activeElement as HTMLElement);
+    const go = (j: number) => { e.preventDefault(); all[(j + all.length) % all.length]?.focus(); };
+    if (e.key === "ArrowDown") go(i + 1); else if (e.key === "ArrowUp") go(i - 1); else if (e.key === "Home") go(0); else if (e.key === "End") go(all.length - 1);
+    else if (e.key === "Tab") setIsOpen(false);
+  };
 
   // Close on click outside
   useEffect(() => {
@@ -70,7 +88,7 @@ export default function ActionMenuDropdown({
   useEffect(() => {
     if (!isOpen) return;
     const handler = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setIsOpen(false);
+      if (e.key === "Escape") close();
     };
     document.addEventListener("keydown", handler);
     return () => document.removeEventListener("keydown", handler);
@@ -86,7 +104,11 @@ export default function ActionMenuDropdown({
       {/* Dropdown menu */}
       {isOpen && (
         <div
-          className={`absolute top-full mt-1.5 ${align === "right" ? "right-0" : "left-0"} ${width} bg-surface rounded-xl shadow-2xl border border-line py-1.5 z-[9999] animate-in fade-in slide-in-from-top-2 duration-200`}
+          ref={menuRef}
+          role="menu"
+          aria-label={ariaLabel}
+          onKeyDown={onMenuKey}
+          className={`absolute ${placement === "above" ? "bottom-full mb-1.5" : "top-full mt-1.5"} ${align === "right" ? "right-0" : "left-0"} ${width} bg-surface rounded-xl shadow-2xl border border-line py-1.5 z-[9999] animate-in fade-in ${placement === "above" ? "slide-in-from-bottom-2" : "slide-in-from-top-2"} duration-200`}
         >
           {items.map((entry, idx) => {
             if (isDivider(entry)) {
@@ -104,11 +126,13 @@ export default function ActionMenuDropdown({
             return (
               <button
                 key={item.id}
+                role="menuitem"
+                tabIndex={-1}
                 onClick={() => {
                   item.onClick?.();
                   setIsOpen(false);
                 }}
-                className="w-full flex items-center gap-3 px-4 py-2 text-[0.8125rem] text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-50 dark:hover:bg-white/5 midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-colors cursor-pointer group"
+                className="w-full flex items-center gap-3 px-4 py-2 text-[0.8125rem] text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-50 dark:hover:bg-white/5 midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 focus-visible:bg-gray-50 dark:focus-visible:bg-white/5 midnight:focus-visible:bg-cyan-500/5 purple:focus-visible:bg-pink-500/5 outline-none transition-colors cursor-pointer group"
               >
                 {IconComp && (
                   <IconComp

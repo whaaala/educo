@@ -1,0 +1,39 @@
+{
+  "$comment": "SAMPLE LISTS for the app shell's list-detail (BATCH A-2 change 4, decision 7: an empty app shows sample rows, MARKED as samples). Every row here is invented — no real pupil, parent or teacher. A place opens one of these when its 'list' (config/app-shell.json) names it. Each row: id (unique, used in the detail URL), title, subtitle, and the fields its detail shows. 'empty' lists prove the empty state.",
+  "words": { "empty": "Nothing here yet.", "back": "Back", "select": "Choose one to see it here.", "missing": "That one is not in this list." },
+  "lists": {
+    "children": {
+      "label": "Children",
+      "rows": [
+        { "id": "child-001", "title": "Adaeze Okonkwo", "subtitle": "JSS 2", "fields": [{ "label": "Term average", "value": "78.5%" }, { "label": "Attendance", "value": "96.2%" }, { "label": "Position", "value": "5th of 45" }] },
+        { "id": "child-002", "title": "Chukwuemeka Okonkwo", "subtitle": "SS 1", "fields": [{ "label": "Term average", "value": "82.3%" }, { "label": "Attendance", "value": "94.5%" }, { "label": "Position", "value": "3rd of 52" }] }
+      ]
+    },
+    "classes": {
+      "label": "Classes",
+      "rows": [
+        { "id": "jss1a", "title": "JSS 1A", "subtitle": "32 pupils · Mathematics", "fields": [{ "label": "Form teacher", "value": "Mrs. Adaeze Okafor" }, { "label": "Room", "value": "Block B, Room 4" }, { "label": "Next lesson", "value": "Monday, 08:00" }] },
+        { "id": "jss1b", "title": "JSS 1B", "subtitle": "29 pupils · Mathematics", "fields": [{ "label": "Form teacher", "value": "Mr. Kwame Mensah" }, { "label": "Room", "value": "Block B, Room 5" }, { "label": "Next lesson", "value": "Monday, 10:00" }] },
+        { "id": "jss2a", "title": "JSS 2A", "subtitle": "35 pupils · Basic Science", "fields": [{ "label": "Form teacher", "value": "Mrs. Aisha Bello" }, { "label": "Room", "value": "Laboratory 1" }, { "label": "Next lesson", "value": "Tuesday, 09:00" }] },
+        { "id": "ss1c", "title": "SS 1C", "subtitle": "27 pupils · Further Mathematics", "fields": [{ "label": "Form teacher", "value": "Mr. Emeka Eze" }, { "label": "Room", "value": "Block D, Room 2" }, { "label": "Next lesson", "value": "Wednesday, 11:30" }] }
+      ]
+    },
+    "messages": {
+      "label": "Messages",
+      "rows": [
+        { "id": "m1", "title": "Mrs. Nkechi Eze", "subtitle": "Mathematics progress report for Adaeze", "fields": [{ "label": "Sent", "value": "Thursday, 10:30" }, { "label": "Message", "value": "Adaeze has improved a great deal this term, especially in fractions." }] },
+        { "id": "m2", "title": "Mr. Yaw Boateng", "subtitle": "Inter-house sports on Friday", "fields": [{ "label": "Sent", "value": "Wednesday, 15:05" }, { "label": "Message", "value": "Please send your child in house colours and with water." }] },
+        { "id": "m3", "title": "School office", "subtitle": "Second-term fees reminder", "fields": [{ "label": "Sent", "value": "Monday, 08:15" }, { "label": "Message", "value": "Fees for the second term are due by the end of the month. Pay by bank transfer or mobile money." }] }
+      ]
+    },
+    "pupils": {
+      "label": "Pupils",
+      "rows": [
+        { "id": "p1", "title": "Adaeze Okonkwo", "subtitle": "JSS 1A · Admission 2024/031", "fields": [{ "label": "Guardian", "value": "Mr. Chidi Okonkwo" }, { "label": "Phone", "value": "+234 803 555 0142" }, { "label": "Fees", "value": "Paid" }] },
+        { "id": "p2", "title": "Kofi Asante", "subtitle": "JSS 1B · Admission 2024/047", "fields": [{ "label": "Guardian", "value": "Mrs. Ama Asante" }, { "label": "Phone", "value": "+233 24 555 0193" }, { "label": "Fees", "value": "Part paid" }] },
+        { "id": "p3", "title": "Fatima Sani", "subtitle": "JSS 2A · Admission 2023/112", "fields": [{ "label": "Guardian", "value": "Alhaji Musa Sani" }, { "label": "Phone", "value": "+234 806 555 0177" }, { "label": "Fees", "value": "Paid" }] }
+      ]
+    },
+    "empty": { "label": "Nothing yet", "rows": [] }
+  }
+}

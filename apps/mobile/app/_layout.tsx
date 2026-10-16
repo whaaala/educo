@@ -16,6 +16,8 @@ import 'react-native-reanimated';
 import { TenantSettingsProvider } from '../contexts/TenantSettingsContext';
 import { ThemeProvider, useTheme } from '../contexts/ThemeContext';
 import BottomTabBar from '../components/ui/BottomTabBar';
+import NavRail from '../components/ui/NavRail';
+import { useWindowClass } from '../hooks/useIsTablet';
 import { ThemedStatusBar } from '../components/ui/ThemedStatusBar';
 
 // Keep splash screen visible while fonts load
@@ -63,6 +65,8 @@ export default function RootLayout() {
 
 function AppChrome() {
   const { colors } = useTheme();
+  // the navigation this window gets (A-2 change 3): a bar on a phone and a phone on its side, a rail on a tablet, a sidebar wider
+  const { shell } = useWindowClass();
 
   const rootStyle = useMemo(() => ({
     flex: 1,
@@ -79,22 +83,25 @@ function AppChrome() {
   }), [screenContentStyle]);
 
   return (
-    <View style={rootStyle}>
+    <View style={[rootStyle, shell !== 'bar' && { flexDirection: 'row' }]}>
       <ThemedStatusBar />
-      <Stack screenOptions={screenOptions}>
-        <Stack.Screen name="(tabs)" />
-        <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
-        <Stack.Screen name="reports" options={{ presentation: 'card' }} />
-        <Stack.Screen name="report-details" options={{ presentation: 'card' }} />
-        <Stack.Screen name="term-progress" options={{ presentation: 'card' }} />
-        <Stack.Screen name="payment-history" options={{ presentation: 'card' }} />
-        <Stack.Screen name="drive" options={{ presentation: 'card' }} />
-        <Stack.Screen name="file-preview" options={{ presentation: 'card' }} />
-        {/* iOS edge swipe would pop the editor mid-drag (trap 8) — its own Back button leaves */}
-        <Stack.Screen name="site-editor" options={{ presentation: 'card', gestureEnabled: false }} />
-      </Stack>
+      {shell !== 'bar' && <NavRail expanded={shell === 'sidebar'} />}
+      <View style={{ flex: 1 }}>
+        <Stack screenOptions={screenOptions}>
+          <Stack.Screen name="(tabs)" />
+          <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
+          <Stack.Screen name="reports" options={{ presentation: 'card' }} />
+          <Stack.Screen name="report-details" options={{ presentation: 'card' }} />
+          <Stack.Screen name="term-progress" options={{ presentation: 'card' }} />
+          <Stack.Screen name="payment-history" options={{ presentation: 'card' }} />
+          <Stack.Screen name="drive" options={{ presentation: 'card' }} />
+          <Stack.Screen name="file-preview" options={{ presentation: 'card' }} />
+          {/* iOS edge swipe would pop the editor mid-drag (trap 8) — its own Back button leaves */}
+          <Stack.Screen name="site-editor" options={{ presentation: 'card', gestureEnabled: false }} />
+        </Stack>
+      </View>
 
-      <BottomTabBar />
+      {shell === 'bar' && <BottomTabBar />}
     </View>
   );
 }

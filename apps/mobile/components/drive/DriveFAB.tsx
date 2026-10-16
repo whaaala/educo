@@ -1,16 +1,13 @@
-import { memo, useState } from 'react';
-import { Pressable, Dimensions, StyleSheet } from 'react-native';
+import { memo } from 'react';
+import { Pressable, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../../contexts/ThemeContext';
+import { useIsTablet } from '@/hooks/useIsTablet';
 
 interface DriveFABProps {
   onPress: () => void;
 }
 
-function useIsTablet() {
-  const [isTablet] = useState(() => Dimensions.get('window').width >= 768);
-  return isTablet;
-}
 
 export const DriveFAB = memo(function DriveFAB({ onPress }: DriveFABProps) {
   const { colors } = useTheme();

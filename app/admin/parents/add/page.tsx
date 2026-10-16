@@ -14,6 +14,7 @@ import { ValidationErrors } from "@/lib/validation";
 import dynamic from "next/dynamic";
 import { emptyParentForm, type ParentFormData } from "@/components/admin/parents/form-sections/types";
 import type { FormFieldSetter } from "@/components/shared/form-section-types";
+import { WEB_SCREEN_PX } from "@/lib/educo-ui/layout";
 
 const ValidationErrorsModal = dynamic(
   () => import("@/components/shared/ValidationErrorsModal"),
@@ -42,7 +43,7 @@ function AddParentForm() {
   // Handle responsive layout
   useEffect(() => {
     const checkScreenSize = () => {
-      setIsLargeScreen(window.innerWidth >= 1024);
+      setIsLargeScreen(window.innerWidth >= WEB_SCREEN_PX.lg);
     };
 
     checkScreenSize();

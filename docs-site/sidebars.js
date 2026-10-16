@@ -21,6 +21,14 @@ const sidebars = {
         'website-builder-in-the-app',
       ],
     },
+    {
+      type: 'category',
+      label: 'The Educo app',
+      collapsed: false,
+      items: [
+        'app-layout',
+      ],
+    },
   ],
 };
 

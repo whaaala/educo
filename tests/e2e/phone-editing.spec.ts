@@ -3,15 +3,17 @@ import { seedSite, sitePage } from "./helpers/seed-site";
 import { type BoxNode as BN, createContainer, markPageGrid, normalizeRowBands, makeRowBand } from "@/lib/box-model";
 import { blockForKind } from "@/lib/box-presets";
 import { emptyPageRoot, siteFromRoot } from "@/lib/box-site";
+import LAYOUT from "../../config/layout.json";
 
 /**
  * BUILDING ON A PHONE — BATCH E-5a, the user's decisions D1 · D3 · D4 · D5 · D6 (research: docs/web-anatomy/phone-editing.md).
  * Behaviours: tests/features/components/website/phone-editing.feature. Runs on every project: the phone asserts the phone,
  * the rest assert that nothing changed for them.
  */
-const phone = (page: Page) => (page.viewportSize()?.width ?? 1280) < 600;
+const TP = LAYOUT.rungs.tabletPortrait.from, TL = LAYOUT.rungs.tabletLandscape.from, DOCK = LAYOUT.editor.dockFrom; // config/layout.json (RULE CFG)
+const phone = (page: Page) => (page.viewportSize()?.width ?? 1280) < TP;
 /** Where the block toolbar docks at the bottom: a phone, and a finger under 1024 (E-5c research rec. 4, E5c-5). */
-const docksBar = (page: Page) => phone(page) || (!!test.info().project.use.hasTouch && (page.viewportSize()?.width ?? 1280) < 1024);
+const docksBar = (page: Page) => phone(page) || (!!test.info().project.use.hasTouch && (page.viewportSize()?.width ?? 1280) < DOCK);
 const stored = (page: Page) => page.evaluate(() => JSON.parse(localStorage.getItem("educo_box_site_v1") || "{}").pages[0].root);
 type N = { id: string; type?: string; text?: string; rowBand?: boolean; children?: N[]; responsive?: Record<string, Record<string, unknown>> };
 const flat = (n: N): N[] => [n, ...(n.children ?? []).flatMap(flat)];
@@ -58,11 +60,11 @@ test.describe("building on a phone (E-5a)", () => {
       await page.getByRole("button", { name: "More", exact: true }).click(); // the screen sizes are in More on a phone (E5a-16)
       await expect(mobile, "the Mobile device is the one being edited").toHaveAttribute("aria-pressed", "true");
       await page.keyboard.press("Escape");
-    } else if (g.vw < 1024) {
-      // E-5c T1: a tablet edits at its own width too, on its rung — Tablet upright, Laptop from 900
+    } else if (g.vw < DOCK) {
+      // E-5c T1: a tablet edits at its own width too, on its rung — Tablet upright, Laptop from Tablet landscape
       expect(g.z, "a tablet is drawn at 1:1, not the desktop page shrunk").toBe(1);
       await page.getByRole("button", { name: "More", exact: true }).click(); // a tablet has the phone's one-row bar too (E5c-2)
-      const own = page.getByRole("button", { name: g.vw < 900 ? /^Tablet/ : /^Laptop/ }).first();
+      const own = page.getByRole("button", { name: g.vw < TL ? /^Tablet/ : /^Laptop/ }).first();
       await expect(own, "the tablet's own rung is the one being edited").toHaveAttribute("aria-pressed", "true");
       await expect(mobile, "a tablet does not switch to Mobile").toHaveAttribute("aria-pressed", "false");
       await page.keyboard.press("Escape");
@@ -86,7 +88,7 @@ test.describe("building on a phone (E-5a)", () => {
       await page.goBack();
       await expect(dialog, "Back puts it away").toBeHidden();
       expect(page.url(), "and does not leave the builder").toContain("box-demo");
-    } else if (vw < 1024) {
+    } else if (vw < DOCK) {
       // E-5c T3: a tablet has the phone's sheet, capped at 32rem and centred
       expect(Math.round(r.y + r.height), "a tablet's sheet rises from the bottom edge").toBeGreaterThanOrEqual(vh - 1);
       expect(r.width, "no wider than 32rem").toBeLessThanOrEqual(512.5);
@@ -170,9 +172,9 @@ test.describe("building on a phone (E-5a)", () => {
     if (phone(page)) {
       expect(b.responsive?.phone?.width, "the phone's own width").toBe("50%");
       expect(b.width, "the desktop untouched").toBe("auto");
-    } else if ((page.viewportSize()?.width ?? 1280) < 1024) {
+    } else if ((page.viewportSize()?.width ?? 1280) < DOCK) {
       // E-5c T1 (C3): a tablet writes its own rung, and the desktop page is untouched
-      const rung = (page.viewportSize()?.width ?? 0) < 900 ? "tabletPortrait" : "tabletLandscape";
+      const rung = (page.viewportSize()?.width ?? 0) < TL ? "tabletPortrait" : "tabletLandscape";
       expect(b.responsive?.[rung]?.width, `the ${rung} rung's own width`).toBe("50%");
       expect(b.width, "the desktop untouched").toBe("auto");
     } else expect(b.width === "50%" || Object.values(b.responsive ?? {}).some((r) => r.width === "50%"), "written at the screen being edited").toBe(true);
@@ -325,7 +327,7 @@ test("a phone's (and a tablet's) top bar is one row, and More holds the rest", a
   await threeBlocks(page);
   const h = await page.evaluate(() => Math.round(document.querySelector("header")!.getBoundingClientRect().height));
   const more = page.getByRole("button", { name: "More", exact: true });
-  if ((page.viewportSize()?.width ?? 1280) >= 1024) { await expect(more, "no More where the bar has room").toHaveCount(0); return; }
+  if ((page.viewportSize()?.width ?? 1280) >= DOCK) { await expect(more, "no More where the bar has room").toHaveCount(0); return; }
   expect(h, "one row (a finger's row is 65px)").toBeLessThanOrEqual(72);
   await more.click();
   const sheet = page.getByRole("dialog", { name: "More" });
@@ -595,14 +597,14 @@ test.describe("the editor on a tablet (E-5c)", () => {
     await threeBlocks(page);
     // [window, the device it edits]: 600 | 601 and 962 are the African tablets (T2). Under 1024 the Inspector is its tab and the
     // bar one row (E5c-4, E5c-2 — the user 2026-10-07); from 1024 the desktop page, the Inspector docked, the full bar
-    const steps: [number, number, string][] = [[601, 1007, "Tablet"], [1007, 601, "Laptop"], [962, 601, "Laptop"], [899, 700, "Tablet"],
-      [900, 700, "Laptop"], [1024, 768, "Full width"], [768, 1024, "Tablet"], [1023, 768, "Laptop"], [600, 900, "Tablet"], [599, 900, "Mobile"]];
+    const steps: [number, number, string][] = [[601, 1007, "Tablet"], [1007, 601, "Laptop"], [962, 601, "Laptop"], [TL - 1, 700, "Tablet"],
+      [TL, 700, "Laptop"], [DOCK, 768, "Full width"], [768, 1024, "Tablet"], [DOCK - 1, 768, "Laptop"], [TP, 900, "Tablet"], [TP - 1, 900, "Mobile"]];
     for (const [w, h, device] of steps) {
       await page.setViewportSize({ width: w, height: h }); await page.waitForTimeout(450);
       expect(await pressed(page), `${w} × ${h} edits ${device}`).toBe(device);
       if (device !== "Full width") expect(await scale(page), `${w} × ${h} is drawn 1:1`).toBe(1);
-      expect(await inspectorDocked(page), `${w} × ${h}: the Inspector ${w >= 1024 ? "docked" : "a tab"}`).toBe(w >= 1024);
-      if (w < 1024) expect(await barH(page), `${w} × ${h}: the bar is one row`).toBeLessThan(64);
+      expect(await inspectorDocked(page), `${w} × ${h}: the Inspector ${w >= DOCK ? "docked" : "a tab"}`).toBe(w >= DOCK);
+      if (w < DOCK) expect(await barH(page), `${w} × ${h}: the bar is one row`).toBeLessThan(64);
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), `${w} × ${h}: no sideways scroll`).toBe(true);
     }
   });

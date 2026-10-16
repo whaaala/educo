@@ -1,16 +1,15 @@
 import type { ComponentProps } from "react";
-import { useState } from 'react';
 import {
   View,
   Text,
   Pressable,
   StyleSheet,
   Modal,
-  Dimensions,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../../contexts/ThemeContext';
 import { type DriveItem, getFileTypeConfig, formatFileSize, timeAgo } from './driveMockData';
+import { useIsTablet } from '@/hooks/useIsTablet';
 
 /** Ionicons' own set of icon names. A name outside it renders nothing, so it is worth checking. */
 type IoniconName = ComponentProps<typeof Ionicons>["name"];
@@ -22,10 +21,6 @@ const FONTS = {
   bold: 'Inter_700Bold',
 };
 
-function useIsTablet() {
-  const [isTablet] = useState(() => Dimensions.get('window').width >= 768);
-  return isTablet;
-}
 
 interface DriveActionSheetProps {
   visible: boolean;

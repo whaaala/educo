@@ -1004,3 +1004,21 @@ describe("BoxInspector — G-3d (2) \"Fill the block's height\" (only where it d
     cleanup();
   });
 });
+
+describe("BoxInspector — Advanced CSS on EVERY block (A2-12, RULE UI)", () => {
+  // the canvas (advancedCssStyle) and the export (box-export's node rule) apply it to every block, so every block offers it
+  const blocks: [string, () => BoxNode][] = [
+    ["text", () => createElement("text", { id: "t" })],
+    ["heading", () => createElement("heading", { id: "h" })],
+    ["stack", () => createContainer("column", { id: "s" })],
+    ["accordion", () => createComponent("accordion", { id: "a" } as Partial<BoxNode>)],
+  ];
+  it.each(blocks)("a %s block: the Content tab's Advanced CSS writes advancedCss", (_k, make) => {
+    const onPatch = renderFor(make());
+    openContent();
+    fireEvent.click(screen.getByRole("button", { name: /Advanced CSS/ }));
+    fireEvent.change(screen.getByLabelText("Advanced CSS"), { target: { value: "letter-spacing: .1em;" } });
+    expect(onPatch).toHaveBeenCalledWith({ advancedCss: "letter-spacing: .1em;" });
+    cleanup();
+  });
+});

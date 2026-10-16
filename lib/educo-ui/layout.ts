@@ -22,16 +22,57 @@
  * named tiers lets the builder be right by default rather than asking a teacher to guess a number.
  */
 
-/** The five rungs, in px. Every other form is derived — never re-type a number. */
-export const RUNG_PX = {
-  phone: 0,
-  tabletPortrait: 600,
-  tabletLandscape: 900,
-  desktop: 1200,
-  wide: 1800,
-} as const;
+import LAYOUT from "../../config/layout.json";
 
-export type RungName = keyof typeof RUNG_PX;
+/** The five rungs, as configured in `config/layout.json` (RULE CFG). Every other form is derived — never re-type a number. */
+export type RungName = keyof typeof LAYOUT.rungs;
+const RUNGS = LAYOUT.rungs as { [K in RungName]: { from: number; label: string; words: string; measure: string | null } };
+
+/** The rungs' first px, in order. Validated where the config is read: phone at 0, each rung wider than the last. */
+export const RUNG_PX = Object.fromEntries(Object.entries(RUNGS).map(([k, r]) => [k, r.from])) as { [K in RungName]: number };
+Object.values(RUNG_PX).forEach((px, i, all) => {
+  if (!Number.isFinite(px) || (i === 0 ? px !== 0 : px <= all[i - 1])) throw new Error(`config/layout.json: rung ${i} "from" ${px} — phone must be 0 and each rung wider than the one before`);
+});
+
+/** The HEIGHT classes, first px of each (A-2 (2)): a phone held sideways is under `medium`. */
+export type HeightClass = keyof typeof LAYOUT.heights;
+export const HEIGHT_PX = LAYOUT.heights as { [K in HeightClass]: number };
+Object.values(HEIGHT_PX).forEach((px, i, all) => {
+  if (!Number.isFinite(px) || (i === 0 ? px !== 0 : px <= all[i - 1])) throw new Error(`config/layout.json: height ${i} ${px} — compact must be 0 and each class taller than the one before`);
+});
+export type Shell = "bar" | "rail" | "sidebar";
+export interface WindowClass { width: RungName; height: HeightClass; shell: Shell; panes: 1 | 2; /** how many places a bar holds legibly here (≥ 2, ≤ shell.barMax) */ barFits: number }
+const last = <K extends string>(steps: { [k in K]: number }, v: number) => (Object.keys(steps) as K[]).filter((k) => v >= steps[k]).pop() as K;
+const SHELL = LAYOUT.shell as { barBelow: { width: RungName; height: HeightClass }; sidebarFrom: RungName; barMax: number; barItemMin: number };
+const SPLIT_FROM = LAYOUT.listDetail.splitFrom as RungName;
+for (const [what, name, set] of [["shell.barBelow.width", SHELL.barBelow.width, RUNG_PX], ["shell.sidebarFrom", SHELL.sidebarFrom, RUNG_PX], ["listDetail.splitFrom", SPLIT_FROM, RUNG_PX], ["shell.barBelow.height", SHELL.barBelow.height, HEIGHT_PX]] as const) {
+  if (!(name in set)) throw new Error(`config/layout.json: ${what} "${name}" is not one of ${Object.keys(set).join(" / ")}`);
+}
+/**
+ * What a window of `width` × `height` CSS px is (A-2 (2)) — read by the web app and `apps/mobile/` alike, so a phone, a turned
+ * phone, a tablet and a desktop get the same answer everywhere. The navigation follows M3's NavigationSuiteScaffold: a bar
+ * when the width OR the height is compact, a sidebar from `shell.sidebarFrom`, a rail between; a list and its detail sit
+ * side by side from `listDetail.splitFrom`; a bar holds `barFits` places. Every line is in `config/layout.json` (RULE CFG). The width
+ * and height are in the unit the CSS rungs use — CSS px at the reader's text size (web: px ÷ 1em × 16; app: dp ÷ fontScale).
+ */
+export function windowClass(width: number, height: number): WindowClass {
+  const w = last(RUNG_PX, width), h = last(HEIGHT_PX, height);
+  const shell: Shell = width < RUNG_PX[SHELL.barBelow.width] || height < HEIGHT_PX[SHELL.barBelow.height] ? "bar" : width >= RUNG_PX[SHELL.sidebarFrom] ? "sidebar" : "rail";
+  // a bar holds as many places as are legible at this text size (A2-22: at 200 % a 375 phone has room for two, not five)
+  const barFits = Math.max(2, Math.min(SHELL.barMax, Math.floor(width / SHELL.barItemMin)));
+  return { width: w, height: h, shell, panes: width >= RUNG_PX[SPLIT_FROM] ? 2 : 1, barFits };
+}
+
+/** The Educo app home's quick-action tiles: as many across as fit at minWidth each (dp at the reader's text size), up to maxAcross. */
+export const APP_TILES: Readonly<{ minWidth: number; maxAcross: number }> = LAYOUT.appTiles;
+/** The narrowest phone a row must still fit, in px (RULE AF). */
+export const NARROWEST_PHONE_PX: number = LAYOUT.narrowestPhone;
+/** The editor's own chrome line: from here its panels dock beside the canvas. Not a rung. */
+export const EDITOR_DOCK_PX: number = LAYOUT.editor.dockFrom;
+/** The Educo web app's breakpoints (Tailwind's xs / sm / md / lg / xl / 2xl), in px — the same numbers its classes use. */
+export const WEB_SCREEN_PX: Readonly<Record<keyof typeof LAYOUT.webApp.screens, number>> = LAYOUT.webApp.screens;
+/** How the Page check names each rung's screens. */
+export const RUNG_WORDS = Object.fromEntries(Object.entries(RUNGS).map(([k, r]) => [k, r.words])) as { [K in RungName]: string };
 
 /** The same ladder in `em`, which is what a media query should use. Derived, so it cannot drift. */
 export const RUNG_EM = Object.fromEntries(
@@ -44,22 +85,10 @@ export const RUNG_EM = Object.fromEntries(
  * A container is not simply "as wide as it can be": past roughly 75 characters a line of text becomes hard to
  * track back to the start of, so each rung earns a cap rather than inheriting the viewport.
  */
-export const RUNG_MEASURE: { [K in RungName]: string | null } = {
-  phone: null, // no cap — the page gutters already hold it in
-  tabletPortrait: "34rem",
-  tabletLandscape: "52rem",
-  desktop: "68rem",
-  wide: "76rem",
-};
+export const RUNG_MEASURE = Object.fromEntries(Object.entries(RUNGS).map(([k, r]) => [k, r.measure])) as { [K in RungName]: string | null }; // phone: null — the page gutters already hold it in
 
 /** Human labels, so the builder's device chips and this ladder can never disagree. */
-export const RUNG_LABEL: { [K in RungName]: string } = {
-  phone: "Phone",
-  tabletPortrait: "Tablet portrait",
-  tabletLandscape: "Tablet landscape",
-  desktop: "Desktop",
-  wide: "Big desktop",
-};
+export const RUNG_LABEL = Object.fromEntries(Object.entries(RUNGS).map(([k, r]) => [k, r.label])) as { [K in RungName]: string };
 
 export const RUNG_ORDER = Object.keys(RUNG_PX) as RungName[];
 
@@ -67,6 +96,9 @@ export const RUNG_ORDER = Object.keys(RUNG_PX) as RungName[];
 export function mediaFrom(rung: RungName): string | null {
   return rung === "phone" ? null : `@media (min-width: ${RUNG_EM[rung]}em)`;
 }
+
+/** The query for every width UNDER `px` (the last em before it), for the editor's own `matchMedia`. */
+export const mediaBelow = (px: number) => `(max-width: ${px / 16 - 0.01}em)`;
 
 /** Wrap declarations in the query for a rung, or return them bare on the phone rung. */
 export function atRung(rung: RungName, css: string): string {
