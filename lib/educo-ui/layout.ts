@@ -69,6 +69,10 @@ export const APP_TILES: Readonly<{ minWidth: number; maxAcross: number }> = LAYO
 export const NARROWEST_PHONE_PX: number = LAYOUT.narrowestPhone;
 /** The editor's own chrome line: from here its panels dock beside the canvas. Not a rung. */
 export const EDITOR_DOCK_PX: number = LAYOUT.editor.dockFrom;
+/** The narrowest a column in a row is drawn, rem — untouched, sized by hand, a page-grid block below the tablet rung (RULE CFG, L5-3). */
+export const COLUMN_FLOORS_REM: Readonly<{ reflowFloorRem: number; handFloorRem: number; blockFloorRem: number }> = LAYOUT.columns;
+/** The editor's edge-drag thresholds (RULE CFG, L5-3) — see `resize.$comment` in config/layout.json. */
+export const RESIZE: Readonly<{ hugSnapPx: number; neighbourMinTracks: number; minRowPx: number; wrapPullPx: number }> = LAYOUT.resize;
 /** The Educo web app's breakpoints (Tailwind's xs / sm / md / lg / xl / 2xl), in px — the same numbers its classes use. */
 export const WEB_SCREEN_PX: Readonly<Record<keyof typeof LAYOUT.webApp.screens, number>> = LAYOUT.webApp.screens;
 /** How the Page check names each rung's screens. */

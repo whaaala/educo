@@ -14,7 +14,7 @@ import type { CSSProperties } from "react";
 import { isRegistryComponent, defaultComponentFields, defaultComponentWidth, componentIsColumn, HUGS_BY_NATURE } from "@/lib/educo-ui/registry";
 import { iconSvg } from "@/lib/educo-ui/icon-svg";
 import { BREAKPOINTS_EM } from "@/lib/educo-ui/base";
-import { RUNG_MEASURE, RUNG_PX, type RungName } from "@/lib/educo-ui/layout";
+import { RUNG_MEASURE, RUNG_PX, COLUMN_FLOORS_REM, type RungName } from "@/lib/educo-ui/layout";
 import { hasItemEffects, itemEffectsCss, revealEffect, REVEAL_DUR, REVEAL_EASE, REVEAL_VIEW_RANGE } from "@/lib/interactions";
 import { PAGE_Z, clampPageZ } from "@/lib/educo-ui/stacking";
 import { remLen, SHADOW_SCALE, SPACE_STEPS } from "@/lib/educo-ui/tokens";
@@ -309,6 +309,17 @@ export interface BoxNode {
   wrapBy?: string;
   /** The width it STORED before a drag rewrote it in drawn terms (it was below its 14rem floor) — written back when it returns (#65). */
   origWidth?: string;
+  /**
+   * The floor it had before a drag FIRST changed it (`floor`, none when absent) and the height it was drawn at then, layout px — a later
+   * drag that brings it back to that height writes that floor back and forgets this (#42 · L4-l · L5-10 · L5-13, the height twin of #65).
+   */
+  heightBefore?: { floor?: number; drawn: number };
+  /**
+   * The width it stored, and whether it was sized by hand, before a drag FIRST changed them — a later drag that brings the whole line back
+   * writes both back and forgets this (L5-2: a round trip left `widthByHand`, so the column's floor fell 14rem → 3rem and a row that
+   * stacked on a phone no longer did; the width twin of `heightBefore`).
+   */
+  widthBefore?: { width?: string; byHand?: boolean };
   radius?: number;          // px corner radius (all corners)
   radiusTopLeft?: number; radiusTopRight?: number; radiusBottomRight?: number; radiusBottomLeft?: number; // per-corner overrides
   opacity?: number;         // 0–100 (%), default 100 (fully opaque) — the BOX's own paint, not its contents
@@ -2553,9 +2564,13 @@ export function fitRowWidths(row: BoxNode): BoxNode {
  * 100% — a wrapping row wraps on a hundredth. A line that still has room is left alone: the drop has already
  * sized the newcomer to that room.
  */
+/** A "Side by side": a plain row the user added (not a band, a grid or a component's own row) — its blocks share one line (E2-22). */
+export const isSideBySide = (n: BoxNode | null | undefined): boolean => !!n && !n.rowBand && (n.direction ?? "column") === "row" && n.layout !== "grid" && !n.preset;
+
 export function fitBand(root: BoxNode, bandId: string, newId?: string): BoxNode {
   const band = findBox(root, bandId);
-  if (!band?.rowBand) return root;
+  if (!band?.rowBand && !isSideBySide(band)) return root; // E2-22: a block added to a Side by side shares its line as a band's does
+  if (!band) return root;
   if (!newId) {
     const fitted = fitRowWidths(band);
     return fitted === band ? root : updateBox(root, bandId, { children: fitted.children });
@@ -2616,6 +2631,14 @@ export function normalizeRowBands(node: BoxNode, gap?: number): BoxNode {
   if (node.rowBand) {
     // A ROW: recurse into its items (each may itself be a content container / leaf).
     return { ...node, children: (node.children ?? []).map((c) => normalizeRowBands(c, gap)) };
+  }
+  /**
+   * E2-22 · A "SIDE BY SIDE" IS A ROW TOO. Its children are blocks on one line, like a band's — but it was taken for a stack and
+   * each block it was given got a full-width band of its own, so no two columns ever shared a line: an edge between them found
+   * no partner, and a drag back opened a 121px hole. Its blocks stay its own, and the line wraps as it was built to (`wrap`). A component's own row (`preset`) is left as it is built; a saved Side by side keeps the bands it has.
+   */
+  if (isSideBySide(node) && node.children && !node.children.some((c) => c.rowBand)) {
+    return { ...node, children: node.children.map((c) => normalizeRowBands(c, gap)) };
   }
   // A GRID's children ARE its cells, so they are never banded.
   //
@@ -4785,10 +4808,10 @@ export function allocateLine(own: number, room: number, followers: LineFollower[
  * floor made roughly 3,000 real sections impossible to build. On a PHONE every column stacks full-width (childStyle), so
  * a narrow column is never squeezed there.
  */
-export const REFLOW_FLOOR_REM = 14;
-export const HAND_FLOOR_REM = 3;
+export const REFLOW_FLOOR_REM = COLUMN_FLOORS_REM.reflowFloorRem; // config/layout.json (RULE CFG, L5-3)
+export const HAND_FLOOR_REM = COLUMN_FLOORS_REM.handFloorRem;
 /** G-3d (3): below the tablet rung no block of a page-grid row has columns narrower than this (`rowNarrowsAt`). */
-export const BLOCK_FLOOR_REM = 10;
+export const BLOCK_FLOOR_REM = COLUMN_FLOORS_REM.blockFloorRem;
 export const floorRemOf = (k: BoxNode) => (k.widthByHand ? HAND_FLOOR_REM : REFLOW_FLOOR_REM);
 
 export function packRowLines(kids: BoxNode[], minPct: number | ((k: BoxNode) => number) = 0): number[] {

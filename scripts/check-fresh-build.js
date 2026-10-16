@@ -35,11 +35,12 @@ function newerThanBuild(dir, out = []) {
     if (e.name === "node_modules" || e.name.startsWith(".")) continue;
     const p = join(dir, e.name);
     if (e.isDirectory()) newerThanBuild(p, out);
-    else if (/\.(tsx?|css)$/.test(e.name) && statSync(p).mtimeMs > builtAt) out.push(p.slice(root.length + 1));
+    else if (/\.(tsx?|css|json)$/.test(e.name) && statSync(p).mtimeMs > builtAt) out.push(p.slice(root.length + 1));
   }
   return out;
 }
-const changed = ["app", "components", "lib", "contexts"].flatMap((d) => { try { return newerThanBuild(join(root, d)); } catch { return []; } });
+// config/ and hooks/ too (L5-6): config/layout.json drives the canvas and the export (RULE CFG), so a build older than it is stale
+const changed = ["app", "components", "lib", "contexts", "hooks", "config"].flatMap((d) => { try { return newerThanBuild(join(root, d)); } catch { return []; } });
 
 http.get({ host: "localhost", port, path: `/_next/static/${buildId}/_buildManifest.js`, timeout: 30000 }, (res) => {
   res.resume();

@@ -143,6 +143,13 @@ inside.
 | **Height** | A minimum height for the block, in rem or px. Not available on all block types. | Per screen |
 | **At least rows tall** (bands) | For a page-grid page's outer band — the band is at least this many row-heights tall. | Per screen |
 
+**Dragging an edge or a corner back.** Every edge and corner can be dragged back, in the same drag or a later one: the
+block — and every neighbour the drag moved — returns to the width and height it had and stores nothing new (no fixed
+height, not "sized by hand"). Within 2px of where an edge started counts as where it started. An edge stops where the
+neighbour across it has nothing left to give: a one-column grid cell with cells after it, the grid's own left edge, a
+column already at the width its words need. Ctrl+Z undoes a drag even if the caret was in the block's words. These
+thresholds (the 2px, the 3rem and 14rem column floors) are set in `config/layout.json` (`resize`, `columns`).
+
 ### Placement
 
 | Control | What it does |

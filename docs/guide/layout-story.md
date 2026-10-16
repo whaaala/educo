@@ -144,6 +144,35 @@ becomes on a phone:
   column's share made the column one pixel wider, the row no longer fitted, and the neighbour dropped to the next
   line — a hole. The slack lives at the end of the line (the last column lends it), so no column changes size.
 
+### Out and back: a drag you take back leaves nothing behind
+
+Maya drags a heading's corner in to see how it looks narrower, doesn't like it, and drags it back. The heading is exactly
+as it was — the same width, the same height, its words on one line — and nothing new is stored on it. That holds for
+every edge and every corner, whether she takes it back in the same drag or in a second one, and however many times:
+
+- **A height dragged back keeps no fixed height.** Dragging a Stat's bottom edge down and back up leaves it with no
+  height of its own, so on a phone, where its column stacks, it is still exactly as tall as its words. The block below a
+  bottom edge gives room and takes it back the same way.
+- **A width dragged back is the width she had.** The row of two halves is two halves again, and it still counts as "not
+  sized by hand": on a phone it stacks, just like a row she never touched.
+- **A hair is not a gap.** A hand never lands on exactly the same pixel twice; within two pixels of where an edge
+  started, it is where it started.
+- **Ctrl+Z undoes the drag** — even if she had clicked into the words to select the block first.
+
+**An edge stops where its neighbour has nothing left to give.** In a grid of five one-column cells, a cell cannot
+grow: the cell beside it is already one column, and pushing the last cell off the row would change the row behind her
+back. The left edge of the first cell on a row is the grid's own edge, so it does not move. And a narrow label column
+squeezed by its neighbour stops at the width its words need — before the whole row would have to break onto more
+lines.
+
+**Blocks added inside a "Side by side" share its line.** Click "Add a block inside" twice and the two blocks sit side
+by side, half each; a third makes thirds. The edge between them drags like any other.
+
+[![Two "Side by side" blocks filled with "Add a block inside": two halves above, three thirds below, then two rows of two](img/story-side-by-side-shares.webp)](img/story-side-by-side-shares.webp)
+
+*Not yet:* a **Button**'s corner still scales its words as it is dragged in, and does not come back exactly when dragged
+out again — it is being decided whether to settle that now or with the Button's own rebuild.
+
 ## 6. Hiding something on one device
 
 The menu is a list of links on a desktop and a "☰ Menu" button on a phone. Maya switches to the **Mobile** chip,

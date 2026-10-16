@@ -353,3 +353,58 @@ test.describe("a drag is one gesture", () => {
     expect(writes, "a drag re-serialised the whole site on every pointer move").toBeLessThanOrEqual(2);
   });
 });
+
+/**
+ * BATCH L-5 — reproduced through the UI first (`scripts/uat/probe-l5.js` l4n), pinned here on the same shape: a grid of FIVE
+ * one-track cells, the "5 across" the picker makes. Behaviours: tests/features/components/website/box-builder-columns.feature.
+ */
+async function seedOneTrack(page: Page, n = 5, columns = n) {
+  const kids = Array.from({ length: n }, (_, i) => ({
+    id: `c${i}`, type: "container", layout: "flex", direction: "column", padding: 0, gap: 0, width: "100%", colSpan: 1,
+    background: ["#c7d2fe", "#bbf7d0", "#fde68a", "#fca5a5", "#e9d5ff"][i % 5],
+    children: [{ id: `t${i}`, type: "text", text: `Cell ${i}`, width: "auto" }],
+  }));
+  await seedSite(page, sitePage([{ id: "tgt", type: "container", layout: "grid", columns, gap: 0, padding: 0, width: "100%", children: kids }]));
+  await page.waitForSelector('[data-box-id="tgt"]', { timeout: 15000 });
+  await page.waitForTimeout(250);
+}
+const rowsOf = (page: Page, n: number) => Promise.all(Array.from({ length: n }, (_, i) => rectOf(page, `c${i}`))).then((rs) => new Set(rs.map((r) => Math.round(r.top))).size);
+
+test.describe("L-5 · a grid cell never pushes another cell off its row", () => {
+  test("L4-n: a one-track neighbour with cells after it cannot give, so the edge stops — and out and back is exact", async ({ page }) => {
+    await seedOneTrack(page);
+    const track = (await rectOf(page, "c1")).left - (await rectOf(page, "c0")).left;
+    await selectCell(page, "c0");
+    await dragHandle(page, "Resize right edge", track, 0);
+    expect(await spansOf(page), "the partner had nothing to give: nothing changed").toEqual([1, 1, 1, 1, 1]);
+    expect(await rowsOf(page, 5), "and no cell left the row").toBe(1);
+    // still selected after the drag: two more clicks would step inside it, to its words
+    await expect(page.locator('[data-box-id="c0"]')).toHaveClass(/outline-indigo-500/);
+    await dragHandle(page, "Resize right edge", -track, 0);
+    expect(await spansOf(page), "back where it began").toEqual([1, 1, 1, 1, 1]);
+  });
+
+  test("…but a partner that is LAST on its row still wraps, and comes back", async ({ page }) => {
+    await seedOneTrack(page, 2);
+    const track = (await rectOf(page, "c1")).left - (await rectOf(page, "c0")).left;
+    await selectCell(page, "c0");
+    await dragHandle(page, "Resize right edge", track, 0);
+    expect(await spansOf(page), "carried out to the full width; the partner keeps its span").toEqual([2, 1]);
+    expect(await rowsOf(page, 2), "and drops to the next row").toBe(2);
+    // still selected after the drag: two more clicks would step inside it, to its words
+    await expect(page.locator('[data-box-id="c0"]')).toHaveClass(/outline-indigo-500/);
+    await dragHandle(page, "Resize right edge", -track, 0);
+    expect(await spansOf(page)).toEqual([1, 1]);
+    expect(await rowsOf(page, 2), "back beside it").toBe(1);
+  });
+
+  test("L5-4: the left edge of a cell that STARTS a row is the grid's own edge, and does not move", async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 900 }); // a phone narrows a 5-track grid by its own box, and c5 no longer starts a row
+    await seedOneTrack(page, 6, 5); // five tracks, six cells: c5 starts row two
+    expect(Math.round((await rectOf(page, "c5")).left), "c5 starts its row (precondition)").toBe(Math.round((await rectOf(page, "c0")).left));
+    const before = await spansOf(page);
+    await selectCell(page, "c5");
+    await dragHandle(page, "Resize left edge", -200, 0);
+    expect(await spansOf(page), "no cell on the row above changed").toEqual(before);
+  });
+});

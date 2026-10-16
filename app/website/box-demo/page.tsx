@@ -14,7 +14,7 @@ import { DEFAULT_THEME, resolveSiteTheme } from "@/lib/site-storage";
 import { THEMES, type ThemeId } from "@/lib/theme-config";
 import { EDITOR_DOCK_PX, mediaBelow as below, RUNG_LABEL, RUNG_ORDER, RUNG_PX } from "@/lib/educo-ui/layout";
 import {
-  type BoxNode, type Breakpoint, createContainer, findBox, findParent, updateBox, insertBox, deleteBox, duplicateBox, widthPct, makeRowBand, normalizeRowBands, markPageGrid, groupBoxes, alignInRow, alignInRowOf, setSectionWidth, sectionWidthOf, pageBandOf,
+  type BoxNode, type Breakpoint, createContainer, findBox, findParent, updateBox, insertBox, fitBand, deleteBox, duplicateBox, widthPct, makeRowBand, normalizeRowBands, markPageGrid, groupBoxes, alignInRow, alignInRowOf, setSectionWidth, sectionWidthOf, pageBandOf,
   floatBox, unfloatBox, bringToFront, bringForward, sendBackward, sendToBack,
   resolveResponsive, updateBoxResponsive, clearOverride, hasOverride,
   gridColumns, retrackGrid, setColumnFraction, pinBlockedBy, fixedBlockedBy, blockedByLabel, pinScopeWords, isFloating,
@@ -792,7 +792,7 @@ export default function BoxDemoPage() {
   const retrackSelected = selected && bp === "base" && selected.layout === "grid"
     ? (columns: number) => commit(updateBox(root, selected.id, retrackGrid(selected, columns)))
     : undefined;
-  const addChildSection = () => { if (!selected) return; const tint = SECTION_TINTS[(countSections(selected) + 1) % SECTION_TINTS.length]; const child = makeBlock(tint, "100%"); const pid = selected.id; commitWith((cur) => insertBox(cur, pid, findBox(cur, pid)?.children?.length ?? 0, child)); revealBox(child.id); };
+  const addChildSection = () => { if (!selected) return; const tint = SECTION_TINTS[(countSections(selected) + 1) % SECTION_TINTS.length]; const child = makeBlock(tint, "100%"); const pid = selected.id; commitWith((cur) => fitBand(insertBox(cur, pid, findBox(cur, pid)?.children?.length ?? 0, child), pid, child.id)); /* E2-22: in a Side by side it shares the line */ revealBox(child.id); };
 
   const floatSelected = () => {
     if (!selected) return;

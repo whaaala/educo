@@ -9,7 +9,7 @@
  */
 
 import { measureCss } from "@/lib/educo-ui/base";
-import { columnFloorRem, dividerThickness, gridLeftoverAt,HAND_FLOOR_REM, isPageRow, LIST_ITEM_GAP, linesAt, pageRowSlot, restForDrag, setFreeInset, slideFreeAt, tabletPlaces }from "@/lib/box-model";
+import { columnFloorRem, dividerThickness, gridLeftoverAt,HAND_FLOOR_REM, REFLOW_FLOOR_REM, isPageRow, rowNarrowsAt, LIST_ITEM_GAP, linesAt, pageRowSlot, restForDrag, setFreeInset, slideFreeAt, tabletPlaces }from "@/lib/box-model";
 import { gapPatch, snapSpace, spacePatch, stepSpace, type SpaceSide } from "@/lib/box-model";
 import { resolvePage } from "@/lib/semantics";
 import { Fragment, useCallback, useEffect, useLayoutEffect, useMemo, useReducer, useRef, useState, type CSSProperties, type ReactNode } from "react";
@@ -32,7 +32,7 @@ import { blockForKind, nodeForPhotos, photoGallery, PHOTO_SETUP, type GalleryPho
 import { treeHoverCss, treeRevealCss } from "@/lib/interactions";
 import { colorToCSS } from "@/components/shared/ColorPalettePicker";
 import { COMPONENT_CSS } from "@/lib/educo-ui/components";
-import { EDITOR_DOCK_PX, layoutCss, mediaBelow, RUNG_MEASURE, RUNG_PX } from "@/lib/educo-ui/layout";
+import { EDITOR_DOCK_PX, layoutCss, mediaBelow, RESIZE, RUNG_MEASURE, RUNG_PX } from "@/lib/educo-ui/layout";
 import { CHROME_Z } from "@/lib/educo-ui/stacking";
 import { iconSvg, onIconsLoaded, warmIcons, hasIcon } from "@/lib/educo-ui/icon-svg";
 import { tokensFromTheme, tokensToCss } from "@/lib/educo-ui/tokens";
@@ -115,7 +115,7 @@ function contentPx(el: HTMLElement, size: "min-content" | "max-content"): number
 export { zoomOf };
 
 /** How close a dragged edge must land to a block's own one-line width to give the block back to its words (L4-f). */
-const HUG_SNAP_PX = 2;
+const HUG_SNAP_PX = RESIZE.hugSnapPx; // config/layout.json (RULE CFG, L5-3)
 
 function measureBoxU(el: HTMLElement, baseFont: number): number {
   const doc = el.ownerDocument;
@@ -403,6 +403,9 @@ function followGesture(
   { capture = false, onCancel = onUp }: { capture?: boolean; onCancel?: (ev: MouseEvent) => void } = {},
 ): () => void {
   const finger = isFinger(start);
+  // L5-12 · A HANDLE GRABBED ENDS TYPING. Selecting a block by its words leaves the caret in them, and a handle's press (preventDefault)
+  // never moves focus — so after a drag Ctrl+Z went to the words' own empty undo and the drag could not be undone from the keyboard.
+  const typing = document.activeElement as HTMLElement | null; if (typing?.isContentEditable) typing.blur();
   const [mv, up] = finger ? ["pointermove", "pointerup"] : ["mousemove", "mouseup"];
   const move = (ev: Event) => onMove(ev as MouseEvent);
   const release = (ev: Event) => { stop(); onUp(ev as MouseEvent); };
@@ -2171,10 +2174,10 @@ export default function BoxCanvas({
    * what used to happen — destroyed the only record of how wide it was, so bringing the dragged cell back
    * left the row several columns short with no way to work out how many.
    */
-  const NEIGHBOUR_MIN = 3;
+  const NEIGHBOUR_MIN = RESIZE.neighbourMinTracks;
 
   /** The least a row may be squeezed to by a drag — below this it is a sliver nobody meant to make. */
-  const MIN_ROW_PX = 24;
+  const MIN_ROW_PX = RESIZE.minRowPx;
 
   /**
    * What a box would be tall if it had no `min-height` of its own — the height its CONTENT needs.
@@ -2312,6 +2315,17 @@ export default function BoxCanvas({
     const partnerAtStart = hasE ? next : prev;
     const others = row.filter((s) => s.id !== id && s.id !== partnerAtStart?.id).reduce((sum, s) => sum + spanOf(s.node), 0);
     const pairBudget = Math.max(2, track - others);
+    /**
+     * L4-n · A PARTNER WITH CELLS AFTER IT ON THIS ROW CANNOT WRAP AWAY. Past its floor the partner keeps its span and is meant to
+     * drop to the next row — but a grid places in source order, so when other cells follow it on the row it is the LAST cell that
+     * drops instead. The row grew out of its far side (rule 19), and the drag back gave the freed track to the partner, not to the
+     * cell that had been pushed off: 132/132 → 275/132 → 132/275. So there the edge stops where the partner runs out.
+     */
+    const partnerAt = row.findIndex((s) => s.id === next?.id);
+    const partnerPinned = hasE && partnerAt >= 0 && partnerAt < row.length - 1;
+    const span0 = spanOf(kids[myIndex]);
+    /** L5-4 · a cell that STARTS its row has its left edge on the grid's own edge: no cell shares it, so it does not move. */
+    const rowStart = hasW && !!prev && !row.some((s) => s.id === prev.id);
     const startX = e.clientX, startY = e.clientY;
     // The starting heights of THIS row and the one above it. A row is as tall as its TALLEST cell, so a
     // height has to be written to every cell in the row — setting one alone does nothing at all.
@@ -2448,10 +2462,10 @@ export default function BoxCanvas({
         // on a four-across grid, dragging the left edge moved the right edge 171px. So a west drag is capped
         // at what the pair actually owns, and because that neighbour cannot wrap, its floor is one column —
         // the wrap threshold would be a wall it has no way past.
-        const ceiling = hasE ? track : Math.max(1, pairBudget - 1);
-        const span = Math.max(1, Math.min(ceiling, want));
+        const ceiling = rowStart ? span0 : hasE ? (partnerPinned ? Math.max(span0, pairBudget - handSpan) : track) : Math.max(1, pairBudget - 1);
+        const span = rowStart ? span0 : Math.max(1, Math.min(ceiling, want));
         tree = writeBox(tree, id, { colSpan: span });
-        if (neighbour) {
+        if (neighbour && !rowStart) {
           const beside = pairBudget - span;                    // what the neighbour needs to fit alongside
           const nSpan = spanOf(neighbour.node);
           tree = writeBox(tree, neighbour.id, { colSpan: beside >= (hasE ? handSpan : 1) ? beside : nSpan });
@@ -2629,11 +2643,17 @@ export default function BoxCanvas({
     })();
 
     // Cross-axis anchor: pin alignment + current position/size so a centred/stretched box doesn't jump.
+    // L5-11 · …but never a margin of 0 on a block that had none: it changes nothing drawn and stayed behind after every round trip.
+    const start0 = resolveResponsive(node, breakpoint);
+    /** L5-11 · what a block that HUGS its words goes back to: "auto", as it is made (`createElement`) — at another rung, what it inherits. */
+    const hugBack = breakpoint === "base" ? "auto" : undefined;
+    /** L5-11 · the top edge's margin: 0 on a block that had none is no margin — it changes nothing drawn and stayed after every round trip. */
+    const mtKeep = (mt: number) => (mt === 0 && (breakpoint === "base" || !node.marginTop) ? undefined : mt); // 0 matters only as an override of a margin the base rung has
     let base = root;
     const anchor: Partial<BoxNode> = {};
     if (prRect) {
-      if ((hasE || hasW) && !parentRow) { anchor.alignSelf = "flex-start"; anchor.width = pct(W0); anchor.marginLeft = pxU(rect.left - contentLeftPx); } // width is CROSS (column) → pin horizontal
-      if ((hasN || hasS) && parentRow) { anchor.alignSelf = "flex-start"; anchor.minHeight = lay(H0); anchor.marginTop = pxU(rect.top - flowTopPx); } // height is CROSS (row) → un-stretch so the floor governs + pin vertical
+      if ((hasE || hasW) && !parentRow) { anchor.alignSelf = "flex-start"; anchor.width = pct(W0); const ml = pxU(rect.left - contentLeftPx); if (ml !== 0 || (breakpoint !== "base" && node.marginLeft)) anchor.marginLeft = ml; } // width is CROSS (column) → pin horizontal
+      if ((hasN || hasS) && parentRow) { anchor.alignSelf = "flex-start"; anchor.minHeight = lay(H0); const mt = pxU(rect.top - flowTopPx); if (mt !== 0 || (breakpoint !== "base" && node.marginTop)) anchor.marginTop = mt; } // height is CROSS (row) → un-stretch so the floor governs + pin vertical
     }
     if (Object.keys(anchor).length) base = writeBox(base, id, anchor);
     // NOT COMMITTED HERE (E5a-8): every move builds on `base`, so the anchor lands with the first one. Committed at the press,
@@ -2760,6 +2780,8 @@ export default function BoxCanvas({
      */
     let nextSibId: string | null = null, nextLeftPx = maxW, nextWidth0 = 0;
     let prevSibId: string | null = null, prevWidth0 = 0;
+    /** #84 · the floor each partner is drawn down to — ITS OWN (14rem untouched, 3rem or its longest word once sized by hand), never a fixed 14rem. */
+    let nextFloorPx = 0, prevFloorPx = 0;
     /**
      * A block AFTER this one: the width it RESTS at (its `restWidth` if a
      * neighbour's drag squeezed it, else its stored width), its current stored width, and its margin — all px.
@@ -2837,6 +2859,7 @@ export default function BoxCanvas({
       const nx = at >= 0 ? measure(kids[at + 1]) : null;
       if (nx && lines[at + 1] === lines[at]) {
         nextSibId = nx.c.id; nextLeftPx = nx.r2.left - HG - contentLeftPx; nextWidth0 = storedPx(nx.c, nx.r2);
+        nextFloorPx = places?.has(nx.c.id) ? nextWidth0 : floorPxOf(nx.c);
         nextRest = restForDrag({ rest: nx.c.restWidth ? restPx(nx.c, nx.r2) : undefined, restBy: nx.c.restBy }, nextWidth0, id).rest;
       }
       // By id, not by index: `followers` drops a block that is not drawn, which would shift every index after it.
@@ -2847,6 +2870,7 @@ export default function BoxCanvas({
       // so it is an outer edge and the gap behaviour below is right for it.
       if (pv && lines[at - 1] === lines[at]) {
         prevSibId = pv.c.id; prevWidth0 = storedPx(pv.c, pv.r2);
+        prevFloorPx = places?.has(pv.c.id) ? prevWidth0 : floorPxOf(pv.c);
         const pr = restForDrag({ rest: pv.c.restWidth ? restPx(pv.c, pv.r2) : undefined, at: pv.c.restAt, restBy: pv.c.restBy }, prevWidth0, id);
         prevRest = pr.rest; prevAt = pr.at;
       }
@@ -3015,6 +3039,14 @@ export default function BoxCanvas({
     const { sibId: aboveSibId, h0: aboveH0, slack: aboveSlack, isComp: aboveIsComp, gap0: aboveGap0 } = above;
     /** And what THIS block can give back — what bounds the same boundary dragged DOWNWARD. */
     const selfSlack = Math.max(0, H0 - Math.max(naturalHeightOf(el), MIN_ROW_PX * Z));
+    /**
+     * L4-l · A CORNER WORKS FROM THE FLOOR THE BLOCK STORED, NOT FROM WORDS THAT HOLD IT TALLER. A corner moves both axes, so the
+     * words reflow as it goes: a Heading's top corner dragged 30 in stored a 22.6px floor while its words, wrapped, held it 84px
+     * tall — and the drag back added its 20px to the 84, not to the 22.6, storing 103 where the heading had needed 42. So in a
+     * corner the height the drag writes starts from the stored floor wherever the words hold the box above it.
+     */
+    const floor0 = start0.minHeight;
+    const heldAbove = (hasN || hasS) && (hasE || hasW) && !selfSizing && floor0 != null && H0 - floor0 * Z > HUG_SNAP_PX * Z ? H0 - floor0 * Z : 0;
 
     /**
      * The least a NEIGHBOUR may be squeezed to by a drag.
@@ -3027,7 +3059,7 @@ export default function BoxCanvas({
      * learned the hard way. Where the partner cannot give, the edge does not move — it never grows out of
      * the far side instead.
      */
-    const neighbourMinPx = Math.min(maxW, 14 * rootPx + 2 * HG);
+    const neighbourMinPx = Math.min(maxW, REFLOW_FLOOR_REM * rootPx + 2 * HG);
 
     const P = (px: number) => (px / maxW) * 100;
     const floor2 = (v: number) => Math.floor(v * 100 + 1e-6) / 100;
@@ -3039,7 +3071,7 @@ export default function BoxCanvas({
     const rawGapE = nextLeftPx - startRightPx;
     const gapE = rawGapE < 1 ? 0 : rawGapE;
     /** How far past a floor the drag must go before a block wraps — see "KEEP PULLING" below. */
-    const WRAP_PULL = 24;
+    const WRAP_PULL = RESIZE.wrapPullPx;
     const band = parentRow && info ? info.parent : null;
     /** A block can only wrap inside a band that has a parent to grow into. */
     const canWrap = !!band && !!findParent(rootRef.current, band.id);
@@ -3048,7 +3080,25 @@ export default function BoxCanvas({
     setResizing(true);
     let raf = 0; let pending: BoxNode | null = null;
     let moved = false; // a press that never moved is not a resize: its release commits nothing either (E5b-3)
-    const flush = () => { raf = 0; if (pending) { onChange(pending, gk); pending = null; } };
+    /**
+     * L5-5 · THE TREE THIS GESTURE LAST COMMITTED. `rootRef` only catches up on the next render, so the release — which flushes the
+     * final frame and then writes on top of it — built on the tree from BEFORE that frame whenever the last move had not rendered yet,
+     * and committed the drag one frame short. Every release write builds on this instead.
+     */
+    let last: BoxNode | null = null;
+    const commit = (t: BoxNode) => { last = t; onChange(t, gk); };
+    const flush = () => { raf = 0; if (pending) { commit(pending); pending = null; } };
+    /**
+     * L5-14 · A DRAG NEVER MAKES THE ROW STEP. The engine steps a line of columns onto more lines (`rowNarrowsAt`, the fit rule) when a
+     * column is too narrow for its words at the width its query container is drawn — and its idea of "too narrow" counts the gaps and
+     * a safe estimate of the longest word, which the drag's own floors cannot match: a label column squeezed 0.48% by its neighbour's left
+     * edge put all three columns on lines of their own (the row grew out of its far side, rule 19). So the engine is ASKED: a frame it would
+     * step, on a row it did not step when the drag began, is not taken — the edge stops at the last frame that keeps the line. The width
+     * is the query container's, found as CSS finds it (the nearest ancestor with a `container-type`); the base rung only, where it applies.
+     */
+    const queryRem = (() => { let q = pEl; while (q && getComputedStyle(q).containerType === "normal") q = q.parentElement; if (!q) return Infinity; const cs = getComputedStyle(q); return (q.clientWidth - (parseFloat(cs.paddingLeft) || 0) - (parseFloat(cs.paddingRight) || 0)) / rootFontPx(); })();
+    const stepsHere = (tree: BoxNode) => { const b = band && findByIdLocal(tree, band.id); return !!b && (rowNarrowsAt(b, !!pageRowBand) ?? []).some((g) => (g.steps[0]?.below ?? 0) > queryRem + 0.01); };
+    const guardSteps = parentRow && breakpoint === "base" && !stepsHere(root);
     /**
      * The dragged side's FREE margin (G-3b (3)): `off` px inside its new columns — 0 on a snapped drag, which puts that side back on
      * its line. The far side's margin is a % of the columns, so it is rescaled to the same px: only the edge you grab moves (rule 19).
@@ -3179,7 +3229,7 @@ export default function BoxCanvas({
         };
         const ownStored0 = bn.width?.trim().endsWith("%") ? widthPct(bn.width) : null;
         // L4-f: back at its words' own width with nothing beside it on the line — it fits its words again (no width stored).
-        if (!after.some((f) => f.sameLine) && backToWords((r.own / 100) * maxW, null)) tree = writeBox(tree, id, { width: undefined, origWidth: undefined, widthByHand: undefined, restWidth: undefined, restAt: undefined, restBy: undefined, endOwed: undefined });
+        if (!after.some((f) => f.sameLine) && backToWords((r.own / 100) * maxW, null)) tree = writeBox(tree, id, { width: hugBack, origWidth: undefined, widthByHand: undefined, restWidth: undefined, restAt: undefined, restBy: undefined, endOwed: undefined });
         else if (!same(r.own, own0) || (ownStored0 !== null && ownStored0 > r.own + 0.001) || (r.owed || 0) !== (bn.endOwed || 0)) tree = writeBox(tree, id, { ...widthFor(bn, r.own), widthByHand: true, restWidth: undefined, restAt: undefined, restBy: undefined, endOwed: r.owed || undefined, ...(selfSizing ? { contentScale: scE < 1 ? scE : undefined } : {}) });
         after.forEach((f) => {
           const w = r.widths.get(f.id);
@@ -3217,7 +3267,7 @@ export default function BoxCanvas({
          * would shrink a block the user sized in order to fill space that belonged to nobody.
          */
         const give = nextSibId
-          ? gapPx + Math.max(0, nextWidth0 - neighbourMinPx)
+          ? gapPx + Math.max(0, nextWidth0 - (nextFloorPx || neighbourMinPx))
           : Math.max(0, maxW - startRightPx);
         /**
          * KEEP PULLING AND THE NEIGHBOUR MOVES TO THE NEXT LINE, keeping the width it had.
@@ -3239,7 +3289,7 @@ export default function BoxCanvas({
         const scE = selfSizing ? fitScale(right - startLeftPx, naturalW) : 1;
         const own = pct(right - startLeftPx);
         const hug = backToWords(right - startLeftPx, nextSibId);
-        tree = writeBox(tree, id, { width: hug ? undefined : own, widthByHand: hug ? undefined : true, restWidth: undefined, restAt: undefined, restBy: undefined, endOwed: undefined, ...(selfSizing ? { contentScale: scE < 1 ? scE : undefined } : {}) });
+        tree = writeBox(tree, id, { width: hug ? hugBack : own, widthByHand: hug ? undefined : true, restWidth: undefined, restAt: undefined, restBy: undefined, endOwed: undefined, ...(selfSizing ? { contentScale: scE < 1 ? scE : undefined } : {}) });
         if (wraps) {
           /**
            * IT WRAPS BY ITSELF — nothing is moved.
@@ -3282,7 +3332,7 @@ export default function BoxCanvas({
         // The mirror image: this block's left edge spends the block BEFORE it. With nothing before it on the
         // line there is no boundary to share, so it keeps the old behaviour and opens a gap with margin-left.
         const wanted = Math.min(startRightPx - minWpx, startLeftPx + dx);
-        const give = prevSibId ? Math.max(0, prevWidth0 - neighbourMinPx) : Math.max(0, startLeftPx - flowX);
+        const give = prevSibId ? Math.max(0, prevWidth0 - (prevFloorPx || neighbourMinPx)) : Math.max(0, startLeftPx - flowX);
         const left = Math.max(startLeftPx - give, wanted);
         const scW = selfSizing ? fitScale(startRightPx - left, naturalW) : 1;
         /**
@@ -3303,12 +3353,15 @@ export default function BoxCanvas({
         // S1-a) came home at 50.02% beside a 50% neighbour, and the line no longer added up.
         const storedOuter = bn.width?.trim().endsWith("%") ? parseFloat(bn.width) + (bn.marginLeftPct ?? 0) : null;
         const outerPct = storedOuter ?? share(startRightPx - flowX);
-        const gapPct = prevSibId ? 0 : Math.max(0, share(left - flowX));
+        // L5-8 · a hair is not a gap: a left edge dragged out and back by 40 at a scaled canvas came home 1.66px short of where it
+        // began (the pointer's sub-pixel rounding) and stored that as a space — the block a hair narrower than its words, which stayed
+        // wrapped, a line taller. Within the snap of its line's start, the edge IS its line's start.
+        const gapPct = prevSibId || left - flowX <= HUG_SNAP_PX * Z ? 0 : Math.max(0, share(left - flowX));
         const widthPct = Math.max(3, Math.min(100, Math.round((outerPct - gapPct) * 100) / 100)); // two decimals, like every stored share
         const ownW = prevSibId ? pct(startRightPx - left) : `${widthPct}%`;
         const hug = gapPct === 0 && backToWords(startRightPx - left, prevSibId);
         tree = writeBox(tree, id, {
-          width: hug ? undefined : ownW, widthByHand: hug ? undefined : true, restWidth: undefined, restAt: undefined, restBy: undefined, endOwed: undefined,
+          width: hug ? hugBack : ownW, widthByHand: hug ? undefined : true, restWidth: undefined, restAt: undefined, restBy: undefined, endOwed: undefined,
           // One field owns this gap. The old length is cleared so the two can never disagree about it.
           ...(prevSibId ? {} : { marginLeftPct: gapPct > 0 ? gapPct : undefined, marginLeft: undefined }),
           ...(selfSizing ? { contentScale: scW < 1 ? scW : undefined } : {}),
@@ -3352,7 +3405,7 @@ export default function BoxCanvas({
         const scS = fitScale(h, naturalH);
         tree = writeBox(tree, id, isComp
           ? { height: remLen(h, rootPx), minHeight: undefined, clip: undefined, contentScale: scS < 1 ? scS : undefined }
-          : { minHeight: lay(h), height: undefined });
+          : { minHeight: lay(Math.max(minHpx, h - heldAbove)), height: undefined });
         // …AND THE ROOM GROWS WITH IT (see `cappingBand`). Without this the gain is taken from whatever sits
         // above inside the same capped band — a `fill` block gives it up without resisting, because its height
         // is leftover — and the anchored TOP edge moves. Measured on the user's page: 61px of a 90px drag.
@@ -3407,7 +3460,7 @@ export default function BoxCanvas({
         // Nothing below it: the bottom edge faces open space, so it simply opens some. Top fixed, bottom moves.
         const h = Math.max(startTopPx + minHpx, startBotPx + dy) - startTopPx; // SCREEN px, not rounded: `lay` keeps a thousandth of a page px, and a whole screen px is 1.45 of them at 0.69 — the partner took the unrounded rest and a round trip drifted 0.08 page px a cycle (E2-17)
         const sc = fitScale(h, naturalH);
-        tree = writeBox(tree, id, isComp ? { height: remLen(h, rootPx), minHeight: undefined, clip: undefined, contentScale: sc < 1 ? sc : undefined } : { minHeight: lay(h), height: undefined });
+        tree = writeBox(tree, id, isComp ? { height: remLen(h, rootPx), minHeight: undefined, clip: undefined, contentScale: sc < 1 ? sc : undefined } : { minHeight: lay(Math.max(minHpx, h - heldAbove)), height: undefined });
         // GROWING RAISES THE ROOM IT GROWS IN (see `cappingBand`), so the gain never comes out of a sibling
         // above. Shrinking leaves the band alone: that space is the one the gesture is deliberately opening.
         const grew = h - H0; // screen px; `h0` is stored — see E2-13 above
@@ -3471,8 +3524,8 @@ export default function BoxCanvas({
         const h = Math.max(MIN_ROW_PX * Z, Math.round((startBotPx - (flowY + (ah - aboveH0)) - mtPx) * 1000) / 1000);
         const scN = fitScale(h, naturalH);
         tree = writeBox(tree, id, isComp
-          ? { height: remLen(h, rootPx), minHeight: undefined, clip: undefined, marginTop: mt, contentScale: scN < 1 ? scN : undefined }
-          : { minHeight: lay(h), height: undefined, marginTop: mt });
+          ? { height: remLen(h, rootPx), minHeight: undefined, clip: undefined, marginTop: mtKeep(mt), contentScale: scN < 1 ? scN : undefined }
+          : { minHeight: lay(Math.max(MIN_ROW_PX * Z, h - heldAbove)), height: undefined, marginTop: mtKeep(mt) });
         tree = writeBox(tree, aboveSibId, aboveIsComp
           ? { height: remLen(ah, rootPx), minHeight: undefined }
           : { minHeight: lay(ah), height: undefined });
@@ -3494,9 +3547,10 @@ export default function BoxCanvas({
         // distances — reproduced on demand under load, where merged mouse moves end a drag on one of those distances.
         const hN = Math.max(minHpx, startBotPx - (flowY + (boxU * mt) / 10));
         const scN = fitScale(hN, naturalH);
-        tree = writeBox(tree, id, isComp ? { height: remLen(hN, rootPx), minHeight: undefined, clip: undefined, marginTop: mt, contentScale: scN < 1 ? scN : undefined } : { minHeight: Math.round((hN / Z) * 1000) / 1000, height: undefined, marginTop: mt });
+        tree = writeBox(tree, id, isComp ? { height: remLen(hN, rootPx), minHeight: undefined, clip: undefined, marginTop: mtKeep(mt), contentScale: scN < 1 ? scN : undefined } : { minHeight: Math.round((Math.max(minHpx, hN - heldAbove) / Z) * 1000) / 1000, height: undefined, marginTop: mtKeep(mt) });
       }
       if (snapCols && (hasE || hasW)) tree = freeEdge(tree, hasE ? "right" : "left", freeOff);
+      if (guardSteps && (hasE || hasW) && stepsHere(tree)) return; // L5-14: the edge stops where the line would step
       pending = tree;
       if (!raf) raf = requestAnimationFrame(flush);
     };
@@ -3506,6 +3560,57 @@ export default function BoxCanvas({
       // A STILL PRESS LEAVES THE PAGE AS IT WAS (E5a-8 for the anchor; E5b-3 for this release): it used to run the release below,
       // and so tidied whatever an EARLIER gesture had left — measured, a still tap after a corner drag rewrote alignSelf.
       if (!moved) return;
+      /**
+       * #42 · A HEIGHT DRAGGED BACK TO WHERE IT WAS GETS BACK THE FLOOR IT HAD — the height twin of #65's `origWidth`. A Stat's bottom
+       * edge out 60 and back left `minHeight: 131.77` where it had none (on a phone, stacked, it held the Stat taller than its words);
+       * a corner in and back left a Heading 61px taller (L4-l); a Stat stretched by its grid row kept its stretched height (L5-10); and the
+       * block below a bottom edge kept the floor it was handed (L5-13). What the block had before a drag FIRST changed its floor is
+       * remembered (`heightBefore`), and a drag that ends at the height it was drawn at then writes exactly that back — so a floor the user
+       * chose (a stack under a space they opened, the PURPLE spec) is never taken for one nobody did.
+       */
+      if (hasN || hasS) {
+        const drawn0 = new Map<string, number>([[id, H0 / Z], ...(aboveSibId ? [[aboveSibId, aboveH0 / Z] as [string, number]] : []), ...(below.sibId ? [[below.sibId, below.h0 / Z] as [string, number]] : [])]);
+        // …and when the block comes HOME, so does every block its boundary touched (L5-13): a bottom edge out pushes the block below down
+        // (it has nothing to give, the page grows) and back hands it the 20px as a floor — a Text left 20px taller by a Heading's round trip.
+        let ownHome = false;
+        for (const [pid, d0] of drawn0) {
+          const pn = findByIdLocal(root, pid); if (!pn || pn.type === "component" || pn.type === "button") continue; // `root`: as the gesture began
+          const was = resolveResponsive(pn, breakpoint), now = resolveResponsive(findByIdLocal(last ?? rootRef.current, pid) ?? pn, breakpoint);
+          const before = was.heightBefore ?? { floor: was.minHeight, drawn: Math.round(d0 * 1000) / 1000 };
+          const home: boolean = pid === id ? now.minHeight == null ? now.minHeight === before.floor : Math.abs(now.minHeight - before.drawn) <= HUG_SNAP_PX : ownHome;
+          if (pid === id) ownHome = home;
+          if (home && (was.heightBefore || now.minHeight !== was.minHeight)) commit(writeBox(last ?? rootRef.current, pid, { minHeight: before.floor, heightBefore: undefined }));
+          else if (!home && now.minHeight !== was.minHeight && !was.heightBefore) commit(writeBox(last ?? rootRef.current, pid, { heightBefore: before }));
+        }
+      }
+      /**
+       * L5-2 · A LINE DRAGGED BACK TO WHERE IT WAS IS WHAT IT WAS — its widths AND whether each was sized by hand. A width round trip stored
+       * `50.00%` + `widthByHand` where `50%` had been: the column's floor fell from 14rem to 3rem, and at 375 the row stayed side by side
+       * (188 + 188) where its untouched twin stacked. And four drags left a pair 640.9 / 639.0 — the pointer's sub-pixel rounding, added up.
+       * What each block had before a drag FIRST changed it is remembered (`widthBefore`); when EVERY block on the line is back within the
+       * snap of it, the whole line is written back — never one block alone, which could sum the line past 100% and wrap it (#66).
+       */
+      if ((hasE || hasW) && parentRow && info) {
+        const cur = () => last ?? rootRef.current;
+        const pctOf = (w?: string) => (w?.trim().endsWith("%") ? widthPct(w) : null);
+        const rows = (info.parent.children ?? []).flatMap((k) => {
+          const k0 = findByIdLocal(root, k.id), kn = findByIdLocal(cur(), k.id); if (!k0 || !kn || isFloating(k0)) return [];
+          const was = resolveResponsive(k0, breakpoint), now = resolveResponsive(kn, breakpoint);
+          const before = was.widthBefore ?? { width: was.width, byHand: was.widthByHand };
+          const changed = now.width !== was.width || now.widthByHand !== was.widthByHand;
+          const a = pctOf(now.width), b = pctOf(before.width);
+          const home = now.width === before.width || (a != null && b != null && (Math.abs(a - b) / 100) * (maxW / Z) <= HUG_SNAP_PX);
+          return [{ id: k.id, was, before, changed, home }];
+        });
+        const touched = rows.filter((r) => r.changed || r.was.widthBefore);
+        if (touched.length && touched.every((r) => r.home)) {
+          let t = cur(); for (const r of touched) t = writeBox(t, r.id, { width: r.before.width, widthByHand: r.before.byHand, widthBefore: undefined, restWidth: undefined, restAt: undefined, restBy: undefined, origWidth: undefined, endOwed: undefined });
+          commit(t);
+        } else {
+          let t = cur(), any = false; for (const r of rows) if (r.changed && !r.was.widthBefore) { t = writeBox(t, r.id, { widthBefore: r.before }); any = true; }
+          if (any) commit(t);
+        }
+      }
       /**
        * OUTWARD GROWS THE BAND; INWARD SHRINKS THE BLOCK — decided here, because only here is the outcome known.
        *
@@ -3560,10 +3665,10 @@ export default function BoxCanvas({
           const pa = paEl.getBoundingClientRect();
           const floor = pa.bottom - (parseFloat(cs.paddingBottom) || 0) * Z;
           const below = Math.round(floor - meEl.getBoundingClientRect().bottom);
-          onChange(writeBox(rootRef.current, id, {
+          commit(writeBox(last ?? rootRef.current, id, {
             alignSelf: undefined,
             marginBottom: hasS && below > 2 ? pxU(below) : undefined,
-          }), gk);
+          }));
         }
       }
       onResized?.(id, (hasS || hasN) && !hasE && !hasW ? "height" : "width");
@@ -3628,7 +3733,7 @@ export default function BoxCanvas({
      * the parent's + again, which is a fair price for never wondering whether the last one happened.
      */
     const index = parent?.children?.length ?? 0;
-    onChange(insertBox(root, parentId, index, node));
+    onChange(fitBand(insertBox(root, parentId, index, node), parentId, node.id)); // E2-22: in a Side by side it shares the line
     select(node.id);
     closeMenu();
   };

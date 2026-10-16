@@ -65,3 +65,23 @@ describe("RULE CFG — the screen edges live in config/layout.json only", () => 
     expect(hardCodedEdges()).toEqual([]);
   });
 });
+
+/**
+ * L5-3 — THE RESIZE NUMBERS ARE DATA TOO. The column floors (14rem untouched, 3rem by hand, 10rem below the tablet rung) and the
+ * edge-drag thresholds lived as literals in `lib/box-model.ts` and `BoxCanvas.tsx`; they are read from `config/layout.json`
+ * (`columns`, `resize`). This fails when one of them is assigned a number again, or the 14rem floor is typed into a drag.
+ */
+const RESIZE_NAMES = /\b(REFLOW_FLOOR_REM|HAND_FLOOR_REM|BLOCK_FLOOR_REM|HUG_SNAP_PX|NEIGHBOUR_MIN|MIN_ROW_PX|WRAP_PULL)\s*=\s*\d/;
+export const typedResizeNumbers = (src: string) => src.split("\n").filter((l) => RESIZE_NAMES.test(l) || /\b14 \* rootPx\b/.test(l)).map((l) => l.trim());
+describe("RULE CFG — the resize floors and thresholds live in config/layout.json only (L5-3)", () => {
+  it("every one is in the config, as a number", () => {
+    for (const v of [...Object.entries(LAYOUT.columns), ...Object.entries(LAYOUT.resize)].filter(([k]) => k !== "$comment")) expect(typeof v[1]).toBe("number");
+  });
+  it("none is typed into the engine or the canvas", () => {
+    for (const f of ["lib/box-model.ts", "components/website/box/BoxCanvas.tsx"]) expect(typedResizeNumbers(readFileSync(join(ROOT, f), "utf8").replace(/\r\n/g, "\n"))).toEqual([]);
+  });
+  it("…and one typed back in is caught", () => {
+    expect(typedResizeNumbers("export const HAND_FLOOR_REM = 3;\nconst x = 1;")).toHaveLength(1);
+    expect(typedResizeNumbers("    const neighbourMinPx = Math.min(maxW, 14 * rootPx + 2 * HG);")).toHaveLength(1);
+  });
+});
