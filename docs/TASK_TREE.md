@@ -1927,7 +1927,7 @@ Risks and distribution (section 2): RK-1 · Developing countries (section 3): AF
     mutation-proven: the old Escape → 1 fails; closes on the HEADED pass) A2-16 · FOUND reusing it for the More menu: the shared
     `ActionMenuDropdown` (used by Drive and the File browser) had no menu roles, no `aria-expanded`, left focus nowhere on
     Escape, had no arrow keys and could only open downward (WCAG 2.1.1 / 4.1.2)
-  - `[ ]` (FIXED 2026-10-16 — `shell.barClearance` in `config/layout.json` + `useBarClearance()`: the bar's height on a phone,
+  - `[x]` (HEADED on the emulators 2026-10-16 — `uat-a2-emulator.js`: phone 12 / 0, tablet 5 / 0, screenshots read: beside the rail no gap, on the phone the last line clears the bar) (FIXED 2026-10-16 — `shell.barClearance` in `config/layout.json` + `useBarClearance()`: the bar's height on a phone,
     0 beside a rail; home (×2), fees, file preview, the Drive list / grid and its sidebar; closes on HEADED U2 + the emulators)
     A2-17 · the room every phone screen leaves for the bar was a typed 90 / 100 / 112 in 9 places, and kept leaving it beside
     the rail
