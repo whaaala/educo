@@ -4157,12 +4157,17 @@ Risks and distribution (section 2): RK-1 · Developing countries (section 3): AF
     — the budgets read from config (RULE CFG); over budget is a FINDING with the number; checked to fail first on a page made heavy
   - `[ ]` U3 (Slow 3G) the exported page on a throttled profile (Slow 3G: the numbers in config) at 360: the first band painted within
     5 s and the page usable (no layout shift after it); in the sweep AND as a `test:fast` spec; proved to fail first under a 3 s budget
-  - `[ ]` U4 (the innovative plan) all 19 pages of `--plan=dressedinnovative` built through the UI: the canvas at every preset, the
+    — the spec `page-weight.spec.ts` (within budget; and W1 W2 W5 W8 raised under a budget no page meets); in every sweep page
+  - `[x]` U4 (the innovative plan) all 19 pages of `--plan=dressedinnovative` built through the UI: the canvas at every preset, the
     Page check, the Preview at every screen of `screens.js`, 150% text — page-audit 0 errors, canvas == Preview; every finding a ledger line
+    — SEEN 2026-10-16 (`uat-pages.js --plan=dressedinnovative --jobs=6`, build `YfY_zLbSN0z9c9wOFqkta`, 83 Preview sizes each): all 19
+    BUILT THROUGH THE UI; 17 clean at once, the two right-sticky asymmetric pages 30 errors each = L6-8 (the audit), re-run 0 / 0;
+    weight on all 19: ≤ 10.9 KB page, ≤ 186.8 KB first view, 2 font families, ≤ 4.3 s first paint on Slow 3G, CLS ≤ 0.005
   - `[ ]` U5 (Centred column) the dresser no longer sets "Centred column": three dressed pages measured before and after — the banner,
     the CTA and the sections sit at the same inset at every rung (≤ 0.5px), or the difference is a finding
-  - `[ ]` U6 (regression) the tier-80 dressed pages (14) re-run with the logo and without "Centred column": 0 errors as before
-  - `[ ]` U7 the guide says what a published page weighs and how it loads on a slow phone (RULE DOCS, RULE AF), `docs:build` green
+  - `[ ]` U6 (regression) the DRESSED plan (`page-plan.json`, 70 pages — the 14 of tier 80 are the bare crawl cover, which the dresser does
+    not build; corrected 2026-10-16) re-run with the logo: 0 errors as before
+  - `[x]` U7 the guide says what a published page weighs and how it loads on a slow phone (RULE DOCS, RULE AF), `docs:build` green
   LEDGER:
   - `[ ]` L6-1 · `scripts/uat/uat-pages.js` builds its OWN device list with breakpoints typed in as 600 / 900 / 1200 / 1800 — the rungs
     are 600 / 840 / 1200 / 1600 (`config/layout.json`): two edges checked that do not exist, two that do never checked (RULE Z: every
@@ -4192,6 +4197,25 @@ Risks and distribution (section 2): RK-1 · Developing countries (section 3): AF
     dressed sweeps had not run since E-6. FIXED: `elementsFromPoint`, through the chrome to the block
   - `[x]` L6-6 · the freshness check (L5-6) called a build stale over `config/budgets.json`, which only the harness reads — it now counts a
     config file only when the app's code names it; proved both ways (budgets.json ignored, a touched layout.json flagged)
+  - `[x]` L6-7 · the audit applied the tablet rule (#78) to rows of a PAGE-GRID page, which the user's G-1 #13 moved to the fit rule
+    (`gridBandOwnsGutter`, nested rows too) — the first dressed page's footer of four (14 errors). The caller now says the page is on the grid;
+    `probe-l6-audit.js`: a plain row of four still flagged, the page-grid one not, and wrongly flagged with the change reverted
+  - `[x]` L6-8 · the audit's phone rule (L5) counted a cell of ONE ICON as a squeezed column — an icon beside words is kept on a phone on
+    purpose (G-3b (4)), and the tablet rule already ignored such cells (c-11c). Seen at 375 (the star beside the words, readable); fixed
+    to count the same cells; the probe proves both ways (words beside an icon: not flagged; beside a 57px cell of words: flagged)
+U6 — THE DRESSED PLAN, 70 pages (`--plan=dressed --jobs=6`, 112 min): 66 clean; idx 18 and 54 over the Slow-3G paint budget (5.53 s,
+  6.96 s) and 4.24 s / 4.25 s ALONE = L6-9; idx 39 "the canvas offered the drop and added nothing" under load, clean alone = L6-10; idx 48
+  failed every time = L6-11, fixed, then 0 errors
+  - `[x]` L6-9 · the Slow-3G paint check flaked under the machine's own load (six windows) — an over-budget paint is measured once more and the
+    better run counts (`page-weight.js`); `page-weight.spec.ts` still proves W8 raised under a budget no page meets
+  - `[ ]` L6-10 · under load (six windows) one drop of a Link under another was offered by the canvas and added nothing (idx 39); alone it
+    builds clean. Could be a race a slow phone would also meet — NOT YET REPRODUCED; to reproduce under CPU throttling before it is closed
+  - `[x]` L6-11 · REAL: `TextStyle` and `AlignRow` were components DEFINED INSIDE the Inspector's render and used as `<TextStyle />`, a new
+    type on every render — React rebuilt the section each time: measured, the Text size slider replaced 85 times in 2 s on idx 48 (the
+    build could not set the title's size, every time). FIXED: called as functions; component guard (the same slider after a re-render)
+    red with `<TextStyle />` put back; idx 48 builds and passes (0 errors). NOT REPRODUCED: what made the Inspector render that often during
+    the live build — a reload of the same page shows no change while idle (the probe could not show it on the old build either, so it
+    proved nothing and was deleted)
   CHANGE (1) LOGO: BUILT — the dresser's header is a 64px crest (an Image: uploaded through its own button, described, "Load straight
   away", Fit) beside the school's name, named as the Logo placeholder (`COMPONENT_GAPS.md`); HEADED in U1
   CHANGES (2) (3) WEIGHT + SLOW 3G: BUILT — `scripts/uat/page-weight.js`: the builder's Export (site.zip) served with gzip by a small

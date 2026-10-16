@@ -127,7 +127,7 @@ const canvasGeo = (page) => page.evaluate(() => {
     if (DRESSED) {
       const d = new Dresser(page, PG, (s) => { R.log = (R.log || []).concat(s); save(); });
       // The STEP it failed at is kept with the error (c-6: a report without it could only say which section).
-      try { await d.build(); } catch (e) { R.buildError = e.message.split('\n')[0]; R.failedStep = page.__step || null; await shot(page, 'build-fail'); }
+      try { await d.build(); } catch (e) { R.buildError = e.message.split('\n')[0]; R.failedStep = page.__step || null; R.buildStack = (e.stack || '').split('\n').filter((l) => /scripts.uat/.test(l)).slice(0, 6).join(' <- '); /* where in the harness it broke */ await shot(page, 'build-fail'); }
       R.placeholders = [...d.placeholders]; R.sectionsBuilt = d.sections; R.secs = d.sections.length;
     } else {
       const secs = G.parsePage(PG.layout); R.secs = secs.length;

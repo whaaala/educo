@@ -958,6 +958,14 @@ describe("G-3b (2) · placing on the page's lines in the Size section", () => {
     fireEvent.change(screen.getByLabelText("At least this many rows tall"), { target: { value: "3" } });
     expect(onPatch).toHaveBeenLastCalledWith(expect.objectContaining({ minHeight: expect.any(Number) }));
   });
+  it("L6-11: a re-render keeps the Text style section — the same slider — rather than building it anew", () => {
+    const h = createElement("heading", { id: "h1" });
+    const { rerender } = render(<BoxInspector node={h} theme={DEFAULT_THEME} onPatch={vi.fn()} />);
+    openContent();
+    const slider = screen.getByLabelText("Text size");
+    rerender(<BoxInspector node={{ ...h }} theme={DEFAULT_THEME} onPatch={vi.fn()} />); // a new object, as every canvas commit makes
+    expect(screen.getByLabelText("Text size"), "the same element: not thrown away and rebuilt").toBe(slider);
+  });
   it("L6-4: on a row of the page a typed rem width says it is drawn as a share — off the page grid it says nothing", () => {
     const say = /On the page grid a width is a share of the columns/;
     renderFor(createElement("image", { id: "i", width: "3.5rem" }), { pageLines: lines, onSetLines: vi.fn(), onSetFreeInset: vi.fn() });

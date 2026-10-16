@@ -123,7 +123,12 @@ async function textSize(page, id, px) {
   // The slider lives inside the "Text style" section (collapsed by default) — a person opens it first.
   for (const t of ['Content', 'Design']) { await tab(page, t); await section(page, 'Text style( \\(everything inside\\))?'); const c = page.getByRole('slider', { name: /^Text size/ }).first(); if (await c.count()) { s = c; break; } }
   if (!s) return false;
-  await s.scrollIntoViewIfNeeded(); await s.focus();
+  // L6-11 diagnostic: if the slider will not hold still, count how often the Inspector REPLACES it in two seconds (a re-render loop)
+  try { await s.scrollIntoViewIfNeeded({ timeout: 4000 }); } catch (e) {
+    const churn = await page.evaluate(() => new Promise((ok) => { let n = 0, last = null; const t0 = performance.now(); const tick = () => { const el = document.querySelector('[role="slider"][aria-label^="Text size"], input[type="range"][aria-label^="Text size"]'); if (el !== last) { n++; last = el; } if (performance.now() - t0 < 2000) requestAnimationFrame(tick); else ok({ swaps: n, now: !!el }); }; tick(); }));
+    console.log(`  L6-11 slider churn on ${id.slice(-4)}: ${JSON.stringify(churn)}`); throw e;
+  }
+  await s.focus();
   // Typed straight into the range (Playwright's fill sets the value and fires input/change, as a drag would); the arrow
   // keys are the fallback for a slider that is not an <input> — measured: the key loop left a hero title at 33, not 48.
   let done = false;

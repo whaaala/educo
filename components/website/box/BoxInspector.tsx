@@ -605,6 +605,9 @@ export default function BoxInspector({ section = false, sectionPlace, outerDefau
    * On a container it lives on the DESIGN tab, where a person looks for styling; on a text block it stays with
    * the rest of that block's content controls, which is where it has always been.
    */
+  // L6-11 · CALLED, NEVER <TextStyle /> / <AlignRow />: a component defined inside this render is a NEW type on every render, so React
+  // threw the section away and rebuilt it each time — measured, the Text size slider replaced 85 times in 2 s (it could not be used,
+  // and an open accordion or a focused field reset with it).
   const TextStyle = () => (
     <Accordion title={container ? "Text style (everything inside)" : "Text style"} icon={TypeIcon}>
       {container && (
@@ -625,7 +628,7 @@ export default function BoxInspector({ section = false, sectionPlace, outerDefau
         <CompactField label="Line spacing" ariaLabel="Line spacing" type="number" step={0.05} min={0.8} max={3} value={node.lineHeight ?? ""} placeholder="auto" onChange={(v) => onPatch({ lineHeight: v === "" ? undefined : Number(v) })} />
         <CompactField label="Letter spacing" ariaLabel="Letter spacing" type="number" step={0.5} value={node.letterSpacing ?? ""} placeholder="0px" onChange={(v) => onPatch({ letterSpacing: v === "" ? undefined : Number(v) })} />
       </div>
-      <AlignRow />
+      {AlignRow()}
       <div className="flex items-center gap-1">
         <button onClick={() => onPatch({ bold: !(node.bold ?? (node.type === "heading")) })} aria-label="Bold" aria-pressed={node.bold ?? (node.type === "heading")} className={`px-2 py-1 rounded-md font-bold text-sm ${(node.bold ?? (node.type === "heading")) ? "bg-indigo-100 dark:bg-indigo-500/20 text-indigo-700 dark:text-indigo-300" : "text-gray-500 hover:bg-gray-100 dark:hover:bg-white/10"}`}>B</button>
         <button onClick={() => onPatch({ italic: !node.italic })} aria-label="Italic" aria-pressed={!!node.italic} className={iconBtn(!!node.italic)}><Italic className="w-4 h-4" /></button>
@@ -1099,7 +1102,7 @@ export default function BoxInspector({ section = false, sectionPlace, outerDefau
 
           {/* A container's typography is a DESIGN decision — it is the look everything inside it inherits —
               so it sits here rather than with a text block's content controls. */}
-          {container && <TextStyle />}
+          {container && TextStyle()}
 
           {/* Order and push apply in BOTH engines and to every block that has a parent, so they are their own
               section rather than a grid-only one. Order is the control that makes "the photo above the words
@@ -1505,7 +1508,7 @@ export default function BoxInspector({ section = false, sectionPlace, outerDefau
                     </div>
                     <Range title="Icon size" value={node.fontSize} min={12} max={120} fallback={32} onChange={(n) => onPatch({ fontSize: n })} unit="rem" />
                     <ColorRow title="Icon colour" value={node.color} fallback={theme.primary} onSelect={(c) => onPatch({ color: c })} />
-                    <AlignRow />
+                    {AlignRow()}
                   </>
                 )}
                 {node.type === "divider" && (
@@ -1914,7 +1917,7 @@ export default function BoxInspector({ section = false, sectionPlace, outerDefau
                   below for what a container's "Text size" means (it scales the roles, it does not flatten
                   them). Before this the controls existed only on text-ish blocks, so a section or a grid cell
                   had no way to set a font at all. */}
-              {textual && <TextStyle />}
+              {textual && TextStyle()}
             </>
           )}
           {/* every block: the canvas and the export apply it to all of them, so the field is offered on all (A2-12, RULE UI) */}
