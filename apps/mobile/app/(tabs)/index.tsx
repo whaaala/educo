@@ -20,6 +20,7 @@ import { PayFeesModal } from '../../components/modals/PayFeesModal';
 import { ViewResultsModal } from '../../components/modals/ViewResultsModal';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useBarClearance, useIsTablet } from '@/hooks/useIsTablet';
+import { APP_TILES } from '@core/educo-ui/layout';
 
 
 // ============================================================================
@@ -276,7 +277,9 @@ function QuickActionTile({ icon, label, subtitle, onPress, color }: {
   onPress: () => void;
   color: 'blue' | 'emerald' | 'violet' | 'rose' | 'amber' | 'cyan' | 'slate';
 }) {
-  const { width: SCREEN_WIDTH } = useWindowDimensions(); // live — a turned or split screen re-lays out (A2-4)
+  const { width: SCREEN_WIDTH, fontScale } = useWindowDimensions(); // live — a turned or split screen re-lays out (A2-4)
+  // as many across as fit at the reader's text size (A2-25: at large text four across split "Messag / es") — config/layout.json
+  const across = Math.max(2, Math.min(APP_TILES.maxAcross, Math.floor(SCREEN_WIDTH / (fontScale || 1) / APP_TILES.minWidth)));
   const { colors, isDark } = useTheme();
   const colorMap: Record<string, { bg: string; iconBg: string; icon: string; border: string; subtitleColor: string }> = {
     blue: { bg: '#fcfeff', iconBg: '#dbeafe', icon: '#2563eb', border: '#f0f5fa', subtitleColor: '#3b82f6' },
@@ -294,7 +297,7 @@ function QuickActionTile({ icon, label, subtitle, onPress, color }: {
 
   return (
     <Pressable
-      style={[mobileStyles.quickActionTile, { width: (SCREEN_WIDTH - 24 - 8 * 3) / 4, backgroundColor: tileBg, borderColor: tileBorder }]}
+      style={[mobileStyles.quickActionTile, { width: (SCREEN_WIDTH - 24 - 8 * (across - 1)) / across, backgroundColor: tileBg, borderColor: tileBorder }]}
       onPress={onPress}
     >
       <View style={[mobileStyles.quickActionTileIcon, { backgroundColor: c.iconBg }]}>
@@ -504,7 +507,7 @@ export default function ParentHomeScreen() {
                             </View>
                           </View>
                           <View style={mobileStyles.childTextContainer}>
-                            <Text style={[mobileStyles.childNameText, mobileStyles.childNameTextSelected]} numberOfLines={1}>
+                            <Text style={[mobileStyles.childNameText, mobileStyles.childNameTextSelected]} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.6}>
                               {child.name.split(' ')[0]}
                             </Text>
                             <View style={[mobileStyles.childClassPill, mobileStyles.childClassPillSelected]}>
@@ -562,6 +565,8 @@ export default function ParentHomeScreen() {
                             <Text
                               style={[mobileStyles.childNameText, isSelected && mobileStyles.childNameTextSelected, !isSelected && isDark && { color: colors.text }]}
                               numberOfLines={1}
+                              adjustsFontSizeToFit
+                              minimumFontScale={0.6}
                             >
                               {child.name.split(' ')[0]}
                             </Text>
@@ -633,6 +638,8 @@ export default function ParentHomeScreen() {
                             <Text
                               style={[mobileStyles.childNameText, isSelected && mobileStyles.childNameTextSelected, !isSelected && isDark && { color: colors.text }]}
                               numberOfLines={1}
+                              adjustsFontSizeToFit
+                              minimumFontScale={0.6}
                             >
                               {child.name.split(' ')[0]}
                             </Text>
@@ -1019,7 +1026,7 @@ export default function ParentHomeScreen() {
                           </View>
                         </View>
                         <View style={tabletStyles.childTextContainer}>
-                          <Text style={[tabletStyles.childNameText, tabletStyles.childNameTextSelected]} numberOfLines={1}>
+                          <Text style={[tabletStyles.childNameText, tabletStyles.childNameTextSelected]} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.6}>
                             {child.name.split(' ')[0]}
                           </Text>
                           <View style={[tabletStyles.childClassPill, tabletStyles.childClassPillSelected]}>
@@ -1077,6 +1084,8 @@ export default function ParentHomeScreen() {
                           <Text
                             style={[tabletStyles.childNameText, isSelected && tabletStyles.childNameTextSelected, !isSelected && isDark && { color: colors.text }]}
                             numberOfLines={1}
+                            adjustsFontSizeToFit
+                            minimumFontScale={0.6}
                           >
                             {child.name.split(' ')[0]}
                           </Text>
@@ -1148,6 +1157,8 @@ export default function ParentHomeScreen() {
                           <Text
                             style={[tabletStyles.childNameText, isSelected && tabletStyles.childNameTextSelected, !isSelected && isDark && { color: colors.text }]}
                             numberOfLines={1}
+                            adjustsFontSizeToFit
+                            minimumFontScale={0.6}
                           >
                             {child.name.split(' ')[0]}
                           </Text>

@@ -63,6 +63,8 @@ export function windowClass(width: number, height: number): WindowClass {
   return { width: w, height: h, shell, panes: width >= RUNG_PX[SPLIT_FROM] ? 2 : 1, barFits };
 }
 
+/** The Educo app home's quick-action tiles: as many across as fit at minWidth each (dp at the reader's text size), up to maxAcross. */
+export const APP_TILES: Readonly<{ minWidth: number; maxAcross: number }> = LAYOUT.appTiles;
 /** The narrowest phone a row must still fit, in px (RULE AF). */
 export const NARROWEST_PHONE_PX: number = LAYOUT.narrowestPhone;
 /** The editor's own chrome line: from here its panels dock beside the canvas. Not a rung. */

@@ -1833,7 +1833,7 @@ Risks and distribution (section 2): RK-1 · Developing countries (section 3): AF
   - `[ ]` U1 rungs: a page built through the UI with an override at every rung → each takes effect at exactly 600 / 840 / 1200 /
     1600 and not one pixel before (599 | 600 … 1599 | 1600), canvas == Preview == export; a page saved BEFORE (seeded only to
     pin the shape, RULE Y) still reads every override; Tablet 768 / Laptop 1024 / Wide 1920 presets land on the same rung as before
-  - `[ ]` U2 height class: 479 | 480 tall → bar vs rail at 700 wide (a phone on its side keeps the bar); the emulator phone
+  - `[x]` (HEADED on the emulators 2026-10-16 — `uat-a2-emulator.js`: phone 12 / 0, tablet 5 / 0, screenshots read: a phone on its side keeps the bar, the tablet turned keeps the rail, the class follows each turn live; web 479 | 480 in `uat-a2-headed.js` S) U2 height class: 479 | 480 tall → bar vs rail at 700 wide (a phone on its side keeps the bar); the emulator phone
     rotated → bar stays; the tablet rotated → rail both ways; the class follows a live resize / rotation without a reload
   - `[x]` (HEADED 2026-10-16, web — `uat-a2-headed.js` S + K, fresh build `BzruQ7_Fy6QzqdzEJnWJt`, 101 / 0 (`logs/a2-uat11.out`): every role × 37 screens (both sides of 600 / 840 / 1200 wide and 480 tall + the presets) × four themes → bar · rail · sidebar, its places, More holding the rest, `aria-current`, every word whole, all on screen; keyboard only: arrows, More by Enter, Escape back to More, a press outside; 200 % text: the bar holds the places that fit (barFits); screenshots read. The APP half → U2 on the emulators) U3 shell: each role × compact / medium / expanded / large / xl × four themes → bar · rail · rail · sidebar · sidebar,
     that role's items, More holds the overflow; every item goes where its data says; keyboard only; screen reader names +
@@ -1866,9 +1866,9 @@ Risks and distribution (section 2): RK-1 · Developing countries (section 3): AF
     under RULE CFG; closes on the HEADED U1) A2-2 · `scripts/uat/screens.js:17` reads `RUNG_PX` out of `layout.ts` with a regex — a reformatted object would
     silently drop the rung edges; to be mutation-checked (does `uat-screens.test.ts` fail?) and closed as NOT A BUG with that
     measurement, or fixed
-  - `[ ]` (FIXED 2026-10-16 — a tablet = a window that gets a rail or sidebar (`windowClass`), so 600–767 upright tablets are tablets and a phone on its side is not; closes on HEADED U2 + the emulators) A2-3 · `apps/mobile/hooks/useIsTablet.ts:4` is `width >= 768` — a width that matches no rung (a 700-wide tablet in
+  - `[x]` (HEADED on the emulators 2026-10-16 — `uat-a2-emulator.js`: phone 12 / 0, tablet 5 / 0, screenshots read: a 1280 × 800 tablet gets the sidebar, 800 wide upright the rail) (FIXED 2026-10-16 — a tablet = a window that gets a rail or sidebar (`windowClass`), so 600–767 upright tablets are tablets and a phone on its side is not; closes on HEADED U2 + the emulators) A2-3 · `apps/mobile/hooks/useIsTablet.ts:4` is `width >= 768` — a width that matches no rung (a 700-wide tablet in
     portrait is "phone")
-  - `[ ]` (FIXED 2026-10-16 — the 15 copies → the shared live hook; the frozen widths of the home screen (4 card / tile widths; `statCard`, never used, removed), term-progress, reports and the tab bar read `useWindowDimensions`; and TWO MORE the code map missed: `Modal.tsx` maxHeight `SCREEN_HEIGHT * 0.8 / 0.75` → `80%` / `75%` of the overlay, `Tooltip.tsx` width live; 14 files of now-unused `Dimensions` / `useState` imports removed; the guard fails on a window read at import or a width compared with a number in `apps/mobile/` (mutation-proven); closes on HEADED U2 + the emulators) A2-4 · 15 local `function useIsTablet` copies in `apps/mobile/` (`(tabs)/index.tsx:167`, `(tabs)/fees.tsx:165`,
+  - `[x]` (HEADED on the emulators 2026-10-16 — `uat-a2-emulator.js`: phone 12 / 0, tablet 5 / 0, screenshots read: every turn re-lays the screen without a restart) (FIXED 2026-10-16 — the 15 copies → the shared live hook; the frozen widths of the home screen (4 card / tile widths; `statCard`, never used, removed), term-progress, reports and the tab bar read `useWindowDimensions`; and TWO MORE the code map missed: `Modal.tsx` maxHeight `SCREEN_HEIGHT * 0.8 / 0.75` → `80%` / `75%` of the overlay, `Tooltip.tsx` width live; 14 files of now-unused `Dimensions` / `useState` imports removed; the guard fails on a window read at import or a width compared with a number in `apps/mobile/` (mutation-proven); closes on HEADED U2 + the emulators) A2-4 · 15 local `function useIsTablet` copies in `apps/mobile/` (`(tabs)/index.tsx:167`, `(tabs)/fees.tsx:165`,
     `BottomTabBar.tsx:26`, `PageHeader.tsx:17`, `Modal.tsx:21` … listed by the code map) plus 4 module-level `Dimensions.get`
     constants read the width ONCE — rotating a tablet or split-screen never updates the layout
   - `[ ]` A2-5 · `apps/mobile/components/ui/BottomTabBar.tsx:165` hard-codes the tab list (the user's no-hard-coding line)
@@ -1919,7 +1919,7 @@ Risks and distribution (section 2): RK-1 · Developing countries (section 3): AF
     configuration. The data layer (decision 22: after the layout) REPLACES these with real records, so moving them to JSON first
     is work thrown away → THE USER'S CALL: move them now, or let the data layer's first batch remove them (my recommendation).
     The NEW sample lists of this batch are config already (`config/sample-lists.json`)
-  - `[ ]` (closes on the EMULATOR pass — BUILT 2026-10-16 with A2-22 — the phone bar holds `barFits` places and a More sheet the rest; NavShell test, mutation-proven) A2-15 · (a FEATURE, not built — RULE LB) on the PHONE app, a role with more places than `shell.barMax` needs a "More"
+  - `[x]` (HEADED on the emulators 2026-10-16 — `uat-a2-emulator.js`: phone 12 / 0, tablet 5 / 0, screenshots read: at font scale 2 the bar shows Home + More, the sheet holds the rest, Back closes it) (closes on the EMULATOR pass — BUILT 2026-10-16 with A2-22 — the phone bar holds `barFits` places and a More sheet the rest; NavShell test, mutation-proven) A2-15 · (a FEATURE, not built — RULE LB) on the PHONE app, a role with more places than `shell.barMax` needs a "More"
     sheet (the web has it, change (3)); the parents' five fit, so the app shows the bar's first `barMax` and marks it
     `ponytail:` in `BottomTabBar.tsx` — built with the first role whose places outgrow the phone bar (the sign-in area's roles)
   - `[ ]` (FIXED 2026-10-16 — `placement` above / below, `role="menu"` + `menuitem`, focus on the first item, arrows / Home /
@@ -1931,7 +1931,7 @@ Risks and distribution (section 2): RK-1 · Developing countries (section 3): AF
     0 beside a rail; home (×2), fees, file preview, the Drive list / grid and its sidebar; closes on HEADED U2 + the emulators)
     A2-17 · the room every phone screen leaves for the bar was a typed 90 / 100 / 112 in 9 places, and kept leaving it beside
     the rail
-  - `[ ]` (FIXED in the code 2026-10-16 — `clearance + 20`; to SEE on the emulator in the HEADED pass) A2-18 · FOUND reading the
+  - `[x]` (HEADED on the emulators 2026-10-16 — `uat-a2-emulator.js`: phone 12 / 0, tablet 5 / 0, screenshots read: the fees screen's last card clears the bar (05-fees-bottom.png)) (FIXED in the code 2026-10-16 — `clearance + 20`; to SEE on the emulator in the HEADED pass) A2-18 · FOUND reading the
     fees screen: its `contentContainerStyle` set `paddingBottom: isTablet ? 24 : 20` AFTER `styles.scrollContent`'s 100, so on a
     phone its last items sat under the bar
   - `[x]` (FIXED 2026-10-16, HEADED 101 / 0) A2-19 · FOUND by the HEADED pass: Back returned the one-pane list 36 px off where it was — Next scrolled
@@ -1943,13 +1943,24 @@ Risks and distribution (section 2): RK-1 · Developing countries (section 3): AF
   - `[x]` (FIXED 2026-10-16, HEADED 101 / 0) A2-21 · FOUND at 200 % text on a 375 phone: the "View as" switch did not wrap (sideways scroll),
     the page heading shrank to "T…" at 390, the list rows cut "32 pupils ·…" — the heading has its own line on a phone, the switch and the
     rows wrap
-  - `[ ]` (web HEADED 101 / 0; the app half closes on the EMULATOR pass) A2-22 · FOUND in the screenshots: words CUT in the navigation — the rail "Dashb…" / "Messa…",
+  - `[x]` (HEADED on the emulators 2026-10-16 — `uat-a2-emulator.js`: phone 12 / 0, tablet 5 / 0, screenshots read — the app half: no word cut in the bar, the rail or the sheet) (web HEADED 101 / 0; the app half closes on the EMULATOR pass) A2-22 · FOUND in the screenshots: words CUT in the navigation — the rail "Dashb…" / "Messa…",
     at 200 % the bar "To…" / "Cla…"; then, wrapping, SPLIT ("Dashboar d", "Toda y"). Now a place never cuts or splits a word: the rail
     gives its words room, wraps only between words (two lines), and a BAR HOLDS AS MANY PLACES AS FIT at the reader's text size —
     `shell.barItemMin` in the config → `windowClass().barFits`, web AND app (dp ÷ fontScale), the rest under More; the app's More SHEET
     built for it (A2-15 closed by this); tests: window-class (barFits), AppShell (enlarged text), NavShell (fontScale 2), mutation-proven
   - `[x]` (FIXED 2026-10-16 — proven: the stricter check FAILS on the old build, 4 of 4 S windows) A2-23 · MY OWN: the cut-word check
     excused a word cut with an ellipsis, and could not see a word split across lines — it now fails on both
+  - `[x]` (FIXED 2026-10-16, HEADED on the emulators 2026-10-16 — `uat-a2-emulator.js`: phone 12 / 0, tablet 5 / 0, screenshots read) A2-24 · FOUND on the phone emulator: the list rows and the More sheet lost their layout (name, class
+    and "Sample" stacked, the badge stretched; icons above their words) — NativeWind's `Pressable` dropped a style FUNCTION; the rows, the
+    sheet and the rail now take a plain style and show a press as Android's ripple
+  - `[x]` (FIXED 2026-10-16, HEADED on the emulators 2026-10-16 — `uat-a2-emulator.js`: phone 12 / 0, tablet 5 / 0, screenshots read) A2-25 · FOUND on the phone at large text: the home screen's quick-action tiles stayed four across and
+    split "Messag / es" — they now sit as many across as fit at the reader's text size (`appTiles` in `config/layout.json`, 2 … 4)
+  - `[x]` (FIXED 2026-10-16, HEADED on the emulators 2026-10-16 — `uat-a2-emulator.js`: phone 12 / 0, tablet 5 / 0, screenshots read) A2-26 · FOUND on the phone: the child cards cut the names to "Adae…" / "Chuk…" even at normal text —
+    one word, so it now shrinks to fit (`adjustsFontSizeToFit`, down to 60 %) instead of being cut
+  - `[?]` A2-27 · FOUND reading the home screen: the Educo app holds 990 hard-coded hex colours in 37 files (the tiles' palette, gradients,
+    badges…) — the no-hard-coded-colours rule and RULE CFG say theme tokens. Many are one-off tints with NO token yet, so this needs a
+    design decision (which tokens, which tints become tokens) → THE USER'S CALL: a colour-token batch for the app, and where on the AREA
+    MAP (it is AREA V's colour work, VB-1 — my recommendation)
 - `[ ]` **BATCH A-3 · The app on a real phone: device proofs and the TCL 505 APK** (area: app layout / app builder · 2 changes, queued 2026-10-16 by RULE LB — the user: "everything should have a batch") — the two proofs R-APP-1's decision 28 left owed, run when the batch that needs each opens (after A-2)
   - `[ ]` device proofs on the emulators: T4 Slow-3G timing on the export, the T2 outbox (app killed mid-send), the app's WebView (from line 1516)
   - `[ ]` an installable APK of `apps/mobile/` for the TCL 505, handed to the user with install steps (from line 1517)

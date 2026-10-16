@@ -34,7 +34,8 @@ export default function NavRail({ expanded }: { expanded: boolean }) {
             accessibilityState={{ selected: on }}
             accessibilityLabel={p.label}
             onPress={() => router.push(p.href as Extract<Href, string>)}
-            style={({ pressed }) => [styles.item, expanded && styles.itemExpanded, { opacity: pressed ? 0.7 : 1 }]}
+            android_ripple={{ color: colors.border, borderless: true }}
+            style={[styles.item, expanded && styles.itemExpanded]}
           >
             <View style={[styles.pill, expanded && styles.pillExpanded, on && { backgroundColor: `${colors.primary}22` }]}>
               <Icon color={tint} size={22} filled={on} />

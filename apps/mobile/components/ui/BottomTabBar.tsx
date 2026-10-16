@@ -382,7 +382,7 @@ export default function BottomTabBar() {
           const Icon = TAB_ICONS[p.icon];
           return (
             <Pressable key={p.id} accessibilityRole="button" accessibilityLabel={p.label} onPress={() => { setSheetOpen(false); router.push(p.href as Extract<Href, string>); }}
-              style={({ pressed }) => [styles.sheetRow, { borderBottomColor: colors.border, opacity: pressed ? 0.7 : 1 }]}>
+              android_ripple={{ color: colors.surfaceHover }} style={[styles.sheetRow, { borderBottomColor: colors.border }]}>
               <Icon color={hit?.id === p.id ? activeGradient[0] : inactiveColor} size={22} filled={hit?.id === p.id} />
               <Text style={[styles.sheetLabel, { color: colors.text }]}>{p.label}</Text>
             </Pressable>

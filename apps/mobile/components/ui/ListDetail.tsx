@@ -34,7 +34,9 @@ export default function ListDetail({ listId, base, openId }: { listId: string; b
         return (
           <Pressable key={row.id} accessibilityRole="button" accessibilityLabel={`${row.title}, ${row.subtitle}`} accessibilityState={{ selected: on }}
             onPress={() => open(row.id)}
-            style={({ pressed }) => [styles.row, { borderBottomColor: colors.border, backgroundColor: on ? `${colors.primary}1a` : pressed ? colors.surfaceHover : 'transparent' }]}>
+            // a plain style (A2-24: NativeWind's Pressable dropped a style FUNCTION — the row lost its layout); the press shows as a ripple
+            android_ripple={{ color: colors.surfaceHover }}
+            style={[styles.row, { borderBottomColor: colors.border, backgroundColor: on ? `${colors.primary}1a` : 'transparent' }]}>
             <View style={styles.flex}>
               <Text numberOfLines={1} style={[styles.title, { color: on ? colors.primary : colors.text }]}>{row.title}</Text>
               <Text numberOfLines={1} style={[styles.subtitle, { color: colors.textSecondary }]}>{row.subtitle}</Text>
