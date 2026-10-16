@@ -47,7 +47,7 @@ Website layout: L-5 → L-6 → S-3 → L-16 → L-10 → L-11 → L-14 → L-15
 
 App layout / app builder: A-2 (open) → A-3 → M-1 (the builder's site inside the app)
 
-AREA V (colour, effects, motion): VB-1 → VB-2 → VB-3 → VB-4 → S-4 (section transitions) → VB-6 · VB-5 (the Educo app's own motion, its own branch) · U-1 (surface what is built)
+AREA V (colour, effects, motion): VB-1 → VB-2 → VB-3 → VB-4 → S-4 (section transitions) → VB-6 → VB-7 (the Educo app's colours) · VB-5 (the Educo app's own motion, its own branch) · U-1 (surface what is built)
 
 Research (after R-1's "enough"): RX-1 → RX-2 · Documentation: D-1 · Components: CP-1 · Templates: T-1 · Semantic layer: SM-1 · LLM builder: LLM-1
 
@@ -1875,7 +1875,7 @@ Risks and distribution (section 2): RK-1 · Developing countries (section 3): AF
   - `[ ]` (GUARD WRITTEN 2026-10-16 — `tests/unit/layout-config.test.ts`: em forms of every edge in all code, px width checks
     in the builder + app + their tests and scripts; mutation-proven: a planted `52.49em` and `w < 840` in `lib/` both fail it,
     removed → passes; the shell half is added with change (3); closes on HEADED U5) A2-6 · nothing guards "no hard-coded rung / shell" — the guard is written in this batch (U5)
-  - `[?]` (FIRST HALF FIXED 2026-10-16 — the overlay switches below `WEB_SCREEN_PX.lg`, HEADED 101 / 0 at 1023 | 1024. SECOND HALF
+  - `[ ]` (→ BATCH ED-1 — the second half, the user 2026-10-16: "I thought we're just doing the layout… all of this later") (FIRST HALF FIXED 2026-10-16 — the overlay switches below `WEB_SCREEN_PX.lg`, HEADED 101 / 0 at 1023 | 1024. SECOND HALF
     MEASURED 2026-10-16: `Sidebar.tsx:885` picks `isParent ? parentMenuItems : menuItems` and nothing reads `isTeacher` — a teacher gets
     the WHOLE school-admin menu (staff, fees set-up, settings…). What a teacher sees is a product decision → THE USER'S CALL; my
     recommendation: the teacher places of `config/app-shell.json` (Today · Classes · Attendance · Marks · Messages · Timetable ·
@@ -1917,7 +1917,7 @@ Risks and distribution (section 2): RK-1 · Developing countries (section 3): AF
     is not used)
   - `[ ]` (FIXED 2026-10-16 — block comments keep their newlines; measured: an edge on line 5 under a 4-line comment was reported as line 2, now 5) A2-10 · MY OWN, in the new guard: stripping block comments
     whole shifted the line numbers it reports
-  - `[?]` A2-14 · FOUND building change (4): the Educo app's screens hold their sample data IN CODE (`app/(tabs)/index.tsx`
+  - `[ ]` (→ BATCH ED-1, the user 2026-10-16: "I thought we're just doing the layout… all of this later") A2-14 · FOUND building change (4): the Educo app's screens hold their sample data IN CODE (`app/(tabs)/index.tsx`
     `mockChildren`, `metricsByChild`, the report history…; the web app's pages the same) — RULE CFG says sample data lives in
     configuration. The data layer (decision 22: after the layout) REPLACES these with real records, so moving them to JSON first
     is work thrown away → THE USER'S CALL: move them now, or let the data layer's first batch remove them (my recommendation).
@@ -1960,7 +1960,7 @@ Risks and distribution (section 2): RK-1 · Developing countries (section 3): AF
     split "Messag / es" — they now sit as many across as fit at the reader's text size (`appTiles` in `config/layout.json`, 2 … 4)
   - `[x]` (FIXED 2026-10-16, HEADED on the emulators 2026-10-16 — `uat-a2-emulator.js`: phone 12 / 0, tablet 5 / 0, screenshots read) A2-26 · FOUND on the phone: the child cards cut the names to "Adae…" / "Chuk…" even at normal text —
     one word, so it now shrinks to fit (`adjustsFontSizeToFit`, down to 60 %) instead of being cut
-  - `[?]` A2-27 · FOUND reading the home screen: the Educo app holds 990 hard-coded hex colours in 37 files (the tiles' palette, gradients,
+  - `[ ]` (→ BATCH VB-7, the user 2026-10-16: "I thought we're just doing the layout… all of this later") A2-27 · FOUND reading the home screen: the Educo app holds 990 hard-coded hex colours in 37 files (the tiles' palette, gradients,
     badges…) — the no-hard-coded-colours rule and RULE CFG say theme tokens. Many are one-off tints with NO token yet, so this needs a
     design decision (which tokens, which tints become tokens) → THE USER'S CALL: a colour-token batch for the app, and where on the AREA
     MAP (it is AREA V's colour work, VB-1 — my recommendation)
@@ -3409,6 +3409,8 @@ Risks and distribution (section 2): RK-1 · Developing countries (section 3): AF
   - `[ ]` AM-1 · the `animate-in` / `slide-in-from-*` / `fade-in` classes are defined nowhere (from line 4859)
   - `[ ]` N4 · the web PageLoader / InPageSpinner not reduced-motion gated, not announced, hard-coded hex (inline in the verified-ledger line)
   - `[ ]` CE-19 · the app's spinner loops with no reduced-motion check and no accessible label (from line 4867)
+- `[ ]` **BATCH VB-7 · The Educo app's colours as theme tokens** (area: AREA V colour · 1 change, queued 2026-10-16 — handed from BATCH A-2, the user 2026-10-16: "I thought we're just doing the layout… all of this later") — after the components
+  - `[ ]` A2-27 · the Educo app holds 990 hard-coded hex colours in 37 files (tile palettes, gradients, badges): design the tokens the one-off tints need, then move every colour to the theme
 - `[ ]` **BATCH VB-6 · Effects, typography and shadow tokens from the frozen list's LATER** (area: AREA V effects & typography · 4 changes, queued 2026-10-16 by RULE LB — the user: "everything should have a batch") — moved out of the layout when it closes (1.1.5 "LATER — not layout")
   - `[ ]` motion: AC-6 easing / delay / repeat · AC-7 halo hover · AC-12 group hover · AC-18 sweeping fill · AC-24 hover keyed to input (from line 4706)
   - `[ ]` style / typography: AC-11 gradient text · AC-14 blend modes · AC-15 `box-decoration-break` · AC-16 image filters · AC-20 hyphenation · AC-28 list markers (from line 4708)
@@ -4192,10 +4194,12 @@ Risks and distribution (section 2): RK-1 · Developing countries (section 3): AF
   - `[ ]` pilot-school feedback on the page grid — the "people" line R-3's enough checklist left open (from line 4572)
 - `[ ]` **BATCH AF-1 · Developing countries: the application-layer areas (section 3)** (area: developing countries first · 1 change, queued 2026-10-16 by RULE LB — the user: "everything should have a batch") — each is its own area, researched first (RULE RS); split into batches as each opens
   - `[ ]` offline-first application layer · Paystack / Flutterwave · WhatsApp / SMS · cheap static hosting and local domains · second-language versions · templates from the region (from line 5205)
-- `[ ]` **BATCH ED-1 · The rest of Educo (section 4)** (area: the rest of Educo · 3 changes, queued 2026-10-16 by RULE LB — the user: "everything should have a batch") — the "original work"; what it means is the user's to confirm first
+- `[ ]` **BATCH ED-1 · The rest of Educo (section 4)** (area: the rest of Educo · 5 changes, queued 2026-10-16 by RULE LB — the user: "everything should have a batch") — the "original work"; what it means is the user's to confirm first
   - `[ ]` confirm with the user what "the original work" is (from line 5220)
   - `[ ]` one engine for the whole of Educo (RULE APP): screens migrate to the shared block model, one area at a time (from line 5210)
   - `[ ]` the 13 menu pages never built, hidden until they are (S2-i) (from line 5213)
+  - `[ ]` A2-7 · a teacher's own web menu (today the web sidebar gives a teacher the whole admin menu) — handed here from BATCH A-2 (the user 2026-10-16: "I thought we're just doing the layout… all of this later")
+  - `[ ]` A2-14 · the Educo app's demo data held in code (the home screen's children, marks, reports…) — replaced by real records with the data layer; handed here from BATCH A-2 (the user 2026-10-16: "I thought we're just doing the layout… all of this later")
 - `[ ]` **ORDER, DECIDED by the user 2026-10-01:** (→ BATCH L-17, the close-out; the full order is the AREA MAP at the top of BATCHES) L-1 … L-6 and D-1 on this branch → pull request to `master` → fresh
   branch `builder/layout-2` → L-7, L-8, L-9 → THEN the whole-tier re-sweep and the layout story (RULE L) ONCE, over all
   of it, so neither is done twice
