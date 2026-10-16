@@ -197,6 +197,7 @@ const canvasGeo = (page) => page.evaluate(() => {
       console.log(`  [${idx}] weight ${JSON.stringify(w.numbers)}`);
     }
     // ── 3–5 · the real Preview ──
+    const onGrid = await page.evaluate(() => !!JSON.parse(localStorage.getItem('educo_box_site_v1') || '{}').pages?.[0]?.root?.pageGrid); // L6-7
     page.__step = 'Preview';
     await page.getByRole('button', { name: 'Preview', exact: true }).first().click();
     await page.waitForSelector('iframe', { timeout: 20000 }); await page.waitForTimeout(1500);
@@ -221,7 +222,7 @@ const canvasGeo = (page) => page.evaluate(() => {
     // every block of the row (tier 99, idx 141). Same window, same answer; a real difference still shows.
     for (const d of [...RUNGS.map((r) => ({ name: r.preset, w: r.w, h: EDITOR_H, rung: r })), ...sizes]) {
       const f = await frameAt(d.w, Math.min(d.h, 1400));
-      const a = await f.evaluate(auditDoc, { semantics: first, rowBands: true, chosen, rungs: RUNG_EDGES }); first = false;
+      const a = await f.evaluate(auditDoc, { semantics: first, rowBands: true, chosen, rungs: RUNG_EDGES, pageGrid: onGrid }); first = false;
       a.err.forEach((m) => find('err', `Preview ${d.name}`, m)); a.warn.forEach((m) => find('warn', `Preview ${d.name}`, m));
       if (d.rung) {
         // canvas == Preview at this rung, within the accepted 0.6% (#41) and 4px of text rounding
@@ -235,7 +236,7 @@ const canvasGeo = (page) => page.evaluate(() => {
         // WCAG 1.4.4 — the reader's text at 150%
         const f2 = await frameAt(d.w, 900);
         await f2.evaluate(() => { document.documentElement.style.fontSize = '150%'; }); await page.waitForTimeout(300);
-        const big = await f2.evaluate(auditDoc, { semantics: false, rowBands: true, chosen, rungs: RUNG_EDGES });
+        const big = await f2.evaluate(auditDoc, { semantics: false, rowBands: true, chosen, rungs: RUNG_EDGES, pageGrid: onGrid });
         big.err.filter((m) => /^L[1-7]/.test(m)).forEach((m) => find('err', `Preview ${d.name} at 150% text`, m));
         const grew = Object.keys(big.geo).filter((id) => a.geo[id] && big.geo[id].h > a.geo[id].h + 1).length;
         if (Object.keys(a.geo).length && !grew) find('err', `Preview ${d.name} at 150% text`, 'W144 nothing grew with the reader\'s text size');

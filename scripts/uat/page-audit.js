@@ -68,7 +68,10 @@ function auditDoc(opts) {
       if (MW < TP && containers.length > 1 && Math.min(...containers.map((k) => k.getBoundingClientRect().width)) < 150) err.push(`L5 phone: ${containers.length} columns squeezed side by side in ${idOf(row).slice(-4)} (${containers.map((k) => Math.round(k.getBoundingClientRect().width)).join('/')}px)`);
       // c-11c (decided B): a cell of one icon (an aria-hidden svg, no words) does not count — a table of ticks is not four columns
       const words = containers.filter((k) => k.innerText.trim() || k.querySelector('img,video,iframe,picture,canvas,input,button,textarea,select'));
-      if (MW >= TP && MW < TL && opts.rowBands && row.children.length >= 4 && ks.length > 3 && containers.length === ks.length && words.length >= 2) err.push(`L6 tablet: ${ks.length} columns on one line in ${idOf(row).slice(-4)} (at most 3, #78)`);
+      // …not on a PAGE-GRID page (L6-7): there every band of two or more columns owns the gutter and is held to the fit rule on every rung
+      // instead (`gridBandOwnsGutter`, G-1 #13 — the user: #78's three-across made a staircase), nested rows too; drawn as flex all the same,
+      // so the caller says which page it is. Its columns stay while their words fit; the word and overflow checks above still run
+      if (MW >= TP && MW < TL && opts.rowBands && !opts.pageGrid && row.children.length >= 4 && ks.length > 3 && containers.length === ks.length && words.length >= 2) err.push(`L6 tablet: ${ks.length} columns on one line in ${idOf(row).slice(-4)} (at most 3, #78)`);
     }
   }
   // collapsed: a block with content that has no size
