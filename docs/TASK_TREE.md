@@ -3350,7 +3350,7 @@ Risks and distribution (section 2): RK-1 · Developing countries (section 3): AF
     - `[ ]` V-2 · components drop `bgOverlay` (`componentBoxCss` has none) → BATCH VB-1
     - `[ ]` V-3 · a legacy `gradient:#a:#b` value is written raw by `componentBoxCss` — invalid CSS on a component → BATCH VB-1
     - `[ ]` V-4 · "Tint over background" uses a 6-digit-hex-only field — no alpha, so the tint is opaque; its `mode="both"` is ignored → BATCH VB-1
-    - `[ ]` V-5 · the per-device banner says "size & layout only change here", but `patchAt` stores EVERY non-content key per device (backgrounds too)
+    - `[ ]` V-5 · the per-device banner says "size & layout only change here", but `patchAt` stores EVERY non-content key per device (backgrounds too) → BATCH L-12 (layout: the per-rung model; pulled onto the layout map 2026-10-16)
     - `[ ]` V-6 · `REVEAL_DUR` falls back to .55s (`interactions.ts:212`) against the 320ms "slow" token → BATCH VB-2
     - FOUND 2026-10-03 by the R-2 inventory (read in the code — each is REPRODUCED through the UI first, then fixed with
       a guard red first, in AREA V's first batch, colour & backgrounds; RULE V):
@@ -3378,6 +3378,7 @@ Risks and distribution (section 2): RK-1 · Developing countries (section 3): AF
   batches of ≤ 6 by area, each HEADED-tested through the UI. Known so far: V-1 · V-5 · Advanced CSS on components only ·
   legacy `gradient:` only from the bulk inspector · motion tokens internal only
   - `[ ]` RULE UI in AREA V: every V family ships with its control (presets + "make your own"), and the audit of what is already built (from line 3271)
+  - its LAYOUT slice (layout fields with no control, or a control the export ignores) → BATCH L-13 (pulled onto the layout map 2026-10-16); V-5 → BATCH L-12
 - `[ ]` **BATCH VB-1 · Colour and backgrounds: what the Inspector offers reaches the page** (area: AREA V colour & backgrounds · 6 changes, queued 2026-10-16 by RULE LB — the user: "everything should have a batch") — AREA V's first build batch ("From R-2", line 3301); each line REPRODUCED through the UI first, then fixed with a guard red first; waits for Task 1
   - `[ ]` V-2 · components drop `bgOverlay` (from line 3281)
   - `[ ]` V-3 · a legacy `gradient:#a:#b` value written raw by `componentBoxCss` (from line 3282)
@@ -3391,7 +3392,7 @@ Risks and distribution (section 2): RK-1 · Developing countries (section 3): AF
   - `[ ]` SH-7 · focus rings drawn only with `box-shadow` — gone in forced colours (from line 4850)
   - `[ ]` N9 · `--eu-color-surface-2` used in `lib/` but never in the exported token sheet (inline in the verified-ledger line)
   - `[ ]` the approved motion tokens built: MR-9 tokens incomplete (from line 5087) · V-6 `REVEAL_DUR` .55s (from line 3285) · EX-2 the alert's hard-coded `.18s` (from line 5076) · EX-6 a stagger capped at ~500 ms (from line 5079)
-  - `[ ]` stored pixels (rule 16): N10 `letter-spacing` in px · HV-17 `.eu-btn:active` 1px (from line 4868) · the video block's `315px` default height (from line 4852)
+  - `[ ]` stored pixels (rule 16): N10 `letter-spacing` in px · HV-17 `.eu-btn:active` 1px (from line 4868) · (the video block's `315px` → BATCH L-13, layout, 2026-10-16)
 - `[ ]` **BATCH VB-3 · Motion Batch B: the pager and the alerts** (area: AREA V motion · 6 changes, queued 2026-10-16 by RULE LB — the user: "everything should have a batch") — "Batch B" of THE FIX ORDER (line 5148)
   - `[ ]` MR-4 · the pager's auto-advance has no visible Pause (from line 5084) · MR-16 focus on its dots / arrows does not stop it (from line 4856)
   - `[ ]` NEW-A1 · the pager strip has no `overscroll-behavior-x: contain` (from line 4853)
@@ -3748,16 +3749,14 @@ Risks and distribution (section 2): RK-1 · Developing countries (section 3): AF
   - `[ ]` hover / focus effects and micro-interactions, with touch and keyboard equivalents (from line 5115)
   - `[ ]` entrance / exit animation in CSS today — `@starting-style`, `allow-discrete`, `display` / `<dialog>` / popover (from line 5117)
   - `[ ]` motion rules — WCAG 2.3.3, `prefers-reduced-motion`, motion tokens, low-cost Android performance (from line 5119)
-- `[ ]` **BATCH S-4 · Section transitions** (RENAMED from S-2 by RULE LB 2026-10-16 — the id clashed with the closed BATCH S-2 · Spacing) (area: band edges and held sections · 5 changes, queued 2026-10-02 by the
+- `[ ]` **BATCH S-4 · Section transitions** (RENAMED from S-2 by RULE LB 2026-10-16 — the id clashed with the closed BATCH S-2 · Spacing) (area: band edges and held sections · 3 changes — ST-5 and ST-7 pulled onto the layout map 2026-10-16, queued 2026-10-02 by the
   user: "yes" — runs AFTER the layout batches L-3…L-7 and the agreed motion Batches A and B; research done in R-1,
   `motion/library/3-section-transition.md` "Added 2026-10-02 (R-1)")
-  - ST-5 · a block can overlap a band edge (a card hanging across two bands): outer spacing may go below 0
+  - ST-5 · → BATCH G-5b (layout — it is AC-37's spill out of a section, 2026-10-16)
   - ST-1 · a sloped / curved band edge shows the NEXT band's colour, as the guide says, not the page colour
   - ST-4 · wave and SVG-shape band edges beside the four `BandEdge` shapes (mask / clip-path, rem-sized, per rung)
   - NEW · a moving (keyframed) wave edge — still under `prefers-reduced-motion`, approved motion tokens
-  - ST-7 · stacked cards — **DECIDED by the user 2026-10-02: BOTH behaviours, side by side** ("can we not do a and b
-    together"): each held section chooses **Queue** (today's, one under another — stays the DEFAULT so no saved page
-    changes) or **Stack** (each card slides over the last); switchable any time, canvas == export
+  - ST-7 · → BATCH L-15 (layout — sticky stacking, 2026-10-16)
 - `[x]` **BATCH L-4 · The decided layout changes** — CLOSED 2026-10-03 (session a51af34e; HEADED pass 4 six windows CLEAN, the eight tier-99
   pages 0 errors / L8 = 0, gate typecheck 0 · eslint 0 errors · vitest 4,022 · test:fast 805; L4-l + L4-n → L-5, L4-r → E-1 by the user).
   Was — next leaf: write its UAT checklist FIRST, then c-8 / c-21 / the grid picker; the user decided 2026-10-03: "finish Task 1 first" — L-4 → L-5 → L-6 (+ S-3, D-1) → the frozen layout list 1.1.5 → PR → Tasks 2–4 → re-sweep + story; AREA V waits) (area: rows and grids · 3 changes)
@@ -4117,7 +4116,7 @@ Risks and distribution (section 2): RK-1 · Developing countries (section 3): AF
   - `[ ]` AC-37a · dragging past the band edge carries the lines into the neighbour, which dims; the label says how far it spills (from line 4668)
   - `[ ]` AC-37a · a red outline on the canvas when a placement would cover words (G-5 (1) builds the Page check warning) (from line 4668)
   - `[ ]` AC-37a · a Position gallery of ready-made placements, one click then drag to adjust (RULE S) (from line 4668)
-  - `[ ]` AC-37 · what G-3 / G-3b left: spilling out of a section and the layer order (the covers-words warning is G-5 (1)) (from line 4401)
+  - `[ ]` AC-37 · what G-3 / G-3b left: spilling out of a section and the layer order (the covers-words warning is G-5 (1)) (from line 4401) — the same build as ST-5 (a card hanging across two bands; pulled from S-4 2026-10-16)
 - `[ ]` **BATCH L-10 · Smaller layout features I: the page and its sections** (area: website layout — the frozen list 1.1.5 · 6 changes, queued 2026-10-16 by RULE LB — the user: "everything should have a batch") — six of the frozen list's twelve "smaller" lines that no batch held
   - `[ ]` AC-9 · ONE site-wide content width, set in one place (with AC-35) — partly done by the page grid (from line 4679)
   - `[ ]` AC-2 · a page frame (a border round the whole page, off on narrow screens) (from line 4680)
@@ -4132,17 +4131,20 @@ Risks and distribution (section 2): RK-1 · Developing countries (section 3): AF
   - `[ ]` AC-17 · a background video for a section, within RULE AF's weight limits (from line 4684)
   - `[ ]` AC-22 · responsive images: `srcset` + `sizes` from the layout, art direction with `<picture>` (from line 4687)
   - `[ ]` AC-23 · the browser baseline: newer export features checked against the audience's phones, `@supports` fallbacks, minified CSS (from line 4689)
-- `[ ]` **BATCH L-12 · Headed checks owed I: grids and placement** (area: website layout — the frozen list's CHECK lines · 5 changes, queued 2026-10-16 by RULE LB — the user: "everything should have a batch") — lines for a HEADED UAT, not features; a check that fails becomes a ledger line of this batch (RULE V)
+- `[ ]` **BATCH L-12 · Headed checks owed I: grids and placement** (area: website layout — the frozen list's CHECK lines · 6 changes, queued 2026-10-16 by RULE LB — the user: "everything should have a batch") — lines for a HEADED UAT, not features; a check that fails becomes a ledger line of this batch (RULE V)
   - `[ ]` the inspector offers DIRECTION, ORDER and PLACEMENT at one rung as plainly as *hide* (from line 4695)
   - `[ ]` a deliberately EMPTY grid cell made through the UI stays empty (from line 4697)
   - `[ ]` a full-width grid cell STAYS full width when the column count changes 3 → 4 (from line 4698)
   - `[ ]` one alignment for ALL blocks of a selected grid (from line 4699)
   - `[ ]` a stack as wide as its widest line ("Fit"), placed in the centre (from line 4700)
-- `[ ]` **BATCH L-13 · Headed checks owed II: semantics, Full screen and pictures** (area: website layout — the frozen list's CHECK lines · 4 changes, queued 2026-10-16 by RULE LB — the user: "everything should have a batch") — the other four CHECK lines
+  - `[ ]` V-5 · the per-device banner says "size & layout only change here", but `patchAt` stores every non-content key per device — measure which keys follow the screen, then make the banner (`BoxInspector.tsx:644`) say what is true, or the storage match it (pulled from AREA V 2026-10-16)
+- `[ ]` **BATCH L-13 · Headed checks owed II: semantics, Full screen and pictures** (area: website layout — the frozen list's CHECK lines · 6 changes, queued 2026-10-16 by RULE LB — the user: "everything should have a batch") — the other four CHECK lines
   - `[ ]` the semantic audit flags an `h3` before its `h2` (an eyebrow) and offers the fix (from line 4701)
   - `[ ]` a footer / menu list of links publishes as `nav > ul > li > a` (from line 4702)
   - `[ ]` *Full screen*: `100svh` / `50svh`, never minus a pinned header — seen headed (from line 4703)
   - `[ ]` every picture path emits `aspect-ratio` or `object-fit` — a catalogue-enumerating guard (from line 4704)
+  - `[ ]` the video block's export falls back to a stored `315px` height when it has none (`box-export.ts:168`; new blocks store rem) — a media box sized by `%` + `aspect-ratio`, the value in config (rule 16, RULE CFG; pulled from VB-2 2026-10-16)
+  - `[ ]` U-1's LAYOUT slice: every layout field the engine reads (`BoxNode`, per rung) set against the Inspector control that reaches it — none · hidden · ignored by the export; each gap found becomes a line of a layout batch (RULE UI; pulled from U-1 2026-10-16)
 - `[ ]` **BATCH L-14 · Sticky and fixed I: the MUST, the gallery and the headed check** (area: website layout — sticky / fixed, GROUP 3 of 1.1.5 · 6 changes, queued 2026-10-16 by RULE LB — the user: "everything should have a batch") — SP-1 and SP-14 stay in G-5 (6)
   - `[ ]` SP-4 · rounding or clipping a section kills every pin inside it: `overflow: clip`, and the editor says why a pin does not stick — with SA-1, the same root (reveals in a clipped box) (from lines 4727, 5088)
   - `[ ]` SP-12 · sticky and floating as a GALLERY OF VARIATIONS a user picks from and makes their own — settled with the user when this opens (from line 4747)
@@ -4150,11 +4152,12 @@ Risks and distribution (section 2): RK-1 · Developing countries (section 3): AF
   - `[ ]` SP-3 · `pinArrival` timed to the moment the bar sticks — DECIDE (from line 4733)
   - `[ ]` SP-9 · flow space for a FIXED top bar so the first heading is not hidden (from line 4744)
   - `[ ]` the SP CHECK for the HEADED UAT — the 15 lines of `01-codepen-sticky-fixed.md` (from line 5154)
-- `[ ]` **BATCH L-15 · Sticky and fixed II: the DECIDE lines** (area: website layout — sticky / fixed · 4 changes, queued 2026-10-16 by RULE LB — the user: "everything should have a batch") — each decided with the user when it opens
+- `[ ]` **BATCH L-15 · Sticky and fixed II: the DECIDE lines** (area: website layout — sticky / fixed · 5 changes, queued 2026-10-16 by RULE LB — the user: "everything should have a batch") — each decided with the user when it opens
   - `[ ]` SP-5 · a scrollable box with sticky group headings inside (from line 4735)
   - `[ ]` SP-7 · a stay-behind layer — content scrolls OVER a held hero (from line 4736)
   - `[ ]` SP-8 · a tall sticky sidebar that scrolls inside itself (from line 4738)
   - `[ ]` SP-11 · a fallback for a fixed background picture on iOS / low-end Android (from line 4740)
+  - `[ ]` ST-7 · stacked held sections — **DECIDED by the user 2026-10-02: BOTH** ("can we not do a and b together"): each held section chooses **Queue** (today's, one under another — the DEFAULT, so no saved page changes) or **Stack** (each card slides over the last); switchable any time, canvas == export (pulled from S-4 2026-10-16)
 - `[ ]` **BATCH L-16 · The 1.2 queue: adding and placing blocks** (area: website layout — adding blocks · 4 changes, queued 2026-10-16 by RULE LB — the user: "everything should have a batch") — the original queue (1.2); the stale `alignSelf` moved here because L-5 is full at six
   - `[ ]` "Place here" + "Return to original position" — the approved plan, "Place here" not built (from line 5167)
   - `[ ]` "Add a block inside" NESTS each click instead of adding a sibling (E2-20) (from line 5169)
