@@ -25,12 +25,16 @@ LIST = LIST.slice(FROM, arg('count', '') ? FROM + +arg('count', '') : undefined)
 const EDITOR_H = 720; // the editor window the page is built and measured in
 const RUNGS = [{ w: 375, preset: 'Mobile (375px)' }, { w: 768, preset: 'Tablet (768px)' }, { w: 1024, preset: 'Laptop (1024px)' }, { w: 1280, preset: 'Desktop (1280px)' }, { w: 1920, preset: 'Wide (1920px)' }];
 const PRESETS = [...RUNGS.map((r) => r.preset), 'Full width'];
+/**
+ * EVERY SCREEN OF `screens.js` (L6-1): the one list every UAT checks — the Preview's own device menu and both sides of every rung, read
+ * from config/layout.json. This kept its own copy with the breakpoints typed in as 600 / 900 / 1200 / 1800 while the rungs are 600 / 840 /
+ * 1200 / 1600: two edges checked that do not exist, two that do never checked. A tablet is also turned sideways, as before.
+ */
 function devices() {
-  const src = fs.readFileSync(path.join(__dirname, '..', '..', 'lib', 'preview-devices.ts'), 'utf8');
-  const out = []; const re = /label: "([^"]+)", w: (\d+), h: (\d+)/g; let m;
-  while ((m = re.exec(src))) { out.push({ name: m[1], w: +m[2], h: +m[3] }); if (/iPad|Tab|Pad|Fold 6 — open|Fold — open/.test(m[1]) && +m[2] < +m[3]) out.push({ name: m[1] + ' (landscape)', w: +m[3], h: +m[2] }); }
-  for (const b of [600, 900, 1200, 1800]) for (const d of [-1, 0, 1]) out.push({ name: `breakpoint ${b}${d < 0 ? '−1' : d > 0 ? '+1' : ''}`, w: b + d, h: 900 });
-  const seen = new Set(); return out.filter((d) => { const k = d.w; if (seen.has(k) && !/breakpoint/.test(d.name)) return false; seen.add(k); return true; });
+  const { SCREENS } = require('./screens.js');
+  const out = SCREENS.map((s) => ({ name: s.label, w: s.w, h: s.h }));
+  for (const s of SCREENS) if (/iPad|Tab|Pad|Fold 6 — open|Fold — open/.test(s.label) && s.w < s.h) out.push({ name: s.label + ' (landscape)', w: s.h, h: s.w });
+  const seen = new Set(); return out.filter((d) => { const k = `${d.w}x${d.h}`; if (seen.has(k)) return false; seen.add(k); return true; });
 }
 const PARAS = [
   'Our pupils learn in small classes where every teacher knows every child by name, and families are welcomed into school life from the very first week.',
@@ -203,7 +207,7 @@ const canvasGeo = (page) => page.evaluate(() => {
     fs.writeFileSync(path.join(OUTDIR, `page-${idx}.export.html`), html); // kept, so a finding is traced from the page's own CSS (E0-e)
     const px = pixelFindings(html); if (px.length) find('err', 'export CSS', `U16 ${px.length} pixel lengths — ${px.slice(0, 6).map(([k, n]) => `${k}×${n}`).join(', ')}`);
     // --sizes=rungs: the five rungs and both sides of every breakpoint only (where a line wraps) — a measuring pass (F-1 (1))
-    let first = true; const sizes = arg('sizes', '') === 'rungs' ? devices().filter((d) => /breakpoint/.test(d.name)) : devices(); R.sizes = sizes.length;
+    let first = true; const sizes = arg('sizes', '') === 'rungs' ? devices().filter((d) => /just below| starts — /.test(d.name)) /* both sides of every rung (screens.js) */ : devices(); R.sizes = sizes.length;
     // AT THE RUNGS THE PREVIEW WINDOW IS AS TALL AS THE EDITOR's. A block measured against the SCREEN — a sticky sidebar is 100dvh, and
     // the row beside it stretches to match — is 720 in a 720 window and 900 in a 900 one: by design, and reported as canvas≠Preview on
     // every block of the row (tier 99, idx 141). Same window, same answer; a real difference still shows.

@@ -27,7 +27,7 @@ describe("the UAT screen list", () => {
 
   it("every headed UAT script written from now on checks the Preview against it", () => {
     const dir = join(__dirname, "..", "..", "scripts", "uat");
-    const scripts = readdirSync(dir).filter((f) => /^uat-.*-headed\.js$/.test(f) && !BEFORE_THE_RULE.has(f));
+    const scripts = readdirSync(dir).filter((f) => (/^uat-.*-headed\.js$/.test(f) || f === "uat-pages.js") && !BEFORE_THE_RULE.has(f)); // uat-pages.js too (L6-1: it slipped past this and typed its own breakpoints)
     expect(scripts.length).toBeGreaterThan(0);
     for (const f of scripts) expect(readFileSync(join(dir, f), "utf8").replace(/\r\n/g, "\n"), `${f} must use ./screens.js`).toMatch(/require\(['"]\.\/screens(\.js)?['"]\)/);
   });

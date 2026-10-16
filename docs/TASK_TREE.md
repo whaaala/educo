@@ -4146,7 +4146,7 @@ Risks and distribution (section 2): RK-1 · Developing countries (section 3): AF
     as real sites are; the probes that build a header do the same. The real Logo block is a COMPONENT (below)
   - page-weight audit in every page report (≤ 100 KB compressed, ≤ 500 KB first view at 360px, images sized and lazy,
     ≤ 2 font families) · Slow-3G profile (first band within 5 s) · the innovative plan (19 pages)
-  - `[ ]` the dresser stops compensating: `scripts/uat/dress.js` 124 / 144 / 204 still set "Centred column" to get an inset the default now gives (from line 4302)
+  - `[x]` the dresser stops compensating: `scripts/uat/dress.js` 124 / 144 / 204 still set "Centred column" to get an inset the default now gives (from line 4302) — NOT A CHANGE, MEASURED 2026-10-16 (`probe-l6-centred.js`, headed, two identical banners on one page, the Preview at all 72 screens): the default band puts the words at 0px from its edge, "Centred column" at 17.6–26px on phones and wider above — the default does NOT give that inset; the dresser chooses a centred column as real sites do, and keeps it. The same probe found L6-2
   HEADED UAT CHECKLIST (written 2026-10-16 BEFORE any change; six headed windows, a FRESH production build, every page BUILT THROUGH THE
   UI by the dresser, the Preview at every screen of `screens.js`; every number read from the page, every screenshot read):
   - `[ ]` U1 (logo) every dressed header shows the school's mark — a small Image beside the school's name, then the menu — named in the
@@ -4166,7 +4166,14 @@ Risks and distribution (section 2): RK-1 · Developing countries (section 3): AF
   LEDGER:
   - `[ ]` L6-1 · `scripts/uat/uat-pages.js` builds its OWN device list with breakpoints typed in as 600 / 900 / 1200 / 1800 — the rungs
     are 600 / 840 / 1200 / 1600 (`config/layout.json`): two edges checked that do not exist, two that do never checked (RULE Z: every
-    UAT uses `screens.js`; RULE CFG). Fix: read `screens.js`; the uat-screens guard covers it
+    UAT uses `screens.js`; RULE CFG). Fix: read `screens.js`; the uat-screens guard covers it — FIXED: `devices()` reads `screens.js`
+    (tablets still turned sideways); the guard only looked at `uat-*-headed.js`, so it now names `uat-pages.js` too — red with the old
+    list put back, green with the fix; HEADED with U4
+  - `[ ]` L6-2 · REAL, found through the UI (`probe-l6-centred.js`, screenshot `logs/uat-l6/centred-1280.png`): a section set to
+    "Centred column" WITH A BACKGROUND shows its colour only inside the centred column, white strips either side — the guide
+    (`layout-story.md` §1, `website-builder.md` §10b) and the engine (`layout.ts`) promise "the colour still runs edge to edge, the
+    content held to a reading width". The colour is on the section (the only thing a user can select; a band is invisible), and the
+    band's padding squeezes the section with it
 - `[ ]` **BATCH D-1 · A README a newcomer can start from** (area: documentation · 1 change, queued — asked by the user
   2026-09-30): the root `README.md` is still the create-next-app template. Replace it with how to install and run each
   app (web 3000, admin 3001, mobile), the project structure, how to test (vitest, test:fast, the UAT scripts, the
