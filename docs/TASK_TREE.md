@@ -4203,7 +4203,7 @@ Risks and distribution (section 2): RK-1 · Developing countries (section 3): AF
   - `[x]` L6-8 · the audit's phone rule (L5) counted a cell of ONE ICON as a squeezed column — an icon beside words is kept on a phone on
     purpose (G-3b (4)), and the tablet rule already ignored such cells (c-11c). Seen at 375 (the star beside the words, readable); fixed
     to count the same cells; the probe proves both ways (words beside an icon: not flagged; beside a 57px cell of words: flagged)
-U6 — THE DRESSED PLAN, 70 pages (`--plan=dressed --jobs=6`, 112 min): 66 clean; idx 18 and 54 over the Slow-3G paint budget (5.53 s,
+  U6 — THE DRESSED PLAN, 70 pages (`--plan=dressed --jobs=6`, 112 min): 66 clean; idx 18 and 54 over the Slow-3G paint budget (5.53 s,
   6.96 s) and 4.24 s / 4.25 s ALONE = L6-9; idx 39 "the canvas offered the drop and added nothing" under load, clean alone = L6-10; idx 48
   failed every time = L6-11, fixed, then 0 errors
   - `[x]` L6-9 · the Slow-3G paint check flaked under the machine's own load (six windows) — an over-budget paint is measured once more and the
