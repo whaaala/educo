@@ -15,6 +15,9 @@ Run through this checklist BEFORE writing any code:
   find out EXACTLY what is needed and climb the ladder: (1) does it need to exist — no → skip it (YAGNI; nothing added that was
   not asked for) · (2) already in this codebase → reuse · (3) standard library · (4) native platform feature · (5) an installed
   dependency (never add one) · (6) one line · (7) only then the minimum that works. Write down which rung was taken.
+- [ ] **⛔ RULE CFG — NOTHING HARD-CODED: DATA IN CONFIGURATION, NEVER IN CODE** (the user, 2026-10-16) — every value that
+  could ever change (breakpoints, sizes, menus, roles, labels, lists, limits, thresholds, sample data) is read from a
+  configuration file; changing it never means touching code. Name the config file each new value goes in.
 - [ ] **Check existing shared components** — search `components/shared/` for `Button`, `FormDropdown`, `CustomDropdown`, `FormInput`, `Modal`, `EditorDialog`, `ColorPickerPopover`, `DataTable`, etc. NEVER duplicate what exists.
 - [ ] **IMPLEMENT for ALL platforms AND screen sizes** — web (desktop 1280px+, tablet 768px, mobile 375px) AND React Native mobile/tablet app (`apps/mobile/`). Every feature MUST be built for BOTH web responsive AND the native mobile/tablet app. Neither is optional.
 - [ ] **Plan for ALL themes** — check `lib/theme-config.ts` for available themes. Every UI element must work in ALL of them.
@@ -653,6 +656,21 @@ Run through this checklist BEFORE telling the user it's done:
     `docs/TASK_TREE.md` audits the whole engine against the builder's controls and surfaces each one it finds.
   - **Checked through the UI** (RULE Y): a feature is done only when a person has selected it, changed it and made their
     own in the builder, and seen the same thing in the Preview.
+- **RULE CFG — NOTHING HARD-CODED: THE DATA IS DETACHED FROM THE CODE (MANDATORY — the user, 2026-10-16: "I don't want
+  anything hard-coded… when we need to change something, then we'll just change in the configuration file. And that goes for
+  everything… moving forward").**
+  - **What is data:** every value a person might ever want different — breakpoints and height classes, sizes and thresholds,
+    menus and which role sees what, labels and wording, lists and their limits, currencies, providers, feature switches,
+    sample rows. It lives in a configuration file (JSON in `config/`, one file per area, e.g. `config/layout.json`), read by
+    the code; the code holds only the logic that USES it. One value, one place: the canvas, the export, the web app, the
+    `apps/mobile/` app, the scripts and the tests all read the same file — a test never re-types a number the config holds.
+  - **What is not:** the logic itself, and the design tokens, which already ARE configuration (rule 17).
+  - **Changing it is a config edit only:** if changing a value means editing a component, a script or a test, that is a bug in
+    the ledger (RULE V). A config value is validated where it is read (RULE M: validation at trust boundaries is never cut).
+  - **Applies from now on, to everything:** new and changed code complies the day it is written; hard-coded values found in
+    the area being worked are ledger lines and moved to configuration in that batch.
+  - **Guarded:** each area's config has a unit guard that fails when one of its values appears as a literal outside the
+    config (mutation-proven), so a value copied back into code is caught the day it appears.
 - **STATUS, ALWAYS (the user, 2026-09-28).** Every reply ends with where the work is and what comes next — one line, a
   pointer the user can act on — so the user never has to ask "where are you?".
 - **RULE P — WEBSITE PERSONALITY AND TONE ARE FOLLOWED (MANDATORY — from 2026-09-27).** The Website Personalities
