@@ -1790,7 +1790,7 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
   expanded ≥ 900 · list-detail two panes from EXPANDED (840) — M3 recommends one pane at medium; the batch line's "split from
   the medium class" is read as 840 unless the user says 600 (said to the user 2026-10-16).
   CHANGES:
-  - `[ ]` (1) THE RUNGS MOVE, INTO CONFIGURATION (RULE CFG): `config/layout.json` holds 600 / 840 / 1200 / 1600, `RUNG_PX` reads it; every hard-coded copy of a rung derived from it (A2-1);
+  - `[ ]` (CODE DONE 2026-10-16 — `config/layout.json` (rungs + label + words + measure, narrowestPhone 360, editor.dockFrom 1024, uat.edgeHeight); `layout.ts` reads + validates it; `mediaBelow`; screens.js `require`s it and exports `EDGE`; guard `layout-config.test.ts`; CLAUDE.md rule 18 + RULE Z line; typecheck 0; the 15 ladder test files 810 / 810 — HEADED U1 owed) (1) THE RUNGS MOVE, INTO CONFIGURATION (RULE CFG): `config/layout.json` holds 600 / 840 / 1200 / 1600, `RUNG_PX` reads it; every hard-coded copy of a rung derived from it (A2-1);
     CLAUDE.md rule 18 + RULE Z's "both sides of every breakpoint" line (599 | 600, 839 | 840, 1199 | 1200, 1599 | 1600);
     `screens.js` follows; saved pages still read (slot names unchanged)
   - `[ ]` (2) A HEIGHT CLASS: `HEIGHT_PX` beside `RUNG_PX` (compact 0 · medium 480 · expanded 900) + one pure
@@ -1833,8 +1833,17 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
     `layout-system.test.ts:38`, `grid-own-box.test.ts:16,37,90,93`, `grid-words-never-break.test.ts:14,96`,
     `page-grid.test.ts:1085,1103,1108`; e2e `phone-editing.spec.ts:12,65,175`, `chrome-follows-resize.spec.ts:193`;
     `scripts/uat/uat-e5b-headed.js:264`, `scripts/research/page-grid-*.js` — each derived from the source or shown to be a
-    chrome line that is not a rung (with the measurement)
-  - `[ ]` A2-2 · `scripts/uat/screens.js:17` reads `RUNG_PX` out of `layout.ts` with a regex — a reformatted object would
+    chrome line that is not a rung (with the measurement).
+    FIXED 2026-10-16 (closes on the HEADED U1 / U5): every one derived — `semantics.ts` reads `RUNG_PX` / `RUNG_WORDS` /
+    `NARROWEST_PHONE_PX`; box-demo + `BoxCanvas.tsx:1149` (a copy the code map MISSED, found by the guard) use `mediaBelow` +
+    `EDITOR_DOCK_PX`; the two bottom sheets cap at their own 32rem (`mx-auto max-w-[32rem] min-[32rem]:border-x`) instead of a
+    rung class; the unit tests read `RUNG_EM` / `RUNG_PX` / the config; e2e read `config/layout.json`; 10 UAT scripts read
+    `EDGE` — and FOUR were STALE after the move (`uat-e5c` `w < 900` ×2, `uat-p0` `w >= 1800`, a `w < 900` own-device), now
+    right. `scripts/research/page-grid-*.js`: NOT CHANGED — they test the research's own static example pages (their CSS is
+    the frozen research record), and their 600 is the phone edge, which did not move
+  - `[ ]` (CLOSED AS FIXED, not "not a bug" — measured 2026-10-16: with `RUNG_PX` reformatted the regex threw `Cannot read
+    properties of null` and the script died, so it was loud, not silent; replaced anyway by `require('../../config/layout.json')`
+    under RULE CFG; closes on the HEADED U1) A2-2 · `scripts/uat/screens.js:17` reads `RUNG_PX` out of `layout.ts` with a regex — a reformatted object would
     silently drop the rung edges; to be mutation-checked (does `uat-screens.test.ts` fail?) and closed as NOT A BUG with that
     measurement, or fixed
   - `[ ]` A2-3 · `apps/mobile/hooks/useIsTablet.ts:4` is `width >= 768` — a width that matches no rung (a 700-wide tablet in
@@ -1843,10 +1852,23 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
     `BottomTabBar.tsx:26`, `PageHeader.tsx:17`, `Modal.tsx:21` … listed by the code map) plus 4 module-level `Dimensions.get`
     constants read the width ONCE — rotating a tablet or split-screen never updates the layout
   - `[ ]` A2-5 · `apps/mobile/components/ui/BottomTabBar.tsx:165` hard-codes the tab list (the user's no-hard-coding line)
-  - `[ ]` A2-6 · nothing guards "no hard-coded rung / shell" — the guard is written in this batch (U5)
+  - `[ ]` (GUARD WRITTEN 2026-10-16 — `tests/unit/layout-config.test.ts`: em forms of every edge in all code, px width checks
+    in the builder + app + their tests and scripts; mutation-proven: a planted `52.49em` and `w < 840` in `lib/` both fail it,
+    removed → passes; the shell half is added with change (3); closes on HEADED U5) A2-6 · nothing guards "no hard-coded rung / shell" — the guard is written in this batch (U5)
   - `[ ]` A2-7 · the web `components/layout/Sidebar.tsx:412` switches to its phone overlay at `innerWidth <= 1023` (Tailwind
     `lg`), not the ladder; and a teacher gets no menu of their own (`:884` picks admin or parent only) — to measure what a
     teacher sees, then fix or ask
+  - `[?]` A2-8 · FOUND by the guard: 11 Educo web-app pages (`app/admin/parents/add`, `…/fees/add`, `…/fees/[id]/edit`,
+    `app/classes/add`, `app/staff/add`, `app/staff/edit/[id]`, `app/staff/[id]/edit`, `app/students/add`, `app/students/edit/[id]`,
+    `app/teachers/add`, `app/teachers/[id]/edit`) each type `window.innerWidth >= 1024` (Tailwind's `lg`) by hand — RULE CFG
+    says config; the value is also baked into their `lg:` classes, so a config value alone would lie. Outside the app-layout
+    area → THE USER'S CALL: in this batch, or its own batch with A2-9
+  - `[?]` A2-9 · the editor's top-bar words show from Tailwind classes typed in box-demo (`WIDE_LABEL` `min-[1600px]` /
+    `min-[1800px]`, `WIDER_LABEL`) — not configurable; the fix is Tailwind reading `config/layout.json` (an `@config` file
+    giving named breakpoints) so every `min-[…]` becomes a named, configured one; `uat-e3-headed.js` names its copy
+    `LABELS_FROM` with a `ponytail:` pointing here → THE USER'S CALL (with A2-8)
+  - `[ ]` (FIXED 2026-10-16 — block comments keep their newlines; measured: an edge on line 5 under a 4-line comment was reported as line 2, now 5) A2-10 · MY OWN, in the new guard: stripping block comments
+    whole shifted the line numbers it reports
 - `[x]` **BATCH G-3 · Placing on columns and rows** — CLOSED 2026-10-04 (HEADED UAT `scripts/uat/uat-g3-headed.js`, six windows,
   65 checks 0 failed on the final build (`logs/g3-uat6.out`), Preview at all 70 screens at 100 / 150 / 200 % text; G-2's suite
   re-run as regression 128/0 (`g2-regress-g3c.out`); gate: see the commit) — OPENED 2026-10-04 (session 5da86722, the user's "go") (area: page grid

@@ -4,6 +4,7 @@
 // to default, Ctrl+Z) and everything measured on the canvas AND in the Preview at every rung, with the page audit's W7.
 //   NODE_PATH=node_modules node scripts/uat/probe-s2.js [--theme=Light] [--pos=0,0]
 const fs = require('fs'); const path = require('path');
+const { EDGE } = require('./screens.js'); // rung + dock edges from config/layout.json (RULE CFG)
 const H = require('./h.js'); const P = require('./pages.js').helpers; const I = require('./inspector.js');
 const { auditDoc } = require('./page-audit.js');
 const arg = (k, d) => { const a = process.argv.find((x) => x.startsWith(`--${k}=`)); return a ? a.split('=')[1] : d; };
@@ -36,7 +37,7 @@ const measure = ([engine, ids]) => {
 const ON_PAGE = ['card', 'button', 'quote', 'alert'];
 const IN_STACK = ['sCard', 'sButton', 'sQuote', 'sAlert'];
 const check = (where, w, m, keep) => {
-  const G = w < 600 ? 14 : 20; // the audit's gutter floor
+  const G = w < EDGE.TP ? 14 : 20; // the audit's gutter floor
   for (let i = 0; i + 1 < ON_PAGE.length; i++) {
     const a = m[ON_PAGE[i]], b = m[ON_PAGE[i + 1]]; if (!a || a.missing || !b || b.missing) { bad(`${where} ${w}: ${ON_PAGE[i]}/${ON_PAGE[i + 1]} missing`); continue; }
     const gap = b.t - a.b; keep[`gap-${i}`] = gap;

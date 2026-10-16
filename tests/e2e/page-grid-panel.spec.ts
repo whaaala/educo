@@ -1,4 +1,6 @@
 import { test, expect, type Page } from "@playwright/test";
+import LAYOUT from "../../config/layout.json";
+const DOCK = LAYOUT.editor.dockFrom; // the editor docks its panels from here (config/layout.json, RULE CFG)
 
 /**
  * THE PAGE GRID PANEL SHOWS WHAT IT CHANGES (E-6; tests/features/components/website/box-builder-spacing.feature).
@@ -44,7 +46,7 @@ for (const [w, h] of [[375, 812], [768, 1024], [1024, 768], [1280, 800], [1536, 
     expect(m.p[0], "its left edge on screen").toBeGreaterThanOrEqual(0);
     expect(m.p[2], "its right edge on screen").toBeLessThanOrEqual(m.vw);
     expect(m.p[3], "its bottom reachable").toBeLessThanOrEqual(m.vh + 1);
-    if (w >= 1024) expect(m.over, "it covers none of the page").toBe(0);
+    if (w >= DOCK) expect(m.over, "it covers none of the page").toBe(0);
   });
 }
 

@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { blockForKind, tableGrid } from "@/lib/box-presets";
+import { RUNG_EM } from "@/lib/educo-ui/layout";
 import { gridNarrowsAt, gridQueryCss, longestWordRem, createElement, createContainer, rowNarrowsAt, hostsNarrowingGrid, CELL_MIN_REM, HAND_FLOOR_REM, type BoxNode } from "@/lib/box-model";
 
 /**
@@ -11,7 +12,7 @@ import { gridNarrowsAt, gridQueryCss, longestWordRem, createElement, createConta
  */
 const statGrid = (n: number): BoxNode => { const g = tableGrid(n, 1); for (const c of g.children ?? []) c.children = [blockForKind("stat")]; return g; };
 const scope = (id: string) => `#${id}`;
-const above = (css: string) => `@media (min-width:37.5em){${css}}`;
+const above = (css: string) => `@media (min-width:${RUNG_EM.tabletPortrait}em){${css}}`;
 
 describe("c-8: a grid narrows by the longest word it holds", () => {
   it("reads the longest word of a cell at the largest size its font reaches", () => {
@@ -93,7 +94,7 @@ describe("L4-h: a row of words wraps into EVEN lines", () => {
   });
   it("emits the regrouping as container queries on the row's host, the stacking step outside the phone wrapper", () => {
     const band = statRow(4);
-    const css = gridQueryCss("#band", band, (id) => `#${id}`, (c) => `@media (min-width:37.5em){${c}}`);
+    const css = gridQueryCss("#band", band, (id) => `#${id}`, (c) => `@media (min-width:${RUNG_EM.tabletPortrait}em){${c}}`);
     expect(css.match(/@container/g)).toHaveLength(2);
     expect(css.match(/@media/g)).toHaveLength(1);             // 2 + 2 is kept off the phone; stacking is the phone's own
     expect(css).toContain("#c0{flex:1 1 calc((100% - 0%) * 0.5");

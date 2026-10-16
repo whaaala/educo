@@ -1,0 +1,13 @@
+{
+  "$comment": "THE LAYOUT, AS DATA (RULE CFG). Every screen edge the builder, the export, the Educo app, the UAT scripts and the tests use is read from here. Change a number here and nowhere else. Rungs: 'from' is the first CSS px of the rung (the cascade runs mobile-first); keep them in ascending order. 'measure' caps a contained column on that rung; 'words' is how the Page check names its screens. narrowestPhone is the low-cost phone a row must still fit (RULE AF). editor.dockFrom is the editor's own chrome line (panels dock from it), not a rung. uat.edgeHeight is the window height the UAT uses for a rung's edge.",
+  "rungs": {
+    "phone":           { "from": 0,    "label": "Phone",            "words": "phones",                 "measure": null },
+    "tabletPortrait":  { "from": 600,  "label": "Tablet portrait",  "words": "tablets held upright",   "measure": "34rem" },
+    "tabletLandscape": { "from": 840,  "label": "Tablet landscape", "words": "tablets held sideways",  "measure": "52rem" },
+    "desktop":         { "from": 1200, "label": "Desktop",          "words": "desktops",               "measure": "68rem" },
+    "wide":            { "from": 1600, "label": "Big desktop",      "words": "wide screens",           "measure": "76rem" }
+  },
+  "narrowestPhone": 360,
+  "editor": { "dockFrom": 1024 },
+  "uat": { "edgeHeight": 900 }
+}

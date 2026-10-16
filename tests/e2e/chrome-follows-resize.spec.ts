@@ -1,5 +1,7 @@
 import { test, expect, type Page } from "@playwright/test";
 import { seedSite, sitePage, pressHeader } from "./helpers/seed-site";
+import LAYOUT from "../../config/layout.json";
+const TP = LAYOUT.rungs.tabletPortrait.from, DOCK = LAYOUT.editor.dockFrom; // config/layout.json (RULE CFG)
 
 /**
  * THE HANDLES STAY ON THE BLOCK — THROUGHOUT A DRAG, NOT JUST AT THE END.
@@ -190,7 +192,7 @@ test.describe("the selection chrome follows the block it is drawn on", () => {
     const vp = page.viewportSize()!;
     // ON A PHONE, AND UNDER A FINGER ON A TABLET, THE BAR DOCKS at the bottom of the screen (E5a-14; E5c-5) — it rides with nothing,
     // so it can float over nothing
-    const docks = vp.width < 600 || (!!test.info().project.use.hasTouch && vp.width < 1024);
+    const docks = vp.width < TP || (!!test.info().project.use.hasTouch && vp.width < DOCK);
     if (docks) expect(bar.y + bar.height, "a docked bar sits at the bottom edge").toBeGreaterThan(vp.height - 40);
     else expect(Math.abs(bar.x - b.x), "the toolbar sits on the block's left edge, wherever that now is").toBeLessThan(6);
   });
@@ -229,7 +231,7 @@ test.describe("the selection chrome follows the block it is drawn on", () => {
       expect(await gapToEdge(page, "Resize bottom edge", "B", "bottom"), `${preset}: the bottom handle is on the bottom edge`).toBeLessThan(4);
       const bar = (await page.locator('[role="toolbar"][aria-label="Block toolbar"]').boundingBox())!;
       const w = page.viewportSize()?.width ?? 1280; // docked on a phone (E5a-14) and under a finger below 1024 (E5c-5)
-      if (!(w < 600 || (!!test.info().project.use.hasTouch && w < 1024))) expect(Math.abs(bar.x - b.x), `${preset}: the toolbar sits on the block's left edge`).toBeLessThan(6);
+      if (!(w < TP || (!!test.info().project.use.hasTouch && w < DOCK))) expect(Math.abs(bar.x - b.x), `${preset}: the toolbar sits on the block's left edge`).toBeLessThan(6);
     }
     expect(moved, `the block really did move, at most of the changes — or this proved nothing (${seen.join(" · ")})`).toBeGreaterThanOrEqual(5);
   });

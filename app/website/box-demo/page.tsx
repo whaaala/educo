@@ -12,7 +12,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { LayoutGrid, Plus, Smartphone, Tablet, Laptop, Monitor, Tv, Maximize2, RotateCw, RotateCcw, Undo2, Redo2, Eye, ShieldCheck, X, Home, Trash2, Files, Download, Settings2, Palette, SlidersHorizontal, PanelRightClose, PanelRightOpen, AlertTriangle, ChevronUp, MoreHorizontal } from "lucide-react";
 import { DEFAULT_THEME, resolveSiteTheme } from "@/lib/site-storage";
 import { THEMES, type ThemeId } from "@/lib/theme-config";
-import { RUNG_LABEL, RUNG_ORDER, RUNG_PX } from "@/lib/educo-ui/layout";
+import { EDITOR_DOCK_PX, mediaBelow as below, RUNG_LABEL, RUNG_ORDER, RUNG_PX } from "@/lib/educo-ui/layout";
 import {
   type BoxNode, type Breakpoint, createContainer, findBox, findParent, updateBox, insertBox, deleteBox, duplicateBox, widthPct, makeRowBand, normalizeRowBands, markPageGrid, groupBoxes, alignInRow, alignInRowOf, setSectionWidth, sectionWidthOf, pageBandOf,
   floatBox, unfloatBox, bringToFront, bringForward, sendBackward, sendToBack,
@@ -44,6 +44,9 @@ import PageCheck, { pageCheckCount } from "@/components/website/box/PageCheck";
 import SiteFontsFields from "@/components/website/box/SiteFontsFields";
 import { useCanvasZoom, ZoomControls } from "@/components/website/box/CanvasZoom";
 
+/** The editor docked from its line (config/layout.json, RULE CFG). */
+const DOCKED = `(min-width: ${EDITOR_DOCK_PX / 16}em)`;
+const NARROW = below(EDITOR_DOCK_PX); // E5c-4 (the user 2026-10-07): docked from the dock line — at 900–1023 a docked Inspector left the 1:1 canvas 484–607px
 const KEY = "educo_box_site_v1"; // multi-page site
 const LEGACY_KEY = "educo_box_demo_v9"; // old single-tree document (migrated on load)
 const CLEANED_KEY = "educo_box_site_cleaned_v1"; // one-time flag: empty-section chrome already pruned
@@ -74,9 +77,9 @@ const DEVICE_RUNG: Record<Device, Breakpoint> = {
 const DEVICES: { id: Device; label: string; w: number | null; Icon: typeof Smartphone }[] = [
   { id: "mobile", label: "Mobile", w: 375, Icon: Smartphone }, // phone rung
   { id: "tablet", label: "Tablet", w: 768, Icon: Tablet }, // tablet portrait (600+)
-  { id: "laptop", label: "Laptop", w: 1024, Icon: Laptop }, // tablet landscape (900+)
+  { id: "laptop", label: "Laptop", w: 1024, Icon: Laptop }, // tablet landscape
   { id: "desktop", label: "Desktop", w: 1280, Icon: Monitor }, // desktop (1200+)
-  { id: "wide", label: "Wide", w: 1920, Icon: Tv }, // big desktop (1800+)
+  { id: "wide", label: "Wide", w: 1920, Icon: Tv }, // big desktop
   { id: "full", label: "Full width", w: null, Icon: Maximize2 },
 ];
 
@@ -228,7 +231,7 @@ export default function BoxDemoPage() {
   const [blocksOpen, setBlocksOpen] = useState(false);
   const [wideScreen, setWideScreen] = useState(false);
   useEffect(() => {
-    const mq = window.matchMedia("(min-width: 64em)");
+    const mq = window.matchMedia(DOCKED);
     const on = () => setWideScreen(mq.matches);
     on(); mq.addEventListener("change", on);
     return () => mq.removeEventListener("change", on);
@@ -236,7 +239,7 @@ export default function BoxDemoPage() {
   const panelDocked = blocksOpen && wideScreen;
   /**
    * A PHONE OR A TABLET EDITS AT ITS OWN WIDTH (E-5a D1, E-5c T1 — the user's decisions): under 64em the canvas opens on the
-   * device for the window's rung — Mobile under 37.5em, Tablet to 56.25em, Laptop to 64em — drawn 1:1 across the screen, not
+   * device for the window's rung — Mobile under Tablet portrait, Tablet to Tablet landscape, Laptop to the dock line (config/layout.json) — drawn 1:1 across the screen, not
    * the 1200px desktop page shrunk to fit; crossing a line (a tablet turned, a window resized) sets it again. From 64em the
    * desktop page at Fit, as before. The device control still shows any other screen. The window decides, never the device.
    */
@@ -244,7 +247,7 @@ export default function BoxDemoPage() {
   // THE ONE-ROW BAR (E-5a, E5a-16) on every screen under 64em — a tablet too (E5c-2, the user 2026-10-07): pages, Undo, Redo, Preview, More
   const compactBar = screenDevice !== null;
   useEffect(() => {
-    const qs = ["(max-width: 37.49em)", "(max-width: 56.24em)", "(max-width: 63.99em)"].map((q) => window.matchMedia(q));
+    const qs = [below(RUNG_PX.tabletPortrait), below(RUNG_PX.tabletLandscape), below(EDITOR_DOCK_PX)].map((q) => window.matchMedia(q));
     const read = (): Device | null => (qs[0].matches ? "mobile" : qs[1].matches ? "tablet" : qs[2].matches ? "laptop" : null);
     const first = read();
     setScreenDevice(first);
@@ -265,7 +268,6 @@ export default function BoxDemoPage() {
   }, [moreOpen]);
   /** WHERE THE NEXT BLOCK GOES, as chosen in the panel for THIS selection (E-5a, D3); a new selection starts at its default. */
   const [whereChoice, setWhereChoice] = useState<{ for: string | null; where: InsertWhere } | null>(null);
-  const NARROW = "(max-width: 63.99em)"; // E5c-4 (the user 2026-10-07): docked from 64em — at 900–1023 a docked Inspector left the 1:1 canvas 484–607px
   const inspectorOpenRef = useRef(inspectorOpen);
   inspectorOpenRef.current = inspectorOpen;
   useEffect(() => {
@@ -537,7 +539,7 @@ export default function BoxDemoPage() {
    *
    * Measured on a 1440px screen: choosing **Wide** asked for 1920px and rendered 1392px — and the frame's own
    * `innerWidth` was 1392 too, so the page inside laid itself out at the DESKTOP rung (1200+) instead of the
-   * big-desktop rung (1800+). The preview was not merely small; it was showing a different layout from the one
+   * big-desktop rung. The preview was not merely small; it was showing a different layout from the one
    * the label named, with nothing to say so. Every narrower device was honest, which is what kept it hidden.
    *
    * So the frame is given its true width (`max-width: none`) and SCALED DOWN to fit, the way a browser's own
@@ -1395,7 +1397,7 @@ export default function BoxDemoPage() {
       </header>
       {compactBar && moreOpen && (<>
         <div aria-hidden="true" onClick={() => setMoreOpen(false)} style={{ zIndex: CHROME_Z.drawer }} className="fixed inset-0 bg-black/20" />
-        <div role="dialog" aria-label="More" style={{ zIndex: CHROME_Z.drawer }} className="fixed inset-x-0 bottom-0 max-h-[70dvh] overflow-y-auto rounded-t-2xl border-t border-line bg-surface shadow-2xl p-4 pt-2 space-y-3 min-[37.5em]:mx-auto min-[37.5em]:max-w-[32rem] min-[37.5em]:border-x">
+        <div role="dialog" aria-label="More" style={{ zIndex: CHROME_Z.drawer }} className="fixed inset-x-0 bottom-0 max-h-[70dvh] overflow-y-auto rounded-t-2xl border-t border-line bg-surface shadow-2xl p-4 pt-2 space-y-3 mx-auto max-w-[32rem] min-[32rem]:border-x">
           <span aria-hidden="true" className="mx-auto block h-1.5 w-10 rounded-full bg-line" />
           <div className="flex items-center justify-between">
             <span className="text-sm font-bold text-ink">More</span>

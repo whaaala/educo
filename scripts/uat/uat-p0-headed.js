@@ -9,7 +9,7 @@
 //   NODE_PATH=node_modules node scripts/uat/uat-p0-headed.js [--only=A,C]
 const path = require('path'); const fs = require('fs');
 const H = require('./h.js'); const P = require('./pages.js').helpers; const I = require('./inspector.js');
-const { SCREENS } = require('./screens.js');
+const { SCREENS, EDGE } = require('./screens.js');
 const OUT = path.join(__dirname, 'logs', 'uat-p0'); fs.mkdirSync(OUT, { recursive: true });
 const ONLY = (process.argv.find((a) => a.startsWith('--only=')) || '').slice(7).split(',').filter(Boolean);
 const KEY = 'educo_box_site_v1'; const RED = 'rgb(255, 0, 0)';
@@ -49,11 +49,11 @@ const SLICES = {
     await chip(page, 'Desktop (1280px)'); ok('canvas 1280: neither shows', (await cs(page, a, 'backgroundColor')) !== RED && (await cs(page, b, 'backgroundColor')) !== RED);
     const bad = [];
     await preview(page, SCREENS, async (f, w) => { const pa = (await pub(f, a, 'backgroundColor')) === RED, pb = (await pub(f, b, 'backgroundColor')) === RED;
-      if (pa !== (w < 600)) bad.push(`${w}: phone-only ${pa ? 'shows' : 'missing'}`); if (pb !== (w >= 1800)) bad.push(`${w}: wide-only ${pb ? 'shows' : 'missing'}`); if (await sideways(f) > 1) bad.push(`${w}: sideways`); });
+      if (pa !== (w < EDGE.TP)) bad.push(`${w}: phone-only ${pa ? 'shows' : 'missing'}`); if (pb !== (w >= EDGE.WD)) bad.push(`${w}: wide-only ${pb ? 'shows' : 'missing'}`); if (await sideways(f) > 1) bad.push(`${w}: sideways`); });
     ok(`Preview at all ${SCREENS.length} screens: phone-only red below 600 only, wide-only red from 1800 only`, !bad.length, bad.slice(0, 6).join(' · '));
     await chip(page, 'Desktop (1280px)'); await advanced(page, a, 'background-color: blue;');
     const blue = 'rgb(0, 0, 255)'; const bad2 = [];
-    await preview(page, SCREENS, async (f, w) => { const c = await pub(f, a, 'backgroundColor'); if (c !== (w < 600 ? RED : blue)) bad2.push(`${w}: ${c}`); });
+    await preview(page, SCREENS, async (f, w) => { const c = await pub(f, a, 'backgroundColor'); if (c !== (w < EDGE.TP ? RED : blue)) bad2.push(`${w}: ${c}`); });
     ok(`a DESKTOP value beside the phone's own: red below 600, blue from 600, all ${SCREENS.length} screens`, !bad2.length, bad2.slice(0, 6).join(' · '));
     await H.select(page, a); await page.keyboard.press('Control+z'); await page.waitForTimeout(600); await chip(page, 'Desktop (1280px)');
     ok('undo removes the desktop value (canvas 1280 no longer blue)', (await cs(page, a, 'backgroundColor')) !== blue);
@@ -90,7 +90,7 @@ const SLICES = {
     const atPhone = await cs(page, row, 'justifyContent'); await chip(page, 'Desktop (1280px)'); const atDesk = await cs(page, row, 'justifyContent');
     ok('"Position in row: Right" at Phone → phone right, desktop unchanged', atPhone === 'flex-end' && atDesk === before, `phone ${atPhone} · desktop ${before} → ${atDesk}`);
     let bad = [];
-    await preview(page, SCREENS, async (f, w) => { const j = await pub(f, row, 'justifyContent'); if ((j === 'flex-end') !== (w < 600)) bad.push(`${w}: ${j}`); });
+    await preview(page, SCREENS, async (f, w) => { const j = await pub(f, row, 'justifyContent'); if ((j === 'flex-end') !== (w < EDGE.TP)) bad.push(`${w}: ${j}`); });
     ok(`Preview at all ${SCREENS.length} screens: right below 600, left from 600`, !bad.length, bad.slice(0, 6).join(' · '));
     await page.reload(); await page.waitForTimeout(1500); await chip(page, 'Mobile (375px)');
     ok('after a reload the phone is still right, the desktop left', (await cs(page, row, 'justifyContent')) === 'flex-end');

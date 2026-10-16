@@ -1,4 +1,6 @@
 import { test, expect } from "@playwright/test";
+import LAYOUT from "../../config/layout.json";
+const DOCK = LAYOUT.editor.dockFrom; // the editor docks its panels from here (config/layout.json, RULE CFG)
 
 /**
  * THE EDITOR'S OWN TOOLBAR FITS ON THE SCREEN — every control, at every width.
@@ -44,7 +46,7 @@ test.describe("the builder's toolbar fits the screen it is on", () => {
       await page.setViewportSize({ width: w, height: 900 });
       await page.waitForTimeout(250);
       // ON A PHONE OR TABLET THE BAR IS ONE ROW and the rest is in its More sheet (E5a-16; tablets E5c-2, the user 2026-10-07)
-      const phoneBar = w < 1024 ? ["Undo", "Redo", "Preview", "More"] : null;
+      const phoneBar = w < DOCK ? ["Undo", "Redo", "Preview", "More"] : null;
       const r = await page.evaluate((controls) => {
         const header = document.querySelector("header")!;
         const named = (name: string) => Array.from(header.querySelectorAll("button, input, [role='group']"))
@@ -140,7 +142,7 @@ test.describe("the builder's toolbar fits the screen it is on", () => {
     expect(await check.evaluate((b) => b === document.activeElement), "the focus is back on the button that opened it").toBe(true);
   });
 
-  test("the Inspector follows the width at every crossing of 64em, as on load (E3-3, the user 2026-10-06)", async ({ page }) => {
+  test("the Inspector follows the width at every crossing of the dock line, as on load (E3-3, the user 2026-10-06)", async ({ page }) => {
     const docked = () => page.locator('aside[aria-label="Inspector"]').isVisible();
     await page.setViewportSize({ width: 768, height: 1000 });
     await page.goto("/website/box-demo");
@@ -149,10 +151,10 @@ test.describe("the builder's toolbar fits the screen it is on", () => {
     expect(await docked(), "768: it starts as its tab").toBe(false);
     await page.setViewportSize({ width: 962, height: 601 }); await page.waitForTimeout(400);
     expect(await docked(), "962 × 601, a tablet held sideways: still its tab — docked it left the page 546px (E5c-4, the user 2026-10-07)").toBe(false);
-    await page.setViewportSize({ width: 1024, height: 1000 }); await page.waitForTimeout(400);
-    expect(await docked(), "widened to 1024 (the crossing itself): it docks open").toBe(true);
-    await page.setViewportSize({ width: 1023, height: 1000 }); await page.waitForTimeout(400);
-    expect(await docked(), "1023: its tab again").toBe(false);
+    await page.setViewportSize({ width: DOCK, height: 1000 }); await page.waitForTimeout(400);
+    expect(await docked(), `widened to ${DOCK} (the crossing itself): it docks open`).toBe(true);
+    await page.setViewportSize({ width: DOCK - 1, height: 1000 }); await page.waitForTimeout(400);
+    expect(await docked(), `${DOCK - 1}: its tab again`).toBe(false);
     await page.getByRole("button", { name: "Expand inspector" }).click(); await page.waitForTimeout(300);
     await page.setViewportSize({ width: 900, height: 1000 }); await page.waitForTimeout(400);
     expect(await docked(), "tapped open, then narrower WITHOUT crossing: the tap holds").toBe(true);

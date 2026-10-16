@@ -22,16 +22,24 @@
  * named tiers lets the builder be right by default rather than asking a teacher to guess a number.
  */
 
-/** The five rungs, in px. Every other form is derived — never re-type a number. */
-export const RUNG_PX = {
-  phone: 0,
-  tabletPortrait: 600,
-  tabletLandscape: 900,
-  desktop: 1200,
-  wide: 1800,
-} as const;
+import LAYOUT from "../../config/layout.json";
 
-export type RungName = keyof typeof RUNG_PX;
+/** The five rungs, as configured in `config/layout.json` (RULE CFG). Every other form is derived — never re-type a number. */
+export type RungName = keyof typeof LAYOUT.rungs;
+const RUNGS = LAYOUT.rungs as { [K in RungName]: { from: number; label: string; words: string; measure: string | null } };
+
+/** The rungs' first px, in order. Validated where the config is read: phone at 0, each rung wider than the last. */
+export const RUNG_PX = Object.fromEntries(Object.entries(RUNGS).map(([k, r]) => [k, r.from])) as { [K in RungName]: number };
+Object.values(RUNG_PX).forEach((px, i, all) => {
+  if (!Number.isFinite(px) || (i === 0 ? px !== 0 : px <= all[i - 1])) throw new Error(`config/layout.json: rung ${i} "from" ${px} — phone must be 0 and each rung wider than the one before`);
+});
+
+/** The narrowest phone a row must still fit, in px (RULE AF). */
+export const NARROWEST_PHONE_PX: number = LAYOUT.narrowestPhone;
+/** The editor's own chrome line: from here its panels dock beside the canvas. Not a rung. */
+export const EDITOR_DOCK_PX: number = LAYOUT.editor.dockFrom;
+/** How the Page check names each rung's screens. */
+export const RUNG_WORDS = Object.fromEntries(Object.entries(RUNGS).map(([k, r]) => [k, r.words])) as { [K in RungName]: string };
 
 /** The same ladder in `em`, which is what a media query should use. Derived, so it cannot drift. */
 export const RUNG_EM = Object.fromEntries(
@@ -44,22 +52,10 @@ export const RUNG_EM = Object.fromEntries(
  * A container is not simply "as wide as it can be": past roughly 75 characters a line of text becomes hard to
  * track back to the start of, so each rung earns a cap rather than inheriting the viewport.
  */
-export const RUNG_MEASURE: { [K in RungName]: string | null } = {
-  phone: null, // no cap — the page gutters already hold it in
-  tabletPortrait: "34rem",
-  tabletLandscape: "52rem",
-  desktop: "68rem",
-  wide: "76rem",
-};
+export const RUNG_MEASURE = Object.fromEntries(Object.entries(RUNGS).map(([k, r]) => [k, r.measure])) as { [K in RungName]: string | null }; // phone: null — the page gutters already hold it in
 
 /** Human labels, so the builder's device chips and this ladder can never disagree. */
-export const RUNG_LABEL: { [K in RungName]: string } = {
-  phone: "Phone",
-  tabletPortrait: "Tablet portrait",
-  tabletLandscape: "Tablet landscape",
-  desktop: "Desktop",
-  wide: "Big desktop",
-};
+export const RUNG_LABEL = Object.fromEntries(Object.entries(RUNGS).map(([k, r]) => [k, r.label])) as { [K in RungName]: string };
 
 export const RUNG_ORDER = Object.keys(RUNG_PX) as RungName[];
 
@@ -67,6 +63,9 @@ export const RUNG_ORDER = Object.keys(RUNG_PX) as RungName[];
 export function mediaFrom(rung: RungName): string | null {
   return rung === "phone" ? null : `@media (min-width: ${RUNG_EM[rung]}em)`;
 }
+
+/** The query for every width UNDER `px` (the last em before it), for the editor's own `matchMedia`. */
+export const mediaBelow = (px: number) => `(max-width: ${px / 16 - 0.01}em)`;
 
 /** Wrap declarations in the query for a rung, or return them bare on the phone rung. */
 export function atRung(rung: RungName, css: string): string {

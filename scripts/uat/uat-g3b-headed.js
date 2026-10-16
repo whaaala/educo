@@ -10,7 +10,7 @@
 //   NODE_PATH=node_modules node scripts/uat/uat-g3b-headed.js [--only=A,C]
 const path = require('path'); const fs = require('fs');
 const H = require('./h.js'); const P = require('./pages.js').helpers;
-const { SCREENS } = require('./screens.js');
+const { SCREENS, EDGE } = require('./screens.js');
 const OUT = path.join(__dirname, 'logs', 'uat-g3b'); fs.mkdirSync(OUT, { recursive: true });
 const ONLY = (process.argv.find((a) => a.startsWith('--only=')) || '').slice(7).split(',').filter(Boolean);
 const KEY = 'educo_box_site_v1';
@@ -58,7 +58,7 @@ async function preview(page, screens, fn, scale = 1) {
 }
 const pubRect = (f, id) => f.evaluate((id) => { const e = document.querySelector(`.bx-${id.replace(/[^A-Za-z0-9_-]/g, '-')}`); if (!e) return null; const r = e.getBoundingClientRect(); return { l: r.left, r: r.right, w: r.width, t: r.top }; }, id);
 /** The Preview's page lines at width `w`: the page grid's columns (6 below 600, 12 from it) across the page. */
-const pubLines = (f, w) => f.evaluate((w) => { const W = document.documentElement.clientWidth, n = w < 600 ? 6 : 12; return Array.from({ length: n + 1 }, (_, k) => (k * W) / n); }, w);
+const pubLines = (f, w) => f.evaluate(([w, tp]) => { const W = document.documentElement.clientWidth, n = w < tp ? 6 : 12; return Array.from({ length: n + 1 }, (_, k) => (k * W) / n); }, [w, EDGE.TP]);
 /** Inside the Preview: sideways scroll, overlapping neighbours, words broken out of their box, unequal lines of a row. */
 const pageFaults = (f) => f.evaluate(() => {
   const out = [];
@@ -434,7 +434,7 @@ const sliceK = (dev) => async (page, ok) => {
     if (await sideways(f) > 1) bad.push(w + ': sideways');
     for (const x of await pageFaults(f)) bad.push(w + ': ' + x);
     const [pp, pa, pb] = await Promise.all([ph, a, b].map((x) => pubRect(f, x)));
-    if (w >= 1200 && pp && pa && pb && !(Math.abs(pa.l - pb.l) < 1 && pb.t > pa.t + 1 && pa.l > pp.r)) bad.push(w + ': not beside the photo');
+    if (w >= EDGE.DT && pp && pa && pb && !(Math.abs(pa.l - pb.l) < 1 && pb.t > pa.t + 1 && pa.l > pp.r)) bad.push(w + ': not beside the photo');
     if (pp && pa && pb && pa.t >= pp.t + 1 && pb.t >= pa.t + 1 && pa.l <= pp.l + 1 && Math.max(pp.l, pa.l, pb.l) - Math.min(pp.l, pa.l, pb.l) > 0.6) bad.push(w + ': stacked but not on the same left frame (G3b-23) ' + [pp.l, pa.l, pb.l].map((v) => v.toFixed(1)).join('/'));
   });
   ok('U7 ' + dev + ' · Preview at all ' + SCREENS.length + ' screens: beside the photo from 1200 up; no overlap, sideways scroll, broken word or staircase', !bad.length, bad.slice(0, 6).join(' · '));

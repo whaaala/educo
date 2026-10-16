@@ -8,7 +8,7 @@
 const path = require('path'); const fs = require('fs');
 process.env.UAT_OUT = process.env.UAT_OUT || path.join(__dirname, 'logs', 'uat-e5c');
 const E = require('./uat-e5b-headed.js');
-require('./screens.js'); // the Preview sweep (E.sweep) runs every screen of it, the three African tablets included (RULE Z)
+const { EDGE } = require('./screens.js'); // the Preview sweep (E.sweep) runs every screen of it, the three African tablets included (RULE Z)
 const OUT = process.env.UAT_OUT; fs.mkdirSync(OUT, { recursive: true });
 const ONLY = (process.argv.find((a) => a.startsWith('--only=')) || '').slice(7).split(',').filter(Boolean);
 const POOL = 6;
@@ -25,7 +25,7 @@ const canvas = (page) => page.evaluate(() => {
 });
 /** The Width presets (Fit · Full · ½ · ⅓ · Custom) — other controls are named Width too */
 const widthGroup = (page) => page.getByRole('group', { name: 'Width', exact: true }).filter({ has: page.getByRole('button', { name: '½' }) }).first();
-const ownDevice = (w) => (w < 600 ? 'Mobile' : w < 900 ? 'Tablet' : w < 1024 ? 'Laptop' : 'Full width');
+const ownDevice = (w) => (w < EDGE.TP ? 'Mobile' : w < EDGE.TL ? 'Tablet' : w < EDGE.DOCK ? 'Laptop' : 'Full width');
 
 /** C1 · C7 — what the window opened on */
 async function C1(page, ok, w, h) {
@@ -60,7 +60,7 @@ async function C6(page, ok, w, h, id) {
 
 /** C3 · C4 — an edit on the tablet lands on its rung; the device control still shows the desktop page */
 async function C3(page, ok, w, ids) {
-  const rung = w < 900 ? 'tabletPortrait' : 'tabletLandscape';
+  const rung = w < EDGE.TL ? 'tabletPortrait' : 'tabletLandscape';
   await selectBox(page, ids.stack);
   const fold = page.getByRole('button', { name: 'Expand inspector' }); const folded = await fold.isVisible().catch(() => false);
   if (folded) { await press(page, fold); await page.waitForTimeout(400); }
@@ -119,10 +119,10 @@ async function RT(page, ok, id) {
     await page.setViewportSize({ width: w, height: h }); await page.waitForTimeout(1300); // the frame's width eases over 300ms once the room settles (E5c-3)
     const c = await canvas(page), d = await pressedDevice(page);
     ok(`C2 → ${w}×${h}: edits ${ownDevice(w)}`, d === ownDevice(w), `pressed ${d}`);
-    if (w < 1024) ok(`C2 → ${w}×${h}: 1:1`, c.z === 1 && Math.abs(c.fw - c.room) < 2, JSON.stringify(c));
+    if (w < EDGE.DOCK) ok(`C2 → ${w}×${h}: 1:1`, c.z === 1 && Math.abs(c.fw - c.room) < 2, JSON.stringify(c));
     ok(`C2 → ${w}×${h}: the selection held`, c.selected >= 1);
     ok(`C2 → ${w}×${h}: nothing scrolls sideways`, c.sideways <= 0, `${c.sideways}px`);
-    ok(`C2 → ${w}×${h}: the Inspector ${w >= 1024 ? 'docked' : 'a tab'}`, (c.inspector === 'static') === (w >= 1024), c.inspector);
+    ok(`C2 → ${w}×${h}: the Inspector ${w >= EDGE.DOCK ? 'docked' : 'a tab'}`, (c.inspector === 'static') === (w >= EDGE.DOCK), c.inspector);
     await page.screenshot({ path: path.join(OUT, `${id}-${w}x${h}.png`) });
   }
 }
@@ -197,7 +197,7 @@ if (require.main === module) (async () => {
       if (kind === 'TB') { await TB(page, ok, id, w, h); if (id === 'TB-601x1007-Light') await E.sweep(page, ok, 'a page a finger built on a 601 tablet'); }
       else if (kind === 'RT') await RT(page, ok, id);
       else if (kind === 'FS') await FS(page, ok, id);
-      else if (kind === 'PH') { if (w >= 1024) { const c = await canvas(page); ok(`C9 ${w}×${h} touch: the desktop page at Fit, as before`, (await pressedDevice(page)) === 'Full width' && c.inspector === 'static', JSON.stringify(c)); } await E.FG(page, ok, id, `${w}px`); }
+      else if (kind === 'PH') { if (w >= EDGE.DOCK) { const c = await canvas(page); ok(`C9 ${w}×${h} touch: the desktop page at Fit, as before`, (await pressedDevice(page)) === 'Full width' && c.inspector === 'static', JSON.stringify(c)); } await E.FG(page, ok, id, `${w}px`); }
       else await E.MS(page, ok, id, `${w}px mouse`);
     } catch (e) { ok(`step: ${e.message.split('\n').slice(0, 8).join(' / ')}`, false); await page.screenshot({ path: path.join(OUT, `${id}-error.png`) }).catch(() => {}); }
     if (errs.length) ok('console / page errors', false, errs.slice(0, 3).join(' | '));

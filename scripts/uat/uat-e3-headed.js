@@ -12,7 +12,8 @@
 const path = require('path'); const fs = require('fs');
 const { chromium } = require('playwright');
 const H = require('./h.js'); const P = require('./pages.js').helpers;
-const { SCREENS } = require('./screens.js');
+const { SCREENS, EDGE } = require('./screens.js');
+const LABELS_FROM = 1600; // ponytail: the top bar's words show from Tailwind's min-[1600px] in box-demo (WIDE_LABEL) — a typed class until Tailwind reads config/layout.json (ledger A2-9); not a rung
 const OUT = path.join(__dirname, 'logs', 'uat-e3'); fs.mkdirSync(OUT, { recursive: true });
 const BASE = process.env.BASE || 'http://localhost:3100';
 const ONLY = (process.argv.find((a) => a.startsWith('--only=')) || '').slice(7).split(',').filter(Boolean);
@@ -47,7 +48,7 @@ const gridCells = (page, leaf) => page.evaluate(([k, id]) => { const s = JSON.pa
 const openInspector = async (page) => { const t = page.getByRole('button', { name: 'Expand inspector' }); if (await t.isVisible().catch(() => false)) { await t.click(); await page.waitForTimeout(500); return true; } return false; };
 const near = (a, b, tol = 2) => Math.abs(a - b) <= tol;
 /** Below 64em the open Inspector is a drawer OVER the canvas: a person shuts it before tapping a block (E3-8). */
-const shutInspector = async (page) => { const b = page.getByRole('button', { name: 'Collapse inspector' }); if (await b.isVisible().catch(() => false) && await page.evaluate(() => matchMedia('(max-width: 63.99em)').matches)) { await b.click(); await page.waitForTimeout(400); } };
+const shutInspector = async (page) => { const b = page.getByRole('button', { name: 'Collapse inspector' }); if (await b.isVisible().catch(() => false) && await page.evaluate((dock) => matchMedia('(max-width: ' + (dock / 16 - 0.01) + 'em)').matches, EDGE.DOCK)) { await b.click(); await page.waitForTimeout(400); } };
 const selected = (page) => page.evaluate(() => document.querySelector('.outline-indigo-500')?.getAttribute('data-box-id') ?? null);
 const editing = (page) => page.evaluate(() => { const a = document.activeElement; return a?.isContentEditable ? a.closest('[data-box-id]')?.getAttribute('data-box-id') ?? null : null; });
 /** A block INTO a Stack: from the palette on a tablet; on a phone the open palette covers the canvas (E2-20), so the block toolbar's "+". */
@@ -246,8 +247,8 @@ async function TB(page, ok, theme) {
     if (w >= 1280) ok(`U7 ${w}px: the top bar is one row`, r.h <= 64, `${r.h}px`);
     ok(`U7 ${w}px: no control off screen, the page never scrolls sideways`, !r.off.length && !r.side, r.off.join(' · '));
     const shown = [];
-    for (const n of WORDS) { const b = btn(n); if (!(await b.isVisible())) { shown.push(`${n}: NOT A BUTTON`); continue; } const t = await b.getAttribute('title'); const txt = (await b.innerText()).includes(n); if (!t || txt !== (w >= 1600)) shown.push(`${n}: words ${txt ? 'on' : 'off'}, tooltip ${t ? 'yes' : 'NO'}`); }
-    ok(`U7 ${w}px: the five ${w >= 1600 ? 'show their words' : 'are icons'}, each with its name and tooltip`, !shown.length, shown.join(' · '));
+    for (const n of WORDS) { const b = btn(n); if (!(await b.isVisible())) { shown.push(`${n}: NOT A BUTTON`); continue; } const t = await b.getAttribute('title'); const txt = (await b.innerText()).includes(n); if (!t || txt !== (w >= LABELS_FROM)) shown.push(`${n}: words ${txt ? 'on' : 'off'}, tooltip ${t ? 'yes' : 'NO'}`); }
+    ok(`U7 ${w}px: the five ${w >= LABELS_FROM ? 'show their words' : 'are icons'}, each with its name and tooltip`, !shown.length, shown.join(' · '));
     if (w === 1280) await page.locator('header').screenshot({ path: path.join(OUT, `TB-${theme}-1280.png`) });
     if (w === 1536) await page.locator('header').screenshot({ path: path.join(OUT, `TB-${theme}-1536.png`) });
   }

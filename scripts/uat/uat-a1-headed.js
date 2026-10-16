@@ -8,7 +8,7 @@ const { chromium } = require('playwright');
 const { unzipSync } = require('fflate');
 const sharp = require('sharp');
 const H = require('./h.js');
-const { SCREENS } = require('./screens.js');
+const { SCREENS, EDGE } = require('./screens.js');
 
 const OUT = path.join(__dirname, 'a1-out'); fs.rmSync(OUT, { recursive: true, force: true }); fs.mkdirSync(OUT, { recursive: true });
 const SITES = path.join(OUT, 'sites');
@@ -143,7 +143,7 @@ async function siteOffline(pos) {
 // ── the served export at one screen: overflow, fonts fetched by subset, the right photo copy, lazy, 150 % text ──
 async function screenCheck(browser, site, page, s, subsets) {
   const dpr = s.w <= 480 ? 2 : 1;
-  const ctx = await browser.newContext({ viewport: { width: s.w, height: s.h }, deviceScaleFactor: dpr, isMobile: s.w <= 480, hasTouch: s.w <= 1024 });
+  const ctx = await browser.newContext({ viewport: { width: s.w, height: s.h }, deviceScaleFactor: dpr, isMobile: s.w <= 480, hasTouch: s.w <= EDGE.DOCK });
   const tab = await ctx.newPage(); const req = [];
   tab.on('request', (r) => req.push(new URL(r.url()).pathname.replace(`/${site}/`, '')));
   await tab.goto(`${HOST}/${site}/${page}`, { waitUntil: 'load' }); await tab.waitForTimeout(400);

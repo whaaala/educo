@@ -307,7 +307,7 @@ Run through this checklist BEFORE telling the user it's done:
     all of the devices… all of the breakpoints… all of the view widths… that must be a rule… for all of our UAT
     testing").** Every UAT's Preview pass runs through ALL of `scripts/uat/screens.js`: every device of the Preview's own
     menu (`lib/preview-devices.ts`, at real width × height — phones incl. Tecno / Infinix / itel, tablets, laptops,
-    monitors, the user's 1536 × 864) and both sides of every breakpoint (599 | 600, 899 | 900, 1199 | 1200, 1799 | 1800).
+    monitors, the user's 1536 × 864) and both sides of every breakpoint (599 | 600, 839 | 840, 1199 | 1200, 1599 | 1600 — read from `config/layout.json`).
     A device or size we need that is missing is ADDED to `lib/preview-devices.ts` (then every UAT checks it). Guarded by
     `tests/unit/uat-screens.test.ts`: the list must hold every preset and every breakpoint, and every new headed UAT
     script must use it. A pass that checked one size is not a pass.
@@ -766,7 +766,9 @@ Every content item and component, existing and future, across the whole app:
 ### 18. The five-rung responsive model (this project's ladder)
 - **`base` IS desktop.** The cascade runs to NARROWER screens; `wide` branches off.
 - Legacy `tablet` / `mobile` slots are still read, so no saved page migrates.
-- Rungs: phone · tablet portrait (600) · tablet landscape (900) · desktop (1200) · big desktop (1800), in `em`.
+- Rungs: phone · tablet portrait (600) · tablet landscape (840) · desktop (1200) · big desktop (1600), in `em` — the
+  platforms' own lines (M3 / Apple; the user's decision 1, 2026-10-15), stored ONLY in `config/layout.json` (RULE CFG,
+  guarded by `tests/unit/layout-config.test.ts`). Saved pages store overrides by rung NAME, so moving a width migrates nothing.
 
 ### 19. Edge-anchored resize (broken on three separate occasions — never again)
 - **The edge you grab is the ONLY one that moves; the opposite edge stays fixed.** All four sides, every layout, every depth.

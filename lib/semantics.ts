@@ -17,6 +17,7 @@
  */
 import { type BoxNode, type Breakpoint, BP_ORDER, isBare, isPageRow, resolveResponsive, baseUnitParts, pageRowCells, pageRowTracks, rowSide, bandGutter, longestWordRem } from "./box-model";
 import { FONT_FAMILIES, familyOf, missingLetters } from "./educo-ui/fonts";
+import { NARROWEST_PHONE_PX, RUNG_PX, RUNG_WORDS, type RungName } from "./educo-ui/layout";
 
 /** The elements a container may be. `div` is the neutral default. */
 export type SemanticTag = "div" | "header" | "nav" | "main" | "section" | "article" | "aside" | "footer" | "ul" | "ol" | "figure" | "address";
@@ -218,8 +219,9 @@ function fontThatWrites(text: string, stack: string): string | undefined {
 }
 
 /** The narrowest screen of each kind, in rem — what a row set for that screen has to fit (G3b-11). 360px is the low-cost phone (RULE AF). */
-const NARROWEST_REM: Record<Breakpoint, number> = { phone: 22.5, tabletPortrait: 37.5, tabletLandscape: 56.25, base: 75, wide: 112.5 };
-const SCREEN_WORDS: Record<Breakpoint, string> = { phone: "phones", tabletPortrait: "tablets held upright", tabletLandscape: "tablets held sideways", base: "desktops", wide: "wide screens" };
+const rungOf = (bp: Breakpoint): RungName => (bp === "base" ? "desktop" : bp);
+const NARROWEST_REM = (bp: Breakpoint) => (bp === "phone" ? NARROWEST_PHONE_PX : RUNG_PX[rungOf(bp)]) / 16; // config/layout.json (RULE CFG)
+const SCREEN_WORDS = (bp: Breakpoint) => RUNG_WORDS[rungOf(bp)];
 
 /** C1: the Page check — ONLY what needs a person. Everything else was corrected by `resolvePage`. */
 /**
@@ -301,10 +303,10 @@ export function pageCheck(root: BoxNode, sem: PageSemantics = resolvePage(root),
     const kids = band.children ?? [];
     for (const bp of BP_ORDER) {
       if (bp === "base" || !kids.some((k) => { const r = resolveResponsive(k, bp); return r.width !== k.width || r.marginLeftPct !== k.marginLeftPct; })) continue;
-      const W = NARROWEST_REM[bp], { loRem, hiRem, remHalf, cqwHalf } = baseUnitParts(), unit = Math.min(hiRem, Math.max(loRem, remHalf + (cqwHalf * W) / 100));
+      const W = NARROWEST_REM(bp), { loRem, hiRem, remHalf, cqwHalf } = baseUnitParts(), unit = Math.min(hiRem, Math.max(loRem, remHalf + (cqwHalf * W) / 100));
       const cells = pageRowCells(band, bp), give = (rowSide(band, "left") + rowSide(band, "right") + bandGutter(band)) / 10 * unit; // a block's part, at most
       const tight = kids.some((k) => { const c = cells.get(k.id); const share = c ? c.span / pageRowTracks(band) : 1; return (longestWordRem(k) / hiRem) * unit > share * W - give; });
-      if (tight) out.push({ id: kids[0].id, kind: "words-too-tight", blocks: false, message: `On ${SCREEN_WORDS[bp]} these blocks sit side by side as you set them, but their words need more room than the narrowest of those screens has — some may break. Give them more room there, or put that screen back to its default.` });
+      if (tight) out.push({ id: kids[0].id, kind: "words-too-tight", blocks: false, message: `On ${SCREEN_WORDS(bp)} these blocks sit side by side as you set them, but their words need more room than the narrowest of those screens has — some may break. Give them more room there, or put that screen back to its default.` });
     }
   }
   return out;

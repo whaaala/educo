@@ -6,7 +6,7 @@
 const path = require('path'); const fs = require('fs');
 const { chromium } = require('playwright');
 const H = require('./h.js'); const P = require('./pages.js').helpers;
-const { SCREENS } = require('./screens.js');
+const { SCREENS, EDGE } = require('./screens.js');
 const OUT = path.join(__dirname, 'logs', 'uat-e4'); fs.mkdirSync(OUT, { recursive: true });
 const BASE = process.env.BASE || 'http://localhost:3100';
 const ONLY = (process.argv.find((a) => a.startsWith('--only=')) || '').slice(7).split(',').filter(Boolean);
@@ -15,7 +15,7 @@ const THEMES = ['Light', 'Dark', 'Midnight', 'Purple Dream'];
 
 async function open(w, h, slot) {
   const browser = await chromium.launch({ headless: false, slowMo: 20, args: ['--force-device-scale-factor=1', `--window-position=${(slot % 3) * 640},${Math.floor(slot / 3) * 520}`] });
-  const ctx = await browser.newContext({ viewport: { width: w, height: h }, hasTouch: true, deviceScaleFactor: 1, isMobile: !!process.env.MOBILE && w < 1024 });
+  const ctx = await browser.newContext({ viewport: { width: w, height: h }, hasTouch: true, deviceScaleFactor: 1, isMobile: !!process.env.MOBILE && w < EDGE.DOCK });
   const page = await ctx.newPage(); const errs = [];
   page.on('pageerror', (e) => errs.push(e.message.split('\n')[0]));
   page.on('console', (m) => { if (m.type() === 'error' && !/favicon|Failed to load resource/.test(m.text())) errs.push(m.text().slice(0, 160)); });
@@ -67,7 +67,7 @@ async function IN(page, ok, id, start) {
 }
 
 // ── change (2): the Preview's own chrome on every screen (E4-3 · E4-4 · E4-5), the pager by touch (E4-2), components at scale (E4-1) ──
-const touch = (page) => page.viewportSize().width < 1024; // a phone or a tablet portrait is opened by a finger here
+const touch = (page) => page.viewportSize().width < EDGE.DOCK; // a phone or a tablet portrait is opened by a finger here
 const press = (loc, page) => (touch(page) ? loc.tap() : loc.click());
 const sharp = require('sharp');
 async function photos() {
