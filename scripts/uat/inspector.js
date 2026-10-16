@@ -42,6 +42,12 @@ async function widthMode(page, id, which) {
   const b = page.getByRole('group', { name: 'Width' }).getByRole('button', { name: which, exact: true }).or(page.getByRole('radio', { name: which, exact: true })).first();
   if (!(await b.count())) return false; await b.scrollIntoViewIfNeeded(); await b.click(); await page.waitForTimeout(250); return true;
 }
+/** A width typed in: Width → Custom, then "Custom width" (e.g. "3.5rem") — how a person sizes a logo. */
+async function customWidth(page, id, value) {
+  if (!(await widthMode(page, id, 'Custom'))) return false;
+  const f = page.getByLabel('Custom width').first(); if (!(await f.count())) return false;
+  await f.fill(value); await f.press('Enter').catch(() => {}); await f.blur(); await page.waitForTimeout(200); return true;
+}
 /** Background colour, typed into the hex field and confirmed with Enter. */
 async function background(page, id, hex) {
   await H.select(page, id); await tab(page, 'Design'); if (!(await section(page, 'Background'))) return false;
@@ -53,6 +59,25 @@ async function text(page, id, words) {
   await H.select(page, id); if (!(await tab(page, 'Content'))) return false;
   const f = page.getByLabel(/^Text$/).first(); if (!(await f.count())) return false;
   await f.fill(words); await f.blur(); await page.waitForTimeout(150); await tab(page, 'Design'); return true;
+}
+/** An image's description, typed into "Describe this image" on the Content tab (L-6: the header's logo). */
+async function alt(page, id, words) {
+  await H.select(page, id); if (!(await tab(page, 'Content'))) return false;
+  const f = page.getByLabel('Image alt text').first(); if (!(await f.count())) return false;
+  await f.fill(words); await f.blur(); await page.waitForTimeout(150); await tab(page, 'Design'); return true;
+}
+/** "Load straight away (for an image at the top of the page)" — ticked for a picture above the fold (L-6: the logo). */
+async function eager(page, id) {
+  await H.select(page, id); if (!(await tab(page, 'Content'))) return false;
+  const c = page.getByLabel(/Load straight away/).first(); if (!(await c.count())) return false;
+  if (!(await c.isChecked())) { await c.check(); await page.waitForTimeout(150); } await tab(page, 'Design'); return true;
+}
+/** A file put into an Image block through ITS OWN Upload button, as a person does (`fillImages` fills every empty one with photos). */
+async function upload(page, id, file) {
+  const btn = page.locator(`[data-box-id="${id}"] button`, { hasText: /^\s*Upload\s*$/ }).first(); if (!(await btn.count())) return false;
+  await btn.scrollIntoViewIfNeeded();
+  const [chooser] = await Promise.all([page.waitForEvent('filechooser', { timeout: 6000 }).catch(() => null), btn.click()]);
+  if (!chooser) return false; await chooser.setFiles(file); await page.waitForTimeout(1200); return true;
 }
 /** Hidden on phones (or shown only on phones: `show` = true hides it everywhere else). */
 async function phoneOnly(page, id, { hideOnPhone = false, onlyOnPhone = false } = {}) {
@@ -106,4 +131,4 @@ async function textSize(page, id, px) {
   if (!done) for (let k = 0; k < 200; k++) { const now = +(await s.getAttribute('aria-valuenow') ?? await s.inputValue()); if (now === px) break; await page.keyboard.press(now < px ? 'ArrowRight' : 'ArrowLeft'); await page.waitForTimeout(20); }
   await page.waitForTimeout(300); await tab(page, 'Design'); return true;
 }
-module.exports = { spacing, textToggle, section, tab, meaning, sticky, contentWidth, background, text, phoneOnly, widthMode, textSize };
+module.exports = { spacing, textToggle, section, tab, meaning, sticky, contentWidth, background, text, alt, eager, upload, customWidth, phoneOnly, widthMode, textSize };

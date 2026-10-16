@@ -4180,6 +4180,24 @@ Risks and distribution (section 2): RK-1 · Developing countries (section 3): AF
     the source reverted), 28 / 28 on the four projects; HEADED `probe-l6-centred.js`: the colour edge to edge at all 72 screens of a
     page-grid page, the words still on the measure (seen at 1280 and 375); the story says so (layout-story.md §1). The canvas side
     is a line of the HEADED pass (U8)
+  - `[x]` L6-3 · `page-audit.js` typed the rung edges in too: its tablet rule ran on `MW >= 600 && MW < 900` while the tablet-landscape
+    rung starts at 840 (`config/layout.json`), and the phone rule on `MW < 600`. FIXED: the caller passes the edges from config
+    (`RUNG_EDGES` in `uat-pages.js`); the RULE CFG guard did not know the audit's `MW` — its pattern now does, red with `MW < 600` put back
+  - `[ ]` L6-4 · REAL (the first dressed page, headed): the Inspector's Width → Custom invites "50% or 15rem", but on a ROW OF THE PAGE a
+    width that is not a % is drawn as an equal share of what is left (`rowLinesAt`) — a crest typed at 3.5rem was drawn a third of the
+    header. The fixed-width column itself is AC-30 (→ BATCH G-4 (3)); FIXED NOW (RULE UI, the control): on a page row the field asks for
+    a % and says a rem is drawn as a share; component test red with the page-row signal cut; HEADED check owed (U4)
+  - `[x]` L6-5 · HARNESS: `h.js dropBeside` asked "what is here" with `elementFromPoint`, and a SELECTED block's chrome (E-6's outer-space
+    handle, just inside its right edge) answered — the drop was aimed 4px outside the canvas and every dressed page failed to build;
+    dressed sweeps had not run since E-6. FIXED: `elementsFromPoint`, through the chrome to the block
+  - `[x]` L6-6 · the freshness check (L5-6) called a build stale over `config/budgets.json`, which only the harness reads — it now counts a
+    config file only when the app's code names it; proved both ways (budgets.json ignored, a touched layout.json flagged)
+  CHANGE (1) LOGO: BUILT — the dresser's header is a 64px crest (an Image: uploaded through its own button, described, "Load straight
+  away", Fit) beside the school's name, named as the Logo placeholder (`COMPONENT_GAPS.md`); HEADED in U1
+  CHANGES (2) (3) WEIGHT + SLOW 3G: BUILT — `scripts/uat/page-weight.js`: the builder's Export (site.zip) served with gzip by a small
+  server, weighed at a 360 phone, then on Slow 3G; budgets in `config/budgets.json` (RULE CFG). First dressed page: 12.3 KB HTML + CSS +
+  JS, 165.7 KB first view, 2 font families, first paint 4.19 s on Slow 3G, CLS 0.003 — all within budget. Still owed: proof it FAILS
+  (a heavy page / a 3 s budget), the `test:fast` spec, the config guard for budgets.json
   - `[ ]` U8 (L6-2) on the CANVAS and in the Preview at every rung: a Centred-column section with a colour fills the band edge to edge,
     its words on the measure; a Card-look section stays a card on the measure; two sections side by side stay on the measure as a row
 - `[ ]` **BATCH D-1 · A README a newcomer can start from** (area: documentation · 1 change, queued — asked by the user

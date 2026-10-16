@@ -29,7 +29,8 @@ const emForms = edges.flatMap((px) => [
   new RegExp(`(?<![\\d.])${em(px / 16)}em\\b`), // not the 75em inside 1.75em
   new RegExp(`(?<![\\d.])${em(px / 16 - 0.01)}em\\b`),
 ]);
-const widthChecks = edges.map((px) => new RegExp(`(?:innerWidth|width|vw|\\bw|px)\\)?\\s*[<>]=?\\s*${px}\\b`));
+// …and `MW` (the page audit's window width — L6-3: `MW >= 600 && MW < 900` slipped past this list)
+const widthChecks = edges.map((px) => new RegExp(`(?:innerWidth|width|vw|\\bw|\\bMW|px)\\)?\\s*[<>]=?\\s*${px}\\b`));
 /**
  * A width check in px against one of the rung / dock numbers is an edge in the builder and the app, their tests and scripts.
  */

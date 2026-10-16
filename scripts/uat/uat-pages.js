@@ -85,6 +85,7 @@ if (!process.argv.includes('--one')) {
 // ── ONE PAGE ──
 const H = require('./h.js'); const G = require('./layout-grammar.js'); const { Builder } = require('./build-page.js'); const { Dresser } = require('./dress.js');
 const { auditDoc, pixelFindings, canvasAudit, chosenIds } = require('./page-audit.js');
+const RUNG_EDGES = (({ rungs }) => ({ tp: rungs.tabletPortrait.from, tl: rungs.tabletLandscape.from }))(require('../../config/layout.json')); // L6-3, RULE CFG
 const idx = +arg('idx', 0), slot = +arg('slot', 0); const PG = COVER[idx];
 const R = { idx, site: PG.site, page: PG.page, type: PG.type, tier: PG.tier, layout: PG.layout, recipe: DRESSED ? { type: PG.type, header: PG.header, hamburger: PG.hamburger, sidebar: PG.sidebar, hero: PG.hero, theme: PG.theme, source: PG.source } : undefined, findings: [], shots: [] };
 const find = (kind, where, msg) => R.findings.push({ kind, where, msg });
@@ -188,6 +189,13 @@ const canvasGeo = (page) => page.evaluate(() => {
     const pc = page.getByRole('button', { name: /Page check/ }).first();
     const pcText = (await pc.textContent().catch(() => '')) || ''; const pcN = +(pcText.match(/\d+/)?.[0] ?? 0);
     if (pcN) find('warn', 'page check', `${pcN} things need the user's words (expected: empty text/pictures)`);
+    // ── 2½ · what the PUBLISHED page weighs, and how it loads on Slow 3G (RULE AF, L-6 (2) (3)): the Export's own files, served ──
+    page.__step = 'page weight';
+    if (!process.argv.includes('--no-weight')) {
+      const w = await require('./page-weight.js').weigh(page); R.weight = w.numbers;
+      w.findings.forEach((m) => find('err', 'published page', m));
+      console.log(`  [${idx}] weight ${JSON.stringify(w.numbers)}`);
+    }
     // ── 3–5 · the real Preview ──
     page.__step = 'Preview';
     await page.getByRole('button', { name: 'Preview', exact: true }).first().click();
@@ -213,7 +221,7 @@ const canvasGeo = (page) => page.evaluate(() => {
     // every block of the row (tier 99, idx 141). Same window, same answer; a real difference still shows.
     for (const d of [...RUNGS.map((r) => ({ name: r.preset, w: r.w, h: EDITOR_H, rung: r })), ...sizes]) {
       const f = await frameAt(d.w, Math.min(d.h, 1400));
-      const a = await f.evaluate(auditDoc, { semantics: first, rowBands: true, chosen }); first = false;
+      const a = await f.evaluate(auditDoc, { semantics: first, rowBands: true, chosen, rungs: RUNG_EDGES }); first = false;
       a.err.forEach((m) => find('err', `Preview ${d.name}`, m)); a.warn.forEach((m) => find('warn', `Preview ${d.name}`, m));
       if (d.rung) {
         // canvas == Preview at this rung, within the accepted 0.6% (#41) and 4px of text rounding
@@ -227,7 +235,7 @@ const canvasGeo = (page) => page.evaluate(() => {
         // WCAG 1.4.4 — the reader's text at 150%
         const f2 = await frameAt(d.w, 900);
         await f2.evaluate(() => { document.documentElement.style.fontSize = '150%'; }); await page.waitForTimeout(300);
-        const big = await f2.evaluate(auditDoc, { semantics: false, rowBands: true, chosen });
+        const big = await f2.evaluate(auditDoc, { semantics: false, rowBands: true, chosen, rungs: RUNG_EDGES });
         big.err.filter((m) => /^L[1-7]/.test(m)).forEach((m) => find('err', `Preview ${d.name} at 150% text`, m));
         const grew = Object.keys(big.geo).filter((id) => a.geo[id] && big.geo[id].h > a.geo[id].h + 1).length;
         if (Object.keys(a.geo).length && !grew) find('err', `Preview ${d.name} at 150% text`, 'W144 nothing grew with the reader\'s text size');

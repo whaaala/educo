@@ -93,6 +93,7 @@ const INVARIANT_SPECS = [
   "tests/e2e/every-component-fills-the-row.spec.ts",
   "tests/e2e/grid-cell-resize.spec.ts",
   "tests/e2e/resize-round-trips.spec.ts",
+  "tests/e2e/page-weight.spec.ts",
   "tests/e2e/add-grid-in-grid.spec.ts",
   "tests/e2e/drag-grid-in.spec.ts",
   "tests/e2e/masonry.spec.ts",

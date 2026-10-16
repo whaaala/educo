@@ -39,8 +39,12 @@ function newerThanBuild(dir, out = []) {
   }
   return out;
 }
-// config/ and hooks/ too (L5-6): config/layout.json drives the canvas and the export (RULE CFG), so a build older than it is stale
-const changed = ["app", "components", "lib", "contexts", "hooks", "config"].flatMap((d) => { try { return newerThanBuild(join(root, d)); } catch { return []; } });
+// config/ and hooks/ too (L5-6): config/layout.json drives the canvas and the export (RULE CFG), so a build older than it is stale —
+// but only a config file the APP reads (named in its code): config/budgets.json is the test harness's, and a build does not hold it
+const appCode = ["app", "components", "lib", "contexts", "hooks"];
+const appText = (() => { const t = []; const walk = (d) => { for (const e of readdirSync(d, { withFileTypes: true })) { if (e.name === "node_modules" || e.name.startsWith(".")) continue; const p = join(d, e.name); if (e.isDirectory()) walk(p); else if (/\.tsx?$/.test(e.name)) t.push(readFileSync(p, "utf8")); } }; for (const d of appCode) { try { walk(join(root, d)); } catch { /* absent */ } } return t.join("\n"); })();
+const changed = [...appCode, "config"].flatMap((d) => { try { return newerThanBuild(join(root, d)); } catch { return []; } })
+  .filter((f) => !f.startsWith("config") || appText.includes(f.split(/[\\/]/).pop()));
 
 http.get({ host: "localhost", port, path: `/_next/static/${buildId}/_buildManifest.js`, timeout: 30000 }, (res) => {
   res.resume();

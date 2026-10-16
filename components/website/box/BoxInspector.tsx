@@ -198,7 +198,12 @@ function AccPartDesign({ title, ariaPrefix, style, onChange, moveLabel = "conten
  * the user's decision); like every value here they are written at the screen being edited, so on a phone they change the phone.
  */
 const WIDTH_PRESETS: Record<string, string> = { auto: "auto", fill: "fill", half: "50%", third: "33.33%" };
-function WidthControl({ node, onPatch }: { node: BoxNode; onPatch: (p: Partial<BoxNode>) => void }) {
+/**
+ * `pageRow` (L6-4): the block is on a ROW OF THE PAGE, where a width is a share of the page's columns — a width that is not a % (a typed
+ * `3.5rem`) is drawn as an equal share of what is left (`rowLinesAt`), until a fixed-width column beside the shares exists (AC-30, BATCH
+ * G-4). The field says so, rather than take a value the page will not draw.
+ */
+function WidthControl({ node, onPatch, pageRow = false }: { node: BoxNode; onPatch: (p: Partial<BoxNode>) => void; pageRow?: boolean }) {
   const w = node.width ?? "auto";
   const mode = Object.keys(WIDTH_PRESETS).find((k) => WIDTH_PRESETS[k] === w) ?? "custom";
   const isCustom = mode === "custom";
@@ -207,7 +212,8 @@ function WidthControl({ node, onPatch }: { node: BoxNode; onPatch: (p: Partial<B
       <span className={label}>Width</span>
       <Segmented full ariaLabel="Width" value={mode} onChange={(m) => onPatch({ width: WIDTH_PRESETS[m] ?? (isCustom ? w : "40%") })}
         options={[{ value: "auto", label: "Fit" }, { value: "fill", label: "Full" }, { value: "half", label: "½", title: "Half the line" }, { value: "third", label: "⅓", title: "A third of the line" }, { value: "custom", label: "Custom" }]} />
-      {isCustom && <CompactField ariaLabel="Custom width" value={w} onChange={(v) => onPatch({ width: typedLength(v) })} placeholder="50% or 15rem" />}
+      {isCustom && <CompactField ariaLabel="Custom width" value={w} onChange={(v) => onPatch({ width: typedLength(v) })} placeholder={pageRow ? "e.g. 25%" : "50% or 15rem"} />}
+      {isCustom && pageRow && !w.trim().endsWith("%") && <p className="text-[0.6875rem] text-muted">On the page grid a width is a share of the columns — type a %. A fixed width (rem) is drawn as an equal share for now.</p>}
     </div>
   );
 }
@@ -1130,7 +1136,7 @@ export default function BoxInspector({ section = false, sectionPlace, outerDefau
           )}
 
           <Accordion title="Size" icon={Maximize2}>
-            <WidthControl node={node} onPatch={onPatch} />
+            <WidthControl node={node} onPatch={onPatch} pageRow={!!onSetFreeInset} />
             {pageSpan && onSetSpan && (
               <div className="space-y-0.5">
                 <CompactField label={`Columns (of ${pageSpan.cols})`} ariaLabel={`Columns of ${pageSpan.cols}`} type="number" min={0.5} max={pageSpan.cols} step={0.5} value={pageSpan.value}

@@ -958,6 +958,17 @@ describe("G-3b (2) · placing on the page's lines in the Size section", () => {
     fireEvent.change(screen.getByLabelText("At least this many rows tall"), { target: { value: "3" } });
     expect(onPatch).toHaveBeenLastCalledWith(expect.objectContaining({ minHeight: expect.any(Number) }));
   });
+  it("L6-4: on a row of the page a typed rem width says it is drawn as a share — off the page grid it says nothing", () => {
+    const say = /On the page grid a width is a share of the columns/;
+    renderFor(createElement("image", { id: "i", width: "3.5rem" }), { pageLines: lines, onSetLines: vi.fn(), onSetFreeInset: vi.fn() });
+    expect(screen.getByText(say)).toBeInTheDocument();
+    cleanup();
+    renderFor(createElement("image", { id: "i", width: "25%" }), { pageLines: lines, onSetLines: vi.fn(), onSetFreeInset: vi.fn() });
+    expect(screen.queryByText(say), "a % is what the page grid draws").toBeNull();
+    cleanup();
+    renderFor(createElement("image", { id: "i", width: "3.5rem" }));
+    expect(screen.queryByText(say), "in a flex row a rem width is drawn as typed").toBeNull();
+  });
   it("G-3b (3): the free margin is shown, changed per side, and put back on the lines in one go", () => {
     const onSetFreeInset = vi.fn();
     renderFor(createContainer("column", { id: "c", freeInset: { right: 20 } } as Partial<BoxNode>), { pageLines: lines, onSetLines: vi.fn(), onSetFreeInset });

@@ -8,6 +8,9 @@ function auditDoc(opts) {
   // `(min-width)` is evaluated on it). The rung a page is drawn at is decided by MW: at a 616px window with a 17px
   // scrollbar the content is 599px and the page is, correctly, on the TABLET rung.
   const W = document.documentElement.clientWidth; const MW = window.innerWidth; const err = []; const warn = [];
+  // L6-3 · the rung edges come from config/layout.json through the caller (RULE CFG): typed in here as 600 / 900, the tablet rule ran on
+  // up to 899 while the tablet-landscape rung starts at 840. No rungs given → the rung rules do not run.
+  const TP = opts.rungs ? opts.rungs.tp : Infinity, TL = opts.rungs ? opts.rungs.tl : -Infinity;
   // Measured from the top — a stuck header overlaps whatever the previous size left scrolled under it.
   window.scrollTo(0, 0);
   const px = (v) => parseFloat(v) || 0;
@@ -62,10 +65,10 @@ function auditDoc(opts) {
     kids.forEach((k) => { const r = k.getBoundingClientRect(); const key = Object.keys(lines).find((x) => r.top < Math.max(...lines[x].map((q) => q.getBoundingClientRect().bottom)) - 2 && r.bottom > +x + 2) ?? Math.round(r.top); (lines[key] = lines[key] || []).push(k); }); // a line = blocks that OVERLAP down the page (F1-h: a centred header's logo and menu have different tops)
     for (const ks of Object.values(lines)) {
       const containers = ks.filter((k) => k.querySelector('[class*="bx-"]'));
-      if (MW < 600 && containers.length > 1 && Math.min(...containers.map((k) => k.getBoundingClientRect().width)) < 150) err.push(`L5 phone: ${containers.length} columns squeezed side by side in ${idOf(row).slice(-4)} (${containers.map((k) => Math.round(k.getBoundingClientRect().width)).join('/')}px)`);
+      if (MW < TP && containers.length > 1 && Math.min(...containers.map((k) => k.getBoundingClientRect().width)) < 150) err.push(`L5 phone: ${containers.length} columns squeezed side by side in ${idOf(row).slice(-4)} (${containers.map((k) => Math.round(k.getBoundingClientRect().width)).join('/')}px)`);
       // c-11c (decided B): a cell of one icon (an aria-hidden svg, no words) does not count — a table of ticks is not four columns
       const words = containers.filter((k) => k.innerText.trim() || k.querySelector('img,video,iframe,picture,canvas,input,button,textarea,select'));
-      if (MW >= 600 && MW < 900 && opts.rowBands && row.children.length >= 4 && ks.length > 3 && containers.length === ks.length && words.length >= 2) err.push(`L6 tablet: ${ks.length} columns on one line in ${idOf(row).slice(-4)} (at most 3, #78)`);
+      if (MW >= TP && MW < TL && opts.rowBands && row.children.length >= 4 && ks.length > 3 && containers.length === ks.length && words.length >= 2) err.push(`L6 tablet: ${ks.length} columns on one line in ${idOf(row).slice(-4)} (at most 3, #78)`);
     }
   }
   // collapsed: a block with content that has no size
