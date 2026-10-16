@@ -7,13 +7,12 @@ import {
   StyleSheet,
   Animated,
   Platform,
-  useWindowDimensions,
 } from 'react-native';
 import { useRouter, usePathname } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '../../contexts/ThemeContext';
 import Svg, { Path, Circle, Rect } from 'react-native-svg';
-import { useIsTablet } from '@/hooks/useIsTablet';
+import { ROLES, activePlace, shellPlaces } from '@core/app-shell';
 
 
 const FONTS = {
@@ -149,35 +148,19 @@ const MoreIcon = ({ color, size, filled }: { color: string; size: number; filled
   </Svg>
 );
 
-interface TabItem {
-  name: string;
-  /** A route path — the STRING half of expo-router's Href, so it can both be pushed and compared against
-   *  the current pathname. Typed rather than cast, so a tab pointing nowhere stops compiling. */
-  route: Extract<Href, string>;
-  label: string;
-  icon: typeof HomeIcon;
-}
+/** The bar's drawings, by the icon key a place carries in config/app-shell.json (RULE CFG). */
+export const TAB_ICONS: Record<string, typeof HomeIcon> = { home: HomeIcon, children: ChildrenIcon, fees: FeesIcon, chat: ChatIcon, more: MoreIcon };
 
-const TABS: TabItem[] = [
-  { name: 'index', route: '/', label: 'Home', icon: HomeIcon },
-  { name: 'children', route: '/children', label: 'Children', icon: ChildrenIcon },
-  { name: 'fees', route: '/fees', label: 'Fees', icon: FeesIcon },
-  { name: 'messages', route: '/messages', label: 'Chat', icon: ChatIcon },
-  { name: 'more', route: '/more', label: 'More', icon: MoreIcon },
-];
+/** The app's places: the parent role — the Educo app is the parents' app today (A-2 change 3, A2-5: was a typed list). */
+export const APP_PLACES = ROLES.parent.items;
+// ponytail: a phone bar shows the first barMax places; an overflow "More" sheet on the phone comes with the first role whose
+// places outgrow the bar there (the parents' five fit) — tracked in BATCH A-2's ledger (A2-15).
+const TABS = shellPlaces(APP_PLACES, 'bar').shown.map((p) => ({ name: p.id, route: p.href as Extract<Href, string>, label: p.label, icon: TAB_ICONS[p.icon] }));
 
 export default function BottomTabBar() {
   const router = useRouter();
   const pathname = usePathname();
   const { colors, isDark, theme } = useTheme();
-  const isTablet = useIsTablet();
-  const { width: SCREEN_WIDTH } = useWindowDimensions(); // live — a turned or split screen re-lays out (A2-4)
-
-  // Tablet sizing: keep the bar centered with a max width so it doesn't look "stretched" on large screens.
-  const tabletHorizontalGutter = 24;
-  const tabletBarMaxWidth = 720;
-  const tabletBarWidth = Math.min(SCREEN_WIDTH - tabletHorizontalGutter * 2, tabletBarMaxWidth);
-  const tabletSideInset = Math.max(0, Math.round((SCREEN_WIDTH - tabletBarWidth) / 2));
 
   // Animation refs for each tab
   const scaleAnims = useRef(TABS.map(() => new Animated.Value(1))).current;
@@ -185,18 +168,10 @@ export default function BottomTabBar() {
 
   // Figure out which tab matches the current URL (if any).
   // For non-tab pages (e.g. /term-progress), we keep the last matched tab highlighted.
-  const getMatchedTabIndex = (): number | null => {
-    // Handle root path
-    if (pathname === '/' || pathname === '') return 0;
-
-    const index = TABS.findIndex(tab => {
-      if (tab.route === '/') return pathname === '/';
-      return pathname.startsWith(tab.route);
-    });
-    return index >= 0 ? index : null;
-  };
-
-  const matchedTabIndex = getMatchedTabIndex();
+  // Which tab the URL is in (if any) — the shared rule; on a non-tab page (e.g. /term-progress) none, and the last one is kept.
+  const hit = activePlace(APP_PLACES, pathname);
+  const hitIndex = hit ? TABS.findIndex((t) => t.name === hit.id) : -1;
+  const matchedTabIndex = hitIndex >= 0 ? hitIndex : null;
   const [lastTabIndex, setLastTabIndex] = useState<number>(() => matchedTabIndex ?? 0);
 
   useEffect(() => {
@@ -284,7 +259,6 @@ export default function BottomTabBar() {
     <View
       style={[
         styles.container,
-        isTablet && styles.containerTablet,
       ]}
     >
       {/* Background */}
@@ -292,11 +266,6 @@ export default function BottomTabBar() {
         pointerEvents="none"
         style={[
           styles.solidBackgroundShadow,
-          isTablet && styles.solidBackgroundShadowTablet,
-          isTablet && {
-            left: tabletSideInset,
-            right: tabletSideInset,
-          },
           {
             backgroundColor: barBaseBg,
             borderColor: barBorderColor,
@@ -309,7 +278,6 @@ export default function BottomTabBar() {
         <View
           style={[
             styles.solidBackgroundInner,
-            isTablet && styles.solidBackgroundInnerTablet,
           ]}
         >
           <LinearGradient
@@ -325,7 +293,6 @@ export default function BottomTabBar() {
       <View
         style={[
           styles.tabsContainer,
-          isTablet && { width: tabletBarWidth, alignSelf: 'center' },
         ]}
       >
         {TABS.map((tab, index) => {
@@ -338,7 +305,6 @@ export default function BottomTabBar() {
               key={tab.name}
               style={[
                 styles.tabItem,
-                isTablet && styles.tabItemTablet,
                 {
                   transform: [
                     { scale: scaleAnims[index] },
@@ -413,10 +379,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingBottom: Platform.OS === 'ios' ? 24 : 16,
   },
-  containerTablet: {
-    paddingHorizontal: 0,
-    paddingBottom: 20,
-  },
   solidBackgroundShadow: {
     position: 'absolute',
     bottom: Platform.OS === 'ios' ? 24 : 16,
@@ -430,20 +392,11 @@ const styles = StyleSheet.create({
     shadowRadius: 18,
     elevation: 10,
   },
-  solidBackgroundShadowTablet: {
-    left: 0,
-    right: 0,
-    bottom: 20,
-    shadowOffset: { width: 0, height: 6 },
-    shadowRadius: 18,
-    elevation: 12,
-  },
   solidBackgroundInner: {
     flex: 1,
     borderRadius: 24,
     overflow: 'hidden',
   },
-  solidBackgroundInnerTablet: {},
   tabsContainer: {
     flexDirection: 'row',
     justifyContent: 'space-around',
@@ -451,20 +404,15 @@ const styles = StyleSheet.create({
     height: 72,
     paddingHorizontal: 8,
   },
-  tabsContainerTablet: {},
   tabItem: {
     flex: 1,
     alignItems: 'center',
-  },
-  tabItemTablet: {
-    flex: 1,
   },
   tabButton: {
     alignItems: 'center',
     justifyContent: 'center',
     flex: 1,
   },
-  tabButtonTablet: {},
   tabContent: {
     alignItems: 'center',
     justifyContent: 'center',
@@ -474,7 +422,6 @@ const styles = StyleSheet.create({
     minWidth: 56,
     marginTop: 3,
   },
-  tabContentTablet: {},
   iconWrapper: {
     width: 36,
     height: 36,
@@ -482,14 +429,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     borderRadius: 12,
   },
-  iconWrapperTablet: {},
   label: {
     fontSize: 10,
     fontFamily: FONTS.medium,
     marginTop: 2,
     letterSpacing: 0.2,
   },
-  labelTablet: {},
   labelActive: {
     fontFamily: FONTS.semiBold,
   },

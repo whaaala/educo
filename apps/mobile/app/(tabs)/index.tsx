@@ -19,7 +19,7 @@ import { MessageTeacherModal } from '../../components/modals/MessageTeacherModal
 import { PayFeesModal } from '../../components/modals/PayFeesModal';
 import { ViewResultsModal } from '../../components/modals/ViewResultsModal';
 import { useTheme } from '../../contexts/ThemeContext';
-import { useIsTablet } from '@/hooks/useIsTablet';
+import { useBarClearance, useIsTablet } from '@/hooks/useIsTablet';
 
 
 // ============================================================================
@@ -350,6 +350,7 @@ function TabletQuickActionTile({ icon, label, subtitle, onPress, color }: {
 
 export default function ParentHomeScreen() {
   const isTablet = useIsTablet();
+  const clearance = useBarClearance(); // room for the phone's bar, none beside a rail (A2-17)
   const { width: SCREEN_WIDTH } = useWindowDimensions(); // live — a turned or split screen re-lays out (A2-4)
   const router = useRouter();
   const { colors, isDark } = useTheme();
@@ -405,7 +406,7 @@ export default function ParentHomeScreen() {
   if (!isTablet) {
     return (
       <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
-        <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 100 }} showsVerticalScrollIndicator={false}>
+        <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: clearance }} showsVerticalScrollIndicator={false}>
           {/* Header with gradient */}
           <LinearGradient
             colors={isDark ? [colors.background, colors.backgroundSecondary, colors.backgroundTertiary] : ['#ffffff', '#f8fafc', '#f0f4ff']}
@@ -911,7 +912,7 @@ export default function ParentHomeScreen() {
   // ============================================================================
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
-      <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 112 }} showsVerticalScrollIndicator={false}>
+      <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: clearance + 16 }} showsVerticalScrollIndicator={false}>
         <LinearGradient
           colors={isDark ? [colors.background, colors.backgroundSecondary, colors.backgroundTertiary] : [COLORS.white, COLORS.slate50, '#f0f4ff']}
           start={{ x: 0, y: 0 }}

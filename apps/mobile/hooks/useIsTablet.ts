@@ -1,5 +1,6 @@
 import { useWindowDimensions } from 'react-native';
 import { windowClass, type WindowClass } from '@core/educo-ui/layout';
+import { BAR_CLEARANCE } from '@core/app-shell';
 
 /**
  * What this window IS (A-2 (2)): its width rung, its height class, the navigation it gets and how many panes a list-detail
@@ -18,4 +19,9 @@ export function useWindowClass(): WindowClass {
  */
 export function useIsTablet(): boolean {
   return useWindowClass().shell !== 'bar';
+}
+
+/** The room a scrolling screen leaves at its foot so its last line clears the phone's bar (config/layout.json); none beside a rail. */
+export function useBarClearance(): number {
+  return useWindowClass().shell === 'bar' ? BAR_CLEARANCE : 0;
 }

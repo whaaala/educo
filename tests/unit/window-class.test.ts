@@ -1,4 +1,5 @@
 import { describe, it, expect } from "vitest";
+import { readFileSync } from "node:fs";
 import { windowClass, RUNG_PX, HEIGHT_PX, NARROWEST_PHONE_PX } from "@/lib/educo-ui/layout";
 
 /**
@@ -41,4 +42,12 @@ describe("windowClass — both sides of every edge", () => {
   it("the height classes climb: compact · medium · expanded", () => {
     expect([0, MED - 1, MED, HEIGHT_PX.expanded].map((h) => windowClass(1000, h).height)).toEqual(["compact", "compact", "medium", "expanded"]);
   });
+});
+
+// The feature file's table IS a test (tests/features/components/app-shell/app-layout.feature): the scenarios and the code cannot drift.
+const FEATURE = readFileSync("tests/features/components/app-shell/app-layout.feature", "utf8").replace(/\r\n/g, "\n");
+const examples = [...FEATURE.matchAll(/^\s*\|\s*(\d+)\s*\|\s*(\d+)\s*\|\s*(\w+)\s*\|\s*(\d)\s*\|\s*$/gm)].map((m) => [+m[1], +m[2], m[3], +m[4]] as const);
+describe("app-layout.feature — every row of its table", () => {
+  it("has its rows", () => expect(examples.length).toBeGreaterThanOrEqual(9));
+  it.each(examples)("%i × %i → a %s, %i pane(s)", (w, h, shell, panes) => expect(windowClass(w, h)).toMatchObject({ shell, panes }));
 });

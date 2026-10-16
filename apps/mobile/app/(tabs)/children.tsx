@@ -1,41 +1,17 @@
-import { Text, View, StyleSheet } from 'react-native';
-import { Screen } from '../../components/ui/Screen';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import ListDetail from '../../components/ui/ListDetail';
+import { APP_PLACES } from '../../components/ui/BottomTabBar';
 import { useTheme } from '../../contexts/ThemeContext';
+import { activePlace } from '@core/app-shell';
 
-const FONTS = {
-  regular: 'Inter_400Regular',
-  medium: 'Inter_500Medium',
-  semiBold: 'Inter_600SemiBold',
-  bold: 'Inter_700Bold',
-};
+/** The Children place: its list-detail (A-2 change 4) — which list it opens is the place's `list` in config/app-shell.json. */
+const CHILDREN = activePlace(APP_PLACES, '/children')!; // this route's own place
 
 export default function ChildrenScreen() {
   const { colors } = useTheme();
-
   return (
-    <Screen>
-      <View style={styles.container}>
-        <Text style={[styles.title, { color: colors.text }]}>Children</Text>
-        <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
-          Tablet split-view and child management will live here.
-        </Text>
-      </View>
-    </Screen>
+    <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }} edges={['top']}>
+      <ListDetail listId={CHILDREN.list!} base={CHILDREN.href} openId={null} />
+    </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    gap: 8,
-  },
-  title: {
-    fontSize: 18,
-    fontFamily: FONTS.bold,
-  },
-  subtitle: {
-    fontSize: 14,
-    fontFamily: FONTS.medium,
-  },
-});
-
-

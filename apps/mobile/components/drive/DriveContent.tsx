@@ -6,6 +6,7 @@ import { DriveFileItem } from './DriveFileItem';
 import { DriveEmptyState } from './DriveEmptyState';
 import { LoadMoreButton } from '../ui/LoadMoreButton';
 import { Spinner } from '../ui/Spinner';
+import { useBarClearance } from '@/hooks/useIsTablet';
 
 interface DriveContentProps {
   items: DriveItem[];
@@ -105,6 +106,7 @@ export const DriveContent = memo(function DriveContent({
   totalItems,
 }: DriveContentProps) {
   const { colors } = useTheme();
+  const clearance = useBarClearance(); // room for the phone's bar, none beside a rail (A2-17)
 
   // Full-page loading state
   if (isLoading) {
@@ -136,7 +138,7 @@ export const DriveContent = memo(function DriveContent({
     <View style={styles.container}>
       <ScrollView
         style={StyleSheet.absoluteFill}
-        contentContainerStyle={contentPadding}
+        contentContainerStyle={[contentPadding, { paddingBottom: clearance }]}
         showsVerticalScrollIndicator={false}
         overScrollMode="never"
         bounces={false}
@@ -188,12 +190,12 @@ const styles = StyleSheet.create({
   emptyContainer: {
     flex: 1,
   },
-  gridContent: { padding: 10, paddingBottom: 90 },
-  gridContentTablet: { padding: 18, paddingBottom: 90 },
+  gridContent: { padding: 10 },
+  gridContentTablet: { padding: 18 },
   gridRow: { flexDirection: 'row' },
   gridEmptySlot: { flex: 1, margin: 6 },
-  listContent: { paddingBottom: 90 },
-  listContentTablet: { paddingTop: 8, paddingBottom: 90 },
+  listContent: {},
+  listContentTablet: { paddingTop: 8 },
   separator: { height: StyleSheet.hairlineWidth, marginLeft: 74, marginRight: 16 },
   countContainer: { alignItems: 'center', paddingVertical: 16 },
   countText: { fontSize: 12, fontFamily: 'Inter_500Medium' },

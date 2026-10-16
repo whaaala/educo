@@ -16,6 +16,8 @@ const config = {
         sheet: rem(editor.sheetWidth),
       },
       maxWidth: { sheet: rem(editor.sheetWidth) },
+      // the app shell's rail and sidebar (A-2 change 3)
+      width: { rail: rem(LAYOUT.shell.railWidth), sidebar: rem(LAYOUT.shell.sidebarWidth), "list-pane": rem(LAYOUT.listDetail.listWidth) },
     },
   },
 };

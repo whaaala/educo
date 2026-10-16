@@ -21,7 +21,7 @@ import { DownloadStatementModal } from '../../components/modals/DownloadStatemen
 import { ProfileAvatar } from '../../components/ui/ProfileAvatar';
 import { ChildSwitcher, type ChildData } from '../../components/ui/ChildSwitcher';
 import type { ThemeColors } from "@/contexts/ThemeContext";
-import { useIsTablet } from '@/hooks/useIsTablet';
+import { useBarClearance, useIsTablet } from '@/hooks/useIsTablet';
 
 // Enable LayoutAnimation on Android
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
@@ -474,6 +474,7 @@ export default function FeesScreen() {
   const router = useRouter();
   const params = useLocalSearchParams();
   const isTablet = useIsTablet();
+  const clearance = useBarClearance(); // room for the phone's bar, none beside a rail (A2-17)
 
   // Get selected child from params or default to first child
   const initialChildId = (params.childId as string) || MOCK_CHILDREN[0]?.id || '';
@@ -552,8 +553,7 @@ export default function FeesScreen() {
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={[
-          styles.scrollContent,
-          { paddingBottom: isTablet ? 24 : 20 },
+          { paddingBottom: clearance + (isTablet ? 24 : 20) }, // A2-18: the 20 alone left the last items under the bar
         ]}
         showsVerticalScrollIndicator={false}
         onTouchStart={() => openDropdown && setOpenDropdown(null)}
@@ -1114,7 +1114,6 @@ export default function FeesScreen() {
 const styles = StyleSheet.create({
   safeArea: { flex: 1 },
   scrollView: { flex: 1 },
-  scrollContent: { paddingBottom: 100 },
 
   // Header Section
   headerSection: { paddingHorizontal: 16, paddingTop: 8 },
