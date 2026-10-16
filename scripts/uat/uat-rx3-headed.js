@@ -892,4 +892,6 @@ async function one(slice, slot) {
     await browser.close();
   }
 }
-(async () => { console.log('HEADED UAT — RX-3 step 3b'); await Promise.all(WINDOWS.map((s, i) => (!ONLY || ONLY.split(',').includes(s)) && one(s, i))); })();
+// the helpers, for uat-rx3-fixes-headed.js (the run starts only when this file is run itself)
+module.exports = { site, activeRoot, nodeOf, parentOf, strip, cls, sleep, selectedId, deselect, band, into, under, beside, allIds, tileThen, sel, expandInspector, at, ins, insText, openAll, btn, choose, field, slider, dragVisible, chip, css, pvOpen, frame, pvAt, pvClose, pcss, ruleText, sweep };
+if (require.main === module) (async () => { console.log('HEADED UAT — RX-3 step 3b'); await Promise.all(WINDOWS.map((s, i) => (!ONLY || ONLY.split(',').includes(s)) && one(s, i))); })();

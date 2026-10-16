@@ -165,7 +165,23 @@ describe("band or contained — the control that makes the layer live", () => {
     expect(one([kid(), kid({ id: "k2" })]), "two sections side by side stay on the measure as a row").not.toContain("eu-band--one");
     expect(one([kid({ position: "absolute" } as Partial<BoxNode>)]), "a floating block").not.toContain("eu-band--one");
     expect(bandClasses(band({ children: [kid()] }), true), "edge to edge is untouched").toBe("eu-band");
-    expect(stripComments(LAYOUT_CSS)).toMatch(/\.eu-band--contained\.eu-band--one\s*>\s*\*\s*\{\s*padding-inline:/);
+    expect(stripComments(LAYOUT_CSS)).toMatch(/\.eu-band--contained\.eu-band--one\s*>\s*\*\s*\{\s*padding-left:/);
+  });
+
+  // RX3-28 (measured HEADED 2026-10-16): the measure padding REPLACED the section's own left / right inner spacing — Inner spacing
+  // left 3 / right 0.5 drew 96 / 96 at 1280. The measure is the floor, the person's spacing is added on top; nothing set, as before.
+  it("RX3-28: one section in a Centred column keeps its own left / right inner spacing on top of the measure", () => {
+    const rule = stripComments(LAYOUT_CSS).match(/\.eu-band--contained\.eu-band--one\s*>\s*\*\s*\{([^}]*)\}/)?.[1] ?? "";
+    expect(rule).toMatch(/padding-left:\s*calc\(max\(var\(--eu-gutter-page\),[^;]*\)\s*\+\s*var\(--bx-pad-l,\s*0rem\)\)\s*!important/);
+    expect(rule).toMatch(/padding-right:\s*calc\(max\(var\(--eu-gutter-page\),[^;]*\)\s*\+\s*var\(--bx-pad-r,\s*0rem\)\)\s*!important/);
+    const css = (extra: Record<string, unknown>) => renderSiteFiles({ homeId: "p1", pages: [{ id: "p1", name: "Home", path: "home",
+      root: { id: "r1", type: "container", direction: "column", children: [
+        { id: "b1", type: "container", direction: "row", rowBand: true, sectionWidth: "contained", children: [
+          { id: "sec", type: "container", direction: "column", ...extra, children: [] }] }] } }] } as unknown as BoxSite, DEFAULT_THEME);
+    const all = (extra: Record<string, unknown>) => Object.values(css(extra)).join("\n");
+    const own = /\.bx-sec\{[^}]*--bx-pad-l:calc\(var\(--box-u, 0\.625rem\) \* 4\.8\);--bx-pad-r:calc\(var\(--box-u, 0\.625rem\) \* 0\.8\)/;
+    expect(all({ paddingLeft: 48, paddingRight: 8 }), "the section hands its spacing to the rule").toMatch(own);
+    expect(all({}), "nothing set: nothing added").not.toMatch(/\.bx-sec\{[^}]*--bx-pad-[lr]/);
   });
 
   it("the export emits those classes onto the section", () => {

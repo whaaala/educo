@@ -298,6 +298,23 @@ describe("BoxInspector — functionality audit (controls act)", () => {
     expect(onPatch).toHaveBeenCalledWith({ marginLeft: 16 });
   });
 
+  it("RX3-7: the side fields say their unit and hold to the slider's range — no negative, nothing past its max", () => {
+    // Measured 2026-10-16 (HEADED): "40" stored 40rem (729.6px of padding) beside a 0–6rem slider, "-1.5" stored a
+    // negative margin through a field marked min=0, and nothing said the fields were in rem.
+    const onPatch = renderFor(createContainer("column", { id: "s" } as Partial<BoxNode>));
+    const top = screen.getByLabelText("Inner spacing top");
+    fireEvent.change(top, { target: { value: "40" } });
+    expect(onPatch).toHaveBeenLastCalledWith({ paddingTop: 96 }); // the slider's max, 6rem
+    fireEvent.change(screen.getByLabelText("Outer spacing top"), { target: { value: "-1.5" } });
+    expect(onPatch).toHaveBeenLastCalledWith({ marginTop: 0 });
+    // the unit is SEEN, and read out with the field
+    const hint = document.getElementById(top.getAttribute("aria-describedby") ?? "");
+    expect(hint?.textContent).toMatch(/in rem/i);
+    // RX3-29: and it does not promise a fixed pixel size — a side is drawn in the fluid page unit (3 → 54.72px at 1280, 67.2 at 1920)
+    expect(hint?.textContent).not.toMatch(/\d+\s*px/);
+    expect(top.getAttribute("max")).toBe("6");
+  });
+
   it("a Style preset applies its whole patch (Heading → Display)", () => {
     const onPatch = renderFor(heading());
     fireEvent.click(screen.getByRole("button", { name: "Display style" }));

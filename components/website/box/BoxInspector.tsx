@@ -7,7 +7,7 @@
  * — the real CSS still runs under the hood. Colours reuse the shared ColorPickerPopover.
  */
 
-import { useState, useRef } from "react";
+import { useState, useRef, useId } from "react";
 import { Plus, X, Tags, Rows3, Columns3, Upload, ArrowRight, AlignLeft, AlignCenter, AlignRight, AlignHorizontalSpaceBetween, Layers, Move, BringToFront, SendToBack, ChevronUp, ChevronDown, Italic, Underline, LayoutGrid, Maximize2, Sparkles, Paintbrush, Ruler, Type as TypeIcon, MonitorSmartphone, Bookmark, Lock, LockOpen } from "lucide-react";
 import type { SiteTheme } from "@/lib/site-storage";
 import type { BoxNode, FlexAlign, FlexJustify, AccPartStyle, Breakpoint, PagerNav, PinScopeWords, SectionFlag } from "@/lib/box-model";
@@ -232,7 +232,9 @@ function SideSpacing({ title, node, base, sides, onPatch, max = 96, defaults = [
   const set = own !== undefined || sides.some((k) => node[k] !== undefined);
   const g = own ?? Math.max(...defaults);
   const setPx = (k: keyof BoxNode, px: number) => onPatch({ [k]: px } as Partial<BoxNode>);
-  const setRem = (k: keyof BoxNode, v: string) => onPatch({ [k]: v === "" ? undefined : fromRem(Number(v)) } as Partial<BoxNode>);
+  // Typed in rem, held to the slider's own 0…max — a field marked min=0 still took "-1.5", and "40" drew 729.6px (RX3-7).
+  const setRem = (k: keyof BoxNode, v: string) => { const n = Number(v); if (v !== "" && !Number.isFinite(n)) return; onPatch({ [k]: v === "" ? undefined : Math.min(max, Math.max(0, fromRem(n))) } as Partial<BoxNode>); };
+  const unitId = useId();
   const [t, r, b, l] = sides;
   const hasDefault = defaults.some((d) => d > 0);
   return (
@@ -249,10 +251,11 @@ function SideSpacing({ title, node, base, sides, onPatch, max = 96, defaults = [
         {([["Top", t], ["Right", r], ["Bottom", b], ["Left", l]] as const).map(([lab, key]) => (
           <label key={lab} className="flex flex-col items-center gap-0.5">
             <span className="text-[0.5625rem] uppercase tracking-wide text-gray-400">{lab}</span>
-            <input type="number" step={0.1} min={0} value={node[key] !== undefined ? toRem(node[key] as number) : ""} placeholder={String(toRem(own ?? defaults[[t, r, b, l].indexOf(key)]))} onChange={(e) => setRem(key, e.target.value)} aria-label={`${title} ${lab.toLowerCase()}`} className="w-full text-xs px-1 py-1 pointer-coarse:min-h-11 rounded-lg border border-gray-200 dark:border-white/10 midnight:border-white/10 purple:border-white/10 bg-transparent text-center outline-none focus:ring-1 focus:ring-indigo-400" />
+            <input type="number" step={0.1} min={0} max={toRem(max)} aria-describedby={unitId} value={node[key] !== undefined ? toRem(node[key] as number) : ""} placeholder={String(toRem(own ?? defaults[[t, r, b, l].indexOf(key)]))} onChange={(e) => setRem(key, e.target.value)} aria-label={`${title} ${lab.toLowerCase()}`} className="w-full text-xs px-1 py-1 pointer-coarse:min-h-11 rounded-lg border border-gray-200 dark:border-white/10 midnight:border-white/10 purple:border-white/10 bg-transparent text-center outline-none focus:ring-1 focus:ring-indigo-400" />
           </label>
         ))}
       </div>
+      <p id={unitId} className="text-[0.6875rem] text-gray-500 dark:text-gray-400 midnight:text-slate-400 purple:text-purple-300">Each side in rem, sized for a laptop — it grows a little on wide screens and closes up on a phone</p>
     </div>
   );
 }

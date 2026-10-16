@@ -400,12 +400,12 @@ describe("box-export — static HTML", () => {
     const root = createContainer("column", { children: [makeRowBand([badge])] } as Partial<BoxNode>);
     const html = renderPageHTML(root, DEFAULT_THEME);
     // a per-instance <style> targets `.bx-<id> .eu-badge` with the box + text styling
-    expect(html).toMatch(/\.bx-[A-Za-z0-9_-]+ \.eu-badge\{[^}]*border:4px solid #ff0000/);
+    expect(html).toMatch(/\.bx-[A-Za-z0-9_-]+ \.eu-badge\{[^}]*border:0.25rem solid #ff0000/);
     expect(html).toMatch(/\.bx-[A-Za-z0-9_-]+ \.eu-badge\{[^}]*background:#00ff00/);
     expect(html).toMatch(/\.bx-[A-Za-z0-9_-]+ \.eu-badge[^{]*\{[^}]*font-family:Georgia, serif/);
     // the component's WRAPPER (bx- rule) carries NO border/background of its own
     const wrapRule = html.match(/\.bx-[A-Za-z0-9_-]+\{([^}]*)\}/)?.[1] ?? "";
-    expect(wrapRule).not.toContain("border:4px");
+    expect(wrapRule).not.toMatch(/(^|;)border:/); // no border of ANY width on the wrapper
     expect(wrapRule).not.toContain("background:#00ff00");
   });
 

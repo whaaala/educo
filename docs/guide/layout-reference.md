@@ -65,7 +65,7 @@ Drag a tile onto the page and let go where the dashed marker shows, or click a t
 | **Media** | Image | One photograph or image. |
 | | Photo gallery | Many photographs at once, set up in one dialog. |
 | | Slider | Photographs shown one at a time with dots. |
-| | Video | YouTube, Vimeo, or MP4. |
+| | Video | YouTube, Vimeo, or MP4. It keeps its shape at every screen size — 16:9 unless you pick **Portrait** (a phone-shaped video) or type a **Height**. On the published page a YouTube or Vimeo video shows its picture and a play button, and the player only loads when a visitor presses play — so the page stays light on a phone and on mobile data. |
 | | Icon | A searchable symbol (inline SVG). |
 | | Embed | Raw iframe or HTML pasted in. |
 | **Components** | Accordion | Expandable Q&A. |
@@ -177,8 +177,8 @@ thresholds (the 2px, the 3rem and 14rem column floors) are set in `config/layout
 | **Space across** · **Space down** | The same space, across and down separately — "same as above" until you move one. | Per screen |
 | **Space between columns** (page-grid rows) | The gap between blocks side by side in a page-grid row (across). | Per screen |
 | **Space between rows** (page-grid rows) | The gap between wrapped lines of a page-grid row (down). | Per screen |
-| **Inner spacing** (padding) | Space between the block's edge and its content, all sides at once or each side separately. Shows "Default · …rem" and a **Back to default** button. | Per screen |
-| **Outer spacing** (margin) | Space outside the block's edge, all sides at once or each side separately. Shows "Default · …rem" and a **Back to default** button. | Per screen |
+| **Inner spacing** (padding) | Space between the block's edge and its content, all sides at once or each side separately. Each side is typed in rem, sized for a laptop: the space grows a little on wide screens and closes up on a phone. It holds between 0 and the slider's largest size. Shows "Default · …rem" and a **Back to default** button. | Per screen |
+| **Outer spacing** (margin) | Space outside the block's edge, all sides at once or each side separately, in rem, from 0 up. Shows "Default · …rem" and a **Back to default** button. | Per screen |
 
 *A block made since 15 October 2026 has no space until you add it — every control starts at 0. A block saved before keeps
 the default it was made with; its controls show "Default · …rem" and **Back to default** returns to it.*

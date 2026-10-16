@@ -1,4 +1,6 @@
 import { describe, it, expect } from "vitest";
+import { readFileSync } from "fs";
+import { join } from "path";
 import { resolvePage, pageCheck, corrections } from "@/lib/semantics";
 import type { BoxNode } from "@/lib/box-model";
 
@@ -113,6 +115,19 @@ describe("C1 — fixed for you, asked only for your words", () => {
     const s = resolvePage(page(box({ tag: "header" }, [box({ id: "n1", tag: "nav" })]), box({}), box({ tag: "footer" }, [box({ id: "n2", tag: "nav" })])));
     expect(s.byId.get("n1")!.label).toBe("Main menu");
     expect(s.byId.get("n2")!.label).toBe("Footer menu");
+  });
+  it("RX3-21: Page check reads a row's sides at the screen it is checking — a per-device Order moves which block is the edge", () => {
+    const src = readFileSync(join(process.cwd(), "lib/semantics.ts"), "utf8").replace(/\r\n/g, "\n");
+    const calls = [...src.matchAll(/rowSide\(([^)]*)\)/g)].map((m) => m[1]);
+    expect(calls.length).toBeGreaterThan(0);
+    expect(calls.filter((a) => a.split(",").length < 3)).toEqual([]);
+  });
+  it("RX3-10: menus in the body are counted from 1 — from 2 only when a Main menu is the first", () => {
+    // Measured 2026-10-16 (HEADED): four unnamed menus and no header were read out as "Menu 2" … "Menu 5".
+    const s = resolvePage(page(box({}, [box({ id: "a", tag: "nav" }), box({ id: "b", tag: "nav" })])));
+    expect([s.byId.get("a")!.label, s.byId.get("b")!.label]).toEqual(["Menu 1", "Menu 2"]);
+    const t = resolvePage(page(box({ tag: "header" }, [box({ id: "h", tag: "nav" })]), box({}, [box({ id: "c", tag: "nav" })])));
+    expect([t.byId.get("h")!.label, t.byId.get("c")!.label]).toEqual(["Main menu", "Menu 2"]);
   });
   it("one menu alone needs no name", () => {
     const s = resolvePage(page(box({ tag: "header" }, [box({ id: "n1", tag: "nav" })]), box({})));

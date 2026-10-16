@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import {
   pinCSS, pinBlockedBy, fixedBlockedBy, blockedByLabel, bandCarriesPin, pinScope, childStyle, createContainer, createGrid,
   createElement, normalizeRowBands, resolveResponsive, updateBoxResponsive, pinArrivalCss, pinArrivalKeyframes,
-  pinArrivalHasEffect, treePinArrivalCss, PIN_ARRIVALS, SHADOW_CSS, floatHoldCSS, canvasFixedStyle, pinStackAttr, pinStackNeeded, pinStackGroup, scrollContainerOf, fixedContainerOf, pinHolder, type BoxNode,
+  pinArrivalHasEffect, treePinArrivalCss, PIN_ARRIVALS, SHADOW_CSS, floatHoldCSS, canvasFixedStyle, pinStackAttr, pinStackNeeded, pinStackGroup, pinPaddingNeeded, pinStackPass, scrollContainerOf, fixedContainerOf, pinHolder, type BoxNode,
 } from "@/lib/box-model";
 import { PAGE_Z } from "@/lib/educo-ui/stacking";
 
@@ -869,4 +869,35 @@ describe("clause 3b — the sticky sidebar's height (L-1)", () => {
       expect(css.height).toBeUndefined();
     });
   }
+});
+
+/**
+ * RX3-8 · AN ANCHOR AND TAB FOCUS LAND BELOW A STICKY PAGE HEADER (AX-5, WCAG 2.4.11 — measured HEADED 2026-10-16: a 320px
+ * sticky header, a #link far down, the target at 258px, under it). A sticky bar held to the PAGE is stuck by the time anything
+ * below it is scrolled to, so it covers every landing just as a fixed one does; one held inside a SECTION hands over and pads nothing.
+ */
+describe("RX3-8 · scroll-padding-top covers a sticky bar held by the page", () => {
+  const page = (kids: BoxNode[]) => createContainer("column", { id: "root", children: kids } as Partial<BoxNode>);
+  const target = () => createContainer("column", { id: "t", anchor: "term-dates" } as Partial<BoxNode>);
+  it("pinPaddingNeeded: a sticky header on the page needs it; one inside a section does not", () => {
+    expect(pinPaddingNeeded(page([box({ id: "hdr", pin: "top" }), target()])), "sticky header on the page").toBe(true);
+    expect(pinPaddingNeeded(page([box({ id: "hdr", pin: "top", hold: "fixed" }), target()])), "fixed bar (2d)").toBe(true);
+    const sec = createContainer("column", { id: "sec", children: [box({ id: "rail", pin: "top" })] } as Partial<BoxNode>);
+    expect(pinPaddingNeeded(page([sec, target()])), "a sticky bar in a section (2e / F1-b)").toBe(false);
+    expect(pinPaddingNeeded(page([box({ id: "hdr", pin: "top" })])), "nothing to scroll to").toBe(false);
+  });
+  it("pinStackPass: the padding is the page-held sticky header's measured height — not a section's bar", () => {
+    document.body.innerHTML = `<div class="bx-root"><div class="bx-hdr" data-eu-pin="top" data-eu-pin-in="root" style="position:sticky"></div>`
+      + `<div class="bx-sec"><div class="bx-rail" data-eu-pin="top" data-eu-pin-in="sec" style="position:sticky"></div></div></div>`;
+    const h = (sel: string, px: number) => { document.querySelector(sel)!.getBoundingClientRect = () => ({ height: px } as DOMRect); };
+    h(".bx-hdr", 320); h(".bx-rail", 50);
+    // jsdom has no `scrollingElement`; a browser's is <html> in standards mode, which is what the export is
+    if (!document.scrollingElement) Object.defineProperty(document, "scrollingElement", { value: document.documentElement, configurable: true });
+    pinStackPass(document);
+    expect(document.documentElement.style.getPropertyValue("scroll-padding-top")).toBe("320px");
+    document.querySelector(".bx-hdr")!.remove();
+    pinStackPass(document);
+    expect(document.documentElement.style.getPropertyValue("scroll-padding-top"), "a section's sticky bar pads nothing").toBe("");
+    document.body.innerHTML = "";
+  });
 });

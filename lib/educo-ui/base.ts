@@ -143,7 +143,7 @@ ${LAYOUT_CSS}
 
 /* ── Accessibility: honour reduced-motion ──────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
-  .eu-root *, .eu-root *::before, .eu-root *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
+  .eu-root *, .eu-root *::before, .eu-root *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; scroll-behavior: auto !important; background-attachment: scroll !important; }
 }
 /* scroll-behavior: smooth is NOT switched off by reduced motion on its own — measured: under
    prefers-reduced-motion: reduce the computed value is still smooth. The rule above is what does it, for

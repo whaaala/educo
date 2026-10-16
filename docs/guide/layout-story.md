@@ -39,7 +39,9 @@ means a new one.
 and so does the content) or *Centred column* (the colour still runs edge to edge, but the content is held to a
 comfortable reading width in the middle). Maya's hero is edge to edge; her body text is a centred column, because 68
 characters a line is what people can read. The colour she gives the section itself runs edge to edge too; only a
-section dressed as a card (rounded corners, a shadow or a border) stays a card in the middle of the column.
+section dressed as a card (rounded corners, a shadow or a border) stays a card in the middle of the column. Any
+Inner spacing she gives that section is added on top of the column, so 3 on the left moves her words 3 further in from
+the column's edge, never out to the window.
 
 ## 2. "I want a photo beside my words"
 

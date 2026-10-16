@@ -1001,7 +1001,7 @@ describe("BoxCanvas (box-model editor)", () => {
     } as Partial<BoxNode>);
     const { container } = render(<BoxCanvas root={t} theme={DEFAULT_THEME} onChange={() => {}} />);
     const el = container.querySelector<HTMLElement>('[data-box-id="d"]')!;
-    expect(el.style.border).toContain("3px");
+    expect(el.style.border).toContain("0.188rem"); // a border wider than a hairline is rem (rule 16, RX3-17)
     expect(el.style.border).toContain("dashed");
     expect(el.style.boxShadow).not.toBe("");
     expect(el.style.borderRadius).toBe([0, 10, 10, 10].map((n) => remLen(n)).join(" ")); // rem, never px — Core Rule 16 // TL overridden to 0

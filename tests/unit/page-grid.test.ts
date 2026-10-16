@@ -1157,3 +1157,21 @@ describe("G-3d (1) · on a phone a block alone on its line takes the whole line,
     expect(rules).toContain(T / 2);
   });
 });
+
+describe("RX3-20 · a block moved by Order in a row of the page gets the margins of the place it is DRAWN in", () => {
+  const rowOf = (edit?: (cols: BoxNode[]) => void) => {
+    const cols = Array.from({ length: 3 }, () => createContainer("column", { children: [blockForKind("text")] }));
+    edit?.(cols);
+    return markPageGrid(normalizeRowBands({ ...emptyPageRoot(), children: [makeRowBand(cols)] } as BoxNode)).children![0];
+  };
+  const sides = (band: BoxNode, i: number, bp: Breakpoint = "base") => { const s = childStyle(band.children![i], band, bp); return [s.marginLeft, s.marginRight]; };
+  it("order −1 on the third: it takes the first place's margins, and the others shift along (base and at a rung)", () => {
+    const plain = rowOf();
+    const base = rowOf((c) => { c[2].order = -1; });
+    expect(isPageRow(base)).toBe(true);
+    expect([sides(base, 2), sides(base, 0), sides(base, 1)]).toEqual([sides(plain, 0), sides(plain, 1), sides(plain, 2)]);
+    const rung = rowOf((c) => { c[2].responsive = { tabletLandscape: { order: -1 } } as BoxNode["responsive"]; });
+    expect([sides(rung, 2, "tabletLandscape"), sides(rung, 0, "tabletLandscape")]).toEqual([sides(plain, 0, "tabletLandscape"), sides(plain, 1, "tabletLandscape")]);
+    expect(sides(rung, 2), "no order at the base: its own place").toEqual(sides(plain, 2));
+  });
+});

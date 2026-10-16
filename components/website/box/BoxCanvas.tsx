@@ -9,7 +9,7 @@
  */
 
 import { measureCss } from "@/lib/educo-ui/base";
-import { columnFloorRem, dividerThickness, gridLeftoverAt,HAND_FLOOR_REM, REFLOW_FLOOR_REM, isPageRow, rowNarrowsAt, LIST_ITEM_GAP, linesAt, pageRowSlot, restForDrag, setFreeInset, slideFreeAt, tabletPlaces }from "@/lib/box-model";
+import { columnFloorRem, dividerThickness, borderLen, videoSizing, gridLeftoverAt,HAND_FLOOR_REM, REFLOW_FLOOR_REM, isPageRow, rowNarrowsAt, LIST_ITEM_GAP, linesAt, pageRowSlot, restForDrag, setFreeInset, slideFreeAt, tabletPlaces }from "@/lib/box-model";
 import { gapPatch, snapSpace, spacePatch, stepSpace, type SpaceSide } from "@/lib/box-model";
 import { resolvePage } from "@/lib/semantics";
 import { Fragment, useCallback, useEffect, useLayoutEffect, useMemo, useReducer, useRef, useState, type CSSProperties, type ReactNode } from "react";
@@ -18,7 +18,7 @@ import { Link2, Plus, ChevronUp, ChevronDown, Copy, Scissors, ClipboardPaste, Tr
 import type { SiteTheme } from "@/lib/site-storage";
 import {
   type BoxNode, type BoxType, frameCss, spanAt, setSpan,
-  containerStyle, childStyle, marginCSS, leafPaddingCSS, outerSpaceCSS, pageBandInset, pagePinCover, sectionContent, sizeToCSS, u, baseUnit, floatingReserve, floatStacksOnMobile, createContainer, createElement, createComponent,
+  containerStyle, childStyle, marginCSS, leafPaddingCSS, ownSidePadVars, outerSpaceCSS, pageBandInset, pagePinCover, sectionContent, sizeToCSS, u, baseUnit, floatingReserve, floatStacksOnMobile, createContainer, createElement, createComponent,
   updateBox, deleteBox, insertBox, moveBlock, canMoveBlock, moveAxis, duplicateBox, moveBox, cloneBox, findParent, isAncestor, isContainer, containerLabel, widthPct, stackWithBlock, fitBand, PILL, blockTypography,
   isFloating, floatBox, unfloatBox, groupBoxes, ungroupBoxes, bringToFront, sendToBack, bringForward, sendBackward, packRowLines, allocateLine, type LineFollower,
   shouldTakeMirrorBox, mirrorFlushSides, edgeSwipeSides, hostSizedFor, type MirrorBox, type MirrorChase, fadedPaint, boxOpacity, backgroundCss, treePaintLayerCss, radiusCSS, isClipped, SHADOW_CSS, videoEmbedSrc, sanitizeCssDeclarations, expandScopedCss, ACCORDION_CSS_PARTS, itemOverrideCss, itemHasOverride, itemNumberVars, richBody, componentTextCss, componentBoxCss, bgShowThroughCss, resizeTopEdge, blockContainmentCss, alertToastCss, treeHasToast, treeHasFixedHold, accordionClasses, bandClasses, advancedCssStyle, alertActionsHTML, hugsContent, itemFloatContextCss, COMPONENT_ITEM_SEL, clampContentScale, MIN_CONTENT_SCALE, isMultiItemComponent, comfortableWidth, remLen, rootFontPx, isDefiniteLen, addItemAfter, duplicateItem, duplicateChildItem, removeItem, removeChildItem, moveItem, moveChildItem, updateItem, updateChildItem, ALERT_SEVERITY_ICON, alertPartInline, alertIconInline, collectAlertItemStyles,
@@ -58,7 +58,7 @@ function decorStyle(node: BoxNode): React.CSSProperties {
   const s: React.CSSProperties = {};
   const br = radiusCSS(node); if (br) s.borderRadius = br;
   const bc = fadedPaint(node).borderColor;
-  if (node.borderWidth && node.type !== "divider") s.border = `${node.borderWidth}px ${node.borderStyle ?? "solid"} ${bc ? colorToCSS(bc) : "rgba(0,0,0,0.15)"}`; // divider uses borderWidth as its line thickness
+  if (node.borderWidth && node.type !== "divider") s.border = `${borderLen(node.borderWidth)} ${node.borderStyle ?? "solid"} ${bc ? colorToCSS(bc) : "rgba(0,0,0,0.15)"}`; // divider uses borderWidth as its line thickness
   if (node.shadow) s.boxShadow = SHADOW_CSS[node.shadow];
   if (node.rotate) s.transform = `rotate(${node.rotate}deg)`;
   Object.assign(s, bandEdgeCSS(node)); // sloped / curved top and bottom edges — the SAME helper the export uses
@@ -3797,6 +3797,7 @@ export default function BoxCanvas({
       ...(selfPaint ? {} : decorStyle(node)), // border, shadow, per-corner radius, rotation
       ...(floating ? {} : marginCSS(node)), // margins are a FLOW concept; a floating box uses left/top instead
       ...leafPaddingCSS(node, section), // inner spacing on a plain element (c-23) — the export writes the same
+      ...ownSidePadVars(node), // RX3-28: its own left / right, for a Centred column's one-section rule — the export writes the same
       // SEE-THROUGH: only a WHOLE-BOX fade reaches this wrapper. A box that is fading just its own paint
       // puts the alpha into its background/border colours instead (see `fadedPaint`), so nothing inside it
       // is touched. A component paints its own element, and `hidden` is the editor showing you a box that
@@ -4380,7 +4381,7 @@ export default function BoxCanvas({
           It matters for the pager: `scroll-behavior: smooth` is NOT switched off by reduced motion on its
           own — measured, the computed value stays `smooth` — so without this a reader who asked for less
           motion would get gliding pages in the editor and instant ones on their site. */}
-      <style dangerouslySetInnerHTML={{ __html: "@media (prefers-reduced-motion: reduce){.eu-tokens *,.eu-tokens *::before,.eu-tokens *::after{animation-duration:.01ms !important;transition-duration:.01ms !important;scroll-behavior:auto !important}}" }} />
+      <style dangerouslySetInnerHTML={{ __html: "@media (prefers-reduced-motion: reduce){.eu-tokens *,.eu-tokens *::before,.eu-tokens *::after{animation-duration:.01ms !important;transition-duration:.01ms !important;scroll-behavior:auto !important;background-attachment:scroll !important}}" }} />
       {/* The empty-columns "Add a block here" target, hidden until asked for.
           Written as a real rule rather than a Tailwind named-group variant: `group-hover/name:` did not make it
           into the compiled sheet, so the class was on the element and did nothing — the ghost simply sat there
@@ -5139,7 +5140,7 @@ function ElementView({ node, headingLevel, theme, editable, selected, onText, on
     case "video": {
       const embed = videoEmbedSrc(node.src);
       return (
-        <div className="relative w-full overflow-hidden rounded-lg bg-black/5" style={{ height: sizeToCSS(node.height) ?? 315 }}>
+        <div className="relative w-full overflow-hidden rounded-lg bg-black/5" style={videoSizing(node)}>
           {embed ? (
             <iframe src={embed} title="Video" className="w-full h-full" style={{ border: 0, pointerEvents: editable ? "none" : "auto" }} allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen />
           ) : node.src ? (

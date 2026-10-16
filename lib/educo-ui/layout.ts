@@ -67,6 +67,8 @@ export function windowClass(width: number, height: number): WindowClass {
 export const APP_TILES: Readonly<{ minWidth: number; maxAcross: number }> = LAYOUT.appTiles;
 /** The narrowest phone a row must still fit, in px (RULE AF). */
 export const NARROWEST_PHONE_PX: number = LAYOUT.narrowestPhone;
+/** A video's proportions — its height follows its width (RX3-2). */
+export const MEDIA: Readonly<{ videoRatio: string; portraitRatio: string; portraitWidthRem: number }> = LAYOUT.media;
 /** The editor's own chrome line: from here its panels dock beside the canvas. Not a rung. */
 export const EDITOR_DOCK_PX: number = LAYOUT.editor.dockFrom;
 /** The narrowest a column in a row is drawn, rem — untouched, sized by hand, a page-grid block below the tablet rung (RULE CFG, L5-3). */
@@ -203,7 +205,12 @@ const LAYOUT_TEMPLATE = `
    The colour is on the section because a band is invisible scaffolding no one can select; padded from outside, the colour sat in
    the column with white strips either side. A section with a card look keeps the band's padding (see bandClasses). */
 @ONE_SEL@ { padding-inline: 0 !important; }
-@ONE_KID_SEL@ { padding-inline: max(var(--eu-gutter-page), (100% - var(--eu-measure, 100%)) / 2) !important; }
+/* RX3-28 (measured HEADED 2026-10-16): the measure is the FLOOR and the section's own left / right inner spacing rides on top of it
+   (--bx-pad-l / --bx-pad-r, written by paddingCSS only when the person set some). Replacing it drew Inner spacing 3 / 0.5 as 96 / 96. */
+@ONE_KID_SEL@ {
+  padding-left: calc(max(var(--eu-gutter-page), (100% - var(--eu-measure, 100%)) / 2) + var(--bx-pad-l, 0rem)) !important;
+  padding-right: calc(max(var(--eu-gutter-page), (100% - var(--eu-measure, 100%)) / 2) + var(--bx-pad-r, 0rem)) !important;
+}
 `.trim();
 
 /** The layout layer as the export ships it. */
