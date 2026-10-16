@@ -10,6 +10,8 @@ Run through this checklist BEFORE writing any code:
 
 - [ ] **READ THE TASK TREE** — [docs/TASK_TREE.md](docs/TASK_TREE.md) holds everything any session has said it will do, as one tree. Find **YOU ARE HERE** before doing anything else, and put every new promise into it the moment it is made.
 - [ ] **Open a BUG LEDGER** — from this point on, every bug you find gets written into your reply as a numbered line the moment you find it, BEFORE deciding anything about it. See [docs/FIX_WHAT_YOU_FIND.md](docs/FIX_WHAT_YOU_FIND.md).
+- [ ] **⛔ RULE LB — EVERY LINE GETS A BATCH OF ITS AREA** — anything written into the tree (task, bug, check, doc) goes into a batch
+  of its area AT ONCE (`→ BATCH X-n`), and the area's AREA MAP shows it. Nothing open lives outside a batch.
 - [ ] **⛔ RULE M — PONYTAIL, EVERY TIME, FOR EVERYTHING** (https://github.com/dietrichgebert/ponytail, `docs/PONYTAIL.md`; the
   user, 2026-10-05: "this must be followed every single time you do anything") — before any code, doc, test, script or tool call,
   find out EXACTLY what is needed and climb the ladder: (1) does it need to exist — no → skip it (YAGNI; nothing added that was
@@ -164,6 +166,14 @@ Run through this checklist BEFORE telling the user it's done:
     under the work that found it. Work that is interrupted stays in the tree as in progress, never dropped.
   - **End of a session:** move **YOU ARE HERE**, mark what closed with its commit or measurement, and commit the file.
   - Nothing is deleted from it. A branch closes only when its children are closed or the user decides otherwise.
+  - **RULE LB — EVERY LINE HAS A BATCH, GROUPED BY AREA (MANDATORY — the user, 2026-10-16: "everything should have a batch…
+    make that a rule going forward so nothing is missed in the ledger… grouped to the area… everything is mapped so nothing is
+    forgotten for each section").** Every open line of the tree — a task, a ledger bug, a check, a doc owed — belongs to a
+    batch of its AREA the moment it is written: inside the batch in BATCHES, or carrying `→ BATCH X-n` with that batch listing
+    it. The **AREA MAP** at the top of BATCHES lists every area's batches in order, so an area's whole remaining work is seen
+    in one place, and an area is finished only when every batch on its map is closed. Measured, 2026-10-16: the layout audit
+    found 31 frozen-list lines and three hand-offs no batch held — work that would have been forgotten. **Guarded:**
+    `unbatchedLines()` in `tests/unit/task-tree-batches.test.ts` fails on any open leaf with no batch.
   - **DONE IS DONE EVERYWHERE (the user, 2026-10-06: "make sure that this mistake doesn't happen again… anybody that picks it up
     would understand this is ticked, this is done").** The same work is often written in more than one place — a ledger line in
     section 1 and its fix in a batch, a question and its decision, a parent and its children. **Closing work ticks EVERY line that
