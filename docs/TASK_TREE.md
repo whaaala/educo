@@ -1820,7 +1820,7 @@ Risks and distribution (section 2): RK-1 · Developing countries (section 3): AF
     the detail with Back (and the browser / Android back); expanded and up = list + detail side by side, the first row
     selected; a URL per detail (`…/<list>/<id>`) that opens straight onto it at every class; the selection survives a resize
     across 840 both ways; web + `apps/mobile/` (expo-router `[id]`)
-  - `[ ]` (5) THE GUIDE: the app layout's page in `docs/guide/` (story + reference, pictures from this pass; the rung move told
+  - `[ ]` (WRITTEN + REPUBLISHED 2026-10-16 — `docs/guide/app-layout.md` (story: the bar, the rail, the sidebar, list-detail, larger text, the app on a phone and a tablet, sample data; reference: the classes table, the bar's keys, the builder's moved screens and what it means for saved pages, the three config files) with 10 pictures from this pass; its own sidebar section "The Educo app"; `layout-story.md` moved to 600 / 840 / 1200 / 1600; `npm run docs:build` 0; Artifact v35 — 73 build files + 5 stale nulled, all 74 read back; the docs HEADED UAT over them owed after test:fast) (5) THE GUIDE: the app layout's page in `docs/guide/` (story + reference, pictures from this pass; the rung move told
     for saved pages) + layout-story's rung table; republished per `docs/DOCUSAURUS.md` § Republishing (every build file, the stale
     nulled, read back, `uat-d4-docs-headed.js`)
   EARLY HEADED CHECK (the user, 2026-10-16: "should we check the test from the browser?" — after change (1) + A2-8 / A2-9, a
@@ -1875,8 +1875,11 @@ Risks and distribution (section 2): RK-1 · Developing countries (section 3): AF
   - `[ ]` (GUARD WRITTEN 2026-10-16 — `tests/unit/layout-config.test.ts`: em forms of every edge in all code, px width checks
     in the builder + app + their tests and scripts; mutation-proven: a planted `52.49em` and `w < 840` in `lib/` both fail it,
     removed → passes; the shell half is added with change (3); closes on HEADED U5) A2-6 · nothing guards "no hard-coded rung / shell" — the guard is written in this batch (U5)
-  - `[ ]` (FIRST HALF FIXED 2026-10-16: the overlay switches below `WEB_SCREEN_PX.lg`, the same line as its `lg:` classes;
-    the teacher menu is measured with change (3)) A2-7 · the web `components/layout/Sidebar.tsx:412` switches to its phone overlay at `innerWidth <= 1023` (Tailwind
+  - `[?]` (FIRST HALF FIXED 2026-10-16 — the overlay switches below `WEB_SCREEN_PX.lg`, HEADED 101 / 0 at 1023 | 1024. SECOND HALF
+    MEASURED 2026-10-16: `Sidebar.tsx:885` picks `isParent ? parentMenuItems : menuItems` and nothing reads `isTeacher` — a teacher gets
+    the WHOLE school-admin menu (staff, fees set-up, settings…). What a teacher sees is a product decision → THE USER'S CALL; my
+    recommendation: the teacher places of `config/app-shell.json` (Today · Classes · Attendance · Marks · Messages · Timetable ·
+    Notices), mapped to the web's pages, as data) A2-7 · the web `components/layout/Sidebar.tsx:412` switches to its phone overlay at `innerWidth <= 1023` (Tailwind
     `lg`), not the ladder; and a teacher gets no menu of their own (`:884` picks admin or parent only) — to measure what a
     teacher sees, then fix or ask
   - `[ ]` (DECIDED by the user 2026-10-16: "it's a rule that we must fix everything we find… don't leave nothing unfixed" →
