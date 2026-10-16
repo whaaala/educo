@@ -1,0 +1,213 @@
+{
+ "letters": {
+  "Yoruba": "ẹọṣẸỌṢ",
+  "Igbo": "ịọụỊỌỤ",
+  "Hausa": "ɓɗƙƁƊƘ",
+  "Twi / Ga / Ewe": "ɛɔƐƆŋ",
+  "Vietnamese": "ạờữ"
+ },
+ "writes": {
+  "Inter": [
+   "Yoruba",
+   "Igbo",
+   "Hausa",
+   "Twi / Ga / Ewe",
+   "Vietnamese"
+  ],
+  "Poppins": [],
+  "DM Sans": [],
+  "Manrope": [
+   "Igbo",
+   "Vietnamese"
+  ],
+  "Lexend": [
+   "Yoruba",
+   "Igbo",
+   "Vietnamese"
+  ],
+  "Montserrat": [
+   "Yoruba",
+   "Igbo",
+   "Hausa",
+   "Twi / Ga / Ewe",
+   "Vietnamese"
+  ],
+  "Work Sans": [
+   "Yoruba",
+   "Igbo",
+   "Vietnamese"
+  ],
+  "Raleway": [
+   "Yoruba",
+   "Igbo",
+   "Vietnamese"
+  ],
+  "Nunito": [
+   "Yoruba",
+   "Igbo",
+   "Vietnamese"
+  ],
+  "Rubik": [],
+  "Karla": [],
+  "Lato": [],
+  "Open Sans": [
+   "Yoruba",
+   "Igbo",
+   "Vietnamese"
+  ],
+  "PT Sans": [],
+  "Source Sans 3": [
+   "Yoruba",
+   "Igbo",
+   "Twi / Ga / Ewe",
+   "Vietnamese"
+  ],
+  "Roboto": [
+   "Yoruba",
+   "Igbo",
+   "Vietnamese"
+  ],
+  "Ubuntu": [],
+  "Comfortaa": [
+   "Yoruba",
+   "Igbo",
+   "Vietnamese"
+  ],
+  "Fredoka": [],
+  "Playfair Display": [
+   "Yoruba",
+   "Igbo",
+   "Vietnamese"
+  ],
+  "Merriweather": [
+   "Yoruba",
+   "Igbo",
+   "Hausa",
+   "Twi / Ga / Ewe",
+   "Vietnamese"
+  ],
+  "Lora": [
+   "Yoruba",
+   "Igbo",
+   "Vietnamese"
+  ],
+  "Bitter": [
+   "Yoruba",
+   "Igbo",
+   "Vietnamese"
+  ],
+  "Cormorant Garamond": [
+   "Yoruba",
+   "Igbo",
+   "Vietnamese"
+  ],
+  "Crimson Text": [
+   "Yoruba",
+   "Igbo",
+   "Vietnamese"
+  ],
+  "EB Garamond": [
+   "Yoruba",
+   "Igbo",
+   "Hausa",
+   "Twi / Ga / Ewe",
+   "Vietnamese"
+  ],
+  "Libre Baskerville": [
+   "Yoruba",
+   "Igbo",
+   "Hausa",
+   "Twi / Ga / Ewe"
+  ],
+  "Noto Serif": [
+   "Yoruba",
+   "Igbo",
+   "Hausa",
+   "Twi / Ga / Ewe",
+   "Vietnamese"
+  ],
+  "PT Serif": [],
+  "Anton": [
+   "Yoruba",
+   "Igbo",
+   "Hausa",
+   "Twi / Ga / Ewe",
+   "Vietnamese"
+  ],
+  "Abril Fatface": [],
+  "Bebas Neue": [],
+  "Oswald": [
+   "Yoruba",
+   "Igbo",
+   "Vietnamese"
+  ],
+  "Righteous": [],
+  "Lobster": [
+   "Yoruba",
+   "Igbo",
+   "Vietnamese"
+  ],
+  "Caveat": [
+   "Yoruba",
+   "Igbo"
+  ],
+  "Dancing Script": [
+   "Yoruba",
+   "Igbo",
+   "Vietnamese"
+  ],
+  "Pacifico": [
+   "Yoruba",
+   "Igbo",
+   "Vietnamese"
+  ],
+  "Amatic SC": [
+   "Yoruba",
+   "Igbo",
+   "Vietnamese"
+  ],
+  "Great Vibes": [
+   "Yoruba",
+   "Igbo",
+   "Hausa",
+   "Twi / Ga / Ewe",
+   "Vietnamese"
+  ],
+  "Indie Flower": [],
+  "Patrick Hand": [
+   "Yoruba",
+   "Igbo",
+   "Vietnamese"
+  ],
+  "Permanent Marker": [],
+  "Sacramento": [],
+  "Satisfy": [],
+  "Shadows Into Light": [],
+  "JetBrains Mono": [
+   "Yoruba",
+   "Igbo",
+   "Vietnamese"
+  ],
+  "Fira Code": [],
+  "IBM Plex Mono": [
+   "Yoruba",
+   "Igbo",
+   "Vietnamese"
+  ],
+  "Roboto Mono": [
+   "Yoruba",
+   "Igbo",
+   "Vietnamese"
+  ],
+  "Source Code Pro": [
+   "Yoruba",
+   "Igbo",
+   "Vietnamese"
+  ],
+  "Space Mono": [
+   "Yoruba",
+   "Igbo",
+   "Vietnamese"
+  ]
+ }
+}

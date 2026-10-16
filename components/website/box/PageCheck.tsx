@@ -12,15 +12,18 @@ import Modal from "@/components/shared/Modal";
 import Button from "@/components/shared/Button";
 import CompactField from "@/components/shared/CompactField";
 import type { BoxNode } from "@/lib/box-model";
-import { resolvePage, pageCheck, corrections } from "@/lib/semantics";
+import { resolvePage, pageCheck, corrections, type SiteFonts } from "@/lib/semantics";
+import { familyOf } from "@/lib/educo-ui/fonts";
 
 /** How many things need the user — for the toolbar badge. */
-export function pageCheckCount(root: BoxNode): number {
-  return pageCheck(root).length;
+export function pageCheckCount(root: BoxNode, fonts?: SiteFonts): number {
+  return pageCheck(root, undefined, fonts).length;
 }
 
-export default function PageCheck({ root, isOpen, onClose, onShow, onPatch, onSideSpace }: {
+export default function PageCheck({ root, fonts, isOpen, onClose, onShow, onPatch, onSideSpace }: {
   root: BoxNode;
+  /** The site's heading + body fonts — what a block without a font of its own is drawn in (A-1b). */
+  fonts?: SiteFonts;
   isOpen: boolean;
   onClose: () => void;
   /** Select the block on the canvas (and close). */
@@ -30,7 +33,7 @@ export default function PageCheck({ root, isOpen, onClose, onShow, onPatch, onSi
   onSideSpace?: (value: number) => void;
 }) {
   const sem = resolvePage(root);
-  const issues = pageCheck(root, sem);
+  const issues = pageCheck(root, sem, fonts);
   const fixed = corrections(sem);
   const [alt, setAlt] = useState<Record<string, string>>({});
   const text = "text-[0.8125rem] text-gray-800 dark:text-gray-100 midnight:text-cyan-50 purple:text-pink-50";
@@ -61,6 +64,9 @@ export default function PageCheck({ root, isOpen, onClose, onShow, onPatch, onSi
                 )}
                 {i.kind === "words-at-edge" && i.fix?.sideSpace !== undefined && onSideSpace && (
                   <Button size="sm" onClick={() => onSideSpace(i.fix!.sideSpace!)}>Add space at the sides</Button>
+                )}
+                {i.kind === "font-letters" && i.fix?.font && (
+                  <Button size="sm" onClick={() => onPatch(i.id, { fontFamily: i.fix!.font })}>Use {familyOf(i.fix.font)} for this block</Button>
                 )}
                 <Button size="sm" variant="ghost" onClick={() => onShow(i.id)}>Show me</Button>
               </li>

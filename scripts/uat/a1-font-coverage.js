@@ -1,6 +1,7 @@
 // A1-6 — which of the builder's font families can WRITE the letters of the region's languages (RULE AF)?
 // For each family: the faces Google serves (regular), loaded as FontFace, and each letter measured against two different
 // fallbacks — a letter the family has is the same width whichever fallback follows it.  node scripts/uat/a1-font-coverage.js
+// Writes lib/educo-ui/font-coverage.json — re-run it when a family is added to lib/educo-ui/fonts.ts.
 const { chromium } = require('playwright'); const fs = require('fs'); const path = require('path');
 const src = fs.readFileSync(path.join(__dirname, '../../lib/educo-ui/fonts.ts'), 'utf8');
 const families = [...src.matchAll(/fam\("([^"]+)", "(\w+)"\)/g)].map((m) => m[1]);
@@ -19,8 +20,12 @@ const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/
     }, { fonts, LETTERS, n: rows.length });
     rows.push({ family: fam, ...has }); console.log(fam.padEnd(22), Object.entries(has).map(([k, v]) => `${k}:${v ? 'yes' : 'NO'}`).join('  '));
   }
-  const all = rows.filter((r) => Object.keys(LETTERS).every((k) => r[k]));
+  // A1b-3: "all" is the REGION's four — Vietnamese was counted too, which dropped Libre Baskerville from the list
+  const REGION = ['Yoruba', 'Igbo', 'Hausa', 'Twi / Ga / Ewe'];
+  const all = rows.filter((r) => REGION.every((k) => r[k]));
   console.log(`\n${rows.length} families · can write ALL of Yoruba, Igbo, Hausa, Twi/Ga/Ewe: ${all.length} — ${all.map((r) => r.family).join(', ')}`);
-  fs.writeFileSync(path.join(__dirname, 'a1-out', 'font-coverage.json'), JSON.stringify(rows, null, 1));
+  // The data the font pickers and the Page check read (A-1b): family → the languages it writes, as measured here
+  const data = { letters: LETTERS, writes: Object.fromEntries(rows.map(({ family, ...has }) => [family, Object.keys(has).filter((k) => has[k])])) };
+  fs.writeFileSync(path.join(__dirname, '../../lib/educo-ui/font-coverage.json'), JSON.stringify(data, null, 1) + '\n');
   await b.close();
 })();

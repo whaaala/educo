@@ -14,7 +14,8 @@ import { ChevronDown, Check } from "lucide-react";
 import { COMPACT_INPUT_CLS, COMPACT_LABEL_CLS } from "./CompactField";
 import { closeOnScrollAway } from "@/lib/scroll-away";
 
-export interface CompactSelectOption { value: string; label: string }
+/** `hint`: a second, smaller line under the label in the menu (it wraps; the trigger shows the label only). */
+export interface CompactSelectOption { value: string; label: string; hint?: string }
 export interface CompactSelectGroup { group: string; items: CompactSelectOption[] }
 
 export interface CompactSelectProps {
@@ -53,21 +54,23 @@ export default function CompactSelect({ label, ariaLabel, value, onChange, optio
   useEffect(() => {
     if (!open) return;
     const onDown = (e: MouseEvent) => { if (!menuRef.current?.contains(e.target as Node) && !btnRef.current?.contains(e.target as Node)) setOpen(false); };
-    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") setOpen(false); };
+    // A1b-8: Esc closes THIS menu and nothing else — caught on the way down, so the builder never also steps out of the
+    // selected block — and focus goes back to the button, not to the page
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") { e.stopPropagation(); setOpen(false); btnRef.current?.focus(); } };
     const onScroll = closeOnScrollAway(() => btnRef.current, () => menuRef.current, () => setOpen(false)); // A1-5
     const onResize = () => setOpen(false);
     document.addEventListener("mousedown", onDown);
-    document.addEventListener("keydown", onKey);
+    document.addEventListener("keydown", onKey, true);
     window.addEventListener("scroll", onScroll, true);
     window.addEventListener("resize", onResize);
-    return () => { document.removeEventListener("mousedown", onDown); document.removeEventListener("keydown", onKey); window.removeEventListener("scroll", onScroll, true); window.removeEventListener("resize", onResize); };
+    return () => { document.removeEventListener("mousedown", onDown); document.removeEventListener("keydown", onKey, true); window.removeEventListener("scroll", onScroll, true); window.removeEventListener("resize", onResize); };
   }, [open]);
 
   const renderOpt = (o: CompactSelectOption) => (
     <button key={o.value} type="button" role="option" aria-selected={o.value === value}
       onClick={() => { onChange(o.value); setOpen(false); }}
       className={`w-full flex items-center gap-2 px-2 py-1.5 pointer-coarse:min-h-11 text-xs text-left rounded-lg transition-colors ${o.value === value ? "bg-brand text-brand-fg" : "text-ink hover:bg-surface-2"}`}>
-      <span className="flex-1 truncate">{o.label}</span>
+      <span className="flex-1 min-w-0"><span className="block truncate">{o.label}</span>{o.hint && <span className="block text-[0.625rem] leading-snug whitespace-normal">{o.hint}</span>}</span>
       {o.value === value && <Check className="w-3 h-3 shrink-0" />}
     </button>
   );
@@ -76,7 +79,7 @@ export default function CompactSelect({ label, ariaLabel, value, onChange, optio
     <button ref={btnRef} type="button" id={id} aria-haspopup="listbox" aria-expanded={open} aria-label={aria} disabled={disabled}
       onClick={() => setOpen((o) => !o)}
       className={`${COMPACT_INPUT_CLS} pointer-coarse:min-h-11 flex items-center justify-between gap-2 text-left disabled:opacity-50 disabled:cursor-not-allowed`}>
-      <span className={`truncate ${selected ? "" : "text-gray-400"}`}>{selected?.label ?? placeholder ?? ""}</span>
+      <span className={`min-w-0 truncate ${selected ? "" : "text-gray-400"}`}>{selected?.label ?? placeholder ?? ""}</span>
       <ChevronDown className={`w-3.5 h-3.5 shrink-0 text-gray-400 transition-transform ${open ? "rotate-180" : ""}`} />
     </button>
   );
