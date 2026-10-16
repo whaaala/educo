@@ -5,7 +5,6 @@ import {
   Pressable,
   StyleSheet,
   ScrollView,
-  Dimensions,
   TextInput,
   LayoutAnimation,
   Platform,
@@ -22,6 +21,7 @@ import { DownloadStatementModal } from '../../components/modals/DownloadStatemen
 import { ProfileAvatar } from '../../components/ui/ProfileAvatar';
 import { ChildSwitcher, type ChildData } from '../../components/ui/ChildSwitcher';
 import type { ThemeColors } from "@/contexts/ThemeContext";
+import { useIsTablet } from '@/hooks/useIsTablet';
 
 // Enable LayoutAnimation on Android
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
@@ -162,10 +162,6 @@ const MOCK_CURRENT_FEES: FeeRecord[] = [
 // Filter options - simplified for current fees
 const STATUS_OPTIONS = ['All', 'Paid', 'Partial', 'Pending', 'Overdue'];
 
-function useIsTablet() {
-  const [isTablet] = useState(() => Dimensions.get('window').width >= 768);
-  return isTablet;
-}
 
 function formatDate(dateString: string) {
   const date = new Date(dateString);

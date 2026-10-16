@@ -1793,7 +1793,7 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
   - `[ ]` (CODE DONE 2026-10-16 — `config/layout.json` (rungs + label + words + measure, narrowestPhone 360, editor.dockFrom 1024, uat.edgeHeight); `layout.ts` reads + validates it; `mediaBelow`; screens.js `require`s it and exports `EDGE`; guard `layout-config.test.ts`; CLAUDE.md rule 18 + RULE Z line; typecheck 0; the 15 ladder test files 810 / 810 — HEADED U1 owed) (1) THE RUNGS MOVE, INTO CONFIGURATION (RULE CFG): `config/layout.json` holds 600 / 840 / 1200 / 1600, `RUNG_PX` reads it; every hard-coded copy of a rung derived from it (A2-1);
     CLAUDE.md rule 18 + RULE Z's "both sides of every breakpoint" line (599 | 600, 839 | 840, 1199 | 1200, 1599 | 1600);
     `screens.js` follows; saved pages still read (slot names unchanged)
-  - `[ ]` (2) A HEIGHT CLASS: `HEIGHT_PX` beside `RUNG_PX` (compact 0 · medium 480 · expanded 900) + one pure
+  - `[ ]` (CODE DONE 2026-10-16 — `heights` / `shell` / `listDetail` in `config/layout.json`, validated where read; `windowClass(w, h)` in `lib/educo-ui/layout.ts` (`tests/unit/window-class.test.ts` 10 / 10, mutation-proven: `||` → `&&` fails 4); `apps/mobile/hooks/useIsTablet.ts` = `useWindowClass()` over `useWindowDimensions` + `useIsTablet` = not the bar; `__tests__/useIsTablet.test.tsx` 6 / 6, mutation-proven (`>= 768` back fails 2); metro watches `config/`; jest 121 / 121 — HEADED U2 + emulators owed) (2) A HEIGHT CLASS: `HEIGHT_PX` beside `RUNG_PX` (compact 0 · medium 480 · expanded 900) + one pure
     `windowClass(width, height)` → { width class, height class, shell }, in the portable engine (rule 20), used by web AND
     `apps/mobile/` (one hook, live on rotate / split-screen — A2-3, A2-4); `screens.js` gains both sides of 480 tall
   - `[ ]` (3) THE NAVIGATION SHELL AS DATA PER ROLE: a shell = per role an ordered list of destinations {id · label · icon ·
@@ -1851,9 +1851,9 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
     under RULE CFG; closes on the HEADED U1) A2-2 · `scripts/uat/screens.js:17` reads `RUNG_PX` out of `layout.ts` with a regex — a reformatted object would
     silently drop the rung edges; to be mutation-checked (does `uat-screens.test.ts` fail?) and closed as NOT A BUG with that
     measurement, or fixed
-  - `[ ]` A2-3 · `apps/mobile/hooks/useIsTablet.ts:4` is `width >= 768` — a width that matches no rung (a 700-wide tablet in
+  - `[ ]` (FIXED 2026-10-16 — a tablet = a window that gets a rail or sidebar (`windowClass`), so 600–767 upright tablets are tablets and a phone on its side is not; closes on HEADED U2 + the emulators) A2-3 · `apps/mobile/hooks/useIsTablet.ts:4` is `width >= 768` — a width that matches no rung (a 700-wide tablet in
     portrait is "phone")
-  - `[ ]` A2-4 · 15 local `function useIsTablet` copies in `apps/mobile/` (`(tabs)/index.tsx:167`, `(tabs)/fees.tsx:165`,
+  - `[ ]` (FIXED 2026-10-16 — the 15 copies → the shared live hook; the frozen widths of the home screen (4 card / tile widths; `statCard`, never used, removed), term-progress, reports and the tab bar read `useWindowDimensions`; and TWO MORE the code map missed: `Modal.tsx` maxHeight `SCREEN_HEIGHT * 0.8 / 0.75` → `80%` / `75%` of the overlay, `Tooltip.tsx` width live; 14 files of now-unused `Dimensions` / `useState` imports removed; the guard fails on a window read at import or a width compared with a number in `apps/mobile/` (mutation-proven); closes on HEADED U2 + the emulators) A2-4 · 15 local `function useIsTablet` copies in `apps/mobile/` (`(tabs)/index.tsx:167`, `(tabs)/fees.tsx:165`,
     `BottomTabBar.tsx:26`, `PageHeader.tsx:17`, `Modal.tsx:21` … listed by the code map) plus 4 module-level `Dimensions.get`
     constants read the width ONCE — rotating a tablet or split-screen never updates the layout
   - `[ ]` A2-5 · `apps/mobile/components/ui/BottomTabBar.tsx:165` hard-codes the tab list (the user's no-hard-coding line)

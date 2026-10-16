@@ -40,6 +40,9 @@ const BUILDER = /^(lib|app[\\/]website|components[\\/]website|apps[\\/]mobile|te
  * number, a `matchMedia` with a number in it.
  */
 const WEB = /^(app|components|contexts|hooks|apps[\\/]admin)[\\/]/;
+/** In the phone / tablet app (A2-3 / A2-4): the window read ONCE at import, or its width compared with a typed number. */
+const MOBILE = /^apps[\\/]mobile[\\/]/;
+const mobileForms = [/^(?:const|let|var)\b.*Dimensions\.get\(/, /(?:Dimensions\.get\(['"]window['"]\)|useWindowDimensions\(\))\.width\s*[<>]=?\s*\d/];
 const webForms = [/\b(?:min|max)-\[[\d.]+(?:px|em|rem)\]:/, /innerWidth\s*[<>]=?\s*\d/, /matchMedia\(\s*["'`][^"'`]*\d+(?:px|em|rem)/];
 // Comments may name an edge. A block comment keeps its newlines, so a reported line number is the file's own (A2-10).
 const codeOnly = (src: string) => src.replace(/\/\*[\s\S]*?\*\//g, (c) => c.replace(/[^\n]/g, "")).replace(/(^|[^:])\/\/.*$/gm, "$1");
@@ -47,7 +50,7 @@ const codeOnly = (src: string) => src.replace(/\/\*[\s\S]*?\*\//g, (c) => c.repl
 export function hardCodedEdges(): string[] {
   return SCAN.flatMap(files).flatMap((f) => {
     const lines = codeOnly(readFileSync(join(ROOT, f), "utf8").replace(/\r\n/g, "\n")).split("\n");
-    const patterns = [...emForms, ...(BUILDER.test(f) ? widthChecks : []), ...(WEB.test(f) ? webForms : [])];
+    const patterns = [...emForms, ...(BUILDER.test(f) ? widthChecks : []), ...(WEB.test(f) ? webForms : []), ...(MOBILE.test(f) ? mobileForms : [])];
     return lines.flatMap((l, i) => (patterns.some((p) => p.test(l)) ? [`${relative(ROOT, join(ROOT, f))}:${i + 1}: ${l.trim().slice(0, 120)}`] : []));
   });
 }

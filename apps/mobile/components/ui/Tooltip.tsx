@@ -7,9 +7,9 @@ import {
   Modal,
   Dimensions,
   LayoutChangeEvent,
+  useWindowDimensions,
 } from 'react-native';
 
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 const FONTS = {
   regular: 'Inter_400Regular',
@@ -49,6 +49,7 @@ export default function Tooltip({
   visible: controlledVisible,
   onVisibilityChange,
 }: TooltipProps) {
+  const { width: SCREEN_WIDTH } = useWindowDimensions(); // live — a turned screen keeps the tooltip on it (A2-4)
   const [internalVisible, setInternalVisible] = useState(false);
   const [tooltipPosition, setTooltipPosition] = useState<'top' | 'bottom'>('top');
   const [triggerLayout, setTriggerLayout] = useState({ x: 0, y: 0, width: 0, height: 0 });
@@ -162,7 +163,7 @@ export default function Tooltip({
           <View
             style={[
               styles.tooltip,
-              { backgroundColor },
+              { backgroundColor, maxWidth: SCREEN_WIDTH - 24 },
               getTooltipStyle(),
             ]}
             onLayout={onTooltipLayout}
@@ -194,7 +195,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 8,
     borderRadius: 8,
-    maxWidth: SCREEN_WIDTH - 24,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.25,

@@ -1,11 +1,9 @@
 import type { ComponentProps } from "react";
-import { useState } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   ScrollView,
-  Dimensions,
 } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -13,6 +11,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../contexts/ThemeContext';
 import { PageHeader } from '../components/ui/PageHeader';
 import { getItem, getFileTypeConfig, formatFileSize, timeAgo } from '../components/drive/driveMockData';
+import { useIsTablet } from '@/hooks/useIsTablet';
 
 /** Ionicons' own set of icon names. A name outside it renders nothing, so it is worth checking. */
 type IoniconName = ComponentProps<typeof Ionicons>["name"];
@@ -24,10 +23,6 @@ const FONTS = {
   bold: 'Inter_700Bold',
 };
 
-function useIsTablet() {
-  const [isTablet] = useState(() => Dimensions.get('window').width >= 768);
-  return isTablet;
-}
 
 // Mock content for different file types
 function getDocumentContent(name: string): string {

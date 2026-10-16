@@ -34,6 +34,32 @@ Object.values(RUNG_PX).forEach((px, i, all) => {
   if (!Number.isFinite(px) || (i === 0 ? px !== 0 : px <= all[i - 1])) throw new Error(`config/layout.json: rung ${i} "from" ${px} — phone must be 0 and each rung wider than the one before`);
 });
 
+/** The HEIGHT classes, first px of each (A-2 (2)): a phone held sideways is under `medium`. */
+export type HeightClass = keyof typeof LAYOUT.heights;
+export const HEIGHT_PX = LAYOUT.heights as { [K in HeightClass]: number };
+Object.values(HEIGHT_PX).forEach((px, i, all) => {
+  if (!Number.isFinite(px) || (i === 0 ? px !== 0 : px <= all[i - 1])) throw new Error(`config/layout.json: height ${i} ${px} — compact must be 0 and each class taller than the one before`);
+});
+export type Shell = "bar" | "rail" | "sidebar";
+export interface WindowClass { width: RungName; height: HeightClass; shell: Shell; panes: 1 | 2 }
+const last = <K extends string>(steps: { [k in K]: number }, v: number) => (Object.keys(steps) as K[]).filter((k) => v >= steps[k]).pop() as K;
+const SHELL = LAYOUT.shell as { barBelow: { width: RungName; height: HeightClass }; sidebarFrom: RungName };
+const SPLIT_FROM = LAYOUT.listDetail.splitFrom as RungName;
+for (const [what, name, set] of [["shell.barBelow.width", SHELL.barBelow.width, RUNG_PX], ["shell.sidebarFrom", SHELL.sidebarFrom, RUNG_PX], ["listDetail.splitFrom", SPLIT_FROM, RUNG_PX], ["shell.barBelow.height", SHELL.barBelow.height, HEIGHT_PX]] as const) {
+  if (!(name in set)) throw new Error(`config/layout.json: ${what} "${name}" is not one of ${Object.keys(set).join(" / ")}`);
+}
+/**
+ * What a window of `width` × `height` CSS px is (A-2 (2)) — read by the web app and `apps/mobile/` alike, so a phone, a turned
+ * phone, a tablet and a desktop get the same answer everywhere. The navigation follows M3's NavigationSuiteScaffold: a bar
+ * when the width OR the height is compact, a sidebar from `shell.sidebarFrom`, a rail between; a list and its detail sit
+ * side by side from `listDetail.splitFrom`. Every line is in `config/layout.json` (RULE CFG).
+ */
+export function windowClass(width: number, height: number): WindowClass {
+  const w = last(RUNG_PX, width), h = last(HEIGHT_PX, height);
+  const shell: Shell = width < RUNG_PX[SHELL.barBelow.width] || height < HEIGHT_PX[SHELL.barBelow.height] ? "bar" : width >= RUNG_PX[SHELL.sidebarFrom] ? "sidebar" : "rail";
+  return { width: w, height: h, shell, panes: width >= RUNG_PX[SPLIT_FROM] ? 2 : 1 };
+}
+
 /** The narrowest phone a row must still fit, in px (RULE AF). */
 export const NARROWEST_PHONE_PX: number = LAYOUT.narrowestPhone;
 /** The editor's own chrome line: from here its panels dock beside the canvas. Not a rung. */

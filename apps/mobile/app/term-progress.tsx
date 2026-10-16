@@ -1,13 +1,12 @@
 import type { ComponentProps } from "react";
-import { useState } from 'react';
 import {
   View,
   Text,
   Pressable,
   StyleSheet,
   ScrollView,
-  Dimensions,
   Image,
+  useWindowDimensions,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -15,11 +14,11 @@ import { useRouter, useLocalSearchParams } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '../contexts/ThemeContext';
 import Tooltip from '../components/ui/Tooltip';
+import { useIsTablet } from '@/hooks/useIsTablet';
 
 /** Ionicons' own set of icon names. A name outside it renders nothing, so it is worth checking. */
 type IoniconName = ComponentProps<typeof Ionicons>["name"];
 
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 const FONTS = {
   regular: 'Inter_400Regular',
@@ -28,10 +27,6 @@ const FONTS = {
   bold: 'Inter_700Bold',
 };
 
-function useIsTablet() {
-  const [isTablet] = useState(() => Dimensions.get('window').width >= 768);
-  return isTablet;
-}
 
 // Subject progress interface
 interface SubjectProgress {
@@ -174,6 +169,7 @@ export default function TermProgressScreen() {
   const router = useRouter();
   const params = useLocalSearchParams();
   const isTablet = useIsTablet();
+  const { width: SCREEN_WIDTH } = useWindowDimensions(); // live — a turned or split screen re-lays out (A2-4)
 
   const childName = (params.childName as string) || 'Student';
   const childClass = (params.childClass as string) || 'JSS 2';
@@ -415,7 +411,7 @@ export default function TermProgressScreen() {
                 style={[
                   styles.subjectCard,
                   { backgroundColor: colors.surface, borderColor: colors.border },
-                  isTablet && styles.subjectCardTablet,
+                  isTablet && { width: (SCREEN_WIDTH - 48 - 12) / 2 },
                 ]}
               >
                 {/* Card Header */}
@@ -802,9 +798,6 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     borderWidth: 1,
     overflow: 'hidden',
-  },
-  subjectCardTablet: {
-    width: (SCREEN_WIDTH - 48 - 12) / 2,
   },
   subjectCardHeader: {
     flexDirection: 'row',

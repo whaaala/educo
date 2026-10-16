@@ -1,11 +1,11 @@
-import { useState } from 'react';
-import { View, Text, StyleSheet, Dimensions } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useTheme } from '../../contexts/ThemeContext';
 import { ProfileAvatar } from './ProfileAvatar';
 import { ChildSwitcher, type ChildData } from './ChildSwitcher';
 import { BackButton } from './BackButton';
+import { useIsTablet } from '@/hooks/useIsTablet';
 
 const FONTS = {
   regular: 'Inter_400Regular',
@@ -14,10 +14,6 @@ const FONTS = {
   bold: 'Inter_700Bold',
 };
 
-function useIsTablet() {
-  const [isTablet] = useState(() => Dimensions.get('window').width >= 768);
-  return isTablet;
-}
 
 interface PageHeaderProps {
   title: string;

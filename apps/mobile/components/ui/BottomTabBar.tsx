@@ -5,16 +5,16 @@ import {
   Text,
   Pressable,
   StyleSheet,
-  Dimensions,
   Animated,
   Platform,
+  useWindowDimensions,
 } from 'react-native';
 import { useRouter, usePathname } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '../../contexts/ThemeContext';
 import Svg, { Path, Circle, Rect } from 'react-native-svg';
+import { useIsTablet } from '@/hooks/useIsTablet';
 
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 const FONTS = {
   regular: 'Inter_400Regular',
@@ -23,10 +23,6 @@ const FONTS = {
   bold: 'Inter_700Bold',
 };
 
-function useIsTablet() {
-  const [isTablet] = useState(() => Dimensions.get('window').width >= 768);
-  return isTablet;
-}
 
 // Custom SVG Icons for a more premium look
 const HomeIcon = ({ color, size, filled }: { color: string; size: number; filled: boolean }) => (
@@ -175,6 +171,7 @@ export default function BottomTabBar() {
   const pathname = usePathname();
   const { colors, isDark, theme } = useTheme();
   const isTablet = useIsTablet();
+  const { width: SCREEN_WIDTH } = useWindowDimensions(); // live — a turned or split screen re-lays out (A2-4)
 
   // Tablet sizing: keep the bar centered with a max width so it doesn't look "stretched" on large screens.
   const tabletHorizontalGutter = 24;
