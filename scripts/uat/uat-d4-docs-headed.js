@@ -27,7 +27,13 @@ const paint = () => {
   const fg = getComputedStyle(document.querySelector('.markdown p') || document.body).color; const [a, b] = [lum(fg), lum(bg)].sort((x, y) => y - x);
   return { theme: document.documentElement.dataset.theme, bg, page, fg, same: bg === page, ratio: (a + 0.05) / (b + 0.05) };
 };
-const PAGES = ['#/', '#/layout-reference', '#/website-builder', '#/website-builder-in-the-app'];
+// Every page of the guide, read from docs/guide/ (A2-28: a typed list never saw the page A-2 added) — the route is the
+// page's `slug:` if it sets one, else its file name, as Docusaurus does.
+const GUIDE = require('path').join(__dirname, '..', '..', 'docs', 'guide');
+const PAGES = require('fs').readdirSync(GUIDE).filter((f) => f.endsWith('.md') && f !== 'README.md').map((f) => {
+  const slug = (require('fs').readFileSync(require('path').join(GUIDE, f), 'utf8').match(/^slug:\s*(\S+)/m) || [])[1];
+  return `#${slug ?? '/' + f.replace(/\.md$/, '')}`;
+}).sort();
 const CASES = [
   { w: 375, theme: 'light' }, { w: 375, theme: 'dark', frame: true }, { w: 768, theme: 'light', frame: true },
   { w: 1024, theme: 'dark' }, { w: 1536, theme: 'light', frame: true }, { w: 1280, theme: 'dark', font: 32 },
