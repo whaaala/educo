@@ -14,16 +14,18 @@ const H = require('./h.js'); const P = require('./pages.js').helpers; const I = 
       await H.panel(page, false); if (centred) await I.contentWidth(page, s, 'Centred column'); await I.background(page, s, '#1e3a5f');
       bands.push({ s, h, centred }); await page.keyboard.press('Escape');
     }
-    const store = await page.evaluate(() => { const r = JSON.parse(localStorage.getItem('educo_box_site_v1')); return { grid: !!r.pages[0].root.pageGrid, // the flag lives on the page root root: r.pages[0].root.children.map((b) => ({ id: b.id.slice(-4), sectionWidth: b.sectionWidth })) }; });
+    const store = await page.evaluate(() => { const r = JSON.parse(localStorage.getItem('educo_box_site_v1')); return { grid: !!r.pages[0].root.pageGrid /* the flag lives on the page root */, root: r.pages[0].root.children.map((b) => ({ id: b.id.slice(-4), sectionWidth: b.sectionWidth })) }; });
     console.log('stored', JSON.stringify(store));
     await page.getByRole('button', { name: 'Preview', exact: true }).first().click(); await page.waitForSelector('iframe'); await page.waitForTimeout(1500); await page.keyboard.press('h');
     for (const sc of SCREENS) {
       await page.setViewportSize({ width: sc.w, height: sc.h }); await page.waitForTimeout(200);
       const f = await (await page.$('iframe')).contentFrame();
-      const m = await f.evaluate((ids) => ids.map(({ s, h }) => { const cls = (id) => '.bx-' + id.replace(/[^A-Za-z0-9_-]/g, '-'); const he = document.querySelector(cls(h)); const band = document.querySelector(cls(s))?.closest('.eu-band') || document.querySelector(cls(s)); if (!he || !band) return null; const a = he.getBoundingClientRect(), b = band.getBoundingClientRect(); return { inset: +(a.left - b.left).toFixed(1), right: +(b.right - a.right).toFixed(1), w: +a.width.toFixed(1) }; }), bands);
+      const m = await f.evaluate((ids) => ids.map(({ s, h }) => { const cls = (id) => '.bx-' + id.replace(/[^A-Za-z0-9_-]/g, '-'); const he = document.querySelector(cls(h)); const band = document.querySelector(cls(s))?.closest('.eu-band') || document.querySelector(cls(s)); if (!he || !band) return null; const a = he.getBoundingClientRect(), b = band.getBoundingClientRect(), sec = document.querySelector(cls(s)).getBoundingClientRect(); return { inset: +(a.left - b.left).toFixed(1), right: +(b.right - a.right).toFixed(1), w: +a.width.toFixed(1), colour: +sec.width.toFixed(1), page: document.documentElement.clientWidth }; }), bands);
       const d = m[0] && m[1] ? +(m[0].inset - m[1].inset).toFixed(1) : null;
       out.push({ w: sc.w, h: sc.h, centred: m[0], dflt: m[1], diff: d });
       if (Math.abs(d ?? 99) > 0.5) console.log(`DIFF ${sc.label} ${sc.w}×${sc.h}: centred inset ${m[0]?.inset} vs default ${m[1]?.inset}`);
+      // L6-2: the centred section's COLOUR runs edge to edge (its box is the page's width), its words still on the measure
+      if (m[0] && Math.abs(m[0].colour - m[0].page) > 0.5) console.log(`L6-2 ${sc.label} ${sc.w}: the centred section's colour is ${m[0].colour} of ${m[0].page}px — not edge to edge`);
       if ([375, 768, 1280, 1920].includes(sc.w) && sc === SCREENS.find((x) => x.w === sc.w)) await page.screenshot({ path: `scripts/uat/logs/uat-l6/centred-${sc.w}.png` });
     }
     const same = out.filter((o) => Math.abs(o.diff ?? 99) <= 0.5).length;

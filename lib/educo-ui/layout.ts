@@ -131,6 +131,8 @@ export function layoutCss(scope = ".eu-root"): string {
   return LAYOUT_TEMPLATE
     .split("@SCOPE@").join(scope)
     .split("@CONTAINED_SEL@").join(within(scope, ".eu-band--contained"))
+    .split("@ONE_SEL@").join(within(scope, ".eu-band--contained.eu-band--one"))
+    .split("@ONE_KID_SEL@").join(within(scope, ".eu-band--contained.eu-band--one > *"))
     .replace("@MEASURE_STEPS@", measureSteps(scope));
 }
 
@@ -196,6 +198,12 @@ const LAYOUT_TEMPLATE = `
    attribute, and an inline style beats any stylesheet rule at any specificity. Without it the band was
    contained in the published site and full-bleed while you edited it — every class name still read correct. */
 @CONTAINED_SEL@ { padding-inline: max(var(--eu-gutter-page), (100% - var(--eu-measure, 100%)) / 2) !important; }
+/* L6-2 (the user, 2026-10-16: "colour edge to edge"): a contained band holding ONE plain section moves that padding INTO the
+   section, so the section's own colour fills the band edge to edge and its words stay on the measure: what this option promises.
+   The colour is on the section because a band is invisible scaffolding no one can select; padded from outside, the colour sat in
+   the column with white strips either side. A section with a card look keeps the band's padding (see bandClasses). */
+@ONE_SEL@ { padding-inline: 0 !important; }
+@ONE_KID_SEL@ { padding-inline: max(var(--eu-gutter-page), (100% - var(--eu-measure, 100%)) / 2) !important; }
 `.trim();
 
 /** The layout layer as the export ships it. */

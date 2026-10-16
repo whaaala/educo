@@ -38,7 +38,8 @@ means a new one.
 **Edge to edge, or a centred column.** Select a band and choose *Edge to edge* (the colour runs to the window's edges
 and so does the content) or *Centred column* (the colour still runs edge to edge, but the content is held to a
 comfortable reading width in the middle). Maya's hero is edge to edge; her body text is a centred column, because 68
-characters a line is what people can read.
+characters a line is what people can read. The colour she gives the section itself runs edge to edge too; only a
+section dressed as a card (rounded corners, a shadow or a border) stays a card in the middle of the column.
 
 ## 2. "I want a photo beside my words"
 

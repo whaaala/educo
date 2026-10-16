@@ -19,7 +19,7 @@ describe("Educo UI base stylesheet — the four responsive ingredients", () => {
     const shipped = stripComments(BASE_CSS);
     const declared = new Set([...shipped.matchAll(/\.(eu-[A-Za-z0-9_-]+)/g)].map((m) => m[1]));
     for (const c of declared) {
-      expect(["eu-root", "eu-band", "eu-band--contained"], `.${c} is declared but nothing emits it`).toContain(c);
+      expect(["eu-root", "eu-band", "eu-band--contained", "eu-band--one"], `.${c} is declared but nothing emits it`).toContain(c);
     }
   });
 

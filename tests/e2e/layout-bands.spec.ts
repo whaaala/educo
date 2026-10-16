@@ -39,6 +39,18 @@ const box = (page: Page, sel: string) =>
     return { left: r.left, right: r.right, width: r.width };
   });
 
+/**
+ * WHERE THE WORDS SIT — the section's CONTENT box, inside its own padding. Since L6-2 (the user, 2026-10-16: "colour edge to edge") a
+ * contained band holding ONE plain section gives that section the measure as its padding, so its colour fills the band while its
+ * words stay on the measure; the measure is read where the reader meets it, whichever box carries it.
+ */
+const content = (page: Page, sel: string) =>
+  page.locator(sel).evaluate((el) => {
+    const r = el.getBoundingClientRect(); const cs = getComputedStyle(el);
+    const l = r.left + parseFloat(cs.paddingLeft), rt = r.right - parseFloat(cs.paddingRight);
+    return { left: l, right: rt, width: rt - l };
+  });
+
 test.describe("bands", () => {
   test("an edge-to-edge band spans the page, and so does its content", async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
@@ -53,7 +65,9 @@ test.describe("bands", () => {
     await page.setViewportSize({ width: 1440, height: 900 });
     await load(page, "contained");
     const band = await box(page, "#band");
-    const inner = await box(page, "#inner");
+    const inner = await content(page, "#inner");
+    // L6-2: the section's own box — and so its colour — fills the band edge to edge
+    expect((await box(page, "#inner")).width, "the section's colour runs edge to edge").toBeGreaterThan(1400);
 
     // The band itself still spans — that is what makes the background full-bleed.
     expect(band.width, "the background must still run edge to edge").toBeGreaterThan(1400);
@@ -77,7 +91,7 @@ test.describe("bands", () => {
       const viewport = RUNG_PX[rung] + 120;
       await page.setViewportSize({ width: viewport, height: 900 });
       await load(page, "contained");
-      const inner = (await box(page, "#inner")).width;
+      const inner = (await content(page, "#inner")).width;
       const measure = parseFloat(RUNG_MEASURE[rung]!) * 16;
       expect(inner, `${rung}: the column must be capped, not the viewport`).toBeLessThan(viewport - 10);
       expect(Math.abs(inner - measure), `${rung} should sit on ${RUNG_MEASURE[rung]}`).toBeLessThan(2);
@@ -90,7 +104,7 @@ test.describe("bands", () => {
     await page.setViewportSize({ width: 375, height: 812 });
     await load(page, "contained");
     const band = await box(page, "#band");
-    const inner = await box(page, "#inner");
+    const inner = await content(page, "#inner");
     expect(inner.left - band.left, "there must still be a gutter").toBeGreaterThanOrEqual(8);
     expect(inner.width).toBeLessThan(band.width);
   });
@@ -120,7 +134,7 @@ test.describe("bands", () => {
     const m = await page.evaluate(() => {
       const band = document.querySelector('[data-box-id="band"]') as HTMLElement;
       const inner = document.querySelector('[data-box-id="inner"]') as HTMLElement;
-      const cs = getComputedStyle(band);
+      const cs = getComputedStyle(inner); // L6-2: one plain section carries the measure as its own padding
       const rootEl = document.querySelector(".eu-tokens") as HTMLElement;
       // The gutter is a clamp(), so its token text cannot be parsed as a number — give it to a probe element
       // and let the browser resolve it to px, which is the value the rule is actually using.
@@ -139,7 +153,8 @@ test.describe("bands", () => {
       };
     });
 
-    expect(m.innerW, "the builder must inset the content, not run it edge to edge").toBeLessThan(m.bandW);
+    expect(Math.abs(m.innerW - m.bandW), "L6-2: the section — and its colour — spans the band").toBeLessThan(1);
+    expect(m.padL, "the builder must inset the content, not run it edge to edge").toBeGreaterThan(0);
     expect(m.padL, "and inset it evenly").toBeCloseTo(m.padR, 0);
     const expected = Math.max(m.gutter, (m.bandW - m.measure) / 2);
     expect(Math.abs(m.padL - expected), "the canvas must apply the SAME rule the export does").toBeLessThan(2);

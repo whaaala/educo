@@ -2037,7 +2037,13 @@ export function alertToastCss(node: BoxNode, scope: string): string {
  */
 export function bandClasses(node: BoxNode, isPageSection = false): string {
   if (!node.rowBand || !isPageSection) return "";
-  return node.sectionWidth === "contained" ? "eu-band eu-band--contained" : "eu-band";
+  if (node.sectionWidth !== "contained") return "eu-band";
+  // L6-2: ONE plain section — nothing floating beside it, no card look (border, rounded corners, shadow) — takes the measure as its own
+  // padding, so its colour runs edge to edge (`layoutCss`). A card stays a card on the measure.
+  const kids = node.children ?? [];
+  const k = kids.length === 1 && !isFloating(kids[0]) && !kids[0].hidden ? kids[0] : null;
+  const card = !!k && (!!k.borderWidth || !!k.shadow || [k.radius, k.radiusTopLeft, k.radiusTopRight, k.radiusBottomRight, k.radiusBottomLeft].some((v) => (v ?? 0) > 0));
+  return k && !card ? "eu-band eu-band--contained eu-band--one" : "eu-band eu-band--contained";
 }
 
 export function accordionClasses(node: BoxNode): string {

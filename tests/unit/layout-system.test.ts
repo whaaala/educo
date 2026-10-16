@@ -72,7 +72,7 @@ describe("containers", () => {
     const declared = new Set(
       [...stripComments(LAYOUT_CSS).matchAll(/\.(eu-[A-Za-z0-9_-]+)/g)].map((m) => m[1]),
     );
-    const emittable = new Set(["eu-band", "eu-band--contained", "eu-root", "eu-tokens"]);
+    const emittable = new Set(["eu-band", "eu-band--contained", "eu-band--one", "eu-root", "eu-tokens"]);
     for (const c of declared) {
       expect(emittable.has(c), `.${c} is declared but no renderer emits it`).toBe(true);
     }
@@ -153,6 +153,19 @@ describe("band or contained — the control that makes the layer live", () => {
     const cls = bandClasses(band({ sectionWidth: "contained" }), true);
     expect(cls).toContain("eu-band");
     expect(cls).toContain("eu-band--contained");
+  });
+
+  // L6-2 (the user 2026-10-16: "colour edge to edge"): ONE plain section in a contained band takes the measure as its own padding,
+  // so its colour fills the band and its words stay on the measure; a card, a second section or a floating block keeps the band's padding
+  it("L6-2: one plain section in a contained band is marked to carry the measure itself", () => {
+    const kid = (extra: Partial<BoxNode> = {}) => ({ id: "k", type: "container", direction: "column", background: "#123456", ...extra }) as BoxNode;
+    const one = (k: BoxNode[]) => bandClasses(band({ sectionWidth: "contained", children: k }), true);
+    expect(one([kid()])).toContain("eu-band--one");
+    for (const card of [{ radius: 12 }, { shadow: "md" as const }, { borderWidth: 1 }, { radiusTopLeft: 8 }]) expect(one([kid(card)]), JSON.stringify(card)).not.toContain("eu-band--one");
+    expect(one([kid(), kid({ id: "k2" })]), "two sections side by side stay on the measure as a row").not.toContain("eu-band--one");
+    expect(one([kid({ position: "absolute" } as Partial<BoxNode>)]), "a floating block").not.toContain("eu-band--one");
+    expect(bandClasses(band({ children: [kid()] }), true), "edge to edge is untouched").toBe("eu-band");
+    expect(stripComments(LAYOUT_CSS)).toMatch(/\.eu-band--contained\.eu-band--one\s*>\s*\*\s*\{\s*padding-inline:/);
   });
 
   it("the export emits those classes onto the section", () => {

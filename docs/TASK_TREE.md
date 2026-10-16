@@ -4169,11 +4169,19 @@ Risks and distribution (section 2): RK-1 · Developing countries (section 3): AF
     UAT uses `screens.js`; RULE CFG). Fix: read `screens.js`; the uat-screens guard covers it — FIXED: `devices()` reads `screens.js`
     (tablets still turned sideways); the guard only looked at `uat-*-headed.js`, so it now names `uat-pages.js` too — red with the old
     list put back, green with the fix; HEADED with U4
-  - `[ ]` L6-2 · REAL, found through the UI (`probe-l6-centred.js`, screenshot `logs/uat-l6/centred-1280.png`): a section set to
+  - `[x]` L6-2 · REAL, found through the UI (`probe-l6-centred.js`, screenshot `logs/uat-l6/centred-1280.png`): a section set to
     "Centred column" WITH A BACKGROUND shows its colour only inside the centred column, white strips either side — the guide
     (`layout-story.md` §1, `website-builder.md` §10b) and the engine (`layout.ts`) promise "the colour still runs edge to edge, the
     content held to a reading width". The colour is on the section (the only thing a user can select; a band is invisible), and the
-    band's padding squeezes the section with it
+    band's padding squeezes the section with it — DECIDED by the user 2026-10-16: "Colour edge to edge" (a section with a card look
+    stays a card in the column). FIXED: `bandClasses` marks a contained band holding ONE plain section (`eu-band--one`) and the layout
+    CSS moves the measure into that section as its padding; unit `layout-system.test.ts` (red with the change reverted) and
+    `layout-bands.spec.ts` now measuring the CONTENT box + the section spanning the band (canvas red on the old build, export red with
+    the source reverted), 28 / 28 on the four projects; HEADED `probe-l6-centred.js`: the colour edge to edge at all 72 screens of a
+    page-grid page, the words still on the measure (seen at 1280 and 375); the story says so (layout-story.md §1). The canvas side
+    is a line of the HEADED pass (U8)
+  - `[ ]` U8 (L6-2) on the CANVAS and in the Preview at every rung: a Centred-column section with a colour fills the band edge to edge,
+    its words on the measure; a Card-look section stays a card on the measure; two sections side by side stay on the measure as a row
 - `[ ]` **BATCH D-1 · A README a newcomer can start from** (area: documentation · 1 change, queued — asked by the user
   2026-09-30): the root `README.md` is still the create-next-app template. Replace it with how to install and run each
   app (web 3000, admin 3001, mobile), the project structure, how to test (vitest, test:fast, the UAT scripts, the
