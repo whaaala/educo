@@ -43,22 +43,38 @@ forgotten").** Every open line of this tree (`[ ]` · `[>]` · `[?]`) is written
 ("→ BATCH X-n"), or its id is listed in one; `unbatchedLines()` in the guard fails on any that is not. The queued batches,
 area by area, in the order they open (open now: none — L-6 closed 2026-10-16; next as the user decides on the 2–3-day plan):
 
-Website layout — ESSENTIALS NOW (RULE TIERS, signed by the user 2026-10-16; every screen and breakpoint, every theme, web AND the app on phone and tablet): RX-3 (research FIRST — is every must-have in? the user 2026-10-16) → LE-1 (Must) → LE-2 (Must) → LE-3 (Should) → LE-4 (Should) → LE-5 (Should) → LE-6 (Must · the app) → LE-7 (Must · close-out + PR) · then COMPONENTS · then the layout RE-OPENED — Nice-to-have: P-1 (the rest) · P-2 · G-4 (the rest) · L-10 (the rest) · L-11 (the rest) · L-12 / L-13 (the rest) · L-14 · L-16 (Place here) · L-7 · L-9 (Safari / Firefox) · G-6 · then Great-to-have: P-3 · G-5 · G-5b · L-15 · then L-17 (re-sweep + story + artifacts + gate + PR). Done: L-5, L-6 (2026-10-16). S-3 and L-8 are inside LE-1 / LE-2
+Website layout — ESSENTIALS NOW (RULE TIERS, signed by the user 2026-10-16; every screen and breakpoint, every theme, web AND the app on phone and tablet): RX-3 (OPEN — the tiers written and published, its 12 bugs fixed now; LE-8 … LE-10 and L-18 … L-22 proposed, pending the user's signature) → LE-1 (Must) → LE-2 (Must) → LE-8 (Must · shared header and footer) → LE-3 (Should) → LE-4 (Should) → LE-5 (Should) → LE-9 (Should · reading order) → LE-10 (Should · where am I) → LE-6 (Must · the app) → LE-7 (Must · close-out + PR) · then the EFFECTS & MOTION essentials (RX-4 decides them — the user 2026-10-16: after the layout essentials, before components) · then COMPONENTS · then the layout RE-OPENED — Nice-to-have: P-1 (the rest) · P-2 · G-4 (the rest) · L-10 (the rest) · L-11 (the rest) · L-12 / L-13 (the rest) · L-14 · L-16 (Place here) · L-7 · L-9 (Safari / Firefox) · G-6 · L-18 · L-19 · L-20 · then Great-to-have: P-3 · G-5 · G-5b · L-15 · L-21 · L-22 · then L-17 (re-sweep + story + artifacts + gate + PR). Done: L-5, L-6 (2026-10-16). S-3 and L-8 are inside LE-1 / LE-2
 
 App layout / app builder: A-2 (closed 2026-10-16) → A-3 → M-1 (the builder's site inside the app)
 
-AREA V (colour, effects, motion): VB-1 → VB-2 → VB-3 → VB-4 → S-4 (section transitions) → VB-6 → VB-7 (the Educo app's colours) · VB-5 (the Educo app's own motion, its own branch) · U-1 (surface what is built)
+AREA V (colour, effects, motion): RX-4 (the tiers — its essentials go BEFORE components, the user 2026-10-16) → VB-1 → VB-2 → VB-3 → VB-4 → S-4 (section transitions) → VB-6 → VB-7 (the Educo app's colours) · VB-5 (the Educo app's own motion, its own branch) · U-1 (surface what is built)
 
 Research (after R-1's "enough"): RX-1 → RX-2 · Documentation: D-1 · Components: CP-1 · Templates: T-1 · Semantic layer: SM-1 · LLM builder: LLM-1
 
 Risks and distribution (section 2): RK-1 · Developing countries (section 3): AF-1 · The rest of Educo (section 4): ED-1
 
-- `[ ]` **BATCH RX-3 · The layout's tiers: is EVERY must-have in the essentials?** (area: research — the page layout · 5 changes, queued 2026-10-16 — the user: "make sure this is definitely a must-have… I don't want us to do must-haves and then we find out that we're missing stuff"; RULE TIERS, RULE MAP, RULE R; a NEW session)
-  - `[ ]` THE INVENTORY: every layout capability a website needs, as axes and values (RULE MAP) — page structure · sections / bands · rows and columns · grids · flow and stacking · sizing · spacing · alignment · positioning (sticky / fixed / floating / overlap) · per-device (hide, order, placement, size) · media sizing · semantics and landmarks · accessibility (text size, focus, reduced motion) · speed (RULE AF) — read from what is STORED first (RULE R: `docs/LAYOUT_BENCHMARK.md`, `docs/layout-benchmark/` crawl + `scripts/uat/page-cover.json`, `docs/web-anatomy/` incl. design-foundation 03 (layout patterns) and R-3 / R-4, the frozen list 1.1.5 AC-1 … AC-37)
-  - `[ ]` THE BASELINE: what EVERY major builder gives for layout (Webflow, Wix Studio, Framer, Squarespace, the WordPress block editor, Carrd) — researched in parallel agents, stored under `docs/web-anatomy/`; a capability every one of them has is a Must candidate
-  - `[ ]` THE EVIDENCE: how often real pages use each capability (the crawl, 80 / 95 / 99 % tiers) and whether a basic site can be built without it — and for each, HAVE · PARTLY · GAP in OUR builder, MEASURED through the UI (never assumed)
-  - `[ ]` THE TIERS: every capability Must · Should · Nice · Great with its reason, written to `docs/web-anatomy/layout-tiers.md` and published as an Artifact for the user to SIGN (RULE RS: the "enough" checklist)
-  - `[ ]` THE RECONCILE: every Must or essential Should that is a GAP joins LE-1 … LE-7 (or a new LE batch, ≤ 6 each); every Nice / Great line is in a batch of its area under its tier (RULE LB); the estimate redone; then LE-1
+- `[>]` **BATCH RX-3 · The layout's tiers: is EVERY must-have in the essentials?** (area: research — the page layout · 5 changes, queued 2026-10-16 — the user: "make sure this is definitely a must-have… I don't want us to do must-haves and then we find out that we're missing stuff"; RULE TIERS, RULE MAP, RULE R; OPENED 2026-10-16, session RX-3)
+  - `[x]` THE INVENTORY — DONE 2026-10-16: the shared list `docs/web-anatomy/layout-tiers/00-capabilities.md`; the inventory with crawl counts `01-inventory.md` (4,250 pages, 490 sites; +31 rows; the frozen list AC-1 … AC-37 mapped); merged into `04-matrix.md` — 132 capabilities
+  - `[x]` THE BASELINE — DONE 2026-10-16: `baseline-webflow-wix.md` · `baseline-framer-carrd.md` · `baseline-squarespace-wordpress.md` (official docs, every row cited); in `04-matrix.md`: 12 capabilities all six have, 11 five of six, 31 the floor (Carrd)
+  - `[x]` THE EVIDENCE — DONE 2026-10-16: the code's claim `02-ours-code.md` (45 HAS · 24 PARTLY · 6 GAP), then HEADED UAT `scripts/uat/uat-rx3-headed.js` on build `HPjv8Hqf8J3Z-BPEFiMSQ` (six windows; per-device rows at all 55 widths of `screens.js`) → `03-ours-measured.md`: 87 rows 51 HAS · 27 PARTLY · 9 GAP; measured ≠ claimed on SB-4, PD-3, SP-2
+  - `[?]` THE TIERS — WRITTEN 2026-10-16: `docs/web-anatomy/layout-tiers.md`, published https://claude.ai/artifact/3kX5W69dTv1KKprQqKMrCy — Must 52 · essential Should 23 · the rest mapped; WAITING ON THE USER: D1 (a shape control → Nice, recommended) · D2 (the browser baseline for the audience's phones → essential, one line in LE-7, recommended) · D3 (focal point waits for CP-1's Image, recommended) · D4 sign the tiers
+  - `[>]` THE RECONCILE — PROPOSED, pending D4: NEW LE-8 (PS-2 · PS-9), LE-9 (SE-4), LE-10 (ED-2); Nice / Great into NEW L-18 … L-22; the estimate 26 changes + 12 bugs, about 4–5 working days (was 22 changes, 2–3 days); then LE-1
+  - LEDGER RX-3 (RULE V — every line fixed in this batch with a mutation-proven guard, or the user's call):
+    - `[ ]` RX3-1 · "Fixed (parallax scroll)" stays `background-attachment: fixed` under `prefers-reduced-motion: reduce` — MEASURED headed at 1280 and 375; the export's reduced-motion rule never resets it (WCAG 2.3.3)
+    - `[ ]` RX3-2 · the Video presets "16:9" / "Portrait" store `height: 315px`, exported with no `aspect-ratio` — MEASURED: drawn ratio 1.19 at 375 … 6.10 at 1920 against 1.78 (rule 16; `lib/box-presets.ts:68-69`)
+    - `[x]` RX3-3 · `docs/web-anatomy/css-layout/06-builder-today.md` described seven things the code has left — FIXED 2026-10-16: a dated correction note at its top and its four "bugs" marked FIXED / PARTLY FIXED in place (rule 14)
+    - `[x]` RX3-4 · the totals line of `02-ours-code.md` read 41 HAS · 31 PARTLY · 9 GAP, not what its 75-row table counts — FIXED 2026-10-16: counted by script (45 · 24 · 6) and corrected; the matrix notes it
+    - `[ ]` RX3-5 · "Position blocks" End / Spread out does nothing in a Stack band — the last block computes `flex-grow: 1`, so there is no free space (canvas and Preview)
+    - `[ ]` RX3-6 · "Order" (per device or not) has no effect on blocks in a band — stored and exported (`order: 5`), drawn in tree order at all 55 widths; the blocks are on the page grid (`onPageGrid`), which ignores `order`
+    - `[ ]` RX3-7 · the spacing side fields (Top / Right / Bottom / Left) take rem with no unit shown ("40" = 729.6px of padding) beside a slider that reads 0–96 like px, and accept negatives below their `min=0`
+    - `[ ]` RX3-8 · a #anchor jump and Tab focus land UNDER a sticky header — the export sets a fixed `scroll-padding-top: 24px`, the target's `scroll-margin` is 0; landed 62px under a 320px header (AX-5, WCAG 2.4.11)
+    - `[ ]` RX3-9 · one YouTube video takes a page from 5.1 KB to 993.5 KB compressed (first view 64 → 1,146 KB at 360; budgets 100 / 500 KB) — no click-to-load stand-in (RULE AF)
+    - `[ ]` RX3-10 · automatic menu names start at "Menu 2" when there is no "Main menu"
+    - `[ ]` RX3-11 · the "+" beside the page tabs adds an unnamed empty page at once; the add-page dialog with "Choose a layout" (`AddPageModal`) is never reached
+    - `[ ]` RX3-12 · "Show the whole picture" overrides a Height set on the image — measure against what the control promises, then fix or close with the measurement
+    - `[ ]` RX3-13 · Ctrl+V with a Text block SELECTED (not editing) pastes the clipboard's text into it — measure against the block-paste shortcut, then fix or close with the measurement
+    - `[ ]` RX3-14 · a page link followed inside the Preview switches the editor to that page — measure whether it is meant (multi-page Preview), then fix or close with the measurement
+    - `[ ]` RX3-15 · a short page's footer floats mid-screen (619px above the bottom at 375) — PS-9, a missing Must → BATCH LE-8
 - `[ ]` **BATCH LE-1 · Essentials: adding blocks, and the Page check** (area: website layout — Must-have · 6 changes, queued 2026-10-16 — RULE TIERS, the user: "let's make sure we do this completely"; every screen and breakpoint, every theme, HEADED)
   - `[ ]` "Add a block inside" adds the next block beside the last one, never nested inside it (E2-20; from BATCH L-16)
   - `[ ]` a block added from the panel into a "Side by side" lands INSIDE it, not after it (E2-20; from BATCH L-16)
@@ -88,6 +104,19 @@ Risks and distribution (section 2): RK-1 · Developing countries (section 3): AF
   - `[ ]` the published guide and the artifacts (Builder Hub · Layout System · Parity Audit) brought up to date (rule 14)
   - `[ ]` a re-sweep of the 19 innovative + 70 dressed pages after LE-1 … LE-5, HEADED, 0 errors
   - `[ ]` the full gate → pull request of `builder/resize` into `master` → the branch deleted (rule 9); then components (CP-1)
+- `[ ]` **BATCH LE-8 · Essentials: one header and footer for every page, and a page that fills the screen** (area: website layout — the site's shared regions · Must-have · 2 changes, PROPOSED by RX-3 2026-10-16, pending the user's signature D4 — all six builders have PS-2)
+  - `[ ]` PS-2 · ONE header and ONE footer shared by every page — edited once, on every page of the canvas, the Preview, the export and the app's webview; the menu is written once, so PS-4's hand-copied menu closes with it
+  - `[ ]` PS-9 · a short page's footer sits at the bottom of the screen (RX3-15) — at every width and device preset
+- `[ ]` **BATCH LE-9 · Essentials: Page check, the reading order** (area: Page check warnings · Should-have (essential) · 1 change, PROPOSED by RX-3 2026-10-16, pending D4)
+  - `[ ]` SE-4 · Page check warns when the order on a screen no longer matches the reading order (WCAG 1.3.2 / 2.4.3), naming the blocks and letting you select them — meaningful once RX3-6 makes Order work
+- `[ ]` **BATCH LE-10 · Essentials: where am I** (area: the editor's selection · Should-have (essential) · 1 change, PROPOSED by RX-3 2026-10-16, pending D4 — 5 of 6 builders)
+  - `[ ]` ED-2 · the selected block's parents shown and clickable (a breadcrumb), on every screen size and in the phone and tablet editor; the full layers tree is Nice (BATCH L-20)
+- `[ ]` **BATCH RX-4 · Effects and motion: which are MUST-haves?** (area: research — AREA V effects & motion · 5 changes, queued 2026-10-16 — the user: "page transitioning, section transitioning… hover… motions… backgrounds blending into each other, sections blending into each other… those are must-haves"; DECIDED by the user 2026-10-16: its essentials are built AFTER the layout essentials (LE-1 … LE-10) and BEFORE components; RULE TIERS, RULE MAP, RULE R — R-2 (signed) and `docs/web-anatomy/motion/LIBRARY.md` are read first, never redone)
+  - `[ ]` THE INVENTORY: every effect and motion capability as axes and values — page transitions · section transitions and band edges · sections and backgrounds blending into each other (gradients, overlays, blend modes, fades) · hover / focus / press · entrance and scroll-driven motion · held / pinned scenes · parallax · text effects · reduced-motion fallbacks · weight (RULE AF) — from R-2, the motion library, `area-v/`, `awwwards-motion-survey.md`, `codepen/`
+  - `[ ]` THE BASELINE: what the six builders (Webflow, Wix Studio, Framer, Squarespace, WordPress, Carrd) give a person for effects and motion — parallel agents, stored under `docs/web-anatomy/effects-tiers/`
+  - `[ ]` THE EVIDENCE: how often real sites use each (the 741 live sites + crawl), and HAS · PARTLY · GAP in OUR builder, MEASURED through the UI, HEADED, in the Preview
+  - `[ ]` THE TIERS: Must · Should · Nice · Great with reasons, `docs/web-anatomy/effects-tiers.md`, published for the user to SIGN
+  - `[ ]` THE RECONCILE: the Musts and essential Shoulds become essentials batches (VE-n, ≤ 6 each) placed after LE-10 and before CP-1; the rest stays in VB-1 … VB-7 / S-4 under its tier (RULE LB); the estimate redone
 - `[x]` **BATCH G-3b · The page as a real CSS grid** — CLOSED 2026-10-05 (FINAL HEADED UAT `scripts/uat/uat-g3b-headed.js`, waves of
   six windows on ONE fresh build: A–F 55 · G H I J1–J3 73 · J4–J6 K1–K3 84 · K4–K6 22 · L + M×4 (+B) 70 — all 0 failed; G-3's nested
   trees at three seeds, all 70 screens; regression G-3c 17/0 · G-3 65/0 · G-2 128/0; U8 saved pages: 59 pages of 59 saved sites, 41
@@ -4351,6 +4380,41 @@ Risks and distribution (section 2): RK-1 · Developing countries (section 3): AF
   - `[ ]` the published artifacts and the guide updated (Builder Hub · Layout System · Parity Audit · Semantic plan · `website-builder.md`) (from line 4332)
   - `[ ]` the full gate → pull request to `master` → delete the branch (rule 9), then 1.3 (from lines 3999, 4002)
   - L6-10 · (from BATCH L-6) once, under six windows: a Link dropped under another was offered by the canvas and added nothing (dressed idx 39); clean alone and twice on a 4× slower CPU — watch for it in the re-sweep, reproduce and fix if it returns
+- `[ ]` **BATCH L-18 · Nice-to-have: the header and the page frame** (area: website layout — the header · Nice-to-have · 6 changes (PROPOSED by RX-3 2026-10-16, pending the user's signature D4; ids from `docs/web-anatomy/layout-tiers/04-matrix.md`))
+  - `[ ]` PS-6 · one row of a two-row header sticky (a utility bar that scrolls away, the main row held)
+  - `[ ]` PS-7 · a header over the hero (transparent, solid once scrolled)
+  - `[ ]` PS-10 · an announcement / alert bar above the header
+  - `[ ]` PS-14 · hide the shared header or footer on one page
+  - `[ ]` PO-7 · a header that hides on scroll down and returns on scroll up (or shrinks)
+  - `[ ]` AX-6 · held bars take at most about a quarter of the screen — a Page check warning
+- `[ ]` **BATCH L-19 · Nice-to-have: widths, grids and spacing** (area: website layout — sizing and spacing · Nice-to-have · 6 changes (PROPOSED by RX-3 2026-10-16, pending the user's signature D4; ids from `docs/web-anatomy/layout-tiers/04-matrix.md`))
+  - `[ ]` SB-10 · three named widths a block can choose: content · wide · full
+  - `[ ]` GR-9 · hairlines between grid cells instead of gaps
+  - `[ ]` GR-10 · the last row's items stretch to fill instead of leaving a hole
+  - `[ ]` SZ-3 · a minimum / maximum width and height control
+  - `[ ]` SP-4 · the Inspector's spacing sliders step on the spacing scale, like the canvas handles (Should, later)
+  - `[ ]` SP-6 · a staggered column (offset down)
+- `[ ]` **BATCH L-20 · Nice-to-have: editing** (area: the editor · Nice-to-have · 6 changes (PROPOSED by RX-3 2026-10-16, pending the user's signature D4; ids from `docs/web-anatomy/layout-tiers/04-matrix.md`))
+  - `[ ]` RC-7 · change a container's kind (stack ↔ row ↔ grid) and keep its content
+  - `[ ]` ED-3 · copy a block's style and paste it onto another
+  - `[ ]` ED-7 · a "set here / inherited" mark on each control at a screen, with its own reset (Should, later)
+  - `[ ]` ED-12 · group the selected blocks into a container in one action, and ungroup
+  - `[ ]` ED-13 · several blocks selected, moved / resized / aligned together
+  - `[ ]` ED-2 (the rest) · the full layers tree (LE-10 builds the breadcrumb)
+- `[ ]` **BATCH L-21 · Great-to-have I: structure** (area: website layout — structure · Great-to-have · 6 changes (PROPOSED by RX-3 2026-10-16, pending the user's signature D4; ids from `docs/web-anatomy/layout-tiers/04-matrix.md`))
+  - `[ ]` PS-11 · a reusable block with per-copy content, variants and slots
+  - `[ ]` PS-12 · in-page sections shown as "pages" (named views switched by a link)
+  - `[ ]` SB-9 · the page as a card over a full-screen background
+  - `[ ]` GR-8 · content in the outer margin (a hanging number)
+  - `[ ]` SZ-9 · an Auto / Manual switch per field at a screen
+  - `[ ]` SP-7 · lock the people editing a site to the spacing scale
+- `[ ]` **BATCH L-22 · Great-to-have II: editing views, and print** (area: the editor — views · Great-to-have (PD-10 Nice) · 6 changes (PROPOSED by RX-3 2026-10-16, pending the user's signature D4; ids from `docs/web-anatomy/layout-tiers/04-matrix.md`))
+  - `[ ]` PD-11 · every screen size side by side on one canvas
+  - `[ ]` AX-7 · a colour-vision preview of the page
+  - `[ ]` ED-8 · locked page building for staff (approved blocks in set slots)
+  - `[ ]` ED-10 · shared appearance styles linked across blocks
+  - `[ ]` ED-11 · lock a block against moving or editing
+  - `[ ]` PD-10 · a print layout (Nice)
 - `[ ]` **BATCH M-1 · The L-2 fixes in the phone and tablet app** (its first piece, the site shown in the app, → BATCH LE-6, essentials, the user 2026-10-16; the native layer stays here) (area: `apps/mobile/` · MUST BE DONE, NOT STARTED — the
   user, 2026-10-01: "Yes, I want something built in mobile for this, but… just have this noted that it must be done", so
   we do not get carried away). What it holds, to be planned when it opens (phone AND tablet, `isTablet`, Jest + both

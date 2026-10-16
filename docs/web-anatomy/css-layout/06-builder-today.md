@@ -1,5 +1,13 @@
 # 06 — What the builder can do with CSS layout TODAY
 
+> **Corrected 2026-10-16 (BATCH RX-3, RX3-3) — seven rows below describe a state the code has left.** At `3939f90`:
+> Advanced CSS set at one screen IS published at that screen (`overridesByRung`, `lib/box-export.ts:351`) · "Position in
+> row" applies to the screen being edited (`alignInRow(…, bp)`) · the container's "Line up" reads "Line up (down)" in a row
+> or grid · the grid cell's "Line up (across)" clears the nine-square choice, so it is no longer overridden · "Width" has
+> "½" and "⅓" · a typed `px` is stored as rem (`typedLength`) · "Show the whole picture" writes rem, not 260px. Line
+> numbers below are from `2f56caa`. The current per-capability picture, measured through the UI, is
+> `docs/web-anatomy/layout-tiers/02-ours-code.md` and `03-ours-measured.md`.
+
 An audit of the code on branch `builder/layout-uat` at `2f56caa` (2026-10-04). It reads the code only; nothing
 here was checked in a browser. For every grid, flexbox and box-alignment property it records what values the
 builder can produce, where they are stored, where the canvas and the published page emit them, which Inspector
@@ -111,18 +119,18 @@ Each of these is a real CSS capability already in the engine with no control, or
 
 ## Values a person can choose that the published page ignores (bugs)
 
-1. **Advanced CSS set at a rung is dropped from the published page.** The export appends `overridesCss(r)` where
+1. **[FIXED by 2026-10-16 — `overridesByRung`, box-export.ts:351] Advanced CSS set at a rung is dropped from the published page.** The export appends `overridesCss(r)` where
    `r = resolveResponsive(node, "base")` (box-export.ts:482, 499–500), so a component's Advanced CSS stored in a
    rung's override (every non-content key goes to the rung, page.tsx:615–623) is never published, while the canvas
    applies the resolved value inline (BoxCanvas.tsx:3050, 3137).
-2. **Grid cell "Line up (across)" is silently overridden by the nine-point Position.** Both write `justify-self`
+2. **[FIXED by 2026-10-16 — the control clears the nine squares, BoxInspector:1096] Grid cell "Line up (across)" is silently overridden by the nine-point Position.** Both write `justify-self`
    (BoxInspector 1063 and 1085); `placeCSS` is applied last (box-model 5530), so once a square is picked the
    "Line up (across)" choice does nothing on the canvas or the page.
-3. **"Position in row", "Content width", re-cutting columns, Floating and layer order ignore the selected device.**
+3. **[PARTLY FIXED by 2026-10-16 — "Position in row" now per screen; the others say "Applies to every screen", BoxInspector:584, 727, 911] "Position in row", "Content width", re-cutting columns, Floating and layer order ignore the selected device.**
    They call structural helpers through `commit(updateBox…)` (alignInRow 2762, setSectionWidth 2781, page.tsx
    666/671/674), so a person editing the Phone view changes every screen. The Per-device tab says "Size, spacing
    and layout you change now only apply here" (BoxInspector ~1847), which is not true for these.
-4. **"Show the whole picture" unticked writes `height: "260px"`** (BoxInspector ~1395) and the Width/Height free
+4. **[FIXED by 2026-10-16 — rem, and typed px stored as rem (`typedLength`)] "Show the whole picture" unticked writes `height: "260px"`** (BoxInspector ~1395) and the Width/Height free
    text accepts `px`; `sizeToCSS` passes them through (4186–4190) so a stored pixel reaches the page — against rule 16.
 
 (The flex "Position blocks" on a grid was the old instance of this class; it is fixed — the grid shows its own
