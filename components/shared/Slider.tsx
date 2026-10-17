@@ -24,11 +24,16 @@ export interface SliderProps {
   formatValue?: (value: number) => string;
   disabled?: boolean;
   className?: string;
+  /**
+   * SP-4 (BATCH LE-12) · a SCALE: the thumb moves on these values only, ascending — a drag and the arrow keys alike (the spacing
+   * scale, as the canvas handles step). A value between them reads as it is until it is moved.
+   */
+  steps?: readonly number[];
 }
 
 export default function Slider({
   label, value, onChange, min = 0, max = 100, step = 1, unit = "",
-  showValue = true, formatValue, disabled = false, className = "",
+  showValue = true, formatValue, disabled = false, className = "", steps,
 }: SliderProps) {
   const id = useId();
   const display = formatValue ? formatValue(value) : `${value}${unit}`;
@@ -45,6 +50,8 @@ export default function Slider({
    */
   const lo = Math.min(min, value);
   const hi = Math.max(max, value);
+  // on a scale the range is the scale's places; the nearest place to the value is where the thumb sits
+  const at = steps?.length ? steps.reduce((best, v, i) => (Math.abs(v - value) < Math.abs(steps[best] - value) ? i : best), 0) : -1;
 
   return (
     <div className={`flex flex-col gap-1.5 ${className}`}>
@@ -61,8 +68,9 @@ export default function Slider({
         </div>
       )}
       <input
-        id={id} type="range" min={lo} max={hi} step={step} value={value} disabled={disabled}
-        onChange={(e) => onChange(Number(e.target.value))}
+        id={id} type="range" disabled={disabled}
+        {...(steps?.length ? { min: 0, max: steps.length - 1, step: 1, value: at } : { min: lo, max: hi, step, value })}
+        onChange={(e) => onChange(steps?.length ? steps[Number(e.target.value)] : Number(e.target.value))}
         className="h-2 pointer-coarse:h-11 pointer-coarse:bg-clip-content pointer-coarse:py-[1.125rem] w-full cursor-pointer appearance-none rounded-full bg-gray-200 accent-blue-600 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-[#22262e] dark:accent-blue-500 midnight:bg-cyan-500/15 midnight:accent-cyan-500 purple:bg-pink-500/15 purple:accent-pink-500"
         aria-label={label}
         aria-valuetext={display}

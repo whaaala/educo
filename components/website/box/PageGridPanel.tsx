@@ -16,6 +16,7 @@ import Slider from "@/components/shared/Slider";
 import type { SpaceShadeKind } from "@/components/website/box/BoxCanvas";
 import { CHROME_Z } from "@/lib/educo-ui/stacking";
 import { CONTENT_WIDTH } from "@/lib/educo-ui/layout";
+import { SPACE_STEPS } from "@/lib/educo-ui/tokens";
 import INSPECTOR from "@/config/inspector.json";
 import { Segmented } from "./ui";
 
@@ -174,13 +175,13 @@ export default function PageGridPanel({ grid, bare = false, ownPage, breakpoint,
       </div>
 
       <div className="space-y-1" onFocus={() => onSpaceFocus?.("side")} onBlur={() => onSpaceFocus?.(null)}>
-        <Slider label="Side space (padding)" value={side} min={PAGE_GRID_LIMITS.sideSpace[0]} max={PAGE_GRID_LIMITS.sideSpace[1]}
+        <Slider label="Side space (padding)" value={side} min={PAGE_GRID_LIMITS.sideSpace[0]} max={PAGE_GRID_LIMITS.sideSpace[1]} steps={SPACE_STEPS.filter((v) => v <= PAGE_GRID_LIMITS.sideSpace[1])}
           onChange={(n) => onChange({ ...grid, sideSpace: n }, "pagegrid:side")} formatValue={(x) => (grid.sideSpace !== undefined ? remRange(x) : bare ? "Default · 0rem" : "Default · 1–1.25rem")} />
         <button type="button" className={link} disabled={grid.sideSpace === undefined} onClick={() => onChange({ ...grid, sideSpace: undefined })}>{grid.sideSpace === undefined ? "At the default" : "Back to default"}</button>
       </div>
       {gaps.map((g) => (
         <div key={g.key} className="space-y-1" onFocus={() => onSpaceFocus?.(g.key)} onBlur={() => onSpaceFocus?.(null)}>
-          <Slider label={g.label} value={g.value} min={PAGE_GRID_LIMITS[g.key][0]} max={PAGE_GRID_LIMITS[g.key][1]}
+          <Slider label={g.label} value={g.value} min={PAGE_GRID_LIMITS[g.key][0]} max={PAGE_GRID_LIMITS[g.key][1]} steps={SPACE_STEPS.filter((v) => v <= PAGE_GRID_LIMITS[g.key][1])}
             onChange={(n) => setGap(g.key, n)} formatValue={(x) => (g.set ? remRange(x) : `Default · ${remRange(x)}`)} />
           <button type="button" className={link} disabled={!g.set} aria-label={`${g.label} — ${g.set ? "back to default" : "at the default"}`} onClick={() => setGap(g.key, undefined)}>{g.set ? "Back to default" : "At the default"}</button>
         </div>

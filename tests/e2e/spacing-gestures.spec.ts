@@ -1,5 +1,6 @@
 import { test, expect, type Page } from "@playwright/test";
 import { seedSite, sitePage, openInspector } from "./helpers/seed-site";
+import { SPACE_STEPS } from "@/lib/educo-ui/tokens"; // SP-4 (BATCH LE-12): each arrow press is one step of the spacing scale
 
 /**
  * ADJUSTING SPACING — the controls, and what one adjustment costs.
@@ -73,7 +74,7 @@ test.describe("spacing is adjusted, not typed", () => {
     await page.locator('input[type="range"][aria-label="Space across"]').focus();
     for (let i = 0; i < 6; i++) await page.keyboard.press("ArrowRight");
     await page.waitForTimeout(250);
-    expect((await gapsOf(page)).gapX, "the axis now has a value of its own").toBe(6);
+    expect((await gapsOf(page)).gapX, "the axis now has a value of its own").toBe(SPACE_STEPS[6]);
     await expect(matchAcross, "…and offers to go back to following").toHaveText(/^Match /);
 
     await matchAcross.click();
@@ -103,7 +104,7 @@ test.describe("an adjustment is one act", () => {
     await page.locator('input[type="range"][aria-label="Space across"]').focus();
     for (let i = 0; i < 20; i++) await page.keyboard.press("ArrowRight");
     await page.waitForTimeout(300);
-    expect((await gapsOf(page)).gapX, "the sweep landed").toBe(20);
+    expect((await gapsOf(page)).gapX, "the sweep landed").toBe(SPACE_STEPS[SPACE_STEPS.length - 1]);
 
     await page.keyboard.press("Control+z");
     await page.waitForTimeout(350);
@@ -119,7 +120,7 @@ test.describe("an adjustment is one act", () => {
     await slider.focus();
     for (let i = 0; i < 8; i++) await page.keyboard.press("ArrowRight");
     await page.waitForTimeout(300);
-    expect((await gapsOf(page)).gapY).toBe(8);
+    expect((await gapsOf(page)).gapY).toBe(SPACE_STEPS[8]);
 
     await expect(slider, "the slider is still the focused element — that is the point of the test").toBeFocused();
     await page.keyboard.press("Control+z");
@@ -137,10 +138,10 @@ test.describe("an adjustment is one act", () => {
     await page.locator('input[type="range"][aria-label="Space down"]').focus();
     for (let i = 0; i < 5; i++) await page.keyboard.press("ArrowRight");
     await page.waitForTimeout(300);
-    expect(await gapsOf(page)).toMatchObject({ gapX: 5, gapY: 5 });
+    expect(await gapsOf(page)).toMatchObject({ gapX: SPACE_STEPS[5], gapY: SPACE_STEPS[5] });
 
     await page.keyboard.press("Control+z");
     await page.waitForTimeout(350);
-    expect(await gapsOf(page), "the second act is undone; the first is still there").toMatchObject({ gapX: 5, gapY: null });
+    expect(await gapsOf(page), "the second act is undone; the first is still there").toMatchObject({ gapX: SPACE_STEPS[5], gapY: null });
   });
 });
