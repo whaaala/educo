@@ -290,7 +290,7 @@ note says so; an effect's own panel says *"Applies to every screen"* while you e
 - **Every screen, or just this one?** With any chip other than Desktop or Full width selected, a change applies to that screen, not the base design (§8 says which others it reaches) — except a few controls
   that change the page's structure (**Floating**, its **front / back order**, a section's **Content width**). Those say *"Applies to
   every screen"* while you are editing a smaller screen.
-- **Line up** on a box names the direction it moves: *across* in a top-to-bottom stack, *down* in a side-by-side row or a grid.
+- **Line up** on a box names the direction it moves: *across* in a top-to-bottom stack, *down* in a side-by-side row or a grid. In a row or a grid it also offers **Text lines up** (see *Lining blocks up*).
 - **A page header or footer spreads by itself.** Give a block the meaning **Page header** (or **Page footer**) and its
   line of two or more blocks is set to **Spread** and centred on one line — the logo at the left edge, the menu between,
   the button at the right edge — so a wide screen is never left empty on the right. It is an ordinary setting: pick
@@ -513,6 +513,36 @@ and the Page grid's side space and gaps — moves in the steps of the spacing sc
 2.5, 3, 4, 5, 6 rem), by dragging or with the arrow keys, the same steps the spacing handles on the canvas take. So spaces
 across the site match. To type an exact value instead, use the Top / Right / Bottom / Left fields, which take any number.
 
+### Lining blocks up: across, down, spread, text lines and push
+
+**Where one block sits.** Select a block and open **Design → Position**. Under the nine squares are two rows: **Across**
+(Auto · Start · Middle · End · Fill) and **Down** (Auto · Top · Middle · Bottom · Fill). The nine squares are a shortcut
+that sets both at once — pick the middle one and both rows read Middle. **Fill** stretches the block that way: in a row of
+cards lined up in the middle, **Down → Fill** makes one card the row's full height while the others stay centred. **Auto**
+lets the block sit where the layout puts it. In a Grid, Across places the block in its cell (End puts it at the cell's end,
+Fill fills it). Like every size, a place can differ by screen — Middle on a desktop, Start on a phone.
+
+[![The Position section: the nine squares, then the Across and Down rows with Fill, Push to the far end and its hint](img/guide-position.webp)](img/guide-position.webp)
+
+**Push to the far end.** Also in Position: tick **Push to the far end** and the block moves to the far end of its row or
+stack — and the blocks after it go with it. Push the third of four menu links and the last two sit at the menu's right
+end. Push the button of each card in a row of cards and the buttons line up along the cards' foot, however much each card
+says. A push needs room to move into: a card in a row of cards has it; a row whose blocks already fill it does not.
+
+**Spreading the blocks of a row.** Select the Stack or Side by side and open **Arrange → Position blocks**: Start · Center ·
+End · **Spread out** (the first and last at the ends, the rest between) · **Space around each** (the same room on both
+sides of every block, so the ends get half) · **Even spacing** (the same room everywhere, the ends included).
+
+[![Four buttons with Even spacing: the same room before the first, between each and after the last](img/guide-even-spacing.webp)](img/guide-even-spacing.webp)
+
+**Lines that wrap.** When **Let blocks wrap to a new line** is on, **Wrapped lines** places those lines in a box taller than
+they are — a tag cloud or a logo wall in a section with a height: **Fill** (the lines share the height), **Top**, **Middle**,
+**Bottom**, **Spread out** or **Even spacing**. Give the box a height (Size → Limits → Min height) to see it.
+
+**Text that lines up.** A large price beside a small "per term", a heading beside a link: in a side-by-side row or a Grid,
+**Line up (down) → Text lines up** puts their first lines of words on one line, whatever their sizes. A top-to-bottom stack
+does not offer it, because there it would change nothing.
+
 ### What you get in the ZIP, and why it's built that way
 
 | | |
@@ -599,7 +629,7 @@ You never have to think in twelfths. Select a block and the **Grid cell** panel 
 | **Width** | How much of the row this block takes — by name, or 1–12 |
 | **Start at column** | Leave columns empty before it (an offset) |
 | **Rows tall** / **Start at row** | The same two things going down, so a block can straddle rows |
-| **Line up (across)** | Where the block sits inside its own cell. It and the nine squares under **Position** are the same setting — whichever you used last wins, and both show it |
+| **Across** (under **Position**) | Where the block sits across its own cell — Start, Middle, End or Fill. It and the nine squares are the same setting, and both show it |
 
 ### Drag a cell's edge
 

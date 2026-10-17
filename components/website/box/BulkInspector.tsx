@@ -13,6 +13,7 @@ import type { BoxNode, FlexAlign, SectionFlag } from "@/lib/box-model";
 import { padSide } from "@/lib/box-model";
 import { ColorPickerPopover, colorToCSS } from "@/components/shared/ColorPalettePicker";
 import BackgroundPicker from "@/components/shared/BackgroundPicker";
+import INSPECTOR from "@/config/inspector.json";
 
 const label = "text-[0.6875rem] font-medium text-gray-500 dark:text-gray-400";
 const section = "text-[0.6875rem] font-semibold uppercase tracking-wide text-gray-400 pt-1";
@@ -102,7 +103,7 @@ export default function BulkInspector({ count, theme, sample, sampleSection = fa
       </label>
       <label className="block"><span className={label}>Line up (across)</span>
         <select value={s?.align ?? "stretch"} onChange={(e) => onPatch({ align: e.target.value as FlexAlign })} aria-label="Line up" className={inputCls}>
-          {([["stretch", "Fill"], ["start", "Start"], ["center", "Center"], ["end", "End"]] as const).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
+          {Object.entries(INSPECTOR.align.lineUp).filter(([v]) => v !== "baseline").map(([v, l]) => <option key={v} value={v}>{l}</option>)}
         </select>
       </label>
 

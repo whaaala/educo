@@ -73,7 +73,7 @@ const find = (st, id) => { let n = null; const w = (x) => { if (x.id === id) n =
   // the app's Preview
   let fr = null;
   for (let i = 0; i < 3 && !fr; i++) { await tap(page.getByRole('button', { name: /^\s*Preview\s*$/ }).first()); await page.waitForSelector('iframe', { timeout: 8000 }).catch(() => {}); await u.sleep(2500); fr = page.frames().find((f) => f !== page.mainFrame()) || null; }
-  const m = await fr.evaluate(([s, h, gid, cs]) => {
+  const m = await fr.evaluate(([, h, gid, cs]) => {
     const r = (id) => document.querySelector(`.bx-${id}`)?.getBoundingClientRect();
     const gap = parseFloat(getComputedStyle(document.querySelector(`.bx-${gid}`)).columnGap) || 0;
     return { vw: document.documentElement.clientWidth, sw: document.documentElement.scrollWidth, s: { w: +r(h).width.toFixed(1), h: +r(h).height.toFixed(1) }, h: +r(h).width.toFixed(1), g: +r(gid).width.toFixed(1), gap, cells: cs.map((c) => ({ t: Math.round(r(c).top), w: +r(c).width.toFixed(1) })), rem: parseFloat(getComputedStyle(document.documentElement).fontSize) };

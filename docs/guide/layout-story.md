@@ -533,6 +533,24 @@ width** of `40rem`, so it never runs into a long line; and the news sidebar a **
 
 [![The Preview at 1536 px: one section set Edge to edge with its heading at the left edge, the next on the centred column](img/story-content-width-optout.webp)](img/story-content-width-optout.webp)
 
+### "The price and its unit on one line"
+
+The fees page shows **₦25,000** large and **per term** small beside it. Side by side, the small words sat at the top, level
+with the top of the big number, and looked lost. Amaka selects the row and sets **Line up (down)** to **Text lines up**: now
+"per term" sits on the same line as the bottom of "₦25,000", the way it would in a sentence, on every screen where the two
+fit side by side. She does the same for the Grid of three fees.
+
+[![The Preview at 1280 px: a large ₦40,000 and a small "per year", their words on one line](img/story-text-lines-up.webp)](img/story-text-lines-up.webp)
+
+### "A card's button at the bottom"
+
+Three club cards sit side by side, each with a few words and a **Join** button. One card says a lot, one very little, so the
+buttons sat at three different heights. Amaka selects each button, opens **Position** and ticks **Push to the far end**: each
+button goes to the foot of its card, and the three line up across the row — and stay lined up when she edits the words. In
+the header she pushes the third of four menu links the same way, so **Admissions** and **Contact** sit at the right end.
+
+[![The Preview at 1280 px: a menu with its last two links at the right end, and three cards whose buttons line up at their foot](img/story-push-far-end.webp)](img/story-push-far-end.webp)
+
 ## 10. What is published
 
 Everything above becomes proper HTML5: `header`, `nav`, `main`, `aside`, `section`, `footer`; one `h1`; heading levels

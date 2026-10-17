@@ -6,6 +6,7 @@ import { createContainer, createElement, createComponent, type BoxNode } from "@
 import userEvent from "@testing-library/user-event";
 import LAYOUT from "@/config/layout.json";
 import { SPACE_STEPS } from "@/lib/educo-ui/tokens";
+import INSPECTOR_WORDS from "@/config/inspector.json";
 
 function renderFor(node: BoxNode, extra: Record<string, unknown> = {}) {
   const onPatch = vi.fn();
@@ -103,16 +104,21 @@ describe("BoxInspector — styling primitives (Design tab)", () => {
 
   // R4-2 (BATCH P-0): the cell's "Line up (across)" and the nine squares both place the cell across; the squares used to
   // win silently, so "Left" did nothing while the control said "Left". Whichever is used last wins, and both show it.
-  it("keeps the cell's 'Line up (across)' and the nine squares in step (R4-2)", () => {
+  // LE-4: the cell's own "Line up (across)" folded into the Position section's Across row — one control, still in step.
+  it("keeps the cell's Across and the nine squares in step (R4-2, LE-4)", () => {
     const onPatch = renderFor(createContainer("column", { id: "c", placeX: "center", placeY: "center", justifySelf: "end" } as Partial<BoxNode>), { inGrid: true });
-    const lineUp = screen.getByRole("button", { name: "Line up (across)" });
-    expect(lineUp).toHaveTextContent("Center");                        // shows the squares' choice, not the stale "Right"
-    fireEvent.click(lineUp); fireEvent.click(screen.getByRole("option", { name: "Left" }));
-    expect(onPatch).toHaveBeenLastCalledWith({ justifySelf: "start", placeX: undefined }); // …and choosing here clears the squares' across value
+    expect(screen.queryByRole("button", { name: "Line up (across)" })).toBeNull(); // no second control for the same thing
+    const across = screen.getByRole("group", { name: "Across" });
+    expect(within(across).getByRole("button", { name: "Middle" })).toHaveAttribute("aria-pressed", "true"); // the squares' choice, not the stale "end"
+    fireEvent.click(within(across).getByRole("button", { name: "Start" }));
+    expect(onPatch).toHaveBeenLastCalledWith({ placeX: "start", justifySelf: undefined, push: undefined });
+    cleanup();
+    renderFor(createContainer("column", { id: "c", justifySelf: "end" } as Partial<BoxNode>), { inGrid: true });
+    expect(within(screen.getByRole("group", { name: "Across" })).getByRole("button", { name: "End" })).toHaveAttribute("aria-pressed", "true"); // a saved cell's place reads as its Across
     cleanup();
     const onSquare = renderFor(createContainer("column", { id: "c", justifySelf: "end" } as Partial<BoxNode>), { inGrid: true });
     fireEvent.click(screen.getByRole("button", { name: "Top left" }));
-    expect(onSquare).toHaveBeenLastCalledWith({ placeX: "start", placeY: "start", justifySelf: undefined }); // a square clears it the other way
+    expect(onSquare).toHaveBeenLastCalledWith({ placeX: "start", placeY: "start", justifySelf: undefined, push: undefined }); // a square clears it the other way
   });
 
   // R4-4 (BATCH P-0): `align-items` moves blocks DOWN in a side-by-side row and in a grid — measured, "End" moved the
@@ -481,8 +487,8 @@ describe("BoxInspector — functionality audit (every remaining control)", () =>
     expect(onPatch).toHaveBeenCalledWith({ colStart: 5 });
     fireEvent.change(screen.getByLabelText("Start at row"), { target: { value: "3" } });
     expect(onPatch).toHaveBeenCalledWith({ rowStart: 3 });
-    pickSelect("Line up (across)", "Right");
-    expect(onPatch).toHaveBeenCalledWith({ justifySelf: "end" });
+    fireEvent.click(within(screen.getByRole("group", { name: "Across" })).getByRole("button", { name: "End" }));
+    expect(onPatch).toHaveBeenCalledWith({ placeX: "end", justifySelf: undefined, push: undefined });
     cleanup();
     // Emptying the field means auto-place after the block before it — never column 1, which would PIN a block
     // the user never pinned and quietly stack it on top of whatever already sits there.
@@ -1263,5 +1269,66 @@ describe("BATCH LE-12 · sizes and grids in the Inspector", () => {
     expect(onPatch).toHaveBeenLastCalledWith({ padding: SPACE_STEPS[3] });
     fireEvent.change(screen.getByLabelText("Space between blocks"), { target: { value: "4" } });
     expect(onPatch).toHaveBeenLastCalledWith(expect.objectContaining({ gap: SPACE_STEPS[4] }));
+  });
+});
+
+// BATCH LE-4 · the alignment panel — Across / Down with Fill (AC-27), Position blocks + Wrapped lines (AC-25), Text lines up (AL-5),
+// Push to the far end (AL-6). Words: config/inspector.json `align`. Engine: tests/unit/alignment.test.ts.
+describe("BoxInspector — LE-4 the alignment panel", () => {
+  const A = (INSPECTOR_WORDS as { align: Record<string, unknown> }).align as { [k: string]: Record<string, string> & string };
+  it("Across and Down: Fill and Auto, and the nine squares light the rows", () => {
+    const onPatch = renderFor(createElement("heading", { id: "h", text: "x", placeX: "end", placeY: "start" } as Partial<BoxNode>), { parentFlow: "column" });
+    const across = screen.getByRole("group", { name: A.across as string }), down = screen.getByRole("group", { name: A.down as string });
+    expect(within(across).getByRole("button", { name: A.acrossChoices.end })).toHaveAttribute("aria-pressed", "true");
+    expect(within(down).getByRole("button", { name: A.downChoices.start })).toHaveAttribute("aria-pressed", "true");
+    fireEvent.click(within(across).getByRole("button", { name: A.acrossChoices.stretch }));
+    expect(onPatch).toHaveBeenLastCalledWith({ placeX: "stretch", justifySelf: undefined, push: undefined });
+    fireEvent.click(within(down).getByRole("button", { name: A.downChoices.stretch }));
+    expect(onPatch).toHaveBeenLastCalledWith({ placeY: "stretch" }); // LE4-7: Down never touches the legacy push (a left / right margin)
+    expect(onPatch).not.toHaveBeenLastCalledWith(expect.objectContaining({ push: undefined }));
+    fireEvent.click(within(across).getByRole("button", { name: A.acrossChoices.auto }));
+    expect(onPatch).toHaveBeenLastCalledWith({ placeX: undefined, justifySelf: undefined, push: undefined });
+  });
+  it("LE4-8: the nine squares' label sits on its own line, never run into the squares", () => {
+    renderFor(createElement("text", { id: "t", text: "x" } as Partial<BoxNode>), { parentFlow: "column" });
+    expect(screen.getByText("Where this block sits").className.split(" ")).toContain("block");
+  });
+  it("Push to the far end: the main axis of a row is Across, of a stack Down; a grid cell is not offered it", () => {
+    const row = renderFor(createElement("text", { id: "t", text: "x" } as Partial<BoxNode>), { parentFlow: "row" });
+    const box = screen.getByRole("checkbox", { name: new RegExp(A.push as string) });
+    expect(box).not.toBeChecked();
+    expect(box).toHaveAccessibleDescription(A.pushHint as string);
+    fireEvent.click(box); expect(row).toHaveBeenLastCalledWith({ placeX: "end", push: undefined });
+    cleanup();
+    const col = renderFor(createElement("button", { id: "b", text: "Go", placeY: "end" } as Partial<BoxNode>), { parentFlow: "column" });
+    const on = screen.getByRole("checkbox", { name: new RegExp(A.push as string) });
+    expect(on).toBeChecked();
+    fireEvent.click(on); expect(col).toHaveBeenLastCalledWith({ placeY: undefined }); // LE4-7: a stack's push is Down — the legacy across push stays
+    expect(col).not.toHaveBeenLastCalledWith(expect.objectContaining({ push: undefined }));
+    cleanup();
+    renderFor(createElement("text", { id: "t", text: "x" } as Partial<BoxNode>), { parentFlow: "grid", inGrid: true });
+    expect(screen.queryByRole("checkbox", { name: new RegExp(A.push as string) })).toBeNull();
+  });
+  it("Text lines up is offered where blocks line up DOWN (a row, a grid), never in a top-to-bottom stack", () => {
+    const has = (node: BoxNode) => { renderFor(node); fireEvent.click(screen.getByRole("button", { name: "Line up" })); const n = screen.queryAllByRole("option", { name: A.lineUp.baseline }).length; cleanup(); return n; };
+    expect(has(createContainer("row", { id: "r" } as Partial<BoxNode>))).toBe(1);
+    expect(has(createContainer("column", { id: "g", layout: "grid", columns: 3 } as Partial<BoxNode>))).toBe(1);
+    expect(has(createContainer("column", { id: "s" } as Partial<BoxNode>))).toBe(0);
+    const onPatch = renderFor(createContainer("row", { id: "r" } as Partial<BoxNode>)); pickSelect("Line up", A.lineUp.baseline);
+    expect(onPatch).toHaveBeenLastCalledWith({ align: "baseline" });
+  });
+  it("Position blocks: Even spacing is evenly, and Space around is named for what it does", () => {
+    const onPatch = renderFor(createContainer("row", { id: "r" } as Partial<BoxNode>));
+    pickSelect("Position blocks", A.justify.evenly); expect(onPatch).toHaveBeenLastCalledWith({ justify: "evenly" });
+    pickSelect("Position blocks", A.justify.around); expect(onPatch).toHaveBeenLastCalledWith({ justify: "around" });
+  });
+  it("Wrapped lines: offered only while a side-by-side row wraps; Fill stores nothing", () => {
+    renderFor(createContainer("row", { id: "r", wrap: false } as Partial<BoxNode>));
+    expect(screen.queryByRole("button", { name: A.wrappedLines as string })).toBeNull(); cleanup();
+    renderFor(createContainer("column", { id: "s", wrap: true } as Partial<BoxNode>));
+    expect(screen.queryByRole("button", { name: A.wrappedLines as string })).toBeNull(); cleanup();
+    const onPatch = renderFor(createContainer("row", { id: "r", wrap: true } as Partial<BoxNode>));
+    pickSelect(A.wrappedLines as string, A.wrappedChoices.end); expect(onPatch).toHaveBeenLastCalledWith({ alignContent: "end" });
+    pickSelect(A.wrappedLines as string, A.wrappedChoices.stretch); expect(onPatch).toHaveBeenLastCalledWith({ alignContent: undefined });
   });
 });

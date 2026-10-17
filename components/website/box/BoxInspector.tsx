@@ -11,7 +11,7 @@ import { useState, useRef, useId } from "react";
 import { Plus, X, Tags, Rows3, Columns3, Upload, ArrowRight, AlignLeft, AlignCenter, AlignRight, AlignHorizontalSpaceBetween, Layers, Move, BringToFront, SendToBack, ChevronUp, ChevronDown, Italic, Underline, LayoutGrid, Maximize2, Sparkles, Paintbrush, Ruler, Type as TypeIcon, MonitorSmartphone, Bookmark, Lock, LockOpen } from "lucide-react";
 import type { SiteTheme } from "@/lib/site-storage";
 import { perScreenBanner, perScreenDeviceTab } from "@/lib/per-screen-note";
-import type { BoxNode, FlexAlign, FlexJustify, AccPartStyle, Breakpoint, PagerNav, PinScopeWords, SectionFlag } from "@/lib/box-model";
+import type { BoxNode, FlexAlign, FlexJustify, FlexLines, AccPartStyle, Breakpoint, PagerNav, PinScopeWords, SectionFlag } from "@/lib/box-model";
 import { RUNG_LABEL, SIZES } from "@/lib/educo-ui/layout";
 import { type ItemAction, gridSeenColumns, setLengthCss, ratioCss, limitCss, colBetween, gridAutoFit, TOAST_CORNERS, hasAnnouncement, fluidRemRange, isContainer, containerLabel, isFloating, isCssBg, addItem, removeItem, moveItem, updateItem, addChildItem, updateChildItem, removeChildItem, moveChildItem , isMultiItemComponent, hasIntrinsicSize, sizeToCSS, typedLength, GRID_MAX, COLUMN_FRACTIONS, columnFractionOf, canSetColumnFraction, gridColumnsAt, bandEdgeCSS, PIN_ARRIVALS, PIN_ARRIVAL_AFTER, pinArrivalHasEffect, linkLineGap, LINK_GAP_ACROSS, LINK_GAP_ACROSS_PHONE, spaceDefaults, outerDefaults, type SectionPlace, gapOf, importPhoto, refusedMotion, rowFilledByBlocks } from "@/lib/box-model";
 import { remLen, SPACE_STEPS } from "@/lib/educo-ui/tokens";
@@ -48,8 +48,12 @@ const toRem = (px: number) => +(px / 16).toFixed(2);
 const fromRem = (rem: number) => Math.round(rem * 16);
 
 // Plain-language option lists (value = the real CSS token, label = what the user reads).
-const JUSTIFY_OPTS: [FlexJustify, string][] = [["start", "Start"], ["center", "Center"], ["end", "End"], ["between", "Spread out"], ["around", "Even gaps"]];
-const ALIGN_OPTS: [FlexAlign, string][] = [["stretch", "Fill"], ["start", "Start"], ["center", "Center"], ["end", "End"]];
+// BATCH LE-4: the words of every alignment choice live in config/inspector.json `align`, keyed by the stored value (RULE CFG).
+const ALIGN_WORDS = INSPECTOR.align;
+const JUSTIFY_OPTS = Object.entries(ALIGN_WORDS.justify) as [FlexJustify, string][];
+const ALIGN_OPTS = Object.entries(ALIGN_WORDS.lineUp) as [FlexAlign, string][];
+const LINES_OPTS = Object.entries(ALIGN_WORDS.wrappedChoices) as [FlexLines, string][];
+type Place = NonNullable<BoxNode["placeX"]>;
 
 // Alert-component choosers (used in the inspector top + the ask-on-add chooser). Mirror the plan's taxonomy.
 const ALERT_SEVERITIES = [
@@ -604,7 +608,7 @@ function AccPreview({ id, size, axes = [] }: { id: string; size: ThumbSize; axes
   );
 }
 
-export default function BoxInspector({ section = false, sectionPlace, outerDefault, fillHeight, pageSpan, onSetSpan, pageLines, onSetLines, onSetFreeInset, rowStepRem, node, theme, onPatch, onAddChild, onAddAnnouncement, onFloat, onUnfloat, onLayer, onAlignInRow, rowJustify, onSectionWidth, sectionWidth, siteWidth, sectionFollows, rowOfPage = false, canFloat = true, inGrid = false, inMasonry = false, inFitGrid = false, gridTrack, onSetFraction, onRetrack, breakpoint = "base", overridden = false, onResetOverride, pages, currentPageId, pinBlockedBy = null, fixedBlockedBy = null, pinScope = null }: {
+export default function BoxInspector({ section = false, sectionPlace, outerDefault, fillHeight, pageSpan, onSetSpan, pageLines, onSetLines, onSetFreeInset, rowStepRem, node, theme, onPatch, onAddChild, onAddAnnouncement, onFloat, onUnfloat, onLayer, onAlignInRow, rowJustify, onSectionWidth, sectionWidth, siteWidth, sectionFollows, rowOfPage = false, canFloat = true, parentFlow, inGrid = false, inMasonry = false, inFitGrid = false, gridTrack, onSetFraction, onRetrack, breakpoint = "base", overridden = false, onResetOverride, pages, currentPageId, pinBlockedBy = null, fixedBlockedBy = null, pinScope = null }: {
   section?: SectionFlag; // the block is the content of a page section, so its default inner spacing is the gutter and the section space
   outerDefault?: [number, number, number, number]; // the outer space it really has by default (`outerSpaceDefaults`, G-3 (1)); else `outerDefaults`
   fillHeight?: { on: boolean }; // G-3d (2): a picture alone in a block spanning rows — "Fill the block's height"; absent where it does nothing
@@ -628,6 +632,8 @@ export default function BoxInspector({ section = false, sectionPlace, outerDefau
   siteWidth?: number;                                         // AC-9: the site's content width (rem), when it has one
   sectionFollows?: boolean;                                   // …and this section has no choice of its own, so it follows it
   canFloat?: boolean;
+  /** LE-4: how the PARENT lays its blocks out — a block's Across / Down and Push to the far end are read against it. */
+  parentFlow?: "row" | "column" | "grid";
   inGrid?: boolean;
   /** Is the PARENT row a masonry gallery? Its cells have no rows to be tall in or to start at. */
   inMasonry?: boolean;
@@ -1200,7 +1206,7 @@ export default function BoxInspector({ section = false, sectionPlace, outerDefau
                       and 1fr tracks leave none — so it was inert here. This one places each block in its CELL. */}
                   <CompactSelect label="Position blocks" ariaLabel="Position blocks" value={node.justifyItems ?? "stretch"}
                     onChange={(v) => onPatch({ justifyItems: v as NonNullable<BoxNode["justifyItems"]> })}
-                    options={[{ value: "stretch", label: "Fill the cell" }, { value: "start", label: "Left" }, { value: "center", label: "Center" }, { value: "end", label: "Right" }]} />
+                    options={Object.entries(ALIGN_WORDS.inCell).map(([value, l]) => ({ value, label: l }))} />
                   {/* MASONRY, as ONE control with two words on it. "Even" is not a new mode — it is the
                       behaviour every saved page already has, finally named, so choosing it can never change
                       anything. "Follow the picture" keeps the twelve columns, the spans and the reading order
@@ -1240,11 +1246,18 @@ export default function BoxInspector({ section = false, sectionPlace, outerDefau
                   <CompactSelect label="Position blocks" ariaLabel="Position blocks" value={node.justify ?? "start"} onChange={(v) => onPatch({ justify: v as FlexJustify })} options={JUSTIFY_OPTS.map(([v, l]) => ({ value: v, label: l }))} />
                   {rowFilledByBlocks(node) && <p role="note" className="text-[0.6875rem] leading-snug text-amber-700 dark:text-amber-300 midnight:text-amber-300 purple:text-amber-300">These blocks fill the row — give one a width to place them.</p>}
                   <label className="pointer-coarse:min-h-11 flex items-center gap-2 text-xs text-gray-600 dark:text-gray-300"><input type="checkbox" checked={!!node.wrap} onChange={(e) => onPatch({ wrap: e.target.checked })} /> Let blocks wrap to a new line</label>
+                  {/* AC-25 · where the LINES sit in a taller box — offered only while a side-by-side row wraps; anywhere else it does nothing */}
+                  {node.wrap && node.direction === "row" && (
+                    <>
+                      <CompactSelect label={ALIGN_WORDS.wrappedLines} ariaLabel={ALIGN_WORDS.wrappedLines} value={node.alignContent ?? "stretch"} onChange={(v) => onPatch({ alignContent: v === "stretch" ? undefined : v as FlexLines })} options={LINES_OPTS.map(([v, l]) => ({ value: v, label: l }))} />
+                      <p className="text-[0.6875rem] leading-snug text-gray-500 dark:text-gray-400 midnight:text-slate-400 purple:text-purple-300">{ALIGN_WORDS.wrappedHint}</p>
+                    </>
+                  )}
                 </>
               )}
               {/* `align-items` lines blocks up across a top-to-bottom stack, but DOWN in a side-by-side row and in a grid
                   (R4-4) — the label names the direction the blocks really move. */}
-              <CompactSelect label={node.layout === "grid" || node.direction === "row" ? "Line up (down)" : "Line up (across)"} ariaLabel="Line up" value={node.align ?? "stretch"} onChange={(v) => onPatch({ align: v as FlexAlign })} options={ALIGN_OPTS.map(([v, l]) => ({ value: v, label: l }))} />
+              <CompactSelect label={node.layout === "grid" || node.direction === "row" ? "Line up (down)" : "Line up (across)"} ariaLabel="Line up" value={node.align ?? "stretch"} onChange={(v) => onPatch({ align: v as FlexAlign })} options={ALIGN_OPTS.filter(([v]) => v !== "baseline" || node.layout === "grid" || node.direction === "row").map(([v, l]) => ({ value: v, label: l }))} />
               <Range title="Space between blocks" value={node.gap} min={0} max={64} steps={spaceSteps(64)} fallback={Math.max(gapOf({ ...node, gap: undefined }).x, gapOf({ ...node, gap: undefined }).y)} onChange={(n) => onPatch({ gap: n, gapX: undefined, gapY: undefined })} unit="rem" />
               {/* Across and down separately — the commonest grid there is wants air between its columns and
                   less between its rows, and one number cannot say that. Unset means "same as above".
@@ -1285,11 +1298,7 @@ export default function BoxInspector({ section = false, sectionPlace, outerDefau
                     value={node.rowStart ?? ""} onChange={(v) => onPatch({ rowStart: v === "" ? undefined : Math.max(1, Number(v) || 1) })} />
                 )}
                 </>}
-                {/* ONE source of truth with the nine squares below (R4-2): both place the cell across, so whichever was
-                    used last wins — this shows the squares' choice, and choosing here clears the squares' across value. */}
-                <CompactSelect label="Line up (across)" ariaLabel="Line up (across)" value={node.placeX ?? node.justifySelf ?? "stretch"}
-                  onChange={(v) => onPatch({ justifySelf: v as NonNullable<BoxNode["justifySelf"]>, placeX: undefined })}
-                  options={[{ value: "stretch", label: "Fill" }, { value: "start", label: "Left" }, { value: "center", label: "Center" }, { value: "end", label: "Right" }]} />
+                {/* Where the cell's block sits ACROSS is the Position section's Across row (LE-4) — one control (R4-2), not two. */}
               </div>
             </Accordion>
           )}
@@ -1308,25 +1317,50 @@ export default function BoxInspector({ section = false, sectionPlace, outerDefau
                   left/right in a section and top/bottom in a row, which is not something anyone should have
                   to reason about. `placeCSS` works out the CSS; the user just points at where they want it. */}
               <div className="space-y-1">
-                <span className={label}>Where this block sits</span>
+                <span className={`${label} block`}>Where this block sits</span>
                 <div role="group" aria-label="Position in its parent" className="inline-grid grid-cols-3 gap-1 rounded-xl bg-surface-2 p-1.5 ring-1 ring-line">
                   {(["start", "center", "end"] as const).map((y) => (["start", "center", "end"] as const).map((x) => {
                     const on = node.placeX === x && node.placeY === y;
                     const name = `${y === "start" ? "Top" : y === "end" ? "Bottom" : "Middle"} ${x === "start" ? "left" : x === "end" ? "right" : "centre"}`;
                     return (
                       <button key={`${y}-${x}`} aria-label={name} title={name} aria-pressed={on}
-                        onClick={() => onPatch(on ? { placeX: undefined, placeY: undefined } : { placeX: x, placeY: y, justifySelf: undefined })}
+                        onClick={() => onPatch(on ? { placeX: undefined, placeY: undefined } : { placeX: x, placeY: y, justifySelf: undefined, push: undefined })}
                         className={`grid h-6 w-6 pointer-coarse:h-11 pointer-coarse:w-11 place-items-center rounded-md transition-colors ${on ? "bg-brand text-brand-fg" : "text-muted hover:bg-brand/10 hover:text-brand"}`}>
                         <span className="block h-2 w-2 rounded-sm bg-current" />
                       </button>
                     );
                   }))}
                 </div>
-                <p className="text-[11px] leading-snug text-gray-500 dark:text-gray-400">
-                  Moves just this block, leaving its neighbours where they are. Click the chosen square again
-                  to let it sit where the layout puts it.
-                </p>
               </div>
+              {/* AC-27 · ACROSS and DOWN, one row each, Fill included (the user's D4, 2026-10-04): the nine squares are the
+                  shortcut that sets both. A grid cell's older `justifySelf` reads as its Across until a choice here replaces it. */}
+              {(["x", "y"] as const).map((axis) => {
+                const key = axis === "x" ? "placeX" : "placeY";
+                const cur = node[key] ?? (axis === "x" && inGrid ? node.justifySelf : undefined) ?? "auto";
+                const words = axis === "x" ? ALIGN_WORDS.acrossChoices : ALIGN_WORDS.downChoices;
+                const name = axis === "x" ? ALIGN_WORDS.across : ALIGN_WORDS.down;
+                return (
+                  <div key={axis} className="space-y-1">
+                    <span className={label}>{name}</span>
+                    <Segmented full ariaLabel={name} value={cur} onChange={(v) => onPatch({ [key]: v === "auto" ? undefined : v as Place, ...(axis === "x" ? { justifySelf: undefined, push: undefined } : {}) })} // LE4-7: `push` is a left / right margin — Across replaces it, Down never touches it
+                      options={Object.entries(words).map(([value, l]) => ({ value, label: l }))} />
+                  </div>
+                );
+              })}
+              {/* AL-6 · PUSH TO THE FAR END — the main-axis End of a row or a stack, an auto margin: it takes the free room before it,
+                  so it and the blocks after it go to the far end. A grid cell has its Across / Down instead. */}
+              {(parentFlow === "row" || parentFlow === "column") && (() => {
+                const key = parentFlow === "row" ? "placeX" : "placeY";
+                const on = node[key] === "end" || (parentFlow === "row" && node.push === "end");
+                return (
+                  <label className="pointer-coarse:min-h-11 flex items-start gap-2 text-xs text-gray-600 dark:text-gray-300 midnight:text-slate-300 purple:text-purple-200">
+                    <input type="checkbox" className="mt-0.5" checked={on} aria-describedby="le4-push-hint"
+                      onChange={(e) => onPatch({ [key]: e.target.checked ? "end" : undefined, ...(parentFlow === "row" ? { push: undefined } : {}) })} />
+                    <span>{ALIGN_WORDS.push}<span id="le4-push-hint" className="block text-[0.6875rem] leading-snug text-gray-500 dark:text-gray-400 midnight:text-slate-400 purple:text-purple-300">{ALIGN_WORDS.pushHint}</span></span>
+                  </label>
+                );
+              })()}
+              <p className="text-[0.6875rem] leading-snug text-gray-500 dark:text-gray-400 midnight:text-slate-400 purple:text-purple-300">{ALIGN_WORDS.placeHint}</p>
               <CompactField label="Order" ariaLabel="Order" type="number" placeholder="auto" value={node.order ?? ""}
                 onChange={(v) => onPatch({ order: v === "" ? undefined : Number(v) || 0 })} />
             </Accordion>
@@ -1389,7 +1423,7 @@ export default function BoxInspector({ section = false, sectionPlace, outerDefau
               <div className="space-y-1">
                 <span className={label}>Position in row</span>
                 <Segmented full ariaLabel="Position in row" value={rowJustify ?? "start"} onChange={(v) => onAlignInRow(v as FlexJustify)}
-                  options={[{ value: "start", label: "Left", Icon: AlignLeft }, { value: "center", label: "Center", Icon: AlignCenter }, { value: "end", label: "Right", Icon: AlignRight }, { value: "between", label: "Spread", Icon: AlignHorizontalSpaceBetween }]} />
+                  options={([["start", AlignLeft], ["center", AlignCenter], ["end", AlignRight], ["between", AlignHorizontalSpaceBetween]] as const).map(([value, Icon]) => ({ value, label: ALIGN_WORDS.inRow[value], Icon }))} />
               </div>
             )}
             {/* Typing a height (or clearing it) also clears any shrink a DRAG applied: the scale exists only to make

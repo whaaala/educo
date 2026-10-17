@@ -40,15 +40,24 @@ const dropTileAt = async (page: Page, text: string, x: number, y: number) => {
 const leaves = (page: Page) => page.evaluate(() => Array.from(document.querySelectorAll("[data-box-id]")).filter((e) => !e.querySelector("[data-box-id]")).map((e) => e.getAttribute("data-box-id")!));
 
 /** Every block's computed flex + width, and every block whose inline style holds a broken (emptied) flex longhand. */
-const drawn = (page: Page) => page.evaluate(() => {
+// LE-4 (a guard that flaked under the full run's load, tablet-landscape: live w229 · reload w224 on all three columns): the width is
+// read in CANVAS units — the Fit zoom differs between a page and its reload when its height (its scrollbar) does — and only once two
+// reads in a row agree, never after a fixed sleep the layout may not have finished in.
+const drawnOnce = (page: Page) => page.evaluate(() => {
   const flex: Record<string, string> = {}; const broken: string[] = [];
+  const z = Number(document.querySelector<HTMLElement>("[data-canvas-scale]")?.dataset.canvasScale) || 1;
   for (const e of Array.from(document.querySelectorAll<HTMLElement>("[data-box-id]"))) {
     const id = e.getAttribute("data-box-id")!;
-    flex[id] = `${getComputedStyle(e).flex} w${Math.round(e.getBoundingClientRect().width)}`;
+    flex[id] = `${getComputedStyle(e).flex} w${Math.round(e.getBoundingClientRect().width / z)}`;
     if (/flex-(grow|shrink|basis):\s*;/.test(e.getAttribute("style") || "")) broken.push(id);
   }
   return { flex, broken };
 });
+async function drawn(page: Page) {
+  let a = await drawnOnce(page);
+  for (let i = 0; i < 20; i++) { await page.waitForTimeout(150); const b = await drawnOnce(page); if (JSON.stringify(a) === JSON.stringify(b)) return b; a = b; }
+  return a;
+}
 
 async function select(page: Page, id: string) {
   for (let i = 0; i < 6; i++) {
