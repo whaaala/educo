@@ -78,6 +78,10 @@ exists.)
 ### Media
 **Image**, **Photo gallery**, **Slider**, **Video** (YouTube/Vimeo/MP4), **Icon** (searchable symbol), **Embed** (paste an iframe/HTML).
 
+**Every picture keeps its shape while it loads.** A photo, a gallery's photos, a Card's picture, an Accordion's or an
+Alert's thumbnail and a video all hold the box they will fill before a single byte has arrived, and a photo is cropped to
+that box, never squashed — so on a slow phone connection the words do not jump as the pictures land.
+
 **Every block publishes the box it is drawn in.** An Icon, a List and a Divider are exactly as big on the published page as in the editor, at every screen size — an icon 22px tall on a phone is 22px published, and a list keeps the same space under each item. They are never padded out to the minimum size an *empty* box is given so that you can grab it.
 
 ### Photo gallery — many photographs at once
@@ -229,7 +233,16 @@ The content that changes per block type — a Button's text + link, a Text's cop
 - **Advanced CSS** — extra CSS declarations for power users, on every block (safely sanitised). Like any style it belongs to the screen you are editing: type it with **Mobile** selected and only phones get it. Two kinds of motion are refused, and the field **says so** under it ("Not applied: …"): animating the size or the place of a block (`transition: height`, `width`, `top`, `margin`, `padding`… — it makes the page jerk on a phone; animate `transform` or `opacity` instead), and an animation that runs forever (`infinite` — a visitor must be able to make moving things stop).
 
 ### Per‑device tab
-A note saying which screen you are editing, and one checkbox: **Hidden everywhere** (at **Desktop** or **Full width**) or **Hidden on** that screen (at any other chip). To change size, spacing or layout for one screen, pick that screen's chip in the top bar and edit in the Design tab (see §8).
+A note saying which screen you are editing, and one checkbox: **Hidden everywhere** (at **Desktop** or **Full width**) or **Hidden on** that screen (at any other chip). To change how a block looks on one screen, pick that screen's chip in the top bar and edit in the Design tab (see §8).
+
+**The yellow note says exactly what changes, and where.** Pick any chip but Desktop and the Inspector opens with a note
+like *"Editing Tablet portrait — what you change here (size, spacing, colours, fonts, backgrounds) shows on tablets held
+upright — and on phones too, unless you change it there."* Every look you set there is that screen's own — a colour, a
+text size, a Button's paint — and the published page shows it on those screens, as the canvas does. The words, links,
+pictures and effects (hover, entrance, what a pinned bar does as it takes hold) stay the same on every screen, and the
+note says so; an effect's own panel says *"Applies to every screen"* while you edit a smaller one.
+
+[![The Inspector at Tablet portrait: the yellow note naming what changes and which screens it reaches, the line that words, links, pictures and effects stay the same, and the Per-device tab saying the same](img/guide-per-device-banner.webp)](img/guide-per-device-banner.webp)
 
 > **Rule of thumb:** *Design* = how it looks; *Content* = what it says; *Per‑device* = whether it shows on each screen. (How it *looks* on a phone is set in Design, with the phone's chip picked.)
 
@@ -307,7 +320,7 @@ Sometimes you want to place things freely (overlap a badge on an image, arrange 
 The builder is responsive by design, and you can fine‑tune per size.
 
 1. Use the **device switcher** (top‑right) to view **Mobile (375)**, **Tablet (768)**, **Laptop (1024)**, **Desktop (1280)**, **Wide (1920)** or **Full width**.
-2. At **Desktop** or **Full width** you edit the base design. At **Mobile**, **Tablet** or **Laptop** your edit applies to that screen and the narrower ones. **Wide** branches off: what you set there stays on big screens and reaches no other.
+2. At **Desktop** or **Full width** you edit the base design. At **Mobile**, **Tablet** or **Laptop** your edit applies to that screen and the narrower ones. **Wide** branches off: what you set there stays on big screens and reaches no other. That holds for every look — sizes, spacing, colours, fonts, backgrounds — on the canvas *and* on the published page; the words, links, pictures and effects are shared by every screen.
 3. On a narrow screen a row stays side by side while every block's words keep about 14rem and, on a phone, every block keeps at least 10rem of the page's columns; when they would not, it stacks. A block left alone on its line takes the whole line on a phone. Nothing forces a horizontal scrollbar. (Pages saved before 4 October 2026 always stack on a phone.)
 
 The full list of chips, and which controls change per screen, is in the reference: [How controls change per screen](./layout-reference.md#how-controls-change-per-screen). How a row behaves on a phone is told in [the story, §2](./layout-story.md#2-i-want-a-photo-beside-my-words) and [§3](./layout-story.md#3-three-cards-across-that-stack-on-a-phone).
@@ -582,6 +595,11 @@ It's a **minimum, not a fixed height**. If the words inside outgrow the screen t
 
 Two things it handles for you. It uses the *conservative* measure of screen height, so a full-screen section always fits on arrival rather than being pushed under the phone's address bar. And because it's a floor, a section that's still empty while you're building it stays full height instead of collapsing to nothing.
 
+**A whole screen means a whole screen.** A header that stays at the top is not taken off it: the section is exactly the
+visitor's screen tall on every phone, tablet and monitor, with the header sitting over its top as the page scrolls.
+**On the canvas, the screen is the part of the canvas you can see** — pick Mobile and a Full screen section fills the
+canvas view from top to bottom, Half screen half of it, rather than the height of your editing window.
+
 ---
 
 ## 10e. Putting a block where you want it
@@ -793,6 +811,14 @@ Your page is published as proper HTML5, however you built it — you do not need
   becomes the title; a page whose content is only cards is titled by the school's name in the header. And when the title
   heads a section, the cards inside that section sit one level under it (2), not two — no level is skipped.
 - **Cards and quotes are already right** — a Card is published as an article, a Quote as a figure.
+- **The links in your header and footer are a menu.** Two or more **Link** blocks one after another in the Page header
+  or the Page footer — on one line, or one under another down a footer column — are published as a menu: a list of
+  links a screen reader can find and count ("navigation, list, 4 items"). Nothing on the page moves, and no bullets
+  appear. A logo or a Button beside them is left out of the menu; two Buttons side by side, a single Link and links in
+  the page's main content are left as they are, and a box you marked **Menu** or **List** yourself keeps your choice.
+  The Page check's *Fixed for you* says it, with **Show me**.
+
+  [![A page header: the school's name and four links on one line — published as a menu](img/guide-header-menu.webp)](img/guide-header-menu.webp)
 - **The Page check** (toolbar) shows a number when something needs *your* words: a picture with no description
   ("Describe this picture for people who can't see it" — type it right there and press **Save description**, or choose
   *It's only decoration*), or a button or a link with no words. It also flags a picture with no image yet, a heading

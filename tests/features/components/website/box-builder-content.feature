@@ -109,3 +109,12 @@ Feature: Box Builder — content types & links
 
   Scenario: New content types work across themes, screen sizes and are accessible
     Then each renders correctly in light/dark/midnight/purple, reflows responsively, and exposes aria labels
+
+  # BATCH LE-2
+  Scenario: Links in a header or footer publish as a menu without my choosing one
+    Given a page header with four Links on one line, and a page footer with a column of three Links
+    When the page is published
+    Then each run of Links is a nav holding a list, one item per link (nav > ul > li > a)
+    And the page looks exactly as it did
+    And the Page check's "Fixed for you" says the links are published as a menu, and Show me selects the first one
+    But two Buttons side by side, a Link alone, Links in the page body, and a box I marked Menu or List stay as they are

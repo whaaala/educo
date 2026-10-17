@@ -125,7 +125,7 @@ export const SKIP_LINK_HTML = `<a class="eu-skip" href="#main">Skip to content</
 export const SKIP_LINK_CSS = ".eu-skip{position:absolute;inset-inline-start:-999rem;top:0}.eu-skip:focus{inset-inline-start:1rem;top:1rem;z-index:" + PAGE_Z_CEILING + ";padding:0.5rem 1rem;background:Canvas;color:CanvasText;outline:0.125rem solid CanvasText;font:inherit}"
   // The AUTOMATIC main wraps whole bands without changing the layout; a list the user chose loses the browser's bullets
   // and indent, so choosing "List" changes the meaning and never the look.
-  + ".eu-main{display:contents}.eu-list{list-style:none;margin:0;padding-left:0}.eu-li{display:contents}"
+  + ".eu-main{display:contents}.eu-list{list-style:none;margin:0;padding-left:0}.eu-li{display:contents}.eu-menu{display:contents}"
   // The skip link's TARGET: a <main> with display:contents has no box and cannot take focus, so Enter on the link left
   // focus where it was (#72). This marker can — and, out of the layout, it adds no gap.
   + ".eu-main-start{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}";
@@ -362,6 +362,29 @@ function overridesByRung(node: BoxNode, cls: string): string[] {
   }
   return out;
 }
+/**
+ * LE2-1 · AN ELEMENT'S OWN LOOK AT EACH SCREEN. A heading's colour and size, a Button's paint… are written INLINE on the element
+ * (`elementHTML`) from the desktop values, so a colour or a size chosen at Phone was drawn by the canvas there and never published —
+ * measured: red 28px words at Mobile on the canvas, grey 16px in the Preview at 375. The element is rendered at every screen; what
+ * differs from the desktop is ONE rule per run of screens, limited to them like `overridesByRung`, `!important` because it must beat
+ * the inline desktop value. A page with nothing set per screen ships nothing extra.
+ */
+function elementByRung(cls: string, html: (bp: Breakpoint) => string): string[] {
+  const decls = (h: string) => new Map((/style="([^"]*)"/.exec(h)?.[1] ?? "").split(";").map((d) => d.split(":")).filter((d) => d.length > 1).map(([k, ...v]) => [k.trim(), v.join(":").trim()] as [string, string]));
+  const base = decls(html("base"));
+  const diffs = BP_ORDER.map((bp) => bp === "base" ? "" : [...decls(html(bp))].filter(([k, v]) => base.get(k) !== v).map(([k, v]) => `${k}:${v}!important`).join(";"));
+  const minEm = (i: number) => RUNG_MIN_EM[BP_ORDER[i] as Exclude<Breakpoint, "phone">];
+  const out: string[] = [];
+  for (let i = 0; i < diffs.length; ) {
+    let j = i; while (j + 1 < diffs.length && diffs[j + 1] === diffs[i]) j++;
+    if (diffs[i]) {
+      const q = [i > 0 ? `(min-width:${minEm(i)}em)` : "", j < diffs.length - 1 ? `(max-width:${(minEm(j + 1) - 0.001).toFixed(3)}em)` : ""].filter(Boolean).join(" and ");
+      out.push(q ? `@media ${q}{.${cls}>:first-child{${diffs[i]}}}` : `.${cls}>:first-child{${diffs[i]}}`);
+    }
+    i = j + 1;
+  }
+  return out;
+}
 const classFor = (id: string) => "bx-" + id.replace(/[^A-Za-z0-9_-]/g, "-");
 // When a property is set at BASE but dropped at a breakpoint, we must actively neutralise it (the base rule
 // still applies at every width) — reset it to its layout initial rather than leaving the desktop value.
@@ -592,6 +615,11 @@ function renderNode(node: BoxNode, rawParent: BoxNode | null, theme: SiteTheme, 
     const kidsAreSections = rawParent === null;
     const kidList = (r.children ?? []).map((c) => renderNode(c, node, theme, pageMap, sheet, kidsAreSections, hostSizedFor(node, hostSized, rawParent), sectionContent(c, kidsAreSections, isPageSection && !!r.rowBand, r), rawParent));
     // A1 — the AUTOMATIC <main>: the page's bands between its header and footer regions, wrapped without a box of its own.
+    // LE-2 · a header's or footer's run of links published as a menu (lib/semantics.ts `menus`) — wrappers with no box, nothing moves
+    for (const run of [...(SEM?.menus.get(node.id) ?? [])].reverse()) {
+      const lbl = SEM?.byId.get(run.key)?.label;
+      kidList.splice(run.start, run.end - run.start, `<nav class="eu-menu"${lbl ? ` aria-label="${esc(lbl)}"` : ""}><ul class="eu-list eu-menu">${kidList.slice(run.start, run.end).join("")}</ul></nav>`);
+    }
     const mw = rawParent === null ? SEM?.mainWrap : null;
     const kids = mw
       ? kidList.slice(0, mw.start).join("") + `<main class="eu-main"><span id="main" tabindex="-1" class="eu-main-start"></span>${kidList.slice(mw.start, mw.end).join("")}</main>` + kidList.slice(mw.end).join("")
@@ -621,7 +649,9 @@ function renderNode(node: BoxNode, rawParent: BoxNode | null, theme: SiteTheme, 
     }
     return wrapLi(`<${el}${idAttr}${semAttr} class="${allCls}">${kids}</${el}>`);
   }
-  return wrapLi(`<${el}${idAttr}${semAttr} class="${allCls}">${elementHTML(r, theme, pageMap, fillsRowsAnywhere(fillHostOf(rawParent, grand)))}</${el}>`);
+  const fill = fillsRowsAnywhere(fillHostOf(rawParent, grand));
+  if (node.responsive) sheet.overrides.push(...elementByRung(cls, (bp) => elementHTML(resolveResponsive(node, bp), theme, pageMap, fill))); // LE2-1
+  return wrapLi(`<${el}${idAttr}${semAttr} class="${allCls}">${elementHTML(r, theme, pageMap, fill)}</${el}>`);
 }
 
 /** Turn the collected rules into a stylesheet: the phone layout first, then each wider screen adds to it. */

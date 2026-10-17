@@ -115,6 +115,8 @@ function contentPx(el: HTMLElement, size: "min-content" | "max-content"): number
 export { zoomOf };
 
 /** How close a dragged edge must land to a block's own one-line width to give the block back to its words (L4-f). */
+/** LE2-3: a screen height on the canvas is a share of the canvas VIEW (`--canvas-h`), as `100svh` is of a visitor's screen. */
+const canvasScreen = (css: CSSProperties["minHeight"]) => (typeof css === "string" ? css.replace(/(\d+(?:\.\d+)?)svh/g, (_, n) => `calc(var(--canvas-h, ${n}svh) * ${+n / 100})`) : css);
 const HUG_SNAP_PX = RESIZE.hugSnapPx; // config/layout.json (RULE CFG, L5-3)
 
 function measureBoxU(el: HTMLElement, baseFont: number): number {
@@ -1514,6 +1516,10 @@ export default function BoxCanvas({
       // E5c-7: a float may hang over its parent (overlap), never past the PAGE's top, left or right — the published page cuts that off
       const pastPage = (dx: number, dy: number) => { const b = id ? document.querySelector(`[data-box-id="${id}"]`)?.getBoundingClientRect() : null, p = document.querySelector(`[data-box-id="${root.id}"]`)?.getBoundingClientRect(); return !!b && !!p && (b.top + dy < p.top - 0.5 || b.left + dx < p.left - 0.5 || b.right + dx > p.right + 0.5); };
       const stepPx = e.shiftKey ? 12 : 2;
+      // LE2-6 · A BLOCK THAT FLOATS ON SCREEN IS PLACED BY ITS SPOT ON THE SCREEN (`pinX` / `pinY`, page px), not by `top` / `left` — the
+      // arrows wrote `top`, which such a block ignores, so the keyboard could not move it at all (measured: 0px after six Shift+↓).
+      const held = !!id && floating && !!rn.pin && rn.hold === "fixed";
+      const nudgeHeld = (dx: number, dy: number) => onChange(writeBox(root, id!, dx ? { pinX: Math.max(0, (rn.pinX ?? 0) + dx) } : { pinY: Math.max(0, (rn.pinY ?? 0) + dy) }));
       if (mod && k === "c") { if (id) { copyBox(id); e.preventDefault(); } }
       else if (mod && k === "x") { if (id) { cutBox(id); e.preventDefault(); } }
       else if (mod && k === "v") { if (clip) { pasteBox(id); e.preventDefault(); } }
@@ -1536,10 +1542,10 @@ export default function BoxCanvas({
       }
       else if ((e.key === "Delete" || e.key === "Backspace") && ids.length) { let next = root; for (const d of ids) if (d !== root.id) next = deleteBox(next, d); onChange(next); select(null); e.preventDefault(); } // delete ALL selected
       // A flowing block moves the way its toolbar arrows do (E-5a, D4): ↑ ↓ where it moves up and down, ← → along a line.
-      else if (e.key === "ArrowUp" && !e.altKey && id && !rn.locked && (floating || moveAxis(root, id) === "vertical")) { if (floating) { if (!pastPage(0, -stepPx)) onChange(writeBox(root, id, { top: round1((rn.top ?? 0) - stepPct("y")) })); } else onChange(moveBlock(root, id, -1)); e.preventDefault(); }
-      else if (e.key === "ArrowDown" && !e.altKey && id && !rn.locked && (floating || moveAxis(root, id) === "vertical")) { if (floating) onChange(writeBox(root, id, { top: round1((rn.top ?? 0) + stepPct("y")) })); else onChange(moveBlock(root, id, 1)); e.preventDefault(); }
-      else if (e.key === "ArrowLeft" && !e.altKey && id && !rn.locked && (floating || moveAxis(root, id) === "horizontal")) { if (floating) { if (!pastPage(-stepPx, 0)) onChange(writeBox(root, id, { left: round1((rn.left ?? 0) - stepPct("x")) })); } else onChange(moveBlock(root, id, -1)); e.preventDefault(); }
-      else if (e.key === "ArrowRight" && !e.altKey && id && !rn.locked && (floating || moveAxis(root, id) === "horizontal")) { if (floating) { if (!pastPage(stepPx, 0)) onChange(writeBox(root, id, { left: round1((rn.left ?? 0) + stepPct("x")) })); } else onChange(moveBlock(root, id, 1)); e.preventDefault(); }
+      else if (e.key === "ArrowUp" && !e.altKey && id && !rn.locked && (floating || moveAxis(root, id) === "vertical")) { if (held) nudgeHeld(0, -stepPx); else if (floating) { if (!pastPage(0, -stepPx)) onChange(writeBox(root, id, { top: round1((rn.top ?? 0) - stepPct("y")) })); } else onChange(moveBlock(root, id, -1)); e.preventDefault(); }
+      else if (e.key === "ArrowDown" && !e.altKey && id && !rn.locked && (floating || moveAxis(root, id) === "vertical")) { if (held) nudgeHeld(0, stepPx); else if (floating) onChange(writeBox(root, id, { top: round1((rn.top ?? 0) + stepPct("y")) })); else onChange(moveBlock(root, id, 1)); e.preventDefault(); }
+      else if (e.key === "ArrowLeft" && !e.altKey && id && !rn.locked && (floating || moveAxis(root, id) === "horizontal")) { if (held) nudgeHeld(-stepPx, 0); else if (floating) { if (!pastPage(-stepPx, 0)) onChange(writeBox(root, id, { left: round1((rn.left ?? 0) - stepPct("x")) })); } else onChange(moveBlock(root, id, -1)); e.preventDefault(); }
+      else if (e.key === "ArrowRight" && !e.altKey && id && !rn.locked && (floating || moveAxis(root, id) === "horizontal")) { if (held) nudgeHeld(stepPx, 0); else if (floating) { if (!pastPage(stepPx, 0)) onChange(writeBox(root, id, { left: round1((rn.left ?? 0) + stepPct("x")) })); } else onChange(moveBlock(root, id, 1)); e.preventDefault(); }
       // ── ENTER / F2 BEGINS EDITING — the way IN that Escape's way OUT always implied ──
       // Every other operation on this canvas had a shortcut, but editing the WORDS — the commonest act in a
       // website builder — was mouse-only, so a keyboard user could select a heading and never type into it.
@@ -2997,8 +3003,9 @@ export default function BoxCanvas({
           aboveSibId = owner.id;
           const ownerRect = ownerEl.getBoundingClientRect();
           aboveH0 = ownerRect.height;
-          aboveSlack = Math.max(0, aboveH0 - Math.max(naturalHeightOf(ownerEl), MIN_ROW_PX * Z));
-          aboveIsComp = owner.type === "component" || owner.type === "button";
+          // L-8: a PICTURE gives what it has down to the row floor — its "content" is the picture, cropped to any height it is given
+          aboveSlack = Math.max(0, aboveH0 - Math.max(owner.type === "image" ? 0 : naturalHeightOf(ownerEl), MIN_ROW_PX * Z));
+          aboveIsComp = owner.type === "component" || owner.type === "button" || owner.type === "image";
           // The space ALREADY between them — outer spacing the user asked for, and the parent's own gap.
           aboveGap0 = Math.max(0, dir === "up" ? rect.top - ownerRect.bottom : ownerRect.top - rect.bottom);
           break;
@@ -3388,6 +3395,9 @@ export default function BoxCanvas({
       // element (which FILLS the box via height:100%) actually grows/shrinks with the drag. A normal element/section
       // uses min-height (a floor it hugs up from) so it can still grow with its content.
       const isComp = node.type === "component" || node.type === "button";
+      // L-8 · A PICTURE TAKES THE HEIGHT IT IS DRAGGED TO, cropped (`object-fit: cover`). A floor (`minHeight`) could only ever hold it
+      // taller: its box is the picture's own 16.25rem or proportion, so dragging its bottom edge up stored a floor and moved nothing.
+      const pic = node.type === "image";
       if (hasS && below.sibId) {
         /**
          * THE MIRROR OF THE TOP EDGE: the block BELOW owns this boundary, so it absorbs what this one releases.
@@ -3409,7 +3419,7 @@ export default function BoxCanvas({
         // deliberately, so a partner can never change what a drag stores. Three guards assert that directly.
         const h = Math.max(startTopPx + minHpx, startBotPx + dy) - startTopPx; // SCREEN px, not rounded: `lay` keeps a thousandth of a page px, and a whole screen px is 1.45 of them at 0.69 — the partner took the unrounded rest and a round trip drifted 0.08 page px a cycle (E2-17)
         const scS = fitScale(h, naturalH);
-        tree = writeBox(tree, id, isComp
+        tree = writeBox(tree, id, pic ? { height: remLen(h, rootPx), minHeight: undefined } : isComp
           ? { height: remLen(h, rootPx), minHeight: undefined, clip: undefined, contentScale: scS < 1 ? scS : undefined }
           : { minHeight: lay(Math.max(minHpx, h - heldAbove)), height: undefined });
         // …AND THE ROOM GROWS WITH IT (see `cappingBand`). Without this the gain is taken from whatever sits
@@ -3466,10 +3476,22 @@ export default function BoxCanvas({
         // Nothing below it: the bottom edge faces open space, so it simply opens some. Top fixed, bottom moves.
         const h = Math.max(startTopPx + minHpx, startBotPx + dy) - startTopPx; // SCREEN px, not rounded: `lay` keeps a thousandth of a page px, and a whole screen px is 1.45 of them at 0.69 — the partner took the unrounded rest and a round trip drifted 0.08 page px a cycle (E2-17)
         const sc = fitScale(h, naturalH);
-        tree = writeBox(tree, id, isComp ? { height: remLen(h, rootPx), minHeight: undefined, clip: undefined, contentScale: sc < 1 ? sc : undefined } : { minHeight: lay(Math.max(minHpx, h - heldAbove)), height: undefined });
+        tree = writeBox(tree, id, pic ? { height: remLen(h, rootPx), minHeight: undefined } : isComp ? { height: remLen(h, rootPx), minHeight: undefined, clip: undefined, contentScale: sc < 1 ? sc : undefined } : { minHeight: lay(Math.max(minHpx, h - heldAbove)), height: undefined });
         // GROWING RAISES THE ROOM IT GROWS IN (see `cappingBand`), so the gain never comes out of a sibling
         // above. Shrinking leaves the band alone: that space is the one the gesture is deliberately opening.
-        const grew = h - H0; // screen px; `h0` is stored — see E2-13 above
+        /**
+         * L-8 · …AND THE ROOM IT GIVES UP STAYS, AS A SPACE AT THAT EDGE (rule 4: inward opens a space at the edge you dragged, and it
+         * stays). In a column that hugs its blocks nothing held that room, so the column simply got shorter and no space ever opened —
+         * measured: a Stack of three pictures, the last one's bottom edge up 80px, space below it 0. The space is a margin (the row's
+         * rule, "a space is a margin, not a leftover"), written live so the edge is seen to open it; dragged back, it closes first.
+         */
+        // ONLY ALONE ON ITS LINE — a block in a column (the builder wraps each in a band of one). In a ROW beside other blocks the
+        // bottom edge crosses the line, and the row already keeps that space at release (`onUp`); a margin here made a block's row
+        // grow by its own round trip (L5-10, measured: out 60 and back left the row 60px taller).
+        const aloneOnLine = !parentRow || (info?.parent.children?.length ?? 0) <= 1;
+        const mb0 = resolveResponsive(node, breakpoint).marginBottom ?? 0, mb = mb0 + pxU(H0 - h);
+        if (aloneOnLine) tree = writeBox(tree, id, { marginBottom: mb > 0 ? mb : undefined });
+        const grew = h - H0 - (aloneOnLine ? Math.min(Math.max(0, h - H0), Math.max(0, (mb0 * boxU) / 10)) : 0); // screen px — only what the space below could not give; `h0` is stored — see E2-13 above
         if (cappingBand && grew > 0) tree = writeBox(tree, cappingBand.id, { minHeight: cappingBand.h0 + lay(grew) });
       }
       if (hasN && aboveSibId) {
@@ -3529,7 +3551,7 @@ export default function BoxCanvas({
          */
         const h = Math.max(MIN_ROW_PX * Z, Math.round((startBotPx - (flowY + (ah - aboveH0)) - mtPx) * 1000) / 1000);
         const scN = fitScale(h, naturalH);
-        tree = writeBox(tree, id, isComp
+        tree = writeBox(tree, id, pic ? { height: remLen(h, rootPx), minHeight: undefined, marginTop: mtKeep(mt) } : isComp
           ? { height: remLen(h, rootPx), minHeight: undefined, clip: undefined, marginTop: mtKeep(mt), contentScale: scN < 1 ? scN : undefined }
           : { minHeight: lay(Math.max(MIN_ROW_PX * Z, h - heldAbove)), height: undefined, marginTop: mtKeep(mt) });
         tree = writeBox(tree, aboveSibId, aboveIsComp
@@ -3553,7 +3575,7 @@ export default function BoxCanvas({
         // distances — reproduced on demand under load, where merged mouse moves end a drag on one of those distances.
         const hN = Math.max(minHpx, startBotPx - (flowY + (boxU * mt) / 10));
         const scN = fitScale(hN, naturalH);
-        tree = writeBox(tree, id, isComp ? { height: remLen(hN, rootPx), minHeight: undefined, clip: undefined, marginTop: mtKeep(mt), contentScale: scN < 1 ? scN : undefined } : { minHeight: Math.round((Math.max(minHpx, hN - heldAbove) / Z) * 1000) / 1000, height: undefined, marginTop: mtKeep(mt) });
+        tree = writeBox(tree, id, pic ? { height: remLen(hN, rootPx), minHeight: undefined, marginTop: mtKeep(mt) } : isComp ? { height: remLen(hN, rootPx), minHeight: undefined, clip: undefined, marginTop: mtKeep(mt), contentScale: scN < 1 ? scN : undefined } : { minHeight: Math.round((Math.max(minHpx, hN - heldAbove) / Z) * 1000) / 1000, height: undefined, marginTop: mtKeep(mt) });
       }
       if (snapCols && (hasE || hasW)) tree = freeEdge(tree, hasE ? "right" : "left", freeOff);
       if (guardSteps && (hasE || hasW) && stepsHere(tree)) return; // L5-14: the edge stops where the line would step
@@ -3993,6 +4015,9 @@ export default function BoxCanvas({
           //   • anything inside it, at which point the content sets the height, which is the real answer.
           style={{
             ...containerStyle(node, breakpoint, section),
+            // LE2-3 · "FULL SCREEN" IS THE SCREEN BEING EDITED, NOT THE EDITOR'S WINDOW. `100svh` inside the canvas is the window's height
+            // (measured: 860 at Mobile in a 1366 × 860 editor, over a canvas view of 804) — the view, `--canvas-h`, is the screen here.
+            ...(node.screenHeight ? { minHeight: canvasScreen(containerStyle(node, breakpoint, section).minHeight) } : {}),
             ...pageBandInset(node, parent?.id === root.id), // S2-f — the export writes the same
             // `relative` so the out-of-flow hint is measured against THIS box and not some ancestor. Only
             // when the box is empty, so it can never become a containing block for a child that floats.
@@ -4381,7 +4406,7 @@ export default function BoxCanvas({
       {/* The LAYOUT layer, and unlike the component styles it is NOT gated on the tree using Educo UI: a band is
           a structural container, so a page made only of plain sections still needs it. Scoped to both roots for
           the same reason the tokens are — the canvas root carries `.eu-tokens`, never `.eu-root`. */}
-      <style dangerouslySetInnerHTML={{ __html: layoutCss(".eu-root, .eu-tokens") + "[data-sem-list]{list-style:none;margin:0;padding-left:0}" + measureCss(".eu-tokens") + linkHoverCss(".eu-tokens") /* RX4-20 */ }} />
+      <style dangerouslySetInnerHTML={{ __html: layoutCss(".eu-root, .eu-tokens") + "[data-sem-list]{list-style:none;margin:0;padding-left:0}li[data-box-id]{list-style:none}" /* LE2-9: an automatic menu's items have no <ul> on the canvas; published, every item is in a .eu-list — no bullet either way */ + measureCss(".eu-tokens") + linkHoverCss(".eu-tokens") /* RX4-20 */ }} />
       {/* REDUCED MOTION, FOR THE CANVAS. The published page gets this from `BASE_CSS` via `.eu-root`; the
           builder's canvas carries `.eu-tokens` instead, so the rule is repeated here rather than added to
           that sheet — it ships to every published page, where `.eu-tokens` can never match, and a guard

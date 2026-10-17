@@ -414,6 +414,14 @@ with an empty half beside it. When Maya deletes the middle one of three columns,
 and after a reload. She drags the outer edge of the last column to leave a margin on the right, and that space stays;
 the column beside it does not grow into it.
 
+**Down a column it is the same.** Maya stacks three photos in a Stack and wants a little air under the last one. She
+drags its bottom edge up: the photo gets shorter — cropped, never squashed — and the space she gave up opens below it,
+shown as a shaded band with its size while it is selected. The Stack keeps its height, the space is still there after a
+reload and on every screen of the Preview, and dragging the edge back down closes it first. The edge *between* two photos
+is different: dragging it up makes the photo below taller by exactly as much, and no gap opens between them.
+
+[![A Stack of three photos: the last one's bottom edge dragged up — it is shorter, and the space below it is shaded and labelled 6.6rem](img/guide-column-outer-edge.webp)](img/guide-column-outer-edge.webp)
+
 ### Pages saved before the page grid
 
 Pages created before 4 October 2026 open exactly as they were. The page grid is new pages only; nothing about an

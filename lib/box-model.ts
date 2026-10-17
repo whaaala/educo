@@ -182,6 +182,12 @@ const RUNG_CASCADE: Record<Breakpoint, (OverrideRung | LegacyRung)[]> = {
   phone: ["tablet", "tabletLandscape", "tabletPortrait", "mobile", "phone"],
 };
 
+/** V-5 · the screens a change made at `bp` shows on: `bp` itself, then every narrower screen that inherits it — read from the cascade. */
+export function screensReachedFrom(bp: Breakpoint): Breakpoint[] {
+  if (bp === "base") return [];
+  return (Object.keys(RUNG_CASCADE) as Breakpoint[]).filter((r) => (RUNG_CASCADE[r] as string[]).includes(bp));
+}
+
 /** The rungs in ladder order, narrowest first — the order a mobile-first stylesheet emits them. */
 export const BP_ORDER: Breakpoint[] = ["phone", "tabletPortrait", "tabletLandscape", "base", "wide"];
 

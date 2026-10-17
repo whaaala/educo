@@ -10,6 +10,7 @@
 import { useState, useRef, useId } from "react";
 import { Plus, X, Tags, Rows3, Columns3, Upload, ArrowRight, AlignLeft, AlignCenter, AlignRight, AlignHorizontalSpaceBetween, Layers, Move, BringToFront, SendToBack, ChevronUp, ChevronDown, Italic, Underline, LayoutGrid, Maximize2, Sparkles, Paintbrush, Ruler, Type as TypeIcon, MonitorSmartphone, Bookmark, Lock, LockOpen } from "lucide-react";
 import type { SiteTheme } from "@/lib/site-storage";
+import { perScreenBanner, perScreenDeviceTab } from "@/lib/per-screen-note";
 import type { BoxNode, FlexAlign, FlexJustify, AccPartStyle, Breakpoint, PagerNav, PinScopeWords, SectionFlag } from "@/lib/box-model";
 import { RUNG_LABEL } from "@/lib/educo-ui/layout";
 import { type ItemAction, TOAST_CORNERS, fluidRemRange, isContainer, containerLabel, isFloating, isCssBg, addItem, removeItem, moveItem, updateItem, addChildItem, updateChildItem, removeChildItem, moveChildItem , isMultiItemComponent, hasIntrinsicSize, sizeToCSS, typedLength, GRID_MAX, COLUMN_FRACTIONS, columnFractionOf, canSetColumnFraction, gridColumnsAt, bandEdgeCSS, PIN_ARRIVALS, PIN_ARRIVAL_AFTER, pinArrivalHasEffect, linkLineGap, LINK_GAP_ACROSS, LINK_GAP_ACROSS_PHONE, spaceDefaults, outerDefaults, type SectionPlace, gapOf, importPhoto, refusedMotion, rowFilledByBlocks } from "@/lib/box-model";
@@ -654,7 +655,8 @@ export default function BoxInspector({ section = false, sectionPlace, outerDefau
       {/* At tablet/mobile, changes here only affect that screen (content stays shared). */}
       {breakpoint !== "base" && (
         <div className="rounded-xl border border-amber-300 dark:border-amber-500/30 bg-amber-50 dark:bg-amber-500/10 p-2.5 space-y-1.5">
-          <div className="text-[0.6875rem] font-semibold text-amber-700 dark:text-amber-300 midnight:text-amber-300 purple:text-amber-300 flex items-center gap-1.5"><MonitorSmartphone className="w-3.5 h-3.5" /> Editing {bpLabel} — size &amp; layout only change here, unless a control says “every screen”.</div>
+          <div className="text-[0.6875rem] font-semibold text-amber-700 dark:text-amber-300 midnight:text-amber-300 purple:text-amber-300 flex items-start gap-1.5"><MonitorSmartphone aria-hidden="true" className="w-3.5 h-3.5 mt-px shrink-0" /> <span>{perScreenBanner(breakpoint, bpLabel).text}</span></div>
+          <p className="text-[0.6875rem] text-amber-700 dark:text-amber-300 midnight:text-amber-300 purple:text-amber-300">{perScreenBanner(breakpoint, bpLabel).shared}</p>
           {overridden && onResetOverride && <button onClick={onResetOverride} className="pointer-coarse:min-h-11 inline-flex items-center text-[0.6875rem] text-amber-700 dark:text-amber-300 midnight:text-amber-300 purple:text-amber-300 underline hover:no-underline">Reset {bpLabel.toLowerCase()} changes to default</button>}
         </div>
       )}
@@ -862,6 +864,7 @@ export default function BoxInspector({ section = false, sectionPlace, outerDefau
                           id: a.id, label: a.label, preview: () => <ArrivalPreview fx={a.id} />,
                         })) }]}
                       />
+                      {everyScreen}
                       {node.pinArrival && (
                         <Range title="Takes hold over" value={node.pinArrivalAfter} min={40} max={600} fallback={PIN_ARRIVAL_AFTER}
                           onChange={(n) => onPatch({ pinArrivalAfter: n === PIN_ARRIVAL_AFTER ? undefined : n })} unit="px of scrolling" />
@@ -1274,6 +1277,7 @@ export default function BoxInspector({ section = false, sectionPlace, outerDefau
           </Accordion>
 
           <Accordion title="Outline & effects" icon={Sparkles}>
+            {everyScreen /* LE2-4: an effect is published for every screen, so it is stored for every screen */}
             {/* HOVER & FOCUS (Interactions 1a) — every block and component, existing and future, because it
                 lives on the node. Named effects only: they cannot reach an invalid state, and a fixed list is
                 one the browser invariants can assert every member of. Each also applies on keyboard focus. */}
@@ -1971,7 +1975,7 @@ export default function BoxInspector({ section = false, sectionPlace, outerDefau
       {/* ─────────────── PER-DEVICE ─────────────── */}
       {tab === "device" && (
         <div className="space-y-3">
-          <p className="text-[0.6875rem] text-gray-400 flex items-start gap-1.5"><MonitorSmartphone className="w-3.5 h-3.5 mt-0.5 shrink-0" /> {breakpoint === "base" ? "Switch the screen-size buttons at the top to Tablet or Mobile to fine-tune those sizes. Text and content stay the same everywhere." : `You're editing ${bpLabel}. Size, spacing and layout you change now only apply here — except a control marked “every screen”.`}</p>
+          <p className="text-[0.6875rem] text-gray-500 dark:text-gray-400 midnight:text-cyan-200/80 purple:text-pink-200/80 flex items-start gap-1.5"><MonitorSmartphone aria-hidden="true" className="w-3.5 h-3.5 mt-0.5 shrink-0" /> {breakpoint === "base" ? "Switch the screen-size buttons at the top to Tablet or Mobile to fine-tune those sizes. Text and content stay the same everywhere." : perScreenDeviceTab(breakpoint, bpLabel)}</p>
           <label className="pointer-coarse:min-h-11 flex items-center gap-2 text-xs text-gray-600 dark:text-gray-300"><input type="checkbox" checked={!!node.hidden} onChange={(e) => onPatch({ hidden: e.target.checked || undefined })} /> Hidden {breakpoint === "base" ? "everywhere" : `on ${bpLabel.toLowerCase()}`}</label>
         </div>
       )}
