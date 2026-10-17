@@ -86,14 +86,16 @@ test.describe("the pinning warnings", () => {
     await page.waitForTimeout(600);
     await select(page, "stickyOk");
 
-    // Sticky offers the two edges a vertical scroll can mean.
-    await expect(page.getByRole("button", { name: "Top", exact: true })).toBeVisible();
-    await expect(page.getByRole("button", { name: "Left", exact: true }), "no sides while sticky").toHaveCount(0);
+    // Sticky offers the two edges a vertical scroll can mean. Read in the "Held against" control: Position's Down row
+    // has a "Top" of its own (LE-4), so a page-wide "Top" names two buttons.
+    const held = () => page.getByRole("group", { name: "Held against" });
+    await expect(held().getByRole("button", { name: "Top", exact: true })).toBeVisible();
+    await expect(held().getByRole("button", { name: "Left", exact: true }), "no sides while sticky").toHaveCount(0);
 
     await page.getByRole("button", { name: "Floats on screen option" }).click();
     await page.waitForTimeout(400);
     // Fixed opens the sides and the corners, because all eight mean something against the viewport.
-    await expect(page.getByRole("button", { name: "Left", exact: true }), "fixed offers the sides").toBeVisible();
-    await expect(page.getByRole("button", { name: "↘", exact: true }), "…and the corners").toBeVisible();
+    await expect(held().getByRole("button", { name: "Left", exact: true }), "fixed offers the sides").toBeVisible();
+    await expect(held().getByRole("button", { name: "↘", exact: true }), "…and the corners").toBeVisible();
   });
 });

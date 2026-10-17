@@ -123,8 +123,10 @@ inside.
 |---------|-------------|
 | **Direction**: Top-to-bottom · Side-by-side | A Stack (blocks down the page) or a row (blocks across it). |
 | **Arrange as**: Free arrange · Grid | Free arrange follows Direction; Grid lays the blocks out across *and* down, in columns. |
-| **Position blocks**: Start · Center · End · Spread out · Even gaps | Where the blocks sit along the Direction when there is room to spare — at the start, the middle or the end, spread to both ends, or with even gaps around them. When the blocks already fill the row (two at 50 %, or one set to Fill) there is no room to place them in, and the Inspector says so: *"These blocks fill the row — give one a width to place them."* Set one to **Fit** or a smaller width and they move. |
+| **Position blocks**: Start · Center · End · Spread out · Space around each · Even spacing | Where the blocks sit along the Direction when there is room to spare — at the start, the middle or the end; spread to both ends; the same room on both sides of each block (half at the ends); or the same room everywhere, the ends included. When the blocks already fill the row (two at 50 %, or one set to Fill) there is no room to place them in, and the Inspector says so: *"These blocks fill the row — give one a width to place them."* Set one to **Fit** or a smaller width and they move. |
 | **Let blocks wrap to a new line** | A row that runs out of room carries its blocks onto the next line instead of squeezing them. |
+| **Wrapped lines**: Fill · Top · Middle · Bottom · Spread out · Even spacing (while wrap is on, a side-by-side row) | Where the lines sit when the box is taller than they need — give it a height to see it. Fill shares the height between them. |
+| **Line up**: Fill · Start · Center · End · Text lines up | Where the blocks sit across a stack, or down a row or a grid. **Text lines up** (a row or a grid only) puts their first lines of words on one line — a price and its unit, a heading and its link. |
 | **Content width** (a section of the page): Edge to edge · Centred column | Edge to edge runs the section's content the full width; Centred column puts it on the centred column — the site's **Content width** when one is set (Page grid panel), which a section with no choice of its own follows; the Inspector says which. | Every screen |
 | **Column widths** (a Grid): Share · Fit content · Set width · Between, one per column you see | Share takes a share of what the others leave; Fit content is as wide as what is in it; Set width is exactly the width typed (e.g. `15rem`); Between is at least one width and at most another (`12rem` – `18rem`). Drawn where the Grid shows all its columns; where it shows fewer (a phone) the columns are equal. Needs every block of the Grid to be the same number of columns wide. | Every screen |
 | **Columns** (a Grid): A set number · As many as fit (+ Each at least, e.g. `16rem`) | A set number: the Grid's column count. As many as fit: as many blocks across as fit at that width on every screen, equal and filling the row, one a line on a narrow phone; the count, Column widths and each block's columns wide stand aside. | Every screen |
@@ -156,6 +158,18 @@ height, not "sized by hand"). Within 2px of where an edge started counts as wher
 neighbour across it has nothing left to give: a one-column grid cell with cells after it, the grid's own left edge, a
 column already at the width its words need. Ctrl+Z undoes a drag even if the caret was in the block's words. These
 thresholds (the 2px, the 3rem and 14rem column floors) are set in `config/layout.json` (`resize`, `columns`).
+
+### Position (every block with a parent)
+
+| Control | What it does |
+|---------|-------------|
+| **The nine squares** | A shortcut: top-left … bottom-right sets Across and Down at once. Click the chosen square again to let the block sit where the layout puts it. |
+| **Across**: Auto · Start · Middle · End · Fill | Where the block sits across its parent. Fill stretches it across; along a row it grows into the free room. |
+| **Down**: Auto · Top · Middle · Bottom · Fill | Where the block sits down its parent. Fill stretches it to the parent's height (one card as tall as its row). |
+| **Push to the far end** (a block in a row or a stack) | Moves the block — and the blocks after it — to the far end: a menu's last links, a card's button to the card's foot. It needs room to move into. |
+| **Order** | Where it comes in the sequence, per screen. |
+
+Each applies to the screen you are editing.
 
 ### Placement
 

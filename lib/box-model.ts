@@ -121,8 +121,10 @@ export interface ComponentItem {
 }
 
 export type FlexDir = "row" | "column";
-export type FlexAlign = "start" | "center" | "end" | "stretch";
-export type FlexJustify = "start" | "center" | "end" | "between" | "around";
+export type FlexAlign = "start" | "center" | "end" | "stretch" | "baseline"; // baseline: "Text lines up" (AL-5)
+export type FlexJustify = "start" | "center" | "end" | "between" | "around" | "evenly"; // evenly: "Even spacing" (AC-25)
+/** Where the LINES of a wrapping container sit when it is taller than they need (`align-content`, AC-25); unset = stretch. */
+export type FlexLines = "start" | "center" | "end" | "between" | "evenly" | "stretch";
 
 /**
  * The shape of a band's top or bottom edge.
@@ -214,6 +216,7 @@ export interface BoxNode {
   alignSelf?: "flex-start" | "flex-end" | "center" | "stretch"; // this box's OWN cross-axis alignment (overrides parent align) — set by edge-anchored resize to pin the far edge
   justify?: FlexJustify;    // justify-content (main axis) — flex only
   wrap?: boolean;           // flex-wrap — flex only
+  alignContent?: FlexLines; // where wrapped lines sit — flex only, read only while it wraps (AC-25)
   columns?: number;         // grid: number of equal columns
   /**
    * How the grid's ROWS are measured. Absent (the default) is `Even` — every row shares the height, which is
@@ -379,8 +382,8 @@ export interface BoxNode {
   // top-left to bottom-right. `placeCSS` turns the pair into whatever the parent's engine and direction
   // actually need — which is the whole point, because that mapping is what nobody should have to hold in
   // their head. It supersedes `push` (still read, so no saved page changes).
-  placeX?: "start" | "center" | "end"; // across the parent
-  placeY?: "start" | "center" | "end"; // down the parent
+  placeX?: "start" | "center" | "end" | "stretch"; // across the parent — stretch = Fill (AC-27)
+  placeY?: "start" | "center" | "end" | "stretch"; // down the parent
   clip?: boolean;           // allow sizing SMALLER than content (min:0) and hide overflow; default off = hug content
   baseFont?: number;        // page root only: the global base unit in px (default 10); rendered as rem so it scales with the browser font size (WCAG)
   spaced?: boolean;         // made under SPACE BY DEFAULT (2026-09-30): unset spacing reads `spaceDefaults`; saved pages lack it and keep theirs
@@ -3225,10 +3228,11 @@ export function isClipped(node: BoxNode): boolean {
 
 // ── Flexbox style mapping ────────────────────────────────────────────────────
 
-const ALIGN_CSS: Record<FlexAlign, string> = { start: "flex-start", center: "center", end: "flex-end", stretch: "stretch" };
+const ALIGN_CSS: Record<FlexAlign, string> = { start: "flex-start", center: "center", end: "flex-end", stretch: "stretch", baseline: "baseline" };
 const JUSTIFY_CSS: Record<FlexJustify, string> = {
-  start: "flex-start", center: "center", end: "flex-end", between: "space-between", around: "space-around",
+  start: "flex-start", center: "center", end: "flex-end", between: "space-between", around: "space-around", evenly: "space-evenly",
 };
+const LINES_CSS: Record<FlexLines, string> = { start: "flex-start", center: "center", end: "flex-end", between: "space-between", evenly: "space-evenly", stretch: "stretch" };
 
 // ── Typography that CASCADES (set it on a box, everything inside follows) ────
 //
@@ -6552,7 +6556,8 @@ function containerStyleOf(node: BoxNode, bp: Breakpoint = "base", section: Secti
      * where a line has no spare room the two are identical, and the only case they differ is the one the
      * user is complaining about.
      */
-    alignContent: "stretch",
+    // AC-25 · …unless the person placed the lines ("Wrapped lines"); an unknown stored value is stretch (a trust boundary).
+    alignContent: (node.alignContent && Object.hasOwn(LINES_CSS, node.alignContent) ? LINES_CSS[node.alignContent] : undefined) ?? "stretch",
     ...paddingCSS(node, section),
     minHeight: minH,
   };
@@ -6799,7 +6804,9 @@ export function childStyle(child: BoxNode, parent: BoxNode, bp: Breakpoint = "ba
   // block that grows into it leaves `justify-content` nothing to place: measured HEADED 2026-10-16, a Full-screen Stack set to
   // End kept its blocks at the top with the last one grown 745px. The fill-and-follow grow (and E0-h's last block) is for Start.
   // RX3-19: the same across a ROW — a Side by side is 100% wide once banded, so its width-less blocks grew and End did nothing.
-  const parentPlaces = (parent.justify ?? "start") !== "start";
+  // LE4-1: …and so does a block placed on the main axis by an auto margin (the nine squares, Push to the far end, the legacy
+  // `push`): auto margins share only what grow leaves, so a growing sibling left the push no room at all.
+  const parentPlaces = (parent.justify ?? "start") !== "start" || inFlowKids.some((k) => placesOnMain(k, isRow, bp));
   // A section of a ROW BAND fills its line ONLY when it is alone on it (`aloneOnItsLine`). Granting the grow
   // unconditionally looks equivalent and is not: grow spends leftover space, and narrowing a block is how a
   // line gets leftover space — so every block became un-shrinkable the moment it stopped sharing a full line.
@@ -6969,7 +6976,8 @@ export function childStyle(child: BoxNode, parent: BoxNode, bp: Breakpoint = "ba
   placeInSequence(s, child, bp);
   // LAST, so the nine-point position wins over the older per-axis controls it replaces (`push`, and the
   // hug-to-content `alignSelf` just above): a block told where to sit goes there.
-  Object.assign(s, placeCSS(child, parent));
+  const lifted = !isRow && child.placeY == null ? loneDown(child, bp) : undefined; // LE4-4
+  Object.assign(s, placeCSS(lifted ? { ...child, placeY: lifted } : child, parent));
   // …and pinning after even that — see the matching line in the grid branch above.
   Object.assign(s, pinCSS(child, parent, bp));
   // A line of menu items is spaced by the block it sits in (`linkLineGap`) — the only one of the two you can select.
@@ -7054,6 +7062,36 @@ function gutterCSS(s: CSSProperties, child: BoxNode, parent: BoxNode, bp: Breakp
  * BEFORE this in both the canvas's wrapStyle and the export's styleAt, so a push cleanly overrides a margin
  * instead of the two silently coexisting as different properties that resolve to the same edge.
  */
+/** A block that takes its parent's main-axis free room with an AUTO MARGIN (LE4-1): the nine squares' Start / Middle / End
+ *  on that axis (Push to the far end is its End), or the legacy `push`. Fill grows instead, so it is not one. */
+function placesOnMain(k: BoxNode, isRow: boolean, bp: Breakpoint): boolean {
+  const m = isRow ? k.placeX : (k.placeY ?? loneDown(k, bp));
+  return (!!m && m !== "stretch") || (isRow && !!k.push);
+}
+
+/**
+ * LE4-4 · THE DOWN PLACE OF A BLOCK ALONE IN ITS ROW BAND, read at this rung. `normalizeRowBands` wraps every stacked block in a
+ * band of its own, so its Down acted inside a band exactly as tall as itself — measured HEADED 2026-10-17: a card's button set to
+ * Push to the far end stayed under its words. The BAND is what sits in the stack, so it takes the place (as it takes the order, RX3-6).
+ */
+function loneDown(band: BoxNode, bp: Breakpoint): BoxNode["placeY"] {
+  if (!band.rowBand) return undefined;
+  const kids = (band.children ?? []).filter((k) => !isFloating(k));
+  return kids.length === 1 ? resolveResponsive(kids[0], bp).placeY : undefined;
+}
+
+/** LE-4 · how a block's parent lays it out, AS A PERSON SEES IT: a block alone in its row band sits in the stack around the band
+ *  (`loneDown`), so its Down — and Push to the far end — are read against that stack, never against the band. */
+export function parentFlowOf(root: BoxNode, id: string, bp: Breakpoint = "base"): "row" | "column" | "grid" | undefined {
+  let p = findParent(root, id)?.parent;
+  if (!p) return undefined;
+  const lone = p.rowBand && (p.children ?? []).filter((k) => !isFloating(k)).length === 1;
+  const up = lone ? findParent(root, p.id)?.parent : undefined;
+  if (up && up.layout !== "grid") p = up;
+  if (p.layout === "grid") return "grid";
+  return resolveResponsive(p, bp).direction === "row" ? "row" : "column";
+}
+
 function placeInSequence(s: CSSProperties, child: BoxNode, bp: Breakpoint = "base"): void {
   if (child.order != null) s.order = Math.round(child.order);
   // RX3-6 · A BLOCK ALONE IN ITS ROW BAND is reordered by its BAND. `normalizeRowBands` gives every stacked block a band of its
@@ -7928,7 +7966,7 @@ function arrivalVars(node: BoxNode, fx: PinArrival): string {
       const pad = ownPadBlock(node), h = node.minHeight ?? 0, set = definiteLength(node.height);
       const free = [...(h ? [u(h)] : []), ...(set ? [set] : [])].map((x) => `(${x} - min(max(${x} * 0.6, 3rem), ${x}))`);
       const v = (node.layout === "grid" || node.direction === "row") ? node.align : node.justify;
-      const share = v === "end" ? [1, 0] : v === "center" || v === "between" || v === "around" ? [0.5, 0.5] : [0, 1];
+      const share = v === "end" ? [1, 0] : v === "center" || v === "between" || v === "around" || v === "evenly" ? [0.5, 0.5] : [0, 1];
       const end = (k: number) => {
         const cuts = [...(pad ? [u(pad * 0.6)] : []), ...(k ? free.map((x) => `calc(${x} * ${k})`) : [])];
         return cuts.length > 1 ? `max(${cuts.join(", ")})` : (cuts[0] ?? "0rem");
@@ -8328,7 +8366,7 @@ function edgeClip(node: BoxNode): string | undefined {
 
 
 /** `align-self` spelt the way flexbox wants it. */
-const SELF_CSS = { start: "flex-start", center: "center", end: "flex-end" } as const;
+const SELF_CSS = { start: "flex-start", center: "center", end: "flex-end", stretch: "stretch" } as const;
 
 /**
  * WHERE A BLOCK SITS IN ITS PARENT — nine positions, one control, whatever the parent happens to be.
@@ -8356,13 +8394,20 @@ export function placeCSS(child: BoxNode, parent: BoxNode): CSSProperties {
   if (parent.layout === "grid") {
     if (x) s.justifySelf = x;
     if (y) s.alignSelf = SELF_CSS[y];
+    // AC-27 · Fill gives up a size of its own on that axis, or a set width / height would keep it from filling the cell
+    if (x === "stretch") s.width = "auto";
+    if (y === "stretch") s.height = "auto";
     return s;
   }
   const isRow = (parent.direction ?? "column") === "row";
   const cross = isRow ? y : x;               // the axis the child owns outright
   const main = isRow ? x : y;                // the axis it can only move along with an auto margin
   if (cross) s.alignSelf = SELF_CSS[cross];
-  if (main === "center") { if (isRow) { s.marginLeft = "auto"; s.marginRight = "auto"; } else { s.marginTop = "auto"; s.marginBottom = "auto"; } }
+  // AC-27 · FILL: across the parent's cross axis it stretches, giving up its own size there; along the main axis it grows into
+  // the free room — the same grow a Fill width is (`fillsMain`), so a sibling's auto margin and justify-content still work.
+  if (cross === "stretch") { if (isRow) s.height = "auto"; else s.width = "auto"; }
+  if (main === "stretch") s.flex = "1 1 auto";
+  else if (main === "center") { if (isRow) { s.marginLeft = "auto"; s.marginRight = "auto"; } else { s.marginTop = "auto"; s.marginBottom = "auto"; } }
   else if (main === "end") { if (isRow) s.marginLeft = "auto"; else s.marginTop = "auto"; }
   else if (main === "start") { if (isRow) s.marginRight = "auto"; else s.marginBottom = "auto"; }
   return s;

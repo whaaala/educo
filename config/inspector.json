@@ -64,5 +64,21 @@
     "label": "On every page",
     "on": "One {region} for the whole site — what you change here changes on every page, and a page you add gets it too.",
     "off": "Only on this page. Turn it on to show this {region} on every page (it takes the place of the other pages' own)."
+  },
+  "align": {
+    "$comment": "BATCH LE-4: AC-27 a block's Across / Down (Fill included; the nine squares set both), AC-25 Position blocks + Wrapped lines, AL-5 Text lines up, AL-6 Push to the far end. Keys are the stored values.",
+    "across": "Across", "down": "Down",
+    "acrossChoices": { "auto": "Auto", "start": "Start", "center": "Middle", "end": "End", "stretch": "Fill" },
+    "downChoices": { "auto": "Auto", "start": "Top", "center": "Middle", "end": "Bottom", "stretch": "Fill" },
+    "placeHint": "Across and Down place just this block. Fill stretches it. Along a row or a stack a place takes the free room, so the blocks after it move with it. Auto lets it sit where the layout puts it.",
+    "push": "Push to the far end",
+    "pushHint": "Moves this block — and the blocks after it — to the far end of its row or stack: a menu's last links, a card's button at the bottom. It needs room to move into: a card in a row of cards has it.",
+    "justify": { "start": "Start", "center": "Center", "end": "End", "between": "Spread out", "around": "Space around each", "evenly": "Even spacing" },
+    "lineUp": { "stretch": "Fill", "start": "Start", "center": "Center", "end": "End", "baseline": "Text lines up" },
+    "wrappedLines": "Wrapped lines",
+    "wrappedChoices": { "stretch": "Fill", "start": "Top", "center": "Middle", "end": "Bottom", "between": "Spread out", "evenly": "Even spacing" },
+    "wrappedHint": "Where the lines sit when the box is taller than they need — give it a height to see it.",
+    "inCell": { "stretch": "Fill the cell", "start": "Left", "center": "Center", "end": "Right" },
+    "inRow": { "start": "Left", "center": "Center", "end": "Right", "between": "Spread" }
   }
 }

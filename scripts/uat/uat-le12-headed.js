@@ -12,7 +12,7 @@
 const path = require('path'); const fs = require('fs');
 const H = require('./h.js'); const P = require('./pages.js').helpers; const I = require('./inspector.js');
 const { WIDTHS } = require('./screens.js');
-const X = require('./uat-rx3-headed.js'); const { site, sleep, deselect, at, ins, insText, pvOpen, pvAt, pvClose, chip, choose, field } = X;
+const X = require('./uat-rx3-headed.js'); const { site, sleep, deselect, at, ins, pvOpen, pvAt, pvClose, chip, choose, field } = X;
 const LAYOUT = require('../../config/layout.json'); const WORDS = require('../../config/inspector.json');
 const S = WORDS.sizes;
 // the spacing scale, read from lib/educo-ui/tokens.ts's SPACE (stored px = rem × 16) — never re-typed here
