@@ -29,3 +29,27 @@ for (const preset of ["Desktop (1280px)", "Tablet (768px)", "Mobile (375px)"]) {
     await expect(page.locator('[data-box-id="a"]')).toHaveCount(1);
   });
 }
+
+/**
+ * LE8-6 (found by the LE-8 HEADED pass, through the UI): after ticking a checkbox in the Inspector ("On every page"), Escape
+ * did nothing — the canvas treated a focused checkbox as text being typed. A checkbox is a CONTROL (Z1-j): it keeps the keys
+ * it uses (Space, Delete), and Escape steps out of the block as it does after a button. Seeded only to pin the UI repro.
+ */
+test("after ticking an Inspector checkbox, Escape steps out of the block — and Delete does not delete it", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  const hdr = { ...stack("h"), tag: "header", shared: true } as unknown as BoxNode;
+  await seedSite(page, { homeId: "p1", pages: [{ id: "p1", name: "Home", path: "/", root: { id: "root", type: "container", direction: "column", children: [hdr, stack("b")] } as unknown as BoxNode }] });
+  await page.waitForSelector('[data-box-id="h"]', { timeout: 30000 });
+  const box = (await page.locator('[data-box-id="h"]').boundingBox())!;
+  await page.mouse.click(box.x + box.width * 0.8, box.y + box.height * 0.8);
+  const sel = () => page.evaluate(() => document.querySelector(".outline-indigo-500")?.getAttribute("data-box-id") ?? null);
+  await expect.poll(sel, { timeout: 3000 }).toBe("h");
+  const meaning = page.getByRole("button", { name: /^\s*Meaning\s*$/ }).first();
+  if ((await meaning.getAttribute("aria-expanded")) === "false") await meaning.click();
+  const cb = page.getByRole("checkbox", { name: "On every page" });
+  await cb.click(); await expect(cb).not.toBeChecked(); // the focus is now on the checkbox
+  await page.keyboard.press("Delete");
+  await expect(page.locator('[data-box-id="h"]'), "Delete on a focused checkbox deleted the block").toHaveCount(1);
+  await page.keyboard.press("Escape");
+  await expect.poll(sel, { timeout: 3000, message: "Escape with the checkbox focused did not step out" }).toBeNull();
+});

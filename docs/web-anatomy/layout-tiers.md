@@ -28,10 +28,10 @@ in what we already have (RX3-1 … RX3-15) — twelve are fixed in RX-3, now (th
 | ID | Capability | Why Must | Ours (measured) | Where |
 |---|---|---|---|---|
 | PS-1 | header · main · footer regions | landmarks, WCAG | HAS | — |
-| **PS-2** | **one header and one footer shared by every page — edit once** | **all 6 builders**, Carrd too; 90 % of sites are multi-page | **GAP** | **NEW → LE-8** |
-| PS-4 | several pages, one navigation | 5 / 6 builders; median 9 pages a site | PARTLY (menu copied by hand) | closes with PS-2 → LE-8 |
+| **PS-2** | **one header and one footer shared by every page — edit once** | **all 6 builders**, Carrd too; 90 % of sites are multi-page | **GAP → HAS** (LE-8, 2026-10-17: "On every page", HEADED 63 / 0) | **NEW → LE-8 — DONE** |
+| PS-4 | several pages, one navigation | 5 / 6 builders; median 9 pages a site | PARTLY → HAS (the menu written once, LE-8 2026-10-17) | closed with PS-2 in LE-8 — DONE |
 | PS-8 | the menu collapses on a phone | every site with more than ~4 links | — | components → CP-1 (Hamburger / overlay menu) |
-| **PS-9** | **a short page's footer sits at the bottom of the screen** | a footer floating mid-screen looks broken | **GAP** (619 px short at 375) | **NEW → LE-8** (RX3-15) |
+| **PS-9** | **a short page's footer sits at the bottom of the screen** | a footer floating mid-screen looks broken | **GAP → HAS** (LE-8, 2026-10-17: the footer on the screen's bottom at all 72 presets) | **NEW → LE-8 (RX3-15) — DONE** |
 | SB-1 · SB-2 · SB-4 | bands stacked; background edge to edge with centred content; content placed down a band | 6 / 6 builders | HAS · HAS · PARTLY (RX3-5) | RX3-5 fixed in RX-3 |
 | RC-1 · RC-2 · RC-4 · RC-5 · RC-6 | side by side; shares by dragging; stacks on a phone; gaps; nesting | 6 / 6 · 5 / 6; rows of 2 on 88 % of pages | HAS | — |
 | GR-1 | a grid that wraps to fewer columns | 55 % of pages use grid | HAS | — |

@@ -509,6 +509,8 @@ export interface BoxNode {
   level?: number;
   /** A name for a landmark ("Main menu", "School news") — announced by screen readers. */
   landmarkName?: string;
+  /** PS-2 (BATCH LE-8): a Page header / Page footer shown "On every page" — edited once, the same on every page (`lib/box-site.ts`). */
+  shared?: boolean;
   src?: string;           // image / video URL (data URL for uploads)
   // What the image SAYS, for someone who cannot see it — and for search engines. The export hardcoded alt="",
   // which tells a screen reader the picture is decorative and to skip it, so every photo a school added was
@@ -2264,7 +2266,7 @@ export function paletteClickSlot(root: BoxNode, selectedId: string | null): { pa
   if (intoSelection) return { parentId: selected.id, index: selected.children?.length ?? 0 };
   const band = here?.parent.rowBand ? findParent(root, here.parent.id) : null;
   const at = band ?? here;
-  return at ? { parentId: at.parent.id, index: at.index + 1 } : { parentId: root.id, index: root.children?.length ?? 0 };
+  return at ? { parentId: at.parent.id, index: at.index + 1 } : { parentId: root.id, index: pageEnd(root) };
 }
 
 /**
@@ -2273,10 +2275,29 @@ export function paletteClickSlot(root: BoxNode, selectedId: string | null): { pa
  * a line of its own; Inside is the end of the selection when it is a container (After otherwise); Start / End are the page's.
  */
 export type InsertWhere = "before" | "after" | "inside" | "start" | "end";
+/** PS-2 (BATCH LE-8) · the block that gives a top-level child its region: itself when it has a meaning, else the one block its band wraps. */
+export function regionBlock(n: BoxNode): BoxNode | undefined {
+  if (n.tag) return n;
+  const kids = n.children ?? [];
+  return n.rowBand && kids.length === 1 && kids[0].tag ? kids[0] : undefined;
+}
+/** The page's header region (its leading Page header children) or footer region (its trailing Page footer children): [start, end). */
+export function regionSpan(root: BoxNode, which: "header" | "footer"): [number, number] {
+  const top = root.children ?? [];
+  const is = (n: BoxNode) => regionBlock(n)?.tag === which;
+  if (which === "header") { let e = 0; while (e < top.length && is(top[e])) e++; return [0, e]; }
+  let s = top.length; while (s > 0 && is(top[s - 1])) s--;
+  return [s, top.length];
+}
+/** LE8-4 · where "the end of the page" is: above its footer (the very end when it has none). */
+export const pageEnd = (root: BoxNode): number => regionSpan(root, "footer")[0];
+
 export function insertSlot(root: BoxNode, selectedId: string | null, where: InsertWhere): { parentId: string; index: number } {
   const selected = selectedId ? findBox(root, selectedId) : null;
-  if (where === "start") return { parentId: root.id, index: 0 };
-  if (!selected || where === "end") return { parentId: root.id, index: root.children?.length ?? 0 };
+  // LE8-4: the page's START is below its header and its END above its footer — a block added "at the end" of a page with a
+  // (shared) footer went under it, and the footer stopped being the page's footer on every page
+  if (where === "start") return { parentId: root.id, index: regionSpan(root, "header")[1] };
+  if (!selected || where === "end") return { parentId: root.id, index: pageEnd(root) };
   if (where === "inside" && isContainer(selected)) return { parentId: selected.id, index: selected.children?.length ?? 0 };
   const here = findParent(root, selected.id);
   const at = (here?.parent.rowBand ? findParent(root, here.parent.id) : null) ?? here;

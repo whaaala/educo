@@ -11,7 +11,7 @@
 import { measureCss, linkHoverCss } from "@/lib/educo-ui/base";
 import { columnFloorRem, dividerThickness, borderLen, videoSizing, gridLeftoverAt,HAND_FLOOR_REM, REFLOW_FLOOR_REM, isPageRow, rowNarrowsAt, LIST_ITEM_GAP, linesAt, pageRowSlot, restForDrag, setFreeInset, slideFreeAt, tabletPlaces }from "@/lib/box-model";
 import { gapPatch, snapSpace, spacePatch, stepSpace, type SpaceSide } from "@/lib/box-model";
-import { resolvePage } from "@/lib/semantics";
+import { resolvePage, pageFillCss, footerPushCss } from "@/lib/semantics";
 import { Fragment, useCallback, useEffect, useLayoutEffect, useMemo, useReducer, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { Link2, Plus, ChevronUp, ChevronDown, Copy, Scissors, ClipboardPaste, Trash2, Upload, GripVertical, MoreVertical, Rows3, Columns3, Grid3x3, Type, Heading as HeadingIcon, MousePointerClick, Image as ImageIcon, Layers, BringToFront, SendToBack, Video as VideoIcon, Sparkles, Minus as MinusIcon, List as ListIcon, Code2, Star, Lock, LockOpen, Ungroup, ArrowUp, ArrowDown, ArrowLeft, ArrowRight, ArrowUpToLine, ArrowDownToLine } from "lucide-react";
@@ -19,13 +19,13 @@ import type { SiteTheme } from "@/lib/site-storage";
 import {
   type BoxNode, type BoxType, frameCss, spanAt, setSpan,
   containerStyle, childStyle, marginCSS, leafPaddingCSS, ownSidePadVars, outerSpaceCSS, pageBandInset, pagePinCover, sectionContent, sizeToCSS, u, baseUnit, floatingReserve, floatStacksOnMobile, createContainer, createElement, createComponent,
-  updateBox, deleteBox, insertBox, moveBlock, canMoveBlock, moveAxis, duplicateBox, moveBox, cloneBox, findParent, isAncestor, isContainer, containerLabel, widthPct, stackWithBlock, fitBand, PILL, blockTypography,
+  updateBox, deleteBox, insertBox, pageEnd, moveBlock, canMoveBlock, moveAxis, duplicateBox, moveBox, cloneBox, findParent, isAncestor, isContainer, containerLabel, widthPct, stackWithBlock, fitBand, PILL, blockTypography,
   isFloating, floatBox, unfloatBox, groupBoxes, ungroupBoxes, bringToFront, sendToBack, bringForward, sendBackward, packRowLines, allocateLine, type LineFollower,
   shouldTakeMirrorBox, mirrorFlushSides, edgeSwipeSides, hostSizedFor, type MirrorBox, type MirrorChase, fadedPaint, boxOpacity, backgroundCss, treePaintLayerCss, radiusCSS, isClipped, SHADOW_CSS, videoEmbedSrc, sanitizeCssDeclarations, expandScopedCss, ACCORDION_CSS_PARTS, itemOverrideCss, itemHasOverride, itemNumberVars, richBody, componentTextCss, componentBoxCss, bgShowThroughCss, resizeTopEdge, blockContainmentCss, alertToastCss, treeHasToast, treeHasFixedHold, accordionClasses, bandClasses, advancedCssStyle, alertActionsHTML, hugsContent, itemFloatContextCss, COMPONENT_ITEM_SEL, clampContentScale, MIN_CONTENT_SCALE, isMultiItemComponent, comfortableWidth, remLen, rootFontPx, isDefiniteLen, addItemAfter, duplicateItem, duplicateChildItem, removeItem, removeChildItem, moveItem, moveChildItem, updateItem, updateChildItem, ALERT_SEVERITY_ICON, alertPartInline, alertIconInline, collectAlertItemStyles,
   type Breakpoint, resolveResponsive, updateBoxResponsive, treePinArrivalCss, floatHoldCSS, canvasFixedStyle, capturesFixed, imageSizing, fillsRowsAnywhere, fillHostOf, importPhoto, treeItemEffectsCss, itemNeedsClass, floatZIndex, gridPlacementAt, masonryMeasureAttr, masonryMeasurePass, mirrorMeasuresNow, baseUnitParts, pinStackMarker, pinStackGroupMarker, pinStackPass, pinArrivalMarker, pinArrivalPass, isPager, pagerStripCss, pagerNavHTML, selectionChain, textLen, typoRole, typoRootVars, typoCascadeCss, bandEdgeCSS, LINK_COLOR_CSS, treeGridQueryCss, TYPE_UNIT_PROPERTY_CSS,
 } from "@/lib/box-model";
 import { ICON_SET } from "./icons";
-import { PortalMenu, MenuItem, MenuHeader, MenuSep, modalOpen } from "./ui";
+import { PortalMenu, MenuItem, MenuHeader, MenuSep, modalOpen, NON_TEXT_INPUTS } from "./ui";
 import GridLayoutMenu, { type MenuAnchor } from "./GridLayoutMenu";
 import GallerySetupMenu from "./GallerySetupMenu";
 import { blockForKind, nodeForPhotos, photoGallery, PHOTO_SETUP, type GalleryPhoto } from "@/lib/box-presets";
@@ -1275,14 +1275,14 @@ export default function BoxCanvas({
     if (isFloating(node)) {
       node.left = round1(Math.min(92, (node.left ?? 0) + 3));
       node.top = round1(Math.min(92, (node.top ?? 0) + 3));
-      onChange(insertBox(rootRef.current, rootRef.current.id, rootRef.current.children?.length ?? 0, node));
+      onChange(insertBox(rootRef.current, rootRef.current.id, pageEnd(rootRef.current), node)); // LE8-4: above the footer
       select(node.id);
       return;
     }
     const target = id ? findByIdLocal(root, id) : null;
     if (target && isContainer(target)) onChange(insertBox(root, target.id, target.children?.length ?? 0, node));
-    else if (target) { const p = findParent(root, target.id); onChange(p ? insertBox(root, p.parent.id, p.index + 1, node) : insertBox(root, root.id, root.children?.length ?? 0, node)); }
-    else onChange(insertBox(root, root.id, root.children?.length ?? 0, node));
+    else if (target) { const p = findParent(root, target.id); onChange(p ? insertBox(root, p.parent.id, p.index + 1, node) : insertBox(root, root.id, pageEnd(root), node)); }
+    else onChange(insertBox(root, root.id, pageEnd(root), node)); // LE8-4: above the footer
     select(node.id);
   };
 
@@ -1487,7 +1487,8 @@ export default function BoxCanvas({
     if (!editable) return;
     const onKey = (e: KeyboardEvent) => {
       const ae = document.activeElement as HTMLElement | null;
-      if (ae && (ae.tagName === "INPUT" || ae.tagName === "TEXTAREA" || ae.isContentEditable)) return; // never hijack text editing
+      // never hijack text editing — a checkbox, a slider or a radio holds no text: it is a CONTROL, below (LE8-6: Escape after ticking one did nothing)
+      if (ae && ((ae.tagName === "INPUT" && !NON_TEXT_INPUTS.has((ae as HTMLInputElement).type)) || ae.tagName === "TEXTAREA" || ae.isContentEditable)) return;
       if (modalOpen()) return; // …nor act on the page under an open dialog (E3-10)
       // …nor a CONTROL outside the page that has the focus (Z1-j). With a block selected, Enter on a focused toolbar
       // button edited the block's words instead of pressing the button (the zoom menu, Preview, Export never opened by
@@ -1497,7 +1498,7 @@ export default function BoxCanvas({
       // Alt + an arrow is no control's key (G3-3): it reaches the page even when the last-clicked toolbar button kept the focus.
       if (["Enter", " ", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", "Delete", "Backspace", "Home", "End"].includes(e.key) && !(e.altKey && e.key.startsWith("Arrow"))
         && ae && ae !== document.body && !canvasRef.current?.contains(ae)
-        && ae.closest("button, a[href], select, [role=button], [role=option], [role=menuitem], [role=menuitemradio], [role=listbox], [role=tab], [role=radio], [role=checkbox], [role=switch], [role=slider]")) return;
+        && ae.closest("button, a[href], select, input, [role=button], [role=option], [role=menuitem], [role=menuitemradio], [role=listbox], [role=tab], [role=radio], [role=checkbox], [role=switch], [role=slider]")) return;
       const ids = selectedIds ?? (selectedId != null ? [selectedId] : []);
       const id = ids[0] ?? null; // the primary (for single-target ops: nudge, reorder, layer, float)
       const mod = e.ctrlKey || e.metaKey;
@@ -3824,6 +3825,7 @@ export default function BoxCanvas({
       // not this wrapper — so the wrapper stays transparent and the controls act on the pill/card/quote directly.
       ...(selfPaint ? {} : decorStyle(node)), // border, shadow, per-corner radius, rotation
       ...(floating ? {} : marginCSS(node)), // margins are a FLOW concept; a floating box uses left/top instead
+      ...(!floating && parent?.id === root.id ? footerPushCss(root, node) : {}), // PS-9: a short page's footer at the bottom — the export writes the same
       ...leafPaddingCSS(node, section), // inner spacing on a plain element (c-23) — the export writes the same
       ...ownSidePadVars(node), // RX3-28: its own left / right, for a Centred column's one-section rule — the export writes the same
       // SEE-THROUGH: only a WHOLE-BOX fade reaches this wrapper. A box that is fading just its own paint
@@ -3854,7 +3856,8 @@ export default function BoxCanvas({
              * is nothing, never a size imposed on a page that has content.
              */
             width: "100%",
-            minHeight: Math.max((node.children?.length ?? 0) ? 0 : minHeight, floatingReserve(node, breakpoint)),
+            // PS-9: a page that ends with a footer is one SCREEN tall — here the canvas view (`--canvas-h`, LE2-3), as the export's `100svh`
+            minHeight: pageFillCss(node).minHeight ? canvasScreen(pageFillCss(node).minHeight) : Math.max((node.children?.length ?? 0) ? 0 : minHeight, floatingReserve(node, breakpoint)),
             ["--box-u" as string]: baseUnit(node.baseFont ?? 10),
             ["--box-t" as string]: baseUnit(node.baseFont ?? 10), // the TYPE unit, computed here at the page root (#133)
             // The role defaults everything below inherits — the SAME set the export writes on the page root,

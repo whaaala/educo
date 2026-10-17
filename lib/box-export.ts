@@ -15,7 +15,7 @@ import { PILL, dividerThickness, borderLen, videoSizing, blockTypography,pinArri
 } from "@/lib/box-model";
 import { isRegistryComponent, renderComponent, componentScripts } from "@/lib/educo-ui/registry";
 import { iconSvg } from "@/lib/educo-ui/icon-svg";
-import { resolvePage, type PageSemantics } from "@/lib/semantics";
+import { resolvePage, pageFillCss, footerPushCss, type PageSemantics } from "@/lib/semantics";
 import { PAGE_Z_CEILING } from "@/lib/educo-ui/stacking";
 import type { BoxSite } from "@/lib/box-site";
 import type { SiteTheme } from "@/lib/site-storage";
@@ -455,6 +455,7 @@ function styleAt(node: BoxNode, rawParent: BoxNode | null, bp: Breakpoint, theme
     maxWidth: "100%", // never wider than the container → no horizontal scrollbar on a phone
     ...(selfPaint ? {} : decorCss(r)), // a component/button's border/radius/shadow style the block element, not this wrapper
     ...(floating ? {} : marginCSS(r)),
+    ...(!floating && onPage && rawParent ? footerPushCss(rawParent, r) : {}), // PS-9: a short page's footer at the bottom — the canvas writes the same
     ...leafPaddingCSS(r, section), // inner spacing on a plain element (c-23) — the canvas writes the same
     ...ownSidePadVars(r), // RX3-28: its own left / right, for a Centred column's one-section rule — the canvas writes the same
     opacity: !isComp ? boxOpacity(r) : undefined, // paint-only fades live in the colours (fadedPaint), not here
@@ -465,7 +466,7 @@ function styleAt(node: BoxNode, rawParent: BoxNode | null, bp: Breakpoint, theme
       ? { position: "relative", width: "100%", height: "auto", minHeight: "auto", zIndex: "auto" } // full-width flow, grows with content
       // The PAGE ROOT publishes the theme's typography as the role defaults everything below inherits — which
       // is what lets a block stop hard-coding them and a section start overriding them.
-      : parent ? childStyle(r, parent, bp, hostSized, grand) : { width: "100%", ["--box-u" as string]: baseUnit(r.baseFont ?? 10), ["--box-t" as string]: baseUnit(r.baseFont ?? 10), ...typoRootVars(theme) }),
+      : parent ? childStyle(r, parent, bp, hostSized, grand) : { width: "100%", ...pageFillCss(r), ["--box-u" as string]: baseUnit(r.baseFont ?? 10), ["--box-t" as string]: baseUnit(r.baseFont ?? 10), ...typoRootVars(theme) }),
     // A CONTAINER hands its typography down to everything inside it (see typoCascadeCss).
     ...(isContainer(r) ? typoCascadeCss(r) : {}),
     ...(selfPaint ? {} : bgCss(r)), // background styles the block element (component/button), not this wrapper

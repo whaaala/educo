@@ -19,8 +19,8 @@ import { resolvePage, pageCheck, corrections, type SiteFonts } from "@/lib/seman
 import { familyOf } from "@/lib/educo-ui/fonts";
 
 /** How many things need the user — for the toolbar badge. */
-export function pageCheckCount(root: BoxNode, fonts?: SiteFonts): number {
-  return pageCheck(root, undefined, fonts).length;
+export function pageCheckCount(root: BoxNode, fonts?: SiteFonts, pageIds?: ReadonlySet<string>): number {
+  return pageCheck(root, undefined, fonts, pageIds).length;
 }
 
 type Measured = { id: string; kind: SpaceKind; rungs: RungName[] };
@@ -73,8 +73,10 @@ const SPACE_WORDS: Record<SpaceKind, (name: string, screens: string) => string> 
   "words-broken": (b, on) => `This ${b} is too narrow for its words on ${on} — a word breaks in the middle. Give it more room there, or let the blocks stack.`,
 };
 
-export default function PageCheck({ root, fonts, html, isOpen, onClose, onShow, onPatch, onSideSpace }: {
+export default function PageCheck({ root, fonts, pageIds, html, isOpen, onClose, onShow, onPatch, onSideSpace }: {
   root: BoxNode;
+  /** The site's page ids — a link to a page not among them was deleted (LE8-3). */
+  pageIds?: ReadonlySet<string>;
   /** The PUBLISHED page (`renderSitePage`) — measured at every screen size for space and narrow columns (LE-1). */
   html?: string;
   /** The site's heading + body fonts — what a block without a font of its own is drawn in (A-1b). */
@@ -88,7 +90,7 @@ export default function PageCheck({ root, fonts, html, isOpen, onClose, onShow, 
   onSideSpace?: (value: number) => void;
 }) {
   const sem = resolvePage(root);
-  const issues = pageCheck(root, sem, fonts);
+  const issues = pageCheck(root, sem, fonts, pageIds);
   const fixed = corrections(sem);
   const measured = useMeasuredSpace(html, isOpen);
   // a block the tree already flags at the page edge (with its one-click fix) is not listed twice

@@ -1,4 +1,5 @@
 {
   "$comment": "THE PAGE CHECK, AS DATA (RULE CFG). quoteWords: how many of a block's first words a measured item quotes, so two blocks of one kind can be told apart (LE1-7).",
-  "quoteWords": 4
+  "quoteWords": 4,
+  "pageGone": "This {block} goes to a page that was deleted, so it takes visitors nowhere. Choose where it goes under Link, or delete it."
 }

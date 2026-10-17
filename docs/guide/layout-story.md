@@ -467,6 +467,20 @@ underneath. Three things she can rely on:
 **She can let go of a block anywhere the marker shows — even over the toolbar.** While anything is being dragged,
 the toolbar and the handles step aside for the pointer, so the block lands where the dashed marker said it would.
 
+## 9½. "The same top and bottom on every page"
+
+Amaka builds the school's header on the home page — the school's name and four links: Home, News, Term dates, Contact.
+She sets **What is this block?** to **Page header**, and **On every page** ticks itself. She opens *News*: the header is
+already there. She renames "Term dates" to "Calendar" while she is on *Contact*, and it reads "Calendar" on every page —
+she wrote the menu once. A footer with the address and phone number is made the same way.
+
+The *Contact* page is short — a map and two lines. On a phone, and on the staffroom's big monitor, its footer still sits
+on the bottom edge of the screen, not half-way up. On the long *News* page the footer simply follows the last story.
+
+**The rules, in plain words:** a Page header or Page footer is on every page unless you untick **On every page**; an edit
+anywhere is an edit everywhere; delete it once and it is gone everywhere (Ctrl+Z brings it back); a new page arrives with
+it; a block added "at the end" goes above the footer; a page that ends with a footer is at least one screen tall.
+
 ## 10. What is published
 
 Everything above becomes proper HTML5: `header`, `nav`, `main`, `aside`, `section`, `footer`; one `h1`; heading levels

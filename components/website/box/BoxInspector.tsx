@@ -34,6 +34,8 @@ import CompactField from "@/components/shared/CompactField";
 import { rowsOf, rowsToMinHeight } from "@/lib/page-grid";
 import CompactSelect from "@/components/shared/CompactSelect";
 import { CONTAINER_TAGS, type SemanticTag } from "@/lib/semantics";
+import INSPECTOR from "@/config/inspector.json";
+const SHARED_REGION = INSPECTOR.sharedRegion; // PS-2: the "On every page" words (RULE CFG)
 import CompactTextarea from "@/components/shared/CompactTextarea";
 
 const label = "text-[0.6875rem] font-semibold text-muted";
@@ -700,11 +702,18 @@ export default function BoxInspector({ section = false, sectionPlace, outerDefau
                   <>
                     <CompactSelect label="What is this block?" ariaLabel="What is this block"
                       value={node.tag ?? "div"}
-                      onChange={(v) => onPatch({ tag: v === "div" ? undefined : (v as SemanticTag) })}
+                      onChange={(v) => onPatch({ tag: v === "div" ? undefined : (v as SemanticTag), shared: v === "header" || v === "footer" ? true : undefined })} // PS-2: a header / footer is on every page unless you say otherwise
                       options={CONTAINER_TAGS.map((t) => ({ value: t.tag, label: t.label }))} />
                     <p className="text-[0.625rem] text-gray-500 dark:text-gray-400 midnight:text-slate-400 purple:text-purple-200">
                       {cur.hint}. Published as <code>&lt;{cur.tag}&gt;</code>; a screen reader announces: {cur.announces}.
                     </p>
+                    {(node.tag === "header" || node.tag === "footer") && (
+                      <label className="pointer-coarse:min-h-11 flex items-start gap-2 text-xs text-gray-600 dark:text-gray-300 midnight:text-slate-300 purple:text-purple-200">
+                        <input type="checkbox" className="mt-0.5" checked={!!node.shared} aria-label={SHARED_REGION.label}
+                          onChange={(e) => onPatch({ shared: e.target.checked || undefined })} />
+                        <span><span className="font-medium text-ink">{SHARED_REGION.label}</span> — {(node.shared ? SHARED_REGION.on : SHARED_REGION.off).replace(/\{region\}/g, node.tag)}</span>
+                      </label>
+                    )}
                     {named && (
                       <CompactField label="Name (read out by screen readers)" ariaLabel="Name for screen readers"
                         value={node.landmarkName ?? ""} placeholder={node.tag === "nav" ? "e.g. Main menu" : "e.g. School news"}
