@@ -15,6 +15,8 @@ import { type PageGridSettings, PAGE_GRID_DEFAULT, PAGE_GRID_LIMITS, columnsAt }
 import Slider from "@/components/shared/Slider";
 import type { SpaceShadeKind } from "@/components/website/box/BoxCanvas";
 import { CHROME_Z } from "@/lib/educo-ui/stacking";
+import { CONTENT_WIDTH } from "@/lib/educo-ui/layout";
+import INSPECTOR from "@/config/inspector.json";
 import { Segmented } from "./ui";
 
 /**
@@ -22,6 +24,7 @@ import { Segmented } from "./ui";
  * doubles from a phone to a wide screen — read as pixels (value / 16) the old default 23 said "1.44rem" while it ran 1 → 2 rem.
  */
 const remRange = fluidRemRange; // the engine's one way a label says a fluid value (G3c-10)
+const CW = INSPECTOR.widths; // the words (RULE CFG)
 
 const SCREENS: { value: Breakpoint; label: string }[] = [
   { value: "phone", label: "Phone" }, { value: "tabletPortrait", label: "Tablet" }, { value: "tabletLandscape", label: "Laptop" },
@@ -141,7 +144,9 @@ export default function PageGridPanel({ grid, bare = false, ownPage, breakpoint,
 
   return (
     <div ref={ref} role="dialog" aria-label="Page grid" onKeyDown={(e) => { if (e.key === "Escape") { e.stopPropagation(); onClose(); } }}
-      style={top !== null ? { zIndex: CHROME_Z.menu, position: "fixed", top, right: "0.5rem", marginTop: 0 } : shift !== null ? { zIndex: CHROME_Z.menu, left: shift, right: "auto" } : { zIndex: CHROME_Z.menu }}
+      // LE3-5 (seen on the tablet, 1280 × 800): taller than the screen, its last controls (Content width, its own grid, Reset) were off
+      // the bottom with no way to reach them — it stops at the screen's foot and scrolls
+      style={top !== null ? { zIndex: CHROME_Z.menu, position: "fixed", top, right: "0.5rem", marginTop: 0, maxHeight: `calc(100dvh - ${top}px - 0.5rem)`, overflowY: "auto" } : shift !== null ? { zIndex: CHROME_Z.menu, left: shift, right: "auto" } : { zIndex: CHROME_Z.menu }}
       className="absolute top-full right-0 mt-2 w-[min(20rem,calc(100vw-2rem))] rounded-xl border border-line bg-surface text-ink shadow-2xl p-3 space-y-3">
       <div className="flex items-baseline justify-between gap-2">
         <h2 className="text-sm font-semibold">Page grid</h2>
@@ -180,6 +185,19 @@ export default function PageGridPanel({ grid, bare = false, ownPage, breakpoint,
           <button type="button" className={link} disabled={!g.set} aria-label={`${g.label} — ${g.set ? "back to default" : "at the default"}`} onClick={() => setGap(g.key, undefined)}>{g.set ? "Back to default" : "At the default"}</button>
         </div>
       ))}
+      {/* AC-9 (BATCH LE-3) · ONE content width for every page: Full width (as before) or a centred width every section sits on — the
+          backgrounds still run edge to edge, and a section can still be set Edge to edge in the Inspector. Bounds: config/layout.json. */}
+      <div className="space-y-1">
+        <span className="text-xs text-ink">{CW.contentWidth}</span>
+        <Segmented ariaLabel={CW.contentWidth} full value={grid.contentWidth !== undefined ? "centred" : "full"}
+          onChange={(v) => onChange({ ...grid, contentWidth: v === "centred" ? grid.contentWidth ?? CONTENT_WIDTH.startRem : undefined }, "pagegrid:content")}
+          options={[{ value: "full", label: CW.contentChoices.full }, { value: "centred", label: CW.contentChoices.centred }]} />
+        {grid.contentWidth !== undefined && (
+          <Slider label={CW.contentWidth} value={grid.contentWidth} min={CONTENT_WIDTH.minRem} max={CONTENT_WIDTH.maxRem} step={CONTENT_WIDTH.stepRem}
+            onChange={(n) => onChange({ ...grid, contentWidth: n }, "pagegrid:content")} formatValue={(x) => `${x}rem`} />
+        )}
+        <p className="text-[0.625rem] text-muted">{grid.contentWidth !== undefined ? CW.contentHint : CW.contentFullHint}</p>
+      </div>
       <p className="text-[0.625rem] text-muted">Changing a number moves every block with it. Half stays half; nothing is lost, and Undo puts it back. Each block&apos;s own spacing stays in the Inspector.</p>
 
       <label className="flex items-center justify-between gap-2 text-xs border-t border-line pt-2.5">

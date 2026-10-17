@@ -351,6 +351,7 @@ export interface BoxNode {
   height?: string;          // "auto" | "fill" | "<n>px"
   ratio?: string;           // a video's proportion, "16 / 9": with no height its height follows its width (RX3-2)
   minHeight?: number;       // px
+  colSizes?: (string | null | undefined)[]; // a Grid's own column widths, one per column (AC-30): unset = a share, "fit" = its content, a length = that width (`gridColSizes`)
   colSpan?: number;         // grid child: columns to span
   rowSpan?: number;         // grid child: rows to span
   // ── the twelve-column grid (Phase 2) ──
@@ -391,6 +392,8 @@ export interface BoxNode {
   // every band did before this existed. "contained" keeps the background full-bleed and insets only the
   // content — a full-width colour or photo with the text still on the measure, which is most school sections.
   sectionWidth?: "band" | "contained";
+  // …and with the SITE's content width set (Page grid → Content width, AC-9) an unset band follows it — sits on that column — and
+  // "band" is stored on purpose, the one section that opts out and runs edge to edge (LE-3; Wix's per-section opt-out).
   /**
    * How tall this box is, measured against the SCREEN rather than its contents — the full-screen hero, and
    * the split-screen that fills the window. Phase 2 of the Layout System.
@@ -2081,9 +2084,9 @@ export function alertToastCss(node: BoxNode, scope: string): string {
  * body and button each came out marked as a page-wide band. Only a band whose parent is the page root is a
  * section, and only a section can be told to run edge to edge or sit on the measure.
  */
-export function bandClasses(node: BoxNode, isPageSection = false): string {
+export function bandClasses(node: BoxNode, isPageSection = false, siteMeasure = false): string {
   if (!node.rowBand || !isPageSection) return "";
-  if (node.sectionWidth !== "contained") return "eu-band";
+  if (!sectionContained(node, siteMeasure)) return "eu-band";
   // L6-2: ONE plain section — nothing floating beside it, no card look (border, rounded corners, shadow) — takes the measure as its own
   // padding, so its colour runs edge to edge (`layoutCss`). A card stays a card on the measure.
   const kids = node.children ?? [];
@@ -3044,12 +3047,27 @@ export function alignInRowOf(root: BoxNode, id: string, bp: Breakpoint = "base")
 export function setSectionWidth(root: BoxNode, id: string, value: "band" | "contained"): BoxNode {
   const band = pageBandOf(root, id);
   if (!band) return root;
-  return updateBox(root, band.id, { sectionWidth: value === "contained" ? "contained" : undefined });
+  // stored as chosen (LE-3): "Edge to edge" must outlast a site content width set later; with none, it is what unset drew anyway
+  return updateBox(root, band.id, { sectionWidth: value });
 }
 
-/** What the section at `id` is currently set to — "band" unless its page-level band says otherwise. */
+/** What the section at `id` is DRAWN as — its band's own choice, or the site's content width when it has none (AC-9). */
 export function sectionWidthOf(root: BoxNode, id: string): "band" | "contained" {
-  return pageBandOf(root, id)?.sectionWidth === "contained" ? "contained" : "band";
+  const band = pageBandOf(root, id);
+  return band && sectionContained(band, hasSiteMeasure(root)) ? "contained" : "band";
+}
+/** AC-9 · does this page carry the site's one content width (Page grid → Content width)? */
+export const hasSiteMeasure = (root: BoxNode | null | undefined): boolean => !!root?.pageGrid && !!root.gridSpace?.measure;
+/** A section band sits on the column: set so, or — with no choice of its own — because the site has a content width (LE-3). */
+const sectionContained = (band: BoxNode, siteMeasure: boolean): boolean => band.sectionWidth === "contained" || (band.sectionWidth === undefined && siteMeasure);
+/**
+ * AC-9 · THE SITE'S CONTENT WIDTH, ON THE PAGE ROOT — `containerStyle`, so the canvas and the export publish the same: the measure every
+ * centred section reads, at every screen (one width, so every page lines up), and a floor of 0 — the page's own side space is the only
+ * space at the sides below it (`pageBandInset` hands it on as `--bx-side-l` / `-r`). Nothing on a page without one.
+ */
+function pageMeasure(root: BoxNode): CSSProperties {
+  if (!hasSiteMeasure(root)) return {};
+  return { ["--eu-measure" as string]: `${root.gridSpace!.measure}rem`, ["--eu-measure-floor" as string]: "0rem" } as CSSProperties;
 }
 
 /** The PAGE-LEVEL band directly holding `id`, or null. Bands exist inside components too; those are not it. */
@@ -3383,6 +3401,37 @@ function acrossAt(node: BoxNode, cols: number, bp: Breakpoint): number {
   const spans = kids.map((c) => Math.max(1, Math.round(resolveResponsive(c, bp).colSpan ?? 1)));
   const span = spans.length ? Math.min(...spans) : 1;
   return Math.max(1, Math.floor(cols / span));
+}
+
+/**
+ * LE3-3 · THE COLUMNS A PERSON SEES. A Grid from the palette is twelve tracks with each cell spanning several ("3 across" = 3 cells of 4),
+ * so its columns are the tracks ÷ the cells' span — when every cell spans the same and none is placed by hand. Null for an uneven grid
+ * (8 + 4…), whose columns are not one width each. `seen` columns of `span` tracks.
+ */
+export function gridSeenColumns(node: BoxNode): { seen: number; span: number } | null {
+  const kids = (node.children ?? []).filter((k) => !isFloating(k)), cols = gridColumns(node);
+  if (!kids.length || kids.some((k) => k.colStart != null)) return null;
+  const span = Math.max(1, Math.round(kids[0].colSpan ?? 1));
+  return kids.every((k) => Math.max(1, Math.round(k.colSpan ?? 1)) === span) && cols % span === 0 ? { seen: cols / span, span } : null;
+}
+/**
+ * AC-30 · A GRID'S OWN COLUMN WIDTHS (`colSizes`, one per column a person SEES, `gridSeenColumns`): a length is that width, "fit" the width
+ * of what is in it (`auto` — as wide as its content while the shares take the rest), anything else a share. A seen column is `span` tracks:
+ * a set width is its first track less the gaps inside the column, the rest `0px`, so the column is exactly the width (LE3-3); a share is
+ * `span` shares. Drawn only where the Grid shows ALL its columns: where it narrows to fewer they are equal again (`gridQueryCss`, the
+ * phone's one column), and a masonry gallery keeps its equal ruler. Null = the plain equal template.
+ */
+export function gridColSizes(node: BoxNode, bp: Breakpoint = "base"): string | null {
+  const sizes = node.colSizes, seen = gridSeenColumns(node);
+  if (!sizes?.length || !seen || isMasonry(node, bp) || gridColumnsAt(node, bp) !== gridColumns(node)) return null;
+  const inner = seen.span - 1, gap = u(gapOf(node).x), rest = Array(inner).fill("0px");
+  const tracks = Array.from({ length: seen.seen }, (_, i) => {
+    if (sizes[i] === "fit") return ["auto", ...rest];
+    const len = setLengthCss(sizes[i]);
+    if (len) return [inner ? `max(0px, calc(${len} - ${inner} * ${gap}))` : len, ...rest];
+    return Array(seen.span).fill("minmax(0, 1fr)");
+  }).flat();
+  return tracks.every((t) => t === "minmax(0, 1fr)") ? null : tracks.join(" ");
 }
 
 export function gridColumnsAt(node: BoxNode, bp: Breakpoint = "base"): number {
@@ -3769,18 +3818,20 @@ export function treeGridQueryCss(root: BoxNode, scopeFor: (id: string) => string
 export function rowNarrowsAt(band: BoxNode, onPage = false): { ids: string[]; steps: { lines: number[]; below: number }[] }[] | null {
   if (!band.rowBand || (band.direction ?? "column") !== "row" || isMenuLine(band)) return null;
   const gridRow = gridBandOwnsGutter(band);
-  const kids = inDrawnOrder(rowColumnsAt(band, "base"), "base"); const lines = packRowLines(kids);
+  const setRow = setWidthRow(band); // AC-30: a set width beside shares is ONE line, whatever the widths add up to
+  const kids = inDrawnOrder(rowColumnsAt(band, "base"), "base"); const lines = setRow ? kids.map(() => 0) : packRowLines(kids);
   const gap = (bandGutter(band) / 10) * baseUnitParts().hiRem;
   const out: { ids: string[]; steps: { lines: number[]; below: number }[] }[] = [];
   for (let line = 0; line <= (lines.at(-1) ?? -1); line++) {
     const cols = kids.filter((_, i) => lines[i] === line); const n = cols.length;
     // a row of the page is a grid, which never wraps a block that is too narrow: every line of it steps (G-3b (4))
-    if (n < 2 || (!(onPage && isPageRow(band)) && cols.filter(holdsWords).length < 2)) continue;
+    if (n < 2 || (!((onPage && isPageRow(band)) || setRow) && cols.filter(holdsWords).length < 2)) continue;
     const floorOf = (k: BoxNode) => { if (!gridRow || !isContainer(k) || k.clip || isEmptyBox(k)) return 0; const f = columnFloorRem(band, k, "base"); return f === HAND_FLOOR_REM ? 0 : f; };
     const words = cols.map((k) => Math.max(longestWordRem(k), floorOf(k))); const word = Math.max(...words); if (!word && !gridRow) continue;
     const share = (k: BoxNode) => (widthPct(k.width) || 100 / n) / 100;
     let needs = (k: number) => k * word + (k - 1) * gap;
     let atStart = Math.max(...cols.map((k, i) => words[i] / share(k))) + (n - 1) * gap;
+    let minFor = (i: number, _w: number) => words[i], gapFor = (_w: number) => gap, edgeFor = (_w: number) => 0; // AC-30 reads them
     if (gridRow) {
       /**
        * G-1 #14 — AT THE SIZE THE WORDS REALLY HAVE THERE. The type is fluid: the unit is `clamp(lo, remHalf + cqwHalf·cqw,
@@ -3806,6 +3857,7 @@ export function rowNarrowsAt(band: BoxNode, onPage = false): { ids: string[]; st
       const solve = (f: (w: number) => number, from: number) => { let w = from; for (let i = 0; i < 12; i++) w = f(w); return w; };
       needs = (k: number) => solve((w) => k * Math.max(...cols.map((_, i) => minAt(i, w))) + (k - 1) * gapAt(w) + edgeAt(w), k * word + (k - 1) * gap);
       atStart = solve((w) => Math.max(...cols.map((k, i) => minAt(i, w) / share(k))) + (n - 1) * gapAt(w) + edgeAt(w), atStart);
+      minFor = minAt; gapFor = gapAt; edgeFor = edgeAt;
       /**
        * G-3d (3), D3-31 (the user 2026-10-06: a floor for ANY block) — ON A PHONE NO BLOCK'S COLUMNS ARE NARROWER THAN 10rem. Words
        * alone gave a photo or a sidebar no floor: ~100px of photo beside a paragraph at 375. Measured on the block's AREA (its
@@ -3816,6 +3868,19 @@ export function rowNarrowsAt(band: BoxNode, onPage = false): { ids: string[]; st
       const byWords = needs, startByWords = atStart;
       needs = (k: number) => Math.max(byWords(k), area(k * BLOCK_FLOOR_REM));
       atStart = Math.max(startByWords, area(Math.max(...cols.map((k) => BLOCK_FLOOR_REM / share(k)))));
+    }
+    if (setRow) {
+      /**
+       * AC-30 · ONE STEP, STRAIGHT TO ONE A LINE: side by side while the set widths plus every shared block at its floor (its words, and
+       * never under the block floor) fit — each shared block gets its weight's part of what the set widths leave — else each a line.
+       */
+      const fixed = cols.reduce((t, k) => t + (setLengthRem(k.width) ?? 0), 0), w8 = setRowWeights(band, "base");
+      const shared = cols.map((k, i) => ({ k, i })).filter(({ k }) => setLengthRem(k.width) === null);
+      const P = shared.reduce((t, { k }) => t + (w8.get(k.id) ?? 1), 0) || 1;
+      const at = (w: number) => fixed + (n - 1) * gapFor(w) + edgeFor(w) + Math.max(0, ...shared.map(({ k, i }) => (Math.max(minFor(i, w), BLOCK_FLOOR_REM) * P) / (w8.get(k.id) ?? 1)));
+      let w = fixed + n * BLOCK_FLOOR_REM; for (let it = 0; it < 12; it++) w = at(w);
+      out.push({ ids: cols.map((k) => k.id), steps: [{ lines: cols.map(() => 1), below: +w.toFixed(4) }] });
+      continue;
     }
     const steps: { lines: number[]; below: number }[] = [];
     let wider = n; // the count across the line had before this step
@@ -5420,7 +5485,7 @@ const unitRemAt = (w: number) => { const { loRem, hiRem, remHalf, cqwHalf } = ba
 export const frameRemAt = (node: BoxNode, w: number): number => (node.gridSpace?.gutter !== undefined ? (node.gridSpace.gutter / 10) * unitRemAt(w) : isBare(node) ? 0 : Math.min(1.25, Math.max(1, 1.6 * unitRemAt(w))));
 
 /** A page grid's own side space (`gutter`) and gap between blocks (`gap`), set in its panel (G-2) — stored fluid units. */
-export interface GridSpace { gutter?: number; gap?: number; gapX?: number; gapY?: number; cols?: Partial<Record<Breakpoint, number>> } // `gapX` / `gapY`: across / down when they differ (G-3b (5)); `cols`: columns per screen, when not the default (G-3b)
+export interface GridSpace { gutter?: number; gap?: number; gapX?: number; gapY?: number; cols?: Partial<Record<Breakpoint, number>>; measure?: number } // `gapX` / `gapY`: across / down when they differ (G-3b (5)); `cols`: columns per screen, when not the default (G-3b); `measure`: the site's content width, rem (AC-9)
 
 /**
  * NO SPACE UNLESS YOU ADD IT (the user, 2026-10-15 — reverses SPACE BY DEFAULT): a block made from now on (`bare`) has no
@@ -5446,7 +5511,7 @@ const spaceFor = (node: BoxNode): Record<keyof typeof SPACE_DEFAULT, number> => 
 /** The side space a page's sections keep by default — what the layout guides draw as padding (G-2). Stored fluid units. */
 export const pageSideSpace = (root: BoxNode): number => spaceFor({ onPageGrid: !!root.pageGrid, gridSpace: root.gridSpace } as BoxNode).gutter;
 
-const sameSpace = (a?: GridSpace, b?: GridSpace) => a?.gutter === b?.gutter && a?.gap === b?.gap && a?.gapX === b?.gapX && a?.gapY === b?.gapY && JSON.stringify(a?.cols) === JSON.stringify(b?.cols);
+const sameSpace = (a?: GridSpace, b?: GridSpace) => a?.gutter === b?.gutter && a?.gap === b?.gap && a?.gapX === b?.gapX && a?.gapY === b?.gapY && a?.measure === b?.measure && JSON.stringify(a?.cols) === JSON.stringify(b?.cols);
 
 /** A page-grid page with the side space and gap `space` (`undefined` = the defaults) — the root keeps it for the blocks
  *  dropped later, and every block takes it now. Returns the SAME tree when nothing changes. */
@@ -5579,7 +5644,13 @@ export function outerSpaceCSS(node: BoxNode, place: SectionPlace | false | undef
  * in it has its Outer spacing across set (0 included).
  * ponytail: a coloured section sharing a band with a component is inset with it.
  */
-export function pageBandInset(band: BoxNode, onPage: boolean): CSSProperties {
+export function pageBandInset(band: BoxNode, onPage: boolean, siteMeasure = false): CSSProperties {
+  const own = pageBandInsetOf(band, onPage);
+  // LE-3 (AC-9): on the site's column the centred padding replaces this one (`layoutCss`), so the side space rides on top of it
+  if (!siteMeasure || !onPage || !sectionContained(band, true)) return own;
+  return { ...own, ["--bx-side-l" as string]: own.paddingLeft ?? "0rem", ["--bx-side-r" as string]: own.paddingRight ?? "0rem" } as CSSProperties;
+}
+function pageBandInsetOf(band: BoxNode, onPage: boolean): CSSProperties {
   if (!onPage || !band.rowBand || isPageRow(band)) return {}; // a row of the page: the side space is its blocks' (G-3b)
   // A menu line on the page is ONE section: the gutter at its ends and the section space above and below (F1-d).
   const S = spaceFor(band);
@@ -5745,7 +5816,47 @@ export function rowSide(band: BoxNode, side: "left" | "right", bp: Breakpoint = 
  * on the page). Saved pages and rows inside a block (`pageRow` unset) keep the flex band.
  */
 export function isPageRow(band: BoxNode | null | undefined): boolean {
-  return !!band?.pageRow && gridBandOwnsGutter(band) && (band.direction ?? "column") === "row" && !isMenuLine(band);
+  return !!band?.pageRow && gridBandOwnsGutter(band) && (band.direction ?? "column") === "row" && !isMenuLine(band) && !holdsSetWidth(band);
+}
+
+/**
+ * AC-30 (BATCH LE-3) · A WIDTH THAT IS A LENGTH — "20rem", "15em", "240px" (stored px read as rem) — as the CSS it is drawn with, or null for
+ * a share, Fit, Full, or anything that is not a positive length (a stored value is a trust boundary).
+ */
+export function setLengthCss(token: string | null | undefined): string | null {
+  const m = /^(\d*\.?\d+)(rem|em|px)$/i.exec(String(token ?? "").trim());
+  if (!m || !(Number(m[1]) > 0)) return null;
+  return m[2].toLowerCase() === "px" ? remLen(Number(m[1])) : `${Number(m[1])}${m[2].toLowerCase()}`;
+}
+/** …and in rem, for the fit rule's arithmetic (an `em` read at the page's 1rem). */
+const setLengthRem = (token: string | null | undefined): number | null => { const c = setLengthCss(token); return c ? parseFloat(c) : null; };
+/** Does any block of the row have a SET width, on any screen? */
+function holdsSetWidth(band: BoxNode): boolean {
+  return (band.children ?? []).some((k) => [k, ...Object.values(k.responsive ?? {})].some((r) => !!setLengthCss((r as Partial<BoxNode> | null)?.width)));
+}
+/**
+ * AC-30 · A ROW OF THE PAGE WITH A COLUMN OF A SET WIDTH (a 20rem sidebar, a logo) beside columns that share the rest — the real fix behind
+ * L6-4, where a typed rem was drawn as an equal share. A set width is not on the page's lines, so the row is drawn as a flex row instead
+ * (`isPageRow` false): the set block exactly its width, every other block a share of what it leaves (`setRowFlex`), and the whole row
+ * one a line where the shares' floors stop fitting (`rowNarrowsAt`). Its side space is the row's own (`pageBandInset`), as for any row
+ * that is not on the page's lines.
+ */
+export const setWidthRow = (band: BoxNode | null | undefined): boolean => !!band?.pageRow && (band.direction ?? "column") === "row" && !isMenuLine(band) && holdsSetWidth(band);
+/** What each block of a set-width row takes of the rest on `bp`: its share (%); a block with no share an equal part of what the
+ *  shares leave, as on the page's lines (`rowLinesAt`) — or, when they leave nothing, the shares' average. */
+function setRowWeights(band: BoxNode, bp: Breakpoint): Map<string, number> {
+  const kids = (band.children ?? []).map((k) => resolveResponsive(k, bp)).filter((k) => !setLengthCss(k.width) && !isFloating(k));
+  const pct = (k: BoxNode) => (k.width?.trim().endsWith("%") ? widthPct(k.width) : null);
+  const shares = kids.map(pct).filter((n): n is number => n !== null), sum = shares.reduce((a, b) => a + b, 0), free = kids.length - shares.length;
+  const rest = free && 100 - sum > 0 ? (100 - sum) / free : shares.length ? sum / shares.length : 1;
+  return new Map(kids.map((k) => [k.id, +(pct(k) ?? rest).toFixed(4)]));
+}
+/** The flex a block of a set-width row is drawn with on `bp` (`childStyle`): `0 0 <width>` for the set one, `<share> 1 0%` for the rest. */
+function setRowFlex(band: BoxNode, child: BoxNode, bp: Breakpoint): string | null {
+  const len = setLengthCss(child.width);
+  if (len) return `0 0 ${len}`;
+  const w = setRowWeights(band, bp).get(child.id);
+  return w === undefined ? null : `${w} 1 0%`;
 }
 
 /** The page grid's columns on `bp` for a row of the page — the page's own count when the site set one (`gridSpace.cols`). */
@@ -6257,7 +6368,7 @@ export function rowFilledByBlocks(node: BoxNode): boolean {
 
 export function containerStyle(node: BoxNode, bp: Breakpoint = "base", section: SectionFlag = false): CSSProperties {
   const scheme = node.bgImage ? null : bandScheme(node.background);
-  const s = { ...containerStyleOf(node, bp, section), ...pageFrameEnds(node) };
+  const s = { ...containerStyleOf(node, bp, section), ...pageFrameEnds(node), ...pageMeasure(node) };
   const lines = listLinesGap(node);
   return { ...s, ...(lines ?? {}), ...((scheme?.vars ?? {}) as CSSProperties) };
 }
@@ -6279,7 +6390,7 @@ function containerStyleOf(node: BoxNode, bp: Breakpoint = "base", section: Secti
     return {
       display: "grid",
       // Per RUNG, so a twelve-column row is twelve columns on a desktop and one on a phone (`gridColumnsAt`).
-      gridTemplateColumns: `repeat(${gridColumnsAt(node, bp)}, minmax(0, 1fr))`,
+      gridTemplateColumns: gridColSizes(node, bp) ?? `repeat(${gridColumnsAt(node, bp)}, minmax(0, 1fr))`, // AC-30: each column its own width
       // The down-gap on a masonry grid is spent as EMPTY ROW UNITS by each cell's span, not as `row-gap` —
       // the number the user set still means exactly what it says, but it lands once per cell instead of once
       // per track, where an estimate of the fluid unit could compound (see `masonrySpanUnits`). Both longhands
@@ -6644,6 +6755,7 @@ export function childStyle(child: BoxNode, parent: BoxNode, bp: Breakpoint = "ba
    * a hair never wraps a neighbour, while a word that is GENUINELY too wide still wraps as before. A margin the user set
    * on that column is theirs and is left alone.
    */
+  if (isRow && setWidthRow(parent)) { const f = setRowFlex(parent, child, bp); if (f) s.flex = f; } // AC-30
   if (parent.rowBand && isRow && lastOnItsLine(parent, child) && child.marginRight == null && child.margin == null && (parent.children ?? []).some((k) => k.widthByHand)) s.marginRight = "-0.0625rem";
   // A box can pin its OWN cross-axis alignment (used by edge-anchored resize to keep the far edge fixed
   // even when the parent centres/stretches its children).

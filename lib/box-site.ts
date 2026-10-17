@@ -169,7 +169,8 @@ export function setRegionShown(site: BoxSite, pageId: string, which: Region, sho
 /** Add a page (unique slug) — it arrives with the shared header and footer; returns the new site + the new page id. */
 export function addPage(site: BoxSite, name: string, root: BoxNode): { site: BoxSite; id: string } {
   const page = makeBoxPage(name, withSharedRegions(site, root), uniquePath(site, name));
-  return { site: { ...site, pages: [...site.pages, page] }, id: page.id };
+  // LE3-1: …and on the site's page grid at once — its side space, gaps, columns and content width (it arrived without them)
+  return { site: applyPageGrid({ ...site, pages: [...site.pages, page] }), id: page.id };
 }
 
 /** Duplicate a page (fresh id, "… copy" name, unique slug). */

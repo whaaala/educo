@@ -172,8 +172,9 @@ describe("band or contained — the control that makes the layer live", () => {
   // left 3 / right 0.5 drew 96 / 96 at 1280. The measure is the floor, the person's spacing is added on top; nothing set, as before.
   it("RX3-28: one section in a Centred column keeps its own left / right inner spacing on top of the measure", () => {
     const rule = stripComments(LAYOUT_CSS).match(/\.eu-band--contained\.eu-band--one\s*>\s*\*\s*\{([^}]*)\}/)?.[1] ?? "";
-    expect(rule).toMatch(/padding-left:\s*calc\(max\(var\(--eu-gutter-page\),[^;]*\)\s*\+\s*var\(--bx-pad-l,\s*0rem\)\)\s*!important/);
-    expect(rule).toMatch(/padding-right:\s*calc\(max\(var\(--eu-gutter-page\),[^;]*\)\s*\+\s*var\(--bx-pad-r,\s*0rem\)\)\s*!important/);
+    // the floor is the page gutter unless the SITE's content width sets it (LE-3: --eu-measure-floor); the band's side space rides on top too
+    expect(rule).toMatch(/padding-left:\s*calc\(max\(var\(--eu-measure-floor,\s*var\(--eu-gutter-page\)\),[^;]*\)\s*\+\s*var\(--bx-pad-l,\s*0rem\)\s*\+\s*var\(--bx-side-l,\s*0rem\)\)\s*!important/);
+    expect(rule).toMatch(/padding-right:\s*calc\(max\(var\(--eu-measure-floor,\s*var\(--eu-gutter-page\)\),[^;]*\)\s*\+\s*var\(--bx-pad-r,\s*0rem\)\s*\+\s*var\(--bx-side-r,\s*0rem\)\)\s*!important/);
     const css = (extra: Record<string, unknown>) => renderSiteFiles({ homeId: "p1", pages: [{ id: "p1", name: "Home", path: "home",
       root: { id: "r1", type: "container", direction: "column", children: [
         { id: "b1", type: "container", direction: "row", rowBand: true, sectionWidth: "contained", children: [
@@ -209,8 +210,9 @@ describe("band or contained — the control that makes the layer live", () => {
     const after = setSectionWidth(tree(), "sec1", "contained");
     expect(sectionWidthOf(after, "sec1")).toBe("contained");
     expect(findBox(after, "band1")!.sectionWidth).toBe("contained");
-    // …and back again, leaving no field behind rather than storing the default.
-    expect(findBox(setSectionWidth(after, "sec1", "band"), "band1")!.sectionWidth).toBeUndefined();
+    // …and back again — STORED (LE-3): "Edge to edge" must outlast a site content width set later; without one it draws as unset did
+    expect(findBox(setSectionWidth(after, "sec1", "band"), "band1")!.sectionWidth).toBe("band");
+    expect(sectionWidthOf(setSectionWidth(after, "sec1", "band"), "sec1")).toBe("band");
   });
 
   it("a section inside a COMPONENT has no such choice, and cannot rewrite a page section", () => {
@@ -231,13 +233,13 @@ describe("band or contained — the control that makes the layer live", () => {
 
   it("a contained band insets with padding, so its background still spans the page", () => {
     // An inner wrapper would have become the band's only flex child and collapsed the row of sections in it.
-    expect(LAYOUT_CSS).toMatch(/\.eu-band--contained\s*\{\s*padding-inline:/);
+    expect(LAYOUT_CSS).toMatch(/\.eu-band--contained\s*\{\s*padding-left:[^}]*padding-right:/);
     expect(LAYOUT_CSS).not.toMatch(/\.eu-band--contained\s*\{[^}]*max-width/);
   });
 
   it("keeps the page gutter on a screen narrower than the measure", () => {
     // Without the max(), the padding goes negative on a phone and the text touches the edge of the screen.
-    expect(LAYOUT_CSS).toMatch(/\.eu-band--contained[^}]*max\(var\(--eu-gutter-page\)/);
+    expect(LAYOUT_CSS).toMatch(/\.eu-band--contained[^}]*max\(var\(--eu-measure-floor, var\(--eu-gutter-page\)\)/);
   });
 });
 

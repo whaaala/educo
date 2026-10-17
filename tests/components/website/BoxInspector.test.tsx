@@ -1002,16 +1002,17 @@ describe("G-3b (2) · placing on the page's lines in the Size section", () => {
     rerender(<BoxInspector node={{ ...h }} theme={DEFAULT_THEME} onPatch={vi.fn()} />); // a new object, as every canvas commit makes
     expect(screen.getByLabelText("Text size"), "the same element: not thrown away and rebuilt").toBe(slider);
   });
-  it("L6-4: on a row of the page a typed rem width says it is drawn as a share — off the page grid it says nothing", () => {
-    const say = /On the page grid a width is a share of the columns/;
-    renderFor(createElement("image", { id: "i", width: "3.5rem" }), { pageLines: lines, onSetLines: vi.fn(), onSetFreeInset: vi.fn() });
+  it("L6-4 → AC-30: on a row of the page a Custom width says a % shares and a set width stays — off the page grid it says nothing", () => {
+    const say = /A set width \(e\.g\. 20rem\) stays that wide/;
+    renderFor(createElement("image", { id: "i", width: "25%" }), { pageLines: lines, onSetLines: vi.fn(), onSetFreeInset: vi.fn() });
     expect(screen.getByText(say)).toBeInTheDocument();
     cleanup();
-    renderFor(createElement("image", { id: "i", width: "25%" }), { pageLines: lines, onSetLines: vi.fn(), onSetFreeInset: vi.fn() });
-    expect(screen.queryByText(say), "a % is what the page grid draws").toBeNull();
+    // LE3-2: a set width takes the row off the page's lines (no `pageLines` any more) — the hint stays, it is still a row of the page
+    renderFor(createElement("image", { id: "i", width: "20rem" }), { rowOfPage: true });
+    expect(screen.getByText(say), "still on a row of the page").toBeInTheDocument();
     cleanup();
     renderFor(createElement("image", { id: "i", width: "3.5rem" }));
-    expect(screen.queryByText(say), "in a flex row a rem width is drawn as typed").toBeNull();
+    expect(screen.queryByText(say), "in a flex row inside a block a rem width is drawn as typed").toBeNull();
   });
   it("G-3b (3): the free margin is shown, changed per side, and put back on the lines in one go", () => {
     const onSetFreeInset = vi.fn();

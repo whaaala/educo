@@ -21,7 +21,7 @@ import {
   containerStyle, childStyle, marginCSS, leafPaddingCSS, ownSidePadVars, outerSpaceCSS, pageBandInset, pagePinCover, sectionContent, sizeToCSS, u, baseUnit, floatingReserve, floatStacksOnMobile, createContainer, createElement, createComponent,
   updateBox, deleteBox, insertBox, pageEnd, moveBlock, canMoveBlock, moveAxis, duplicateBox, moveBox, cloneBox, findParent, isAncestor, isContainer, containerLabel, widthPct, stackWithBlock, fitBand, PILL, blockTypography,
   isFloating, floatBox, unfloatBox, groupBoxes, ungroupBoxes, bringToFront, sendToBack, bringForward, sendBackward, packRowLines, allocateLine, type LineFollower,
-  shouldTakeMirrorBox, mirrorFlushSides, edgeSwipeSides, hostSizedFor, type MirrorBox, type MirrorChase, fadedPaint, boxOpacity, backgroundCss, treePaintLayerCss, radiusCSS, isClipped, SHADOW_CSS, videoEmbedSrc, sanitizeCssDeclarations, expandScopedCss, ACCORDION_CSS_PARTS, itemOverrideCss, itemHasOverride, itemNumberVars, richBody, componentTextCss, componentBoxCss, bgShowThroughCss, resizeTopEdge, blockContainmentCss, alertToastCss, treeHasToast, treeHasFixedHold, accordionClasses, bandClasses, advancedCssStyle, alertActionsHTML, hugsContent, itemFloatContextCss, COMPONENT_ITEM_SEL, clampContentScale, MIN_CONTENT_SCALE, isMultiItemComponent, comfortableWidth, remLen, rootFontPx, isDefiniteLen, addItemAfter, duplicateItem, duplicateChildItem, removeItem, removeChildItem, moveItem, moveChildItem, updateItem, updateChildItem, ALERT_SEVERITY_ICON, alertPartInline, alertIconInline, collectAlertItemStyles,
+  shouldTakeMirrorBox, mirrorFlushSides, edgeSwipeSides, hostSizedFor, type MirrorBox, type MirrorChase, fadedPaint, boxOpacity, backgroundCss, treePaintLayerCss, radiusCSS, isClipped, SHADOW_CSS, videoEmbedSrc, sanitizeCssDeclarations, expandScopedCss, ACCORDION_CSS_PARTS, itemOverrideCss, itemHasOverride, itemNumberVars, richBody, componentTextCss, componentBoxCss, bgShowThroughCss, resizeTopEdge, blockContainmentCss, alertToastCss, treeHasToast, treeHasFixedHold, accordionClasses, bandClasses, hasSiteMeasure, advancedCssStyle, alertActionsHTML, hugsContent, itemFloatContextCss, COMPONENT_ITEM_SEL, clampContentScale, MIN_CONTENT_SCALE, isMultiItemComponent, comfortableWidth, remLen, rootFontPx, isDefiniteLen, addItemAfter, duplicateItem, duplicateChildItem, removeItem, removeChildItem, moveItem, moveChildItem, updateItem, updateChildItem, ALERT_SEVERITY_ICON, alertPartInline, alertIconInline, collectAlertItemStyles,
   type Breakpoint, resolveResponsive, updateBoxResponsive, treePinArrivalCss, floatHoldCSS, canvasFixedStyle, capturesFixed, imageSizing, fillsRowsAnywhere, fillHostOf, importPhoto, treeItemEffectsCss, itemNeedsClass, floatZIndex, gridPlacementAt, masonryMeasureAttr, masonryMeasurePass, mirrorMeasuresNow, baseUnitParts, pinStackMarker, pinStackGroupMarker, pinStackPass, pinArrivalMarker, pinArrivalPass, headerMarkers, headerPass, underOverHeaderPad, isPager, pagerStripCss, pagerNavHTML, selectionChain, textLen, typoRole, typoRootVars, typoCascadeCss, bandEdgeCSS, LINK_COLOR_CSS, treeGridQueryCss, TYPE_UNIT_PROPERTY_CSS,
 } from "@/lib/box-model";
 import { ICON_SET } from "./icons";
@@ -496,7 +496,7 @@ export interface LayoutGuidesView { cols: number; rowStepRem: number; rows: bool
  * the side space (`frameCss`, the page's frame as the sections draw it, G-3c) is shaded INSIDE them as the default margin of what
  * sits there. Each column shows its middle line faintly.
  */
-function LayoutGuides({ view, side, unit, color }: { view: LayoutGuidesView; side: string; unit: string; color: string }) {
+function LayoutGuides({ view, side, unit, color, measured = false }: { view: LayoutGuidesView; side: string; unit: string; color: string; measured?: boolean }) {
   const strip = `color-mix(in oklch, ${color} 14%, transparent)`;
   return (
     <div aria-hidden="true" data-layout-guides={view.cols} data-row-step={view.rows ? view.rowStepRem : undefined} style={{
@@ -504,6 +504,8 @@ function LayoutGuides({ view, side, unit, color }: { view: LayoutGuidesView; sid
       ["--box-u" as string]: unit,
       position: "absolute", inset: 0, pointerEvents: "none", zIndex: CHROME_Z.guides, display: "grid",
       gridTemplateColumns: gridTemplate(view.cols), boxSizing: "border-box",
+      // AC-9: with the site's content width the columns are the column's — drawn inside it, as every centred section is (`layoutCss`)
+      ...(measured ? { paddingInline: "max(0rem, (100% - var(--eu-measure, 100%)) / 2)", backgroundOrigin: "content-box", backgroundClip: "content-box" } : {}),
       backgroundImage: `linear-gradient(to right, ${strip} 0 ${side}, transparent ${side} calc(100% - ${side}), ${strip} calc(100% - ${side}))`,
     }}>
       {Array.from({ length: view.cols }, (_, i) => <div key={i} data-guide-col />)}
@@ -4023,7 +4025,7 @@ export default function BoxCanvas({
             // LE2-3 · "FULL SCREEN" IS THE SCREEN BEING EDITED, NOT THE EDITOR'S WINDOW. `100svh` inside the canvas is the window's height
             // (measured: 860 at Mobile in a 1366 × 860 editor, over a canvas view of 804) — the view, `--canvas-h`, is the screen here.
             ...(node.screenHeight ? { minHeight: canvasScreen(containerStyle(node, breakpoint, section).minHeight) } : {}),
-            ...pageBandInset(node, parent?.id === root.id), // S2-f — the export writes the same
+            ...pageBandInset(node, parent?.id === root.id, hasSiteMeasure(root)), // S2-f — the export writes the same
             // `relative` so the out-of-flow hint is measured against THIS box and not some ancestor. Only
             // when the box is empty, so it can never become a containing block for a child that floats.
             ...(editable && kids.length === 0 ? { position: "relative" as const } : {}),
@@ -4051,7 +4053,7 @@ export default function BoxCanvas({
           // `bandClasses` is the SAME function the export calls, so a contained band is contained here too —
           // canvas = export for layout, not only for styling. Only a band directly under the page root is a
           // SECTION: normalizeRowBands also makes bands inside every component, and they are not sections.
-          className={`${bandClasses(node, parent === root)} ${editable ? "transition-shadow" : ""} ${isSel ? "outline outline-2 outline-indigo-500 outline-offset-[-2px]" : (editable && !node.rowBand && !isRoot) ? "hover:outline hover:outline-1 hover:outline-indigo-300/70 hover:outline-offset-[-1px]" : ""}`}
+          className={`${bandClasses(node, parent === root, hasSiteMeasure(root))} ${editable ? "transition-shadow" : ""} ${isSel ? "outline outline-2 outline-indigo-500 outline-offset-[-2px]" : (editable && !node.rowBand && !isRoot) ? "hover:outline hover:outline-1 hover:outline-indigo-300/70 hover:outline-offset-[-1px]" : ""}`}
         >
           {/* SHOW ONE AT A TIME — the same two elements the export writes, for the same reason: the
               navigation has to sit OUTSIDE the scroll container or it scrolls away with the pages. The
@@ -4393,7 +4395,9 @@ export default function BoxCanvas({
        */
       style={{
         ...(editable ? { position: "relative" as const } : {}),
-        ...(RUNG_MEASURE[breakpoint === "base" ? "desktop" : breakpoint]
+        // AC-9: the site's one content width wins on every screen (the page root carries it too; the guides beside it read it here)
+        ...(hasSiteMeasure(root) ? ({ ["--eu-measure" as string]: `${root.gridSpace!.measure}rem` } as CSSProperties)
+          : RUNG_MEASURE[breakpoint === "base" ? "desktop" : breakpoint]
           ? ({ ["--eu-measure" as string]: RUNG_MEASURE[breakpoint === "base" ? "desktop" : breakpoint] } as CSSProperties)
           : {}),
       }}
@@ -4473,7 +4477,7 @@ export default function BoxCanvas({
         <div role="status" data-span-live style={{ position: "fixed", left: spanLive.x + 14, top: spanLive.y - 28, zIndex: CHROME_Z.snapGuide, pointerEvents: "none", background: guideHue, color: guideInk(guideHue), font: "500 0.75rem/1 ui-monospace, monospace", padding: "0.3rem 0.45rem", borderRadius: "0.25rem", whiteSpace: "nowrap" }}>{spanLive.text}</div>,
         document.body,
       )}
-      {editable && guides && <LayoutGuides view={guides} side={frameCss(root)} unit={baseUnit(root.baseFont ?? 10)} color={guideHue} />}
+      {editable && guides && <LayoutGuides view={guides} side={frameCss(root)} unit={baseUnit(root.baseFont ?? 10)} color={guideHue} measured={hasSiteMeasure(root)} />}
       {editable && guides && <GuideLines color={guideHue} rows={guides.rows} />}
       {editable && spaceShade && <SpaceShade kind={spaceShade} side={frameCss(root)} unit={baseUnit(root.baseFont ?? 10)} color={guideHue} />}
       {/* Marquee (rubber-band) selection rectangle. Portaled so it's never clipped. */}

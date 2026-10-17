@@ -490,6 +490,27 @@ headline sits just below it, and the header fills in white once it is held. For 
 announcement bar** — it is on every page, and a parent who closes it is not asked again. The admissions landing page gets no
 header at all: **Page settings → Show the header on this page**, unticked there only.
 
+### "A sidebar that stays its width"
+
+Amaka wants the news page to have a narrow column of quick links on the left and the stories beside it. She puts the two
+side by side and sets the links' **Width → Custom** to `20rem`. However wide the screen — the staffroom monitor, a laptop,
+a tablet on its side — the links stay 20rem and the stories take all the rest. On a phone there is no room for both, so
+the links sit above the stories, each the full width. In the header she does the same with the crest: `8rem`, and the
+menu takes what is left. For the clubs page she uses a **Grid** of three and sets its **Column widths**: the first
+`Set width`, the second `Fit content` for a small icon, the third `Share`.
+
+### "Every page lines up"
+
+On a wide monitor the school's pages felt stretched, and each page's headings started in a different place. Amaka opens
+**Layout guides** and sets **Content width → Centred**. Now every section of every page — and the *Admissions* page she adds
+afterwards — puts its words on one centred column, 75rem wide; the coloured bands still run edge to edge. Moving between
+pages, the headings no longer jump. The welcome photo should fill the screen, so on that one section she picks **Content
+width → Edge to edge**; it stays that way whatever she later does to the site's width.
+
+[![The Preview at 1536 px: two sections whose colours run edge to edge, their headings starting on the same centred column](img/story-content-width.webp)](img/story-content-width.webp)
+
+[![The Preview at 1536 px: one section set Edge to edge with its heading at the left edge, the next on the centred column](img/story-content-width-optout.webp)](img/story-content-width-optout.webp)
+
 ## 10. What is published
 
 Everything above becomes proper HTML5: `header`, `nav`, `main`, `aside`, `section`, `footer`; one `h1`; heading levels

@@ -17,5 +17,6 @@
   "resize": { "$comment": "Edge drags in the editor. hugSnapPx: a size dragged back within this of the content's own size stores none (layout px). neighbourMinTracks: a grid neighbour's wrap threshold when its tracks cannot be measured. minRowPx: the least a row may be squeezed to (layout px). wrapPullPx: how far past a neighbour's floor a drag must go before it wraps (screen px).", "hugSnapPx": 2, "neighbourMinTracks": 3, "minRowPx": 24, "wrapPullPx": 24 },
   "webApp": { "screens": { "xs": 420, "sm": 640, "md": 768, "lg": 1024, "xl": 1280, "2xl": 1536 } },
   "media": { "$comment": "A video is sized by its width and a proportion, never a stored height (RX3-2). videoRatio: a new video and the 16:9 style. portraitRatio + portraitWidthRem: the Portrait style (a phone-shaped video, narrower than a column).", "videoRatio": "16 / 9", "portraitRatio": "9 / 16", "portraitWidthRem": 20 },
+  "contentWidth": { "$comment": "AC-9 (BATCH LE-3): the ONE content width a site's sections sit on, set in Page grid → Content width (rem). Unset = Full width (edge to edge, as before). minRem / maxRem bound the slider and any stored value; startRem is where it starts when turned on (live content widths measured on real sites: 1194–1280 px, layout-tiers SZ-5); stepRem its step.", "minRem": 40, "maxRem": 100, "startRem": 75, "stepRem": 1 },
   "uat": { "edgeHeight": 900 }
 }

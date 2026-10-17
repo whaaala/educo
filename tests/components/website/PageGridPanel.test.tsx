@@ -9,6 +9,7 @@ import { emptyPageRoot } from "@/lib/box-site";
 import { guideColor, guideInk } from "@/lib/page-grid";
 import { contrastRatio } from "@/lib/educo-ui/color";
 import { resolveSiteTheme } from "@/lib/site-storage";
+import LAYOUT from "@/config/layout.json";
 
 /** G-2 · the page-grid panel and the layout guides. Scenarios: tests/features/components/website/page-grid.feature. */
 const panel = (over: Partial<Parameters<typeof PageGridPanel>[0]> = {}) => {
@@ -18,6 +19,24 @@ const panel = (over: Partial<Parameters<typeof PageGridPanel>[0]> = {}) => {
 };
 
 describe("the page-grid panel", () => {
+  it("LE3-5: pinned under its button it stops at the screen's foot and scrolls — its last controls are always reachable", () => {
+    panel();
+    const d = screen.getByRole("dialog", { name: "Page grid" });
+    expect(d.style.maxHeight).toMatch(/^calc\(100dvh - [\d.]+px - 0\.5rem\)$/);
+    expect(d.style.overflowY).toBe("auto");
+  });
+
+  it("AC-9: Content width — Full width, or Centred at config's start width, then a slider; Full width again clears it", () => {
+    const p = panel();
+    expect(screen.queryByRole("slider", { name: "Content width" })).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: "Centred" }));
+    expect(p.onChange).toHaveBeenLastCalledWith({ contentWidth: LAYOUT.contentWidth.startRem }, "pagegrid:content");
+    const q = panel({ grid: { contentWidth: 80 } });
+    expect(screen.getAllByRole("slider", { name: "Content width" }).at(-1)).toHaveValue("80");
+    fireEvent.click(screen.getAllByRole("button", { name: "Full width" }).at(-1)!);
+    expect(q.onChange).toHaveBeenLastCalledWith({ contentWidth: undefined }, "pagegrid:content");
+  });
+
   it("opens on the screen being edited and steps that screen's columns", () => {
     const p = panel({ breakpoint: "phone" });
     expect(screen.getByLabelText("Columns on Phone")).toHaveValue(6);
