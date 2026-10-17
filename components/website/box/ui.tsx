@@ -38,6 +38,8 @@ export function ToolBtn({ onClick, title, ariaLabel, active, disabled, primary, 
 }
 
 /** A modal dialog is open: the page's own keys (undo, delete, Escape…) are the dialog's until it closes (E3-10). */
+/** Input types with no text in them: controls, not typing — the page keeps Ctrl+Z and Escape while one has the focus. */
+export const NON_TEXT_INPUTS: ReadonlySet<string> = new Set(["range", "checkbox", "radio", "color", "button", "submit", "file"]);
 export const modalOpen = () => !!document.querySelector('[aria-modal="true"]');
 
 /**

@@ -42,6 +42,24 @@ export const spaceName = (n: BoxNode | null): string => {
 };
 const QUOTE_WORDS: number = PAGE_CHECK.quoteWords;
 
+/** AX-6 (BATCH LE-11): the screens held bars are measured on, and how much of one they may cover (config/page-check.json). */
+export const HELD_SCREENS = PAGE_CHECK.heldBars.screens as [number, number][];
+export const HELD_WORDS: string = PAGE_CHECK.heldBars.message;
+/** Too much of the screen held? The rows of a header that scroll away (`--eu-pin-skip`) do not count. */
+export function heldTooMuch(bars: { h: number; skip: number }[], vh: number): boolean {
+  return bars.reduce((n, b) => n + Math.max(0, b.h - b.skip), 0) / vh > PAGE_CHECK.heldBars.maxShare;
+}
+/** The bars held on screen at this size — sticky or fixed at the top or bottom (`data-eu-pin`) — by block id, with their heights. */
+export function measureHeld(doc: Document): { ids: string[]; bars: { h: number; skip: number }[] } {
+  const win = doc.defaultView;
+  if (!win) return { ids: [], bars: [] };
+  const els = Array.from(doc.querySelectorAll<HTMLElement>("[data-eu-pin]")).filter((e) => ["sticky", "fixed"].includes(win.getComputedStyle(e).position));
+  return {
+    ids: els.map((e) => Array.from(e.classList).find((c) => c.startsWith("bx-"))?.slice(3) ?? ""),
+    bars: els.map((e) => ({ h: e.getBoundingClientRect().height, skip: parseFloat(e.style.getPropertyValue("--eu-pin-skip")) || 0 })),
+  };
+}
+
 /** Every hit on the page as it is laid out NOW (the document's own width). One per block and kind. */
 export function measureSpace(doc: Document): SpaceHit[] {
   const win = doc.defaultView;

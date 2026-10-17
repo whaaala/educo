@@ -372,7 +372,7 @@ room: one row from 1,366px wide, two rows at 1,280px, and the buttons' words app
 
 [![The Preview's bar: Exit preview, the page menu, the screen menu set to Responsive, the width and height boxes, Fit to window, rotate, "1280 px · Desktop", and the hide arrow at the right end](img/guide-preview-bar.webp)](img/guide-preview-bar.webp)
 
-- **Pages:** use the Pages control (top‑left) to add pages, rename them, set the **Home** page, and duplicate. Buttons can **link to a page** so your nav works.
+- **Pages:** use the Pages control (top‑left) to add pages, rename them, set the **Home** page, duplicate, and put them in order with **Move earlier** / **Move later** (the order of the page tabs and of the Preview's page menu). Buttons can **link to a page** so your nav works.
 - **Preview:** a true, isolated preview of the exported site — **one real page at a time**, not every page stacked together. Switch devices inside preview, and click your own nav to walk from page to page exactly as a visitor will.
 - **It opens at the size of your own screen.** The page fills your whole window — the same width *and* height a visitor on your monitor gets — with no frame, no padding and no rounded corners around it. The bar floats *over* the page rather than sitting above it, so it costs the preview no height.
 - **The controls step aside when you say so — never on their own.** Press the hide arrow at the right end of the bar (or **H**) and the bar slides away for an unobstructed look; a small **Controls** button waits in the bottom‑right corner beside **Exit preview** to bring it back — down there, rather than at the top, so it never sits on the header and menu you built — and **H** works from anywhere, including after you've clicked the page you're previewing. The bar used to hide itself on a timer and again whenever the pointer left it — which meant choosing a device made the whole strip vanish before you could rotate it. It doesn't do that any more.
@@ -384,12 +384,58 @@ room: one row from 1,366px wide, two rows at 1,280px, and the buttons' words app
 - **Rotate** turns the screen on its side. Rotating back lands on precisely the numbers you started from.
 - **Zoom** is yours: *Fit to window* shrinks a big screen until it fits, or pick 50–200% and it's obeyed exactly. Zoom past the window and the preview scrolls — every part of the page stays reachable.
 - **A band you coloured and left empty is the same size on the page as on the canvas.** An empty band — including one holding a box or a grid you haven't filled yet — keeps its visible height when published, so a coloured strip at the top of your page is still there when a visitor arrives. A height you set yourself always wins over that, and a band with something in it takes its height from the content as usual.
-- **A page shorter than the screen ends in its own colour.** If your content doesn't fill a visitor's window, the space below it takes the colour of the band your page ends on — so a dark footer simply runs to the bottom instead of stopping against a slab of white that looks like an empty block you never added. **Nothing is stretched and nothing is inserted:** your layout is untouched, it costs no height, there's no setting to find, and on any page taller than the screen you'll never see it at all.
+- **A page shorter than the screen still ends with its footer at the bottom of the screen.** When a page ends with a **Page footer** and its content doesn't fill a visitor's window, the footer sits on the bottom edge of the screen — on every phone, tablet and monitor — and the spare room is above it, in the page's own colour. Nothing is stretched: the footer keeps its own height, and on a page taller than the screen nothing changes at all. If you gave the footer a top space of your own, yours is kept. A page with no footer is left exactly as you built it, and below its content you see your page's own background.
 - **The one known difference from the canvas — a desktop scrollbar.** On a desktop browser that shows a classic scrollbar, the Preview's page is about 15px narrower than the canvas, so a block's share of the width can differ by up to about **0.4%**. That is expected and accepted; our checks allow up to **0.6%** for it. Anything larger between the canvas and the Preview is a bug — please report it.
 - **Previewing changes nothing.** Choosing a screen to look at doesn't touch your canvas or which per‑device layer you're editing; that stays with the editor's own device switcher in the top bar. Looking is not editing.
 - **The size you pick is the size the page really gets.** Choose *Wide* and the page is laid out at a genuine 1920 × 1080, so it picks the layout a 1920px screen gets — even when your own screen is smaller. It's scaled down to fit and the bar states both numbers (e.g. `1920 px · 73%`). It's never cut off, and never quietly re-laid out at your screen's size instead.
 - **Nothing is added on top of your page.** The preview shows what you designed and only that. Earlier versions prepended a navigation bar of their own; it's gone, from the preview *and* the exported site. To let visitors move between pages, build your own header and set a block's link to **another page** — it resolves to the right file when you export. While you're in the preview, the page tabs in the toolbar walk you around the site without touching the design.
 - **Export:** downloads your site as a **ZIP of real pages** — `index.html` for the home page and one `.html` per page, a shared `styles.css` (each page also carries its own few styles inside it), and two folders: `fonts/` for your typefaces and `images/` for your photos.
+
+### One header and one footer for every page
+
+A school site has many pages and one top and one bottom. Build the header once — your name, your logo, your menu — and it is
+the header of **every** page.
+
+1. Build the header on any page: a **Side by side** with your name and a few **Link** blocks, each set to **Link to page**.
+2. Select it and, under **Design → Meaning**, set **What is this block?** to **Page header**. **On every page** is ticked for you.
+3. Every page now starts with that header — the ones you have and every page you add or duplicate later.
+
+[![Page 2 of a three-page site: the header built on Home is already at its top, and the Inspector shows What is this block? set to Page header with On every page ticked](img/guide-shared-header.webp)](img/guide-shared-header.webp)
+
+Change a word in the menu on *any* page and it changes on all of them; the menu is written once. A **Page footer** works the
+same way. What you see on the canvas is what visitors get in the Preview, in the downloaded site and in the Educo app.
+
+- **Delete it** on one page and it goes from every page — **Ctrl+Z** brings it back on all of them.
+- **Untick "On every page"** and every page keeps its own copy, to change on its own. Tick it again on a page and *that*
+  page's header becomes the one on every page (it takes the place of the others' own).
+- **Hide it on a phone** (Per‑device → Hidden on mobile) and it is hidden on phones on every page.
+- **A block added at the end of a page goes above the footer**, and one added at the start below the header — "End",
+  "+ Add section", a click on a tile with nothing selected, and a paste all keep the header and footer where they belong.
+- **A link to a page you deleted** is listed by the **Page check** ("goes to a page that was deleted") with **Show me**,
+  so a menu never sends visitors nowhere.
+
+[![The Preview at 375 px of a short page: the spare room is above the footer, and the footer sits on the bottom edge of the screen](img/guide-footer-bottom.webp)](img/guide-footer-bottom.webp)
+
+### A header that does more than sit at the top
+
+Make the header stay on screen first (**Design → Placement → Sticks when reached**). Then:
+
+| You want | Where | What a visitor sees |
+|---|---|---|
+| The header out of the way while reading | **When you scroll down → Slides away** or **Fades out** | Scrolling down, it slides off (or fades); scrolling up — or moving into it with the keyboard, or reaching the end of the page — brings it straight back. With "reduce motion" on, it goes and comes without moving. |
+| The header lying over the first photo | **Over the first section** (a Page header) | The first section starts at the very top, its background running under the header; its words start below the header, so nothing is printed over them. Ticking it sets **When it takes hold → Solid**, so the header fills in once it is held. |
+| A top bar that scrolls away, the menu that stays | **Keep only the last row on screen** (a Page header made as a **Stack** of rows) | The rows above the last scroll away; the last row — your menu — stays held at the top. |
+| An announcement on every page | **Meaning → Add an announcement bar** (a Page header) | A bar becomes the header's first row — on every page, read out as a status, and a visitor who closes it does not see it again on the other pages. In a Side by side header it gets a row of its own above your name and links. |
+| No header on one page (a landing page) | **Page settings → Show the header on this page** (and the footer) | That page has none; every other page keeps it, and any change made meanwhile is there when you tick it again. |
+
+[![A Page header with an announcement bar as its first row, full width above the name and four links; the Inspector shows What is this block? set to Page header with On every page ticked](img/guide-announcement-bar.webp)](img/guide-announcement-bar.webp)
+
+**Never more than a quarter of the screen.** If the bars held on screen — a held header, a held bottom bar — cover more than a
+quarter of a phone held upright or on its side, the **Page check** says so, names them, and **Show me** selects one. Let a row
+scroll away, make the header slide away, or make the bars shorter.
+
+**Nothing goes above the header or below the footer by accident.** "Before" on the header puts the new block just under it;
+"After" on the footer, just above it — the header and footer stay the page's, and stay shared.
 
 ### What you get in the ZIP, and why it's built that way
 

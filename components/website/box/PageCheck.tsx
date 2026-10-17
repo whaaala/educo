@@ -12,18 +12,21 @@ import Modal from "@/components/shared/Modal";
 import Button from "@/components/shared/Button";
 import CompactField from "@/components/shared/CompactField";
 import { type BoxNode, findBox } from "@/lib/box-model";
-import { CHECK_HEIGHT, CHECK_WIDTHS, measureSpace, screensInWords, spaceName, type SpaceKind } from "@/lib/space-check";
+import { CHECK_HEIGHT, CHECK_WIDTHS, HELD_SCREENS, HELD_WORDS, heldTooMuch, measureHeld, measureSpace, screensInWords, spaceName, type SpaceKind } from "@/lib/space-check";
 import type { RungName } from "@/lib/educo-ui/layout";
 import InPageSpinner from "@/components/shared/InPageSpinner";
 import { resolvePage, pageCheck, corrections, type SiteFonts } from "@/lib/semantics";
 import { familyOf } from "@/lib/educo-ui/fonts";
 
 /** How many things need the user — for the toolbar badge. */
-export function pageCheckCount(root: BoxNode, fonts?: SiteFonts): number {
-  return pageCheck(root, undefined, fonts).length;
+export function pageCheckCount(root: BoxNode, fonts?: SiteFonts, pageIds?: ReadonlySet<string>): number {
+  return pageCheck(root, undefined, fonts, pageIds).length;
 }
 
-type Measured = { id: string; kind: SpaceKind; rungs: RungName[] };
+/** A held BAND is the page's line around a block — Show me selects the block it holds (a band cannot be selected). */
+const shownId = (root: BoxNode, id: string) => { const n = findBox(root, id); return n?.rowBand && n.children?.length === 1 ? n.children[0].id : id; };
+/** `held-too-much` (AX-6): measured at `HELD_SCREENS`, not per rung — `where` names them, `ids` the bars. */
+type Measured = { id: string; kind: SpaceKind | "held-too-much"; rungs: RungName[]; where?: string[]; ids?: string[] };
 
 /**
  * LE-1 (S-3): the published page measured at every width of CHECK_WIDTHS, one hidden frame at a time — the space the tree
@@ -44,12 +47,24 @@ function useMeasuredSpace(html: string | undefined, open: boolean): Measured[] |
     document.body.appendChild(frame);
     const at = async (i: number): Promise<void> => {
       if (!live) return;
-      if (i >= CHECK_WIDTHS.length) { setFound(Array.from(all.values())); return; }
-      const { rung, px } = CHECK_WIDTHS[i];
+      if (i >= CHECK_WIDTHS.length + HELD_SCREENS.length) { setFound(Array.from(all.values())); return; }
+      // AX-6 (LE-11): after the widths, the held bars at a phone upright and on its side
+      const heldAt = i >= CHECK_WIDTHS.length ? HELD_SCREENS[i - CHECK_WIDTHS.length] : null;
+      const { rung, px } = heldAt ? { rung: "phone" as RungName, px: heldAt[0] } : CHECK_WIDTHS[i];
       frame.style.width = `${px}px`; // a screen's CSS px: the width under measure, not a size drawn on the page
+      frame.style.height = `${heldAt ? heldAt[1] : CHECK_HEIGHT}px`;
       await new Promise<void>((done) => { frame.onload = () => done(); frame.srcdoc = html; });
       const doc = frame.contentDocument;
-      if (doc) {
+      if (doc && heldAt) {
+        await doc.fonts?.ready;
+        await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(() => requestAnimationFrame(r)))); // the page's own pin / header passes first
+        const held = measureHeld(doc);
+        if (held.ids.length && heldTooMuch(held.bars, heldAt[1])) {
+          const m = all.get("held");
+          if (m) m.where!.push(`${heldAt[0]} × ${heldAt[1]}`);
+          else all.set("held", { id: held.ids[0], kind: "held-too-much", rungs: [], where: [`${heldAt[0]} × ${heldAt[1]}`], ids: held.ids });
+        }
+      } else if (doc) {
         await doc.fonts?.ready;
         await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
         for (const h of measureSpace(doc)) {
@@ -73,8 +88,10 @@ const SPACE_WORDS: Record<SpaceKind, (name: string, screens: string) => string> 
   "words-broken": (b, on) => `This ${b} is too narrow for its words on ${on} — a word breaks in the middle. Give it more room there, or let the blocks stack.`,
 };
 
-export default function PageCheck({ root, fonts, html, isOpen, onClose, onShow, onPatch, onSideSpace }: {
+export default function PageCheck({ root, fonts, pageIds, html, isOpen, onClose, onShow, onPatch, onSideSpace }: {
   root: BoxNode;
+  /** The site's page ids — a link to a page not among them was deleted (LE8-3). */
+  pageIds?: ReadonlySet<string>;
   /** The PUBLISHED page (`renderSitePage`) — measured at every screen size for space and narrow columns (LE-1). */
   html?: string;
   /** The site's heading + body fonts — what a block without a font of its own is drawn in (A-1b). */
@@ -88,7 +105,7 @@ export default function PageCheck({ root, fonts, html, isOpen, onClose, onShow, 
   onSideSpace?: (value: number) => void;
 }) {
   const sem = resolvePage(root);
-  const issues = pageCheck(root, sem, fonts);
+  const issues = pageCheck(root, sem, fonts, pageIds);
   const fixed = corrections(sem);
   const measured = useMeasuredSpace(html, isOpen);
   // a block the tree already flags at the page edge (with its one-click fix) is not listed twice
@@ -131,8 +148,10 @@ export default function PageCheck({ root, fonts, html, isOpen, onClose, onShow, 
             ))}
             {spaced.map((m) => (
               <li key={m.id + m.kind} className="rounded-xl border border-line p-3 space-y-2" data-space-kind={m.kind}>
-                <p className={text}>{SPACE_WORDS[m.kind](spaceName(findBox(root, m.id)), screensInWords(m.rungs))} (a suggestion — it won&rsquo;t stop you publishing)</p>
-                <Button size="sm" variant="ghost" onClick={() => onShow(m.id)}>Show me</Button>
+                <p className={text}>{m.kind === "held-too-much"
+                  ? HELD_WORDS.replace("{bars}", (m.ids ?? []).map((id) => spaceName(findBox(root, shownId(root, id)))).join(", ") /* LE11-2: the block, not its band */).replace("{screens}", (m.where ?? []).join(" or "))
+                  : SPACE_WORDS[m.kind](spaceName(findBox(root, m.id)), screensInWords(m.rungs))} (a suggestion — it won&rsquo;t stop you publishing)</p>
+                <Button size="sm" variant="ghost" onClick={() => onShow(shownId(root, m.id))}>Show me</Button>
               </li>
             ))}
           </ul>

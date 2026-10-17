@@ -13,7 +13,7 @@ import type { SiteTheme } from "@/lib/site-storage";
 import { perScreenBanner, perScreenDeviceTab } from "@/lib/per-screen-note";
 import type { BoxNode, FlexAlign, FlexJustify, AccPartStyle, Breakpoint, PagerNav, PinScopeWords, SectionFlag } from "@/lib/box-model";
 import { RUNG_LABEL } from "@/lib/educo-ui/layout";
-import { type ItemAction, TOAST_CORNERS, fluidRemRange, isContainer, containerLabel, isFloating, isCssBg, addItem, removeItem, moveItem, updateItem, addChildItem, updateChildItem, removeChildItem, moveChildItem , isMultiItemComponent, hasIntrinsicSize, sizeToCSS, typedLength, GRID_MAX, COLUMN_FRACTIONS, columnFractionOf, canSetColumnFraction, gridColumnsAt, bandEdgeCSS, PIN_ARRIVALS, PIN_ARRIVAL_AFTER, pinArrivalHasEffect, linkLineGap, LINK_GAP_ACROSS, LINK_GAP_ACROSS_PHONE, spaceDefaults, outerDefaults, type SectionPlace, gapOf, importPhoto, refusedMotion, rowFilledByBlocks } from "@/lib/box-model";
+import { type ItemAction, TOAST_CORNERS, hasAnnouncement, fluidRemRange, isContainer, containerLabel, isFloating, isCssBg, addItem, removeItem, moveItem, updateItem, addChildItem, updateChildItem, removeChildItem, moveChildItem , isMultiItemComponent, hasIntrinsicSize, sizeToCSS, typedLength, GRID_MAX, COLUMN_FRACTIONS, columnFractionOf, canSetColumnFraction, gridColumnsAt, bandEdgeCSS, PIN_ARRIVALS, PIN_ARRIVAL_AFTER, pinArrivalHasEffect, linkLineGap, LINK_GAP_ACROSS, LINK_GAP_ACROSS_PHONE, spaceDefaults, outerDefaults, type SectionPlace, gapOf, importPhoto, refusedMotion, rowFilledByBlocks } from "@/lib/box-model";
 import { remLen } from "@/lib/educo-ui/tokens";
 import { ACCORDION_DESIGNS, ACCORDION_DESIGN_COUNT, ACCORDION_AXES } from "@/lib/educo-ui/accordions";
 import { ALERT_DESIGNS, ALERT_DESIGN_COUNT, ALERT_AXES } from "@/lib/educo-ui/alerts";
@@ -33,7 +33,11 @@ import Slider from "@/components/shared/Slider";
 import CompactField from "@/components/shared/CompactField";
 import { rowsOf, rowsToMinHeight } from "@/lib/page-grid";
 import CompactSelect from "@/components/shared/CompactSelect";
+import Button from "@/components/shared/Button";
 import { CONTAINER_TAGS, type SemanticTag } from "@/lib/semantics";
+import INSPECTOR from "@/config/inspector.json";
+const SHARED_REGION = INSPECTOR.sharedRegion; // PS-2: the "On every page" words (RULE CFG)
+const HEADER = INSPECTOR.header; // LE-11: the held header's words (RULE CFG)
 import CompactTextarea from "@/components/shared/CompactTextarea";
 
 const label = "text-[0.6875rem] font-semibold text-muted";
@@ -504,7 +508,7 @@ function AccPreview({ id, size, axes = [] }: { id: string; size: ThumbSize; axes
   );
 }
 
-export default function BoxInspector({ section = false, sectionPlace, outerDefault, fillHeight, pageSpan, onSetSpan, pageLines, onSetLines, onSetFreeInset, rowStepRem, node, theme, onPatch, onAddChild, onFloat, onUnfloat, onLayer, onAlignInRow, rowJustify, onSectionWidth, sectionWidth, canFloat = true, inGrid = false, inMasonry = false, gridTrack, onSetFraction, onRetrack, breakpoint = "base", overridden = false, onResetOverride, pages, currentPageId, pinBlockedBy = null, fixedBlockedBy = null, pinScope = null }: {
+export default function BoxInspector({ section = false, sectionPlace, outerDefault, fillHeight, pageSpan, onSetSpan, pageLines, onSetLines, onSetFreeInset, rowStepRem, node, theme, onPatch, onAddChild, onAddAnnouncement, onFloat, onUnfloat, onLayer, onAlignInRow, rowJustify, onSectionWidth, sectionWidth, canFloat = true, inGrid = false, inMasonry = false, gridTrack, onSetFraction, onRetrack, breakpoint = "base", overridden = false, onResetOverride, pages, currentPageId, pinBlockedBy = null, fixedBlockedBy = null, pinScope = null }: {
   section?: SectionFlag; // the block is the content of a page section, so its default inner spacing is the gutter and the section space
   outerDefault?: [number, number, number, number]; // the outer space it really has by default (`outerSpaceDefaults`, G-3 (1)); else `outerDefaults`
   fillHeight?: { on: boolean }; // G-3d (2): a picture alone in a block spanning rows — "Fill the block's height"; absent where it does nothing
@@ -513,6 +517,8 @@ export default function BoxInspector({ section = false, sectionPlace, outerDefau
   theme: SiteTheme;
   onPatch: (patch: Partial<BoxNode>) => void;
   onAddChild?: () => void;
+  /** PS-10 (LE-11): an announcement bar as this Page header's first row. */
+  onAddAnnouncement?: () => void;
   onFloat?: () => void;
   onUnfloat?: () => void;
   onLayer?: (dir: "front" | "forward" | "backward" | "back") => void;
@@ -700,11 +706,21 @@ export default function BoxInspector({ section = false, sectionPlace, outerDefau
                   <>
                     <CompactSelect label="What is this block?" ariaLabel="What is this block"
                       value={node.tag ?? "div"}
-                      onChange={(v) => onPatch({ tag: v === "div" ? undefined : (v as SemanticTag) })}
+                      onChange={(v) => onPatch({ tag: v === "div" ? undefined : (v as SemanticTag), shared: v === "header" || v === "footer" ? true : undefined })} // PS-2: a header / footer is on every page unless you say otherwise
                       options={CONTAINER_TAGS.map((t) => ({ value: t.tag, label: t.label }))} />
                     <p className="text-[0.625rem] text-gray-500 dark:text-gray-400 midnight:text-slate-400 purple:text-purple-200">
                       {cur.hint}. Published as <code>&lt;{cur.tag}&gt;</code>; a screen reader announces: {cur.announces}.
                     </p>
+                    {(node.tag === "header" || node.tag === "footer") && (
+                      <label className="pointer-coarse:min-h-11 flex items-start gap-2 text-xs text-gray-600 dark:text-gray-300 midnight:text-slate-300 purple:text-purple-200">
+                        <input type="checkbox" className="mt-0.5" checked={!!node.shared} aria-label={SHARED_REGION.label}
+                          onChange={(e) => onPatch({ shared: e.target.checked || undefined })} />
+                        <span><span className="font-medium text-ink">{SHARED_REGION.label}</span> — {(node.shared ? SHARED_REGION.on : SHARED_REGION.off).replace(/\{region\}/g, node.tag)}</span>
+                      </label>
+                    )}
+                    {node.tag === "header" && onAddAnnouncement && !hasAnnouncement(node) && (
+                      <Button size="sm" variant="outline" onClick={onAddAnnouncement}>{HEADER.announce}</Button>
+                    )}
                     {named && (
                       <CompactField label="Name (read out by screen readers)" ariaLabel="Name for screen readers"
                         value={node.landmarkName ?? ""} placeholder={node.tag === "nav" ? "e.g. Main menu" : "e.g. School news"}
@@ -879,6 +895,34 @@ export default function BoxInspector({ section = false, sectionPlace, outerDefau
                           its own. Give it a <b>Height</b> under <b>Size</b>, inner spacing under <b>Spacing</b>, or a
                           <b>Band height</b> under <b>Background</b> — or pick another arrival.
                         </p>
+                      )}
+                    </>
+                  )}
+                  {/* LE-11 · A HEADER THAT GETS OUT OF THE WAY (PO-7 / PN-3) — with Scrolls away and Sticks above, Wix Studio's four
+                      (Scroll with site · Freeze · Disappear · Fade out); it always comes back on scroll up, focus and the page's end. */}
+                  {node.pin === "top" && (
+                    <>
+                      <span className="block text-[0.6875rem] font-medium text-gray-600 dark:text-gray-300 midnight:text-slate-300 purple:text-purple-200">{HEADER.away}</span>
+                      <Segmented full ariaLabel={HEADER.away} value={node.pinAway ?? "stay"}
+                        onChange={(v) => onPatch({ pinAway: v === "stay" ? undefined : (v as NonNullable<BoxNode["pinAway"]>) })}
+                        options={(["stay", "slide", "fade"] as const).map((v) => ({ value: v, label: HEADER.awayChoices[v] }))} />
+                      {node.pinAway && <p className="text-[0.6875rem] leading-snug text-gray-600 dark:text-gray-300 midnight:text-slate-300 purple:text-purple-200">{HEADER.awayHint}</p>}
+                    </>
+                  )}
+                  {/* PS-7 and PS-6 — a held Page header over the first section, and one that keeps only its last row */}
+                  {node.pin === "top" && (node.hold ?? "sticky") === "sticky" && node.tag === "header" && (
+                    <>
+                      <label className="pointer-coarse:min-h-11 flex items-start gap-2 text-xs text-gray-600 dark:text-gray-300 midnight:text-slate-300 purple:text-purple-200">
+                        <input type="checkbox" className="mt-0.5" checked={!!node.pinOver} aria-label={HEADER.over}
+                          onChange={(e) => onPatch(e.target.checked ? { pinOver: true, pinArrival: node.pinArrival ?? "solid" } : { pinOver: undefined })} />
+                        <span><span className="font-medium text-ink">{HEADER.over}</span> — {HEADER.overHint}</span>
+                      </label>
+                      {node.direction === "column" && (node.children ?? []).length > 1 && ( /* rows are the children of a STACK — a Side by side is one row */
+                        <label className="pointer-coarse:min-h-11 flex items-start gap-2 text-xs text-gray-600 dark:text-gray-300 midnight:text-slate-300 purple:text-purple-200">
+                          <input type="checkbox" className="mt-0.5" checked={!!node.pinLastRow} aria-label={HEADER.lastRow}
+                            onChange={(e) => onPatch({ pinLastRow: e.target.checked || undefined })} />
+                          <span><span className="font-medium text-ink">{HEADER.lastRow}</span> — {HEADER.lastRowHint}</span>
+                        </label>
                       )}
                     </>
                   )}

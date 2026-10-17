@@ -9,8 +9,11 @@
  */
 
 import { SHARED_KEYS } from "@/lib/per-screen-note";
+import INSPECTOR from "@/config/inspector.json";
+const PAGE_ORDER = INSPECTOR.pageOrder; // LE8-2: "Move earlier" / "Move later" (RULE CFG)
+const PAGE_REGIONS = INSPECTOR.pageRegions; // PS-14: "Show the header / footer on this page" (RULE CFG)
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { LayoutGrid, Plus, Smartphone, Tablet, Laptop, Monitor, Tv, Maximize2, RotateCw, RotateCcw, Undo2, Redo2, Eye, ShieldCheck, X, Home, Trash2, Files, Download, Settings2, Palette, SlidersHorizontal, PanelRightClose, PanelRightOpen, AlertTriangle, ChevronUp, MoreHorizontal } from "lucide-react";
+import { LayoutGrid, Plus, Smartphone, Tablet, Laptop, Monitor, Tv, Maximize2, RotateCw, RotateCcw, Undo2, Redo2, Eye, ShieldCheck, X, Home, Trash2, Files, Download, Settings2, Palette, SlidersHorizontal, PanelRightClose, PanelRightOpen, AlertTriangle, ChevronUp, MoreHorizontal, ChevronLeft, ChevronRight } from "lucide-react";
 import { DEFAULT_THEME, resolveSiteTheme } from "@/lib/site-storage";
 import { THEMES, type ThemeId } from "@/lib/theme-config";
 import { EDITOR_DOCK_PX, mediaBelow as below, RUNG_LABEL, RUNG_ORDER, RUNG_PX } from "@/lib/educo-ui/layout";
@@ -19,11 +22,11 @@ import {
   floatBox, unfloatBox, bringToFront, bringForward, sendBackward, sendToBack,
   resolveResponsive, updateBoxResponsive, clearOverride, hasOverride,
   gridColumns, setColumnFraction, pinBlockedBy, fixedBlockedBy, blockedByLabel, pinScopeWords, isFloating,
-  isSectionContentIn, sectionPlaceIn, insertSlot, defaultWhere, addInsideParent, placeSharing, retrackGridAt, type InsertWhere, isContainer, outerSpaceDefaults, spanAt, setSpan, lineUpWithGrid, linesAt, setLinesAt, fullWidthAt, setFreeInset, fitStepAt, fillsRows, fillHostOf,
+  isSectionContentIn, sectionPlaceIn, insertSlot, pageEnd, addAnnouncementBar, defaultWhere, addInsideParent, placeSharing, retrackGridAt, type InsertWhere, isContainer, outerSpaceDefaults, spanAt, setSpan, lineUpWithGrid, linesAt, setLinesAt, fullWidthAt, setFreeInset, fitStepAt, fillsRows, fillHostOf,
 } from "@/lib/box-model";
 import { blockForKind } from "@/lib/box-presets";
 import {
-  type BoxSite, freshSite, siteFonts, setSiteFonts, SAVED_SITE_FONTS, coerceSite, normalizeSite, setPageRoot, addPage, deletePage, renamePage, setHomePage, duplicatePage, emptyPageRoot, setSiteTheme, setPageGrid,
+  type BoxSite, freshSite, siteFonts, setSiteFonts, SAVED_SITE_FONTS, coerceSite, normalizeSite, setPageRoot, addPage, deletePage, renamePage, setHomePage, duplicatePage, emptyPageRoot, setSiteTheme, setPageGrid, movePage, hasSharedRegion, setRegionShown,
 } from "@/lib/box-site";
 import { columnsAt, resolvePageGrid, type PageGridSettings } from "@/lib/page-grid";
 import PageGridPanel from "@/components/website/box/PageGridPanel";
@@ -37,7 +40,7 @@ import BoxInspector from "@/components/website/box/BoxInspector";
 import BulkInspector from "@/components/website/box/BulkInspector";
 import BlocksPanel, { LAUNCHER_GUTTER_REM, PANEL_GUTTER_REM } from "@/components/website/box/BlocksPanel";
 import ThemeSwitcher from "@/components/shared/ThemeSwitcher";
-import { ToolBtn, ToolDivider, Segmented, PortalMenu, MenuItem, modalOpen, useSheetManners } from "@/components/website/box/ui";
+import { ToolBtn, ToolDivider, Segmented, PortalMenu, MenuItem, modalOpen, useSheetManners, NON_TEXT_INPUTS } from "@/components/website/box/ui";
 import PageLoader from "@/components/shared/PageLoader";
 import CompactSelect from "@/components/shared/CompactSelect";
 import DeleteConfirmationModal from "@/components/shared/DeleteConfirmationModal";
@@ -120,8 +123,6 @@ function pruneEmptyChrome(root: BoxNode): BoxNode {
 type Hist = { present: BoxSite; past: BoxSite[]; future: BoxSite[] };
 const HIST_CAP = 100;
 
-/** Input types with no text in them, so the page's own undo keeps Ctrl+Z instead of the browser's. */
-const NON_TEXT_INPUTS = new Set(["range", "checkbox", "radio", "color", "button", "submit", "file"]);
 /** Is a person typing here? Then a plain letter is a letter, never a shortcut. */
 const typingIn = (el: Element | null) => { const ae = el as HTMLElement | null;
   return ae?.tagName === "TEXTAREA" || !!ae?.isContentEditable || (ae?.tagName === "INPUT" && !NON_TEXT_INPUTS.has((ae as HTMLInputElement).type)); };
@@ -414,6 +415,7 @@ export default function BoxDemoPage() {
   const siteThemeId = site?.themeId ?? "light";
   // A-1b: the site's own heading + body fonts — the canvas, the Preview, the download and the fonts it ships all read this
   const fonts = site ? siteFonts(site) : SAVED_SITE_FONTS;
+  const pageIds = useMemo(() => new Set(site?.pages.map((p) => p.id) ?? []), [site?.pages]); // LE8-3: a link to a page not here was deleted
   const renderTheme = useMemo(() => ({ ...resolveSiteTheme(DEFAULT_THEME, siteThemeId), headingFont: fonts.heading, bodyFont: fonts.body }), [siteThemeId, fonts.heading, fonts.body]);
   const setWebsiteTheme = (id: string) => setHist((h) => (h ? { present: setSiteTheme(h.present, id), past: [...h.past, h.present].slice(-HIST_CAP), future: [] } : h));
 
@@ -740,6 +742,7 @@ export default function BoxDemoPage() {
   const onDuplicatePage = () => { const { site: s, id } = duplicatePage(site, activePage.id); pushSite(s); setActivePageId(id); setPageMenu(false); };
   const onRenamePage = (name: string) => pushSite(renamePage(site, activePage.id, name));
   const onDeletePage = () => { if (site.pages.length <= 1) return; const s = deletePage(site, activePage.id); pushSite(s); setActivePageId(s.homeId); setSelectedIds([]); setPageMenu(false); setConfirmDeletePage(false); };
+  const onMovePage = (by: -1 | 1) => pushSite(movePage(site, activePage.id, by)); // LE8-2
   const onSetHome = () => { pushSite(setHomePage(site, activePage.id)); setPageMenu(false); };
 
   // ── The page grid (G-2): the site's, or this page's own; a whole slider drag is ONE undo, like the Inspector's ──
@@ -760,7 +763,7 @@ export default function BoxDemoPage() {
   const setOwnGrid = (own: boolean) => pushSite(setPageGrid(site, own ? { ...site.pageGrid } : undefined, activePage.id));
 
   // A1-4: the new band is SELECTED, as every added block is (`revealBox`), so its Background is the next thing to hand.
-  const addSection = () => { const sec = makeSection(SECTION_TINTS[countSections(root) % SECTION_TINTS.length]); sec.width = "100%"; commit(insertBox(root, root.id, root.children?.length ?? 0, makeRow([sec]))); revealBox(sec.id); };
+  const addSection = () => { const sec = makeSection(SECTION_TINTS[countSections(root) % SECTION_TINTS.length]); sec.width = "100%"; commit(insertBox(root, root.id, pageEnd(root), makeRow([sec]))); /* LE8-4: above the footer */ revealBox(sec.id); };
   // The merge key is the block plus the FIELDS being written, so "drag the spacing slider" coalesces while
   // "set the spacing, then the colour" does not — no control had to be told about any of this.
   const onPatch = (patch: Partial<BoxNode>) => {
@@ -1328,6 +1331,16 @@ export default function BoxDemoPage() {
                 <button onClick={onSetHome} disabled={activePage.id === site.homeId} className="flex items-center justify-center gap-1 text-xs px-2 py-1.5 rounded-lg border border-line text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-100 dark:hover:bg-white/10 disabled:opacity-40"><Home className="w-3.5 h-3.5" /> Home</button>
                 <button onClick={onDuplicatePage} className="flex items-center justify-center gap-1 text-xs px-2 py-1.5 rounded-lg border border-line text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-100 dark:hover:bg-white/10"><Files className="w-3.5 h-3.5" /> Duplicate</button>
               </div>
+              <div className="grid grid-cols-2 gap-1.5">{/* LE8-2: the page's place in the order of the tabs */}
+                <button onClick={() => onMovePage(-1)} disabled={site.pages[0]?.id === activePage.id} className="flex items-center justify-center gap-1 text-xs px-2 py-1.5 rounded-lg border border-line text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-100 dark:hover:bg-white/10 disabled:opacity-40"><ChevronLeft className="w-3.5 h-3.5" aria-hidden="true" /> {PAGE_ORDER.earlier}</button>
+                <button onClick={() => onMovePage(1)} disabled={site.pages[site.pages.length - 1]?.id === activePage.id} className="flex items-center justify-center gap-1 text-xs px-2 py-1.5 rounded-lg border border-line text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-100 dark:hover:bg-white/10 disabled:opacity-40">{PAGE_ORDER.later} <ChevronRight className="w-3.5 h-3.5" aria-hidden="true" /></button>
+              </div>
+              {(["header", "footer"] as const).filter((w) => hasSharedRegion(site, w)).map((w) => (
+                <label key={w} className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200">{/* PS-14 */}
+                  <input type="checkbox" checked={!activePage.away?.[w]} onChange={(e) => pushSite(setRegionShown(site, activePage.id, w, e.target.checked))} />
+                  {PAGE_REGIONS[w]}
+                </label>
+              ))}
               <button onClick={() => { const r = lineUpWithGrid(root, columnsAt(gridHere, bp), bp); if (r.moved) commit(r.root);
                 const screen = DEVICES.find((d) => d.id === device)?.label ?? "this screen";
                 setLineUpSaid(r.moved ? `${r.moved} block${r.moved === 1 ? "" : "s"} moved to the grid on ${screen}. Undo puts them back.` : `Everything on ${screen} is already on the grid.`); }}
@@ -1352,6 +1365,16 @@ export default function BoxDemoPage() {
                 <button onClick={onSetHome} disabled={activePage.id === site.homeId} className="flex items-center justify-center gap-1 text-xs px-2 py-1.5 rounded-lg border border-line text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-100 dark:hover:bg-white/10 disabled:opacity-40"><Home className="w-3.5 h-3.5" /> Home</button>
                 <button onClick={onDuplicatePage} className="flex items-center justify-center gap-1 text-xs px-2 py-1.5 rounded-lg border border-line text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-100 dark:hover:bg-white/10"><Files className="w-3.5 h-3.5" /> Duplicate</button>
               </div>
+              <div className="grid grid-cols-2 gap-1.5">{/* LE8-2: the page's place in the order of the tabs */}
+                <button onClick={() => onMovePage(-1)} disabled={site.pages[0]?.id === activePage.id} className="flex items-center justify-center gap-1 text-xs px-2 py-1.5 rounded-lg border border-line text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-100 dark:hover:bg-white/10 disabled:opacity-40"><ChevronLeft className="w-3.5 h-3.5" aria-hidden="true" /> {PAGE_ORDER.earlier}</button>
+                <button onClick={() => onMovePage(1)} disabled={site.pages[site.pages.length - 1]?.id === activePage.id} className="flex items-center justify-center gap-1 text-xs px-2 py-1.5 rounded-lg border border-line text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-100 dark:hover:bg-white/10 disabled:opacity-40">{PAGE_ORDER.later} <ChevronRight className="w-3.5 h-3.5" aria-hidden="true" /></button>
+              </div>
+              {(["header", "footer"] as const).filter((w) => hasSharedRegion(site, w)).map((w) => (
+                <label key={w} className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200">{/* PS-14 */}
+                  <input type="checkbox" checked={!activePage.away?.[w]} onChange={(e) => pushSite(setRegionShown(site, activePage.id, w, e.target.checked))} />
+                  {PAGE_REGIONS[w]}
+                </label>
+              ))}
               <button onClick={() => { const r = lineUpWithGrid(root, columnsAt(gridHere, bp), bp); if (r.moved) commit(r.root);
                 const screen = DEVICES.find((d) => d.id === device)?.label ?? "this screen";
                 setLineUpSaid(r.moved ? `${r.moved} block${r.moved === 1 ? "" : "s"} moved to the grid on ${screen}. Undo puts them back.` : `Everything on ${screen} is already on the grid.`); }}
@@ -1386,7 +1409,7 @@ export default function BoxDemoPage() {
           <ToolBtn onClick={redo} disabled={!canRedo} ariaLabel="Redo" title="Redo (Ctrl+Y)"><Redo2 className="w-4 h-4" /></ToolBtn>
         </div>
         <ToolDivider />
-        {(() => { const n = pageCheckCount(root, fonts); return (
+        {(() => { const n = pageCheckCount(root, fonts, pageIds); return (
           <ToolBtn onClick={() => setPageCheckOpen(true)} title={n ? `${n} thing${n === 1 ? "" : "s"} on this page need${n === 1 ? "s" : ""} your words` : "Everyone can use this page"} ariaLabel={`Page check${n ? `, ${n} to do` : ""}`}>
             <ShieldCheck className="w-3.5 h-3.5" aria-hidden="true" /><span className={wide}>Page check</span>{n ? <span className="ml-1 rounded-full bg-amber-500 px-1.5 text-[0.625rem] font-bold text-white">{n}</span> : null}
           </ToolBtn>
@@ -1415,7 +1438,7 @@ export default function BoxDemoPage() {
             <ToolBtn onClick={() => { onAddPage(); setMoreOpen(false); }} ariaLabel="Add page" title="Add page"><Plus className="w-4 h-4" aria-hidden="true" /><span>Add page</span></ToolBtn>
             <ToolBtn onClick={() => { setMoreOpen(false); setPageMenu(true); }} ariaLabel="Page settings" title="Page settings"><Settings2 className="w-4 h-4" aria-hidden="true" /><span>Page settings</span></ToolBtn>
         <ToolBtn onClick={addSection} primary title="Add a full-width, tinted band across the page" ariaLabel="Add a band"><Plus className="w-3.5 h-3.5" aria-hidden="true" /><span className={wide}>Add a band</span></ToolBtn>
-        {(() => { const n = pageCheckCount(root, fonts); return (
+        {(() => { const n = pageCheckCount(root, fonts, pageIds); return (
           <ToolBtn onClick={() => setPageCheckOpen(true)} title={n ? `${n} thing${n === 1 ? "" : "s"} on this page need${n === 1 ? "s" : ""} your words` : "Everyone can use this page"} ariaLabel={`Page check${n ? `, ${n} to do` : ""}`}>
             <ShieldCheck className="w-3.5 h-3.5" aria-hidden="true" /><span className={wide}>Page check</span>{n ? <span className="ml-1 rounded-full bg-amber-500 px-1.5 text-[0.625rem] font-bold text-white">{n}</span> : null}
           </ToolBtn>
@@ -1481,7 +1504,7 @@ export default function BoxDemoPage() {
                   onSetSpan={(n) => commit(setSpan(root, selected.id, n, columnsAt(gridHere, bp), bp), `span:${selected.id}`)}
                   pageLines={(() => { const c = columnsAt(gridHere, bp), l = linesAt(root, selected.id, c, bp); if (!l) return undefined; const w = device === screenDevice ? fitW : DEVICES.find((d) => d.id === device)?.w, band = findParent(root, selected.id)?.parent; return { ...l, cols: c, drawnAcross: w && band ? fitStepAt(band, selected.id, w / 16, bp) ?? undefined : undefined }; })()}
                   onSetLines={(want) => commit(want === "full" ? fullWidthAt(root, selected.id, bp) : setLinesAt(root, selected.id, want, columnsAt(gridHere, bp), bp), `lines:${selected.id}`)}
-                  onSetFreeInset={linesAt(root, selected.id, columnsAt(gridHere, bp), bp) ? (side, v) => commit(side === "both" ? setFreeInset(setFreeInset(root, selected.id, "left", undefined, bp), selected.id, "right", undefined, bp) : setFreeInset(root, selected.id, side, v, bp), `free:${selected.id}`) : undefined}pinBlockedBy={blockedByLabel(pinBlockedBy(root, selected.id, bp))} fixedBlockedBy={blockedByLabel(fixedBlockedBy(root, selected.id, bp))} pinScope={pinScopeWords(root, selected.id, bp)} node={bp === "base" ? selected : resolveResponsive(selected, bp)} theme={renderTheme} onPatch={onPatch} onAddChild={addChildSection} onFloat={floatSelected} onUnfloat={unfloatSelected} onLayer={layerSelected} onAlignInRow={(j) => commit(alignInRow(root, selected.id, j, bp))} rowJustify={alignInRowOf(root, selected.id, bp)} onSectionWidth={pageBandOf(root, selected.id) ? (v) => commit(setSectionWidth(root, selected.id, v)) : undefined} sectionWidth={sectionWidthOf(root, selected.id)} canFloat={selected.id !== root.id} inGrid={gridTrack !== undefined} inMasonry={parentGrid?.rowFlow === "masonry"} gridTrack={gridTrack} onSetFraction={setFraction} onRetrack={retrackSelected} breakpoint={bp} overridden={hasOverride(selected, bp)} onResetOverride={resetOverride} pages={pageList} currentPageId={activePage.id} />
+                  onSetFreeInset={linesAt(root, selected.id, columnsAt(gridHere, bp), bp) ? (side, v) => commit(side === "both" ? setFreeInset(setFreeInset(root, selected.id, "left", undefined, bp), selected.id, "right", undefined, bp) : setFreeInset(root, selected.id, side, v, bp), `free:${selected.id}`) : undefined}pinBlockedBy={blockedByLabel(pinBlockedBy(root, selected.id, bp))} fixedBlockedBy={blockedByLabel(fixedBlockedBy(root, selected.id, bp))} pinScope={pinScopeWords(root, selected.id, bp)} node={bp === "base" ? selected : resolveResponsive(selected, bp)} theme={renderTheme} onPatch={onPatch} onAddChild={addChildSection} onAddAnnouncement={() => commit(addAnnouncementBar(root, selected.id))} onFloat={floatSelected} onUnfloat={unfloatSelected} onLayer={layerSelected} onAlignInRow={(j) => commit(alignInRow(root, selected.id, j, bp))} rowJustify={alignInRowOf(root, selected.id, bp)} onSectionWidth={pageBandOf(root, selected.id) ? (v) => commit(setSectionWidth(root, selected.id, v)) : undefined} sectionWidth={sectionWidthOf(root, selected.id)} canFloat={selected.id !== root.id} inGrid={gridTrack !== undefined} inMasonry={parentGrid?.rowFlow === "masonry"} gridTrack={gridTrack} onSetFraction={setFraction} onRetrack={retrackSelected} breakpoint={bp} overridden={hasOverride(selected, bp)} onResetOverride={resetOverride} pages={pageList} currentPageId={activePage.id} />
               ) : (
                 <div className="p-6 text-xs text-gray-400 text-center mt-6">Click a block to edit it — or drag a box on empty canvas to select several at once.</div>
               )}
@@ -1497,7 +1520,7 @@ export default function BoxDemoPage() {
           </aside>
       </div>
 
-      <PageCheck root={root} fonts={fonts} html={checkHTML} isOpen={pageCheckOpen} onClose={() => setPageCheckOpen(false)}
+      <PageCheck root={root} fonts={fonts} pageIds={pageIds} html={checkHTML} isOpen={pageCheckOpen} onClose={() => setPageCheckOpen(false)}
         onShow={(id) => { setPageCheckOpen(false); revealBox(id); }}
         onPatch={(id, patch) => commit(updateBox(root, id, patch))} onSideSpace={(v) => setGrid({ ...gridStored, sideSpace: v })} />
       <DeleteConfirmationModal

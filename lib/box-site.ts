@@ -5,7 +5,7 @@
  */
 
 import { type PageGridSettings, resolvePageGrid, gridSpaceOf } from "@/lib/page-grid";
-import { type BoxNode, newBoxId, createContainer, makeRowBand, normalizeRowBands, releaseStaleAlignSelf, markPageGrid, withGridSpace } from "@/lib/box-model";
+import { type BoxNode, findBox, regionBlock, regionSpan, newBoxId, createContainer, makeRowBand, normalizeRowBands, releaseStaleAlignSelf, markPageGrid, withGridSpace } from "@/lib/box-model";
 import { DEFAULT_THEME } from "@/lib/site-storage";
 import type { SiteFonts } from "@/lib/semantics";
 
@@ -15,6 +15,8 @@ export interface BoxPage {
   path: string;   // URL slug (unique within the site), e.g. "about" — "" / "home" for the landing page
   root: BoxNode;  // the page's box tree
   grid?: PageGridSettings; // "This page uses its own grid" (AC-37b) — absent: the site's
+  /** PS-14 (BATCH LE-11): a shared header / footer left off THIS page — the copy set aside here, kept in step with every edit. */
+  away?: Partial<Record<"header" | "footer", BoxNode[]>>;
 }
 
 export interface BoxSite {
@@ -77,14 +79,96 @@ export function setSiteTheme(site: BoxSite, themeId: string): BoxSite {
   return { ...site, themeId };
 }
 
-/** Replace a page's root (an edit). Returns a new site. */
+/** Replace a page's root (an edit). Returns a new site — with the shared header and footer carried to every page (PS-2). */
 export function setPageRoot(site: BoxSite, id: string, root: BoxNode): BoxSite {
-  return { ...site, pages: site.pages.map((p) => (p.id === id ? { ...p, root } : p)) };
+  const prev = findPage(site, id)?.root;
+  const next = { ...site, pages: site.pages.map((p) => (p.id === id ? { ...p, root } : p)) };
+  return prev ? syncSharedRegions(next, id, prev) : next;
 }
 
-/** Add a page (unique slug); returns the new site + the new page id. */
+// ── ONE HEADER AND ONE FOOTER FOR EVERY PAGE (PS-2, BATCH LE-8) ─────────────────────────────────────────
+/**
+ * Every page keeps its whole tree, so the canvas, the Preview, the export and the app's webview draw a shared region exactly
+ * as they draw anything else — nothing new to render, and nothing that can disagree. What makes it ONE header is that an
+ * edit to it on any page is written to every page, here, in the one function every edit goes through. A region is shared
+ * when its block says "On every page" (`shared`); the region is the page's leading header children / trailing footer
+ * children (`regionSpan`, the same rule the published page's landmarks use).
+ */
+type Region = "header" | "footer";
+const REGIONS: Region[] = ["header", "footer"];
+/** The page's region, when it is shown on every page; else null. */
+function sharedRegion(root: BoxNode, which: Region): BoxNode[] | null {
+  const [s, e] = regionSpan(root, which);
+  const kids = (root.children ?? []).slice(s, e);
+  return kids.some((k) => regionBlock(k)?.shared) ? kids : null;
+}
+/** The page with its region replaced by `nodes` (header first, footer last). */
+function withRegion(root: BoxNode, which: Region, nodes: BoxNode[]): BoxNode {
+  const [s, e] = regionSpan(root, which);
+  const kids = [...(root.children ?? [])];
+  kids.splice(s, e - s, ...nodes);
+  return { ...root, children: kids };
+}
+const unshare = (n: BoxNode): BoxNode => {
+  const b = regionBlock(n);
+  if (!b?.shared) return n;
+  const plain = { ...b, shared: undefined };
+  return b === n ? plain : { ...n, children: [plain] };
+};
+const sameNodes = (a: BoxNode[], b: BoxNode[]) => a.length === b.length && a.every((n, i) => n === b[i]);
+
+/** After page `id` changed from `prev`: its shared header / footer is written to every other page — or, when it went, taken
+ *  off them (deleted: gone everywhere; "On every page" turned off: every page keeps its own copy, no longer shared). */
+export function syncSharedRegions(site: BoxSite, id: string, prev: BoxNode): BoxSite {
+  const src = findPage(site, id);
+  if (!src) return site;
+  let pages = site.pages;
+  for (const which of REGIONS) {
+    const now = sharedRegion(src.root, which), was = sharedRegion(prev, which);
+    if (now ? was && sameNodes(now, was) : !was) continue; // untouched (an edit elsewhere on the page) — nothing to carry
+    const keptHere = !now && was!.some((n) => !!findBox(src.root, regionBlock(n)?.id ?? "")); // the block is still on this page (turned off, or made something else) — only a DELETED one goes everywhere
+    pages = pages.map((p) => {
+      if (p.id === id) return p;
+      const set = p.away?.[which]; // PS-14: left off this page — the copy set aside follows the edit, the page does not
+      if (set) return { ...p, away: { ...p.away, [which]: now ?? (keptHere ? set.map(unshare) : undefined) } };
+      if (now) return { ...p, root: withRegion(p.root, which, now) };
+      const theirs = sharedRegion(p.root, which);
+      return theirs ? { ...p, root: withRegion(p.root, which, keptHere ? theirs.map(unshare) : []) } : p;
+    });
+  }
+  return pages === site.pages ? site : { ...site, pages };
+}
+
+/** A new page's tree with the site's shared header and footer in place (PS-2). */
+function withSharedRegions(site: BoxSite, root: BoxNode): BoxNode {
+  let out = root;
+  for (const which of REGIONS) {
+    const shared = site.pages.map((p) => sharedRegion(p.root, which)).find(Boolean) ?? site.pages.map((p) => p.away?.[which]).find(Boolean);
+    if (shared) out = withRegion(out, which, shared);
+  }
+  return out;
+}
+
+/** PS-14 · is there a shared header / footer anywhere on the site (shown, or set aside on a page)? */
+export const hasSharedRegion = (site: BoxSite, which: Region): boolean => site.pages.some((p) => !!sharedRegion(p.root, which) || !!p.away?.[which]);
+/** PS-14 · "Show the header on this page" — off: the shared region is set aside on this page; on: it comes back as it is now. */
+export function setRegionShown(site: BoxSite, pageId: string, which: Region, shown: boolean): BoxSite {
+  const page = findPage(site, pageId);
+  if (!page || shown === !page.away?.[which]) return site;
+  const others = site.pages.filter((p) => p.id !== pageId);
+  const current = others.map((p) => sharedRegion(p.root, which)).find(Boolean) ?? others.map((p) => p.away?.[which]).find(Boolean);
+  const set = (p: BoxPage): BoxPage => {
+    if (p.id !== pageId) return p;
+    if (!shown) { const nodes = sharedRegion(p.root, which) ?? current; return nodes ? { ...p, root: withRegion(p.root, which, []), away: { ...p.away, [which]: nodes } } : p; }
+    const { [which]: back, ...rest } = p.away ?? {};
+    return { ...p, root: withRegion(p.root, which, current ?? back ?? []), away: Object.keys(rest).length ? rest : undefined };
+  };
+  return { ...site, pages: site.pages.map(set) };
+}
+
+/** Add a page (unique slug) — it arrives with the shared header and footer; returns the new site + the new page id. */
 export function addPage(site: BoxSite, name: string, root: BoxNode): { site: BoxSite; id: string } {
-  const page = makeBoxPage(name, root, uniquePath(site, name));
+  const page = makeBoxPage(name, withSharedRegions(site, root), uniquePath(site, name));
   return { site: { ...site, pages: [...site.pages, page] }, id: page.id };
 }
 
@@ -97,6 +181,14 @@ export function duplicatePage(site: BoxSite, id: string): { site: BoxSite; id: s
   const idx = site.pages.findIndex((p) => p.id === id);
   const pages = [...site.pages]; pages.splice(idx + 1, 0, page);
   return { site: { ...site, pages }, id: page.id };
+}
+
+/** LE8-2 · Move a page one place earlier (-1) or later (+1) — the order of the page tabs and the Preview's page menu. The ends stay put. */
+export function movePage(site: BoxSite, id: string, by: -1 | 1): BoxSite {
+  const i = site.pages.findIndex((p) => p.id === id), j = i + by;
+  if (i < 0 || j < 0 || j >= site.pages.length) return site;
+  const pages = [...site.pages]; [pages[i], pages[j]] = [pages[j], pages[i]];
+  return { ...site, pages };
 }
 
 export function renamePage(site: BoxSite, id: string, name: string): BoxSite {

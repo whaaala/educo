@@ -15,8 +15,10 @@
  *
  * Pure: no React, no DOM (engine-stays-portable).
  */
-import { type BoxNode, type Breakpoint, BP_ORDER, isBare, isPageRow, resolveResponsive, baseUnitParts, pageRowCells, pageRowTracks, rowSide, bandGutter, longestWordRem } from "./box-model";
+import type { CSSProperties } from "react";
+import { type BoxNode, type Breakpoint, BP_ORDER, regionBlock, regionSpan, isBare, isPageRow, resolveResponsive, baseUnitParts, pageRowCells, pageRowTracks, rowSide, bandGutter, longestWordRem } from "./box-model";
 import { FONT_FAMILIES, familyOf, missingLetters } from "./educo-ui/fonts";
+import PAGE_CHECK from "../config/page-check.json";
 import { NARROWEST_PHONE_PX, RUNG_PX, RUNG_WORDS, type RungName } from "./educo-ui/layout";
 
 /** The elements a container may be. `div` is the neutral default. */
@@ -67,11 +69,26 @@ export const MENU_KEY = "menu:";
 const isLinkItem = (c: BoxNode) => c.type === "link" || (!!c.rowBand && (c.children ?? []).length === 1 && c.children![0].type === "link");
 
 /** A top-level child's region: its own tag, or the tag of the one block a structural band wraps. */
-function regionTag(n: BoxNode): string | undefined {
-  if (isTag(n.tag)) return n.tag;
-  const kids = n.children ?? [];
-  if (n.rowBand && kids.length === 1 && isTag(kids[0].tag)) return kids[0].tag;
-  return undefined;
+const regionTag = (n: BoxNode): string | undefined => { const t = regionBlock(n)?.tag; return isTag(t) ? t : undefined; };
+
+
+/**
+ * PS-9 (BATCH LE-8) · A SHORT PAGE STILL ENDS AT THE BOTTOM OF THE SCREEN. A page that ends with a Page footer is at least
+ * one screen tall (`svh`: the screen on arrival, chrome shown), and its footer takes the space left over above itself
+ * (`margin-top: auto` in the page's column) — so on a page shorter than the screen the footer sits on the screen's bottom
+ * edge, and on a longer one nothing changes. One resolver: the canvas (where `svh` is the canvas view, LE2-3) and the
+ * export both call it.
+ */
+const fillsColumn = (root: BoxNode) => root.layout === "flex" && root.direction === "column";
+export function pageFillCss(root: BoxNode): CSSProperties {
+  const [s, e] = regionSpan(root, "footer");
+  return s < e && fillsColumn(root) ? { minHeight: "100svh" } : {};
+}
+/** …and the first block of the footer region is the one pushed down — unless the user gave it a top space of their own. */
+export function footerPushCss(root: BoxNode, child: BoxNode): CSSProperties {
+  const [s, e] = regionSpan(root, "footer");
+  if (s === e || !fillsColumn(root) || root.children?.[s]?.id !== child.id) return {};
+  return (child.marginTop ?? child.margin) === undefined ? { marginTop: "auto" } : {};
 }
 
 const hasText = (n: BoxNode) => !!(n.text ?? "").replace(/<[^>]*>/g, "").trim();
@@ -238,7 +255,7 @@ export function resolvePage(root: BoxNode): PageSemantics {
 }
 
 /** Something only the user can fix — plain words, what to do, and whether it stops publishing. */
-export type PageIssue = { id: string; kind: "image-description" | "button-words" | "link-words" | "heading-jump" | "picture-missing" | "words-too-tight" | "words-at-edge" | "font-letters"; blocks: boolean; message: string; fix?: { level?: number; sideSpace?: number; font?: string } };
+export type PageIssue = { id: string; kind: "image-description" | "button-words" | "link-words" | "heading-jump" | "picture-missing" | "words-too-tight" | "words-at-edge" | "font-letters" | "link-page-gone"; blocks: boolean; message: string; fix?: { level?: number; sideSpace?: number; font?: string } };
 
 /** The site's heading + body fonts (CSS stacks) — what a block draws in when nothing above it sets a font. */
 export type SiteFonts = { heading: string; body: string };
@@ -287,7 +304,8 @@ export function wordsAtEdge(root: BoxNode): string | null {
   return null;
 }
 
-export function pageCheck(root: BoxNode, sem: PageSemantics = resolvePage(root), fonts?: SiteFonts): PageIssue[] {
+/** `pages`: the site's page ids — a link to one not among them was deleted (LE8-3). */
+export function pageCheck(root: BoxNode, sem: PageSemantics = resolvePage(root), fonts?: SiteFonts, pages?: ReadonlySet<string>): PageIssue[] {
   const out: PageIssue[] = [];
   let lastLevel = 0;
   // `font`: the nearest font set above — a block's own font sets its headings and words alike, as the canvas draws it
@@ -312,6 +330,8 @@ export function pageCheck(root: BoxNode, sem: PageSemantics = resolvePage(root),
         out.push({ id: c.id, kind: "image-description", blocks: true, message: "Describe this picture for people who can't see it — or mark it as only decoration." });
       if (c.type === "link" && !hasText(c))
         out.push({ id: c.id, kind: "link-words", blocks: true, message: "This link has no words, so nobody knows where it goes. Add words to it." });
+      if (pages && (c.type === "link" || c.type === "button") && c.href?.startsWith("page:") && !pages.has(c.href.slice(5))) // LE8-3: published as a dead "#"
+        out.push({ id: c.id, kind: "link-page-gone", blocks: true, message: PAGE_CHECK.pageGone.replace("{block}", c.type) });
       if (c.type === "button" && !hasText(c))
         out.push({ id: c.id, kind: "button-words", blocks: true, message: "This button has no words, so nobody knows what it does. Add words to it." });
       const r = sem.byId.get(c.id);
