@@ -8,6 +8,9 @@ function auditDoc(opts) {
   // `(min-width)` is evaluated on it). The rung a page is drawn at is decided by MW: at a 616px window with a 17px
   // scrollbar the content is 599px and the page is, correctly, on the TABLET rung.
   const W = document.documentElement.clientWidth; const MW = window.innerWidth; const err = []; const warn = [];
+  // L6-3 · the rung edges come from config/layout.json through the caller (RULE CFG): typed in here as 600 / 900, the tablet rule ran on
+  // up to 899 while the tablet-landscape rung starts at 840. No rungs given → the rung rules do not run.
+  const TP = opts.rungs ? opts.rungs.tp : Infinity, TL = opts.rungs ? opts.rungs.tl : -Infinity;
   // Measured from the top — a stuck header overlaps whatever the previous size left scrolled under it.
   window.scrollTo(0, 0);
   const px = (v) => parseFloat(v) || 0;
@@ -62,10 +65,14 @@ function auditDoc(opts) {
     kids.forEach((k) => { const r = k.getBoundingClientRect(); const key = Object.keys(lines).find((x) => r.top < Math.max(...lines[x].map((q) => q.getBoundingClientRect().bottom)) - 2 && r.bottom > +x + 2) ?? Math.round(r.top); (lines[key] = lines[key] || []).push(k); }); // a line = blocks that OVERLAP down the page (F1-h: a centred header's logo and menu have different tops)
     for (const ks of Object.values(lines)) {
       const containers = ks.filter((k) => k.querySelector('[class*="bx-"]'));
-      if (MW < 600 && containers.length > 1 && Math.min(...containers.map((k) => k.getBoundingClientRect().width)) < 150) err.push(`L5 phone: ${containers.length} columns squeezed side by side in ${idOf(row).slice(-4)} (${containers.map((k) => Math.round(k.getBoundingClientRect().width)).join('/')}px)`);
       // c-11c (decided B): a cell of one icon (an aria-hidden svg, no words) does not count — a table of ticks is not four columns
       const words = containers.filter((k) => k.innerText.trim() || k.querySelector('img,video,iframe,picture,canvas,input,button,textarea,select'));
-      if (MW >= 600 && MW < 900 && opts.rowBands && row.children.length >= 4 && ks.length > 3 && containers.length === ks.length && words.length >= 2) err.push(`L6 tablet: ${ks.length} columns on one line in ${idOf(row).slice(-4)} (at most 3, #78)`);
+      // …on a PHONE too (L6-8): an icon beside words is kept on a phone on purpose (G-3b (4)); counting its cell called it "squeezed"
+      if (MW < TP && words.length > 1 && Math.min(...words.map((k) => k.getBoundingClientRect().width)) < 150) err.push(`L5 phone: ${words.length} columns squeezed side by side in ${idOf(row).slice(-4)} (${words.map((k) => Math.round(k.getBoundingClientRect().width)).join('/')}px)`);
+      // …not on a PAGE-GRID page (L6-7): there every band of two or more columns owns the gutter and is held to the fit rule on every rung
+      // instead (`gridBandOwnsGutter`, G-1 #13 — the user: #78's three-across made a staircase), nested rows too; drawn as flex all the same,
+      // so the caller says which page it is. Its columns stay while their words fit; the word and overflow checks above still run
+      if (MW >= TP && MW < TL && opts.rowBands && !opts.pageGrid && row.children.length >= 4 && ks.length > 3 && containers.length === ks.length && words.length >= 2) err.push(`L6 tablet: ${ks.length} columns on one line in ${idOf(row).slice(-4)} (at most 3, #78)`);
     }
   }
   // collapsed: a block with content that has no size
@@ -125,11 +132,15 @@ function auditDoc(opts) {
   // digits of "oklch(0.97 0.01 250)" as if they were r, g, b made this check report contrast that was not there.
   const cv = document.createElement('canvas'); cv.width = cv.height = 1; const cx = cv.getContext('2d', { willReadFrequently: true });
   const rgbOf = (c) => { cx.clearRect(0, 0, 1, 1); cx.fillStyle = '#000'; cx.fillStyle = c; cx.fillRect(0, 0, 1, 1); const d = cx.getImageData(0, 0, 1, 1).data; return { r: d[0], g: d[1], b: d[2], a: d[3] }; };
-  const lum = (c) => { const { r, g, b } = rgbOf(c); return [r, g, b].map((v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; }).reduce((s, v, i) => s + v * [0.2126, 0.7152, 0.0722][i], 0); };
-  const bgOf = (e) => { for (let x = e; x; x = x.parentElement) { const cs = getComputedStyle(x); if (cs.backgroundImage !== 'none') return null; if (cs.backgroundColor && rgbOf(cs.backgroundColor).a > 242) return cs.backgroundColor; } return getComputedStyle(document.body).backgroundColor && rgbOf(getComputedStyle(document.body).backgroundColor).a > 242 ? getComputedStyle(document.body).backgroundColor : 'rgb(255,255,255)'; };
+  // RX4-24: a SEE-THROUGH text colour is composed over the background it sits on before it is measured — read as solid,
+  // 30 % black on white (≈2.1:1) passed as black (21:1). `under` is that background (already opaque, see bgOf).
+  const lum = (c, under) => { let { r, g, b, a } = rgbOf(c); if (under && a < 255) { const u = rgbOf(under), k = a / 255; r = r * k + u.r * (1 - k); g = g * k + u.g * (1 - k); b = b * k + u.b * (1 - k); } return [r, g, b].map((v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; }).reduce((s, v, i) => s + v * [0.2126, 0.7152, 0.0722][i], 0); };
+  // RX4-24: a SEE-THROUGH background is composed over what lies under it (up to the first solid one), never skipped —
+  // skipped, slate text on a 60 % black band was measured against the white below it (4.8:1) where it is 1.2:1.
+  const bgOf = (e) => { const glass = []; let base = null; for (let x = e; x; x = x.parentElement) { const cs = getComputedStyle(x); if (cs.backgroundImage !== 'none') return null; const c = cs.backgroundColor ? rgbOf(cs.backgroundColor) : { a: 0 }; if (c.a > 242) { base = c; break; } if (c.a > 0) glass.push(c); } if (!base) { const bb = rgbOf(getComputedStyle(document.body).backgroundColor || 'transparent'); base = bb.a > 242 ? bb : { r: 255, g: 255, b: 255 }; } for (const l of glass.reverse()) { const k = l.a / 255; base = { r: l.r * k + base.r * (1 - k), g: l.g * k + base.g * (1 - k), b: l.b * k + base.b * (1 - k) }; } return `rgb(${Math.round(base.r)},${Math.round(base.g)},${Math.round(base.b)})`; };
   let lowC = 0; const lowEx = [];
   for (const e of texts) { const rr = e.getBoundingClientRect(); if (rr.right <= 0 || rr.left >= W) continue; // parked off-screen (the skip link until focused): nobody reads it there
-    const bg = bgOf(e); if (!bg) continue; const a = lum(getComputedStyle(e).color), b = lum(bg); if (a == null || b == null) continue; const ratio = (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05); const large = px(getComputedStyle(e).fontSize) >= 24 || (px(getComputedStyle(e).fontSize) >= 18.6 && +getComputedStyle(e).fontWeight >= 700); if (ratio < (large ? 3 : 4.5)) { lowC++; if (lowEx.length < 3) lowEx.push(ex(e, ` ${ratio.toFixed(2)}:1 ${getComputedStyle(e).color} on ${bg}`)); } }
+    const bg = bgOf(e); if (!bg) continue; const a = lum(getComputedStyle(e).color, bg), b = lum(bg); if (a == null || b == null) continue; const ratio = (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05); const large = px(getComputedStyle(e).fontSize) >= 24 || (px(getComputedStyle(e).fontSize) >= 18.6 && +getComputedStyle(e).fontWeight >= 700); if (ratio < (large ? 3 : 4.5)) { lowC++; if (lowEx.length < 3) lowEx.push(ex(e, ` ${ratio.toFixed(2)}:1 ${getComputedStyle(e).color} on ${bg}`)); } }
   if (lowC) err.push(`C29 ${lowC} text elements below WCAG contrast — ${lowEx.join(' ')}`);
 
   // ── WHITESPACE (Rule #7; space by default, CLAUDE.md rule 3) — `warn`: the user may have set a 0 on purpose ──

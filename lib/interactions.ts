@@ -19,7 +19,11 @@
  *     focus style.
  *   • `prefers-reduced-motion` removes the movement while keeping the non-moving part of the feedback, so the
  *     effect still communicates "this is interactive" to someone who cannot tolerate motion.
+ *   • A hover look applies only where a pointer can hover (`@media (hover:hover)`), and every effect answers a
+ *     press (`:active`) — RX4-2, RX4-3.
  */
+
+import { DURATION, EASING, SHADOW_SCALE } from "@/lib/educo-ui/tokens";
 
 export type HoverEffect = {
   id: string;
@@ -30,9 +34,18 @@ export type HoverEffect = {
   transition?: string;
   /** True when the effect moves the block, so reduced-motion has something to strip. */
   moves?: boolean;
+  /** What it looks like while PRESSED (`:active`) — transform only. Omitted → the shared small dip. */
+  press?: string;
 };
 
-const EASE = "var(--eu-dur-base, .18s) var(--eu-ease-standard, cubic-bezier(.2,0,0,1))";
+/** A token's fallback IS the token (RX4-7): one value, read from the token module, never a second copy here. */
+const EASE = `var(--eu-dur-base, ${DURATION.base}) var(--eu-ease-standard, ${EASING.standard})`;
+
+/**
+ * THE PRESS (RX4-3): every effect answers a finger or a mouse-down with a small dip, so a block that reacts to a
+ * hover also reacts to being pressed. Transform only — it never moves the layout — and stripped by reduced motion.
+ */
+const PRESS = "transform:scale(.98)";
 
 /**
  * The catalogue. Colours come from tokens so an effect re-themes with the site and keeps its contrast in all
@@ -44,8 +57,9 @@ export const HOVER_EFFECTS: HoverEffect[] = [
     decls: "transform:translateY(-0.25rem);box-shadow:0 0.75rem 1.5rem -0.75rem rgba(0,0,0,.32)" },
   { id: "grow", label: "Grow", moves: true, transition: `transform ${EASE}`,
     decls: "transform:scale(1.03)" },
+  // A PRESS, not a hover look (RX4-3): nothing happens until the block is pressed, then it sinks in.
   { id: "press", label: "Press", moves: true, transition: `transform ${EASE}`,
-    decls: "transform:translateY(0.125rem) scale(.995)" },
+    decls: "", press: "transform:translateY(0.125rem) scale(.97)" },
   { id: "glow", label: "Glow", transition: `box-shadow ${EASE}`,
     decls: "box-shadow:0 0 0 0.25rem color-mix(in oklab, var(--eu-color-brand) 32%, transparent)" },
   { id: "outline", label: "Outline", transition: `outline-color ${EASE}`,
@@ -91,23 +105,83 @@ export function hasHover(hoverEffectId?: string): boolean {
  *
  * Returns "" when there is no effect, so a page with no interactions ships not a single extra byte.
  */
-export function hoverCss(scope: string, hoverEffectId?: string): string {
-  const fx = hoverEffect(hoverEffectId);
-  if (!fx || !fx.decls) return "";
+/**
+ * A box-shadow (one or more layers) as the same `drop-shadow()` filters. A drop-shadow has no spread: a spread-only ring
+ * (Glow: `0 0 0 0.25rem`) becomes that much blur, any other spread is left out.
+ */
+export function dropShadows(shadow: string): string {
+  return splitTop(shadow, ",").map((layer) => {
+    const t = splitTop(layer.trim(), " ").filter(Boolean);
+    const lens = t.filter((x) => /^-?[\d.]+(rem|em|px)?$/.test(x)), colour = t.filter((x) => !lens.includes(x)).join(" ");
+    const [x = "0", y = "0", blur = "0", spread] = lens;
+    const b = parseFloat(blur) === 0 && spread && parseFloat(spread) > 0 ? spread : blur;
+    return `drop-shadow(${x} ${y} ${b} ${colour})`;
+  }).join(" ");
+}
+
+/** Split on `sep` outside parentheses, at any depth — `color-mix(in oklab, var(--x) 32%, transparent)` stays whole. */
+function splitTop(s: string, sep: string): string[] {
+  const out: string[] = []; let depth = 0, cur = "";
+  for (const ch of s) {
+    if (ch === "(") depth++; else if (ch === ")") depth--;
+    if (depth === 0 && (sep === " " ? /\s/.test(ch) : ch === sep)) { out.push(cur); cur = ""; } else cur += ch;
+  }
+  return [...out, cur];
+}
+
+/**
+ * The resting filter of a SHAPED band with a shadow (RX4-8) — its shadow as drop-shadows, because a clip would cut a
+ * box-shadow away — or undefined for every other block. One answer, read by `bandEdgeCSS` (box-model) and by the hover
+ * below, so a hover composes with it instead of overwriting it (RX4-22).
+ */
+export function shapeShadowFilter(n: { shadow?: keyof typeof SHADOW_SCALE; edgeTop?: string; edgeBottom?: string }): string | undefined {
+  return n.shadow && (n.edgeTop || n.edgeBottom) ? dropShadows(SHADOW_SCALE[n.shadow]) : undefined;
+}
+
+/**
+ * A hover look ON a shaped band (RX4-22): its box-shadow would be a rectangle and its filter would REPLACE the shape's
+ * drop-shadow. So both go into ONE filter after the resting drop-shadows — the shadow as one more drop-shadow, a
+ * brightness after them — and a transition of either becomes a transition of `filter`.
+ */
+function onShape(decls: string, rest: string): string {
+  let add = "";
+  const kept = decls.split(";").map((d) => d.trim()).filter(Boolean).filter((d) => {
+    const i = d.indexOf(":"), p = d.slice(0, i).trim(), v = d.slice(i + 1).trim();
+    if (p === "box-shadow") { add += ` ${dropShadows(v)}`; return false; }
+    if (p === "filter") { add += ` ${v}`; return false; }
+    return true;
+  });
+  return add ? [...kept, `filter:${rest}${add}`].join(";") : decls;
+}
+
+export function hoverCss(scope: string, hoverEffectId?: string, shapeFilter?: string): string {
+  const base0 = hoverEffect(hoverEffectId);
+  if (!base0 || !base0.id) return "";
+  const fx: HoverEffect = shapeFilter
+    ? { ...base0, decls: onShape(base0.decls, shapeFilter), transition: base0.transition?.replace(/\bbox-shadow\b/g, "filter") }
+    : base0;
 
   // `:has(:focus-visible)` lets a card respond when the button inside it takes keyboard focus. Browsers that
   // do not support `:has` simply skip that selector — the hover and focus rules are separate, so nothing else
   // in the list is lost. (An invalid selector would otherwise void the whole rule, hence three rules, not one.)
-  const states = [`${scope}:hover`, `${scope}:focus-visible`, `${scope}:has(:focus-visible)`];
-  const base = fx.transition ? `${scope}{transition:${fx.transition}}` : "";
-  const on = states.map((s) => `${s}{${important(fx.decls)}}`).join("");
-
-  // Reduced motion strips the MOVEMENT, not the feedback: a lift keeps its shadow, a grow simply stops growing.
-  const calmed = fx.moves
-    ? `@media (prefers-reduced-motion:reduce){${scope}{transition:none !important}${states.map((s) => `${s}{transform:none !important}`).join("")}}`
+  const focus = [`${scope}:focus-visible`, `${scope}:has(:focus-visible)`];
+  const states = [`${scope}:hover`, ...focus, `${scope}:active`];
+  // The press moves by transform, so every effect transitions transform too — or the dip would snap.
+  const transition = [fx.transition, fx.transition?.includes("transform") ? "" : `transform ${EASE}`].filter(Boolean).join(", ");
+  const base = `${scope}{transition:${transition}}`;
+  // RX4-2: the HOVER look only where a pointer can hover. On a touch screen a tap sets :hover and leaves it set,
+  // so a tapped Lift card stayed lifted after the finger had gone. Keyboard focus is not a hover: ungated.
+  const on = fx.decls
+    ? `@media (hover:hover){${scope}:hover{${important(fx.decls)}}}${focus.map((s) => `${s}{${important(fx.decls)}}`).join("")}`
     : "";
+  // RX4-3: the press, LAST, so pressing a hovered or focused block still dips (same specificity, later wins).
+  const press = `${scope}:active{${important(fx.press ?? PRESS)}}`;
 
-  return `${base}${on}${calmed}`;
+  // Reduced motion strips the MOVEMENT, not the feedback: a lift keeps its shadow, a grow simply stops growing,
+  // and no effect dips when pressed.
+  const calmed = `@media (prefers-reduced-motion:reduce){${fx.moves ? `${scope}{transition:none !important}` : ""}${states.map((s) => `${s}{transform:none !important}`).join("")}}`;
+
+  return `${base}${on}${press}${calmed}`;
 }
 
 // ── Round 1b: ENTRANCE & SCROLL-INTO-VIEW ─────────────────────────────────────────────────────────
@@ -197,9 +271,9 @@ export function itemEffectsCss(scope: string, it: ItemEffects): string {
 /**
  * One block's entrance.
  *
- * `revealScroll` plays it when the block comes into view, through a CSS scroll-driven timeline — with an
- * `@supports` guard, so a browser without `animation-timeline` plays the entrance on load instead of showing
- * nothing. STAGGER applies the effect to the container's direct CHILDREN, each a beat later, which is what
+ * `revealScroll` plays it ONCE when the block comes into view: the entrance is held by a class the shared
+ * `revealOnceScript` adds and removes (RX4-1) — without the script it simply plays on load, never left hidden.
+ * STAGGER applies the effect to the container's direct CHILDREN, each a beat later, which is what
  * people actually mean by it: a row of cards arriving one after another.
  */
 /**
@@ -209,9 +283,58 @@ export function itemEffectsCss(scope: string, it: ItemEffects): string {
  * animation running was the arrival. `pinArrivalCss` now declares both in one rule, reading these rather
  * than keeping a second copy that could drift out of step with the entrance it is naming.
  */
-export const REVEAL_DUR = "var(--eu-dur-slow, .55s)";
-export const REVEAL_EASE = "var(--eu-ease-standard, cubic-bezier(.2,0,0,1))";
-export const REVEAL_VIEW_RANGE = "entry 0% cover 28%";
+export const REVEAL_DUR = `var(--eu-dur-slow, ${DURATION.slow})`; // 320ms — the token, not a second copy (RX4-7)
+export const REVEAL_EASE = `var(--eu-ease-standard, ${EASING.standard})`;
+/** The class the shared script puts on a scroll entrance while it waits to come into view (RX4-1). Also read by
+ *  `pinArrivalCss` (box-model.ts), whose entrance on a PINNED block waits behind the same gate (RX4-19). */
+export const REVEAL_WAIT = "eu-wait";
+const WAIT = REVEAL_WAIT;
+
+/**
+ * PLAY ONCE AS IT ENTERS (RX4-1). A scroll-driven `view()` timeline SCRUBS: scrolling back up ran the entrance
+ * backwards (measured: opacity .99 → 0). There is no CSS that latches "has been seen", so a tiny shared script
+ * does it: it reads the page's own `X.eu-wait` rules (so no selector list has to be plumbed through), puts the
+ * class on each matching element — which pauses its entrance at the start — and takes it off, once, as the
+ * element comes into view. One guarded `window.__euReveal` per page, shipped only when a scroll entrance exists.
+ *
+ * Nothing can be left hidden: no script, no IntersectionObserver, or a sheet that cannot be read → no class is
+ * ever added, and the entrance simply plays on load. Reduced motion → `animation:none`, the block is there.
+ */
+export function revealOnceScript(): string {
+  return `<script>(function(){if(window.__euReveal)return;window.__euReveal=1;var wire=${String(revealOnceWire)};wire(document,'${WAIT}');})();<\/script>`;
+}
+
+/**
+ * THE GATE ITSELF, as a real function: the page ships its source (`revealOnceScript`) and the CANVAS calls it (RX4-17) —
+ * one implementation, so a scroll entrance waits in the editor exactly as it does on the page. Self-contained (its source
+ * is shipped), so the class comes in as an argument. Returns the disconnect, for the canvas to call as its tree changes.
+ */
+export function revealOnceWire(doc: Document, cls: string): () => void {
+  if (typeof IntersectionObserver === "undefined") return function () {};
+  const io = new IntersectionObserver(function (es) {
+    es.forEach(function (e) { if (e.isIntersecting) { e.target.classList.remove(cls); io.unobserve(e.target); } });
+  });
+  const tail = new RegExp("\\." + cls + "$");
+  const scan = function (rs: CSSRuleList) {
+    for (let i = 0; i < rs.length; i++) {
+      const r = rs[i] as CSSStyleRule & { cssRules?: CSSRuleList };
+      if (r.cssRules && !r.selectorText) { scan(r.cssRules); continue; }
+      let s = r.selectorText || "";
+      if (!tail.test(s)) continue;
+      s = s.replace(tail, "");
+      if (/[\s>+~]$/.test(s)) s += "*";
+      try { doc.querySelectorAll(s).forEach(function (el) { el.classList.add(cls); io.observe(el); }); } catch { /* a selector this browser cannot read */ }
+    }
+  };
+  for (let i = 0; i < doc.styleSheets.length; i++) { try { scan(doc.styleSheets[i].cssRules); } catch { /* a sheet it may not read */ } }
+  return function () { io.disconnect(); };
+}
+
+/** Does anything on this page — a block or one of its items — play its entrance on scroll? */
+export function scrollRevealNeeded(n: { revealEffect?: string; revealScroll?: boolean; items?: ItemEffects[]; children?: unknown[] }): boolean {
+  const on = (x: { revealEffect?: string; revealScroll?: boolean }) => !!(x.revealScroll && revealEffect(x.revealEffect)?.from);
+  return on(n) || (n.items ?? []).some(on) || ((n.children ?? []) as typeof n[]).some(scrollRevealNeeded);
+}
 
 export function revealCss(scope: string, node: RevealNode, opts: RevealOpts = {}): string {
   const fx = revealEffect(node.revealEffect);
@@ -239,7 +362,9 @@ export function revealCss(scope: string, node: RevealNode, opts: RevealOpts = {}
   }
 
   if (node.revealScroll) {
-    css += `@supports (animation-timeline: view()){${target}{animation-timeline:view();animation-range:${REVEAL_VIEW_RANGE}}}`;
+    // Held at its start while the shared script says it is out of view; released once (RX4-1, revealOnceScript).
+    // The extra class out-ranks the `animation` shorthand above, which would otherwise reset the play state.
+    css += `${target}.${WAIT}{animation-play-state:paused}`;
   }
 
   // Reduced motion: no entrance at all. The block is simply present — which is the resting style anyway.
@@ -272,10 +397,10 @@ export function treeRevealCss(
 
 /** Every hover rule in a tree, for the one stylesheet the canvas injects. `scopeFor` maps a node id to a selector. */
 export function treeHoverCss(
-  node: { id: string; hoverEffect?: string; children?: { id: string }[] },
+  node: { id: string; hoverEffect?: string; children?: { id: string }[] } & Parameters<typeof shapeShadowFilter>[0],
   scopeFor: (id: string) => string,
 ): string {
-  const self = hoverCss(scopeFor(node.id), node.hoverEffect);
+  const self = hoverCss(scopeFor(node.id), node.hoverEffect, shapeShadowFilter(node)); // RX4-22
   const kids = ((node.children ?? []) as typeof node[]).map((c) => treeHoverCss(c, scopeFor)).join("");
   return self + kids;
 }

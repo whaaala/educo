@@ -42,6 +42,12 @@ async function widthMode(page, id, which) {
   const b = page.getByRole('group', { name: 'Width' }).getByRole('button', { name: which, exact: true }).or(page.getByRole('radio', { name: which, exact: true })).first();
   if (!(await b.count())) return false; await b.scrollIntoViewIfNeeded(); await b.click(); await page.waitForTimeout(250); return true;
 }
+/** A width typed in: Width → Custom, then "Custom width" (e.g. "3.5rem") — how a person sizes a logo. */
+async function customWidth(page, id, value) {
+  if (!(await widthMode(page, id, 'Custom'))) return false;
+  const f = page.getByLabel('Custom width').first(); if (!(await f.count())) return false;
+  await f.fill(value); await f.press('Enter').catch(() => {}); await f.blur(); await page.waitForTimeout(200); return true;
+}
 /** Background colour, typed into the hex field and confirmed with Enter. */
 async function background(page, id, hex) {
   await H.select(page, id); await tab(page, 'Design'); if (!(await section(page, 'Background'))) return false;
@@ -53,6 +59,25 @@ async function text(page, id, words) {
   await H.select(page, id); if (!(await tab(page, 'Content'))) return false;
   const f = page.getByLabel(/^Text$/).first(); if (!(await f.count())) return false;
   await f.fill(words); await f.blur(); await page.waitForTimeout(150); await tab(page, 'Design'); return true;
+}
+/** An image's description, typed into "Describe this image" on the Content tab (L-6: the header's logo). */
+async function alt(page, id, words) {
+  await H.select(page, id); if (!(await tab(page, 'Content'))) return false;
+  const f = page.getByLabel('Image alt text').first(); if (!(await f.count())) return false;
+  await f.fill(words); await f.blur(); await page.waitForTimeout(150); await tab(page, 'Design'); return true;
+}
+/** "Load straight away (for an image at the top of the page)" — ticked for a picture above the fold (L-6: the logo). */
+async function eager(page, id) {
+  await H.select(page, id); if (!(await tab(page, 'Content'))) return false;
+  const c = page.getByLabel(/Load straight away/).first(); if (!(await c.count())) return false;
+  if (!(await c.isChecked())) { await c.check(); await page.waitForTimeout(150); } await tab(page, 'Design'); return true;
+}
+/** A file put into an Image block through ITS OWN Upload button, as a person does (`fillImages` fills every empty one with photos). */
+async function upload(page, id, file) {
+  const btn = page.locator(`[data-box-id="${id}"] button`, { hasText: /^\s*Upload\s*$/ }).first(); if (!(await btn.count())) return false;
+  await btn.scrollIntoViewIfNeeded();
+  const [chooser] = await Promise.all([page.waitForEvent('filechooser', { timeout: 6000 }).catch(() => null), btn.click()]);
+  if (!chooser) return false; await chooser.setFiles(file); await page.waitForTimeout(1200); return true;
 }
 /** Hidden on phones (or shown only on phones: `show` = true hides it everywhere else). */
 async function phoneOnly(page, id, { hideOnPhone = false, onlyOnPhone = false } = {}) {
@@ -98,7 +123,12 @@ async function textSize(page, id, px) {
   // The slider lives inside the "Text style" section (collapsed by default) — a person opens it first.
   for (const t of ['Content', 'Design']) { await tab(page, t); await section(page, 'Text style( \\(everything inside\\))?'); const c = page.getByRole('slider', { name: /^Text size/ }).first(); if (await c.count()) { s = c; break; } }
   if (!s) return false;
-  await s.scrollIntoViewIfNeeded(); await s.focus();
+  // L6-11 diagnostic: if the slider will not hold still, count how often the Inspector REPLACES it in two seconds (a re-render loop)
+  try { await s.scrollIntoViewIfNeeded({ timeout: 4000 }); } catch (e) {
+    const churn = await page.evaluate(() => new Promise((ok) => { let n = 0, last = null; const t0 = performance.now(); const tick = () => { const el = document.querySelector('[role="slider"][aria-label^="Text size"], input[type="range"][aria-label^="Text size"]'); if (el !== last) { n++; last = el; } if (performance.now() - t0 < 2000) requestAnimationFrame(tick); else ok({ swaps: n, now: !!el }); }; tick(); }));
+    console.log(`  L6-11 slider churn on ${id.slice(-4)}: ${JSON.stringify(churn)}`); throw e;
+  }
+  await s.focus();
   // Typed straight into the range (Playwright's fill sets the value and fires input/change, as a drag would); the arrow
   // keys are the fallback for a slider that is not an <input> — measured: the key loop left a hero title at 33, not 48.
   let done = false;
@@ -106,4 +136,4 @@ async function textSize(page, id, px) {
   if (!done) for (let k = 0; k < 200; k++) { const now = +(await s.getAttribute('aria-valuenow') ?? await s.inputValue()); if (now === px) break; await page.keyboard.press(now < px ? 'ArrowRight' : 'ArrowLeft'); await page.waitForTimeout(20); }
   await page.waitForTimeout(300); await tab(page, 'Design'); return true;
 }
-module.exports = { spacing, textToggle, section, tab, meaning, sticky, contentWidth, background, text, phoneOnly, widthMode, textSize };
+module.exports = { spacing, textToggle, section, tab, meaning, sticky, contentWidth, background, text, alt, eager, upload, customWidth, phoneOnly, widthMode, textSize };

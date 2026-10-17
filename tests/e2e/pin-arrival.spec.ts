@@ -28,7 +28,7 @@ const bare = (children: BoxNode[]) =>
   ({ id: "root", type: "container", direction: "column", padding: 0, gap: 0, children } as unknown as BoxNode);
 const asSite = (root: BoxNode) => ({ homeId: "p1", pages: [{ id: "p1", name: "Home", path: "/", root }] });
 
-type Look = { shadow: string; bg: string; backdrop: string; height: number; running: string[] };
+type Look = { shadow: string; bg: string; backdrop: string; height: number; below: number; running: string[] };
 
 /** Open the exported page and read the bar at rest, then again after the page has moved. */
 async function arrivalInExport(page: Page, node: BoxNode, scrollTo = 300): Promise<{ rest: Look; moved: Look }> {
@@ -44,7 +44,9 @@ async function arrivalInExport(page: Page, node: BoxNode, scrollTo = 300): Promi
       const s = getComputedStyle(el);
       return {
         shadow: s.boxShadow, bg: s.backgroundColor, backdrop: s.backdropFilter || (s as unknown as { webkitBackdropFilter?: string }).webkitBackdropFilter || "none",
-        height: Math.round(el.getBoundingClientRect().height),
+        // The VISIBLE height: Condense clips an equal slice off each end rather than re-laying the bar out (RX4-4).
+        height: Math.round(el.getBoundingClientRect().height - 2 * (parseFloat((/inset\(([\d.]+)px/.exec(s.clipPath) ?? [])[1] ?? "0") || 0)),
+        below: Math.round(document.querySelector(".bx-body1")?.getBoundingClientRect().top ?? NaN),
         running: el.getAnimations().map((a) => (a as unknown as { animationName?: string }).animationName ?? "?"),
       };
     };
@@ -72,7 +74,9 @@ async function arrivalOnCanvas(page: Page, node: BoxNode): Promise<{ rest: Look;
       const s = getComputedStyle(el);
       return {
         shadow: s.boxShadow, bg: s.backgroundColor, backdrop: s.backdropFilter || "none",
-        height: Math.round(el.getBoundingClientRect().height),
+        // The VISIBLE height: Condense clips an equal slice off each end rather than re-laying the bar out (RX4-4).
+        height: Math.round(el.getBoundingClientRect().height - 2 * (parseFloat((/inset\(([\d.]+)px/.exec(s.clipPath) ?? [])[1] ?? "0") || 0)),
+        below: Math.round(document.querySelector('[data-box-id="body1"]')?.getBoundingClientRect().top ?? NaN),
         running: el.getAnimations().map((a) => (a as unknown as { animationName?: string }).animationName ?? "?"),
       };
     };
@@ -149,6 +153,8 @@ test.describe("an arrival changes the bar, and only once the page has moved", ()
   test("CONDENSE makes it shorter, and the page does not jump while it does", async ({ page }) => {
     const { rest, moved } = await arrivalInExport(page, bar({ pinArrival: "condense" }));
     expect(moved.height, `it was ${rest.height}px and became ${moved.height}px`).toBeLessThan(rest.height - 8);
+    // RX4-4: nothing below it re-laid out — what follows it moved by the scroll and by nothing else.
+    expect(moved.below - rest.below, `the band below moved ${moved.below - rest.below}px for a 300px scroll`).toBe(-300);
     // A bar that shrinks moves the content under it, which scroll anchoring can chase — the oscillation
     // people know from shrinking headers. Measured rather than assumed: the scroll position must settle.
     const settled = await page.evaluate(async () => {

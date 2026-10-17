@@ -38,7 +38,10 @@ means a new one.
 **Edge to edge, or a centred column.** Select a band and choose *Edge to edge* (the colour runs to the window's edges
 and so does the content) or *Centred column* (the colour still runs edge to edge, but the content is held to a
 comfortable reading width in the middle). Maya's hero is edge to edge; her body text is a centred column, because 68
-characters a line is what people can read.
+characters a line is what people can read. The colour she gives the section itself runs edge to edge too; only a
+section dressed as a card (rounded corners, a shadow or a border) stays a card in the middle of the column. Any
+Inner spacing she gives that section is added on top of the column, so 3 on the left moves her words 3 further in from
+the column's edge, never out to the window.
 
 ## 2. "I want a photo beside my words"
 
@@ -143,6 +146,38 @@ becomes on a phone:
 - **Every line that holds a hand-sized column has one pixel of slack.** A word that needed one pixel more than the
   column's share made the column one pixel wider, the row no longer fitted, and the neighbour dropped to the next
   line — a hole. The slack lives at the end of the line (the last column lends it), so no column changes size.
+
+### Out and back: a drag you take back leaves nothing behind
+
+Maya drags a heading's corner in to see how it looks narrower, doesn't like it, and drags it back. The heading is exactly
+as it was — the same width, the same height, its words on one line — and nothing new is stored on it. That holds for
+every edge and every corner, whether she takes it back in the same drag or in a second one, and however many times:
+
+- **A height dragged back keeps no fixed height.** Dragging a Stat's bottom edge down and back up leaves it with no
+  height of its own, so on a phone, where its column stacks, it is still exactly as tall as its words. The block below a
+  bottom edge gives room and takes it back the same way.
+- **A width dragged back is the width she had.** The row of two halves is two halves again, and it still counts as "not
+  sized by hand": on a phone it stacks, just like a row she never touched.
+- **A hair is not a gap.** A hand never lands on exactly the same pixel twice; within two pixels of where an edge
+  started, it is where it started.
+- **Ctrl+Z undoes the drag** — even if she had clicked into the words to select the block first.
+
+**An edge stops where its neighbour has nothing left to give.** In a grid of five one-column cells, a cell cannot
+grow: the cell beside it is already one column, and pushing the last cell off the row would change the row behind her
+back. The left edge of the first cell on a row is the grid's own edge, so it does not move. And a narrow label column
+squeezed by its neighbour stops at the width its words need — before the whole row would have to break onto more
+lines.
+
+**Blocks added inside a "Side by side" share its line.** Click "Add a block inside" twice and the two blocks sit side
+by side, half each; a third makes thirds. The edge between them drags like any other. Clicking it again and again keeps
+adding them side by side in the same row, never one inside the last. The same goes for tiles: add a **Side by side**,
+then click **Text**, **Image** and **Button** in the panel, and all three go into it, on one line. To put the next block
+under the row instead, choose **Where → After** in the panel first.
+
+[![Two "Side by side" blocks filled with "Add a block inside": two halves above, three thirds below, then two rows of two](img/story-side-by-side-shares.webp)](img/story-side-by-side-shares.webp)
+
+*Not yet:* a **Button**'s corner still scales its words as it is dragged in, and does not come back exactly when dragged
+out again — that is settled when the Button is rebuilt as a component, after the layout.
 
 ## 6. Hiding something on one device
 
@@ -430,6 +465,25 @@ Everything above becomes proper HTML5: `header`, `nav`, `main`, `aside`, `sectio
 that follow the page; a skip link for keyboard users. The canvas and the published page are the same layout to within
 a pixel at every size — that is a rule with tests behind it, not an aspiration, and every sweep of real pages
 re-measures it.
+
+### Light enough for a cheap phone on a slow connection
+
+Maya's parents mostly visit on low-cost Android phones, often on 3G, paying for data by the megabyte. So every page the
+builder publishes is held to a budget, measured on the files **Export** gives her, the way a visitor's phone receives
+them:
+
+| What | Budget |
+|------|--------|
+| The page's HTML, CSS and scripts, compressed | 100 KB at most |
+| Everything a 360px-wide phone downloads for the first screen — pictures and fonts included | 500 KB at most |
+| Typefaces | two families at most, and words show straight away while the font arrives |
+| Pictures | sized to the box they are shown in, with their width and height set so the page does not jump, and loaded only when the visitor scrolls near them |
+| On a slow 3G connection | the first content painted within 5 seconds, and the page not shifting about as the rest arrives |
+
+A typical school home page — a header with the crest, a large photo, three sections and a footer — comes in at about
+12 KB of page and 165 KB for the first screen, and paints in about 4 seconds on slow 3G. The one thing Maya chooses
+herself: a picture at the very top of the page (the crest, a hero photo) can be set to **Load straight away** in its
+Content tab; everything below the first screen waits until it is needed.
 
 ---
 

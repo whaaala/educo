@@ -681,6 +681,30 @@ Run through this checklist BEFORE telling the user it's done:
     the area being worked are ledger lines and moved to configuration in that batch.
   - **Guarded:** each area's config has a unit guard that fails when one of its values appears as a literal outside the
     config (mutation-proven), so a value copied back into code is caught the day it appears.
+- **RULE TIERS — MUST · SHOULD · NICE · GREAT: EVERY AREA SHIPS ITS ESSENTIALS FIRST (MANDATORY — the user, 2026-10-16: "must-have,
+  some of the should-have that's really essential, and then nice-to-have and great-to-have later… that's how we're going to do
+  everything going forward").** Every line of an area's work carries one tier, written on its batch in `docs/TASK_TREE.md`:
+  **Must-have** (a person building a site meets it at once, or the result is wrong) · **Should-have** (most sites need it; the
+  essential few are done with the musts, the rest later) · **Nice-to-have** · **Great-to-have**. An area is built in that order:
+  its musts and essential shoulds COMPLETELY — every screen size and breakpoint, every theme, the web AND the `apps/mobile/` app on
+  phone and tablet, HEADED — then the next area; the nice and great lines stay mapped in the tree under their tier, and the area
+  is RE-OPENED for them later, never forgotten. The tiers are proposed by the session and signed by the user before the build.
+- **RULE BEST — A MUST-HAVE STANDS NEXT TO THE BEST, NEVER "JUST ENOUGH" (MANDATORY — the user, 2026-10-17: "a must-have must be
+  extremely more than average… we want to be next to whatever the best could be out there… multiple combinations… including all the
+  components").** Applies to every area — layout, effects, every component, the app — now and from now on.
+  - **The bar is the best, measured:** an area's Must tier is set by the best builder for each capability (Webflow, Framer, Wix
+    Studio… whichever leads it) AND what award-winning sites do (Awwwards Sites of the Day). "A basic site manages without it" is no
+    longer a reason to leave a line out of Must; a tiers proposal names, per family, which leader it was measured against.
+  - **MANY COMBINATIONS, never one-to-ten:** every Must capability ships a gallery of ready-made designs at least as large as the
+    best builder offers for that family (counted, written in the tiers document), AND every axis it has — direction, distance,
+    duration, delay, easing, trigger, intensity, colour… — adjustable and combinable with the others (RULE T, RULE MAP), so the
+    space a person can make is hundreds, not a handful. Components the same: every variation the best component libraries have.
+  - **What is never cut to get there:** accessibility (reduced motion → a still, focus, no flashing, a Pause), RULE AF (a 360px
+    phone on Slow 3G, the weight budget, poster-first media) — a showy effect is in only if it passes them. Deliberately left out
+    (written with the reason): what harms the reader (a smooth-scroll library that fights their own scrolling) or a low-cost phone
+    (WebGL backgrounds, custom cursors stay Great).
+  - **Checked, not claimed:** the tiers document carries the leader comparison and the counts; the HEADED UAT proves the combinations
+    draw and differ (RULE T), canvas == export.
 - **STATUS, ALWAYS (the user, 2026-09-28).** Every reply ends with where the work is and what comes next — one line, a
   pointer the user can act on — so the user never has to ask "where are you?".
 - **RULE P — WEBSITE PERSONALITY AND TONE ARE FOLLOWED (MANDATORY — from 2026-09-27).** The Website Personalities

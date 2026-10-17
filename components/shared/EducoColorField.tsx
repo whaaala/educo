@@ -20,11 +20,21 @@ import { closeOnScrollAway } from "@/lib/scroll-away";
 const GRID_SHADES: Shade[] = [75, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950];
 const NEUTRALS = ["#ffffff", "#f3f4f6", "#d1d5db", "#9ca3af", "#6b7280", "#374151", "#111827", "#000000"];
 
+const hex2 = (n: number) => Math.max(0, Math.min(255, Math.round(n))).toString(16).padStart(2, "0");
+
+/**
+ * A typed colour → `#rrggbb`, or `#rrggbbaa` when it is see-through (RX4-6: a tint over a photo has to be, and
+ * `#00000066` / `rgba(…)` typed used to store nothing). Accepts #rgb · #rgba · #rrggbb · #rrggbbaa · rgb() · rgba().
+ * A fully opaque alpha is dropped, so an opaque colour is always the plain six digits.
+ */
 function normalizeHex(v: string): string | null {
-  const s = v.trim().replace(/^#?/, "");
-  if (/^[0-9a-fA-F]{3}$/.test(s)) return "#" + s.split("").map((c) => c + c).join("").toLowerCase();
-  if (/^[0-9a-fA-F]{6}$/.test(s)) return "#" + s.toLowerCase();
-  return null;
+  const rgb = /^rgba?\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*(?:,\s*([\d.]+)(%?)\s*)?\)$/i.exec(v.trim());
+  const s = rgb
+    ? hex2(+rgb[1]) + hex2(+rgb[2]) + hex2(+rgb[3]) + (rgb[4] ? hex2((rgb[5] ? +rgb[4] / 100 : +rgb[4]) * 255) : "")
+    : v.trim().replace(/^#?/, "");
+  const full = /^[0-9a-fA-F]{3,4}$/.test(s) ? s.split("").map((c) => c + c).join("") : s;
+  if (!/^([0-9a-fA-F]{6}|[0-9a-fA-F]{8})$/.test(full)) return null;
+  return "#" + full.toLowerCase().replace(/^(.{6})ff$/, "$1");
 }
 
 const CHECKER = "repeating-conic-gradient(#c9ced6 0% 25%, #ffffff 0% 50%) 50% / 10px 10px";
@@ -85,6 +95,11 @@ export default function EducoColorField({ label, ariaLabel, value, onChange, con
 
   const isNone = !value || value === "transparent";
   const normalized = normalizeHex(value) ?? "#000000";
+  const solid = normalized.slice(0, 7);          // the colour without its transparency — what contrast is measured on
+  const alpha = normalized.slice(7);             // "" when opaque, else two hex digits
+  const opacity = alpha ? Math.round((parseInt(alpha, 16) / 255) * 100) : 100;
+  // A swatch picked for a see-through colour keeps the transparency (RX4-6): a tint stays a tint, the photo shows.
+  const pick = (hex: string) => { const n = normalizeHex(hex); onChange(n ? n.slice(0, 7) + alpha : hex); };
   /**
    * TYPING BELONGS TO THE BLOCK IT WAS TYPED FOR (#89). The `onChange` of the render in which the user typed is kept
    * with the text, and only still-PENDING typing is committed on blur — to that block. Measured through the UI: a colour
@@ -98,10 +113,10 @@ export default function EducoColorField({ label, ariaLabel, value, onChange, con
     const n = normalizeHex(raw); if (n) target(n); else setText(value);
   };
   const pickEyedropper = async () => {
-    try { const res = await new (window as unknown as { EyeDropper: new () => { open: () => Promise<{ sRGBHex: string }> } }).EyeDropper().open(); if (res?.sRGBHex) onChange(res.sRGBHex); } catch { /* cancelled */ }
+    try { const res = await new (window as unknown as { EyeDropper: new () => { open: () => Promise<{ sRGBHex: string }> } }).EyeDropper().open(); if (res?.sRGBHex) pick(res.sRGBHex); } catch { /* cancelled */ }
   };
 
-  const ratio = contrastBg ? contrastRatio(normalized, contrastBg) : null;
+  const ratio = contrastBg ? contrastRatio(solid, contrastBg) : null;
   const min = largeText ? 3 : 4.5;
 
   return (
@@ -127,7 +142,7 @@ export default function EducoColorField({ label, ariaLabel, value, onChange, con
             WCAG {ratio.toFixed(2)}:1 {ratio >= min ? "✓ AA" : "· low"}
           </span>
           {ratio < min && (
-            <button type="button" onClick={() => onChange(nearestAccessibleColor(normalized, contrastBg!, min))} className="inline-flex items-center gap-1 text-indigo-600 hover:text-indigo-500"><Wand2 className="h-3 w-3" /> Fix contrast</button>
+            <button type="button" onClick={() => onChange(nearestAccessibleColor(solid, contrastBg!, min))} className="inline-flex items-center gap-1 text-indigo-600 hover:text-indigo-500"><Wand2 className="h-3 w-3" /> Fix contrast</button>
           )}
         </div>
       )}
@@ -146,7 +161,7 @@ export default function EducoColorField({ label, ariaLabel, value, onChange, con
           <div className="text-[0.5625rem] font-semibold uppercase tracking-wide text-gray-400">Palettes</div>
           <div className="flex flex-wrap gap-1">
             {presets.map((p) => (
-              <button key={p.name} type="button" title={`${p.name} (${p.patch.primary})`} onClick={() => onChange(p.patch.primary!)}
+              <button key={p.name} type="button" title={`${p.name} (${p.patch.primary})`} onClick={() => pick(p.patch.primary!)}
                 className="h-5 w-5 pointer-coarse:h-11 pointer-coarse:w-11 rounded-md ring-1 ring-inset ring-black/10 dark:ring-white/15" style={{ background: p.patch.primary }} />
             ))}
           </div>
@@ -155,7 +170,7 @@ export default function EducoColorField({ label, ariaLabel, value, onChange, con
             {spectrum.map((h) => (
               <div key={h.name} className="flex gap-0.5">
                 {GRID_SHADES.map((s) => (
-                  <button key={s} type="button" title={`${h.name} ${s} · ${h.ramp[s]}`} onClick={() => onChange(h.ramp[s])}
+                  <button key={s} type="button" title={`${h.name} ${s} · ${h.ramp[s]}`} onClick={() => pick(h.ramp[s])}
                     className="h-4 flex-1 rounded-[3px] transition-transform hover:scale-110 hover:ring-1 hover:ring-black/20" style={{ background: h.ramp[s] }} />
                 ))}
               </div>
@@ -164,9 +179,17 @@ export default function EducoColorField({ label, ariaLabel, value, onChange, con
           <div className="text-[0.5625rem] font-semibold uppercase tracking-wide text-gray-400">Neutrals</div>
           <div className="flex gap-0.5">
             {NEUTRALS.map((n) => (
-              <button key={n} type="button" title={n} onClick={() => onChange(n)} className="h-4 flex-1 rounded-[3px] ring-1 ring-inset ring-black/10 dark:ring-white/10" style={{ background: n }} />
+              <button key={n} type="button" title={n} onClick={() => pick(n)} className="h-4 flex-1 rounded-[3px] ring-1 ring-inset ring-black/10 dark:ring-white/10" style={{ background: n }} />
             ))}
           </div>
+          {/* SEE-THROUGH (RX4-6): any colour can be made transparent — a tint over a photo must let the photo show */}
+          <label className="flex items-center gap-2 text-[0.5625rem] font-semibold uppercase tracking-wide text-gray-400">
+            Opacity
+            <input type="range" min={0} max={100} value={opacity} aria-label={`${aria} opacity`} aria-valuetext={`${opacity}%`}
+              onChange={(e) => { const p = Number(e.target.value); onChange(solid + (p >= 100 ? "" : hex2((p / 100) * 255))); }}
+              className="flex-1 min-w-0 pointer-coarse:min-h-11 accent-indigo-600" />
+            <span className="w-8 text-right font-mono normal-case text-gray-600 dark:text-gray-300 midnight:text-slate-300 purple:text-purple-200">{opacity}%</span>
+          </label>
         </div>,
         document.body,
       )}

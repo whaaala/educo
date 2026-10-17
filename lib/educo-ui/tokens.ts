@@ -47,9 +47,9 @@ const SPACE: Record<string, string> = {
 /** The spacing scale as the stored numbers a block's spacing is written in (rem × 16: 0, 4, 8 … 96) — what the canvas's
  *  spacing handles snap to (E-6 (3)), so a dragged space always lands on a token. */
 export const SPACE_STEPS: readonly number[] = Object.values(SPACE).map((v) => parseFloat(v) * 16);
-const DURATION: Record<string, string> = { fast: "120ms", base: "200ms", slow: "320ms", slower: "500ms" };
+export const DURATION: Record<string, string> = { fast: "120ms", base: "200ms", slow: "320ms", slower: "500ms" };
 // Named easings (see easings.net): standard for most UI, in/out for enter/exit, spring-ish for playful.
-const EASING: Record<string, string> = {
+export const EASING: Record<string, string> = {
   standard: "cubic-bezier(0.2, 0, 0, 1)", in: "cubic-bezier(0.4, 0, 1, 1)",
   out: "cubic-bezier(0, 0, 0.2, 1)", "in-out": "cubic-bezier(0.4, 0, 0.2, 1)",
   emphasized: "cubic-bezier(0.2, 0, 0, 1.2)",

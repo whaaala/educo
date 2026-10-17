@@ -653,3 +653,47 @@ Feature: The twelve-column grid in the Box Builder
     And a count the user set at any rung switches the rule off for that grid
     And a masonry gallery and a pager keep their tracks
     Because a per-device setting always wins, and a masonry track is a ruler, not a row.
+
+  # ── BATCH L-5 · resize round trips (2026-10-16): every gesture out and back comes home ──────────────────────────────
+
+  Scenario: A height dragged back to what its words need stores no floor (#42)
+    Given three Stats side by side, built through the blocks panel
+    When I drag the middle Stat's bottom edge down 60px and then back up 60px, in two drags or in one
+    Then the Stat stores no height floor, exactly as before I touched it
+    And the row is the height it started at
+    Because a floor nobody chose held the Stat taller than its words on a phone, where the columns stack
+
+  Scenario: A corner dragged in and back gives a heading its own height again (L4-l)
+    Given a Heading in a stack
+    When I drag any of its four corners 30px inward and 20px in, then back out by the same
+    Then the heading is the width and the height it started at, and stores neither
+    Because the drag back starts from the floor the heading stored, not from the height its wrapped words gave it
+
+  Scenario: A grid cell cannot push another cell off its row (L4-n)
+    Given a grid of five cells across, each one track wide
+    When I drag the first cell's right edge one track wider
+    Then the edge stops, because the cell beside it has nothing left to give and cannot leave the row
+    And dragging it back leaves every cell one track wide, all five on one row
+    But a cell whose partner is the last on its row still carries out to the full width, and the partner wraps and comes back
+
+  Scenario: The edge a grid row starts on does not move (L5-4)
+    Given a grid cell that is the first on its row
+    When I drag its left edge
+    Then nothing changes, because no cell shares the grid's own edge
+
+  Scenario: Blocks added inside a Side by side share its line, and their edge resizes (E2-22)
+    Given a "Side by side" block
+    When I click "Add a block inside" twice
+    Then the two blocks sit beside each other, half the line each, directly inside it
+    And dragging the edge between them moves only that edge, and dragging it back brings both home
+    And a Side by side saved before this keeps the blocks it has
+
+  Scenario: A left edge squeezes its neighbour down to that neighbour's own floor (#84)
+    Given three stacks side by side, the first one sized by hand to 180px
+    When I drag the second stack's left edge 80px to the left
+    Then the first stack narrows by 80px, down to its own floor (3rem, or its longest word) and no further
+    Because the floor is the neighbour's own, never a fixed 14rem
+
+  Scenario: The resize numbers are data (L5-3)
+    Given config/layout.json holds the column floors and the edge-drag thresholds
+    Then the engine and the editor read them from there, and none is typed into code

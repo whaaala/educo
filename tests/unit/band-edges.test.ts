@@ -68,11 +68,16 @@ describe("each shape does what its name says", () => {
     expect(p[p.length - 1][1], "and the right").toBeCloseTo(0, 1);
   });
 
-  it("curve-out bulges the opposite way to curve-in", () => {
-    const into = points(clip({ edgeTop: "curve-in", edgeDepth: 10 })!).find(([x]) => Math.abs(x - 50) < 0.01)!;
-    const outOf = points(clip({ edgeTop: "curve-out", edgeDepth: 10 })!).find(([x]) => Math.abs(x - 50) < 0.01)!;
-    expect(into[1]).toBeGreaterThan(0);
-    expect(outOf[1]).toBeLessThan(0);
+  it("curve-out bulges the opposite way to curve-in — inside the box (RX4-10)", () => {
+    // It used to run PAST the box (y < 0), where nothing paints, and drew nothing. Now its ENDS are cut in by the depth
+    // and its middle reaches the edge: the mirror of curve-in, every point inside the band.
+    const into = points(clip({ edgeTop: "curve-in", edgeDepth: 10 })!).slice(0, 17);
+    const outOf = points(clip({ edgeTop: "curve-out", edgeDepth: 10 })!).slice(0, 17);
+    const mid = (p: readonly (readonly number[])[]) => p.find(([x]) => Math.abs(x - 50) < 0.01)![1];
+    expect(mid(into)).toBeCloseTo(10, 1);
+    expect(mid(outOf)).toBeCloseTo(0, 1);
+    expect(outOf[0][1], "its corner is cut in").toBeCloseTo(10, 1);
+    expect(Math.min(...outOf.map(([, y]) => y)), "never outside the box").toBeGreaterThanOrEqual(0);
   });
 
   it("the bottom edge cuts UPWARD from 100%, mirroring the top", () => {
@@ -91,7 +96,9 @@ describe("the two edges are independent, in ONE clip-path", () => {
     expect((css.match(/polygon\(/g) ?? []).length).toBe(1);
     const p = points(css);
     expect(p.some(([, y]) => y > 0 && y < 50), "the top edge is sloped").toBe(true);
-    expect(p.some(([, y]) => y > 100), "the bottom edge bulges outward").toBe(true);
+    expect(p.some(([, y]) => y > 50 && y < 100), "the bottom edge's corners are cut in…").toBe(true);
+    expect(p.some(([x, y]) => Math.abs(x - 50) < 0.01 && y === 100), "…and it bulges to the bottom in the middle").toBe(true);
+    expect(p.every(([, y]) => y <= 100), "inside the box (RX4-10)").toBe(true);
   });
 
   it("depth is clamped, so a shape can never swallow the band", () => {

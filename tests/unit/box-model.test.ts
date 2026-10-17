@@ -1242,7 +1242,7 @@ describe("box-model — the five-rung ladder", () => {
 
 describe("box-model — content types", () => {
   it("createElement builds the new element types with sensible defaults", () => {
-    expect(createElement("video").height).toBe(remLen(315)); // rem, never px — Core Rule 16
+    expect(createElement("video").height).toBeUndefined(); // no stored height: its proportion sizes it (RX3-2, Core Rule 16)
     expect(createElement("icon").icon).toBe("Star");
     expect(createElement("list").listStyle).toBe("bullet");
     expect(createElement("list").listItems?.length).toBe(3);
@@ -1934,5 +1934,60 @@ describe("rows of four or more (#78): one row on a desktop and a laptop · at mo
     // two cells of words + two icon cells: two hold words, so the line is rearranged
     const two = cols(["40%", "40%", "10%", "10%"], [{}, {}, { children: ico() }, { children: ico() }] as Partial<BoxNode>[]);
     expect(tabletPlaces(two, "tabletPortrait")?.size).toBe(4);
+  });
+});
+
+describe("RX3-5 · Position blocks works in a Stack band (no last-block grow eats the free space)", () => {
+  const stack = (p: Partial<BoxNode>) => normalizeRowBands(createContainer("column", {
+    screenHeight: "full", children: [createElement("text"), createElement("text")], ...p,
+  } as Partial<BoxNode>));
+  const grows = (st: BoxNode) => (st.children ?? []).map((b) => String(childStyle(b, st, "base", hostSizedFor(st, false, null)).flex ?? ""))
+    .filter((f) => /^[1-9]/.test(f)).length;
+  it("End / Spread out / Even gaps / Center: no block grows, so justify-content has space to place", () => {
+    for (const justify of ["end", "between", "around", "center"] as const) {
+      expect(grows(stack({ justify })), justify).toBe(0);
+      expect(grows(stack({ justify, screenHeight: undefined, minHeight: 300 })), `${justify} + a dragged height`).toBe(0);
+    }
+  });
+  it("Start (the default) keeps E0-h: the last block takes the spare height", () => {
+    expect(grows(stack({}))).toBe(1);
+    expect(grows(stack({ justify: "start" }))).toBe(1);
+  });
+});
+
+describe("RX3-6 · Order reorders a block that sits alone in its row band", () => {
+  const stack = () => {
+    const [a, b, c] = [createElement("text"), createElement("text"), createElement("text")];
+    c.responsive = { phone: { order: -1 } } as BoxNode["responsive"];
+    b.order = 5;
+    return normalizeRowBands(createContainer("column", { children: [a, b, c] } as Partial<BoxNode>));
+  };
+  it("the band carries its lone block's order, per rung — the canvas and the export both read childStyle", () => {
+    const st = stack(); const [b1, b2, b3] = st.children!;
+    expect(childStyle(b3, st, "phone").order).toBe(-1);
+    expect(childStyle(b3, st, "base").order).toBeUndefined();
+    expect(childStyle(b2, st, "base").order).toBe(5);
+    expect(childStyle(b1, st, "base").order).toBeUndefined();
+  });
+  it("a band holding two blocks side by side is not given either one's order", () => {
+    const [a, b] = [createElement("text", { order: 3 } as Partial<BoxNode>), createElement("text")];
+    const band = makeRowBand([a, b]); const st = createContainer("column", { children: [band] } as Partial<BoxNode>);
+    expect(childStyle(band, st, "base").order).toBeUndefined();
+  });
+});
+
+describe("RX3-19 · Position blocks works in a Side by side row (width-less blocks do not grow into the free width)", () => {
+  const flexes = (justify: "start" | "end" | "center" | "between" | "around") => {
+    const sbs = createContainer("row", { justify, children: [createElement("text"), createElement("button")] } as Partial<BoxNode>);
+    const page = normalizeRowBands(createContainer("column", { children: [sbs] } as Partial<BoxNode>));
+    const band = page.children![0]; const row = band.children![0];
+    const hs = hostSizedFor(row, hostSizedFor(band, hostSizedFor(page, false, null), page), band);
+    return (row.children ?? []).map((c) => String(childStyle(c, row, "base", hs).flex));
+  };
+  it("End / Center / Spread out / Even gaps: the blocks hug, so justify-content has width to place", () => {
+    for (const j of ["end", "center", "between", "around"] as const) expect(flexes(j), j).toEqual(["0 0 auto", "0 0 auto"]);
+  });
+  it("Start (the default) is exactly as before: they fill the wide row", () => {
+    expect(flexes("start")).toEqual(["1 1 auto", "1 1 auto"]);
   });
 });

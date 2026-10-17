@@ -14,11 +14,11 @@ import { DEFAULT_THEME, resolveSiteTheme } from "@/lib/site-storage";
 import { THEMES, type ThemeId } from "@/lib/theme-config";
 import { EDITOR_DOCK_PX, mediaBelow as below, RUNG_LABEL, RUNG_ORDER, RUNG_PX } from "@/lib/educo-ui/layout";
 import {
-  type BoxNode, type Breakpoint, createContainer, findBox, findParent, updateBox, insertBox, deleteBox, duplicateBox, widthPct, makeRowBand, normalizeRowBands, markPageGrid, groupBoxes, alignInRow, alignInRowOf, setSectionWidth, sectionWidthOf, pageBandOf,
+  type BoxNode, type Breakpoint, createContainer, findBox, findParent, updateBox, insertBox, fitBand, deleteBox, duplicateBox, widthPct, makeRowBand, normalizeRowBands, markPageGrid, groupBoxes, alignInRow, alignInRowOf, setSectionWidth, sectionWidthOf, pageBandOf,
   floatBox, unfloatBox, bringToFront, bringForward, sendBackward, sendToBack,
   resolveResponsive, updateBoxResponsive, clearOverride, hasOverride,
-  gridColumns, retrackGrid, setColumnFraction, pinBlockedBy, fixedBlockedBy, blockedByLabel, pinScopeWords, isFloating,
-  isSectionContentIn, sectionPlaceIn, insertSlot, defaultWhere, type InsertWhere, isContainer, outerSpaceDefaults, spanAt, setSpan, lineUpWithGrid, linesAt, setLinesAt, fullWidthAt, setFreeInset, fitStepAt, fillsRows, fillHostOf,
+  gridColumns, setColumnFraction, pinBlockedBy, fixedBlockedBy, blockedByLabel, pinScopeWords, isFloating,
+  isSectionContentIn, sectionPlaceIn, insertSlot, defaultWhere, addInsideParent, placeSharing, retrackGridAt, type InsertWhere, isContainer, outerSpaceDefaults, spanAt, setSpan, lineUpWithGrid, linesAt, setLinesAt, fullWidthAt, setFreeInset, fitStepAt, fillsRows, fillHostOf,
 } from "@/lib/box-model";
 import { blockForKind } from "@/lib/box-presets";
 import {
@@ -137,6 +137,8 @@ export default function BoxDemoPage() {
   const autoSelectedId = useRef<string | null>(null);
   // The container the last palette insert went into, so repeating the click repeats the result.
   const lastInsertParent = useRef<string | null>(null);
+  // LE-1 (E2-20): what the last "+ Add a block inside" made, and where — so clicking it again adds a sibling, never one level deeper.
+  const lastAddInside = useRef<{ parent: string; child: string } | null>(null);
   /**
    * Selection the USER made — which, unlike one the builder made, IS a place to insert into.
    *
@@ -448,6 +450,8 @@ export default function BoxDemoPage() {
     embedFontCss(fontFamilyKey.split("|")).then((css) => { if (live) { previewFontCss.current = css; addPreviewFonts(); } }).catch(() => { /* the fallback font applies, exactly as a failed download would */ });
     return () => { live = false; };
   }, [preview, fontFamilyKey, addPreviewFonts]);
+  // LE-1: the Page check measures the PUBLISHED page — rendered only while it is open
+  const checkHTML = useMemo(() => (pageCheckOpen && site && activePage ? renderSitePage(site, renderTheme, activePage.id, { inlineShared: true }) : ""), [pageCheckOpen, site, activePage, renderTheme]);
   const previewHTML = useMemo(
     () => (preview && site && activePage ? renderSitePage(site, renderTheme, activePage.id, { inlineShared: true }) : ""),
     [preview, site, activePage, renderTheme],
@@ -789,10 +793,10 @@ export default function BoxDemoPage() {
   const setFraction = (num: number, den: number) => { if (selected) commit(setColumnFraction(root, selected.id, num, den, bp)); };
   // Only at the BASE: re-cutting a row rescales its CHILDREN's placement, and a rung override carries style,
   // never structure. At a rung the count is a plain per-rung override and the spans clamp to it instead.
-  const retrackSelected = selected && bp === "base" && selected.layout === "grid"
-    ? (columns: number) => commit(updateBox(root, selected.id, retrackGrid(selected, columns)))
+  const retrackSelected = selected && selected.layout === "grid" // LE1-4: at a screen too — its own count AND each cell's span there
+    ? (columns: number) => commit(retrackGridAt(root, selected.id, columns, bp))
     : undefined;
-  const addChildSection = () => { if (!selected) return; const tint = SECTION_TINTS[(countSections(selected) + 1) % SECTION_TINTS.length]; const child = makeBlock(tint, "100%"); const pid = selected.id; commitWith((cur) => insertBox(cur, pid, findBox(cur, pid)?.children?.length ?? 0, child)); revealBox(child.id); };
+  const addChildSection = () => { if (!selected) return; const tint = SECTION_TINTS[(countSections(selected) + 1) % SECTION_TINTS.length]; const child = makeBlock(tint, "100%"); const pid = addInsideParent(root, selected.id, autoSelectedId.current === selected.id ? lastAddInside.current : null); lastAddInside.current = { parent: pid, child: child.id }; commitWith((cur) => fitBand(insertBox(cur, pid, findBox(cur, pid)?.children?.length ?? 0, child), pid, child.id)); /* E2-22: in a Side by side it shares the line */ revealBox(child.id); };
 
   const floatSelected = () => {
     if (!selected) return;
@@ -923,7 +927,8 @@ export default function BoxDemoPage() {
     commitWith((cur) => {
       const target = findBox(cur, parentId) ?? cur;
       const max = target.children?.length ?? 0;
-      return insertBox(cur, findBox(cur, parentId) ? parentId : cur.id, Math.min(index, max), node);
+      const pid = findBox(cur, parentId) ? parentId : cur.id;
+      return placeSharing(cur, pid, Math.min(index, max), node); // LE1-3: in a Side by side it shares the line, as add-inside does
     });
     // "Flow + auto-reveal": a new block joins the normal flow (a floating sibling overlays it), so SELECT it and
     // scroll it into view — you always see exactly what landed and where, never lost behind a floating card.
@@ -1491,7 +1496,7 @@ export default function BoxDemoPage() {
           </aside>
       </div>
 
-      <PageCheck root={root} fonts={fonts} isOpen={pageCheckOpen} onClose={() => setPageCheckOpen(false)}
+      <PageCheck root={root} fonts={fonts} html={checkHTML} isOpen={pageCheckOpen} onClose={() => setPageCheckOpen(false)}
         onShow={(id) => { setPageCheckOpen(false); revealBox(id); }}
         onPatch={(id, patch) => commit(updateBox(root, id, patch))} onSideSpace={(v) => setGrid({ ...gridStored, sideSpace: v })} />
       <DeleteConfirmationModal

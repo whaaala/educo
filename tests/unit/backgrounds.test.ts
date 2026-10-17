@@ -44,3 +44,11 @@ describe("educo-ui backgrounds — the self-contained background library", () =>
     expect(bgPresetById("nope")).toBeUndefined();
   });
 });
+
+describe("RX4-21 — every preset is sized in rem, so a pattern grows with the reader's text (rule 16)", () => {
+  // Enumerates the WHOLE library, so a preset added later is covered the day it appears.
+  it.each(BG_PRESETS.map((p) => [p.id, p] as const))("%s: no px in its tile, and px in its CSS only as a 1px hairline", (_id, p) => {
+    expect(p.tile ?? "").not.toMatch(/px\b/);
+    expect(p.css.replace(/(^|[^\d.])1px\b/g, "$1")).not.toMatch(/\d(\.\d+)?px\b/);
+  });
+});

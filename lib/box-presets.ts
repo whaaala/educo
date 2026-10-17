@@ -5,7 +5,8 @@
  * Card container — without touching individual properties. Pure + theme-aware.
  */
 
-import { type BoxNode, type BoxType, type PagerNav, createContainer, createGrid, createElement, cloneBox, GRID_MAX } from "@/lib/box-model";
+import { type BoxNode, type BoxType, type PagerNav, createContainer, createGrid, createElement, cloneBox, GRID_MAX, remLen } from "@/lib/box-model";
+import { MEDIA } from "@/lib/educo-ui/layout";
 import { buildCatalogueComponent, addChoices, applyPresetVariant } from "@/lib/component-catalogue";
 import type { SiteTheme } from "@/lib/site-storage";
 
@@ -65,8 +66,8 @@ export function getPresets(kind: string, theme: SiteTheme): Preset[] {
       { id: "shadow", label: "Shadow", patch: { radius: 12, shadow: "lg" } },
     ];
     case "video": return [
-      { id: "wide", label: "16:9", patch: { height: "315px" } },
-      { id: "tall", label: "Portrait", patch: { height: "480px" } },
+      { id: "wide", label: "16:9", patch: { height: "auto", ratio: MEDIA.videoRatio, width: "100%" } },
+      { id: "tall", label: "Portrait", patch: { height: "auto", ratio: MEDIA.portraitRatio, width: remLen(MEDIA.portraitWidthRem * 16) } },
       { id: "rounded", label: "Rounded", patch: { radius: 16 } },
     ];
     case "icon": return [

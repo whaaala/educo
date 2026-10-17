@@ -193,11 +193,11 @@ export function resolvePage(root: BoxNode): PageSemantics {
   // Repeated menus need names to be told apart; name the unnamed ones by where they are.
   const unnamed = navs.filter((x) => !x.n.landmarkName);
   if (navs.length > 1) {
-    let k = 0;
+    let k = navs.some((x) => x.region === "header") ? 1 : 0; // "Main menu" is the first; the rest count on from it (RX3-10)
     for (const x of unnamed) {
       const r = byId.get(x.n.id)!;
       const label = x.region === "header" && !navs.some((o) => o !== x && o.region === "header" && byId.get(o.n.id)?.label === "Main menu") ? "Main menu"
-        : x.region === "footer" ? "Footer menu" : `Menu ${++k + 1}`;
+        : x.region === "footer" ? "Footer menu" : `Menu ${++k}`;
       byId.set(x.n.id, { ...r, label, corrected: `Two or more menus are named so they can be told apart — this one is "${label}".` });
     }
   }
@@ -304,7 +304,7 @@ export function pageCheck(root: BoxNode, sem: PageSemantics = resolvePage(root),
     for (const bp of BP_ORDER) {
       if (bp === "base" || !kids.some((k) => { const r = resolveResponsive(k, bp); return r.width !== k.width || r.marginLeftPct !== k.marginLeftPct; })) continue;
       const W = NARROWEST_REM(bp), { loRem, hiRem, remHalf, cqwHalf } = baseUnitParts(), unit = Math.min(hiRem, Math.max(loRem, remHalf + (cqwHalf * W) / 100));
-      const cells = pageRowCells(band, bp), give = (rowSide(band, "left") + rowSide(band, "right") + bandGutter(band)) / 10 * unit; // a block's part, at most
+      const cells = pageRowCells(band, bp), give = (rowSide(band, "left", bp) + rowSide(band, "right", bp) + bandGutter(band)) / 10 * unit; // a block's part, at most
       const tight = kids.some((k) => { const c = cells.get(k.id); const share = c ? c.span / pageRowTracks(band) : 1; return (longestWordRem(k) / hiRem) * unit > share * W - give; });
       if (tight) out.push({ id: kids[0].id, kind: "words-too-tight", blocks: false, message: `On ${SCREEN_WORDS(bp)} these blocks sit side by side as you set them, but their words need more room than the narrowest of those screens has — some may break. Give them more room there, or put that screen back to its default.` });
     }

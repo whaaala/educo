@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import type { BoxNode } from "@/lib/box-model";
 import { dividerThickness } from "@/lib/box-model";
-import { blockForKind } from "@/lib/box-presets";
+import { blockForKind, getPresets, presetKindFor } from "@/lib/box-presets";
 import { COMPONENT_CATALOGUE } from "@/lib/component-catalogue";
 import { siteFromRoot } from "@/lib/box-site";
 import { renderSitePage } from "@/lib/box-export";
@@ -90,6 +90,19 @@ describe("the unit system reaches the page, and stored pixels do not", () => {
     }
     if (Object.keys(report).length) console.log("stored pixels in BLOCK rules:\n" + JSON.stringify(report, null, 2));
     expect(Object.keys(report), `blocks emitting stored pixels: ${Object.keys(report).join(", ")}`).toEqual([]);
+  });
+
+  it("…and NOT ONE Styles preset of any kind stores a pixel either (RX3-16 — the presets were never enumerated)", () => {
+    // Measured 2026-10-16 (HEADED, RX-3): the Video "16:9" preset stored `height: 315px` and published it — the block
+    // scan above only ever saw each kind's DEFAULT, never what a Styles tile writes onto it.
+    const report: Record<string, string[]> = {};
+    for (const kind of ALL_KINDS) for (const p of getPresets(presetKindFor(blockForKind(kind, { id: "probe" } as Partial<BoxNode>)), DEFAULT_THEME)) {
+      const block = { ...blockForKind(kind, { id: "probe" } as Partial<BoxNode>), ...p.patch } as BoxNode;
+      const site = siteFromRoot({ id: "root", type: "container", direction: "column", children: [block] } as unknown as BoxNode);
+      const px = [...storedPixels(blockRules(renderSitePage(site, DEFAULT_THEME, site.homeId, { inlineShared: true }))), ...storedPixels(JSON.stringify(p.patch))];
+      if (px.length) report[`${kind} · ${p.label}`] = [...new Set(px)];
+    }
+    expect(report).toEqual({});
   });
 
   it("a Divider at EVERY thickness its control offers publishes no stored pixel — a 1px line is a hairline (L3-l)", () => {

@@ -13,6 +13,9 @@
   "appTiles": { "minWidth": 88, "maxAcross": 4 },
   "narrowestPhone": 360,
   "editor": { "dockFrom": 1024, "labelsFrom": 1600, "labelsWideFrom": 1800, "brandFrom": 368, "sheetWidth": 512 },
+  "columns": { "$comment": "The narrowest a column in a row is drawn, in rem: untouched (it wraps below this), sized by hand, and a page-grid block below the tablet rung.", "reflowFloorRem": 14, "handFloorRem": 3, "blockFloorRem": 10 },
+  "resize": { "$comment": "Edge drags in the editor. hugSnapPx: a size dragged back within this of the content's own size stores none (layout px). neighbourMinTracks: a grid neighbour's wrap threshold when its tracks cannot be measured. minRowPx: the least a row may be squeezed to (layout px). wrapPullPx: how far past a neighbour's floor a drag must go before it wraps (screen px).", "hugSnapPx": 2, "neighbourMinTracks": 3, "minRowPx": 24, "wrapPullPx": 24 },
   "webApp": { "screens": { "xs": 420, "sm": 640, "md": 768, "lg": 1024, "xl": 1280, "2xl": 1536 } },
+  "media": { "$comment": "A video is sized by its width and a proportion, never a stored height (RX3-2). videoRatio: a new video and the 16:9 style. portraitRatio + portraitWidthRem: the Portrait style (a phone-shaped video, narrower than a column).", "videoRatio": "16 / 9", "portraitRatio": "9 / 16", "portraitWidthRem": 20 },
   "uat": { "edgeHeight": 900 }
 }

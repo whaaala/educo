@@ -44,6 +44,7 @@ const BROWSER_ALLOWED = new Set([
   "pagerWire",
   "masonryMeasurePass",
   "pinStackPass",
+  "pinArrivalPass", // RX4-13 — where each pinned block's arrival starts
   // Builders of <script> strings. Their `document.` lives inside a template literal: it is text the exported
   // page will run, not something this module does.
   "alertDismissScript",

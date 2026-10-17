@@ -73,3 +73,33 @@ describe("a colour belongs to the block it was typed for (#89)", () => {
     expect(forStack).toHaveBeenCalledWith("#1e3a8a");
   });
 });
+
+describe("EducoColorField — RX4-6 · a colour can be see-through", () => {
+  it("a typed #rrggbbaa or rgba() is kept, with its transparency", () => {
+    const onChange = vi.fn();
+    render(<EducoColorField label="Tint" value="#000000" onChange={onChange} />);
+    const hex = screen.getByLabelText("Tint hex value");
+    fireEvent.change(hex, { target: { value: "#00000066" } }); fireEvent.blur(hex);
+    expect(onChange).toHaveBeenLastCalledWith("#00000066");
+    fireEvent.change(hex, { target: { value: "rgba(255, 0, 136, 0.5)" } }); fireEvent.blur(hex);
+    expect(onChange).toHaveBeenLastCalledWith("#ff008880");
+  });
+
+  it("a swatch picked for a see-through colour stays see-through, and the Opacity control sets it", () => {
+    const onChange = vi.fn();
+    render(<EducoColorField label="Tint" value="#00000066" onChange={onChange} />);
+    fireEvent.click(screen.getByRole("button", { name: "Tint palette" }));
+    fireEvent.click(screen.getByTitle("#374151"));
+    expect(onChange).toHaveBeenLastCalledWith("#37415166");
+    fireEvent.change(screen.getByRole("slider", { name: "Tint opacity" }), { target: { value: "25" } });
+    expect(onChange).toHaveBeenLastCalledWith("#00000040");
+  });
+
+  it("an opaque colour stays a plain #rrggbb", () => {
+    const onChange = vi.fn();
+    render(<EducoColorField label="Fill" value="#4f46e5" onChange={onChange} />);
+    fireEvent.click(screen.getByRole("button", { name: "Fill palette" }));
+    fireEvent.click(screen.getByTitle("#374151"));
+    expect(onChange).toHaveBeenLastCalledWith("#374151");
+  });
+});

@@ -191,7 +191,13 @@ test.describe("what masonry uncovered on the way", () => {
     // Masonry only made it visible because it is the first feature whose arithmetic depends on the column's
     // width: the spans came out short, and the gaps between pictures collapsed to nothing.
     await seedGallery(page); // seeds, then picks Desktop (1280) in an 1800px window — the exact trap
-    const width = await page.locator('[data-box-id="gallery"]').evaluate((el) => el.getBoundingClientRect().width);
+    // The COLUMN is the gallery's content box. Since L6-2 a contained band holding one plain section hands the measure to that
+    // section as its own side padding (so its colour runs edge to edge): the gallery's border box is the whole 1280 frame and its
+    // content — where the pictures are — is the measure. The border box is 1280 whichever measure applies, so it proves nothing.
+    const width = await page.locator('[data-box-id="gallery"]').evaluate((el) => {
+      const cs = getComputedStyle(el);
+      return el.getBoundingClientRect().width - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+    });
     expect(width, "68rem, the desktop rung's measure — not the wide rung's 76rem").toBeCloseTo(68 * 16, 0);
   });
 

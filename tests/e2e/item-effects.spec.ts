@@ -48,6 +48,9 @@ async function openCanvas(page: import("@playwright/test").Page, root: BoxNode) 
   await page.waitForSelector('[data-box-id="acc"] .eu-accordion__item', { timeout: 20000 });
 }
 
+/** RX4-2: hover is gated to `(hover: hover)`; the touch projects have none. */
+const canHover = (page: import("@playwright/test").Page) => page.evaluate(() => matchMedia("(hover: hover)").matches);
+
 /** The row's vertical offset — "Lift" is a translateY, so this is what moves. */
 const topOf = (page: import("@playwright/test").Page, nth: number) =>
   page.locator(".eu-accordion__item").nth(nth).evaluate((el) => Math.round(el.getBoundingClientRect().top));
@@ -63,6 +66,8 @@ test.describe("one item's own hover", () => {
     await page.waitForTimeout(260); // let the transition settle
 
     const liftedFirst = await topOf(page, 0);
+    // RX4-2: on a touch screen (the tablet and phone projects) there is no hover, and a tapped row must not stick lifted
+    if (!(await canHover(page))) { expect(liftedFirst, "no hover on a touch screen — the row stays put").toBe(restedFirst); return; }
     expect(liftedFirst, "the hovered row lifts").toBeLessThan(restedFirst);
     // The whole point of a per-ITEM effect: the row next to it does not move.
     expect(await topOf(page, 1), "its neighbour must not move").toBe(restedSecond);
@@ -75,6 +80,7 @@ test.describe("one item's own hover", () => {
     await page.locator(".eu-accordion__item").first().hover();
     await page.waitForTimeout(260);
 
+    if (!(await canHover(page))) { expect(await topOf(page, 0), "no hover on a touch screen (RX4-2)").toBe(rested); return; }
     expect(await topOf(page, 0), "an effect that only works once published is a bug, not a feature")
       .toBeLessThan(rested);
   });

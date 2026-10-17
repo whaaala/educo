@@ -68,7 +68,12 @@ class Dresser {
   async header() {
     const p = this.page;
     const hdr = await P.first(p, 'Stack');
-    const logo = await P.into(p, hdr, 'Heading');
+    // A LOGO, NOT A HEADING (the user, 2026-10-03: "wherever you say new heading in the test, that should always be a logo"): the
+    // school's MARK — a small Image — and its name beside it, as every real header has. A PLACEHOLDER for the Logo component (RULE C).
+    const mark = await P.into(p, hdr, 'Image');
+    // the crest first, at its own size — a new Image fills the line, so there is no room beside it until it is sized (as a person does)
+    await H.panel(p, false); await I.upload(p, mark, require('path').join(__dirname, 'img', 'logo.png')); await I.widthMode(p, mark, 'Fit'); await H.panel(p, true); // a 64px crest at its own size: on a page row a typed rem width is drawn as an equal share (L6-4, AC-30 in G-4)
+    const logo = await P.beside(p, mark, 'Heading');
     const cta = await P.beside(p, logo, 'Button');
     const menuBtn = this.r.hamburger ? await P.beside(p, logo, 'Button') : null;      // lands between logo and cta
     const nav = await P.beside(p, logo, 'Stack');                                      // …and the menu right after the logo
@@ -79,6 +84,9 @@ class Dresser {
     this.placeholders.add('Navigation component (menu built from Links; no dropdowns or overlay yet)');
     await H.panel(p, false);
     await this.words(logo, COPY.school); await this.words(cta, 'Apply now');
+    // the mark: the crest through its own Upload button, described, loaded straight away (it is at the top of the page), its own size
+    await I.alt(p, mark, `${COPY.school} crest`); await I.eager(p, mark);
+    this.placeholders.add('Logo component (an Image of the crest beside the school name)');
     for (let i = 0; i < links.length; i++) await this.words(links[i], COPY.nav[i]);
     await I.meaning(p, hdr, 'Page header'); await I.meaning(p, nav, 'Menu'); await I.meaning(p, list, 'List');
     for (const l of links) await I.textToggle(p, l, 'Underline', false); // a menu's links are told apart by place, not underline

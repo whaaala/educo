@@ -9,9 +9,9 @@
  */
 
 import type { CSSProperties } from "react";
-import { PILL, dividerThickness, blockTypography,pinArrivalCss, pinArrivalKeyframes, floatHoldCSS,
-  type BoxNode, type Breakpoint, type SectionFlag, BP_ORDER, containerStyle, childStyle, hostSizedFor, marginCSS, leafPaddingCSS, outerSpaceCSS, pageBandInset, pagePinCover, sectionContent, sizeToCSS, radiusCSS, SHADOW_CSS, u, LIST_ITEM_GAP, textLen, baseUnit, fadedPaint, boxOpacity, backgroundCss, paintLayerCss,
-  resolveResponsive, floatStacksOnMobile, floatingReserve, alertToastCss, accordionClasses, bandClasses, videoEmbedSrc, isContainer, sanitizeCssDeclarations, expandScopedCss, COMPONENT_PARTS, itemFloatContextCss, itemOverrideCss, itemNumberVars, richBody, plainBody, componentTextCss, componentBoxCss, renderAlertHTML, alertDismissScript, masonryMeasureAttr, masonryMeasureScript, pinStackMarker, pinStackGroupMarker, pinStackNeeded, pinStackScript, isPager, pagerNavHTML, pagerScript, pagerStripCss, pagerSlideId, bgShowThroughCss, blockContainmentCss, COMPONENT_ITEM_SEL, remLen, imageSizing, fillsRowsAnywhere, fillHostOf, hasIntrinsicSize, itemNeedsClass, itemScope, floatZIndex, typoRole, typoRootVars, typoCascadeCss, bandEdgeCSS, LINK_COLOR_CSS, gridQueryCss, TYPE_UNIT_PROPERTY_CSS,
+import { PILL, dividerThickness, borderLen, videoSizing, blockTypography,pinArrivalCss, pinArrivalKeyframes, floatHoldCSS,
+  type BoxNode, type Breakpoint, type SectionFlag, BP_ORDER, containerStyle, childStyle, hostSizedFor, marginCSS, leafPaddingCSS, ownSidePadVars, outerSpaceCSS, pageBandInset, pagePinCover, sectionContent, sizeToCSS, radiusCSS, SHADOW_CSS, u, LIST_ITEM_GAP, textLen, baseUnit, fadedPaint, boxOpacity, backgroundCss, paintLayerCss,
+  resolveResponsive, floatStacksOnMobile, floatingReserve, alertToastCss, accordionClasses, bandClasses, videoEmbedSrc, isContainer, sanitizeCssDeclarations, expandScopedCss, COMPONENT_PARTS, itemFloatContextCss, itemOverrideCss, itemNumberVars, richBody, plainBody, componentTextCss, componentBoxCss, renderAlertHTML, alertDismissScript, masonryMeasureAttr, masonryMeasureScript, pinStackMarker, pinStackGroupMarker, pinStackNeeded, pinStackScript, pinArrivalMarker, pinArrivalScript, treeHasArrival, isPager, pagerNavHTML, pagerScript, pagerStripCss, pagerSlideId, bgShowThroughCss, blockContainmentCss, COMPONENT_ITEM_SEL, remLen, imageSizing, fillsRowsAnywhere, fillHostOf, hasIntrinsicSize, itemNeedsClass, itemScope, floatZIndex, typoRole, typoRootVars, typoCascadeCss, bandEdgeCSS, LINK_COLOR_CSS, gridQueryCss, TYPE_UNIT_PROPERTY_CSS,
 } from "@/lib/box-model";
 import { isRegistryComponent, renderComponent, componentScripts } from "@/lib/educo-ui/registry";
 import { iconSvg } from "@/lib/educo-ui/icon-svg";
@@ -26,7 +26,7 @@ import { tokensFromTheme, tokensToCss } from "@/lib/educo-ui/tokens";
 import { subsetCss, usedEuClasses, stripComments } from "@/lib/educo-ui/subset";
 import { familiesInUse } from "@/lib/educo-ui/font-embed";
 import { zipSync, strToU8 } from "fflate";
-import { hoverCss, revealCss, revealKeyframes, itemEffectsCss } from "@/lib/interactions";
+import { hoverCss, shapeShadowFilter, revealCss, revealKeyframes, itemEffectsCss, scrollRevealNeeded, revealOnceScript } from "@/lib/interactions";
 
 /**
  * The properties a bare number is UNITLESS for — React's own list, because React is what draws the canvas.
@@ -82,7 +82,7 @@ function decorCss(node: BoxNode): CSSProperties {
   const s: CSSProperties = {};
   const br = radiusCSS(node); if (br) s.borderRadius = br;
   const bc = fadedPaint(node).borderColor;
-  if (node.borderWidth && node.type !== "divider") s.border = `${node.borderWidth}px ${node.borderStyle ?? "solid"} ${bc ? colorToCSS(bc) : "rgba(0,0,0,0.15)"}`;
+  if (node.borderWidth && node.type !== "divider") s.border = `${borderLen(node.borderWidth)} ${node.borderStyle ?? "solid"} ${bc ? colorToCSS(bc) : "rgba(0,0,0,0.15)"}`;
   if (node.shadow) s.boxShadow = SHADOW_CSS[node.shadow];
   if (node.rotate) s.transform = `rotate(${node.rotate}deg)`;
   Object.assign(s, bandEdgeCSS(node)); // sloped / curved top and bottom edges — the SAME helper the canvas uses
@@ -165,7 +165,7 @@ function elementHTML(node: BoxNode, theme: SiteTheme, pageMap: Map<string, strin
       const dims = hasIntrinsicSize(node) ? ` width="${node.imgW}" height="${node.imgH}"` : "";
       return `<img src="${esc(node.src)}" alt="${esc(node.alt ?? "")}"${dims} loading="${node.eager ? "eager" : "lazy"}" decoding="async" style="${styleString({ width: "100%", height, aspectRatio, objectFit: "cover", display: "block" })}" />`;
     }
-    case "video": { const embed = videoEmbedSrc(node.src); const h = sizeToCSS(node.height) ?? "315px"; if (embed) return `<iframe src="${esc(embed)}" title="Video" allowfullscreen style="${styleString({ width: "100%", height: h, border: "0" })}"></iframe>`; return node.src ? `<video src="${esc(node.src)}" controls style="${styleString({ width: "100%", height: h })}"></video>` : ""; }
+    case "video": { const embed = videoEmbedSrc(node.src); const box = videoSizing(node); if (embed) return videoLink(node.src!, embed, box); return node.src ? `<video src="${esc(node.src)}" controls style="${styleString({ width: "100%", ...box })}"></video>` : ""; }
     case "divider": return `<hr style="${styleString({ border: "0", margin: "0", height: "0", width: "100%", borderTopWidth: dividerThickness(node),borderTopStyle: node.borderStyle ?? "solid", borderTopColor: node.color ? colorToCSS(node.color) : node.borderColor ? colorToCSS(node.borderColor) : typoRole.color("muted") })}">`;
     case "list": { const li = styleString({ marginBottom: u(LIST_ITEM_GAP) }); const items = (node.listItems ?? []).map((it) => `<li style="${li}">${esc(it)}</li>`).join(""); const st = styleString({ color: node.color || typoRole.color("text"), fontSize: node.fontSize != null ? textLen(node.fontSize) : typoRole.size(1), textAlign: align, width: "100%", paddingLeft: u(22), ...typoCss(node, "body", 400) }); return node.listStyle === "number" ? `<ol style="${st}">${items}</ol>` : `<ul style="${st}">${items}</ul>`; }
     case "embed": return node.html ?? "";
@@ -433,6 +433,7 @@ function styleAt(node: BoxNode, rawParent: BoxNode | null, bp: Breakpoint, theme
     ...(selfPaint ? {} : decorCss(r)), // a component/button's border/radius/shadow style the block element, not this wrapper
     ...(floating ? {} : marginCSS(r)),
     ...leafPaddingCSS(r, section), // inner spacing on a plain element (c-23) — the canvas writes the same
+    ...ownSidePadVars(r), // RX3-28: its own left / right, for a Centred column's one-section rule — the canvas writes the same
     opacity: !isComp ? boxOpacity(r) : undefined, // paint-only fades live in the colours (fadedPaint), not here
     overflow: stacked ? "visible" : (!selfPaint && (r.clip || radiusCSS(r))) ? "hidden" : undefined,
     ...(floating
@@ -542,7 +543,7 @@ function renderNode(node: BoxNode, rawParent: BoxNode | null, theme: SiteTheme, 
   sheet.overrides.push(...overridesByRung(node, cls));
   // Hover & focus (Interactions 1a) — the SAME emitter the canvas uses, so the builder shows exactly what a
   // visitor gets. Pure CSS: a page with no effects ships nothing extra.
-  const hov = hoverCss(`.${cls}`, r.hoverEffect);
+  const hov = hoverCss(`.${cls}`, r.hoverEffect, shapeShadowFilter(r)); // composes with a shaped band's shadow (RX4-22)
   if (hov) sheet.rungs.phone.push(hov);
   // SEE-THROUGH over a background IMAGE: the paint moves to a `::before` that carries the opacity, so the box
   // fades and its contents do not. Same emitter the canvas injects — canvas = export, including this.
@@ -581,7 +582,9 @@ function renderNode(node: BoxNode, rawParent: BoxNode | null, theme: SiteTheme, 
     // them and forgetting the others is exactly the seam this project keeps paying for.
     + ((m) => (m ? ` data-eu-pin="${m}"` : ""))(pinStackMarker(node, rawParent ?? undefined))
     // WHICH stack it joins (2e) — the window for a fixed bar, the box it travels inside for a sticky one.
-    + ((g) => (g ? ` data-eu-pin-in="${esc(g)}"` : ""))(pinStackGroupMarker(node, rawParent ?? undefined));
+    + ((g) => (g ? ` data-eu-pin-in="${esc(g)}"` : ""))(pinStackGroupMarker(node, rawParent ?? undefined))
+    // RX4-13: an arrival starts where this block takes hold — `pinArrivalPass` finds it by this marker.
+    + (pinArrivalMarker(node) ? " data-eu-arrive" : "");
   // A structural band also carries its layout classes — computed by box-model, so the canvas gets the same ones.
   const allCls = [cls, bandClasses(r, isPageSection), el === "ul" || el === "ol" ? "eu-list" : ""].filter(Boolean).join(" ");
   if (isContainer(r)) {
@@ -613,7 +616,7 @@ function renderNode(node: BoxNode, rawParent: BoxNode | null, theme: SiteTheme, 
       // measured, with the page itself never moving.
       return wrapLi(`<${el}${idAttr}${semAttr} class="${allCls}">`
         + `<div data-eu-pager${auto} tabindex="0" role="group" aria-roledescription="carousel"`
-        + ` aria-label="One at a time" style="${styleString(pagerStripCss())}">${kids}</div>`
+        + ` aria-label="One at a time" style="${styleString(pagerStripCss(r))}">${kids}</div>`
         + `${nav}${script}</${el}>`);
     }
     return wrapLi(`<${el}${idAttr}${semAttr} class="${allCls}">${kids}</${el}>`);
@@ -705,13 +708,34 @@ export function documentBackdropCss(theme: SiteTheme): string {
   return `html{background-color:${colour}}`;
 }
 
+/**
+ * A HOSTED VIDEO COSTS NOTHING UNTIL IT IS ASKED FOR (RX3-9, RULE AF). A YouTube player is ~990 KB compressed and loaded on
+ * arrival whether or not anyone presses play — measured on one video, a page went from 5.1 KB to 993.5 KB. So the page
+ * carries a LINK to the video, with YouTube's own still (lazy), and `videoScript` swaps in the player on a click. With no
+ * script — a proxy browser, a script that failed — the link still opens the video.
+ */
+function videoLink(src: string, embed: string, box: CSSProperties): string {
+  const yt = /youtube\.com\/embed\/([\w-]{11})/.exec(embed)?.[1];
+  const fill = styleString({ position: "absolute", inset: "0", width: "100%", height: "100%" });
+  const still = yt ? `<img src="https://i.ytimg.com/vi/${yt}/hqdefault.jpg" width="480" height="360" alt="" loading="lazy" decoding="async" style="${fill};object-fit:cover">` : "";
+  // The play mark: the page's own text colour behind, its background colour as the triangle — tokens, never a literal.
+  const play = `<svg viewBox="0 0 68 48" aria-hidden="true" style="${styleString({ position: "absolute", top: "50%", left: "50%", width: "4.25rem", translate: "-50% -50%" })}"><rect width="68" height="48" rx="12" fill="${typoRole.color("text")}" opacity=".85"/><path d="M27 15v18l16-9z" fill="var(--eu-color-bg)"/></svg>`;
+  return `<a href="${esc(src)}" data-eu-video="${esc(embed)}" aria-label="Play the video" style="${styleString({ position: "relative", display: "block", width: "100%", ...box, overflow: "hidden", background: `color-mix(in oklch, ${typoRole.color("text")} 88%, transparent)` })}">${still}${play}</a>`;
+}
+
+/** The one script every page with a hosted video carries: a click on the link puts the player in its place, playing, focused. */
+export function videoScript(): string {
+  return `<script>(function(){if(window.__euVideo)return;window.__euVideo=1;document.addEventListener('click',function(e){var a=e.target&&e.target.closest?e.target.closest('a[data-eu-video]'):null;if(!a)return;e.preventDefault();var u=a.getAttribute('data-eu-video');var f=document.createElement('iframe');f.src=u+(u.indexOf('?')<0?'?':'&')+'autoplay=1';f.title='Video';f.allow='autoplay; encrypted-media; picture-in-picture; fullscreen';f.setAttribute('allowfullscreen','');f.style.cssText=a.style.cssText;f.style.border='0';a.replaceWith(f);f.focus();});})();<\/script>`;
+}
+const hasHostedVideo = (n: BoxNode): boolean => (n.type === "video" && !!videoEmbedSrc(n.src)) || (n.children ?? []).some(hasHostedVideo);
+
 export function renderPageHTML(root: BoxNode, theme: SiteTheme, pageMap: Map<string, string> = new Map(), sheet?: Sheet): string {
   /**
    * STACKED PINS (Step 2c) ride with the PAGE, not with a block — because the thing being measured is the
    * relationship BETWEEN blocks, and no one of them owns it. `pinStackNeeded` is what keeps zero-JS the
    * default: fewer than two bars at one edge and nothing is emitted at all, at any rung.
    */
-  const stack = pinStackNeeded(root) ? pinStackScript() : "";
+  const stack = (pinStackNeeded(root) ? pinStackScript() : "") + (treeHasArrival(root) ? pinArrivalScript() : "") + (hasHostedVideo(root) ? videoScript() : "") + (scrollRevealNeeded(root) ? revealOnceScript() : "");
   const prev = SEM; SEM = resolvePage(root);
   try {
     if (sheet) return SKIP_LINK_HTML + renderNode(root, null, theme, pageMap, sheet) + stack; // shared sheet → caller emits the CSS

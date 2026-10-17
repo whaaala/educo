@@ -1,4 +1,6 @@
 import { describe, it, expect } from "vitest";
+import { readFileSync } from "fs";
+import { join } from "path";
 import { BREAKPOINTS_EM, BASE_CSS, BREAKPOINTS, stylesheet } from "@/lib/educo-ui/base";
 import { stripComments } from "@/lib/educo-ui/subset";
 import { DEFAULT_THEME } from "@/lib/site-storage";
@@ -19,7 +21,7 @@ describe("Educo UI base stylesheet — the four responsive ingredients", () => {
     const shipped = stripComments(BASE_CSS);
     const declared = new Set([...shipped.matchAll(/\.(eu-[A-Za-z0-9_-]+)/g)].map((m) => m[1]));
     for (const c of declared) {
-      expect(["eu-root", "eu-band", "eu-band--contained"], `.${c} is declared but nothing emits it`).toContain(c);
+      expect(["eu-root", "eu-band", "eu-band--contained", "eu-band--one"], `.${c} is declared but nothing emits it`).toContain(c);
     }
   });
 
@@ -61,6 +63,16 @@ describe("Educo UI base stylesheet — the four responsive ingredients", () => {
   it("has a reset and honours reduced-motion", () => {
     expect(BASE_CSS).toContain("box-sizing: border-box");
     expect(BASE_CSS).toContain("prefers-reduced-motion: reduce");
+  });
+
+  it("RX3-1: reduced motion also stops a parallax background — on the published page AND on the canvas", () => {
+    // Measured 2026-10-16 (HEADED, RX-3): "Fixed (parallax scroll)" stayed `background-attachment: fixed` under
+    // prefers-reduced-motion: reduce at 1280 and 375 — the rule reset animation, transition and scroll-behavior only.
+    const block = (css: string) => css.slice(css.indexOf("prefers-reduced-motion"), css.indexOf("}}", css.indexOf("prefers-reduced-motion")) + 2);
+    const published = stripComments(BASE_CSS).replace(/\s+/g, "");
+    expect(block(published)).toContain("background-attachment:scroll!important");
+    const canvas = readFileSync(join(process.cwd(), "components/website/box/BoxCanvas.tsx"), "utf8").replace(/\r\n/g, "\n").match(/@media \(prefers-reduced-motion: reduce\)\{\.eu-tokens[^"]*/)?.[0] ?? "";
+    expect(canvas.replace(/\s+/g, "")).toContain("background-attachment:scroll!important");
   });
 
   it("covers accessibility & basic UI: focus-visible, selection, accent-color", () => {

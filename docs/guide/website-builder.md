@@ -226,7 +226,7 @@ It works for a **background image** too, not just a colour: fade a photo hero an
 The content that changes per block type — a Button's text + link, a Text's copy, a List's items, an Accordion's items, an Image's source, a Card's title/body/button, and so on.
 
 - **Text style** — for a text block: font, size, weight, capitals, line and letter spacing. On a component the same controls are under **Typography**.
-- **Advanced CSS** — components only: extra CSS declarations for power users (safely sanitised). Like any style it belongs to the screen you are editing: type it with **Mobile** selected and only phones get it.
+- **Advanced CSS** — extra CSS declarations for power users, on every block (safely sanitised). Like any style it belongs to the screen you are editing: type it with **Mobile** selected and only phones get it. Two kinds of motion are refused, and the field **says so** under it ("Not applied: …"): animating the size or the place of a block (`transition: height`, `width`, `top`, `margin`, `padding`… — it makes the page jerk on a phone; animate `transform` or `opacity` instead), and an animation that runs forever (`infinite` — a visitor must be able to make moving things stop).
 
 ### Per‑device tab
 A note saying which screen you are editing, and one checkbox: **Hidden everywhere** (at **Desktop** or **Full width**) or **Hidden on** that screen (at any other chip). To change size, spacing or layout for one screen, pick that screen's chip in the top bar and edit in the Design tab (see §8).
@@ -246,7 +246,7 @@ A note saying which screen you are editing, and one checkbox: **Hidden everywher
   - **Floats on screen** — it is lifted off the page and always visible at the edge or corner you pick, from the moment the page opens. Nothing keeps its space, so the page runs underneath it. Right for a cookie bar, a back-to-top button or a chat bubble. Held against any **edge** or any **corner**.
   The line under the control tells you **where this block lets go**: a block placed straight on the page holds *for the rest of the page*; one inside a Stack, a Grid or a row of blocks names what it leaves with. A bar that **floats** against the top or bottom also says what it covers — the top of your page, or your footer — and offers **Keep its space instead**, which switches it to the way that keeps its place.
   **A block you placed freely can hold on screen too.** Float a stack, drag it where you want it, then choose **Floats on screen** — it holds exactly there, however far the page scrolls, and it doesn't jump when you choose it. *Sticks when reached* isn't offered for a floating block and the Inspector says why: that one holds a block against the place it occupies in the page, and a freely placed block has given that place up. Put it back **In the layout** to use it.
-  **When it takes hold.** Once a block is pinned you can choose what it *becomes* as the page moves under it — each shown as a picture of the bar before and after a scroll: **Shadow** (lifts off the page), **Solid** (a see-through bar fills in), **Glass** (frosted, with the page showing through), **Rule** (a hairline underneath) or **Condense** (it gets shorter). **Nothing** is the default. *Takes hold over* sets how much scrolling it takes, 120px by default. Condense needs something to condense — a height or inner spacing of its own — and the Inspector says so when there is none. A reader who prefers reduced motion simply sees the resting look; the block is still pinned.
+  **When it takes hold.** Once a block is pinned you can choose what it *becomes* as the page moves under it — each shown as a picture of the bar before and after a scroll: **Shadow** (lifts off the page), **Solid** (a see-through bar fills in), **Glass** (frosted, with the page showing through), **Rule** (a hairline underneath) or **Condense** (it gets shorter). **Nothing** is the default. *Takes hold over* sets how much scrolling it takes, 120px by default. Condense needs something to condense — a height or inner spacing of its own — and the Inspector says so when there is none. It shortens from the side where there is room — below blocks that sit at the top, above blocks at the bottom, from both ends when they are centred — so the bar's own words and links stay in view, and nothing below it moves. A reader who prefers reduced motion simply sees the resting look; the block is still pinned.
   **Two bars at the same edge sit under one another.** Set a second block to **Floats on screen** at the same
   edge and it lands *below* the first, not on top of it — a header and an announcement bar, or a cookie notice
   and a back-to-top button. Each keeps its own height, and the one nearest the edge is the first of them down
@@ -346,6 +346,7 @@ room: one row from 1,366px wide, two rows at 1,280px, and the buttons' words app
 - **Editor theme** (the sun/moon picker beside it) — how the **builder UI itself** looks while you work. It never changes your website; design a Light site in a Dark editor if you like.
 
 - Colours come from the site's **design tokens** (an OKLCH colour system) — pick from themed swatches, a spectrum, a hex field, or the eyedropper. There are **no hardcoded colours**, so switching the Website theme re‑skins everything consistently.
+- **Any colour can be see-through.** The palette's **Opacity** slider (0–100%) sets it, and the hex field takes `#rrggbbaa` or `rgba(…)` as typed. A swatch picked for a see-through colour keeps its transparency — so **Tint over background** stays a tint and the photo shows through it.
 - Colour fields show a **WCAG contrast** readout so text stays legible.
 - **Text follows the page, space follows the box.** A heading is one size wherever it sits — in a sidebar, a card or a
   wide band — so the page's hierarchy holds; a card's padding still tightens in a narrow column. (Decided 2026‑09‑28.)
@@ -456,6 +457,8 @@ A Grid block is **twelve columns** underneath, and each block in it takes a numb
 
 You never have to think in twelfths. Select a block and the **Grid cell** panel offers the names — **Full, Half, Third, Two‑thirds, Quarter, Three‑quarters** — with the raw number underneath if you want it. Pick a Half inside a row of thirds and the row quietly re‑cuts itself to twelve so it can express one; nothing on the page moves.
 
+**A different count on one screen.** On a phone a Grid stacks its blocks one under another, and with **Mobile** selected the **Columns** control says so: none of the names is picked. Choose one there (say **Thirds**) and the phone shows that many across, each block keeping its share of the row (a quarter of the row on a desktop stays as close to a quarter as the new count allows). The desktop is left exactly as it was. If the blocks get too narrow for their words, the **Page check** says which one, and on which screens.
+
 | Control | What it does |
 |---|---|
 | **Width** | How much of the row this block takes — by name, or 1–12 |
@@ -552,7 +555,7 @@ Bands don't have to meet in a straight line. Select one → **Design → Arrange
 
 - **Straight** — the default
 - **Slope right** / **Slope left** — a diagonal cut
-- **Curve out** / **Curve in** — an arch, bulging outward or scooped inward
+- **Curve out** / **Curve in** — an arch: Curve out bulges (its corners are cut in by the depth, its middle reaches the edge), Curve in scoops inward
 
 **Edge depth** controls how far the shape cuts, as a percentage of the section's height. It's capped, so a shape can never swallow the whole band.
 
@@ -562,6 +565,8 @@ Two things worth knowing:
 
 - **The shape cuts the background; it doesn't move your content.** A sloped section is exactly as tall as it was — so text stays where you put it and nothing reflows when you change the shape.
 - **It's the section underneath that shows through.** A slope on the bottom of a blue section reveals whatever comes next, so the effect reads best between two sections of different colours.
+- **A shadow follows the shape.** Give a shaped section a Shadow and the shadow is cast by the curve or the slope, not cut off by it — on the canvas and on the published page alike, and a Lift, Glow or Brighten hover keeps to the shape too. (A border on a shaped section stays a straight rectangle.)
+- **A shaped section holds what is inside it.** A block set to *Floats on screen* inside a shaped section stays with that section, not the window — the Inspector says so. Put such a block outside the shaped section.
 
 ---
 
@@ -744,7 +749,7 @@ Select any block → **Design** tab → **Outline & effects**.
 
 ### Hover & focus — how it reacts
 
-Eight effects, shown as previews: **Lift · Grow · Press · Glow · Outline · Brighten · Soften**, and None.
+Eight effects, shown as previews: **Lift · Grow · Press · Glow · Outline · Brighten · Soften**, and None. **Press** does nothing on hover — it sinks in when the block is pressed, so its tile is drawn pressed in. Every effect also dips slightly when pressed; hover looks only happen where there is a mouse, so a tapped card on a phone never stays lifted.
 
 Each one also applies when a visitor **tabs to it with a keyboard**, and to a card when a button *inside* it takes focus — so someone not using a mouse gets the same feedback.
 
@@ -753,7 +758,7 @@ Each one also applies when a visitor **tabs to it with a keyboard**, and to a ca
 Eight effects: **Fade in · Rise up · Drop down · From the left · From the right · Zoom in · Sharpen**, and None.
 
 Two options go with them:
-- **Play when it scrolls into view** — instead of on load
+- **Play when it scrolls into view** — instead of on load. It plays **once**, the first time the block comes into view, and never again or backwards as the visitor scrolls up — on the canvas exactly as on the published page, a pinned bar included.
 - **Bring the blocks inside in one after another** — the contents arrive in sequence rather than together. On a section, that's its blocks: a row of three cards rising one after the other as a visitor scrolls to it. On an accordion it's the **rows**, so the list reads as a set of things rather than one lump.
 
 ### Movement on a single row
@@ -794,6 +799,14 @@ Your page is published as proper HTML5, however you built it — you do not need
   that skips a level (one click: **Make it level N**) and words too tight to sit side by side on a narrow screen —
   those three are suggestions; it won't stop you publishing. Every item has **Show me**, which takes you to the block.
   Everything else is fixed for you and listed under *Fixed for you*.
+- **Space, measured at every screen size.** When it opens, the Page check also measures the page as visitors will get
+  it, on a phone, a tablet held upright and sideways, a desktop and a wide screen. It names any block whose words come
+  closer than 1rem to the page's edge, words that touch the edge of their coloured box, two sections whose words run
+  together, and a column too narrow for its words (a word broken in the middle, say four columns you set for phones),
+  and says on which screens. Add the space, or give the column more room, and the item goes. These are suggestions too.
+
+[![The Page check listing words that touch their coloured box and two sections whose words run together, each naming the screens — phones, tablets held upright, tablets held sideways, desktops and wide screens — with Show me](img/guide-page-check-space.webp)](img/guide-page-check-space.webp)
+
 - **Letters the font lacks.** When a block's words use a letter its font cannot draw, the Page check names the font,
   the letters and a font of the same kind that has them: *"DM Sans has no ẹ ọ ṣ … Inter has them."* One click, **Use
   Inter for this block**, changes that block's font. To change it everywhere, use **Site fonts** in Page settings. This

@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { createPortal } from "react-dom";
+import { hexToRgb } from "@/lib/educo-ui/color";
 // ─── Shared Color Palettes ──────────────────────────────────────────────
 
 /** 30 solid colors (6 columns × 5 rows) */
@@ -194,9 +195,7 @@ export function colorToSolid(color: string): string {
 /** Check if a hex color is light (for contrast text) */
 export function isLightColor(hex: string): boolean {
   if (!hex.startsWith("#")) return false;
-  const r = parseInt(hex.slice(1, 3), 16);
-  const g = parseInt(hex.slice(3, 5), 16);
-  const b = parseInt(hex.slice(5, 7), 16);
+  const { r, g, b } = hexToRgb(hex); // every hex form — #rgb, #rgba, #rrggbb, #rrggbbaa (RX4-24: "#fff" read as dark)
   return (r * 299 + g * 587 + b * 114) / 1000 > 150;
 }
 

@@ -79,6 +79,9 @@ const look = (sel: string, withOutline: boolean) =>
     return [c.transform, c.boxShadow, c.opacity, c.filter${withOutline ? ", c.outlineWidth, c.outlineColor" : ""}].join(" | "); })()`;
 const lookOf = (page: Page, sel: string, withOutline = true) =>
   page.evaluate(look(sel, withOutline)) as Promise<string>;
+/** RX4-2: hover is gated to `(hover: hover)` — the touch projects (tablets, phone) have none, and must not stick. */
+const canHover = (page: Page) => page.evaluate(() => matchMedia("(hover: hover)").matches);
+const allCss = (page: Page) => page.evaluate(() => [...document.querySelectorAll("style")].map((n) => n.textContent ?? "").join(""));
 
 // The canvas cases open the builder once per effect, which the default 30s cannot cover — the same reason the
 // layout harness raises its own limit. No longer serial: "parallel reloads just time out" was a misreading of
@@ -128,10 +131,21 @@ test.describe("Interactions — hover, focus and entrance (Rounds 1a + 1b)", () 
 
       if (fx.id === "") {
         expect(hovered, "None must do nothing at all").toBe(resting);
+      } else if (!fx.decls) {
+        // A PRESS-only effect (RX4-3) has no hover look by design; a mouse-down on the canvas also selects the
+        // block, so its rule is asserted here and the export test below presses it for real.
+        expect(hovered, `"${fx.label}" has no hover look`).toBe(resting);
+        const css = await page.evaluate(() =>
+          [...document.querySelectorAll("style")].map((n) => n.textContent ?? "").join(""));
+        expect(css, `"${fx.label}" must be wired up on the canvas`).toContain(`${sel}:active`);
       } else if (outlineOnly) {
         const css = await page.evaluate(() =>
           [...document.querySelectorAll("style")].map((n) => n.textContent ?? "").join(""));
         expect(css, `"${fx.label}" must still be wired up on the canvas`).toContain(`${sel}:hover`);
+      } else if (!(await canHover(page))) {
+        // RX4-2: a TOUCH screen has no hover — a tapped card that stays lifted is the bug. The rule is there, gated.
+        expect(hovered, `"${fx.label}" must NOT stick on a touch screen`).toBe(resting);
+        expect(await allCss(page), `"${fx.label}" is gated to devices that can hover`).toMatch(/@media \(hover:\s*hover\)/);
       } else {
         expect(hovered, `"${fx.label}" must visibly change the block on hover`).not.toBe(resting);
         expect(released, `"${fx.label}" must return to its resting look`).toBe(resting);
@@ -146,7 +160,15 @@ test.describe("Interactions — hover, focus and entrance (Rounds 1a + 1b)", () 
       await page.locator("#tgt").hover();
       await page.waitForTimeout(320);
       const hovered = await lookOf(page, "#tgt");
-      expect(hovered, `"${fx.label}" must work on the published page too`).not.toBe(resting);
+      // RX4-2: where hover exists it works on the published page; on a touch screen it must not stick
+      if (fx.decls && (await canHover(page))) expect(hovered, `"${fx.label}" must work on the published page too`).not.toBe(resting);
+      if (fx.decls && !(await canHover(page))) expect(hovered, `"${fx.label}" must not stick on a touch screen`).toBe(resting);
+      // RX4-3: EVERY effect answers a press, and the press differs from the hover look.
+      await page.mouse.down();
+      await page.waitForTimeout(320);
+      const pressed = await lookOf(page, "#tgt");
+      await page.mouse.up();
+      expect(pressed, `"${fx.label}" must answer a press`).not.toBe(hovered);
     }
   });
 
@@ -419,7 +441,8 @@ test.describe("Interactions — hover, focus and entrance (Rounds 1a + 1b)", () 
       await page.locator("#tgt").hover();
       await page.waitForTimeout(300);
       const hovered = await lookOf(page, "#tgt");
-      expect(hovered, `${component} must support a hover effect`).not.toBe(resting);
+      if (await canHover(page)) expect(hovered, `${component} must support a hover effect`).not.toBe(resting);
+      else expect(await allCss(page), `${component}'s hover is there, gated to devices that can hover (RX4-2)`).toMatch(/@media \(hover:\s*hover\)/);
     }
   });
 });

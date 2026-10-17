@@ -7,12 +7,12 @@
  * — the real CSS still runs under the hood. Colours reuse the shared ColorPickerPopover.
  */
 
-import { useState, useRef } from "react";
+import { useState, useRef, useId } from "react";
 import { Plus, X, Tags, Rows3, Columns3, Upload, ArrowRight, AlignLeft, AlignCenter, AlignRight, AlignHorizontalSpaceBetween, Layers, Move, BringToFront, SendToBack, ChevronUp, ChevronDown, Italic, Underline, LayoutGrid, Maximize2, Sparkles, Paintbrush, Ruler, Type as TypeIcon, MonitorSmartphone, Bookmark, Lock, LockOpen } from "lucide-react";
 import type { SiteTheme } from "@/lib/site-storage";
 import type { BoxNode, FlexAlign, FlexJustify, AccPartStyle, Breakpoint, PagerNav, PinScopeWords, SectionFlag } from "@/lib/box-model";
 import { RUNG_LABEL } from "@/lib/educo-ui/layout";
-import { type ItemAction, TOAST_CORNERS, fluidRemRange, isContainer, containerLabel, isFloating, isCssBg, addItem, removeItem, moveItem, updateItem, addChildItem, updateChildItem, removeChildItem, moveChildItem , isMultiItemComponent, hasIntrinsicSize, sizeToCSS, typedLength, GRID_MAX, COLUMN_FRACTIONS, columnFractionOf, canSetColumnFraction, gridColumns, bandEdgeCSS, PIN_ARRIVALS, PIN_ARRIVAL_AFTER, pinArrivalHasEffect, linkLineGap, LINK_GAP_ACROSS, LINK_GAP_ACROSS_PHONE, spaceDefaults, outerDefaults, type SectionPlace, gapOf, importPhoto } from "@/lib/box-model";
+import { type ItemAction, TOAST_CORNERS, fluidRemRange, isContainer, containerLabel, isFloating, isCssBg, addItem, removeItem, moveItem, updateItem, addChildItem, updateChildItem, removeChildItem, moveChildItem , isMultiItemComponent, hasIntrinsicSize, sizeToCSS, typedLength, GRID_MAX, COLUMN_FRACTIONS, columnFractionOf, canSetColumnFraction, gridColumnsAt, bandEdgeCSS, PIN_ARRIVALS, PIN_ARRIVAL_AFTER, pinArrivalHasEffect, linkLineGap, LINK_GAP_ACROSS, LINK_GAP_ACROSS_PHONE, spaceDefaults, outerDefaults, type SectionPlace, gapOf, importPhoto, refusedMotion, rowFilledByBlocks } from "@/lib/box-model";
 import { remLen } from "@/lib/educo-ui/tokens";
 import { ACCORDION_DESIGNS, ACCORDION_DESIGN_COUNT, ACCORDION_AXES } from "@/lib/educo-ui/accordions";
 import { ALERT_DESIGNS, ALERT_DESIGN_COUNT, ALERT_AXES } from "@/lib/educo-ui/alerts";
@@ -126,7 +126,7 @@ function GapRange({ label, value, fallback, onChange, onMatch }: {
 
 // A labelled colour control that reuses the design-system OKLCH palette picker (spectrum + palettes + hex).
 // When `onClear` is given, the picker offers a "None (transparent)" choice and shows a checkerboard when unset.
-function ColorRow({ title, value, fallback, onSelect, onClear }: { title: string; value?: string; fallback: string; onSelect: (c: string) => void; onClear?: () => void; mode?: "matrix" | "both" }) {
+function ColorRow({ title, value, fallback, onSelect, onClear }: { title: string; value?: string; fallback: string; onSelect: (c: string) => void; onClear?: () => void }) {
   return <EducoColorField label={title} ariaLabel={title} value={onClear ? (value ?? "") : (value || fallback)} onChange={onSelect} onClear={onClear} />;
 }
 
@@ -198,7 +198,12 @@ function AccPartDesign({ title, ariaPrefix, style, onChange, moveLabel = "conten
  * the user's decision); like every value here they are written at the screen being edited, so on a phone they change the phone.
  */
 const WIDTH_PRESETS: Record<string, string> = { auto: "auto", fill: "fill", half: "50%", third: "33.33%" };
-function WidthControl({ node, onPatch }: { node: BoxNode; onPatch: (p: Partial<BoxNode>) => void }) {
+/**
+ * `pageRow` (L6-4): the block is on a ROW OF THE PAGE, where a width is a share of the page's columns — a width that is not a % (a typed
+ * `3.5rem`) is drawn as an equal share of what is left (`rowLinesAt`), until a fixed-width column beside the shares exists (AC-30, BATCH
+ * G-4). The field says so, rather than take a value the page will not draw.
+ */
+function WidthControl({ node, onPatch, pageRow = false }: { node: BoxNode; onPatch: (p: Partial<BoxNode>) => void; pageRow?: boolean }) {
   const w = node.width ?? "auto";
   const mode = Object.keys(WIDTH_PRESETS).find((k) => WIDTH_PRESETS[k] === w) ?? "custom";
   const isCustom = mode === "custom";
@@ -207,7 +212,8 @@ function WidthControl({ node, onPatch }: { node: BoxNode; onPatch: (p: Partial<B
       <span className={label}>Width</span>
       <Segmented full ariaLabel="Width" value={mode} onChange={(m) => onPatch({ width: WIDTH_PRESETS[m] ?? (isCustom ? w : "40%") })}
         options={[{ value: "auto", label: "Fit" }, { value: "fill", label: "Full" }, { value: "half", label: "½", title: "Half the line" }, { value: "third", label: "⅓", title: "A third of the line" }, { value: "custom", label: "Custom" }]} />
-      {isCustom && <CompactField ariaLabel="Custom width" value={w} onChange={(v) => onPatch({ width: typedLength(v) })} placeholder="50% or 15rem" />}
+      {isCustom && <CompactField ariaLabel="Custom width" value={w} onChange={(v) => onPatch({ width: typedLength(v) })} placeholder={pageRow ? "e.g. 25%" : "50% or 15rem"} />}
+      {isCustom && pageRow && !w.trim().endsWith("%") && <p className="text-[0.6875rem] text-muted">On the page grid a width is a share of the columns — type a %. A fixed width (rem) is drawn as an equal share for now.</p>}
     </div>
   );
 }
@@ -226,7 +232,9 @@ function SideSpacing({ title, node, base, sides, onPatch, max = 96, defaults = [
   const set = own !== undefined || sides.some((k) => node[k] !== undefined);
   const g = own ?? Math.max(...defaults);
   const setPx = (k: keyof BoxNode, px: number) => onPatch({ [k]: px } as Partial<BoxNode>);
-  const setRem = (k: keyof BoxNode, v: string) => onPatch({ [k]: v === "" ? undefined : fromRem(Number(v)) } as Partial<BoxNode>);
+  // Typed in rem, held to the slider's own 0…max — a field marked min=0 still took "-1.5", and "40" drew 729.6px (RX3-7).
+  const setRem = (k: keyof BoxNode, v: string) => { const n = Number(v); if (v !== "" && !Number.isFinite(n)) return; onPatch({ [k]: v === "" ? undefined : Math.min(max, Math.max(0, fromRem(n))) } as Partial<BoxNode>); };
+  const unitId = useId();
   const [t, r, b, l] = sides;
   const hasDefault = defaults.some((d) => d > 0);
   return (
@@ -243,10 +251,11 @@ function SideSpacing({ title, node, base, sides, onPatch, max = 96, defaults = [
         {([["Top", t], ["Right", r], ["Bottom", b], ["Left", l]] as const).map(([lab, key]) => (
           <label key={lab} className="flex flex-col items-center gap-0.5">
             <span className="text-[0.5625rem] uppercase tracking-wide text-gray-400">{lab}</span>
-            <input type="number" step={0.1} min={0} value={node[key] !== undefined ? toRem(node[key] as number) : ""} placeholder={String(toRem(own ?? defaults[[t, r, b, l].indexOf(key)]))} onChange={(e) => setRem(key, e.target.value)} aria-label={`${title} ${lab.toLowerCase()}`} className="w-full text-xs px-1 py-1 pointer-coarse:min-h-11 rounded-lg border border-gray-200 dark:border-white/10 midnight:border-white/10 purple:border-white/10 bg-transparent text-center outline-none focus:ring-1 focus:ring-indigo-400" />
+            <input type="number" step={0.1} min={0} max={toRem(max)} aria-describedby={unitId} value={node[key] !== undefined ? toRem(node[key] as number) : ""} placeholder={String(toRem(own ?? defaults[[t, r, b, l].indexOf(key)]))} onChange={(e) => setRem(key, e.target.value)} aria-label={`${title} ${lab.toLowerCase()}`} className="w-full text-xs px-1 py-1 pointer-coarse:min-h-11 rounded-lg border border-gray-200 dark:border-white/10 midnight:border-white/10 purple:border-white/10 bg-transparent text-center outline-none focus:ring-1 focus:ring-indigo-400" />
           </label>
         ))}
       </div>
+      <p id={unitId} className="text-[0.6875rem] text-gray-500 dark:text-gray-400 midnight:text-slate-400 purple:text-purple-300">Each side in rem, sized for a laptop — it grows a little on wide screens and closes up on a phone</p>
     </div>
   );
 }
@@ -332,7 +341,8 @@ function HoverPreview({ effect }: { effect: HoverEffect }) {
         display: "block", width: "72%", height: "58%", borderRadius: "0.4rem",
         background: "var(--eu-color-surface, #fff)", border: "1px solid var(--eu-color-border, #e2e7ee)",
         // the effect's own declarations, shown as its resting look so the tile IS the result
-        ...declsToStyle(effect.decls),
+        // "Press" has no resting/hover look — only a press — so its tile shows the press (RX4-18, RULE T)
+        ...declsToStyle(effect.decls || effect.press || ""),
       }} />
     </span>
   );
@@ -599,6 +609,9 @@ export default function BoxInspector({ section = false, sectionPlace, outerDefau
    * On a container it lives on the DESIGN tab, where a person looks for styling; on a text block it stays with
    * the rest of that block's content controls, which is where it has always been.
    */
+  // L6-11 · CALLED, NEVER <TextStyle /> / <AlignRow />: a component defined inside this render is a NEW type on every render, so React
+  // threw the section away and rebuilt it each time — measured, the Text size slider replaced 85 times in 2 s (it could not be used,
+  // and an open accordion or a focused field reset with it).
   const TextStyle = () => (
     <Accordion title={container ? "Text style (everything inside)" : "Text style"} icon={TypeIcon}>
       {container && (
@@ -619,7 +632,7 @@ export default function BoxInspector({ section = false, sectionPlace, outerDefau
         <CompactField label="Line spacing" ariaLabel="Line spacing" type="number" step={0.05} min={0.8} max={3} value={node.lineHeight ?? ""} placeholder="auto" onChange={(v) => onPatch({ lineHeight: v === "" ? undefined : Number(v) })} />
         <CompactField label="Letter spacing" ariaLabel="Letter spacing" type="number" step={0.5} value={node.letterSpacing ?? ""} placeholder="0px" onChange={(v) => onPatch({ letterSpacing: v === "" ? undefined : Number(v) })} />
       </div>
-      <AlignRow />
+      {AlignRow()}
       <div className="flex items-center gap-1">
         <button onClick={() => onPatch({ bold: !(node.bold ?? (node.type === "heading")) })} aria-label="Bold" aria-pressed={node.bold ?? (node.type === "heading")} className={`px-2 py-1 rounded-md font-bold text-sm ${(node.bold ?? (node.type === "heading")) ? "bg-indigo-100 dark:bg-indigo-500/20 text-indigo-700 dark:text-indigo-300" : "text-gray-500 hover:bg-gray-100 dark:hover:bg-white/10"}`}>B</button>
         <button onClick={() => onPatch({ italic: !node.italic })} aria-label="Italic" aria-pressed={!!node.italic} className={iconBtn(!!node.italic)}><Italic className="w-4 h-4" /></button>
@@ -755,9 +768,31 @@ export default function BoxInspector({ section = false, sectionPlace, outerDefau
                         id, label: name, preview: () => <PinPreview mode={id} />,
                       })) }]}
                     />
+                    {/* RX4-12 — WHERE ON THE WINDOW: where it was placed (measured at the switch), or an edge or a corner, the same
+                        eight an in-flow block's "Floats on screen" has. Picking "Where I put it" re-measures (box-demo `onPatch`);
+                        picking an edge clears the measurement. */}
+                    {node.pin && (node.hold ?? "sticky") === "fixed" && (
+                      <>
+                        <Segmented full ariaLabel="Held against"
+                          value={node.pinX != null || node.pinY != null ? "place" : node.pin}
+                          onChange={(v) => onPatch(v === "place" ? { pin: "top", hold: "fixed" } : { pin: v as NonNullable<BoxNode["pin"]> })}
+                          options={[
+                            { value: "place", label: "Where I put it", title: "Where you placed it, kept inside the window" },
+                            { value: "top", label: "Top" }, { value: "bottom", label: "Bottom" },
+                            { value: "left", label: "Left" }, { value: "right", label: "Right" },
+                            { value: "top-left", label: "↖", title: "Top-left corner" }, { value: "top-right", label: "↗", title: "Top-right corner" },
+                            { value: "bottom-left", label: "↙", title: "Bottom-left corner" }, { value: "bottom-right", label: "↘", title: "Bottom-right corner" },
+                          ]} />
+                        {node.pinX == null && node.pinY == null && (
+                          <Range title="Distance from the edge" value={node.pinOffset} min={0} max={120} fallback={0} onChange={(n) => onPatch({ pinOffset: n || undefined })} unit="rem" />
+                        )}
+                      </>
+                    )}
                     <p data-float-pin-note className="text-[11px] leading-snug text-gray-500 dark:text-gray-400 midnight:text-cyan-200/80 purple:text-pink-200/80">
                       {node.pin && (node.hold ?? "sticky") === "fixed"
-                        ? "It holds exactly where you placed it, on every screen and however far the page scrolls."
+                        ? node.pinX != null || node.pinY != null
+                          ? "It holds where you placed it however far the page scrolls — and on a smaller screen it comes to rest on the window’s edge rather than off it."
+                          : `It holds against the ${node.pin.replace("-", " ")}${node.pin.includes("-") ? " corner" : " edge"} of the window, on every screen, however far the page scrolls.`
                         : "It scrolls with the page. “Sticks when reached” needs it back in the layout — that one holds a block against where it sits in the page, and a freely placed block has no place there."}
                     </p>
                     {node.pin && (node.hold ?? "sticky") === "fixed" && fixedBlockedBy && (
@@ -838,7 +873,8 @@ export default function BoxInspector({ section = false, sectionPlace, outerDefau
                       {node.pinArrival === "condense" && !pinArrivalHasEffect(node) && (
                         <p role="status" className="text-[11px] leading-snug rounded-md px-2 py-1.5 bg-amber-50 text-amber-900 ring-1 ring-amber-200 dark:bg-amber-950/40 dark:text-amber-200 dark:ring-amber-900 midnight:bg-amber-950/40 midnight:text-amber-200 midnight:ring-amber-900 purple:bg-amber-950/40 purple:text-amber-200 purple:ring-amber-900">
                           There is nothing to condense yet: this block has no height and no inner spacing of
-                          its own. Give it one under <b>Size</b> or <b>Spacing</b>, or pick another arrival.
+                          its own. Give it a <b>Height</b> under <b>Size</b>, inner spacing under <b>Spacing</b>, or a
+                          <b>Band height</b> under <b>Background</b> — or pick another arrival.
                         </p>
                       )}
                     </>
@@ -987,10 +1023,10 @@ export default function BoxInspector({ section = false, sectionPlace, outerDefau
                       there is no retrack (a rung holds style, never the row's children), so the count is a
                       plain override and the spans clamp to it. */}
                   <span className={label}>Columns</span>
-                  <Segmented full ariaLabel="Columns" value={String(gridColumns(node))}
+                  <Segmented full ariaLabel="Columns" value={String(gridColumnsAt(node, breakpoint))} /* LE1-4: the count DRAWN on this screen */
                     onChange={(v) => (onRetrack ?? ((n: number) => onPatch({ columns: n })))(Number(v))}
                     options={[{ value: "2", label: "Halves" }, { value: "3", label: "Thirds" }, { value: "4", label: "Quarters" }, { value: "6", label: "Sixths" }, { value: "12", label: "Twelve" }]} />
-                  <Range title="Columns in the row" value={node.columns} min={1} max={GRID_MAX} fallback={3}
+                  <Range title="Columns in the row" value={gridColumnsAt(node, breakpoint)} min={1} max={GRID_MAX} fallback={3}
                     onChange={(n) => (onRetrack ?? ((c: number) => onPatch({ columns: c })))(n)} unit="" />
                   <p className="text-[11px] leading-snug text-gray-500 dark:text-gray-400">
                     Twelve divides by 2, 3, 4 and 6 — pick it when blocks in the same row need different widths.
@@ -1038,6 +1074,7 @@ export default function BoxInspector({ section = false, sectionPlace, outerDefau
                   <Segmented full ariaLabel="Direction" value={node.direction === "row" ? "row" : "column"} onChange={(v) => onPatch({ direction: v as "row" | "column" })}
                     options={[{ value: "column", label: "Top-to-bottom", Icon: Rows3 }, { value: "row", label: "Side-by-side", Icon: Columns3 }]} />
                   <CompactSelect label="Position blocks" ariaLabel="Position blocks" value={node.justify ?? "start"} onChange={(v) => onPatch({ justify: v as FlexJustify })} options={JUSTIFY_OPTS.map(([v, l]) => ({ value: v, label: l }))} />
+                  {rowFilledByBlocks(node) && <p role="note" className="text-[0.6875rem] leading-snug text-amber-700 dark:text-amber-300 midnight:text-amber-300 purple:text-amber-300">These blocks fill the row — give one a width to place them.</p>}
                   <label className="pointer-coarse:min-h-11 flex items-center gap-2 text-xs text-gray-600 dark:text-gray-300"><input type="checkbox" checked={!!node.wrap} onChange={(e) => onPatch({ wrap: e.target.checked })} /> Let blocks wrap to a new line</label>
                 </>
               )}
@@ -1093,7 +1130,7 @@ export default function BoxInspector({ section = false, sectionPlace, outerDefau
 
           {/* A container's typography is a DESIGN decision — it is the look everything inside it inherits —
               so it sits here rather than with a text block's content controls. */}
-          {container && <TextStyle />}
+          {container && TextStyle()}
 
           {/* Order and push apply in BOTH engines and to every block that has a parent, so they are their own
               section rather than a grid-only one. Order is the control that makes "the photo above the words
@@ -1130,7 +1167,7 @@ export default function BoxInspector({ section = false, sectionPlace, outerDefau
           )}
 
           <Accordion title="Size" icon={Maximize2}>
-            <WidthControl node={node} onPatch={onPatch} />
+            <WidthControl node={node} onPatch={onPatch} pageRow={!!onSetFreeInset} />
             {pageSpan && onSetSpan && (
               <div className="space-y-0.5">
                 <CompactField label={`Columns (of ${pageSpan.cols})`} ariaLabel={`Columns of ${pageSpan.cols}`} type="number" min={0.5} max={pageSpan.cols} step={0.5} value={pageSpan.value}
@@ -1365,7 +1402,7 @@ export default function BoxInspector({ section = false, sectionPlace, outerDefau
                 {/* Patterns: let the user retune tile size + repeat too */}
                 {node.bgTile && (
                   <div className="grid grid-cols-2 gap-1.5">
-                    <CompactField label="Tile size" ariaLabel="Pattern tile size" value={node.bgTile} placeholder="24px 24px" onChange={(v) => onPatch({ bgTile: v || undefined })} />
+                    <CompactField label="Tile size" ariaLabel="Pattern tile size" value={node.bgTile} placeholder="1.5rem 1.5rem" onChange={(v) => onPatch({ bgTile: v || undefined })} />
                     <CompactSelect label="Repeat" ariaLabel="Pattern repeat" value={node.bgRepeat ?? "repeat"} onChange={(v) => onPatch({ bgRepeat: v || undefined })}
                       options={[{ value: "repeat", label: "Tile" }, { value: "repeat-x", label: "Tile across" }, { value: "repeat-y", label: "Tile down" }, { value: "no-repeat", label: "Once" }]} />
                   </div>
@@ -1392,7 +1429,7 @@ export default function BoxInspector({ section = false, sectionPlace, outerDefau
                   <input type="checkbox" checked={node.bgAttach === "fixed"} onChange={(e) => onPatch({ bgAttach: e.target.checked ? "fixed" : undefined })} aria-label="Fixed background (parallax)" className="accent-indigo-600" />
                   Fixed (parallax scroll)
                 </label>
-                <ColorRow title="Tint over background" value={node.bgOverlay} fallback="#00000066" onSelect={(c) => onPatch({ bgOverlay: c })} mode="both" />
+                <ColorRow title="Tint over background" value={node.bgOverlay} fallback="#00000066" onSelect={(c) => onPatch({ bgOverlay: c })} />
                 <button onClick={() => onPatch({ bgImage: undefined, bgTile: undefined, bgOverlay: undefined, bgPosition: undefined, bgRepeat: undefined, bgAttach: undefined })} className="text-[0.6875rem] text-red-500 hover:underline">Remove background</button>
               </>
             )}
@@ -1499,7 +1536,7 @@ export default function BoxInspector({ section = false, sectionPlace, outerDefau
                     </div>
                     <Range title="Icon size" value={node.fontSize} min={12} max={120} fallback={32} onChange={(n) => onPatch({ fontSize: n })} unit="rem" />
                     <ColorRow title="Icon colour" value={node.color} fallback={theme.primary} onSelect={(c) => onPatch({ color: c })} />
-                    <AlignRow />
+                    {AlignRow()}
                   </>
                 )}
                 {node.type === "divider" && (
@@ -1908,7 +1945,7 @@ export default function BoxInspector({ section = false, sectionPlace, outerDefau
                   below for what a container's "Text size" means (it scales the roles, it does not flatten
                   them). Before this the controls existed only on text-ish blocks, so a section or a grid cell
                   had no way to set a font at all. */}
-              {textual && <TextStyle />}
+              {textual && TextStyle()}
             </>
           )}
           {/* every block: the canvas and the export apply it to all of them, so the field is offered on all (A2-12, RULE UI) */}
@@ -1921,6 +1958,12 @@ export default function BoxInspector({ section = false, sectionPlace, outerDefau
               helpText={node.component === "accordion"
                 ? <>Plain lines style the accordion. Use <code>title</code>, <code>body</code>, <code>icon</code>, <code>meta</code> or <code>media</code> {"{ … }"} to restyle that part of every item. Sanitised on export.</>
                 : <>One <code>property: value;</code> per line. Applied to this block; sanitised on export (no selectors, @-rules, or remote URLs).</>} />
+            {/* RX4-15: a refusal is SAID, never silent — a line left out with no word reads as "it took it" */}
+            {refusedMotion(node.advancedCss).length > 0 && (
+              <p role="status" aria-label="Advanced CSS not applied" className="mt-1.5 text-[0.6875rem] leading-snug rounded-md px-2 py-1.5 bg-amber-50 text-amber-900 ring-1 ring-amber-200 dark:bg-amber-950/40 dark:text-amber-200 dark:ring-amber-900 midnight:bg-amber-950/40 midnight:text-amber-200 midnight:ring-amber-900 purple:bg-amber-950/40 purple:text-amber-200 purple:ring-amber-900">
+                Not applied: {refusedMotion(node.advancedCss).map((d, i) => <code key={i} className="mx-0.5">{d}</code>)}. Animate <code>transform</code> or <code>opacity</code> instead — moving the size or place makes the page jerk on a phone — and nothing may move forever (a visitor must be able to make it stop).
+              </p>
+            )}
           </Accordion>
         </div>
       )}

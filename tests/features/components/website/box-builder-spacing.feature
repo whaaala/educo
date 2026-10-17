@@ -468,3 +468,17 @@ Feature: Spacing — none unless I add it (since 2026-10-15); a saved page keeps
     When the page audit runs in the Preview at every screen size
     Then it reports no words closer than the gutter floor to the page edge or to the edge of the coloured box they sit in
     And no two sections closer than the section-space floor
+
+  # LE-1 (S-3): the in-app Page check measures space the way the sweep's page-audit.js does, on the published page, at every size.
+  Scenario: The Page check finds words without space, at every screen size
+    Given a page built through the UI with words at the page edge, words in a coloured box with no inner space, and two sections whose words touch
+    When I open the Page check
+    Then it lists each one, naming the block and the screen sizes it happens at
+    And "Show me" selects that block
+    And once I add the space, it is no longer listed
+
+  Scenario: The Page check finds a column too narrow for its words
+    Given a Side by side of four blocks, one holding a long word
+    When I open the Page check
+    Then it says that column is too narrow for its words on phones, and names it
+    And when the blocks have room, nothing is listed

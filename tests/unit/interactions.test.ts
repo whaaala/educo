@@ -52,8 +52,10 @@ describe("hover & focus effects (Interactions 1a)", () => {
     const moving = hoverCss(".b", "lift");
     expect(moving).toContain("@media (prefers-reduced-motion:reduce)");
     expect(moving).toContain("transform:none !important");
-    // a non-moving effect has nothing to calm, so it emits no media block at all
-    expect(hoverCss(".b", "glow")).not.toContain("prefers-reduced-motion");
+    // a non-moving effect keeps its fade; only its press dip is calmed (RX4-3), never its transition
+    const glow = hoverCss(".b", "glow");
+    expect(glow).toContain("@media (prefers-reduced-motion:reduce){.b:hover{transform:none !important}");
+    expect(glow).not.toContain("transition:none");
   });
 
   it("every effect is token-driven — no hardcoded brand colour", () => {
@@ -120,11 +122,11 @@ describe("entrance effects (Interactions 1b)", () => {
     expect(css).toContain("#b{animation:eu-reveal-rise");
   });
 
-  it("scroll-triggered entrances are GUARDED, so an unsupporting browser still reveals on load", () => {
+  it("scroll-triggered entrances are GUARDED, so a page without the script still reveals on load", () => {
     const css = revealCss(".b", { revealEffect: "fade", revealScroll: true });
-    expect(css).toContain("@supports (animation-timeline: view())");
-    // the plain animation is declared outside the @supports block — that is the fallback
-    expect(css.indexOf("animation:eu-reveal-fade")).toBeLessThan(css.indexOf("@supports"));
+    // held only by a class the shared script adds (RX4-1); the plain animation is the fallback
+    expect(css).toContain(".b.eu-wait{animation-play-state:paused}");
+    expect(css.indexOf("animation:eu-reveal-fade")).toBeLessThan(css.indexOf(".b.eu-wait"));
   });
 
   it("stagger moves the effect onto the CHILDREN, each a beat later", () => {

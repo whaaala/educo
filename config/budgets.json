@@ -1,0 +1,5 @@
+{
+  "$comment": "RULE AF budgets for a PUBLISHED page (docs/DEVELOPING_COUNTRIES_FIRST.md): measured by scripts/uat/page-weight.js on the files the builder's Export gives (site.zip), served with gzip as a real host does. page: the HTML + CSS + JS a page sends, compressed (KB); everything a 360-wide phone downloads for its first view, images and fonts included (KB); the phone it is measured on; at most this many font families; a picture more than this many times wider than it is shown (at the phone's pixel ratio) is sent too big. slow3g: Chrome DevTools' Slow 3G — the first content painted within firstBandSeconds, and the page moving no more than maxLayoutShift (CLS) after that.",
+  "page": { "htmlCssJsKbCompressed": 100, "firstViewKb": 500, "phone": { "width": 360, "height": 640, "pixelRatio": 2 }, "fontFamilies": 2, "imageOversize": 1.5 },
+  "slow3g": { "downloadKbps": 400, "uploadKbps": 400, "latencyMs": 2000, "firstBandSeconds": 5, "maxLayoutShift": 0.1 }
+}

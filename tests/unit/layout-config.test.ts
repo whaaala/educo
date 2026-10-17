@@ -29,7 +29,8 @@ const emForms = edges.flatMap((px) => [
   new RegExp(`(?<![\\d.])${em(px / 16)}em\\b`), // not the 75em inside 1.75em
   new RegExp(`(?<![\\d.])${em(px / 16 - 0.01)}em\\b`),
 ]);
-const widthChecks = edges.map((px) => new RegExp(`(?:innerWidth|width|vw|\\bw|px)\\)?\\s*[<>]=?\\s*${px}\\b`));
+// …and `MW` (the page audit's window width — L6-3: `MW >= 600 && MW < 900` slipped past this list)
+const widthChecks = edges.map((px) => new RegExp(`(?:innerWidth|width|vw|\\bw|\\bMW|px)\\)?\\s*[<>]=?\\s*${px}\\b`));
 /**
  * A width check in px against one of the rung / dock numbers is an edge in the builder and the app, their tests and scripts.
  */
@@ -63,5 +64,25 @@ describe("RULE CFG — the screen edges live in config/layout.json only", () => 
   });
   it("no edge is typed into code — a media query or a width check reads the config", () => {
     expect(hardCodedEdges()).toEqual([]);
+  });
+});
+
+/**
+ * L5-3 — THE RESIZE NUMBERS ARE DATA TOO. The column floors (14rem untouched, 3rem by hand, 10rem below the tablet rung) and the
+ * edge-drag thresholds lived as literals in `lib/box-model.ts` and `BoxCanvas.tsx`; they are read from `config/layout.json`
+ * (`columns`, `resize`). This fails when one of them is assigned a number again, or the 14rem floor is typed into a drag.
+ */
+const RESIZE_NAMES = /\b(REFLOW_FLOOR_REM|HAND_FLOOR_REM|BLOCK_FLOOR_REM|HUG_SNAP_PX|NEIGHBOUR_MIN|MIN_ROW_PX|WRAP_PULL)\s*=\s*\d/;
+export const typedResizeNumbers = (src: string) => src.split("\n").filter((l) => RESIZE_NAMES.test(l) || /\b14 \* rootPx\b/.test(l)).map((l) => l.trim());
+describe("RULE CFG — the resize floors and thresholds live in config/layout.json only (L5-3)", () => {
+  it("every one is in the config, as a number", () => {
+    for (const v of [...Object.entries(LAYOUT.columns), ...Object.entries(LAYOUT.resize)].filter(([k]) => k !== "$comment")) expect(typeof v[1]).toBe("number");
+  });
+  it("none is typed into the engine or the canvas", () => {
+    for (const f of ["lib/box-model.ts", "components/website/box/BoxCanvas.tsx"]) expect(typedResizeNumbers(readFileSync(join(ROOT, f), "utf8").replace(/\r\n/g, "\n"))).toEqual([]);
+  });
+  it("…and one typed back in is caught", () => {
+    expect(typedResizeNumbers("export const HAND_FLOOR_REM = 3;\nconst x = 1;")).toHaveLength(1);
+    expect(typedResizeNumbers("    const neighbourMinPx = Math.min(maxW, 14 * rootPx + 2 * HG);")).toHaveLength(1);
   });
 });

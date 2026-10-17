@@ -65,7 +65,7 @@ Drag a tile onto the page and let go where the dashed marker shows, or click a t
 | **Media** | Image | One photograph or image. |
 | | Photo gallery | Many photographs at once, set up in one dialog. |
 | | Slider | Photographs shown one at a time with dots. |
-| | Video | YouTube, Vimeo, or MP4. |
+| | Video | YouTube, Vimeo, or MP4. It keeps its shape at every screen size — 16:9 unless you pick **Portrait** (a phone-shaped video) or type a **Height**. On the published page a YouTube or Vimeo video shows its picture and a play button, and the player only loads when a visitor presses play — so the page stays light on a phone and on mobile data. |
 | | Icon | A searchable symbol (inline SVG). |
 | | Embed | Raw iframe or HTML pasted in. |
 | **Components** | Accordion | Expandable Q&A. |
@@ -123,8 +123,10 @@ inside.
 |---------|-------------|
 | **Direction**: Top-to-bottom · Side-by-side | A Stack (blocks down the page) or a row (blocks across it). |
 | **Arrange as**: Free arrange · Grid | Free arrange follows Direction; Grid lays the blocks out across *and* down, in columns. |
+| **Position blocks**: Start · Center · End · Spread out · Even gaps | Where the blocks sit along the Direction when there is room to spare — at the start, the middle or the end, spread to both ends, or with even gaps around them. When the blocks already fill the row (two at 50 %, or one set to Fill) there is no room to place them in, and the Inspector says so: *"These blocks fill the row — give one a width to place them."* Set one to **Fit** or a smaller width and they move. |
+| **Let blocks wrap to a new line** | A row that runs out of room carries its blocks onto the next line instead of squeezing them. |
 | **Show one at a time** | Turns any container into a pager — children become pages, visitors swipe between them. |
-| **Edge shape**: Top · Bottom — Straight · Slope right · Slope left · Curve out · Curve in | Cuts the band's top or bottom edge into a slope or a curve, shown as little pictures; **Edge depth** sets how deep. The shape cuts the background, never the size. |
+| **Edge shape**: Top · Bottom — Straight · Slope right · Slope left · Curve out · Curve in | Cuts the band's top or bottom edge into a slope or a curve, shown as little pictures; **Edge depth** sets how deep. The shape cuts the background, never the size; a Shadow follows the shape. |
 
 ### Size (every block)
 
@@ -142,6 +144,13 @@ inside.
 | **Rows tall** (page-grid rows) | How many grid rows this block spans. 1 is the default; 2 or more makes it cover multiple rows. | Per screen |
 | **Height** | A minimum height for the block, in rem or px. Not available on all block types. | Per screen |
 | **At least rows tall** (bands) | For a page-grid page's outer band — the band is at least this many row-heights tall. | Per screen |
+
+**Dragging an edge or a corner back.** Every edge and corner can be dragged back, in the same drag or a later one: the
+block — and every neighbour the drag moved — returns to the width and height it had and stores nothing new (no fixed
+height, not "sized by hand"). Within 2px of where an edge started counts as where it started. An edge stops where the
+neighbour across it has nothing left to give: a one-column grid cell with cells after it, the grid's own left edge, a
+column already at the width its words need. Ctrl+Z undoes a drag even if the caret was in the block's words. These
+thresholds (the 2px, the 3rem and 14rem column floors) are set in `config/layout.json` (`resize`, `columns`).
 
 ### Placement
 
@@ -170,8 +179,8 @@ inside.
 | **Space across** · **Space down** | The same space, across and down separately — "same as above" until you move one. | Per screen |
 | **Space between columns** (page-grid rows) | The gap between blocks side by side in a page-grid row (across). | Per screen |
 | **Space between rows** (page-grid rows) | The gap between wrapped lines of a page-grid row (down). | Per screen |
-| **Inner spacing** (padding) | Space between the block's edge and its content, all sides at once or each side separately. Shows "Default · …rem" and a **Back to default** button. | Per screen |
-| **Outer spacing** (margin) | Space outside the block's edge, all sides at once or each side separately. Shows "Default · …rem" and a **Back to default** button. | Per screen |
+| **Inner spacing** (padding) | Space between the block's edge and its content, all sides at once or each side separately. Each side is typed in rem, sized for a laptop: the space grows a little on wide screens and closes up on a phone. It holds between 0 and the slider's largest size. Shows "Default · …rem" and a **Back to default** button. | Per screen |
+| **Outer spacing** (margin) | Space outside the block's edge, all sides at once or each side separately, in rem, from 0 up. Shows "Default · …rem" and a **Back to default** button. | Per screen |
 
 *A block made since 15 October 2026 has no space until you add it — every control starts at 0. A block saved before keeps
 the default it was made with; its controls show "Default · …rem" and **Back to default** returns to it.*

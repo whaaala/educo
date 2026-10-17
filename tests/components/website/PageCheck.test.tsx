@@ -22,3 +22,12 @@ describe("Page check — words at the page's edge", () => {
     expect(onSideSpace).toHaveBeenCalledWith(EDGE_SPACE);
   });
 });
+
+describe("LE1-6 · the measuring frame is the width under measure, whatever the editor's width (found HEADED, probe-le1-space.js)", () => {
+  it("lifts the stylesheet's `max-width: 100%` on iframes — from a 375 editor every width measured at 375", () => {
+    render(<PageCheck root={emptyPageRoot()} html="<p>x</p>" isOpen onClose={() => {}} onShow={() => {}} onPatch={() => {}} />);
+    const frame = document.querySelector<HTMLIFrameElement>('iframe[title="Page check measurement"]');
+    expect(frame?.style.maxWidth).toBe("none");
+    expect(frame?.style.minWidth).toBe("0");
+  });
+});

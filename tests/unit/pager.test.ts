@@ -160,7 +160,9 @@ describe("the controls read over any photograph", () => {
   // predict what is behind them. `currentColor` is actively wrong here: a dot is an `<a>`, so it takes
   // the LINK colour, which came out indigo on a dark navy hero.
   const nav3 = () => {
-    const n = createContainer("column", { pager: true, pagerNav: "both" });
+    // A pager with a height of its own (a photo Slider is 420 tall) is the one overlaid; a content-sized one puts
+    // its controls in the flow under the strip (RX4-9, tests/unit/rx4-ledger.test.ts).
+    const n = createContainer("column", { pager: true, pagerNav: "both", minHeight: 420 });
     n.children = [createContainer("column"), createContainer("column"), createContainer("column")];
     return pagerNavHTML(n);
   };
@@ -178,7 +180,8 @@ describe("the controls read over any photograph", () => {
   it("sits clear of the bottom edge, so a full-screen page does not hide it under the fold", () => {
     // Measured on a real published page: flush against the bottom, a 100svh page under a 57px site nav
     // put the only control 65px past the fold and entirely out of sight.
-    expect(nav3()).toContain("bottom:clamp(1rem,9vh,5rem)");
+    // …and never more than the box's own height less the nav's, or a short box lifts it above itself (RX4-9).
+    expect(nav3()).toContain("bottom:max(0rem, min(clamp(1rem,9vh,5rem), calc(100% - 2.25rem)))");
   });
 
   it("lets clicks through everywhere except the controls themselves", () => {

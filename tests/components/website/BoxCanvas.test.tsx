@@ -1001,7 +1001,7 @@ describe("BoxCanvas (box-model editor)", () => {
     } as Partial<BoxNode>);
     const { container } = render(<BoxCanvas root={t} theme={DEFAULT_THEME} onChange={() => {}} />);
     const el = container.querySelector<HTMLElement>('[data-box-id="d"]')!;
-    expect(el.style.border).toContain("3px");
+    expect(el.style.border).toContain("0.188rem"); // a border wider than a hairline is rem (rule 16, RX3-17)
     expect(el.style.border).toContain("dashed");
     expect(el.style.boxShadow).not.toBe("");
     expect(el.style.borderRadius).toBe([0, 10, 10, 10].map((n) => remLen(n)).join(" ")); // rem, never px — Core Rule 16 // TL overridden to 0
@@ -1296,5 +1296,47 @@ describe("the remembered original width follows the floor a column is DRAWN at (
     fireEvent.mouseUp(document);
     const out = onChange.mock.calls.at(-1)![0] as BoxNode;
     expect(parseFloat(findBox(out, "c1")!.width!)).toBeCloseTo(22.4, 0); // was written back as 16.07% — an 81px hole
+  });
+});
+
+// ══ LEDGER RX-4 — canvas == export for the effects (2026-10-17) ══
+describe("BoxCanvas — RX4-17 · a scroll entrance waits on the canvas, as it does on the page", () => {
+  it("is held until it comes into view, then released once — the export's own revealOnce wiring", () => {
+    type Entry = { target: Element; isIntersecting: boolean };
+    const observers: { cb: (e: Entry[]) => void; watched: Set<Element> }[] = [];
+    const saved = (window as unknown as Record<string, unknown>).IntersectionObserver;
+    (window as unknown as Record<string, unknown>).IntersectionObserver = class {
+      watched = new Set<Element>();
+      constructor(public cb: (e: Entry[]) => void) { observers.push(this); }
+      observe(el: Element) { this.watched.add(el); }
+      unobserve(el: Element) { this.watched.delete(el); }
+      disconnect() { this.watched.clear(); }
+    };
+    try {
+      const root = createContainer("column", { id: "root", children: [
+        createContainer("column", { id: "late", revealEffect: "rise", revealScroll: true, children: [createElement("text", { id: "t", text: "Late" } as Partial<BoxNode>)] } as Partial<BoxNode>),
+        createContainer("column", { id: "now", revealEffect: "rise", children: [createElement("text", { id: "t2", text: "Now" } as Partial<BoxNode>)] } as Partial<BoxNode>),
+      ] } as Partial<BoxNode>);
+      const { container } = render(<BoxCanvas root={root} theme={DEFAULT_THEME} selectedId={null} onChange={() => {}} />);
+      const late = container.querySelector('[data-box-id="late"]')!;
+      expect(late.classList.contains("eu-wait"), "held until it is seen").toBe(true);
+      expect(container.querySelector('[data-box-id="now"]')!.classList.contains("eu-wait"), "an on-load entrance is not held").toBe(false);
+      const io = observers.find((o) => o.watched.has(late))!;
+      io.cb([{ target: late, isIntersecting: true }]);
+      expect(late.classList.contains("eu-wait"), "released as it enters").toBe(false);
+    } finally {
+      (window as unknown as Record<string, unknown>).IntersectionObserver = saved;
+    }
+  });
+});
+
+describe("BoxCanvas — RX4-20 · a Link's hover is on the canvas too", () => {
+  it("the canvas carries the published page's Link hover rule, scoped to its own root, and the Link matches it", () => {
+    const root = createContainer("column", { id: "root", children: [createElement("link", { id: "l", text: "Read more" } as Partial<BoxNode>)] } as Partial<BoxNode>);
+    const { container } = render(<BoxCanvas root={root} theme={DEFAULT_THEME} selectedId={null} onChange={() => {}} />);
+    const sheet = [...container.querySelectorAll("style")].map((s) => s.textContent).join("");
+    expect(sheet).toContain('.eu-tokens a[style*="text-underline-offset"]:hover');
+    const link = container.querySelector('[data-box-id="l"] a, a[data-box-id="l"]') ?? container.querySelector("a")!;
+    expect(link.matches('.eu-tokens a[style*="text-underline-offset"]')).toBe(true);
   });
 });
