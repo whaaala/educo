@@ -2252,7 +2252,9 @@ export function selectionChain(root: BoxNode, id: string): string[] {
 export function paletteClickSlot(root: BoxNode, selectedId: string | null): { parentId: string; index: number } {
   const selected = selectedId ? findBox(root, selectedId) : null;
   const here = selected ? findParent(root, selected.id) : null;
-  const intoSelection = !!selected && isContainer(selected) && (selected.layout === "grid" || here?.parent.layout === "grid");
+  // LE-1 (E2-20): a Side by side exists to hold blocks beside each other — an empty one added and then tiles clicked used to
+  // send every tile AFTER it, so it could never be filled by clicking
+  const intoSelection = !!selected && isContainer(selected) && (selected.layout === "grid" || here?.parent.layout === "grid" || isSideBySide(selected));
   if (intoSelection) return { parentId: selected.id, index: selected.children?.length ?? 0 };
   const band = here?.parent.rowBand ? findParent(root, here.parent.id) : null;
   const at = band ?? here;
@@ -2279,6 +2281,62 @@ export function insertSlot(root: BoxNode, selectedId: string | null, where: Inse
 export function defaultWhere(root: BoxNode, selectedId: string | null): InsertWhere {
   if (!selectedId || !findBox(root, selectedId)) return "end";
   return paletteClickSlot(root, selectedId).parentId === selectedId ? "inside" : "after";
+}
+
+/**
+ * WHERE "+ Add a block inside" PUTS THE NEXT BLOCK (LE-1, E2-20). The block it adds is selected so you see it — and it is a
+ * container, so the next click used to go INSIDE it: three clicks, three boxes nested in one another. While the selection is
+ * still the block the last add-inside made (and it still sits where it was put), the next one goes into the SAME parent.
+ */
+export function addInsideParent(root: BoxNode, selectedId: string, last: { parent: string; child: string } | null): string {
+  if (!last || last.child !== selectedId) return selectedId;
+  // LE1-2: inside a Stack the builder wraps each new block in its own row band — look through those to the parent it was put in
+  let up = findParent(root, selectedId);
+  while (up && up.parent.rowBand && up.parent.id !== last.parent) up = findParent(root, up.parent.id);
+  return up?.parent.id === last.parent ? last.parent : selectedId;
+}
+
+/**
+ * A STALE `alignSelf` (LE-1, the #42 family). Only edge-anchored resize stores one — "flex-start", with the size it pins: a
+ * width in a column, a height in a row. Pages saved before E5b-3 kept it after the size was gone, so the block stopped
+ * following its row (or its column's width) for good. On load, a pin that holds no size of its own is released; a pin WITH
+ * its size is the user's drag and stays. A tree with nothing stale comes back as the same object. ponytail: grid parents are
+ * left alone — their cells size by tracks, never by this pin.
+ */
+export function releaseStaleAlignSelf(root: BoxNode): BoxNode {
+  const visit = (n: BoxNode): BoxNode => {
+    const kids = n.children;
+    if (!kids?.length) return n;
+    let changed = false;
+    const next = kids.map((c) => {
+      let k = visit(c);
+      const layer = (bp: Breakpoint): boolean => {
+        const p = resolveResponsive(n, bp), me = resolveResponsive(k, bp);
+        if (me.alignSelf !== "flex-start" || p.layout === "grid") return false;
+        return (p.direction ?? "column") === "row" ? me.minHeight == null && me.height == null : me.width == null || me.width === "fill"; // "fill" is every block's default — no size of its own
+      };
+      if (k.alignSelf === "flex-start" && layer("base")) k = { ...k, alignSelf: undefined };
+      for (const r of BP_ORDER) { // ponytail: a legacy `tablet` / `mobile` slot is read, never rewritten
+        const o = r === "base" ? undefined : k.responsive?.[r];
+        if (o?.alignSelf === "flex-start" && layer(r)) k = { ...k, responsive: { ...k.responsive, [r]: { ...o, alignSelf: undefined } } };
+      }
+      if (k !== c) changed = true;
+      return k;
+    });
+    return changed ? { ...n, children: next } : n;
+  };
+  return visit(root);
+}
+
+/**
+ * PLACE A BLOCK, SHARING A SIDE BY SIDE'S LINE (LE1-3). In a Side by side every block takes a share of the one line, as "+ Add
+ * a block inside" gives it — so a block arriving there starts at the full line and `fitBand` shares it. A hugging block (a
+ * Text is "auto") used to stop the sharing: `fitBand` leaves a line with a Fit block alone, so Text, Image, Button clicked in
+ * turn left the Button wrapped below. Anywhere else the block is inserted as it is.
+ */
+export function placeSharing(root: BoxNode, parentId: string, index: number, node: BoxNode): BoxNode {
+  const into = isSideBySide(findBox(root, parentId));
+  return fitBand(insertBox(root, parentId, index, into ? { ...node, width: "100%" } : node), parentId, node.id);
 }
 
 /** Insert `node` into `parentId` at `index` (clamped). No-op if the parent is missing. */
@@ -4434,6 +4492,25 @@ function placementDivides(node: BoxNode, k: number): boolean {
  * cleanly. When it does not, the stored spans are LEFT ALONE and the render clamps them instead — so a round
  * trip restores the layout rather than quietly losing a column, which is what rewriting them would do.
  */
+/**
+ * A COLUMN COUNT CHOSEN AT A SCREEN IS THE COUNT DRAWN THERE (LE1-4). At the base it is `retrackGrid`. At a screen the count is
+ * that screen's own, and each cell gets its span for that screen too — its desktop SHARE of the row in the new count (a quarter
+ * of twelve is one of three), with its desktop start given up so the cells flow. Before, only the count was stored: a cell kept
+ * its desktop span, clamped to the new track, so "Thirds" on a phone drew ONE across (measured, probe-le1-cols.js).
+ */
+export function retrackGridAt(root: BoxNode, gridId: string, columns: number, bp: Breakpoint): BoxNode {
+  const node = findBox(root, gridId);
+  if (!node) return root;
+  if (bp === "base") return updateBox(root, gridId, retrackGrid(node, columns));
+  const to = Math.min(GRID_MAX, Math.max(1, Math.round(columns))), from = gridColumns(node);
+  let next = updateBoxResponsive(root, gridId, { columns: to }, bp);
+  for (const c of node.children ?? []) {
+    const span = Math.max(1, Math.min(to, Math.round(((c.colSpan ?? 1) * to) / from)));
+    next = updateBoxResponsive(next, c.id, { colSpan: span, ...(c.colStart != null ? { colStart: undefined } : {}) }, bp);
+  }
+  return next;
+}
+
 export function retrackGrid(node: BoxNode, columns: number): BoxNode {
   const from = gridColumns(node);
   const to = Math.min(GRID_MAX, Math.max(1, Math.round(columns)));

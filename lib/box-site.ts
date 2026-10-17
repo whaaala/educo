@@ -5,7 +5,7 @@
  */
 
 import { type PageGridSettings, resolvePageGrid, gridSpaceOf } from "@/lib/page-grid";
-import { type BoxNode, newBoxId, createContainer, makeRowBand, normalizeRowBands, markPageGrid, withGridSpace } from "@/lib/box-model";
+import { type BoxNode, newBoxId, createContainer, makeRowBand, normalizeRowBands, releaseStaleAlignSelf, markPageGrid, withGridSpace } from "@/lib/box-model";
 import { DEFAULT_THEME } from "@/lib/site-storage";
 import type { SiteFonts } from "@/lib/semantics";
 
@@ -152,7 +152,7 @@ export function setHomePage(site: BoxSite, id: string): BoxSite {
 
 /** Normalize every page's tree (used on load / after edits). */
 export function normalizeSite(site: BoxSite, gap?: number): BoxSite {
-  return { ...site, pages: site.pages.map((p) => ({ ...p, root: normalizeRowBands(p.root, gap) })) };
+  return { ...site, pages: site.pages.map((p) => ({ ...p, root: releaseStaleAlignSelf(normalizeRowBands(p.root, gap)) })) }; // LE-1: a pin a past resize left with no size to hold
 }
 
 /**

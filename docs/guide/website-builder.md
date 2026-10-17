@@ -457,6 +457,8 @@ A Grid block is **twelve columns** underneath, and each block in it takes a numb
 
 You never have to think in twelfths. Select a block and the **Grid cell** panel offers the names — **Full, Half, Third, Two‑thirds, Quarter, Three‑quarters** — with the raw number underneath if you want it. Pick a Half inside a row of thirds and the row quietly re‑cuts itself to twelve so it can express one; nothing on the page moves.
 
+**A different count on one screen.** On a phone a Grid stacks its blocks one under another, and with **Mobile** selected the **Columns** control says so: none of the names is picked. Choose one there (say **Thirds**) and the phone shows that many across, each block keeping its share of the row (a quarter of the row on a desktop stays as close to a quarter as the new count allows). The desktop is left exactly as it was. If the blocks get too narrow for their words, the **Page check** says which one, and on which screens.
+
 | Control | What it does |
 |---|---|
 | **Width** | How much of the row this block takes — by name, or 1–12 |
@@ -797,6 +799,14 @@ Your page is published as proper HTML5, however you built it — you do not need
   that skips a level (one click: **Make it level N**) and words too tight to sit side by side on a narrow screen —
   those three are suggestions; it won't stop you publishing. Every item has **Show me**, which takes you to the block.
   Everything else is fixed for you and listed under *Fixed for you*.
+- **Space, measured at every screen size.** When it opens, the Page check also measures the page as visitors will get
+  it, on a phone, a tablet held upright and sideways, a desktop and a wide screen. It names any block whose words come
+  closer than 1rem to the page's edge, words that touch the edge of their coloured box, two sections whose words run
+  together, and a column too narrow for its words (a word broken in the middle, say four columns you set for phones),
+  and says on which screens. Add the space, or give the column more room, and the item goes. These are suggestions too.
+
+[![The Page check listing words that touch their coloured box and two sections whose words run together, each naming the screens — phones, tablets held upright, tablets held sideways, desktops and wide screens — with Show me](img/guide-page-check-space.webp)](img/guide-page-check-space.webp)
+
 - **Letters the font lacks.** When a block's words use a letter its font cannot draw, the Page check names the font,
   the letters and a font of the same kind that has them: *"DM Sans has no ẹ ọ ṣ … Inter has them."* One click, **Use
   Inter for this block**, changes that block's font. To change it everywhere, use **Site fonts** in Page settings. This

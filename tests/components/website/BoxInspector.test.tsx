@@ -1161,3 +1161,20 @@ describe("BoxInspector — RX4-15 · Advanced CSS says what it refused", () => {
     expect(screen.queryByRole("status", { name: "Advanced CSS not applied" })).toBeNull();
   });
 });
+
+describe("LE1-4 · the Columns control tells the truth at a screen (found HEADED, uat-le1-headed.js U5)", () => {
+  const grid = () => createContainer("row", { id: "g", layout: "grid", columns: 4 } as Partial<BoxNode>);
+  it("at Phone a desktop Quarters grid is drawn ONE across — the control does not claim Quarters", () => {
+    renderFor(grid(), { breakpoint: "phone" });
+    expect(within(screen.getByRole("group", { name: "Columns" })).getByRole("button", { name: "Quarters" })).toHaveAttribute("aria-pressed", "false");
+  });
+  it("…so picking Quarters there sets four across for phones", () => {
+    const onPatch = renderFor(grid(), { breakpoint: "phone" });
+    fireEvent.click(within(screen.getByRole("group", { name: "Columns" })).getByRole("button", { name: "Quarters" }));
+    expect(onPatch).toHaveBeenCalledWith({ columns: 4 });
+  });
+  it("on the base the control shows the stored count", () => {
+    renderFor(grid(), { breakpoint: "base" });
+    expect(within(screen.getByRole("group", { name: "Columns" })).getByRole("button", { name: "Quarters" })).toHaveAttribute("aria-pressed", "true");
+  });
+});

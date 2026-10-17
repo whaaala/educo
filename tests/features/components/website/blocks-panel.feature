@@ -106,14 +106,30 @@ Feature: A floating Blocks panel — modern, spacious, out of the way
     Then there are three blocks at page level
     And none of them is inside another
 
-  Scenario: A container I selected myself still receives the block inside it
+  # LE1-1 (2026-10-17): this scenario used to say a selected Stack receives the block INSIDE it. The code changed in L-1 · e-1
+  # (a block inside an EMPTY Stack lands on its identical pixels, so the click looked like it failed): a click adds AFTER what is
+  # selected, and only a box that exists to hold blocks side by side or in cells receives it. Inside a Stack is "Where → Inside",
+  # or "+ Add a block inside".
+  Scenario: A Stack I selected gets the new block after it
     Given the Box Builder is open on an empty page
     And I have added a "Stack"
     When I click that Stack on the canvas to select it
-    And I click "Stack" in the panel
-    Then the new block lands INSIDE the one I selected
-    # The distinction that makes both true: a selection the BUILDER made for you on add is not a place to
-    # insert into — only one YOU made is. Repeating a click repeats the result.
+    And I click "Text" in the panel
+    Then the Text lands AFTER the Stack, on a line of its own
+
+  Scenario: A grid cell I selected receives the block inside it
+    Given a Grid on the page and one of its cells selected
+    When I click "Text" in the panel
+    Then the Text lands INSIDE that cell
+
+  # LE-1 (E2-20): "Side by side" made an empty row that clicked tiles landed AFTER, never inside.
+  Scenario: Blocks clicked after "Side by side" go into it, side by side
+    Given the Box Builder is open on an empty page
+    When I click "Side by side"
+    And I click "Text", then "Image", then "Button"
+    Then all three are inside the Side by side, sharing its line
+    And the canvas and the Preview show them beside each other at every screen size
+    And choosing "Where → After" puts the next block below the Side by side instead
 
   # ── The page is exactly as tall as what is on it ──
   # Reported from the canvas: adding a Stack left a strip of dead space underneath it. The page root carried

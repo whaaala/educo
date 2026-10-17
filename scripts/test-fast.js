@@ -46,6 +46,7 @@ const INVARIANT_SPECS = [
   "tests/e2e/export-layout-invariants.spec.ts",
   "tests/e2e/component-breathing.spec.ts",
   "tests/e2e/page-audit-whitespace.spec.ts",
+  "tests/e2e/le1-space-check.spec.ts",
   "tests/e2e/page-audit-spill.spec.ts",
   "tests/e2e/page-audit-unused-space.spec.ts",
   "tests/e2e/drop-under-icon.spec.ts",

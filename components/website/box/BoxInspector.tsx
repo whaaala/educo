@@ -12,7 +12,7 @@ import { Plus, X, Tags, Rows3, Columns3, Upload, ArrowRight, AlignLeft, AlignCen
 import type { SiteTheme } from "@/lib/site-storage";
 import type { BoxNode, FlexAlign, FlexJustify, AccPartStyle, Breakpoint, PagerNav, PinScopeWords, SectionFlag } from "@/lib/box-model";
 import { RUNG_LABEL } from "@/lib/educo-ui/layout";
-import { type ItemAction, TOAST_CORNERS, fluidRemRange, isContainer, containerLabel, isFloating, isCssBg, addItem, removeItem, moveItem, updateItem, addChildItem, updateChildItem, removeChildItem, moveChildItem , isMultiItemComponent, hasIntrinsicSize, sizeToCSS, typedLength, GRID_MAX, COLUMN_FRACTIONS, columnFractionOf, canSetColumnFraction, gridColumns, bandEdgeCSS, PIN_ARRIVALS, PIN_ARRIVAL_AFTER, pinArrivalHasEffect, linkLineGap, LINK_GAP_ACROSS, LINK_GAP_ACROSS_PHONE, spaceDefaults, outerDefaults, type SectionPlace, gapOf, importPhoto, refusedMotion, rowFilledByBlocks } from "@/lib/box-model";
+import { type ItemAction, TOAST_CORNERS, fluidRemRange, isContainer, containerLabel, isFloating, isCssBg, addItem, removeItem, moveItem, updateItem, addChildItem, updateChildItem, removeChildItem, moveChildItem , isMultiItemComponent, hasIntrinsicSize, sizeToCSS, typedLength, GRID_MAX, COLUMN_FRACTIONS, columnFractionOf, canSetColumnFraction, gridColumnsAt, bandEdgeCSS, PIN_ARRIVALS, PIN_ARRIVAL_AFTER, pinArrivalHasEffect, linkLineGap, LINK_GAP_ACROSS, LINK_GAP_ACROSS_PHONE, spaceDefaults, outerDefaults, type SectionPlace, gapOf, importPhoto, refusedMotion, rowFilledByBlocks } from "@/lib/box-model";
 import { remLen } from "@/lib/educo-ui/tokens";
 import { ACCORDION_DESIGNS, ACCORDION_DESIGN_COUNT, ACCORDION_AXES } from "@/lib/educo-ui/accordions";
 import { ALERT_DESIGNS, ALERT_DESIGN_COUNT, ALERT_AXES } from "@/lib/educo-ui/alerts";
@@ -1023,10 +1023,10 @@ export default function BoxInspector({ section = false, sectionPlace, outerDefau
                       there is no retrack (a rung holds style, never the row's children), so the count is a
                       plain override and the spans clamp to it. */}
                   <span className={label}>Columns</span>
-                  <Segmented full ariaLabel="Columns" value={String(gridColumns(node))}
+                  <Segmented full ariaLabel="Columns" value={String(gridColumnsAt(node, breakpoint))} /* LE1-4: the count DRAWN on this screen */
                     onChange={(v) => (onRetrack ?? ((n: number) => onPatch({ columns: n })))(Number(v))}
                     options={[{ value: "2", label: "Halves" }, { value: "3", label: "Thirds" }, { value: "4", label: "Quarters" }, { value: "6", label: "Sixths" }, { value: "12", label: "Twelve" }]} />
-                  <Range title="Columns in the row" value={node.columns} min={1} max={GRID_MAX} fallback={3}
+                  <Range title="Columns in the row" value={gridColumnsAt(node, breakpoint)} min={1} max={GRID_MAX} fallback={3}
                     onChange={(n) => (onRetrack ?? ((c: number) => onPatch({ columns: c })))(n)} unit="" />
                   <p className="text-[11px] leading-snug text-gray-500 dark:text-gray-400">
                     Twelve divides by 2, 3, 4 and 6 — pick it when blocks in the same row need different widths.

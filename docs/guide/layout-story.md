@@ -169,7 +169,10 @@ squeezed by its neighbour stops at the width its words need — before the whole
 lines.
 
 **Blocks added inside a "Side by side" share its line.** Click "Add a block inside" twice and the two blocks sit side
-by side, half each; a third makes thirds. The edge between them drags like any other.
+by side, half each; a third makes thirds. The edge between them drags like any other. Clicking it again and again keeps
+adding them side by side in the same row, never one inside the last. The same goes for tiles: add a **Side by side**,
+then click **Text**, **Image** and **Button** in the panel, and all three go into it, on one line. To put the next block
+under the row instead, choose **Where → After** in the panel first.
 
 [![Two "Side by side" blocks filled with "Add a block inside": two halves above, three thirds below, then two rows of two](img/story-side-by-side-shares.webp)](img/story-side-by-side-shares.webp)
 

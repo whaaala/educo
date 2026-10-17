@@ -1276,3 +1276,19 @@ Feature: Placing blocks beside one another in the Box Builder
   Scenario: Contrast is measured on the colour a reader sees (RX4-24)
     Given a Text whose colour is 30% black on a white band
     Then the page check reports it as too faint, as it would a solid light grey
+
+  # LE-1 (E2-20): each "+ Add a block inside" used to go inside the block the last one added, nesting deeper every click.
+  Scenario: Adding a block inside, again and again, adds them one after another
+    Given a Stack I selected
+    When I click "+ Add a block inside" three times
+    Then the Stack holds three blocks, one under another, and none is inside another
+    And the last one is selected
+    And in a Side by side the three share its line instead
+
+  # LE-1: a height drag saved before E5b-3 left the block pinned to the top of its row for good.
+  Scenario: An old page with a pin no drag still needs opens with the block following its row
+    Given a page saved before the release, whose block in a row kept "align to the top" with no height of its own
+    When I open it
+    Then the block stretches with its row again
+    And a block whose height or width I set by a drag keeps its pin
+    And a page with no such pin opens exactly as it was saved
