@@ -25,6 +25,21 @@ Feature: The page uses its space (BATCH F-1)
     Then a space opens at that edge and stays there
     And the other column does not grow into it
 
+  # L-8 (BATCH LE-2): the same rule down a column
+  Scenario: A space I open at the bottom of a column stays
+    Given a Stack holding three pictures, one under another
+    When I drag the last picture's bottom edge up
+    Then the picture gets shorter, cropped, by what I dragged
+    And a space of that size opens below it, at the edge I dragged, and the Stack keeps its height
+    And the space is still there after a reload and in the Preview
+    When I drag the same edge back down
+    Then the space closes first and the picture is its old height again
+
+  Scenario: A picture between two others gives up its height to the one below
+    Given a Stack holding three pictures
+    When I drag the first picture's bottom edge up
+    Then the picture below grows by what it gave up and no space opens between them
+
   Scenario: Links on a phone sit closer so the line fits
     Given a line of four links in a pager or a menu
     When the page is shown on a phone

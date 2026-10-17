@@ -151,6 +151,33 @@ test.describe("a height you set beats the courtesy height", () => {
       .toBeGreaterThanOrEqual(90);
   });
 
+  // LE2-3 (BATCH LE-2): `100svh` on the canvas was the EDITOR WINDOW's height — 860 at Mobile in a 1366 × 860 editor, over a canvas
+  // view of 804 — so "Full screen" ran past what the person could see. On the canvas the screen is the canvas view.
+  test("Full screen and Half screen are the canvas VIEW's height at Mobile, not the editor window's (LE2-3)", async ({ page }) => {
+    test.skip(test.info().project.name !== "desktop-chrome", "picks the Mobile chip of the desktop editor's top bar; every editor width is in uat-le2-headed.js");
+    await freshBuilder(page);
+    await tile(page, "Stack").click();
+    await page.waitForTimeout(900);
+    await page.keyboard.press("b");
+    await page.waitForTimeout(400);
+    await page.locator('button[title="Mobile (375px)"]').first().click();
+    await page.waitForTimeout(900);
+    const box = page.locator("[data-box-id]").last();
+    const b = (await box.boundingBox())!;
+    await page.mouse.click(b.x + b.width * 0.5, b.y + 10);
+    await page.waitForTimeout(600);
+    await openInspector(page);
+    const ratio = () => page.locator("[data-box-id]").last().evaluate((el) => {
+      const z = Number(el.closest<HTMLElement>("[data-canvas-scale]")?.dataset.canvasScale) || 1;
+      const view = parseFloat(getComputedStyle(el).getPropertyValue("--canvas-h"));
+      return Math.round((el.getBoundingClientRect().height / z / view) * 100);
+    });
+    for (const [label, want] of [["Full screen", 100], ["Half screen", 50]] as const) {
+      await page.locator('[aria-label="Screen height"] button', { hasText: label }).click();
+      await expect.poll(ratio, { timeout: 8000, message: `${label} is ${want}% of the canvas view` }).toBe(want);
+    }
+  });
+
   test("…and an empty section nobody sized still gets its courtesy height", async ({ page }) => {
     // The offer must survive the fix: an unsized empty box is still visible and droppable rather than 0px.
     await freshBuilder(page);

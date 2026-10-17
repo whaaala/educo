@@ -76,3 +76,23 @@ Feature: Box Builder — responsive per-breakpoint overrides
   Scenario: No typed pixel reaches the published page (R4-5)
     When I type "300px" as a block's Height, or untick a picture's "Show the whole picture"
     Then the block stores and publishes rem ("18.75rem", "16.25rem") — the same size at 100 % text, larger at 150 %
+
+  # BATCH LE-2 · controls that tell the truth
+  Scenario: The per-device banner says exactly what changes, and where (V-5)
+    Given I am editing at Tablet portrait
+    Then the banner says that sizes, spacing, colours, fonts and backgrounds I change show on tablets held upright and on phones
+    And it says that words, links, pictures and effects are the same on every screen
+    When I edit at Big desktop
+    Then it says the change shows on wide screens only
+
+  Scenario: A colour, a size or a Button's paint set at one screen is published at that screen (LE2-1)
+    Given a Text, a Heading and a Button
+    When I switch to Mobile and give them a colour, a text size and a background
+    Then the canvas at Mobile and the Preview at every phone width show them
+    And the Preview at 600 and wider shows the desktop look
+
+  Scenario: An effect is the same on every screen, and says so (LE2-4)
+    Given I am editing at Mobile
+    When I choose a Hover, an Entrance or a "When it takes hold" effect
+    Then the Inspector says it applies to every screen
+    And the published page plays it at every screen

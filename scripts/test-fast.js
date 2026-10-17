@@ -131,6 +131,8 @@ const INVARIANT_SPECS = [
   "tests/e2e/parity-every-arrangement.spec.ts",
   "tests/e2e/width-round-trip.spec.ts",
   "tests/e2e/phone-editing.spec.ts",
+  "tests/e2e/column-outer-edge.spec.ts", // LE-2 (L-8)
+  "tests/e2e/canvas-equals-preview.spec.ts", // LE-2 (L-9 (1))
 ];
 
 const argv = process.argv.slice(2);

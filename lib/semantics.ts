@@ -56,7 +56,15 @@ export type PageSemantics = {
   byId: Map<string, Resolved>;
   /** The automatic <main>: the range of the root's children it wraps (end exclusive), or null when a block is Main. */
   mainWrap: { start: number; end: number } | null;
+  /** LE-2 · the AUTOMATIC menus: per container, the runs of its children (end exclusive) published as `<nav><ul>`, and the key of
+   *  each run's own entry in `byId` (its name, its "fixed for you" note). */
+  menus: Map<string, { start: number; end: number; key: string }[]>;
 };
+
+/** The key an automatic menu's entry is stored under in `byId` — its first link's id, prefixed so it never meets a block's own. */
+export const MENU_KEY = "menu:";
+/** A child that is ONE link: a Link block, or a line (row band) holding a single Link. */
+const isLinkItem = (c: BoxNode) => c.type === "link" || (!!c.rowBand && (c.children ?? []).length === 1 && c.children![0].type === "link");
 
 /** A top-level child's region: its own tag, or the tag of the one block a structural band wraps. */
 function regionTag(n: BoxNode): string | undefined {
@@ -122,10 +130,31 @@ export function resolvePage(root: BoxNode): PageSemantics {
   // section's OWN heading is at the level the section sits at, and only what is nested inside it goes one deeper (#64).
   /** Lines of a list that hold several blocks side by side — each becomes the list itself (#104). */
   const lineAsList = new Map<string, SemanticTag>();
-  const walk = (n: BoxNode, own: number, inner: number, where: "header" | "footer" | "main", parentTag: string, pass: "main" | "rest", inSelf = false) => {
+  /**
+   * LE-2 · A HEADER'S OR FOOTER'S LINKS ARE A MENU, WITHOUT ANYONE SAYING SO. Two or more Links one after another — on one line, or one
+   * per line down a footer column — published as `<div>`s, so a screen reader met a run of loose links and no "navigation, list, 4
+   * items". Each run is published as `<nav><ul>` with each link an `<li>`, both wrappers `display: contents`, so nothing moves; a box
+   * the person marked Menu or List keeps their choice, and two Buttons side by side stay what they are.
+   */
+  const menus = new Map<string, { start: number; end: number; key: string }[]>();
+  const autoItems = new Set<string>();
+  const findMenus = (n: BoxNode) => {
+    const kids = n.children ?? [], runs: { start: number; end: number; key: string }[] = [];
+    for (let i = 0; i < kids.length; ) {
+      let j = i; while (j < kids.length && isLinkItem(kids[j])) j++;
+      if (j - i >= 2) { runs.push({ start: i, end: j, key: MENU_KEY + kids[i].id }); kids.slice(i, j).forEach((k) => autoItems.add(k.id)); }
+      i = Math.max(j, i + 1);
+    }
+    if (runs.length) menus.set(n.id, runs);
+  };
+  const walk = (n: BoxNode, own: number, inner: number, where: "header" | "footer" | "main", parentTag: string, pass: "main" | "rest", inSelf = false, inMenu = false) => {
+    if (pass === "main" && where !== "main" && !inMenu && n !== root) {
+      findMenus(n);
+      for (const r of menus.get(n.id) ?? []) { byId.set(r.key, { tag: "nav", corrected: "These links are published as a menu — a list of links a screen reader can find and count." }); navs.push({ n: { id: r.key } as BoxNode, region: where }); }
+    }
     for (const c of n.children ?? []) {
       const inMainNow = where === "main";
-      const listItem = parentTag === "ul" || parentTag === "ol";
+      const listItem = parentTag === "ul" || parentTag === "ol" || autoItems.has(c.id);
       if (c.type === "heading") {
         if ((pass === "main") !== inMainNow) continue;
         if (!hasText(c)) { byId.set(c.id, { tag: "div", omit: true, listItem, corrected: "An empty heading is not published until it has words." }); continue; }
@@ -158,8 +187,9 @@ export function resolvePage(root: BoxNode): PageSemantics {
       }
       const nextWhere = n === root ? (pageHeaders.has(c.id) ? "header" : pageFooters.has(c.id) ? "footer" : "main") : where;
       const nextSelf = inSelf || SELF_CONTAINED.has(tag);
-      if (SECTIONING.has(tag) && ownsHeading(c)) walk(c, inner, Math.min(6, inner + 1), nextWhere, tag, pass, nextSelf);
-      else walk(c, own, inner, nextWhere, tag, pass, nextSelf);
+      const nextMenu = inMenu || tag === "nav" || tag === "ul" || tag === "ol" || autoItems.has(c.id);
+      if (SECTIONING.has(tag) && ownsHeading(c)) walk(c, inner, Math.min(6, inner + 1), nextWhere, tag, pass, nextSelf, nextMenu);
+      else walk(c, own, inner, nextWhere, tag, pass, nextSelf, nextMenu);
     }
   };
   walk(root, 2, 2, "main", "div", "main");
@@ -198,11 +228,13 @@ export function resolvePage(root: BoxNode): PageSemantics {
       const r = byId.get(x.n.id)!;
       const label = x.region === "header" && !navs.some((o) => o !== x && o.region === "header" && byId.get(o.n.id)?.label === "Main menu") ? "Main menu"
         : x.region === "footer" ? "Footer menu" : `Menu ${++k}`;
-      byId.set(x.n.id, { ...r, label, corrected: `Two or more menus are named so they can be told apart — this one is "${label}".` });
+      byId.set(x.n.id, { ...r, label, corrected: x.n.id.startsWith(MENU_KEY) // an automatic menu still says what it is
+        ? `These links are published as a menu, "${label}" — a list of links a screen reader can find, count and tell from the others.`
+        : `Two or more menus are named so they can be told apart — this one is "${label}".` });
     }
   }
 
-  return { byId, mainWrap: explicitMain ? null : end > start ? { start, end } : null };
+  return { byId, mainWrap: explicitMain ? null : end > start ? { start, end } : null, menus };
 }
 
 /** Something only the user can fix — plain words, what to do, and whether it stops publishing. */
@@ -314,5 +346,5 @@ export function pageCheck(root: BoxNode, sem: PageSemantics = resolvePage(root),
 
 /** Everything `resolvePage` fixed for the user — shown in the Page check as "fixed for you", so nothing is a mystery. */
 export function corrections(sem: PageSemantics): { id: string; message: string }[] {
-  return [...sem.byId.entries()].filter(([, r]) => r.corrected).map(([id, r]) => ({ id, message: r.corrected! }));
+  return [...sem.byId.entries()].filter(([, r]) => r.corrected).map(([id, r]) => ({ id: id.startsWith(MENU_KEY) ? id.slice(MENU_KEY.length) : id, message: r.corrected! })); // an automatic menu shows its first link
 }

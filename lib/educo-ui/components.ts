@@ -110,6 +110,8 @@ export const COMPONENT_CSS = `
 /* parts */
 .eu-root .eu-alert__icon { display: inline-flex; flex: none; color: var(--al-c); font-size: 1.3rem; line-height: 1; margin-block-start: 0.05em; }
 .eu-root .eu-alert__icon svg { width: 1em; height: 1em; }
+/* LE2-5 · an item's picture keeps its box while it loads and is cropped, never squashed (it had no rule at all) — the accordion's thumbnail size */
+.eu-root .eu-alert__media { flex: none; inline-size: 2.75em; block-size: 2.75em; max-inline-size: 100%; object-fit: cover; }
 .eu-root .eu-alert__content { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: var(--eu-space-1); }
 .eu-root .eu-alert__title { font-family: var(--eu-font-heading); font-weight: var(--eu-weight-bold); color: var(--al-c); line-height: 1.2; }
 .eu-root .eu-alert__body { color: var(--eu-color-text); font-size: 0.95em; }

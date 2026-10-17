@@ -63,7 +63,7 @@ type Block = { kind: string; label: string; Icon: LucideIcon; hint: string };
  * it inferred is what let a dragged Columns block invent its own shape once already.
  */
 const OPENS_A_PICKER = new Set(["grid", "gallery", "slider", "hero", "rotatingHero"]);
-const GROUPS: { name: string; Icon: LucideIcon; blocks: Block[] }[] = [
+export const GROUPS: { name: string; Icon: LucideIcon; blocks: Block[] }[] = [ // exported for the guards that enumerate the palette (LE-2: pictures keep their shape)
   { name: "Layout", Icon: LayoutTemplate, blocks: [
     // NAMED FOR WHAT THEY DO, and ordered by it: down the page, across the page, both at once.
     //

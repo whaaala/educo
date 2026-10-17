@@ -71,3 +71,68 @@ describe("a menu is a list of links (#104)", () => {
     expect(itemsOf(doc(navWith(list)))).toBe(3);
   });
 });
+
+describe("LE-2 · a header's or footer's links publish as a menu with no tag chosen — nav > ul > li > a", () => {
+  const links = (p: string, n: number) => Array.from({ length: n }, (_, i) => createElement("link", { id: `${p}${i}`, text: `${p} ${i}`, href: `#${p}${i}` } as Partial<BoxNode>));
+  const site = async (header: BoxNode[], footer: BoxNode[], body: BoxNode[] = [createElement("text", { id: "words", text: "Hello" } as Partial<BoxNode>)]) => {
+    const { normalizeRowBands } = await import("@/lib/box-model");
+    return doc(normalizeRowBands(page([
+      createContainer("column", { id: "hdr", tag: "header", children: header } as Partial<BoxNode>),
+      createContainer("column", { id: "bdy", children: body } as Partial<BoxNode>),
+      createContainer("column", { id: "ftr", tag: "footer", children: footer } as Partial<BoxNode>),
+    ])));
+  };
+  /** Each <a> with its own <li> straight above it, inside one <ul> inside a <nav>. */
+  const menuOf = (html: string, p: string, n: number) => {
+    const d = new DOMParser().parseFromString(html, "text/html");
+    const as = Array.from(d.querySelectorAll("a")).filter((a) => a.textContent!.startsWith(p + " "));
+    expect(as).toHaveLength(n);
+    const uls = new Set(as.map((a) => a.closest("li")?.parentElement));
+    expect(uls.size, "one list").toBe(1);
+    const ul = [...uls][0]!;
+    expect(ul.tagName).toBe("UL"); expect(ul.parentElement!.tagName).toBe("NAV");
+    expect(new Set(as.map((a) => a.closest("li"))).size, "one item each").toBe(n);
+    return ul.parentElement!;
+  };
+  it("four Links on one line in the header, and a column of Links in the footer", async () => {
+    const { makeRowBand } = await import("@/lib/box-model");
+    const html = await site([makeRowBand(links("Top", 4), 0)], links("Foot", 3));
+    menuOf(html, "Top", 4); menuOf(html, "Foot", 3);
+    // two menus are told apart by name, as before
+    expect(html).toMatch(/<nav class="eu-menu" aria-label="Main menu">/); expect(html).toMatch(/<nav class="eu-menu" aria-label="Footer menu">/);
+  });
+  it("the Page check says so — named or not — and Show me points at the menu's first link", async () => {
+    const { makeRowBand, normalizeRowBands } = await import("@/lib/box-model");
+    const { resolvePage, corrections } = await import("@/lib/semantics");
+    const mk = (footer: boolean) => normalizeRowBands(page([
+      createContainer("column", { id: "hdr", tag: "header", children: [makeRowBand(links("Top", 3), 0)] } as Partial<BoxNode>),
+      createContainer("column", { id: "bdy", children: [createElement("text", { id: "w", text: "Hi" } as Partial<BoxNode>)] } as Partial<BoxNode>),
+      ...(footer ? [createContainer("column", { id: "ftr", tag: "footer", children: links("Foot", 2) } as Partial<BoxNode>)] : []),
+    ]));
+    for (const [two, n] of [[false, 1], [true, 2]] as const) {
+      const notes = corrections(resolvePage(mk(two))).filter((c) => /published as a menu/.test(c.message));
+      expect(notes, two ? "two menus" : "one menu").toHaveLength(n);
+      expect(notes[0].id).toBe("Top0");
+    }
+  });
+  it("beside a logo on the same line: only the links are the menu", async () => {
+    const { makeRowBand } = await import("@/lib/box-model");
+    const html = await site([makeRowBand([createElement("text", { id: "logo", text: "Our School" } as Partial<BoxNode>), ...links("Top", 3), createElement("button", { id: "cta", text: "Apply" } as Partial<BoxNode>)], 0)], []);
+    const nav = menuOf(html, "Top", 3);
+    expect(nav.textContent).not.toMatch(/Our School|Apply/);
+  });
+  it("NOT a menu: two Buttons, one Link alone, or Links in the page body", async () => {
+    const { makeRowBand } = await import("@/lib/box-model");
+    const html = await site([makeRowBand([createElement("button", { id: "b1", text: "A" } as Partial<BoxNode>), createElement("button", { id: "b2", text: "B" } as Partial<BoxNode>)], 0), ...links("One", 1)], [], links("Body", 3));
+    expect(html).not.toMatch(/<nav/);
+  });
+  it("a box the person marked Menu or List keeps their choice — no menu inside a menu", async () => {
+    const { makeRowBand } = await import("@/lib/box-model");
+    const html = await site([createContainer("column", { id: "mine", tag: "nav", children: [createContainer("column", { id: "lst", tag: "ul", children: [makeRowBand(links("Top", 3), 0)] } as Partial<BoxNode>)] } as Partial<BoxNode>)], []);
+    expect((html.match(/<nav/g) ?? []).length).toBe(1); expect((html.match(/<ul/g) ?? []).length).toBe(1);
+  });
+  it("it lays out exactly as before: both wrappers have no box", async () => {
+    const { makeRowBand } = await import("@/lib/box-model");
+    expect(await site([makeRowBand(links("Top", 2), 0)], [])).toMatch(/\.eu-menu\{display:contents\}/);
+  });
+});

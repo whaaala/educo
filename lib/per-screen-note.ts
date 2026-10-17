@@ -1,0 +1,26 @@
+import INSPECTOR from "../config/inspector.json";
+import { RUNG_WORDS } from "./educo-ui/layout";
+import { screensReachedFrom, type Breakpoint } from "./box-model";
+
+/**
+ * V-5 (BATCH LE-2) · WHAT THE INSPECTOR SAYS WHILE ANOTHER SCREEN IS BEING EDITED — and it must be TRUE. It said "size & layout only
+ * change here", while every look (a background, a colour, a font) was stored for that screen too, and a Tablet change showed on phones
+ * as well. The words are data (config/inspector.json, RULE CFG); the screens a change reaches are read from the cascade itself.
+ */
+const PER = INSPECTOR.perScreen;
+/** The keys a change still writes for EVERY screen, whichever screen is being edited (the words, links, pictures and effects). */
+export const SHARED_KEYS: ReadonlySet<string> = new Set(PER.sharedKeys);
+
+const words = (bp: Breakpoint) => RUNG_WORDS[bp === "base" ? "desktop" : bp];
+const list = (xs: string[]) => (xs.length < 2 ? xs.join("") : `${xs.slice(0, -1).join(", ")} and ${xs[xs.length - 1]}`);
+
+/** "phones" · "tablets held upright — and on phones too, unless you change them there". */
+export function reachWords(bp: Breakpoint): string {
+  const [own, ...narrower] = screensReachedFrom(bp).map(words);
+  return narrower.length ? PER.narrowerToo.replace("{own}", own).replace("{narrower}", list(narrower)) : own ?? "";
+}
+const fill = (t: string, screen: string, bp: Breakpoint) => t.replace("{screen}", screen).replace("{reach}", reachWords(bp));
+/** The banner above the Inspector's controls, and the line under it about what stays shared. */
+export const perScreenBanner = (bp: Breakpoint, screen: string) => ({ text: fill(PER.banner, screen, bp), shared: PER.shared });
+/** The Per-device tab's hint. */
+export const perScreenDeviceTab = (bp: Breakpoint, screen: string) => fill(PER.deviceTab, screen, bp);
