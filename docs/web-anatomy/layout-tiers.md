@@ -121,3 +121,67 @@ The user chose the recommendation on all four: **D1 Nice, later · D2 an essenti
   Opera Mini must still get a readable page (RULE AF).
 - **D3 · MS-1 — an image's focal point waits for the Image component (CP-1), straight after the essentials?** Recommended: yes.
 - **D4 · sign the tiers above** (Must 52 · essential Should 23 · the rest mapped), or move any line.
+
+## RX-5 — re-checked to RULE BEST (2026-10-17) — for the user to SIGN
+
+**The new bar** (RULE BEST, the user 2026-10-17): a Must stands next to the **best** builder for that capability, not "what a
+basic site manages without". Re-read against the same evidence (`04-matrix.md`, the three baselines, `03-ours-measured.md`).
+Where a baseline never judged Webflow / Wix Studio / Framer, the leader is marked *(verify)* and is checked in the product
+when its batch opens.
+
+### Promoted
+
+| ID | Capability | Leader | Real pages | Tier now | Batch |
+|---|---|---|---|---|---|
+| PS-6 | a two-row header, one row held | built on PO-1 (Webflow, Wix) *(verify)* | 28.6 %, education 35 % | Must | **LE-11** |
+| PS-7 | a header over the hero, solid once scrolled | Wix header scroll effects *(verify)* | 20.5 % | Must | **LE-11** |
+| PO-7 / PN-3 | a header that hides on scroll down, returns on up | Squarespace H, Wix *(verify)* | — | Must (also on the effects list) | **LE-11** |
+| PS-10 | an announcement bar (school closures) | Squarespace *(verify)* | — | essential Should | **LE-11** |
+| PS-14 | hide the shared header / footer on one page | Squarespace H, WordPress H | — | essential Should | **LE-11** |
+| AX-6 | held bars at most a quarter of the screen (WCAG 1.4.10) | — | needed once the above exist | Must | **LE-11** |
+| SZ-4 | a proportion (16:9, 1:1, 4:3…) and a custom one | Webflow "Ratio presets", Framer | video 19.5 % | Must (D1 reversed) | **LE-12** |
+| SZ-3 | min / max width and height | Webflow, Wix, Framer | — | Must | **LE-12** |
+| GR-2 | a grid by minimum card width (auto-fit) | Webflow, Framer; ours engine-only | rule 16 | Must | **LE-12** |
+| SP-4 | spacing sliders step on the scale | Webflow (size variables) | — | essential Should | **LE-12** |
+| FL-3 | text wraps round a picture | Webflow "Float" | news / article pages | essential Should | **LE-13** |
+| FL-6 | a sideways strip (scroll-snap, CSS only) | Wix "Slider" display | scroll-snap 21 % of live sites | essential Should | **LE-13** |
+| PO-4 | "overlap the next band" as a control | Framer | up to 29.6 % | essential Should | **LE-13** |
+| AL-5 · AL-6 | baseline alignment; push to the far end | Webflow | — | essential Should | **LE-4** (now 4) |
+| MS-5b | a background video, poster first, lazy, off on Save-Data / Slow 3G, Pause, still under reduced motion | Webflow, Wix (6 / 6 have video) | — | Must | **LE-5** (now 2) = BG-7 (VE-2) — built once |
+| ED-2b | the full layers tree | 5 / 6 builders | 26.5 % nest 3+ deep | Must | **LE-14** |
+| ED-3b · ED-7 · ED-12 · ED-13 · RC-7 | copy / paste a style · "set here / inherited" + reset · group / ungroup · move and align several · change a container's kind | Webflow · Framer · Squarespace / WordPress | — | essential Should | **LE-14** |
+| PS-5 | save a section to reuse; a global section; a page from a template | Webflow (≤ 40 page templates), Wix, Framer | — | Must | **LE-15** |
+| ED-4+ | ready-made SECTIONS by category, a gallery ≥ the leader's count (measured first) | Webflow Layouts, Wix Sections, Framer Sections | — | Must (was HAS for grid splits only) | **LE-15** |
+| AX-7 · AX-1+ | a colour-vision preview; a text-zoom preview | Webflow | — | essential Should | **LE-16** |
+
+### Musts below the leader — what closing the gap needs
+
+- **ED-4 ready-made sections — the biggest gap.** Ours: 8 grid splits, two hero tiles, no section or page library. The
+  baselines store no section counts for the leaders, so **LE-15 change (1) counts them first**; the gallery is then built from
+  existing blocks to at least that size (RULE C placeholders until CP-1).
+- **SZ-5 / LE-3:** Wix lets one section opt out of the site width — added to LE-3's AC-9.
+- **ED-6 Page check:** we are ahead (every builder is P or N).
+
+### Kept, or out, under RULE BEST
+
+- **Out:** PD-12 a separate hand-arranged phone layout (breaks the cascade) · ED-9 free custom CSS (goes round the one emitter,
+  the tokens and canvas = export).
+- **Kept Nice / Great:** PO-5 free placement (Wix only; breaks reflow and reading order) · GR-7 dense packing (breaks reading
+  order) · FL-4 text in columns (readers scroll down on a phone) · GR-6 subgrid (no builder has it) · PD-11 every screen on one
+  canvas (heavy on low-cost laptops) · ED-8 locked editing for editors (Great; noted for RULE RK).
+- **To the effects re-tier:** SB-5 band edges and PO-6 / ST-7 stacked sections (→ VE-7). **To CP-1:** MS-1 focal point is now a
+  Must (5 / 6), still built with the Image; PS-11 / ED-10 with the design system.
+- **Unmapped, found by this pass (RULE LB):** SB-12 a colour theme per section (Squarespace H) → **L-19** as Nice.
+
+### The estimate, redone
+
+Essentials were 26 changes (4–5 working days). The promotions add **29 changes** (LE-4 +2, LE-5 +1, LE-11 6, LE-12 4, LE-13 3,
+LE-14 6, LE-15 5, LE-16 2) → **55 changes, about 9–11 working days**; LE-14 and LE-15 the heaviest (1.5–2 days each).
+L-18 and L-20 empty into LE-11 / LE-14; L-19 keeps SB-10, GR-9, GR-10, SP-6 (+ SB-12).
+
+### Decisions for the user
+
+- **L1 · Sign the promotions above** (LE-11 … LE-16, LE-4 and LE-5 extended), or move any line.
+- **L2 · D1 reversed:** a proportion control (SZ-4) becomes a Must — recommended, Webflow and Framer both have it.
+- **L3 · The order:** LE-1 → LE-2 → LE-8 → LE-11 (the header, rides on LE-8) → LE-3 → LE-12 → LE-4 → LE-13 → LE-5 → LE-9 →
+  LE-10 → LE-14 → LE-15 → LE-16 → LE-6 → LE-7. Recommended.

@@ -151,3 +151,10 @@ Built only from research already stored: `motion/LIBRARY.md` + `motion/library/1
 | WT-5 | Weight / performance | `will-change` only in time; `content-visibility` for long pages |
 | WT-6 | Weight / performance | Heavy media (video, WebGL) poster-first, lazy, off on Save-Data / phone |
 | WT-7 | Weight / performance | Measured on a 360px low-cost phone, CPU slowed, Slow 3G |
+| LD-1 | Loading (RX-5) | A thin progress bar while the next page loads |
+| LD-2 | Loading (RX-5) | A blur-up or dominant-colour placeholder under every photo until it arrives |
+| LD-3 | Loading (RX-5) | Skeletons for content that arrives late (feeds, lists) |
+| LD-4 | Loading (RX-5) | The first band shown at once — nothing above the fold waits for script, fonts or below-the-fold media |
+| LD-5 | Loading (RX-5) | A full-screen splash that hides the page until everything loads — OUT (on 3G it makes the wait longer) |
+| MO-8 | Motion tokens (RX-5) | A gallery of looping ("ongoing") motions, each with a Pause |
+| MO-9 | Motion tokens (RX-5) | An easing gallery: every family × in / out / in-out, springs, a curve editor |

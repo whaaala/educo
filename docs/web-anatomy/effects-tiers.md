@@ -85,3 +85,51 @@ The user chose the recommendation on all three: **E1 yes · E2 yes, with the lim
 - **The 16 bugs are being fixed now, in RX-4, before LE-1** (your standing rule) — a slider a visitor cannot move (RX4-9) and a reveal
   that runs backwards (RX4-1) are on pages people build today.
 - **E3 · Sign the tiers** (Must 53 · essential Should 18 · the rest mapped).
+
+## RX-5 — re-tiered to RULE BEST (2026-10-17) — for the user to SIGN
+
+**The new bar** (RULE BEST, the user 2026-10-17: "a must-have must be extremely more than average… next to whatever the best
+could be… multiple combinations"). The user **accepted** ~50 capabilities promoted to Must, plus **loading done right**; out by
+agreement: an inertia smooth-scroll library (SC-12), WebGL backgrounds (BG-11), custom cursors (CU-1 … CU-4) and a full-screen
+splash (LD-5 / EN-4). The leaders and their counts: [effects-tiers/leaders.md](effects-tiers/leaders.md).
+
+**How the counts were read.** Wix's counts are from Wix's own published preset code (`@wix/motion-presets`, 62 presets +
+11 background-scroll); every preset name the Studio help shows matches it, but the panel itself was not counted. Where no
+official count exists the target is set from the named presets, marked *(unverified)*, and re-counted in the product when the
+batch opens. Where **no builder** has a capability (loading, typewriter, gradient / outline text, a header colour per section,
+moving dividers), the bar is the award sites (Awwwards Sites of the Day, `awwwards-motion-survey.md`) and we lead.
+
+**Never cut, in every batch:** reduced motion → a still or a fade · a Pause for anything moving > 5 s · no flashing · hover
+only where hover exists · contrast held · CSS first, compositor-only, within RULE AF's 100 KB on a 360px phone on Slow 3G.
+
+### The new batches — each with its leader and the gallery it must match or beat
+
+| Batch | Area | Changes | Leader · its count | Our gallery |
+|---|---|---|---|---|
+| **VE-6** | page transitions + loading | PT-4 wipe / curtain · PT-6 shared-element morph · LD-1 progress bar between pages · LD-2 blur-up / colour placeholders · LD-3 skeletons · LD-4 first band at once | Framer Page Effects: ~4–6 presets + 3 masks (Wipe · Inset · Blinds) *(unverified)*; loading: **no builder** | ≥ 10 transitions (fade, slide ×4, wipe ×4 directions, inset, blinds, morph) × exit / enter · duration · delay · easing · scope (all pages / one page / a pair) |
+| **VE-7** | section edges | ST-3 the full divider library · ST-4 / ST-6 layered and moving waves · ST-5 cards over an edge · ST-9 curtain footer · ST-7 section snap · PN-5 stacking sections | Wix Studio Shape Dividers: Ellipse, Waves, Skyline, Bottom of the Sea + custom SVG *(count unverified)*; **no builder animates one** | ≥ 14 shapes (wave, zigzag, triangle, arrow, curve, slope, ellipse, cloud, torn, scallop, drip, steps, skyline, mountains) × top / bottom · height · flip · invert · repeat · layers 1–3 · fade · motion · custom SVG |
+| **VE-8** | sections and backgrounds blending | BL-7 page colour per section · BL-8 header colour over each band · BL-9 stay-behind hero · BG-9 grain · BG-10 moving gradient · BG-3 a mesh gallery | Wix gradients 4 types (Linear, Radial, Conic ≤ 8 colours, Fluid mesh); Webflow 16 blend modes; header colour per section: **no builder** | 4 gradient types + ≥ 12 mesh presets · all 16 blend modes (VE-4) · grain strength / size · drift speed / angle |
+| **VE-9** | hover | HV-4 icon nudge / label roll · HV-7 shadow grows · HV-8 dim the others · HV-9 fill sweep · CU-5 tilt · HV-18 direction-aware | Wix Studio: 9 hover presets (Expand, Shrink, Skew, Rotate, Move, Twist, Fade, Appear, Color) + 11 mouse; Webflow: 4 states | ≥ 20 hover looks (today's 7 + VE-3's 4 + these 6 + skew, rotate, twist) × duration · delay · easing · distance · angle · scale · direction; every state Webflow has (hover · pressed · focus · keyboard focus) |
+| **VE-10** | scroll-driven | SC-1 / SC-2 parallax + layers · SC-3 scrubbed scroll · SC-4 progress bar · SC-5 scroll-spy · SC-10 grow to full bleed · SC-11 line draws | Wix Studio: 19 scroll presets + 11 background-scroll; Webflow: pin / scrub / start-end, 0 presets; progress bar: **no builder** | ≥ 19 scroll presets + ≥ 11 background-scroll × in / out · direction · distance · scale · range |
+| **VE-11** | held and moving by itself | SC-6 sideways section · SC-7 marquee · PN-4 pinned story · PN-9 stuck style · MO-8 a loop gallery | Wix Studio: 13 ongoing loops; Squarespace marquee: direction, speed 0.5 / 1 / 2×, pause on hover, edge fade, spacing, wave | ≥ 13 loops + a marquee with every Squarespace axis — each with a visible Pause, still under reduced motion |
+| **VE-12** | text | TX-1 / TX-2 line / word reveal · TX-3 words light up · TX-5 rotating word · TX-4 typewriter · TX-8 / TX-9 gradient / outline text · TX-10 marker sweep | Framer Text Effect: split by character · word · line · element; triggers Appear / Layer in view / Section in view; Scale · Blur · Offset · 3D; typewriter, gradient and outline text: **no builder** | every split × every trigger × fade / rise / blur / scale / 3D, plus the four no builder has |
+| **VE-13** | the motion system | EN-1 / EN-2 an entrance gallery · MO-9 an easing gallery · MO-3 springs · EN-11 list moves · A11Y-8 a motion switch on the page | Wix Studio: 19 entrance presets; Webflow: 10 easing families + a bezier editor | ≥ 19 entrances × direction · distance · duration · delay · easing · stagger; ≥ 10 easing families × in / out / in-out + springs + a curve editor |
+
+**46 new changes.** The promoted capabilities already in VE-1 … VE-5 move to **Must** in place: ST-3's first three shapes
+(VE-1), BL-6 masks (VE-2), HV-3 · HV-6 · HV-10 · HV-12 (VE-3), MO-6 · EN-5 / EN-6 · BL-4 / BL-5 · BL-11 (VE-4), PT-3 (VE-5).
+**To the layout's header batch (LE-11):** PN-3 the header that hides on scroll (= PO-7) and the header's own scroll effects —
+Wix Studio has 4 (Scroll with site · Freeze · Disappear · Fade out), ours ≥ that.
+
+### The estimate, redone
+
+VE-1 … VE-5: 27 changes (4–5 working days). VE-6 … VE-13: 46 changes. The user accepted ~6–8 days for the promotions; sizing
+each gallery to the leader's count makes VE-9, VE-10 and VE-13 heavier, so **about 8–10 working days** for VE-6 … VE-13 —
+**12–15 working days** for all of the effects essentials, after LE-7 and before CP-1.
+
+### Decisions for the user
+
+- **E4 · Sign VE-6 … VE-13** with the gallery targets above, or move any line.
+- **E5 · The counts that are unverified** (Framer's page and text presets, Wix's dividers and mesh presets) are re-counted in the
+  product when their batch opens, and the target raised if the leader has more — recommended.
+- **E6 · The estimate** (8–10 days for VE-6 … VE-13, above the ~6–8 accepted) — accept, or trim a gallery to the leader's count
+  exactly instead of beyond it.
