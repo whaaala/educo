@@ -86,7 +86,7 @@ The user chose the recommendation on all three: **E1 yes · E2 yes, with the lim
   that runs backwards (RX4-1) are on pages people build today.
 - **E3 · Sign the tiers** (Must 53 · essential Should 18 · the rest mapped).
 
-## RX-5 — re-tiered to RULE BEST (2026-10-17) — for the user to SIGN
+## RX-5 — re-tiered to RULE BEST (2026-10-17) — SIGNED by the user 2026-10-17 (E4 · E5 · E6 as recommended; E6: 8–10 days accepted)
 
 **The new bar** (RULE BEST, the user 2026-10-17: "a must-have must be extremely more than average… next to whatever the best
 could be… multiple combinations"). The user **accepted** ~50 capabilities promoted to Must, plus **loading done right**; out by

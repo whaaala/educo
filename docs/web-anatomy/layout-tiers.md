@@ -122,7 +122,7 @@ The user chose the recommendation on all four: **D1 Nice, later · D2 an essenti
 - **D3 · MS-1 — an image's focal point waits for the Image component (CP-1), straight after the essentials?** Recommended: yes.
 - **D4 · sign the tiers above** (Must 52 · essential Should 23 · the rest mapped), or move any line.
 
-## RX-5 — re-checked to RULE BEST (2026-10-17) — for the user to SIGN
+## RX-5 — re-checked to RULE BEST (2026-10-17) — SIGNED by the user 2026-10-17 (L1 · L2 · L3 as recommended)
 
 **The new bar** (RULE BEST, the user 2026-10-17): a Must stands next to the **best** builder for that capability, not "what a
 basic site manages without". Re-read against the same evidence (`04-matrix.md`, the three baselines, `03-ours-measured.md`).
