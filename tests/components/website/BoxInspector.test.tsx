@@ -315,6 +315,24 @@ describe("BoxInspector — functionality audit (controls act)", () => {
     expect(top.getAttribute("max")).toBe("6");
   });
 
+  it("RX3-22: a row its blocks already fill says so under Position blocks — and says nothing while there is room", () => {
+    // Measured HEADED 2026-10-16: blocks added with "+" store 50 % each, so End / Spread out had no room to place them and did
+    // nothing, silently. The user's decision 2026-10-17: the Inspector says so, rather than overriding a width the person chose.
+    const kid = (id: string, width?: string) => createContainer("column", { id, width } as Partial<BoxNode>);
+    const note = /These blocks fill the row — give one a width to place them/;
+    const row = (kids: BoxNode[], direction: "row" | "column" = "row") => createContainer(direction, { id: "r", children: kids } as Partial<BoxNode>);
+    renderFor(row([kid("a", "50%"), kid("b", "50%")]));
+    expect(screen.getByText(note)).toBeTruthy();
+    cleanup(); renderFor(row([kid("a", "fill"), kid("b", "30%")]));
+    expect(screen.getByText(note), "a Fill block takes all that is left").toBeTruthy();
+    cleanup(); renderFor(row([kid("a", "40%"), kid("b", "30%")]));
+    expect(screen.queryByText(note), "30 % is spare — End / Spread out can place them").toBeNull();
+    cleanup(); renderFor(row([kid("a", "50%"), kid("b")]));
+    expect(screen.queryByText(note), "a width-less block is not a claim on the row").toBeNull();
+    cleanup(); renderFor(row([kid("a", "50%"), kid("b", "50%")], "column"));
+    expect(screen.queryByText(note), "down a stack the widths say nothing about the room").toBeNull();
+  });
+
   it("a Style preset applies its whole patch (Heading → Display)", () => {
     const onPatch = renderFor(heading());
     fireEvent.click(screen.getByRole("button", { name: "Display style" }));
@@ -823,8 +841,9 @@ describe("BoxInspector — Stays put while scrolling", () => {
     fireEvent.click(screen.getByRole("button", { name: "Floats on screen option" }));
     expect(onPatch).toHaveBeenCalledWith({ pin: "top", hold: "fixed" });
     cleanup();
-    renderFor(heading({ position: "absolute", left: 5, top: 5, pin: "top", hold: "fixed" }), { canFloat: true });
-    expect(document.querySelector("[data-float-pin-note]")?.textContent).toMatch(/holds exactly where you placed it/);
+    // Measured at the switch (box-demo writes pinX / pinY); RX4-12 keeps that place inside the window on a smaller screen.
+    renderFor(heading({ position: "absolute", left: 5, top: 5, pin: "top", hold: "fixed", pinX: 40, pinY: 60 }), { canFloat: true });
+    expect(document.querySelector("[data-float-pin-note]")?.textContent).toMatch(/holds where you placed it/);
   });
 });
 
@@ -1056,5 +1075,89 @@ describe("BoxInspector — Advanced CSS on EVERY block (A2-12, RULE UI)", () => 
     fireEvent.change(screen.getByLabelText("Advanced CSS"), { target: { value: "letter-spacing: .1em;" } });
     expect(onPatch).toHaveBeenCalledWith({ advancedCss: "letter-spacing: .1em;" });
     cleanup();
+  });
+});
+
+// ══ LEDGER RX-4 (measured HEADED 2026-10-17) — the Inspector's half ══
+describe("BoxInspector — RX4-11 · a Height under Size is something to condense", () => {
+  it("does not tell a bar with a Size → Height that it has nothing to condense", () => {
+    renderFor(createContainer("column", { id: "bar", pin: "top", pinArrival: "condense", height: "8rem" } as Partial<BoxNode>), { canFloat: true });
+    expect(screen.queryByText(/nothing to condense yet/)).toBeNull();
+  });
+
+  it("when it does warn, it names every control that works — Size's Height, Spacing, the Band height", () => {
+    renderFor(createContainer("column", { id: "bar", pin: "top", pinArrival: "condense" } as Partial<BoxNode>), { canFloat: true });
+    const note = screen.getByText(/nothing to condense yet/).textContent ?? "";
+    expect(note).toMatch(/Height/);
+    expect(note).toMatch(/Band height/);
+  });
+});
+
+describe("BoxInspector — RX4-12 · a Floating block floating on screen gets the window's edges and corners", () => {
+  const floatedOn = (extra: Partial<BoxNode> = {}) =>
+    createElement("button", { id: "b", text: "Apply", position: "absolute", left: 5, top: 5, pin: "top", hold: "fixed", ...extra } as Partial<BoxNode>);
+
+  it("offers where it was placed, the four edges and the four corners", () => {
+    renderFor(floatedOn({ pinX: 10, pinY: 20 }), { canFloat: true });
+    const group = screen.getByRole("group", { name: "Held against" });
+    for (const t of ["Where you placed it, kept inside the window", "Top", "Bottom", "Left", "Right", "Top-left corner", "Top-right corner", "Bottom-left corner", "Bottom-right corner"]) {
+      expect(within(group).getByTitle(t)).toBeInTheDocument();
+    }
+    expect(within(group).getByTitle("Where you placed it, kept inside the window")).toHaveAttribute("aria-pressed", "true");
+  });
+
+  it("a corner writes the pin; “Where I put it” asks for the fixed hold again, so the place is measured", () => {
+    const onPatch = renderFor(floatedOn({ pinX: 10, pinY: 20 }), { canFloat: true });
+    fireEvent.click(screen.getByTitle("Bottom-right corner"));
+    expect(onPatch).toHaveBeenCalledWith({ pin: "bottom-right" });
+    cleanup();
+    const again = renderFor(floatedOn({ pin: "bottom-right" }), { canFloat: true });
+    expect(screen.getByText(/bottom right corner of the window/)).toBeInTheDocument();
+    fireEvent.click(screen.getByTitle("Where you placed it, kept inside the window"));
+    expect(again).toHaveBeenCalledWith({ pin: "top", hold: "fixed" });
+  });
+});
+
+describe("BoxInspector — RX4-18 · the Press tile draws its press (RULE T)", () => {
+  it("the Press tile does not look like None", () => {
+    renderFor(createContainer("column", { id: "s" }));
+    const look = (name: string) => screen.getByRole("button", { name }).querySelector(".eu-root > span")!.getAttribute("style");
+    expect(look("Press hover effect")).not.toBe(look("None hover effect"));
+    expect(look("Press hover effect")).toMatch(/translateY\(0\.125rem\) scale\(0?\.97\)/);
+  });
+});
+
+describe("BoxInspector — RX4-16 · a pattern opens its pattern editor, never the gradient one", () => {
+  // Measured HEADED: the 4th pattern, "Dot grid" — TWO radial layers, which the gradient parser read as one gradient.
+  it.each([
+    ["Dot grid (two layers)", "radial-gradient(circle at 0 0, currentColor 1.5px, transparent 1.6px), radial-gradient(circle at 12px 12px, currentColor 1.5px, transparent 1.6px)", "24px 24px"],
+    ["Dots (one layer)", "radial-gradient(currentColor 1.5px, transparent 1.6px)", "20px 20px"],
+  ])("%s shows “Edit pattern CSS”", (_n, bgImage, bgTile) => {
+    renderFor(createContainer("column", { id: "s", bgImage, bgTile } as Partial<BoxNode>));
+    expect(screen.getByText("Edit pattern CSS")).toBeInTheDocument();
+    expect(screen.queryByText("Edit gradient")).toBeNull();
+  });
+
+  it("a plain gradient still opens the gradient editor", () => {
+    renderFor(createContainer("column", { id: "s", bgImage: "linear-gradient(135deg, #6a11cb, #2575fc)" } as Partial<BoxNode>));
+    expect(screen.getByText("Edit gradient")).toBeInTheDocument();
+  });
+});
+
+describe("BoxInspector — RX4-15 · Advanced CSS says what it refused", () => {
+  it("names a layout transition and a never-ending animation as not applied", () => {
+    renderFor(createContainer("column", { id: "s", advancedCss: "color: red; transition: height 1s; animation: spin 1s infinite" } as Partial<BoxNode>));
+    openContent();
+    fireEvent.click(screen.getByRole("button", { name: /Advanced CSS/ }));
+    const msg = screen.getByRole("status", { name: "Advanced CSS not applied" });
+    expect(msg).toHaveTextContent("transition: height 1s");
+    expect(msg).toHaveTextContent("animation: spin 1s infinite");
+  });
+
+  it("says nothing when every line is applied", () => {
+    renderFor(createContainer("column", { id: "s", advancedCss: "transition: transform .3s" } as Partial<BoxNode>));
+    openContent();
+    fireEvent.click(screen.getByRole("button", { name: /Advanced CSS/ }));
+    expect(screen.queryByRole("status", { name: "Advanced CSS not applied" })).toBeNull();
   });
 });

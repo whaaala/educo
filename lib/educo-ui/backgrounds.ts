@@ -214,7 +214,7 @@ const MESH_PALETTES: { id: string; label: string; a: string; b: string; c: strin
 // NB: the base MUST be a gradient layer, not a bare colour — a bare colour is an invalid background-image
 // value and would blank the ENTIRE layered background. `linear-gradient(base, base)` = a valid solid fill.
 const meshCss = (m: { a: string; b: string; c: string; base: string }) =>
-  `radial-gradient(at 18% 20%, ${m.a} 0px, transparent 50%), radial-gradient(at 82% 12%, ${m.b} 0px, transparent 50%), radial-gradient(at 50% 92%, ${m.c} 0px, transparent 50%), radial-gradient(at 12% 80%, ${m.a} 0px, transparent 45%), linear-gradient(${m.base}, ${m.base})`;
+  `radial-gradient(at 18% 20%, ${m.a} 0, transparent 50%), radial-gradient(at 82% 12%, ${m.b} 0, transparent 50%), radial-gradient(at 50% 92%, ${m.c} 0, transparent 50%), radial-gradient(at 12% 80%, ${m.a} 0, transparent 45%), linear-gradient(${m.base}, ${m.base})`;
 const MESH: BgPreset[] = MESH_PALETTES.map((m) => ({ id: `mesh-${m.id}`, label: m.label, group: "mesh", css: meshCss(m) }));
 
 // ── Patterns (need a tile size; use currentColor → re-theme with the block's colour) ──
@@ -222,31 +222,31 @@ const MESH: BgPreset[] = MESH_PALETTES.map((m) => ({ id: `mesh-${m.id}`, label: 
 // go INSIDE gradients via `at X Y`; NEVER use background-shorthand position/size tokens (e.g. `… 12px 12px`
 // or `/ 8px 8px`) — those are invalid in background-image and blank the whole background. `bgTile` sizes them.
 export const PATTERNS: BgPreset[] = [
-  { id: "dots", label: "Dots", group: "pattern", tile: "20px 20px", css: "radial-gradient(currentColor 1.5px, transparent 1.6px)" },
-  { id: "dots-lg", label: "Big dots", group: "pattern", tile: "32px 32px", css: "radial-gradient(currentColor 2.5px, transparent 2.6px)" },
-  { id: "dots-sm", label: "Fine dots", group: "pattern", tile: "12px 12px", css: "radial-gradient(currentColor 1px, transparent 1.1px)" },
-  { id: "dot-grid", label: "Dot grid", group: "pattern", tile: "24px 24px", css: "radial-gradient(circle at 0 0, currentColor 1.5px, transparent 1.6px), radial-gradient(circle at 12px 12px, currentColor 1.5px, transparent 1.6px)" },
-  { id: "confetti", label: "Confetti", group: "pattern", tile: "26px 26px", css: "radial-gradient(circle at 4px 4px, currentColor 2px, transparent 2.5px), radial-gradient(circle at 17px 17px, currentColor 2px, transparent 2.5px)" },
-  { id: "grid", label: "Grid", group: "pattern", tile: "24px 24px", css: "linear-gradient(currentColor 1px, transparent 1px), linear-gradient(90deg, currentColor 1px, transparent 1px)" },
-  { id: "grid-sm", label: "Fine grid", group: "pattern", tile: "12px 12px", css: "linear-gradient(currentColor 1px, transparent 1px), linear-gradient(90deg, currentColor 1px, transparent 1px)" },
-  { id: "grid-lg", label: "Bold grid", group: "pattern", tile: "44px 44px", css: "linear-gradient(currentColor 1.5px, transparent 1.5px), linear-gradient(90deg, currentColor 1.5px, transparent 1.5px)" },
-  { id: "lines-h", label: "Lines", group: "pattern", tile: "100% 10px", css: "linear-gradient(currentColor 1px, transparent 1px)" },
-  { id: "lines-v", label: "Columns", group: "pattern", tile: "10px 100%", css: "linear-gradient(90deg, currentColor 1px, transparent 1px)" },
-  { id: "lines-thick", label: "Thick lines", group: "pattern", tile: "100% 16px", css: "linear-gradient(currentColor 2px, transparent 2px)" },
-  { id: "ribs", label: "Ribs", group: "pattern", tile: "12px 100%", css: "repeating-linear-gradient(90deg, currentColor 0, currentColor 2px, transparent 2px, transparent 12px)" },
-  { id: "diagonal", label: "Diagonal", group: "pattern", tile: "16px 16px", css: "repeating-linear-gradient(45deg, currentColor 0, currentColor 1px, transparent 0, transparent 50%)" },
-  { id: "diagonal-wide", label: "Stripes", group: "pattern", tile: "40px 40px", css: "repeating-linear-gradient(45deg, currentColor 0, currentColor 2px, transparent 0, transparent 50%)" },
-  { id: "diagonal-rev", label: "Back stripes", group: "pattern", tile: "24px 24px", css: "repeating-linear-gradient(-45deg, currentColor 0, currentColor 2px, transparent 0, transparent 50%)" },
-  { id: "crosshatch", label: "Crosshatch", group: "pattern", tile: "20px 20px", css: "repeating-linear-gradient(45deg, currentColor 0, currentColor 1px, transparent 0, transparent 50%), repeating-linear-gradient(-45deg, currentColor 0, currentColor 1px, transparent 0, transparent 50%)" },
-  { id: "grid-diagonal", label: "Woven", group: "pattern", tile: "28px 28px", css: "linear-gradient(currentColor 1px, transparent 1px), linear-gradient(90deg, currentColor 1px, transparent 1px), repeating-linear-gradient(45deg, currentColor 0, currentColor 1px, transparent 0, transparent 50%)" },
-  { id: "checker", label: "Checkerboard", group: "pattern", tile: "32px 32px", css: "conic-gradient(currentColor 90deg, transparent 90deg 180deg, currentColor 180deg 270deg, transparent 270deg)" },
-  { id: "checker-sm", label: "Fine checker", group: "pattern", tile: "16px 16px", css: "conic-gradient(currentColor 90deg, transparent 90deg 180deg, currentColor 180deg 270deg, transparent 270deg)" },
-  { id: "zigzag", label: "Zigzag", group: "pattern", tile: "20px 20px", css: "linear-gradient(135deg, currentColor 25%, transparent 25%), linear-gradient(225deg, currentColor 25%, transparent 25%)" },
-  { id: "triangles", label: "Triangles", group: "pattern", tile: "20px 20px", css: "linear-gradient(60deg, currentColor 25%, transparent 25.5%), linear-gradient(-60deg, currentColor 25%, transparent 25.5%)" },
-  { id: "diamonds", label: "Diamonds", group: "pattern", tile: "24px 24px", css: "linear-gradient(135deg, currentColor 25%, transparent 25%), linear-gradient(225deg, currentColor 25%, transparent 25%), linear-gradient(45deg, currentColor 25%, transparent 25%), linear-gradient(315deg, currentColor 25%, transparent 25%)" },
-  { id: "waves", label: "Waves", group: "pattern", tile: "40px 20px", css: "radial-gradient(circle at 10px -6px, transparent 12px, currentColor 12px, currentColor 13px, transparent 13px)" },
-  { id: "scales", label: "Scales", group: "pattern", tile: "40px 20px", css: "radial-gradient(circle at 50% 100%, transparent 9px, currentColor 9px, currentColor 10px, transparent 10px)" },
-  { id: "isometric", label: "Isometric", group: "pattern", tile: "28px 48px", css: "linear-gradient(30deg, currentColor 12%, transparent 12.5%, transparent 87%, currentColor 87.5%, currentColor), linear-gradient(150deg, currentColor 12%, transparent 12.5%, transparent 87%, currentColor 87.5%, currentColor)" },
+  { id: "dots", label: "Dots", group: "pattern", tile: "1.25rem 1.25rem", css: "radial-gradient(currentColor 0.09375rem, transparent 0.1rem)" },
+  { id: "dots-lg", label: "Big dots", group: "pattern", tile: "2rem 2rem", css: "radial-gradient(currentColor 0.15625rem, transparent 0.1625rem)" },
+  { id: "dots-sm", label: "Fine dots", group: "pattern", tile: "0.75rem 0.75rem", css: "radial-gradient(currentColor 0.0625rem, transparent 0.06875rem)" },
+  { id: "dot-grid", label: "Dot grid", group: "pattern", tile: "1.5rem 1.5rem", css: "radial-gradient(circle at 0 0, currentColor 0.09375rem, transparent 0.1rem), radial-gradient(circle at 0.75rem 0.75rem, currentColor 0.09375rem, transparent 0.1rem)" },
+  { id: "confetti", label: "Confetti", group: "pattern", tile: "1.625rem 1.625rem", css: "radial-gradient(circle at 0.25rem 0.25rem, currentColor 0.125rem, transparent 0.15625rem), radial-gradient(circle at 1.0625rem 1.0625rem, currentColor 0.125rem, transparent 0.15625rem)" },
+  { id: "grid", label: "Grid", group: "pattern", tile: "1.5rem 1.5rem", css: "linear-gradient(currentColor 1px, transparent 1px), linear-gradient(90deg, currentColor 1px, transparent 1px)" },
+  { id: "grid-sm", label: "Fine grid", group: "pattern", tile: "0.75rem 0.75rem", css: "linear-gradient(currentColor 1px, transparent 1px), linear-gradient(90deg, currentColor 1px, transparent 1px)" },
+  { id: "grid-lg", label: "Bold grid", group: "pattern", tile: "2.75rem 2.75rem", css: "linear-gradient(currentColor 0.09375rem, transparent 0.09375rem), linear-gradient(90deg, currentColor 0.09375rem, transparent 0.09375rem)" },
+  { id: "lines-h", label: "Lines", group: "pattern", tile: "100% 0.625rem", css: "linear-gradient(currentColor 1px, transparent 1px)" },
+  { id: "lines-v", label: "Columns", group: "pattern", tile: "0.625rem 100%", css: "linear-gradient(90deg, currentColor 1px, transparent 1px)" },
+  { id: "lines-thick", label: "Thick lines", group: "pattern", tile: "100% 1rem", css: "linear-gradient(currentColor 0.125rem, transparent 0.125rem)" },
+  { id: "ribs", label: "Ribs", group: "pattern", tile: "0.75rem 100%", css: "repeating-linear-gradient(90deg, currentColor 0, currentColor 0.125rem, transparent 0.125rem, transparent 0.75rem)" },
+  { id: "diagonal", label: "Diagonal", group: "pattern", tile: "1rem 1rem", css: "repeating-linear-gradient(45deg, currentColor 0, currentColor 1px, transparent 0, transparent 50%)" },
+  { id: "diagonal-wide", label: "Stripes", group: "pattern", tile: "2.5rem 2.5rem", css: "repeating-linear-gradient(45deg, currentColor 0, currentColor 0.125rem, transparent 0, transparent 50%)" },
+  { id: "diagonal-rev", label: "Back stripes", group: "pattern", tile: "1.5rem 1.5rem", css: "repeating-linear-gradient(-45deg, currentColor 0, currentColor 0.125rem, transparent 0, transparent 50%)" },
+  { id: "crosshatch", label: "Crosshatch", group: "pattern", tile: "1.25rem 1.25rem", css: "repeating-linear-gradient(45deg, currentColor 0, currentColor 1px, transparent 0, transparent 50%), repeating-linear-gradient(-45deg, currentColor 0, currentColor 1px, transparent 0, transparent 50%)" },
+  { id: "grid-diagonal", label: "Woven", group: "pattern", tile: "1.75rem 1.75rem", css: "linear-gradient(currentColor 1px, transparent 1px), linear-gradient(90deg, currentColor 1px, transparent 1px), repeating-linear-gradient(45deg, currentColor 0, currentColor 1px, transparent 0, transparent 50%)" },
+  { id: "checker", label: "Checkerboard", group: "pattern", tile: "2rem 2rem", css: "conic-gradient(currentColor 90deg, transparent 90deg 180deg, currentColor 180deg 270deg, transparent 270deg)" },
+  { id: "checker-sm", label: "Fine checker", group: "pattern", tile: "1rem 1rem", css: "conic-gradient(currentColor 90deg, transparent 90deg 180deg, currentColor 180deg 270deg, transparent 270deg)" },
+  { id: "zigzag", label: "Zigzag", group: "pattern", tile: "1.25rem 1.25rem", css: "linear-gradient(135deg, currentColor 25%, transparent 25%), linear-gradient(225deg, currentColor 25%, transparent 25%)" },
+  { id: "triangles", label: "Triangles", group: "pattern", tile: "1.25rem 1.25rem", css: "linear-gradient(60deg, currentColor 25%, transparent 25.5%), linear-gradient(-60deg, currentColor 25%, transparent 25.5%)" },
+  { id: "diamonds", label: "Diamonds", group: "pattern", tile: "1.5rem 1.5rem", css: "linear-gradient(135deg, currentColor 25%, transparent 25%), linear-gradient(225deg, currentColor 25%, transparent 25%), linear-gradient(45deg, currentColor 25%, transparent 25%), linear-gradient(315deg, currentColor 25%, transparent 25%)" },
+  { id: "waves", label: "Waves", group: "pattern", tile: "2.5rem 1.25rem", css: "radial-gradient(circle at 0.625rem -0.375rem, transparent 0.75rem, currentColor 0.75rem, currentColor 0.8125rem, transparent 0.8125rem)" },
+  { id: "scales", label: "Scales", group: "pattern", tile: "2.5rem 1.25rem", css: "radial-gradient(circle at 50% 100%, transparent 0.5625rem, currentColor 0.5625rem, currentColor 0.625rem, transparent 0.625rem)" },
+  { id: "isometric", label: "Isometric", group: "pattern", tile: "1.75rem 3rem", css: "linear-gradient(30deg, currentColor 12%, transparent 12.5%, transparent 87%, currentColor 87.5%, currentColor), linear-gradient(150deg, currentColor 12%, transparent 12.5%, transparent 87%, currentColor 87.5%, currentColor)" },
 ];
 
 export const BG_PRESETS: BgPreset[] = [...THEMED, ...GRADIENTS, ...MESH, ...PATTERNS];

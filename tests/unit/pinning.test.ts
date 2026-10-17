@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import {
   pinCSS, pinBlockedBy, fixedBlockedBy, blockedByLabel, bandCarriesPin, pinScope, childStyle, createContainer, createGrid,
   createElement, normalizeRowBands, resolveResponsive, updateBoxResponsive, pinArrivalCss, pinArrivalKeyframes,
-  pinArrivalHasEffect, treePinArrivalCss, PIN_ARRIVALS, SHADOW_CSS, floatHoldCSS, canvasFixedStyle, pinStackAttr, pinStackNeeded, pinStackGroup, pinPaddingNeeded, pinStackPass, scrollContainerOf, fixedContainerOf, pinHolder, type BoxNode,
+  pinArrivalHasEffect, treePinArrivalCss, PIN_ARRIVALS, u, SHADOW_CSS, floatHoldCSS, canvasFixedStyle, pinStackAttr, pinStackNeeded, pinStackGroup, pinPaddingNeeded, pinStackPass, scrollContainerOf, fixedContainerOf, pinHolder, type BoxNode,
 } from "@/lib/box-model";
 import { PAGE_Z } from "@/lib/educo-ui/stacking";
 
@@ -602,11 +602,12 @@ describe("pinArrivalCss — the one arrival resolver", () => {
     const css = pinArrivalCss(".bx-a", box({ pin: "top", pinArrival: "shadow" }));
     expect(css).toContain("@supports (animation-timeline: scroll())");
     expect(css).toContain("animation-timeline:scroll()");
-    expect(css).toContain("animation-range:0 7.5rem");              // the 120px default, at ordinary text size
-    expect(css).not.toMatch(/animation-range:0 \d+px/);
+    // the 120px default, at ordinary text size — from where the bar takes hold (RX4-13, `--eu-hold-at`)
+    expect(css).toContain("animation-range:var(--eu-hold-at,0%) calc(var(--eu-hold-at,0%) + 7.5rem)");
+    expect(css).not.toMatch(/\+ \d+px\)/);
     expect(css, "never the container-width unit").not.toContain("--box-u");
     expect(pinArrivalCss(".bx-a", box({ pin: "top", pinArrival: "shadow", pinArrivalAfter: 320 })))
-      .toContain("animation-range:0 20rem");
+      .toContain("calc(var(--eu-hold-at,0%) + 20rem)");
   });
 
   it("writes `animation-duration: auto`, because the shorthand's 0s finishes before the range starts", () => {
@@ -638,8 +639,9 @@ describe("pinArrivalCss — the one arrival resolver", () => {
     expect(pinArrivalCss(".bx-a", box({ pin: "top", pinArrival: "condense" }))).toBe("");
     expect(pinArrivalHasEffect(box({ pin: "top", pinArrival: "condense", minHeight: 80 }))).toBe(true);
     const css = pinArrivalCss(".bx-a", box({ pin: "top", pinArrival: "condense", minHeight: 80, padding: 20 }));
-    expect(css).toContain("--eu-arrive-h-rest:");
-    expect(css).toContain("--eu-arrive-pad-on:");
+    // RX4-4: how much is clipped off each end, and which way it slides — never a padding or a height to re-lay out.
+    expect(css).toContain("--eu-arrive-cut-b:max("); // RX4-26: blocks at the top, so the height's room comes off the bottom
+    expect(css).toContain("--eu-arrive-shift:calc(-1 * ");
   });
 
   it("the keyframes a page needs are emitted once, and only the ones it uses", () => {
@@ -683,16 +685,17 @@ describe("floatHoldCSS — free placement AND holding on screen", () => {
   });
 
   it("…at the place it was measured sitting, in a unit that means the same in both boxes", () => {
+    // …capped by the window less its own size (RX4-12), so a place below the fold comes to rest on the window's edge.
     const css = floatHoldCSS(floated({ pin: "top", hold: "fixed", pinX: 256, pinY: 240 }));
-    expect(css.left).toBe("16rem");
-    expect(css.top).toBe("15rem");
+    expect(css.left).toBe("max(0rem, min(16rem, calc(100% - 2.5rem)))");
+    expect(css.top).toBe("max(0rem, min(15rem, calc(var(--canvas-h, 100dvh) - 2.5rem)))");
     expect(String(css.left), "never a stored pixel").not.toMatch(/px/);
   });
 
-  it("with no measurement stored it leaves the float's own placement alone, rather than moving it", () => {
+  it("with no measurement stored it holds against the edge it names, keeping its place along it (RX4-12)", () => {
     const css = floatHoldCSS(floated({ pin: "top", hold: "fixed" }));
-    expect(css.left).toBeUndefined();
-    expect(css.top).toBeUndefined();
+    expect(css.left, "its place along the edge is the float's own").toBeUndefined();
+    expect(css.top).toBe(u(0));
   });
 
   it("STICKY on a floated block emits nothing — it would jump back into the flow", () => {

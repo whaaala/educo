@@ -24,7 +24,7 @@ const clamp = (x: number, lo = 0, hi = 1) => Math.min(hi, Math.max(lo, x));
 // ── hex ↔ rgb ────────────────────────────────────────────────────────────────
 export function hexToRgb(hex: string): RGB {
   let h = hex.trim().replace(/^#/, "");
-  if (h.length === 3) h = h.split("").map((c) => c + c).join("");
+  if (h.length === 3 || h.length === 4) h = h.split("").map((c) => c + c).join(""); // #rgb and #rgba (RX4-24)
   if (h.length === 8) h = h.slice(0, 6); // drop alpha
   const n = parseInt(h || "000000", 16);
   return { r: (n >> 16) & 255, g: (n >> 8) & 255, b: n & 255 };

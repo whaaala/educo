@@ -15,7 +15,7 @@ import { isRegistryComponent, defaultComponentFields, defaultComponentWidth, com
 import { iconSvg } from "@/lib/educo-ui/icon-svg";
 import { BREAKPOINTS_EM } from "@/lib/educo-ui/base";
 import { RUNG_MEASURE, RUNG_PX, COLUMN_FLOORS_REM, MEDIA, type RungName } from "@/lib/educo-ui/layout";
-import { hasItemEffects, itemEffectsCss, revealEffect, REVEAL_DUR, REVEAL_EASE, REVEAL_VIEW_RANGE } from "@/lib/interactions";
+import { hasItemEffects, itemEffectsCss, revealEffect, REVEAL_DUR, REVEAL_EASE, REVEAL_WAIT, shapeShadowFilter } from "@/lib/interactions";
 import { PAGE_Z, clampPageZ } from "@/lib/educo-ui/stacking";
 import { remLen, SHADOW_SCALE, SPACE_STEPS } from "@/lib/educo-ui/tokens";
 import { contrastRatio, hexToRgb, oklchToRgb, rgbToHex, rgbToOklch } from "@/lib/educo-ui/color";
@@ -658,7 +658,8 @@ export function floatStacksOnMobile(node: BoxNode): boolean {
   // its explicit placement rather than silently starting to auto-stack.
   const m = { ...(node.responsive?.mobile ?? {}), ...(node.responsive?.phone ?? {}) };
   const pinned = m.left != null || m.top != null || m.position != null || m.width != null || m.height != null;
-  return !pinned;
+  // RX4-12: one set to FLOAT ON SCREEN is held by the window on a phone too — stacked, it scrolled away at 375.
+  return !pinned && !(node.pin && node.hold === "fixed");
 }
 
 const round1 = (n: number) => Math.round(n * 10) / 10;
@@ -1112,7 +1113,17 @@ export function backgroundCss(node: BoxNode, colors?: { background?: string; bgO
  * `.bx-…` rules), so this is the same rule text in both places.
  */
 export function paintsViaLayer(node: BoxNode): boolean {
-  return fadesPaintOnly(node) && !!node.bgImage;
+  return (fadesPaintOnly(node) && !!node.bgImage) || shapedWithShadow(node);
+}
+
+/**
+ * A SHAPED EDGE WITH A SHADOW (RX4-8). A `clip-path` on the band cuts away every shadow it casts (measured: 30px below a
+ * curved band, page white where the straight one had shadow). So such a band is NOT clipped: its paint moves to the
+ * `::before` layer, which carries the shape, and the shadow becomes a `drop-shadow` filter on the band — which follows
+ * whatever the band paints, i.e. the shape. ponytail: a border on such a band stays a rectangle (the layer has none).
+ */
+export function shapedWithShadow(node: BoxNode): boolean {
+  return !!shapeShadowFilter(node); // the one answer, in interactions.ts — the hover reads it too (RX4-22)
 }
 
 /**
@@ -1134,7 +1145,7 @@ export function paintLayerCss(selector: string, node: BoxNode): string {
   const a = paintAlpha(node);
   return `${selector}{position:relative;isolation:isolate}`
     + `${selector}::before{content:"";position:absolute;inset:0;z-index:${PAGE_Z.behind};pointer-events:none;`
-    + `border-radius:inherit;opacity:${a};${decls}}`;
+    + `border-radius:inherit;opacity:${a};${decls}${edgeClip(node) ? `;clip-path:${edgeClip(node)}` : ""}}`;
 }
 
 /** Every paint-layer rule in a tree, for the one stylesheet the canvas injects. */
@@ -1335,6 +1346,25 @@ export function animatesLayout(property: string, value: string): boolean {
   return value.toLowerCase().split(/[ ,]+/).some((tok) => LAYOUT_ANIMATION_PROPS.has(tok));
 }
 
+/** Does this `animation` run FOREVER? Moving content with no way to stop it fails WCAG 2.2.2 (RX4-15). */
+function animatesForever(property: string, value: string): boolean {
+  return /^animation(-iteration-count)?$/i.test(property.trim()) && /\binfinite\b/i.test(value);
+}
+
+/** Motion a declaration is refused for: through layout, or forever. */
+const refusesMotion = (prop: string, value: string) => animatesLayout(prop, value) || animatesForever(prop, value);
+
+/**
+ * The Advanced CSS declarations refused for their MOTION, as typed — so the Inspector can SAY what was left out
+ * (RX4-15: the refusal was silent, and a silent refusal reads as "it took it"). Part blocks (`title { … }`) are read too.
+ */
+export function refusedMotion(raw?: string): string[] {
+  return (raw ?? "").split(/[;{}]/).map((d) => d.trim()).filter((d) => {
+    const i = d.indexOf(":");
+    return i > 0 && refusesMotion(d.slice(0, i).trim(), d.slice(i + 1));
+  });
+}
+
 /**
  * A node's Advanced CSS as a style OBJECT, for the React canvas.
  *
@@ -1376,7 +1406,7 @@ export function sanitizeCssDeclarations(raw?: string): string {
       if (!/^-{0,2}[a-zA-Z][a-zA-Z0-9-]*$/.test(prop)) return false; // a plausible CSS property / custom property
       // Refuse to animate a LAYOUT property — see LAYOUT_ANIMATION_PROPS. `transition: all` is refused too:
       // it sweeps in every layout property by definition, which is exactly the trap.
-      if (animatesLayout(prop, decl.slice(idx + 1))) return false;
+      if (refusesMotion(prop, decl.slice(idx + 1))) return false; // …and one that never stops (RX4-15)
       return true;
     })
     .map((decl) => decl + ";")
@@ -3892,8 +3922,12 @@ export const pagerSlideId = (slide: BoxNode): string => slide.anchor || `slide-$
  * `overflow-y: hidden` matters as much as the `x`: without it a tall page turns the strip into a
  * two-directional scroller and the snap points fight the vertical scroll.
  */
-export function pagerStripCss(): CSSProperties {
+export function pagerStripCss(node?: BoxNode): CSSProperties {
+  // With its own arrows or dots the native scrollbar is a second, grey control under every page (RX4-25);
+  // with no way between the pages it is a mouse's only way to move it, so it stays.
+  const controls = !!node && (node.pagerNav ?? "dots") !== "none";
   return {
+    ...(controls ? { scrollbarWidth: "none" as const } : {}),
     display: "grid",
     gridAutoFlow: "column",
     gridAutoColumns: "100%",
@@ -3926,7 +3960,9 @@ export function pagerSlideCss(): CSSProperties {
 export function pagerNavHTML(node: BoxNode): string {
   if (!isPager(node)) return "";
   const nav = node.pagerNav ?? "dots";
-  if (nav === "none") return "";
+  const auto = !!node.pagerAuto && node.pagerAuto > 0;
+  // "None" means no way BETWEEN the pages — never no way to make a moving pager stop (RX4-5, WCAG 2.2.2).
+  if (nav === "none" && !auto) return "";
   const slides = node.children ?? [];
   if (slides.length < 2) return ""; // one page is not a pager; offering controls would be a lie
   const wants = (k: "dots" | "arrows") => nav === k || nav === "both";
@@ -3967,7 +4003,15 @@ export function pagerNavHTML(node: BoxNode): string {
     + ` style="width:2.25rem;height:2.25rem;border-radius:50%;border:1px solid rgba(255,255,255,.7);`
     + `background:rgba(0,0,0,.3);text-align:center;line-height:2.15rem;text-decoration:none;color:#fff">`
     + `${dir === "prev" ? "&#8249;" : "&#8250;"}</a>`;
-  const body = wants("arrows") ? `${arrow("prev")}${dots}${arrow("next")}` : dots;
+  // PAUSE (RX4-5, WCAG 2.2.2): a pager that moves on its own gets a real, labelled button that holds it still. It ships
+  // hidden like the arrows — only the script can stop the timer — and the script shows it only when something is moving
+  // (never under reduced motion, where nothing moves). Its label says what pressing it does: "Pause", then "Play".
+  const pause = auto
+    ? `<button type="button" hidden data-eu-pager-pause aria-label="Pause"`
+      + ` style="width:2.25rem;height:2.25rem;border-radius:50%;border:1px solid rgba(255,255,255,.7);`
+      + `background:rgba(0,0,0,.3);color:#fff;font:inherit;line-height:1;cursor:pointer;padding:0">&#10074;&#10074;</button>`
+    : "";
+  const body = (wants("arrows") ? `${arrow("prev")}${dots}${arrow("next")}` : dots) + pause;
 
   // `<nav>` rather than a bare div: it is a set of links between the parts of one thing, which is what the
   // landmark is for, and it gives a screen-reader user a way to skip past it.
@@ -3986,10 +4030,32 @@ export function pagerNavHTML(node: BoxNode): string {
   // `clamp(1rem, 9vh, 5rem)` is 72px at 800 tall, 97px at 1080 and 36px on a phone — it clears a header
   // at every size, scales instead of being tuned to one, and floating the dots above the edge is what a
   // carousel looks like anyway.
+  //
+  // RX4-9 — ONLY A PAGER THAT HAS A HEIGHT IS OVERLAID, AND NEVER OUT OF ITS OWN BOX. Measured HEADED 2026-10-17: three
+  // Text slides make a 39px strip, and 72px up from its bottom the nav sat at top −69px — above the page, unclickable.
+  // A content-sized pager therefore puts its controls in the flow, right under the strip; a tall one (a photo Slider, a
+  // Rotating hero) keeps them over its foot, with the inset capped by the box's own height (a `bottom` % is of the box)
+  // less the nav's height, so however short the box comes out the controls stay inside it.
+  const place = pagerHasHeight(node)
+    ? "position:absolute;left:0;right:0;bottom:max(0rem, min(clamp(1rem,9vh,5rem), calc(100% - 2.25rem)));"
+    : "";
   return `<nav data-eu-pager-nav aria-label="Choose which one to show"`
-    + ` style="position:absolute;left:0;right:0;bottom:clamp(1rem,9vh,5rem);display:flex;gap:.75rem;`
-    + `justify-content:center;align-items:center;pointer-events:none">`
+    + ` style="${place}pointer-events:none;display:flex;gap:.75rem;justify-content:center;align-items:center">`
     + `<span style="display:flex;gap:.75rem;align-items:center;pointer-events:auto">${body}</span></nav>`;
+}
+
+/** Does the pager — or a page it shows — have a height of its own, rather than its words' height (RX4-9)? */
+function pagerHasHeight(node: BoxNode): boolean {
+  // RX4-27: through the builder's plain row wrappers — every slide added through the UI sits in one, so a full-screen hero
+  // read as content-sized and its dots dropped under it, off the first screen (found by pager-hero.spec on the real tree).
+  const sized = (n: BoxNode): boolean => !!n.screenHeight || (n.minHeight ?? 0) > 0 || definiteLength(n.height) != null
+    || (!!n.bare && (n.children ?? []).some(sized));
+  return sized(node) || (node.children ?? []).some(sized);
+}
+
+/** A height that is a real length ("128px", "8rem", "40vh") — not auto, fill or a % of something unknown; px as rem. */
+function definiteLength(h?: string): string | null {
+  return h && /^\s*\d*\.?\d+\s*(px|rem|em|vh|svh|dvh|lvh)\s*$/.test(h) ? typedLength(h.trim()) : null;
 }
 
 /**
@@ -4051,8 +4117,20 @@ export function pagerWire(strip: HTMLElement): void {
   const every = Number(strip.dataset.euPagerAuto || 0);
   if (!every || still) return;
   let timer = 0;
+  // A PAUSE THE READER CHOSE (RX4-5) outranks every automatic resume: a mouse leaving, focus moving on.
+  let held = false;
   const stop = () => { win.clearInterval(timer); timer = 0; };
-  const start = () => { if (!timer) timer = win.setInterval(() => { if (!d.hidden) go(at() + 1); }, every * 1000); };
+  const start = () => { if (!timer && !held) timer = win.setInterval(() => { if (!d.hidden) go(at() + 1); }, every * 1000); };
+  const pause = nav ? nav.querySelector("[data-eu-pager-pause]") as HTMLButtonElement | null : null;
+  if (pause) {
+    pause.hidden = false; // it was hidden because without this script nothing moves and nothing can stop
+    pause.addEventListener("click", () => {
+      held = !held;
+      pause.setAttribute("aria-label", held ? "Play" : "Pause");
+      pause.innerHTML = held ? "&#9654;" : "&#10074;&#10074;";
+      if (held) stop(); else start();
+    });
+  }
   // Pause while it is being read or operated, and pick up again when it is not. `focusin` covers the
   // keyboard: tabbing INTO a slide has to stop it just as surely as hovering does.
   // A MOUSE THAT IS REALLY THERE, OR A FINGER ON IT (E4-13). It paused on `mouseenter`, and on a touch screen a tap leaves a
@@ -5996,8 +6074,9 @@ export function bandScheme(bg: string | undefined): { dark: boolean; vars: Recor
 /** A solid, opaque colour as #rrggbb — or null when it is not one (see-through, a gradient, a token, a photo). */
 function solidHex(bg: string | undefined): string | null {
   const v = bg?.trim().toLowerCase(); if (!v) return null;
-  let m = /^#([0-9a-f]{3})$/.exec(v); if (m) return "#" + m[1].split("").map((c) => c + c).join("");
-  m = /^#([0-9a-f]{6})([0-9a-f]{2})?$/.exec(v); if (m) return m[2] && parseInt(m[2], 16) < 230 ? null : "#" + m[1];
+  let m = /^#([0-9a-f]{3,4})$/.exec(v); // #rgb and #rgba (RX4-24) read as their long forms
+  const long = m ? "#" + m[1].split("").map((c) => c + c).join("") : v;
+  m = /^#([0-9a-f]{6})([0-9a-f]{2})?$/.exec(long); if (m) return m[2] && parseInt(m[2], 16) < 230 ? null : "#" + m[1];
   const r = /^rgba?\(\s*(\d+)[\s,]+(\d+)[\s,]+(\d+)(?:[\s,/]+([\d.]+%?))?\s*\)$/.exec(v);
   if (r) { const a = r[4] == null ? 1 : r[4].endsWith("%") ? parseFloat(r[4]) / 100 : parseFloat(r[4]); if (a < 0.9) return null; return "#" + [r[1], r[2], r[3]].map((x) => Math.min(255, +x).toString(16).padStart(2, "0")).join(""); }
   return null;
@@ -6045,6 +6124,21 @@ function listLinesGap(node: BoxNode): CSSProperties | null {
   if ((node.tag !== "ul" && node.tag !== "ol") || (node.direction ?? "column") !== "column" || node.gapY != null || (node.gap ?? 0) > 0) return null;
   const items = (node.children ?? []).flatMap((k) => (k.rowBand ? k.children ?? [] : [k]));
   return items.length > 1 && items.every(isMenuItem) ? { rowGap: LINK_GAP_DOWN } : null;
+}
+
+/**
+ * RX3-22 — DO THE BLOCKS ALREADY CLAIM THE WHOLE ROW? Then "Position blocks" has no room to place them in, and End / Spread
+ * out do nothing. True for a side-by-side row whose in-flow blocks include a Fill, or whose % widths add up to the row. The
+ * Inspector says so rather than overriding a width the person chose (the user's decision, 2026-10-17).
+ * ponytail: reads the widths as stored on the blocks (the base rung) — a rung that re-sizes them is not consulted.
+ */
+export function rowFilledByBlocks(node: BoxNode): boolean {
+  if (node.layout === "grid" || node.direction !== "row") return false;
+  const kids = (node.children ?? []).filter((c) => !isFloating(c));
+  if (!kids.length) return false;
+  if (kids.some((c) => c.width === "fill")) return true;
+  const pct = kids.map((c) => /^(\d+(?:\.\d+)?)%$/.exec(c.width ?? "")?.[1]);
+  return pct.every((p) => p != null) && pct.reduce((sum, p) => sum + Number(p), 0) >= 99.5;
 }
 
 export function containerStyle(node: BoxNode, bp: Breakpoint = "base", section: SectionFlag = false): CSSProperties {
@@ -7311,6 +7405,8 @@ export function canvasFixedStyle(css: CSSProperties): CSSProperties {
     // distance from that edge — then pulled back by its own height, which only `translate` knows.
     out.top = `calc(${scroll} + ${view} - (${String(bottom)}))`;
     out.translate = "0 -100%";
+    // …said once more as a variable, so a Condense arrival's own `translate` adds to it instead of erasing it (RX4-4).
+    (out as Record<string, string>)["--eu-hold-ty"] = "-100%";
   } else {
     out.top = `calc(${scroll} + (${String(css.top ?? "0px")}))`;
   }
@@ -7335,10 +7431,31 @@ export function canvasFixedStyle(css: CSSProperties): CSSProperties {
 export function floatHoldCSS(node: BoxNode): CSSProperties {
   if (!isFloating(node) || !node.pin || (node.hold ?? "sticky") !== "fixed") return {};
   const css: CSSProperties = { position: "fixed" };
-  // Measured at the moment it was lifted, so it does not jump — see `pinX`/`pinY`. Absent (an older page,
-  // or a tree built by hand) leaves the float's own left/top in place rather than moving it somewhere new.
-  if (node.pinX != null) css.left = remLen(node.pinX);
-  if (node.pinY != null) css.top = remLen(node.pinY);
+  /**
+   * WHERE IT WAS PLACED — KEPT INSIDE THE WINDOW (RX4-12). Measured at the moment it was lifted (`pinX`/`pinY`), so it does
+   * not jump. But measured HEADED 2026-10-17: a Button 873px down a tall band was fixed at top 873px in an 800px window —
+   * never seen, on any screen. The place is therefore capped at the window less the block's own size, so a spot below the
+   * fold or past a phone's edge comes to rest on the window's edge instead of off it. `--canvas-h` is the editor's visible
+   * height (the canvas draws fixed as absolute, see `canvasFixedStyle`); the page has the window's, `100dvh`. `100%` across
+   * is the window's width on the page and the page's width on the canvas.
+   */
+  if (node.pinX != null || node.pinY != null) {
+    const size = (v?: string) => definiteLength(v) ?? "2.5rem"; // unknown (hug) → at least the empty-box floor stays on screen
+    if (node.pinX != null) css.left = `max(0rem, min(${remLen(node.pinX)}, calc(100% - ${size(node.width)})))`;
+    if (node.pinY != null) css.top = `max(0rem, min(${remLen(node.pinY)}, calc(var(--canvas-h, 100dvh) - ${size(node.height)})))`;
+    return css;
+  }
+  /**
+   * …OR AGAINST AN EDGE OR A CORNER OF THE WINDOW (RX4-12), exactly as an in-flow block's "Floats on screen" offers. The
+   * float's own `left`/`top` percentages are cleared on the sides it is held from, or they would fight the inset; along an
+   * edge it keeps its place. "Top" with no measurement is the top edge (an older page, or a corner chosen and then Top).
+   */
+  const off = u(node.pinOffset ?? 0);
+  for (const edge of PIN_EDGES[node.pin]) {
+    css[edge] = off;
+    if (edge === "bottom") css.top = undefined;
+    if (edge === "right") css.left = undefined;
+  }
   return css;
 }
 
@@ -7362,8 +7479,13 @@ const PIN_ARRIVAL_KEYFRAMES: Record<PinArrival, string> = {
   // transparent there — the background-color half carries the look on its own if the blur never applies.
   glass: `@keyframes eu-arrive-glass{from{background-color:transparent;-webkit-backdrop-filter:blur(0);backdrop-filter:blur(0)}`
     + `to{background-color:var(--eu-arrive-bg,color-mix(in srgb, ${ARRIVE_SURFACE} 72%, transparent));-webkit-backdrop-filter:blur(0.6rem);backdrop-filter:blur(0.6rem)}}`,
-  condense: `@keyframes eu-arrive-condense{from{padding-block:var(--eu-arrive-pad-rest,0);min-height:var(--eu-arrive-h-rest,auto)}`
-    + `to{padding-block:var(--eu-arrive-pad-on,0);min-height:var(--eu-arrive-h-on,auto)}}`,
+  // RX4-4 — COMPOSITOR AND PAINT ONLY. It animated `padding-block` and `min-height`, measured HEADED: the bar went 182 → 128px
+  // over 160px of scroll and the band below moved with it (142 → −14) — the page reflowed on every scroll frame. Now the bar
+  // keeps its layout box: a slice is clipped off its top and its bottom (`--eu-arrive-cut-t` / `-b`), and it slides toward the
+  // edge it is held at by its own end's slice (`--eu-arrive-shift`), so what shows is a shorter bar flush against its edge —
+  // and nothing below it moves. RX4-26: the slice comes from where the EMPTY space is (see arrivalVars), never off the content. `--eu-hold-ty` composes with the canvas's own hold `translate`.
+  condense: `@keyframes eu-arrive-condense{from{clip-path:inset(0 0);translate:0 var(--eu-hold-ty,0%)}`
+    + `to{clip-path:inset(var(--eu-arrive-cut-t,0) 0 var(--eu-arrive-cut-b,0) 0);translate:0 calc(var(--eu-hold-ty,0%) + var(--eu-arrive-shift,0rem))}}`,
 };
 
 /** The keyframes a page actually uses — emitted once, exactly like the entrance effects. */
@@ -7383,7 +7505,8 @@ const ownPadBlock = (node: BoxNode): number =>
 export function pinArrivalHasEffect(node: BoxNode): boolean {
   if (!node.pinArrival) return false;
   if (node.pinArrival !== "condense") return true;
-  return ownPadBlock(node) > 0 || (node.minHeight ?? 0) > 0;
+  // RX4-11: a Height set under Size counts — the Inspector's own advice ("give it one under Size") was ignored.
+  return ownPadBlock(node) > 0 || (node.minHeight ?? 0) > 0 || definiteLength(node.height) != null;
 }
 
 /** A block's own colour, when it has a flat one to fill to — a gradient or a photo is not a colour. */
@@ -7402,13 +7525,24 @@ function arrivalVars(node: BoxNode, fx: PinArrival): string {
     case "solid": return `--eu-arrive-bg:${flatColour(node.background) ?? ARRIVE_SURFACE}`;
     case "glass": return `--eu-arrive-bg:color-mix(in srgb, ${flatColour(node.background) ?? ARRIVE_SURFACE} 72%, transparent)`;
     case "condense": {
-      const pad = ownPadBlock(node), h = node.minHeight ?? 0;
-      // 60% of itself, with a floor: the research is blunt that a bar on a phone lives between 48 and 56px,
-      // and condensing past that trades one problem for a smaller tap target.
-      const padOn = pad ? Math.max(pad * 0.4, 0) : 0;
-      const hOn = h ? Math.max(h * 0.6, 48) : 0;
-      return `--eu-arrive-pad-rest:${u(pad)};--eu-arrive-pad-on:${u(padOn)}`
-        + (h ? `;--eu-arrive-h-rest:${u(h)};--eu-arrive-h-on:${u(Math.min(hOn, h))}` : "");
+      // How much it gets shorter: 60% of its inner spacing, or 40% of a height, with a floor — the research is blunt that a
+      // bar on a phone lives between 48 and 56px (3rem), and condensing past that trades one problem for a smaller tap target.
+      // Clipped, never re-laid out (RX4-4). Inner spacing comes off both ends; the room a height leaves comes off where it IS
+      // — below blocks that sit at the top (the default), above blocks at the bottom, half each for centred ones (RX4-26:
+      // an equal slice off each end cut a top-aligned bar's own words away). Several sources → the largest saving wins.
+      const pad = ownPadBlock(node), h = node.minHeight ?? 0, set = definiteLength(node.height);
+      const free = [...(h ? [u(h)] : []), ...(set ? [set] : [])].map((x) => `(${x} - min(max(${x} * 0.6, 3rem), ${x}))`);
+      const v = (node.layout === "grid" || node.direction === "row") ? node.align : node.justify;
+      const share = v === "end" ? [1, 0] : v === "center" || v === "between" || v === "around" ? [0.5, 0.5] : [0, 1];
+      const end = (k: number) => {
+        const cuts = [...(pad ? [u(pad * 0.6)] : []), ...(k ? free.map((x) => `calc(${x} * ${k})`) : [])];
+        return cuts.length > 1 ? `max(${cuts.join(", ")})` : (cuts[0] ?? "0rem");
+      };
+      const [top, bottom] = [end(share[0]), end(share[1])];
+      // Toward the edge it is held at, by that end's slice: up for a top bar, down for a bottom one, not at all for a rail.
+      const edges = node.pin ? PIN_EDGES[node.pin] : [];
+      const shift = edges.includes("top") ? `calc(-1 * ${top})` : edges.includes("bottom") ? bottom : "0rem";
+      return `--eu-arrive-cut-t:${top};--eu-arrive-cut-b:${bottom};--eu-arrive-shift:${shift}`;
     }
   }
 }
@@ -7447,8 +7581,14 @@ export function pinArrivalCss(scope: string, node: BoxNode): string {
   const durs = rev ? `${REVEAL_DUR},auto` : "auto";
   const eases = rev ? `${REVEAL_EASE},linear` : "linear";
   const fills = rev ? "both,both" : "both";
-  const timelines = rev ? `${node.revealScroll ? "view()" : "auto"},scroll()` : "scroll()";
-  const ranges = rev ? `${node.revealScroll ? REVEAL_VIEW_RANGE : "normal"},0 ${after}` : `0 ${after}`;
+  // The entrance runs on the DOCUMENT timeline, held by the shared once-only gate while it waits for the scroll (RX4-19):
+  // a view() timeline here scrubbed, so a pinned block's entrance ran backwards as the visitor scrolled up (RX4-1).
+  const timelines = rev ? "auto,scroll()" : "scroll()";
+  // RX4-13 — FROM WHERE IT TAKES HOLD, not from the top of the page. Measured HEADED: a bar one screen down was 50% into its
+  // Shadow at scroll 60, still 920px down the page. `--eu-hold-at` is the scroll at which its holder sticks, written by
+  // `pinArrivalPass` (the canvas runs it, the export ships it); with nothing written it is the top of the page, as before.
+  const span = `var(--eu-hold-at,0%) calc(var(--eu-hold-at,0%) + ${after})`;
+  const ranges = rev ? `normal,${span}` : span;
   /**
    * LONGHANDS, and `animation-duration: auto` written out. The `animation` shorthand resets duration to 0s,
    * and a 0s animation on a progress timeline is finished before the range begins — the arrival would appear
@@ -7456,11 +7596,67 @@ export function pinArrivalCss(scope: string, node: BoxNode): string {
    */
   css += `@supports (animation-timeline: scroll()){${scope}{`
     + `animation-name:${names};animation-duration:${durs};animation-timing-function:${eases};`
-    + `animation-fill-mode:${fills};animation-timeline:${timelines};animation-range:${ranges}}}`;
+    + `animation-fill-mode:${fills};animation-timeline:${timelines};animation-range:${ranges}}`
+    // While it waits, only the ENTRANCE is paused — `revealCss`'s one-value pause would freeze the arrival with it.
+    + (rev && node.revealScroll ? `${scope}.${REVEAL_WAIT}{animation-play-state:paused,running}` : "")
+    + "}";
   // Decorative, so reduced motion simply gets the resting look. Nothing is lost: the block is still pinned.
   css += `@media (prefers-reduced-motion:reduce){${scope}{animation:none !important}}`;
   return css;
 }
+
+/** Does this block carry an arrival that will play? The marker the measuring pass looks for (RX4-13). */
+export const pinArrivalMarker = (node: BoxNode): boolean => !!node.pin && pinArrivalHasEffect(node);
+
+/**
+ * WHERE EACH ARRIVAL STARTS — the scroll at which the block's holder actually sticks (RX4-13).
+ *
+ * The holder is the block itself or the band carrying its pin: whichever is `sticky` at this width. Its place in the page
+ * is read with it UNSTUCK (`position: static` for one synchronous read, then put back — no frame is painted between), less
+ * its top inset; that is the scroll offset where it takes hold. A bar held at the BOTTOM, fixed, or not pinned at this
+ * width is holding from the first pixel, so it gets no hold point and the range starts at the top, as it always did.
+ *
+ * In the scroller's own px, which is what a scroll timeline counts — on the scaled canvas the inset is scaled to match.
+ * THE CANVAS CALLS THIS FUNCTION AND THE EXPORT SHIPS ITS SOURCE, as `pinStackPass` does.
+ * ponytail: the canvas's simulated sticky inset moves with its scroll; it is read once, at rest.
+ */
+export function pinArrivalPass(root: ParentNode): void {
+  const z = Number((root as Element).closest?.("[data-canvas-scale]")?.getAttribute("data-canvas-scale")) || 1;
+  root.querySelectorAll("[data-eu-arrive]").forEach((node) => {
+    const el = node as HTMLElement;
+    el.style.removeProperty("--eu-hold-at");
+    let h: HTMLElement | null = el;
+    while (h && h !== root && getComputedStyle(h).position !== "sticky") h = h.parentElement;
+    if (!h || h === root) return;
+    const inset = parseFloat(getComputedStyle(h).top);
+    if (Number.isNaN(inset)) return; // held at the bottom: holding from the first pixel
+    let sc: HTMLElement | null = h.parentElement;
+    while (sc && !/auto|scroll/.test(getComputedStyle(sc).overflowY)) sc = sc.parentElement;
+    const origin = sc ? sc.getBoundingClientRect().top + sc.clientTop - sc.scrollTop : -window.scrollY;
+    const was = h.style.getPropertyValue("position"), prio = h.style.getPropertyPriority("position");
+    h.style.setProperty("position", "static", "important");
+    const at = h.getBoundingClientRect().top - origin - inset * z;
+    if (was) h.style.setProperty("position", was, prio); else h.style.removeProperty("position");
+    if (at > 0) el.style.setProperty("--eu-hold-at", Math.round(at) + "px");
+  });
+}
+
+/** The pass, shipped as this file's own function on a page with an arrival — re-run when a height it read could change. */
+export function pinArrivalScript(): string {
+  return `<script>(function(){if(window.__euArrive)return;window.__euArrive=1;
+var pass=${String(pinArrivalPass)};
+var queued=0;
+function all(){queued=0;try{pass(document);}catch(e){}}
+function soon(){if(queued)return;queued=1;requestAnimationFrame(all);}
+soon();
+addEventListener('resize',soon);
+addEventListener('load',soon);
+if(document.fonts&&document.fonts.ready)document.fonts.ready.then(soon).catch(function(){});
+})();<\/script>`;
+}
+
+/** Does any block in this tree carry an arrival — i.e. does the page need the pass at all? */
+export const treeHasArrival = (n: BoxNode): boolean => pinArrivalMarker(n) || (n.children ?? []).some(treeHasArrival);
 
 /** Every arrival rule in a tree, plus one copy of each keyframes it needs — the canvas's half. */
 export function treePinArrivalCss(node: BoxNode, scopeFor: (id: string) => string): string {
@@ -7504,6 +7700,11 @@ export function capturesFixed(node: BoxNode): boolean {
   // captured it (−607 / −600px after a 1200px scroll) in all three. Counting it warned "will not stay on screen" for a
   // bar inside any component that does not hug its content, and it did stay.
   if (node.rotate) return true;                                   // transform: rotate()
+  // A SHAPED EDGE (RX4-23): with a shadow the band carries `filter: drop-shadow()` — a non-none filter is the containing
+  // block of fixed descendants (Filter Effects §5); without one it carries `clip-path`, which clips every descendant, fixed
+  // ones included. Either way a block held on screen inside it is held to the band. ponytail: no wrapper is added to
+  // escape it (the layout rules forbid wrappers) — the engine says so, as it does for a tilt and Glass.
+  if (node.edgeTop || node.edgeBottom) return true;
   return !!node.variant?.includes("glass");                        // backdrop-filter
 }
 
@@ -7687,10 +7888,13 @@ function edgePoints(shape: BandEdge | undefined, depth: number, base: 0 | 100): 
   if (shape === "slope-left") return [[0, base + inward], [100, base]];
   // A cosine gives a single clean arch — flat at both ends, deepest in the middle — where a circle segment
   // would meet the sides at an angle and read as a lens rather than a curve.
-  const sign = shape === "curve-out" ? -1 : 1;
+  // "Curve in" dips in the middle; "Curve out" BULGES — its ends cut in by the depth, its middle at the edge. Both stay
+  // inside the box (RX4-10): a curve that ran past 100% promised a bulge where nothing paints, and drew nothing.
+  const out = shape === "curve-out";
   return Array.from({ length: CURVE_STEPS + 1 }, (_, i) => {
     const t = i / CURVE_STEPS;
-    const y = base + sign * inward * (1 - Math.cos(t * Math.PI * 2)) / 2;
+    const arch = (1 - Math.cos(t * Math.PI * 2)) / 2;
+    const y = base + inward * (out ? 1 - arch : arch);
     return [t * 100, y] as [number, number];
   });
 }
@@ -7707,15 +7911,26 @@ function edgePoints(shape: BandEdge | undefined, depth: number, base: 0 | 100): 
  * shrank as you sloped it would be a layout control disguised as a decorative one.
  */
 export function bandEdgeCSS(node: BoxNode): CSSProperties {
-  if (!node.edgeTop && !node.edgeBottom) return {};
+  const clip = edgeClip(node);
+  if (!clip) return {};
+  // With a shadow the shape rides on the paint layer and the shadow follows it (RX4-8, `shapedWithShadow`).
+  const shadowed = shapeShadowFilter(node);
+  if (shadowed) return { boxShadow: "none", filter: shadowed };
+  return { clipPath: clip };
+}
+
+/** The band's shaped edges as one `polygon()`, or undefined when both edges are straight. */
+function edgeClip(node: BoxNode): string | undefined {
+  if (!node.edgeTop && !node.edgeBottom) return undefined;
   const depth = Math.min(50, Math.max(0, node.edgeDepth ?? 6));
   const pts = [
     ...edgePoints(node.edgeTop, depth, 0),
     ...edgePoints(node.edgeBottom, depth, 100).reverse(), // right to left, closing the shape
   ];
   const round = (n: number) => Math.round(n * 100) / 100;
-  return { clipPath: `polygon(${pts.map(([x, y]) => `${round(x)}% ${round(y)}%`).join(", ")})` };
+  return `polygon(${pts.map(([x, y]) => `${round(x)}% ${round(y)}%`).join(", ")})`;
 }
+
 
 /** `align-self` spelt the way flexbox wants it. */
 const SELF_CSS = { start: "flex-start", center: "center", end: "flex-end" } as const;

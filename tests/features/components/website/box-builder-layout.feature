@@ -355,7 +355,8 @@ Feature: Placing blocks beside one another in the Box Builder
   Scenario: A block placed freely can still hold on screen
     Given a stack lifted onto its own free-floating layer and dragged into place
     When I choose "Floats on screen"
-    Then it holds exactly where I placed it, however far the page scrolls
+    Then it holds where I placed it, however far the page scrolls
+    And on a window too small for that place it comes to rest on the window's edge, never off it (RX4-12)
     And it does not jump when I choose it
     Because free placement and holding on screen are the same property doing the
       same job — measured, the block travelled 0 pixels over a 900-pixel scroll
@@ -1182,3 +1183,96 @@ Feature: Placing blocks beside one another in the Box Builder
     When I narrow it again
     Then the Inspector is a strip again
     But opening or closing it myself holds until the next time the width crosses that line
+
+  # LEDGER RX-4 (measured HEADED 2026-10-17) — guards: tests/unit/rx4-ledger.test.ts
+  Scenario: A floated block floating on screen can be held in a corner (RX4-12)
+    Given a Button made Floating and set to "Floats on screen"
+    Then "Held against" offers Where I put it, Top, Bottom, Left, Right and the four corners
+    When I choose the bottom-right corner
+    Then it holds in the bottom-right corner of the window on every screen, a phone included
+
+  Scenario: Condense shortens the bar without moving the page below it (RX4-4, RX4-11)
+    Given a bar that "Sticks when reached" with a Height under Size
+    When I choose "Condense" under "When it takes hold"
+    Then no warning says there is nothing to condense
+    And as the page scrolls the bar gets shorter while the band below moves only by the scroll
+
+  Scenario: A lower bar's arrival starts when it takes hold (RX4-13)
+    Given a second band one screen down that "Sticks when reached" with "Shadow"
+    When I scroll 60 pixels
+    Then it has no shadow yet, and the shadow arrives once the bar reaches the top
+
+  Scenario: A short pager's controls sit under it; a tall one's over its foot (RX4-9)
+    Given a Stack of three Texts set to "Show one at a time" with "Both"
+    Then the arrows and dots sit just below the strip, and a click on "Show the next one" moves it
+    Given a photo Slider or a Rotating hero
+    Then the controls sit over the bottom of the strip, inside it, at every screen size
+
+  Scenario: A pager that moves on its own has a Pause (RX4-5)
+    Given a pager set to "Move on its own every" 3 seconds
+    Then a "Pause" button is shown beside its controls and is reachable by keyboard
+    When I press it, it stops and the button says "Play"; a mouse leaving does not restart it
+    And under reduced motion nothing moves and no Pause is shown
+
+  Scenario: A scroll entrance waits on the canvas too, and plays once (RX4-17)
+    Given a block lower down the page with "Rise up" and "Play when it scrolls into view"
+    When I open the page in the editor
+    Then the block is not played until I scroll it into view on the canvas, exactly as on the published page
+    And scrolling back up does not play it again
+
+  Scenario: An entrance on a pinned block plays once (RX4-19)
+    Given a bar that "Sticks when reached" with "Shadow" and the entrance "Rise up" on scroll
+    When I scroll it into view and back up
+    Then the entrance has played once and does not run backwards, while the shadow still follows the scroll
+
+  Scenario: The Press tile shows a press (RX4-18)
+    When I open "Hover & focus" on any block
+    Then the "Press" tile is drawn pressed in, and looks different from "None"
+
+  Scenario: A Link's hover shows on the canvas (RX4-20)
+    Given a Link block
+    When I hover it on the canvas with a mouse
+    Then its underline thickens, as it does in the Preview and on the published page
+
+  Scenario: A colour can be see-through (RX4-6)
+    Given a band with a photo background
+    When I type "#00000066" or "rgba(0, 0, 0, 0.4)" in "Tint over background"
+    Then the tint is stored with its transparency and the photo shows through it
+    When I pick a swatch from the palette
+    Then it keeps the transparency, and the palette's "Opacity" control changes it from 0 to 100%
+
+  Scenario: A shaped edge keeps its band's shadow (RX4-8)
+    Given a dark band with Shadow "Bold" and a bottom edge "Curve out"
+    Then the shadow follows the curve under the band, on the canvas and in the Preview
+
+  Scenario: "Curve out" draws a curve (RX4-10)
+    Given a band with a background colour
+    When I choose the bottom edge "Curve out"
+    Then the band's bottom edge bulges: its corners are cut in by the depth and its middle reaches the bottom
+
+  Scenario: Advanced CSS says what it refused (RX4-15)
+    When I type "transition: height 1s" or "animation: spin 1s infinite" in Advanced CSS
+    Then a message says it was not applied and to animate transform or opacity instead
+    And neither reaches the canvas or the published page
+
+  Scenario: A pattern opens the pattern editor (RX4-16)
+    When I choose "Dot grid" from the Background library
+    Then "Edit pattern CSS" is shown, never "Edit gradient"
+
+  Scenario: A pattern grows with the reader's text (RX4-21)
+    Given a band with the "Dots" pattern
+    When the reader's browser text size is 150%
+    Then the dots and their spacing are 150% as large, and the Tile size reads in rem
+
+  Scenario: A hover on a shaped band with a shadow keeps the shape (RX4-22)
+    Given a dark band with Shadow "Bold", a bottom edge "Curve out" and the hover "Lift", "Glow" or "Brighten"
+    When I hover it, or tab to it
+    Then the shadow and the glow follow the curve — never a rectangle — and Brighten keeps the shadow
+
+  Scenario: A block held on screen inside a shaped band is warned about (RX4-23)
+    Given a band with a shaped edge, and inside it a block set to "Floats on screen"
+    Then the Inspector says it will not stay on screen because the band around it makes its own frame
+
+  Scenario: Contrast is measured on the colour a reader sees (RX4-24)
+    Given a Text whose colour is 30% black on a white band
+    Then the page check reports it as too faint, as it would a solid light grey

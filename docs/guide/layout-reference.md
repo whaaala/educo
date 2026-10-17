@@ -123,8 +123,10 @@ inside.
 |---------|-------------|
 | **Direction**: Top-to-bottom · Side-by-side | A Stack (blocks down the page) or a row (blocks across it). |
 | **Arrange as**: Free arrange · Grid | Free arrange follows Direction; Grid lays the blocks out across *and* down, in columns. |
+| **Position blocks**: Start · Center · End · Spread out · Even gaps | Where the blocks sit along the Direction when there is room to spare — at the start, the middle or the end, spread to both ends, or with even gaps around them. When the blocks already fill the row (two at 50 %, or one set to Fill) there is no room to place them in, and the Inspector says so: *"These blocks fill the row — give one a width to place them."* Set one to **Fit** or a smaller width and they move. |
+| **Let blocks wrap to a new line** | A row that runs out of room carries its blocks onto the next line instead of squeezing them. |
 | **Show one at a time** | Turns any container into a pager — children become pages, visitors swipe between them. |
-| **Edge shape**: Top · Bottom — Straight · Slope right · Slope left · Curve out · Curve in | Cuts the band's top or bottom edge into a slope or a curve, shown as little pictures; **Edge depth** sets how deep. The shape cuts the background, never the size. |
+| **Edge shape**: Top · Bottom — Straight · Slope right · Slope left · Curve out · Curve in | Cuts the band's top or bottom edge into a slope or a curve, shown as little pictures; **Edge depth** sets how deep. The shape cuts the background, never the size; a Shadow follows the shape. |
 
 ### Size (every block)
 

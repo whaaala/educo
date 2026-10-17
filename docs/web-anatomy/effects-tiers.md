@@ -1,8 +1,8 @@
 ---
-title: Effects and motion tiers — Must · Should · Nice · Great (BATCH RX-4, for the user to sign)
+title: Effects and motion tiers — Must · Should · Nice · Great (BATCH RX-4, SIGNED 2026-10-17)
 ---
 
-# Effects and motion tiers (BATCH RX-4, 2026-10-17) — for the user to SIGN
+# Effects and motion tiers (BATCH RX-4, 2026-10-17) — SIGNED by the user 2026-10-17
 
 **The question** (the user, 2026-10-16): "page transitioning, section transitioning… hover… motions… backgrounds blending into
 each other, sections blending into each other… those are must-haves." **Decided** the same day: their essentials are built
@@ -73,7 +73,10 @@ that keeps words legible over a photo · A11Y-7 reduced transparency, more contr
 | **VE-5** | Should | 3 | directional page slide (PT-3) · text halo over a photo (TX-12) · easing tokens by role surfaced (MO-2) |
 | **Total** | | **27 changes + 16 bugs** | about **4–5 working days**, after LE-10 and before CP-1 |
 
-## Decisions for the user
+## Decisions — SIGNED by the user, 2026-10-17
+
+The user chose the recommendation on all three: **E1 yes · E2 yes, with the limits · E3 the tiers signed** (Must 53 · essential Should 18 · the rest mapped).
+
 
 - **E1 · Page transitions:** a cross-fade (PT-2) as the Must, a directional slide (PT-3) as Should, wipes and morphs Nice?
   Recommended: yes — the cross-fade is native, needs no script and costs nothing on a phone.

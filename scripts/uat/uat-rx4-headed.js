@@ -14,7 +14,7 @@
 //   NODE_PATH=node_modules BASE=http://localhost:3100 node scripts/uat/uat-rx4-headed.js [--follow] [--only=W1,W3]
 const path = require('path'); const fs = require('fs');
 const H = require('./h.js'); const I = require('./inspector.js'); const W = require('./page-weight.js');
-const X = require('./uat-rx3-headed.js'); const { WIDTHS } = require('./screens.js');
+const X = require('./uat-rx3-headed.js'); require('./screens.js'); // the screens guard (tests/unit/uat-screens.test.ts) — this measuring pass reads 375 / 1280 only; the fixes re-check runs every width
 const { cls, sleep, nodeOf, deselect, band, into, under, tileThen, sel, expandInspector, at, ins, insText, btn, choose, field, slider, chip, pvOpen, frame, pvAt, pvClose } = X;
 const OUT = path.join(__dirname, 'rx4'); fs.mkdirSync(OUT, { recursive: true });
 const IMG = path.join(__dirname, 'img');
@@ -121,7 +121,7 @@ const SLICES = {
     await c.probe('HV-13/14/17', async () => {
       await at(page, bt, 'Design', 'Outline & effects'); await gal(page, 'Lift hover effect');
       await pvOpen(page); const f = await pvAt(page, 1280); await moveAway(page);
-      await (await f.frameElement()).focus(); await f.evaluate(() => { document.activeElement && document.activeElement.blur && document.activeElement.blur(); document.body.focus(); });
+      await (await f.frameElement()).focus(); await f.evaluate(() => { if (document.activeElement && document.activeElement.blur) document.activeElement.blur(); document.body.focus(); });
       let hit = null; const stops = [];
       for (let i = 0; i < 12 && !hit; i++) { await page.keyboard.press('Tab'); await sleep(page, 120); const a = await f.evaluate(([b]) => { const e = document.activeElement; const c = getComputedStyle(e); const box = document.querySelector(b); return { tag: e.tagName.toLowerCase(), txt: (e.innerText || e.getAttribute('aria-label') || '').trim().slice(0, 20), ring: `${c.outlineStyle} ${c.outlineWidth} ${c.outlineColor}`, inBtn: !!(box && box.contains(e)), btnTransform: box ? getComputedStyle(box).transform : null }; }, [cls(bt)]); stops.push(`${a.tag}"${a.txt}" ring ${a.ring}`); if (a.inBtn) hit = a; }
       await c.shot('HV-14-button-focused');
@@ -194,7 +194,7 @@ const SLICES = {
     for (const fx of ['Fade in', 'Rise up', 'Drop down', 'From the left', 'From the right', 'Zoom in', 'Sharpen']) {
       await c.probe('EN-' + fx, async () => {
         await at(page, eL, 'Design', 'Outline & effects'); await gal(page, `${fx} entrance`);
-        const f = await pvOpen(page); const a = await anims(await frame(page), cls(eL)); await pvClose(page, c.w);
+        await pvOpen(page); const a = await anims(await frame(page), cls(eL)); await pvClose(page, c.w);
         enRes[fx] = a; c.rec('EN-' + fx, a && a.length ? 'ANIMATES' : 'NO ANIMATION', `Preview on load: ${JSON.stringify(a)}`, '');
       });
     }
@@ -232,7 +232,7 @@ const SLICES = {
     await c.probe('EN-9', async () => {
       const fresh = await tileThen(page, 'Accordion', defaultStyle(page)); await H.panel(page, false); const acc = await selFirst(page, fresh);
       const v = await vocab(page, acc); c.store.accVocab = v;
-      const f = await pvOpen(page); const ff = await frame(page);
+      await pvOpen(page); const ff = await frame(page);
       const sumSel = `${cls(acc)} summary`; const has = await ff.$(sumSel);
       let res = 'no <summary>';
       if (has) { await ff.evaluate((s) => document.querySelector(s).scrollIntoView({ block: 'center' }), sumSel); await sleep(page, 300); const [x, y] = await center(ff, sumSel);
@@ -248,7 +248,7 @@ const SLICES = {
       const v = await vocab(page, al); c.store.alertVocab = v;
       const all = JSON.stringify(v); const toast = (v['Design tiles'] || []).concat(v['Content tiles'] || []).find((x) => /toast/i.test(x));
       if (toast) { await at(page, al, 'Design'); await openSections(page); await gal(page, toast).catch(() => {}); }
-      const f = await pvOpen(page); const ff = await frame(page);
+      await pvOpen(page); const ff = await frame(page);
       const a = await ff.evaluate((s) => { const e = document.querySelector(s); const al = e.querySelector('.eu-alert') || e; const c = getComputedStyle(al); const b = Array.from(e.querySelectorAll('button')).map((x) => x.getAttribute('aria-label') || x.innerText.trim()); return { pos: c.position, anims: al.getAnimations().map((x) => x.animationName), buttons: b }; }, cls(al));
       await c.shot('EN-10-alert');
       let dismiss = null; const db = await ff.$(`${cls(al)} button`);
@@ -261,9 +261,9 @@ const SLICES = {
 
   // ── W3 · HELD / PINNED ──────────────────────────────────────────────────────────────────────────────────────────
   async W3(c) {
-    const { page } = c; let hd, hl, f1, hd2, f2, f3;
+    const { page } = c; let hd, f1, hd2, f2, f3;
     await c.probe('build', async () => {
-      hd = await band(page); hl = await into(page, hd, 'Link'); await H.panel(page, false);
+      hd = await band(page); await into(page, hd, 'Link'); await H.panel(page, false);
       await at(page, hd, 'Design', 'Size'); await field(page, 'Height', '8rem');
       await at(page, hd, 'Design', 'Background'); await ins(page).getByRole('button', { name: 'Background colour palette' }).first().click(); await sleep(page, 300); await page.locator('[role=dialog] button[title="#f3f4f6"]').first().click().catch(() => {}); await closePop(page);
       f1 = await band(page); await into(page, f1, 'Text'); await H.panel(page, false); await at(page, f1, 'Design', 'Arrange'); await btn(page, 'Full screen', ins(page));
@@ -375,13 +375,12 @@ const SLICES = {
     });
     let ph;
     await c.probe('BG-4/5/6 V-4 V-9', async () => {
-      ph = await band(page); const pt = await into(page, ph, 'Text'); await H.panel(page, false);
+      ph = await band(page); await into(page, ph, 'Text'); await H.panel(page, false);
       await at(page, ph, 'Design', 'Background'); await ins(page).getByRole('button', { name: 'Background library', exact: true }).first().click(); await sleep(page, 400);
       const dlg = page.locator('[role=dialog][aria-label="Background library picker"]'); const tabs = await dlg.getByRole('tab').allInnerTexts(); await dlg.getByRole('tab', { name: tabs.find((x) => /gradient/i.test(x)) || tabs[0] }).first().click(); await sleep(page, 300); await dlg.locator('button[aria-pressed]').first().click(); await sleep(page, 500); await closePop(page);
       const gradBefore = (await nodeOf(page, ph)).bgImage;
       await ins(page).getByRole('button', { name: 'Background colour palette' }).first().click(); await sleep(page, 300); await page.locator('[role=dialog] button[title="#d1d5db"]').first().click().catch(() => {}); await closePop(page);
       await upload(page, ph); const n1 = await nodeOf(page, ph);
-      const t = await insText(page); const sels = ['Background size / fit', 'Background position', 'Background repeat'].filter((x) => t.includes(x) || true);
       const fit = await choose(page, 'Background size / fit', /contain/i).catch(() => 'no select');
       await ins(page).getByLabel('Fixed background (parallax)').check(); await sleep(page, 300);
       // the tint: what is shown, what typing an alpha does, what picking a swatch does
@@ -392,7 +391,7 @@ const SLICES = {
       const n2 = await nodeOf(page, ph);
       const s = await site(c); const p = await visit(c, s.url);
       const bg = await read(p, cls(ph), ['backgroundColor', 'backgroundImage', 'backgroundSize', 'backgroundAttachment']);
-      const [x, y] = await center(p, cls(ph)); await p.evaluate((s) => document.querySelector(s).scrollIntoView({ block: 'center' }), cls(ph)); await sleep(page, 300); const [x2, y2, bb] = await center(p, cls(ph));
+      await p.evaluate((s) => document.querySelector(s).scrollIntoView({ block: 'center' }), cls(ph)); await sleep(page, 300); const [, , bb] = await center(p, cls(ph));
       const px = await pixel(p, bb.x + 20, bb.y + bb.height - 10); await p.screenshot({ path: path.join(OUT, 'V-4-tint-export.png') });
       const p375 = await visit(c, s.url, { w: 375, h: 700, touch: true }); const fixed375 = (await read(p375, cls(ph), ['backgroundAttachment'])).backgroundAttachment;
       c.rec('BG-4/5', 'MEASURED', `gradient chosen (${String(gradBefore).slice(0, 50)}) + colour #d1d5db + uploaded photo → stored bgImage "${String(n1.bgImage).slice(0, 40)}", background ${n1.background}; Fit options ${JSON.stringify(fit).slice(0, 160)} → stored bgSize ${n2.bgSize}; exported ${JSON.stringify({ ...bg, backgroundImage: bg.backgroundImage.slice(0, 160) })}`, '');
@@ -466,7 +465,7 @@ const SLICES = {
       // A11Y-6: keyboard — is the button on slide 3 focusable while slide 1 shows? are hidden slides inert?
       await p.evaluate((s) => { document.querySelector(s).scrollLeft = 0; }, strip); await sleep(page, 600);
       const inert = await p.evaluate((s) => Array.from(document.querySelector(s).children).map((k) => `${k.hasAttribute('inert') ? 'inert' : '-'}/${k.getAttribute('aria-hidden') || '-'}`), strip);
-      await p.evaluate(() => { document.activeElement && document.activeElement.blur(); }); const tabs = [];
+      await p.evaluate(() => { if (document.activeElement) document.activeElement.blur(); }); const tabs = [];
       for (let i = 0; i < 10; i++) { await p.keyboard.press('Tab'); await sleep(page, 150); tabs.push(await p.evaluate(([s, b]) => { const e = document.activeElement; const inSlide = document.querySelector(b)?.contains(e); return `${e.tagName.toLowerCase()}"${(e.getAttribute('aria-label') || e.innerText || '').trim().slice(0, 18)}"${inSlide ? '[SLIDE-3 BUTTON]' : ''} sl${Math.round(document.querySelector(s).scrollLeft)}`; }, [strip, cls(bt3)])); }
       await p.screenshot({ path: path.join(OUT, 'A11Y-6-tab.png') });
       // PT-7 — the arrow: does the strip glide (intermediate positions) or jump?
@@ -514,7 +513,7 @@ const SLICES = {
     void text;
     c.rec('VOCAB', 'MEASURED', `Inspector (Design · Content · Per-device, every section opened) of every one of ${Object.keys(voc).filter((k) => TILES.includes(k)).length}/25 palette tiles + their style menus + the toolbar; keyword hits: ${JSON.stringify(hits)}`, 'vocabulary.json');
     await c.probe('WT-6', async () => {
-      if (!vid) throw new Error('no video'); let v = null; for (const id of [vid]) { const n = await nodeOf(page, id); v = n; }
+      if (!vid) throw new Error('no video');
       const vids = await page.evaluate(() => Array.from(document.querySelectorAll('[data-box-id]')).map((e) => e.getAttribute('data-box-id')));
       let vb = null; for (const id of vids) { const n = await nodeOf(page, id); if (n && n.type === 'video') { vb = id; break; } }
       await at(page, vb, 'Content'); await field(page, 'Video URL', 'https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4');
@@ -540,7 +539,7 @@ const SLICES = {
     });
     await c.probe('weight', async () => { const w = await W.weigh(page); c.rec('WT-1 weight', 'MEASURED', `${JSON.stringify(w.numbers)} findings ${JSON.stringify(w.findings)}`, ''); });
     await c.probe('A11Y-9', async () => {
-      const b = await band(page); const t = await into(page, b, 'Text'); await H.panel(page, false); await upload(page, b);
+      const b = await band(page); await into(page, b, 'Text'); await H.panel(page, false); await upload(page, b);
       await page.getByRole('button', { name: /^Page check/ }).first().click(); await sleep(page, 900); const pc = (await page.getByRole('dialog').first().innerText().catch(() => '')).replace(/\s+/g, ' '); await c.shot('A11Y-9-page-check'); await page.keyboard.press('Escape');
       c.rec('A11Y-9', 'MEASURED', `a Text over an uploaded photo (no tint) → Page check says: ${JSON.stringify(pc.slice(0, 600))}; mentions contrast ${/contrast/i.test(pc)}`, 'A11Y-9-page-check.png');
     });
@@ -699,4 +698,6 @@ async function one(slice, slot) {
     await browser.close();
   }
 }
-(async () => { console.log('HEADED UAT — BATCH RX-4 step 3b (effects & motion), six windows'); await Promise.all(WINDOWS.map((s, i) => (!ONLY || ONLY.split(',').includes(s)) && one(s, i))); })();
+// the helpers, for uat-rx4-fixes-headed.js (the run starts only when this file is run itself)
+module.exports = { gal, pressedOf, defaultStyle, openSections, read, anims, allCss, site, visit, center, pixel, upload, advCss, closePop, selFirst, moveAway, photoTile };
+if (require.main === module) (async () => { console.log('HEADED UAT — BATCH RX-4 step 3b (effects & motion), six windows'); await Promise.all(WINDOWS.map((s, i) => (!ONLY || ONLY.split(',').includes(s)) && one(s, i))); })();

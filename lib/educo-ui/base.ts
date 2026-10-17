@@ -39,6 +39,17 @@ export { RUNG_PX as BREAKPOINTS, RUNG_EM as BREAKPOINTS_EM };
 export const PARAGRAPH_MEASURE = "min(56ch, 32em)";
 export const measureCss = (scope: string) => `${scope} p { max-width: ${PARAGRAPH_MEASURE}; }`;
 
+/**
+ * A LINK BLOCK'S HOVER (RX4-14): it changed nothing — measured underlined and the same colour before and after.
+ * The Link block is the one anchor that sets text-underline-offset inline (a Button is an anchor too, but a pill,
+ * and must not gain an underline), and its inline text-decoration is why !important is needed. The underline
+ * thickens — or appears, on a link drawn without one — so the change is shape, never colour alone (WCAG 1.4.1),
+ * and the colour, hence the contrast, is untouched. Only where a pointer can hover (RX4-2). ONE rule, scoped by the
+ * caller like `measureCss`: the page under `.eu-root` (BASE_CSS), the canvas under `.eu-tokens` (RX4-20).
+ */
+export const linkHoverCss = (scope: string) =>
+  `@media (hover:hover) { ${scope} a[style*="text-underline-offset"]:hover { text-decoration-line: underline !important; text-decoration-thickness: max(0.125rem, 0.12em) !important; } }`;
+
 export const BASE_CSS = `
 /* ── Reset ─────────────────────────────────────────────────────────────────── */
 .eu-root *, .eu-root *::before, .eu-root *::after { box-sizing: border-box; }
@@ -79,6 +90,7 @@ export const BASE_CSS = `
 .eu-root h3 { font-size: clamp(var(--eu-text-xl), 2vw + 1rem, var(--eu-text-3xl)); }
 ${measureCss(".eu-root")} /* comfortable measure */
 .eu-root a  { color: var(--eu-color-brand); }
+${linkHoverCss(".eu-root")} /* a Link block's hover (RX4-14) — see linkHoverCss */
 .eu-root code, .eu-root pre { font-family: var(--eu-font-mono); }
 
 /* ── Flexible images / media ───────────────────────────────────────────────── */

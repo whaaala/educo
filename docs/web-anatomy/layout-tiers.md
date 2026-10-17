@@ -1,5 +1,5 @@
 ---
-title: The layout's tiers — Must · Should · Nice · Great (BATCH RX-3, for the user to sign)
+title: The layout's tiers — Must · Should · Nice · Great (BATCH RX-3, SIGNED 2026-10-17)
 ---
 
 # The layout's tiers (BATCH RX-3, 2026-10-16) — for the user to SIGN
@@ -109,7 +109,10 @@ in what we already have (RX3-1 … RX3-15) — twelve are fixed in RX-3, now (th
 footer the largest (a new piece of the site model, the export and the app's webview), plus the 12 RX-3 bugs —
 **about 4–5 working days** to a merged pull request, then components.
 
-## Decisions for the user
+## Decisions — SIGNED by the user, 2026-10-17
+
+The user chose the recommendation on all four: **D1 Nice, later · D2 an essential Should, a line in LE-7 · D3 waits for CP-1 · D4 the tiers signed** (Must 52 · essential Should 23 · the rest mapped).
+
 
 - **D1 · SZ-4 — a "proportion" control for any block (16:9, square)?** Recommended: **Nice, later (AC-34)** — LE-1 sizes the
   video by its width and LE-2 makes every picture keep its shape, which covers the cases a basic site meets.

@@ -8,7 +8,7 @@
  * onChange(root); selection via selectedId/onSelectId.
  */
 
-import { measureCss } from "@/lib/educo-ui/base";
+import { measureCss, linkHoverCss } from "@/lib/educo-ui/base";
 import { columnFloorRem, dividerThickness, borderLen, videoSizing, gridLeftoverAt,HAND_FLOOR_REM, REFLOW_FLOOR_REM, isPageRow, rowNarrowsAt, LIST_ITEM_GAP, linesAt, pageRowSlot, restForDrag, setFreeInset, slideFreeAt, tabletPlaces }from "@/lib/box-model";
 import { gapPatch, snapSpace, spacePatch, stepSpace, type SpaceSide } from "@/lib/box-model";
 import { resolvePage } from "@/lib/semantics";
@@ -22,14 +22,14 @@ import {
   updateBox, deleteBox, insertBox, moveBlock, canMoveBlock, moveAxis, duplicateBox, moveBox, cloneBox, findParent, isAncestor, isContainer, containerLabel, widthPct, stackWithBlock, fitBand, PILL, blockTypography,
   isFloating, floatBox, unfloatBox, groupBoxes, ungroupBoxes, bringToFront, sendToBack, bringForward, sendBackward, packRowLines, allocateLine, type LineFollower,
   shouldTakeMirrorBox, mirrorFlushSides, edgeSwipeSides, hostSizedFor, type MirrorBox, type MirrorChase, fadedPaint, boxOpacity, backgroundCss, treePaintLayerCss, radiusCSS, isClipped, SHADOW_CSS, videoEmbedSrc, sanitizeCssDeclarations, expandScopedCss, ACCORDION_CSS_PARTS, itemOverrideCss, itemHasOverride, itemNumberVars, richBody, componentTextCss, componentBoxCss, bgShowThroughCss, resizeTopEdge, blockContainmentCss, alertToastCss, treeHasToast, treeHasFixedHold, accordionClasses, bandClasses, advancedCssStyle, alertActionsHTML, hugsContent, itemFloatContextCss, COMPONENT_ITEM_SEL, clampContentScale, MIN_CONTENT_SCALE, isMultiItemComponent, comfortableWidth, remLen, rootFontPx, isDefiniteLen, addItemAfter, duplicateItem, duplicateChildItem, removeItem, removeChildItem, moveItem, moveChildItem, updateItem, updateChildItem, ALERT_SEVERITY_ICON, alertPartInline, alertIconInline, collectAlertItemStyles,
-  type Breakpoint, resolveResponsive, updateBoxResponsive, treePinArrivalCss, floatHoldCSS, canvasFixedStyle, capturesFixed, imageSizing, fillsRowsAnywhere, fillHostOf, importPhoto, treeItemEffectsCss, itemNeedsClass, floatZIndex, gridPlacementAt, masonryMeasureAttr, masonryMeasurePass, mirrorMeasuresNow, baseUnitParts, pinStackMarker, pinStackGroupMarker, pinStackPass, isPager, pagerStripCss, pagerNavHTML, selectionChain, textLen, typoRole, typoRootVars, typoCascadeCss, bandEdgeCSS, LINK_COLOR_CSS, treeGridQueryCss, TYPE_UNIT_PROPERTY_CSS,
+  type Breakpoint, resolveResponsive, updateBoxResponsive, treePinArrivalCss, floatHoldCSS, canvasFixedStyle, capturesFixed, imageSizing, fillsRowsAnywhere, fillHostOf, importPhoto, treeItemEffectsCss, itemNeedsClass, floatZIndex, gridPlacementAt, masonryMeasureAttr, masonryMeasurePass, mirrorMeasuresNow, baseUnitParts, pinStackMarker, pinStackGroupMarker, pinStackPass, pinArrivalMarker, pinArrivalPass, isPager, pagerStripCss, pagerNavHTML, selectionChain, textLen, typoRole, typoRootVars, typoCascadeCss, bandEdgeCSS, LINK_COLOR_CSS, treeGridQueryCss, TYPE_UNIT_PROPERTY_CSS,
 } from "@/lib/box-model";
 import { ICON_SET } from "./icons";
 import { PortalMenu, MenuItem, MenuHeader, MenuSep, modalOpen } from "./ui";
 import GridLayoutMenu, { type MenuAnchor } from "./GridLayoutMenu";
 import GallerySetupMenu from "./GallerySetupMenu";
 import { blockForKind, nodeForPhotos, photoGallery, PHOTO_SETUP, type GalleryPhoto } from "@/lib/box-presets";
-import { treeHoverCss, treeRevealCss } from "@/lib/interactions";
+import { treeHoverCss, treeRevealCss, scrollRevealNeeded, revealOnceWire, REVEAL_WAIT } from "@/lib/interactions";
 import { colorToCSS } from "@/components/shared/ColorPalettePicker";
 import { COMPONENT_CSS } from "@/lib/educo-ui/components";
 import { EDITOR_DOCK_PX, layoutCss, mediaBelow, RESIZE, RUNG_MEASURE, RUNG_PX } from "@/lib/educo-ui/layout";
@@ -1385,6 +1385,7 @@ export default function BoxCanvas({
       // edge sit under one another on the canvas exactly as they will on the page. It rides in this pass
       // because it needs the same triggers: a re-render, a resize, a font landing, a photo decoding.
       pinStackPass(host);
+      pinArrivalPass(host); // RX4-13 — where each arrival starts; the export ships this function's source
     };
     run();
     // A ResizeObserver catches what a render does not: a photo decoding, a web font landing, the device frame
@@ -1396,6 +1397,11 @@ export default function BoxCanvas({
     ro.observe(host);
     return () => ro.disconnect();
   });
+
+  // A SCROLL ENTRANCE WAITS UNTIL IT IS SEEN, AND PLAYS ONCE (RX4-17) — the very function whose source the export
+  // ships (`revealOnceWire` / `revealOnceScript`). Without it the canvas played every scroll entrance on load while
+  // the page held it: canvas ≠ export. Re-wired when the tree changes, so a block given the entrance is gated too.
+  useEffect(() => (scrollRevealNeeded(root) ? revealOnceWire(document, REVEAL_WAIT) : undefined), [root]);
 
   /**
    * THE CARET LEAVES WHEN THE POINTER LANDS OUTSIDE IT. The question is WHERE THE CLICK WENT — never what is
@@ -3878,6 +3884,8 @@ export default function BoxCanvas({
       ...((m) => (m ? { "data-eu-pin": m } : {}))(pinStackMarker(rawNode, parent ?? undefined)),
       // …and WHICH stack it joins (2e): the window for a fixed bar, the box it travels inside for a sticky one.
       ...((g) => (g ? { "data-eu-pin-in": g } : {}))(pinStackGroupMarker(rawNode, parent ?? undefined)),
+      // RX4-13: the same arrival marker the export writes, so the canvas's arrival starts where the bar takes hold too.
+      ...(pinArrivalMarker(rawNode) ? { "data-eu-arrive": "" } : {}),
     };
 
     // Visible drag-to-resize handles on every edge + corner, so you can resize from any side.
@@ -4028,7 +4036,7 @@ export default function BoxCanvas({
                 role="group"
                 aria-roledescription="carousel"
                 aria-label="One at a time"
-                style={pagerStripCss()}
+                style={pagerStripCss(node)}
               >
                 {kids.map((c) => (
                   <Fragment key={c.id}>{renderNode(c, node, sizedAbove || node.minHeight != null || node.height != null, hostSizedFor(node, hostSized, parent), capturedAbove || capturesFixed(node), parent)}</Fragment>
@@ -4373,7 +4381,7 @@ export default function BoxCanvas({
       {/* The LAYOUT layer, and unlike the component styles it is NOT gated on the tree using Educo UI: a band is
           a structural container, so a page made only of plain sections still needs it. Scoped to both roots for
           the same reason the tokens are — the canvas root carries `.eu-tokens`, never `.eu-root`. */}
-      <style dangerouslySetInnerHTML={{ __html: layoutCss(".eu-root, .eu-tokens") + "[data-sem-list]{list-style:none;margin:0;padding-left:0}" + measureCss(".eu-tokens") }} />
+      <style dangerouslySetInnerHTML={{ __html: layoutCss(".eu-root, .eu-tokens") + "[data-sem-list]{list-style:none;margin:0;padding-left:0}" + measureCss(".eu-tokens") + linkHoverCss(".eu-tokens") /* RX4-20 */ }} />
       {/* REDUCED MOTION, FOR THE CANVAS. The published page gets this from `BASE_CSS` via `.eu-root`; the
           builder's canvas carries `.eu-tokens` instead, so the rule is repeated here rather than added to
           that sheet — it ships to every published page, where `.eu-tokens` can never match, and a guard

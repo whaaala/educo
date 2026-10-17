@@ -11,7 +11,7 @@
 import type { CSSProperties } from "react";
 import { PILL, dividerThickness, borderLen, videoSizing, blockTypography,pinArrivalCss, pinArrivalKeyframes, floatHoldCSS,
   type BoxNode, type Breakpoint, type SectionFlag, BP_ORDER, containerStyle, childStyle, hostSizedFor, marginCSS, leafPaddingCSS, ownSidePadVars, outerSpaceCSS, pageBandInset, pagePinCover, sectionContent, sizeToCSS, radiusCSS, SHADOW_CSS, u, LIST_ITEM_GAP, textLen, baseUnit, fadedPaint, boxOpacity, backgroundCss, paintLayerCss,
-  resolveResponsive, floatStacksOnMobile, floatingReserve, alertToastCss, accordionClasses, bandClasses, videoEmbedSrc, isContainer, sanitizeCssDeclarations, expandScopedCss, COMPONENT_PARTS, itemFloatContextCss, itemOverrideCss, itemNumberVars, richBody, plainBody, componentTextCss, componentBoxCss, renderAlertHTML, alertDismissScript, masonryMeasureAttr, masonryMeasureScript, pinStackMarker, pinStackGroupMarker, pinStackNeeded, pinStackScript, isPager, pagerNavHTML, pagerScript, pagerStripCss, pagerSlideId, bgShowThroughCss, blockContainmentCss, COMPONENT_ITEM_SEL, remLen, imageSizing, fillsRowsAnywhere, fillHostOf, hasIntrinsicSize, itemNeedsClass, itemScope, floatZIndex, typoRole, typoRootVars, typoCascadeCss, bandEdgeCSS, LINK_COLOR_CSS, gridQueryCss, TYPE_UNIT_PROPERTY_CSS,
+  resolveResponsive, floatStacksOnMobile, floatingReserve, alertToastCss, accordionClasses, bandClasses, videoEmbedSrc, isContainer, sanitizeCssDeclarations, expandScopedCss, COMPONENT_PARTS, itemFloatContextCss, itemOverrideCss, itemNumberVars, richBody, plainBody, componentTextCss, componentBoxCss, renderAlertHTML, alertDismissScript, masonryMeasureAttr, masonryMeasureScript, pinStackMarker, pinStackGroupMarker, pinStackNeeded, pinStackScript, pinArrivalMarker, pinArrivalScript, treeHasArrival, isPager, pagerNavHTML, pagerScript, pagerStripCss, pagerSlideId, bgShowThroughCss, blockContainmentCss, COMPONENT_ITEM_SEL, remLen, imageSizing, fillsRowsAnywhere, fillHostOf, hasIntrinsicSize, itemNeedsClass, itemScope, floatZIndex, typoRole, typoRootVars, typoCascadeCss, bandEdgeCSS, LINK_COLOR_CSS, gridQueryCss, TYPE_UNIT_PROPERTY_CSS,
 } from "@/lib/box-model";
 import { isRegistryComponent, renderComponent, componentScripts } from "@/lib/educo-ui/registry";
 import { iconSvg } from "@/lib/educo-ui/icon-svg";
@@ -26,7 +26,7 @@ import { tokensFromTheme, tokensToCss } from "@/lib/educo-ui/tokens";
 import { subsetCss, usedEuClasses, stripComments } from "@/lib/educo-ui/subset";
 import { familiesInUse } from "@/lib/educo-ui/font-embed";
 import { zipSync, strToU8 } from "fflate";
-import { hoverCss, revealCss, revealKeyframes, itemEffectsCss } from "@/lib/interactions";
+import { hoverCss, shapeShadowFilter, revealCss, revealKeyframes, itemEffectsCss, scrollRevealNeeded, revealOnceScript } from "@/lib/interactions";
 
 /**
  * The properties a bare number is UNITLESS for — React's own list, because React is what draws the canvas.
@@ -543,7 +543,7 @@ function renderNode(node: BoxNode, rawParent: BoxNode | null, theme: SiteTheme, 
   sheet.overrides.push(...overridesByRung(node, cls));
   // Hover & focus (Interactions 1a) — the SAME emitter the canvas uses, so the builder shows exactly what a
   // visitor gets. Pure CSS: a page with no effects ships nothing extra.
-  const hov = hoverCss(`.${cls}`, r.hoverEffect);
+  const hov = hoverCss(`.${cls}`, r.hoverEffect, shapeShadowFilter(r)); // composes with a shaped band's shadow (RX4-22)
   if (hov) sheet.rungs.phone.push(hov);
   // SEE-THROUGH over a background IMAGE: the paint moves to a `::before` that carries the opacity, so the box
   // fades and its contents do not. Same emitter the canvas injects — canvas = export, including this.
@@ -582,7 +582,9 @@ function renderNode(node: BoxNode, rawParent: BoxNode | null, theme: SiteTheme, 
     // them and forgetting the others is exactly the seam this project keeps paying for.
     + ((m) => (m ? ` data-eu-pin="${m}"` : ""))(pinStackMarker(node, rawParent ?? undefined))
     // WHICH stack it joins (2e) — the window for a fixed bar, the box it travels inside for a sticky one.
-    + ((g) => (g ? ` data-eu-pin-in="${esc(g)}"` : ""))(pinStackGroupMarker(node, rawParent ?? undefined));
+    + ((g) => (g ? ` data-eu-pin-in="${esc(g)}"` : ""))(pinStackGroupMarker(node, rawParent ?? undefined))
+    // RX4-13: an arrival starts where this block takes hold — `pinArrivalPass` finds it by this marker.
+    + (pinArrivalMarker(node) ? " data-eu-arrive" : "");
   // A structural band also carries its layout classes — computed by box-model, so the canvas gets the same ones.
   const allCls = [cls, bandClasses(r, isPageSection), el === "ul" || el === "ol" ? "eu-list" : ""].filter(Boolean).join(" ");
   if (isContainer(r)) {
@@ -614,7 +616,7 @@ function renderNode(node: BoxNode, rawParent: BoxNode | null, theme: SiteTheme, 
       // measured, with the page itself never moving.
       return wrapLi(`<${el}${idAttr}${semAttr} class="${allCls}">`
         + `<div data-eu-pager${auto} tabindex="0" role="group" aria-roledescription="carousel"`
-        + ` aria-label="One at a time" style="${styleString(pagerStripCss())}">${kids}</div>`
+        + ` aria-label="One at a time" style="${styleString(pagerStripCss(r))}">${kids}</div>`
         + `${nav}${script}</${el}>`);
     }
     return wrapLi(`<${el}${idAttr}${semAttr} class="${allCls}">${kids}</${el}>`);
@@ -733,7 +735,7 @@ export function renderPageHTML(root: BoxNode, theme: SiteTheme, pageMap: Map<str
    * relationship BETWEEN blocks, and no one of them owns it. `pinStackNeeded` is what keeps zero-JS the
    * default: fewer than two bars at one edge and nothing is emitted at all, at any rung.
    */
-  const stack = (pinStackNeeded(root) ? pinStackScript() : "") + (hasHostedVideo(root) ? videoScript() : "");
+  const stack = (pinStackNeeded(root) ? pinStackScript() : "") + (treeHasArrival(root) ? pinArrivalScript() : "") + (hasHostedVideo(root) ? videoScript() : "") + (scrollRevealNeeded(root) ? revealOnceScript() : "");
   const prev = SEM; SEM = resolvePage(root);
   try {
     if (sheet) return SKIP_LINK_HTML + renderNode(root, null, theme, pageMap, sheet) + stack; // shared sheet → caller emits the CSS

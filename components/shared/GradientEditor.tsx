@@ -50,6 +50,8 @@ function parseStop(s: string): GradStop | null {
 /** Parse a CSS gradient into an editable model, or null if it isn't a simple single gradient. */
 export function parseGradient(css?: string): GradModel | null {
   if (!css) return null;
+  // ONE layer only (RX4-16): a pattern of several layers ("Dot grid") matched the greedy regex below as one gradient.
+  if (splitTop(css).length > 1) return null;
   const m = css.trim().match(/^(linear|radial|conic)-gradient\(([\s\S]*)\)$/i);
   if (!m) return null;
   const type = m[1].toLowerCase() as GradType;

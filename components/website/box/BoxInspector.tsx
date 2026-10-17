@@ -12,7 +12,7 @@ import { Plus, X, Tags, Rows3, Columns3, Upload, ArrowRight, AlignLeft, AlignCen
 import type { SiteTheme } from "@/lib/site-storage";
 import type { BoxNode, FlexAlign, FlexJustify, AccPartStyle, Breakpoint, PagerNav, PinScopeWords, SectionFlag } from "@/lib/box-model";
 import { RUNG_LABEL } from "@/lib/educo-ui/layout";
-import { type ItemAction, TOAST_CORNERS, fluidRemRange, isContainer, containerLabel, isFloating, isCssBg, addItem, removeItem, moveItem, updateItem, addChildItem, updateChildItem, removeChildItem, moveChildItem , isMultiItemComponent, hasIntrinsicSize, sizeToCSS, typedLength, GRID_MAX, COLUMN_FRACTIONS, columnFractionOf, canSetColumnFraction, gridColumns, bandEdgeCSS, PIN_ARRIVALS, PIN_ARRIVAL_AFTER, pinArrivalHasEffect, linkLineGap, LINK_GAP_ACROSS, LINK_GAP_ACROSS_PHONE, spaceDefaults, outerDefaults, type SectionPlace, gapOf, importPhoto } from "@/lib/box-model";
+import { type ItemAction, TOAST_CORNERS, fluidRemRange, isContainer, containerLabel, isFloating, isCssBg, addItem, removeItem, moveItem, updateItem, addChildItem, updateChildItem, removeChildItem, moveChildItem , isMultiItemComponent, hasIntrinsicSize, sizeToCSS, typedLength, GRID_MAX, COLUMN_FRACTIONS, columnFractionOf, canSetColumnFraction, gridColumns, bandEdgeCSS, PIN_ARRIVALS, PIN_ARRIVAL_AFTER, pinArrivalHasEffect, linkLineGap, LINK_GAP_ACROSS, LINK_GAP_ACROSS_PHONE, spaceDefaults, outerDefaults, type SectionPlace, gapOf, importPhoto, refusedMotion, rowFilledByBlocks } from "@/lib/box-model";
 import { remLen } from "@/lib/educo-ui/tokens";
 import { ACCORDION_DESIGNS, ACCORDION_DESIGN_COUNT, ACCORDION_AXES } from "@/lib/educo-ui/accordions";
 import { ALERT_DESIGNS, ALERT_DESIGN_COUNT, ALERT_AXES } from "@/lib/educo-ui/alerts";
@@ -126,7 +126,7 @@ function GapRange({ label, value, fallback, onChange, onMatch }: {
 
 // A labelled colour control that reuses the design-system OKLCH palette picker (spectrum + palettes + hex).
 // When `onClear` is given, the picker offers a "None (transparent)" choice and shows a checkerboard when unset.
-function ColorRow({ title, value, fallback, onSelect, onClear }: { title: string; value?: string; fallback: string; onSelect: (c: string) => void; onClear?: () => void; mode?: "matrix" | "both" }) {
+function ColorRow({ title, value, fallback, onSelect, onClear }: { title: string; value?: string; fallback: string; onSelect: (c: string) => void; onClear?: () => void }) {
   return <EducoColorField label={title} ariaLabel={title} value={onClear ? (value ?? "") : (value || fallback)} onChange={onSelect} onClear={onClear} />;
 }
 
@@ -341,7 +341,8 @@ function HoverPreview({ effect }: { effect: HoverEffect }) {
         display: "block", width: "72%", height: "58%", borderRadius: "0.4rem",
         background: "var(--eu-color-surface, #fff)", border: "1px solid var(--eu-color-border, #e2e7ee)",
         // the effect's own declarations, shown as its resting look so the tile IS the result
-        ...declsToStyle(effect.decls),
+        // "Press" has no resting/hover look — only a press — so its tile shows the press (RX4-18, RULE T)
+        ...declsToStyle(effect.decls || effect.press || ""),
       }} />
     </span>
   );
@@ -767,9 +768,31 @@ export default function BoxInspector({ section = false, sectionPlace, outerDefau
                         id, label: name, preview: () => <PinPreview mode={id} />,
                       })) }]}
                     />
+                    {/* RX4-12 — WHERE ON THE WINDOW: where it was placed (measured at the switch), or an edge or a corner, the same
+                        eight an in-flow block's "Floats on screen" has. Picking "Where I put it" re-measures (box-demo `onPatch`);
+                        picking an edge clears the measurement. */}
+                    {node.pin && (node.hold ?? "sticky") === "fixed" && (
+                      <>
+                        <Segmented full ariaLabel="Held against"
+                          value={node.pinX != null || node.pinY != null ? "place" : node.pin}
+                          onChange={(v) => onPatch(v === "place" ? { pin: "top", hold: "fixed" } : { pin: v as NonNullable<BoxNode["pin"]> })}
+                          options={[
+                            { value: "place", label: "Where I put it", title: "Where you placed it, kept inside the window" },
+                            { value: "top", label: "Top" }, { value: "bottom", label: "Bottom" },
+                            { value: "left", label: "Left" }, { value: "right", label: "Right" },
+                            { value: "top-left", label: "↖", title: "Top-left corner" }, { value: "top-right", label: "↗", title: "Top-right corner" },
+                            { value: "bottom-left", label: "↙", title: "Bottom-left corner" }, { value: "bottom-right", label: "↘", title: "Bottom-right corner" },
+                          ]} />
+                        {node.pinX == null && node.pinY == null && (
+                          <Range title="Distance from the edge" value={node.pinOffset} min={0} max={120} fallback={0} onChange={(n) => onPatch({ pinOffset: n || undefined })} unit="rem" />
+                        )}
+                      </>
+                    )}
                     <p data-float-pin-note className="text-[11px] leading-snug text-gray-500 dark:text-gray-400 midnight:text-cyan-200/80 purple:text-pink-200/80">
                       {node.pin && (node.hold ?? "sticky") === "fixed"
-                        ? "It holds exactly where you placed it, on every screen and however far the page scrolls."
+                        ? node.pinX != null || node.pinY != null
+                          ? "It holds where you placed it however far the page scrolls — and on a smaller screen it comes to rest on the window’s edge rather than off it."
+                          : `It holds against the ${node.pin.replace("-", " ")}${node.pin.includes("-") ? " corner" : " edge"} of the window, on every screen, however far the page scrolls.`
                         : "It scrolls with the page. “Sticks when reached” needs it back in the layout — that one holds a block against where it sits in the page, and a freely placed block has no place there."}
                     </p>
                     {node.pin && (node.hold ?? "sticky") === "fixed" && fixedBlockedBy && (
@@ -850,7 +873,8 @@ export default function BoxInspector({ section = false, sectionPlace, outerDefau
                       {node.pinArrival === "condense" && !pinArrivalHasEffect(node) && (
                         <p role="status" className="text-[11px] leading-snug rounded-md px-2 py-1.5 bg-amber-50 text-amber-900 ring-1 ring-amber-200 dark:bg-amber-950/40 dark:text-amber-200 dark:ring-amber-900 midnight:bg-amber-950/40 midnight:text-amber-200 midnight:ring-amber-900 purple:bg-amber-950/40 purple:text-amber-200 purple:ring-amber-900">
                           There is nothing to condense yet: this block has no height and no inner spacing of
-                          its own. Give it one under <b>Size</b> or <b>Spacing</b>, or pick another arrival.
+                          its own. Give it a <b>Height</b> under <b>Size</b>, inner spacing under <b>Spacing</b>, or a
+                          <b>Band height</b> under <b>Background</b> — or pick another arrival.
                         </p>
                       )}
                     </>
@@ -1050,6 +1074,7 @@ export default function BoxInspector({ section = false, sectionPlace, outerDefau
                   <Segmented full ariaLabel="Direction" value={node.direction === "row" ? "row" : "column"} onChange={(v) => onPatch({ direction: v as "row" | "column" })}
                     options={[{ value: "column", label: "Top-to-bottom", Icon: Rows3 }, { value: "row", label: "Side-by-side", Icon: Columns3 }]} />
                   <CompactSelect label="Position blocks" ariaLabel="Position blocks" value={node.justify ?? "start"} onChange={(v) => onPatch({ justify: v as FlexJustify })} options={JUSTIFY_OPTS.map(([v, l]) => ({ value: v, label: l }))} />
+                  {rowFilledByBlocks(node) && <p role="note" className="text-[0.6875rem] leading-snug text-amber-700 dark:text-amber-300 midnight:text-amber-300 purple:text-amber-300">These blocks fill the row — give one a width to place them.</p>}
                   <label className="pointer-coarse:min-h-11 flex items-center gap-2 text-xs text-gray-600 dark:text-gray-300"><input type="checkbox" checked={!!node.wrap} onChange={(e) => onPatch({ wrap: e.target.checked })} /> Let blocks wrap to a new line</label>
                 </>
               )}
@@ -1377,7 +1402,7 @@ export default function BoxInspector({ section = false, sectionPlace, outerDefau
                 {/* Patterns: let the user retune tile size + repeat too */}
                 {node.bgTile && (
                   <div className="grid grid-cols-2 gap-1.5">
-                    <CompactField label="Tile size" ariaLabel="Pattern tile size" value={node.bgTile} placeholder="24px 24px" onChange={(v) => onPatch({ bgTile: v || undefined })} />
+                    <CompactField label="Tile size" ariaLabel="Pattern tile size" value={node.bgTile} placeholder="1.5rem 1.5rem" onChange={(v) => onPatch({ bgTile: v || undefined })} />
                     <CompactSelect label="Repeat" ariaLabel="Pattern repeat" value={node.bgRepeat ?? "repeat"} onChange={(v) => onPatch({ bgRepeat: v || undefined })}
                       options={[{ value: "repeat", label: "Tile" }, { value: "repeat-x", label: "Tile across" }, { value: "repeat-y", label: "Tile down" }, { value: "no-repeat", label: "Once" }]} />
                   </div>
@@ -1404,7 +1429,7 @@ export default function BoxInspector({ section = false, sectionPlace, outerDefau
                   <input type="checkbox" checked={node.bgAttach === "fixed"} onChange={(e) => onPatch({ bgAttach: e.target.checked ? "fixed" : undefined })} aria-label="Fixed background (parallax)" className="accent-indigo-600" />
                   Fixed (parallax scroll)
                 </label>
-                <ColorRow title="Tint over background" value={node.bgOverlay} fallback="#00000066" onSelect={(c) => onPatch({ bgOverlay: c })} mode="both" />
+                <ColorRow title="Tint over background" value={node.bgOverlay} fallback="#00000066" onSelect={(c) => onPatch({ bgOverlay: c })} />
                 <button onClick={() => onPatch({ bgImage: undefined, bgTile: undefined, bgOverlay: undefined, bgPosition: undefined, bgRepeat: undefined, bgAttach: undefined })} className="text-[0.6875rem] text-red-500 hover:underline">Remove background</button>
               </>
             )}
@@ -1933,6 +1958,12 @@ export default function BoxInspector({ section = false, sectionPlace, outerDefau
               helpText={node.component === "accordion"
                 ? <>Plain lines style the accordion. Use <code>title</code>, <code>body</code>, <code>icon</code>, <code>meta</code> or <code>media</code> {"{ … }"} to restyle that part of every item. Sanitised on export.</>
                 : <>One <code>property: value;</code> per line. Applied to this block; sanitised on export (no selectors, @-rules, or remote URLs).</>} />
+            {/* RX4-15: a refusal is SAID, never silent — a line left out with no word reads as "it took it" */}
+            {refusedMotion(node.advancedCss).length > 0 && (
+              <p role="status" aria-label="Advanced CSS not applied" className="mt-1.5 text-[0.6875rem] leading-snug rounded-md px-2 py-1.5 bg-amber-50 text-amber-900 ring-1 ring-amber-200 dark:bg-amber-950/40 dark:text-amber-200 dark:ring-amber-900 midnight:bg-amber-950/40 midnight:text-amber-200 midnight:ring-amber-900 purple:bg-amber-950/40 purple:text-amber-200 purple:ring-amber-900">
+                Not applied: {refusedMotion(node.advancedCss).map((d, i) => <code key={i} className="mx-0.5">{d}</code>)}. Animate <code>transform</code> or <code>opacity</code> instead — moving the size or place makes the page jerk on a phone — and nothing may move forever (a visitor must be able to make it stop).
+              </p>
+            )}
           </Accordion>
         </div>
       )}
