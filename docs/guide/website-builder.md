@@ -437,6 +437,43 @@ scroll away, make the header slide away, or make the bars shorter.
 **Nothing goes above the header or below the footer by accident.** "Before" on the header puts the new block just under it;
 "After" on the footer, just above it — the header and footer stay the page's, and stay shared.
 
+### Widths: a column that stays its width, and one width for the whole site
+
+**A column of a set width.** Select the block — a sidebar, a logo, a photo — and set **Design → Size → Width → Custom** to a
+width such as `20rem` (a `%` is a share of the row instead). Beside it, the other blocks of the row share what is left, in
+the proportions they already had: a ½ and a ¼ next to a 20rem sidebar take two parts and one part of the rest. The set
+width grows with a visitor's text size, so it stays right for someone who has made their text bigger. Where the row no
+longer fits side by side, the blocks stack, each the full width — nothing ever runs off a phone's screen.
+
+[![The Preview at 1280 px: a 20rem sidebar, a block at ½ and one at ¼ sharing the rest two to one; below, the school's name at 8rem beside three links](img/guide-set-width-row.webp)](img/guide-set-width-row.webp)
+
+**A Grid's columns, each its own width.** Select a **Grid** and open **Column widths** (under its Columns). Each column a
+visitor sees has one of three:
+
+| Choice | What it does |
+|---|---|
+| **Share** | Takes a share of what the other columns leave (the default). |
+| **Fit content** | As wide as what is in it — a logo, an icon, a short label. |
+| **Set width** | Exactly the width you type, e.g. `15rem`. |
+
+They are drawn wherever the Grid shows all its columns; where it shows fewer — a phone's single column — the columns are
+equal again. They are the same on every screen, so setting them while a phone is selected still changes the desktop.
+Column widths need every block of the Grid to be the same number of columns wide; the Inspector says so otherwise.
+
+[![The Inspector's Column widths for a Grid of three: Column 1 Set width 20rem, Column 2 Fit content, Column 3 Share](img/guide-column-widths.webp)](img/guide-column-widths.webp)
+
+**One content width for the whole site.** Open **Layout guides** (or **Page settings → Page grid…**) and set **Content
+width** to **Centred**: every section of every page — and every page you add later — puts its words and pictures on one
+centred column (75rem to start; the slider goes from 40 to 100), while section backgrounds still run edge to edge. On a
+screen narrower than the column, only the page's side space is kept at the edges. The layout guides are drawn inside the
+column. **Full width** puts everything back edge to edge; **Ctrl+Z** undoes either.
+
+One section can still run the full width: select it and set **Layout → Arrange → Content width → Edge to edge**. The
+Inspector says which sections follow the site and which do not, and a section set this way stays so when the site's width
+changes.
+
+[![The Page grid panel with Content width set to Centred at 75rem, and its hint](img/guide-content-width-panel.webp)](img/guide-content-width-panel.webp)
+
 ### What you get in the ZIP, and why it's built that way
 
 | | |

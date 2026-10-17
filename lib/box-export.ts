@@ -11,7 +11,7 @@
 import type { CSSProperties } from "react";
 import { PILL, dividerThickness, borderLen, videoSizing, blockTypography,pinArrivalCss, pinArrivalKeyframes, floatHoldCSS,
   type BoxNode, type Breakpoint, type SectionFlag, BP_ORDER, containerStyle, childStyle, hostSizedFor, marginCSS, leafPaddingCSS, ownSidePadVars, outerSpaceCSS, pageBandInset, pagePinCover, sectionContent, sizeToCSS, radiusCSS, SHADOW_CSS, u, LIST_ITEM_GAP, textLen, baseUnit, fadedPaint, boxOpacity, backgroundCss, paintLayerCss,
-  resolveResponsive, floatStacksOnMobile, floatingReserve, alertToastCss, accordionClasses, bandClasses, videoEmbedSrc, isContainer, sanitizeCssDeclarations, expandScopedCss, COMPONENT_PARTS, itemFloatContextCss, itemOverrideCss, itemNumberVars, richBody, plainBody, componentTextCss, componentBoxCss, renderAlertHTML, alertDismissScript, masonryMeasureAttr, masonryMeasureScript, pinStackMarker, pinStackGroupMarker, pinStackNeeded, pinStackScript, headerMarkers, headerScript, headerScriptNeeded, underOverHeaderPad, pinArrivalMarker, pinArrivalScript, treeHasArrival, isPager, pagerNavHTML, pagerScript, pagerStripCss, pagerSlideId, bgShowThroughCss, blockContainmentCss, COMPONENT_ITEM_SEL, remLen, imageSizing, fillsRowsAnywhere, fillHostOf, hasIntrinsicSize, itemNeedsClass, itemScope, floatZIndex, typoRole, typoRootVars, typoCascadeCss, bandEdgeCSS, LINK_COLOR_CSS, gridQueryCss, TYPE_UNIT_PROPERTY_CSS,
+  resolveResponsive, floatStacksOnMobile, floatingReserve, alertToastCss, accordionClasses, bandClasses, hasSiteMeasure, videoEmbedSrc, isContainer, sanitizeCssDeclarations, expandScopedCss, COMPONENT_PARTS, itemFloatContextCss, itemOverrideCss, itemNumberVars, richBody, plainBody, componentTextCss, componentBoxCss, renderAlertHTML, alertDismissScript, masonryMeasureAttr, masonryMeasureScript, pinStackMarker, pinStackGroupMarker, pinStackNeeded, pinStackScript, headerMarkers, headerScript, headerScriptNeeded, underOverHeaderPad, pinArrivalMarker, pinArrivalScript, treeHasArrival, isPager, pagerNavHTML, pagerScript, pagerStripCss, pagerSlideId, bgShowThroughCss, blockContainmentCss, COMPONENT_ITEM_SEL, remLen, imageSizing, fillsRowsAnywhere, fillHostOf, hasIntrinsicSize, itemNeedsClass, itemScope, floatZIndex, typoRole, typoRootVars, typoCascadeCss, bandEdgeCSS, LINK_COLOR_CSS, gridQueryCss, TYPE_UNIT_PROPERTY_CSS,
 } from "@/lib/box-model";
 import { isRegistryComponent, renderComponent, componentScripts } from "@/lib/educo-ui/registry";
 import { iconSvg } from "@/lib/educo-ui/icon-svg";
@@ -476,7 +476,7 @@ function styleAt(node: BoxNode, rawParent: BoxNode | null, bp: Breakpoint, theme
   if (!floating && !stacked) Object.assign(wrap, outerSpaceCSS(r, section && (rawParent?.rowBand ? "band" : "page")));
   if (r.hidden) wrap.display = "none"; // hidden-on-this-device → removed at that breakpoint
   if (isContainer(r)) {
-    const cs: CSSProperties = { ...containerStyle(r, bp, section), ...pageBandInset(r, onPage), ...wrap, ...pagePinCover(r, onPage) };
+    const cs: CSSProperties = { ...containerStyle(r, bp, section), ...pageBandInset(r, onPage, hasSiteMeasure(rawParent)), ...wrap, ...pagePinCover(r, onPage) };
     Object.assign(cs, underOverHeaderPad(rawParent, node, cs.paddingTop, grand)); // LE11-4 — the canvas writes the same
     // An EMPTY container that paints a background would collapse to 0px in the exported/preview site (the editor's
     // "Drag a block here" placeholder gives it height, but that's editor-only). Give it a visible band so the
@@ -613,7 +613,7 @@ function renderNode(node: BoxNode, rawParent: BoxNode | null, theme: SiteTheme, 
     // LE-11: a header that slides / fades away, lies over the first section, keeps only its last row — `headerScript` reads these
     + Object.entries(headerMarkers(node, rawParent ?? undefined)).map(([k, v]) => ` ${k}="${esc(v)}"`).join("");
   // A structural band also carries its layout classes — computed by box-model, so the canvas gets the same ones.
-  const allCls = [cls, bandClasses(r, isPageSection), el === "ul" || el === "ol" ? "eu-list" : ""].filter(Boolean).join(" ");
+  const allCls = [cls, bandClasses(r, isPageSection, hasSiteMeasure(rawParent)), el === "ul" || el === "ol" ? "eu-list" : ""].filter(Boolean).join(" ");
   if (isContainer(r)) {
     // Children of the PAGE ROOT (the only call with no parent) are the page's sections; nothing deeper is.
     const kidsAreSections = rawParent === null;

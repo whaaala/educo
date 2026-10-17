@@ -13,7 +13,7 @@ import type { SiteTheme } from "@/lib/site-storage";
 import { perScreenBanner, perScreenDeviceTab } from "@/lib/per-screen-note";
 import type { BoxNode, FlexAlign, FlexJustify, AccPartStyle, Breakpoint, PagerNav, PinScopeWords, SectionFlag } from "@/lib/box-model";
 import { RUNG_LABEL } from "@/lib/educo-ui/layout";
-import { type ItemAction, TOAST_CORNERS, hasAnnouncement, fluidRemRange, isContainer, containerLabel, isFloating, isCssBg, addItem, removeItem, moveItem, updateItem, addChildItem, updateChildItem, removeChildItem, moveChildItem , isMultiItemComponent, hasIntrinsicSize, sizeToCSS, typedLength, GRID_MAX, COLUMN_FRACTIONS, columnFractionOf, canSetColumnFraction, gridColumnsAt, bandEdgeCSS, PIN_ARRIVALS, PIN_ARRIVAL_AFTER, pinArrivalHasEffect, linkLineGap, LINK_GAP_ACROSS, LINK_GAP_ACROSS_PHONE, spaceDefaults, outerDefaults, type SectionPlace, gapOf, importPhoto, refusedMotion, rowFilledByBlocks } from "@/lib/box-model";
+import { type ItemAction, gridSeenColumns, setLengthCss, TOAST_CORNERS, hasAnnouncement, fluidRemRange, isContainer, containerLabel, isFloating, isCssBg, addItem, removeItem, moveItem, updateItem, addChildItem, updateChildItem, removeChildItem, moveChildItem , isMultiItemComponent, hasIntrinsicSize, sizeToCSS, typedLength, GRID_MAX, COLUMN_FRACTIONS, columnFractionOf, canSetColumnFraction, gridColumnsAt, bandEdgeCSS, PIN_ARRIVALS, PIN_ARRIVAL_AFTER, pinArrivalHasEffect, linkLineGap, LINK_GAP_ACROSS, LINK_GAP_ACROSS_PHONE, spaceDefaults, outerDefaults, type SectionPlace, gapOf, importPhoto, refusedMotion, rowFilledByBlocks } from "@/lib/box-model";
 import { remLen } from "@/lib/educo-ui/tokens";
 import { ACCORDION_DESIGNS, ACCORDION_DESIGN_COUNT, ACCORDION_AXES } from "@/lib/educo-ui/accordions";
 import { ALERT_DESIGNS, ALERT_DESIGN_COUNT, ALERT_AXES } from "@/lib/educo-ui/alerts";
@@ -204,9 +204,8 @@ function AccPartDesign({ title, ariaPrefix, style, onChange, moveLabel = "conten
  */
 const WIDTH_PRESETS: Record<string, string> = { auto: "auto", fill: "fill", half: "50%", third: "33.33%" };
 /**
- * `pageRow` (L6-4): the block is on a ROW OF THE PAGE, where a width is a share of the page's columns — a width that is not a % (a typed
- * `3.5rem`) is drawn as an equal share of what is left (`rowLinesAt`), until a fixed-width column beside the shares exists (AC-30, BATCH
- * G-4). The field says so, rather than take a value the page will not draw.
+ * `pageRow` (L6-4 → AC-30, BATCH LE-3): the block is on a ROW OF THE PAGE, where a % is a share of the row and a set width (`20rem`) is drawn
+ * exactly so, the other blocks sharing the rest (`setWidthRow`). The field says both, in the words of config/inspector.json.
  */
 function WidthControl({ node, onPatch, pageRow = false }: { node: BoxNode; onPatch: (p: Partial<BoxNode>) => void; pageRow?: boolean }) {
   const w = node.width ?? "auto";
@@ -217,8 +216,42 @@ function WidthControl({ node, onPatch, pageRow = false }: { node: BoxNode; onPat
       <span className={label}>Width</span>
       <Segmented full ariaLabel="Width" value={mode} onChange={(m) => onPatch({ width: WIDTH_PRESETS[m] ?? (isCustom ? w : "40%") })}
         options={[{ value: "auto", label: "Fit" }, { value: "fill", label: "Full" }, { value: "half", label: "½", title: "Half the line" }, { value: "third", label: "⅓", title: "A third of the line" }, { value: "custom", label: "Custom" }]} />
-      {isCustom && <CompactField ariaLabel="Custom width" value={w} onChange={(v) => onPatch({ width: typedLength(v) })} placeholder={pageRow ? "e.g. 25%" : "50% or 15rem"} />}
-      {isCustom && pageRow && !w.trim().endsWith("%") && <p className="text-[0.6875rem] text-muted">On the page grid a width is a share of the columns — type a %. A fixed width (rem) is drawn as an equal share for now.</p>}
+      {isCustom && <CompactField ariaLabel="Custom width" value={w} onChange={(v) => onPatch({ width: typedLength(v) })} placeholder="50% or 15rem" />}
+      {isCustom && pageRow && <p className="text-[0.6875rem] text-muted">{INSPECTOR.widths.pageRowHint}</p>}
+    </div>
+  );
+}
+
+/**
+ * AC-30 (BATCH LE-3) · A GRID'S COLUMN WIDTHS — one line a column: Share · Fit content · Set width, and the width when set (`colSizes`, drawn
+ * by `gridColSizes` where the Grid shows all its columns). Words: config/inspector.json `widths`.
+ */
+function ColumnWidths({ node, onPatch }: { node: BoxNode; onPatch: (p: Partial<BoxNode>) => void }) {
+  const seen = gridSeenColumns(node), sizes = node.colSizes ?? [];
+  // LE3-3: the columns a person SEES (a palette "3 across" is twelve tracks); an uneven grid has no one width a column
+  if (!seen) return <p className="text-[11px] leading-snug text-gray-500 dark:text-gray-400 midnight:text-gray-400 purple:text-gray-400">{INSPECTOR.widths.colUneven}</p>;
+  const cols = seen.seen;
+  const kind = (v: string | null | undefined) => (v === "fit" ? "fit" : setLengthCss(v) ? "set" : "share");
+  const put = (i: number, v: string | undefined) => {
+    const next = Array.from({ length: cols }, (_, j) => (j === i ? v : sizes[j] ?? undefined));
+    onPatch({ colSizes: next.some((x) => x) ? next.map((x) => x ?? null) : undefined });
+  };
+  return (
+    <div className="space-y-1" role="group" aria-label={INSPECTOR.widths.colWidths}>
+      <span className={label}>{INSPECTOR.widths.colWidths}</span>
+      {Array.from({ length: cols }, (_, i) => {
+        const name = INSPECTOR.widths.colLabel.replace("{n}", String(i + 1)), k = kind(sizes[i]);
+        return (
+          <div key={i} className="grid grid-cols-2 gap-1.5 items-end">
+            <CompactSelect label={name} ariaLabel={`${name} width`} value={k}
+              onChange={(v) => put(i, v === "fit" ? "fit" : v === "set" ? INSPECTOR.widths.colStart : undefined)}
+              options={(["share", "fit", "set"] as const).map((v) => ({ value: v, label: INSPECTOR.widths.colChoices[v] }))} />
+            {k === "set" && <CompactField ariaLabel={`${name}: set width`} value={sizes[i] ?? ""} placeholder="15rem"
+              onChange={(v) => put(i, setLengthCss(typedLength(v)) ? typedLength(v) : sizes[i] ?? undefined)} />}
+          </div>
+        );
+      })}
+      <p className="text-[11px] leading-snug text-gray-500 dark:text-gray-400 midnight:text-gray-400 purple:text-gray-400">{INSPECTOR.widths.colHint}</p>
     </div>
   );
 }
@@ -508,7 +541,7 @@ function AccPreview({ id, size, axes = [] }: { id: string; size: ThumbSize; axes
   );
 }
 
-export default function BoxInspector({ section = false, sectionPlace, outerDefault, fillHeight, pageSpan, onSetSpan, pageLines, onSetLines, onSetFreeInset, rowStepRem, node, theme, onPatch, onAddChild, onAddAnnouncement, onFloat, onUnfloat, onLayer, onAlignInRow, rowJustify, onSectionWidth, sectionWidth, canFloat = true, inGrid = false, inMasonry = false, gridTrack, onSetFraction, onRetrack, breakpoint = "base", overridden = false, onResetOverride, pages, currentPageId, pinBlockedBy = null, fixedBlockedBy = null, pinScope = null }: {
+export default function BoxInspector({ section = false, sectionPlace, outerDefault, fillHeight, pageSpan, onSetSpan, pageLines, onSetLines, onSetFreeInset, rowStepRem, node, theme, onPatch, onAddChild, onAddAnnouncement, onFloat, onUnfloat, onLayer, onAlignInRow, rowJustify, onSectionWidth, sectionWidth, siteWidth, sectionFollows, rowOfPage = false, canFloat = true, inGrid = false, inMasonry = false, gridTrack, onSetFraction, onRetrack, breakpoint = "base", overridden = false, onResetOverride, pages, currentPageId, pinBlockedBy = null, fixedBlockedBy = null, pinScope = null }: {
   section?: SectionFlag; // the block is the content of a page section, so its default inner spacing is the gutter and the section space
   outerDefault?: [number, number, number, number]; // the outer space it really has by default (`outerSpaceDefaults`, G-3 (1)); else `outerDefaults`
   fillHeight?: { on: boolean }; // G-3d (2): a picture alone in a block spanning rows — "Fill the block's height"; absent where it does nothing
@@ -528,6 +561,9 @@ export default function BoxInspector({ section = false, sectionPlace, outerDefau
   // a band to write to — the setting lives on the parent, which the user can never select.
   onSectionWidth?: (v: "band" | "contained") => void;
   sectionWidth?: "band" | "contained";                        // its current position (parent row's justify-content)
+  rowOfPage?: boolean;                                        // LE3-2: on a row of the page — still so once a set width takes it off the lines
+  siteWidth?: number;                                         // AC-9: the site's content width (rem), when it has one
+  sectionFollows?: boolean;                                   // …and this section has no choice of its own, so it follows it
   canFloat?: boolean;
   inGrid?: boolean;
   /** Is the PARENT row a masonry gallery? Its cells have no rows to be tall in or to start at. */
@@ -984,7 +1020,9 @@ export default function BoxInspector({ section = false, sectionPlace, outerDefau
                     options={[{ value: "band", label: "Edge to edge" }, { value: "contained", label: "Centred column" }]} />
                   {everyScreen}
                   <p className="text-[11px] leading-snug text-gray-500 dark:text-gray-400">
-                    {sectionWidth === "contained"
+                    {siteWidth && sectionFollows ? INSPECTOR.widths.sectionFollows.replace("{width}", String(siteWidth))
+                      : siteWidth && sectionWidth === "band" ? INSPECTOR.widths.sectionOptsOut.replace("{width}", String(siteWidth))
+                      : sectionWidth === "contained"
                       ? "The background still spans the page; the content sits on a centred column."
                       : "This section and its content run the full width of the page."}
                   </p>
@@ -1079,6 +1117,7 @@ export default function BoxInspector({ section = false, sectionPlace, outerDefau
                     Twelve divides by 2, 3, 4 and 6 — pick it when blocks in the same row need different widths.
                     Narrow screens stack this row unless you set a count here with a device selected.
                   </p>
+                  {node.rowFlow !== "masonry" && <ColumnWidths node={node} onPatch={onPatch} />}
                   {/* A grid's own "Position blocks". The flex one distributes leftover space between tracks,
                       and 1fr tracks leave none — so it was inert here. This one places each block in its CELL. */}
                   <CompactSelect label="Position blocks" ariaLabel="Position blocks" value={node.justifyItems ?? "stretch"}
@@ -1214,7 +1253,7 @@ export default function BoxInspector({ section = false, sectionPlace, outerDefau
           )}
 
           <Accordion title="Size" icon={Maximize2}>
-            <WidthControl node={node} onPatch={onPatch} pageRow={!!onSetFreeInset} />
+            <WidthControl node={node} onPatch={onPatch} pageRow={!!onSetFreeInset || rowOfPage} />
             {pageSpan && onSetSpan && (
               <div className="space-y-0.5">
                 <CompactField label={`Columns (of ${pageSpan.cols})`} ariaLabel={`Columns of ${pageSpan.cols}`} type="number" min={0.5} max={pageSpan.cols} step={0.5} value={pageSpan.value}

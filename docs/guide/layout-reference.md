@@ -125,6 +125,8 @@ inside.
 | **Arrange as**: Free arrange · Grid | Free arrange follows Direction; Grid lays the blocks out across *and* down, in columns. |
 | **Position blocks**: Start · Center · End · Spread out · Even gaps | Where the blocks sit along the Direction when there is room to spare — at the start, the middle or the end, spread to both ends, or with even gaps around them. When the blocks already fill the row (two at 50 %, or one set to Fill) there is no room to place them in, and the Inspector says so: *"These blocks fill the row — give one a width to place them."* Set one to **Fit** or a smaller width and they move. |
 | **Let blocks wrap to a new line** | A row that runs out of room carries its blocks onto the next line instead of squeezing them. |
+| **Content width** (a section of the page): Edge to edge · Centred column | Edge to edge runs the section's content the full width; Centred column puts it on the centred column — the site's **Content width** when one is set (Page grid panel), which a section with no choice of its own follows; the Inspector says which. | Every screen |
+| **Column widths** (a Grid): Share · Fit content · Set width, one per column you see | Share takes a share of what the others leave; Fit content is as wide as what is in it; Set width is exactly the width typed (e.g. `15rem`). Drawn where the Grid shows all its columns; where it shows fewer (a phone) the columns are equal. Needs every block of the Grid to be the same number of columns wide. | Every screen |
 | **Show one at a time** | Turns any container into a pager — children become pages, visitors swipe between them. |
 | **Edge shape**: Top · Bottom — Straight · Slope right · Slope left · Curve out · Curve in | Cuts the band's top or bottom edge into a slope or a curve, shown as little pictures; **Edge depth** sets how deep. The shape cuts the background, never the size; a Shadow follows the shape. |
 
@@ -132,7 +134,7 @@ inside.
 
 | Control | What it does | Notes |
 |---------|-------------|-------|
-| **Width** | The block's share of its row, as a fraction (e.g. 3 of 6) or a fixed rem value. Drag the block's left or right edge to change it; the opposite edge stays fixed. | Per screen |
+| **Width** | The block's share of its row, as a fraction (e.g. 3 of 6) or a fixed rem value. **Custom** takes a % (a share) or a set width such as `20rem`: a set width stays exactly that wide and the other blocks of the row share the rest; where they no longer fit, the row stacks. Drag the block's left or right edge to change it; the opposite edge stays fixed. | Per screen |
 | **Columns (of 12)** (page-grid rows) | How many of the page's columns the block spans on this screen, in halves; the block beside it gives what this one takes. | Per screen · Alt ← / → (Shift: half) |
 | **From line** (page-grid rows) | The column line where the block starts. Changing this moves the left edge; the right edge stays. | Per screen |
 | **To line** (page-grid rows) | The column line where the block ends. Changing this moves the right edge; the left edge stays. | Per screen |
@@ -271,6 +273,7 @@ Opened by the **Layout guides** button in the top bar (the grid icon), or right-
 | **Side space (padding)** | Room at the page's four edges. A page made since 15 October 2026 has none until you add it; pages made before keep 1–1.25rem. While you hold the slider the space is shaded on the page with its size. | All four sides |
 | **Space between columns** | Gap between blocks side by side (across). None until you add it on a new page. Shaded on the page, with its size, while you hold the slider. | Per screen |
 | **Space between rows** | Gap between blocks one under another — the page's own rows on a new page, and lines that wrap. None until you add it. Shaded while you hold the slider. | Per screen |
+| **Content width**: Full width · Centred (+ a slider, 40–100rem, 75 to start) | Full width: sections run edge to edge inside the side space. Centred: every section of every page sits its words and pictures on one centred column of this width — backgrounds still edge to edge, the layout guides drawn inside it. A section set **Edge to edge** in the Inspector opts out. | Every screen |
 | **This page uses its own grid** | The settings above apply to this page only; unticked, they are shared by every page of the site. | — |
 | **Reset to default** | Puts every setting in the panel back to its default. | — |
 

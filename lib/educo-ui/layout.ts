@@ -69,6 +69,9 @@ export const APP_TILES: Readonly<{ minWidth: number; maxAcross: number }> = LAYO
 export const NARROWEST_PHONE_PX: number = LAYOUT.narrowestPhone;
 /** A video's proportions — its height follows its width (RX3-2). */
 export const MEDIA: Readonly<{ videoRatio: string; portraitRatio: string; portraitWidthRem: number }> = LAYOUT.media;
+/** AC-9 · the site's one content width (rem): its slider's bounds, start and step (RULE CFG). */
+export const CONTENT_WIDTH: Readonly<{ minRem: number; maxRem: number; startRem: number; stepRem: number }> = LAYOUT.contentWidth;
+if (!(CONTENT_WIDTH.minRem > 0 && CONTENT_WIDTH.minRem <= CONTENT_WIDTH.startRem && CONTENT_WIDTH.startRem <= CONTENT_WIDTH.maxRem && CONTENT_WIDTH.stepRem > 0)) throw new Error("config/layout.json: contentWidth needs 0 < minRem ≤ startRem ≤ maxRem and stepRem > 0");
 /** The editor's own chrome line: from here its panels dock beside the canvas. Not a rung. */
 export const EDITOR_DOCK_PX: number = LAYOUT.editor.dockFrom;
 /** The narrowest a column in a row is drawn, rem — untouched, sized by hand, a page-grid block below the tablet rung (RULE CFG, L5-3). */
@@ -199,7 +202,13 @@ const LAYOUT_TEMPLATE = `
 /* Marked important for the same reason the hover effects are: the CANVAS writes its box as an inline style
    attribute, and an inline style beats any stylesheet rule at any specificity. Without it the band was
    contained in the published site and full-bleed while you edited it — every class name still read correct. */
-@CONTAINED_SEL@ { padding-inline: max(var(--eu-gutter-page), (100% - var(--eu-measure, 100%)) / 2) !important; }
+/* LE-3 (AC-9): with the SITE's content width the floor is 0 (--eu-measure-floor, set on the page root) and the band's own side space
+   rides on top (--bx-side-l / -r, written by pageBandInset only then) — so the space at the sides is the page's side space below the
+   width, and every kind of row is the width less its side space above it. Without a site width both are unset: exactly as before. */
+@CONTAINED_SEL@ {
+  padding-left: calc(max(var(--eu-measure-floor, var(--eu-gutter-page)), (100% - var(--eu-measure, 100%)) / 2) + var(--bx-side-l, 0rem)) !important;
+  padding-right: calc(max(var(--eu-measure-floor, var(--eu-gutter-page)), (100% - var(--eu-measure, 100%)) / 2) + var(--bx-side-r, 0rem)) !important;
+}
 /* L6-2 (the user, 2026-10-16: "colour edge to edge"): a contained band holding ONE plain section moves that padding INTO the
    section, so the section's own colour fills the band edge to edge and its words stay on the measure: what this option promises.
    The colour is on the section because a band is invisible scaffolding no one can select; padded from outside, the colour sat in
@@ -208,8 +217,8 @@ const LAYOUT_TEMPLATE = `
 /* RX3-28 (measured HEADED 2026-10-16): the measure is the FLOOR and the section's own left / right inner spacing rides on top of it
    (--bx-pad-l / --bx-pad-r, written by paddingCSS only when the person set some). Replacing it drew Inner spacing 3 / 0.5 as 96 / 96. */
 @ONE_KID_SEL@ {
-  padding-left: calc(max(var(--eu-gutter-page), (100% - var(--eu-measure, 100%)) / 2) + var(--bx-pad-l, 0rem)) !important;
-  padding-right: calc(max(var(--eu-gutter-page), (100% - var(--eu-measure, 100%)) / 2) + var(--bx-pad-r, 0rem)) !important;
+  padding-left: calc(max(var(--eu-measure-floor, var(--eu-gutter-page)), (100% - var(--eu-measure, 100%)) / 2) + var(--bx-pad-l, 0rem) + var(--bx-side-l, 0rem)) !important;
+  padding-right: calc(max(var(--eu-measure-floor, var(--eu-gutter-page)), (100% - var(--eu-measure, 100%)) / 2) + var(--bx-pad-r, 0rem) + var(--bx-side-r, 0rem)) !important;
 }
 `.trim();
 
