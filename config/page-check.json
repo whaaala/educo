@@ -1,5 +1,11 @@
 {
   "$comment": "THE PAGE CHECK, AS DATA (RULE CFG). quoteWords: how many of a block's first words a measured item quotes, so two blocks of one kind can be told apart (LE1-7).",
   "quoteWords": 4,
+  "heldBars": {
+    "$comment": "AX-6 (BATCH LE-11, WCAG 1.4.10): bars held on screen (sticky / fixed at the top or bottom) may cover at most maxShare of a screen; measured at these width × height screens (a phone upright and on its side — docs/web-anatomy/layout-tiers/01-inventory.md AX-6).",
+    "maxShare": 0.25,
+    "screens": [[360, 640], [640, 360]],
+    "message": "The bars held on screen ({bars}) cover more than a quarter of a {screens} screen, so little is left to read. Let one scroll away (Keep only the last row on screen, or When you scroll down), or make them shorter."
+  },
   "pageGone": "This {block} goes to a page that was deleted, so it takes visitors nowhere. Choose where it goes under Link, or delete it."
 }

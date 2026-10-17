@@ -1,12 +1,24 @@
 {
   "$comment": "THE INSPECTOR'S PER-SCREEN PROMISE, AS DATA (RULE CFG; BATCH LE-2 V-5). sharedKeys: what a change made while another screen is being edited still writes for EVERY screen — the words, links and pictures, and the effects (the published page carries an effect for every screen: LE2-4), and what a block IS — its meaning, a heading's level, a landmark’s name, “On every page” (the page has one structure on every screen: LE8-1). Everything else is that screen's own. banner / deviceTab: what the Inspector says while a screen other than the desktop is being edited; {screen} is that screen's name, {reach} the screens the change shows on (config/layout.json rungs' words, joined), {shared} the line about what stays shared.",
   "perScreen": {
-    "sharedKeys": ["text", "href", "newTab", "anchor", "src", "icon", "html", "listItems", "listStyle", "hoverEffect", "revealEffect", "pinArrival", "pinArrivalAfter", "tag", "level", "landmarkName", "shared"],
+    "sharedKeys": ["text", "href", "newTab", "anchor", "src", "icon", "html", "listItems", "listStyle", "hoverEffect", "revealEffect", "pinArrival", "pinArrivalAfter", "tag", "level", "landmarkName", "shared", "pinAway", "pinOver", "pinLastRow"],
     "banner": "Editing {screen} — what you change here (size, spacing, colours, fonts, backgrounds) shows on {reach}. A control that says “every screen” changes them all.",
     "shared": "Words, links, pictures and effects are the same on every screen.",
     "deviceTab": "You're editing {screen}. Sizes, spacing and looks you change now show on {reach}. A control marked “every screen” changes them all.",
     "narrowerToo": "{own} — and on {narrower} too, unless you change it there"
   },
+  "header": {
+    "$comment": "LE-11: the held header's controls (Placement) and the announcement bar (Meaning); pageRegions: Page settings' show / hide of the shared header and footer on one page (PS-14).",
+    "away": "When you scroll down",
+    "awayChoices": { "stay": "Stays", "slide": "Slides away", "fade": "Fades out" },
+    "awayHint": "It comes back when the visitor scrolls up, moves into it with the keyboard, or reaches the end of the page.",
+    "over": "Over the first section",
+    "overHint": "The first section starts at the very top, under the header. It fills in once held, so its words stay readable.",
+    "lastRow": "Keep only the last row on screen",
+    "lastRowHint": "The rows above it (a top bar, an announcement) scroll away; the last row stays held.",
+    "announce": "Add an announcement bar"
+  },
+  "pageRegions": { "header": "Show the header on this page", "footer": "Show the footer on this page" },
   "pageOrder": { "$comment": "LE8-2: Page settings — move the page one place in the order of the page tabs.", "earlier": "Move earlier", "later": "Move later" },
   "sharedRegion": {
     "$comment": "PS-2 (BATCH LE-8): the Page header / Page footer's “On every page” switch under Meaning. {region} is header or footer.",

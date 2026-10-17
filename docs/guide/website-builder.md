@@ -416,6 +416,27 @@ same way. What you see on the canvas is what visitors get in the Preview, in the
 
 [![The Preview at 375 px of a short page: the spare room is above the footer, and the footer sits on the bottom edge of the screen](img/guide-footer-bottom.webp)](img/guide-footer-bottom.webp)
 
+### A header that does more than sit at the top
+
+Make the header stay on screen first (**Design → Placement → Sticks when reached**). Then:
+
+| You want | Where | What a visitor sees |
+|---|---|---|
+| The header out of the way while reading | **When you scroll down → Slides away** or **Fades out** | Scrolling down, it slides off (or fades); scrolling up — or moving into it with the keyboard, or reaching the end of the page — brings it straight back. With "reduce motion" on, it goes and comes without moving. |
+| The header lying over the first photo | **Over the first section** (a Page header) | The first section starts at the very top, its background running under the header; its words start below the header, so nothing is printed over them. Ticking it sets **When it takes hold → Solid**, so the header fills in once it is held. |
+| A top bar that scrolls away, the menu that stays | **Keep only the last row on screen** (a Page header made as a **Stack** of rows) | The rows above the last scroll away; the last row — your menu — stays held at the top. |
+| An announcement on every page | **Meaning → Add an announcement bar** (a Page header) | A bar becomes the header's first row — on every page, read out as a status, and a visitor who closes it does not see it again on the other pages. In a Side by side header it gets a row of its own above your name and links. |
+| No header on one page (a landing page) | **Page settings → Show the header on this page** (and the footer) | That page has none; every other page keeps it, and any change made meanwhile is there when you tick it again. |
+
+[![A Page header with an announcement bar as its first row, full width above the name and four links; the Inspector shows What is this block? set to Page header with On every page ticked](img/guide-announcement-bar.webp)](img/guide-announcement-bar.webp)
+
+**Never more than a quarter of the screen.** If the bars held on screen — a held header, a held bottom bar — cover more than a
+quarter of a phone held upright or on its side, the **Page check** says so, names them, and **Show me** selects one. Let a row
+scroll away, make the header slide away, or make the bars shorter.
+
+**Nothing goes above the header or below the footer by accident.** "Before" on the header puts the new block just under it;
+"After" on the footer, just above it — the header and footer stay the page's, and stay shared.
+
 ### What you get in the ZIP, and why it's built that way
 
 | | |

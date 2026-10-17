@@ -11,7 +11,7 @@
 import type { CSSProperties } from "react";
 import { PILL, dividerThickness, borderLen, videoSizing, blockTypography,pinArrivalCss, pinArrivalKeyframes, floatHoldCSS,
   type BoxNode, type Breakpoint, type SectionFlag, BP_ORDER, containerStyle, childStyle, hostSizedFor, marginCSS, leafPaddingCSS, ownSidePadVars, outerSpaceCSS, pageBandInset, pagePinCover, sectionContent, sizeToCSS, radiusCSS, SHADOW_CSS, u, LIST_ITEM_GAP, textLen, baseUnit, fadedPaint, boxOpacity, backgroundCss, paintLayerCss,
-  resolveResponsive, floatStacksOnMobile, floatingReserve, alertToastCss, accordionClasses, bandClasses, videoEmbedSrc, isContainer, sanitizeCssDeclarations, expandScopedCss, COMPONENT_PARTS, itemFloatContextCss, itemOverrideCss, itemNumberVars, richBody, plainBody, componentTextCss, componentBoxCss, renderAlertHTML, alertDismissScript, masonryMeasureAttr, masonryMeasureScript, pinStackMarker, pinStackGroupMarker, pinStackNeeded, pinStackScript, pinArrivalMarker, pinArrivalScript, treeHasArrival, isPager, pagerNavHTML, pagerScript, pagerStripCss, pagerSlideId, bgShowThroughCss, blockContainmentCss, COMPONENT_ITEM_SEL, remLen, imageSizing, fillsRowsAnywhere, fillHostOf, hasIntrinsicSize, itemNeedsClass, itemScope, floatZIndex, typoRole, typoRootVars, typoCascadeCss, bandEdgeCSS, LINK_COLOR_CSS, gridQueryCss, TYPE_UNIT_PROPERTY_CSS,
+  resolveResponsive, floatStacksOnMobile, floatingReserve, alertToastCss, accordionClasses, bandClasses, videoEmbedSrc, isContainer, sanitizeCssDeclarations, expandScopedCss, COMPONENT_PARTS, itemFloatContextCss, itemOverrideCss, itemNumberVars, richBody, plainBody, componentTextCss, componentBoxCss, renderAlertHTML, alertDismissScript, masonryMeasureAttr, masonryMeasureScript, pinStackMarker, pinStackGroupMarker, pinStackNeeded, pinStackScript, headerMarkers, headerScript, headerScriptNeeded, underOverHeaderPad, pinArrivalMarker, pinArrivalScript, treeHasArrival, isPager, pagerNavHTML, pagerScript, pagerStripCss, pagerSlideId, bgShowThroughCss, blockContainmentCss, COMPONENT_ITEM_SEL, remLen, imageSizing, fillsRowsAnywhere, fillHostOf, hasIntrinsicSize, itemNeedsClass, itemScope, floatZIndex, typoRole, typoRootVars, typoCascadeCss, bandEdgeCSS, LINK_COLOR_CSS, gridQueryCss, TYPE_UNIT_PROPERTY_CSS,
 } from "@/lib/box-model";
 import { isRegistryComponent, renderComponent, componentScripts } from "@/lib/educo-ui/registry";
 import { iconSvg } from "@/lib/educo-ui/icon-svg";
@@ -477,6 +477,7 @@ function styleAt(node: BoxNode, rawParent: BoxNode | null, bp: Breakpoint, theme
   if (r.hidden) wrap.display = "none"; // hidden-on-this-device → removed at that breakpoint
   if (isContainer(r)) {
     const cs: CSSProperties = { ...containerStyle(r, bp, section), ...pageBandInset(r, onPage), ...wrap, ...pagePinCover(r, onPage) };
+    Object.assign(cs, underOverHeaderPad(rawParent, node, cs.paddingTop, grand)); // LE11-4 — the canvas writes the same
     // An EMPTY container that paints a background would collapse to 0px in the exported/preview site (the editor's
     // "Drag a block here" placeholder gives it height, but that's editor-only). Give it a visible band so the
     // background actually shows — unless the user gave it an explicit height/min-height.
@@ -608,7 +609,9 @@ function renderNode(node: BoxNode, rawParent: BoxNode | null, theme: SiteTheme, 
     // WHICH stack it joins (2e) — the window for a fixed bar, the box it travels inside for a sticky one.
     + ((g) => (g ? ` data-eu-pin-in="${esc(g)}"` : ""))(pinStackGroupMarker(node, rawParent ?? undefined))
     // RX4-13: an arrival starts where this block takes hold — `pinArrivalPass` finds it by this marker.
-    + (pinArrivalMarker(node) ? " data-eu-arrive" : "");
+    + (pinArrivalMarker(node) ? " data-eu-arrive" : "")
+    // LE-11: a header that slides / fades away, lies over the first section, keeps only its last row — `headerScript` reads these
+    + Object.entries(headerMarkers(node, rawParent ?? undefined)).map(([k, v]) => ` ${k}="${esc(v)}"`).join("");
   // A structural band also carries its layout classes — computed by box-model, so the canvas gets the same ones.
   const allCls = [cls, bandClasses(r, isPageSection), el === "ul" || el === "ol" ? "eu-list" : ""].filter(Boolean).join(" ");
   if (isContainer(r)) {
@@ -766,7 +769,7 @@ export function renderPageHTML(root: BoxNode, theme: SiteTheme, pageMap: Map<str
    * relationship BETWEEN blocks, and no one of them owns it. `pinStackNeeded` is what keeps zero-JS the
    * default: fewer than two bars at one edge and nothing is emitted at all, at any rung.
    */
-  const stack = (pinStackNeeded(root) ? pinStackScript() : "") + (treeHasArrival(root) ? pinArrivalScript() : "") + (hasHostedVideo(root) ? videoScript() : "") + (scrollRevealNeeded(root) ? revealOnceScript() : "");
+  const stack = (pinStackNeeded(root) ? pinStackScript() : "") + (treeHasArrival(root) ? pinArrivalScript() : "") + (hasHostedVideo(root) ? videoScript() : "") + (scrollRevealNeeded(root) ? revealOnceScript() : "") + (headerScriptNeeded(root) ? headerScript() : "");
   const prev = SEM; SEM = resolvePage(root);
   try {
     if (sheet) return SKIP_LINK_HTML + renderNode(root, null, theme, pageMap, sheet) + stack; // shared sheet → caller emits the CSS

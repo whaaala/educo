@@ -15,6 +15,8 @@ export interface BoxPage {
   path: string;   // URL slug (unique within the site), e.g. "about" — "" / "home" for the landing page
   root: BoxNode;  // the page's box tree
   grid?: PageGridSettings; // "This page uses its own grid" (AC-37b) — absent: the site's
+  /** PS-14 (BATCH LE-11): a shared header / footer left off THIS page — the copy set aside here, kept in step with every edit. */
+  away?: Partial<Record<"header" | "footer", BoxNode[]>>;
 }
 
 export interface BoxSite {
@@ -127,6 +129,8 @@ export function syncSharedRegions(site: BoxSite, id: string, prev: BoxNode): Box
     const keptHere = !now && was!.some((n) => !!findBox(src.root, regionBlock(n)?.id ?? "")); // the block is still on this page (turned off, or made something else) — only a DELETED one goes everywhere
     pages = pages.map((p) => {
       if (p.id === id) return p;
+      const set = p.away?.[which]; // PS-14: left off this page — the copy set aside follows the edit, the page does not
+      if (set) return { ...p, away: { ...p.away, [which]: now ?? (keptHere ? set.map(unshare) : undefined) } };
       if (now) return { ...p, root: withRegion(p.root, which, now) };
       const theirs = sharedRegion(p.root, which);
       return theirs ? { ...p, root: withRegion(p.root, which, keptHere ? theirs.map(unshare) : []) } : p;
@@ -139,10 +143,27 @@ export function syncSharedRegions(site: BoxSite, id: string, prev: BoxNode): Box
 function withSharedRegions(site: BoxSite, root: BoxNode): BoxNode {
   let out = root;
   for (const which of REGIONS) {
-    const shared = site.pages.map((p) => sharedRegion(p.root, which)).find(Boolean);
+    const shared = site.pages.map((p) => sharedRegion(p.root, which)).find(Boolean) ?? site.pages.map((p) => p.away?.[which]).find(Boolean);
     if (shared) out = withRegion(out, which, shared);
   }
   return out;
+}
+
+/** PS-14 · is there a shared header / footer anywhere on the site (shown, or set aside on a page)? */
+export const hasSharedRegion = (site: BoxSite, which: Region): boolean => site.pages.some((p) => !!sharedRegion(p.root, which) || !!p.away?.[which]);
+/** PS-14 · "Show the header on this page" — off: the shared region is set aside on this page; on: it comes back as it is now. */
+export function setRegionShown(site: BoxSite, pageId: string, which: Region, shown: boolean): BoxSite {
+  const page = findPage(site, pageId);
+  if (!page || shown === !page.away?.[which]) return site;
+  const others = site.pages.filter((p) => p.id !== pageId);
+  const current = others.map((p) => sharedRegion(p.root, which)).find(Boolean) ?? others.map((p) => p.away?.[which]).find(Boolean);
+  const set = (p: BoxPage): BoxPage => {
+    if (p.id !== pageId) return p;
+    if (!shown) { const nodes = sharedRegion(p.root, which) ?? current; return nodes ? { ...p, root: withRegion(p.root, which, []), away: { ...p.away, [which]: nodes } } : p; }
+    const { [which]: back, ...rest } = p.away ?? {};
+    return { ...p, root: withRegion(p.root, which, current ?? back ?? []), away: Object.keys(rest).length ? rest : undefined };
+  };
+  return { ...site, pages: site.pages.map(set) };
 }
 
 /** Add a page (unique slug) — it arrives with the shared header and footer; returns the new site + the new page id. */

@@ -45,6 +45,7 @@ const BROWSER_ALLOWED = new Set([
   "masonryMeasurePass",
   "pinStackPass",
   "pinArrivalPass", // RX4-13 — where each pinned block's arrival starts
+  "headerPass", // LE-11 — a header over the first section, a header keeping only its last row: measured, as pinStackPass
   // Builders of <script> strings. Their `document.` lives inside a template literal: it is text the exported
   // page will run, not something this module does.
   "alertDismissScript",

@@ -133,12 +133,12 @@ when its batch opens.
 
 | ID | Capability | Leader | Real pages | Tier now | Batch |
 |---|---|---|---|---|---|
-| PS-6 | a two-row header, one row held | built on PO-1 (Webflow, Wix) *(verify)* | 28.6 %, education 35 % | Must | **LE-11** |
-| PS-7 | a header over the hero, solid once scrolled | Wix header scroll effects *(verify)* | 20.5 % | Must | **LE-11** |
-| PO-7 / PN-3 | a header that hides on scroll down, returns on up | Squarespace H, Wix *(verify)* | — | Must (also on the effects list) | **LE-11** |
-| PS-10 | an announcement bar (school closures) | Squarespace *(verify)* | — | essential Should | **LE-11** |
-| PS-14 | hide the shared header / footer on one page | Squarespace H, WordPress H | — | essential Should | **LE-11** |
-| AX-6 | held bars at most a quarter of the screen (WCAG 1.4.10) | — | needed once the above exist | Must | **LE-11** |
+| PS-6 | a two-row header, one row held | built on PO-1 (Webflow, Wix) *(verify)* | 28.6 %, education 35 % | Must | **LE-11 — DONE 2026-10-17** |
+| PS-7 | a header over the hero, solid once scrolled | Wix header scroll effects *(verify)* | 20.5 % | Must | **LE-11 — DONE 2026-10-17** |
+| PO-7 / PN-3 | a header that hides on scroll down, returns on up | Squarespace H, Wix *(verify)* | — | Must (also on the effects list) | **LE-11 — DONE 2026-10-17** |
+| PS-10 | an announcement bar (school closures) | Squarespace *(verify)* | — | essential Should | **LE-11 — DONE 2026-10-17** |
+| PS-14 | hide the shared header / footer on one page | Squarespace H, WordPress H | — | essential Should | **LE-11 — DONE 2026-10-17** |
+| AX-6 | held bars at most a quarter of the screen (WCAG 1.4.10) | — | needed once the above exist | Must | **LE-11 — DONE 2026-10-17** |
 | SZ-4 | a proportion (16:9, 1:1, 4:3…) and a custom one | Webflow "Ratio presets", Framer | video 19.5 % | Must (D1 reversed) | **LE-12** |
 | SZ-3 | min / max width and height | Webflow, Wix, Framer | — | Must | **LE-12** |
 | GR-2 | a grid by minimum card width (auto-fit) | Webflow, Framer; ours engine-only | rule 16 | Must | **LE-12** |

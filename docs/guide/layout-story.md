@@ -481,6 +481,15 @@ on the bottom edge of the screen, not half-way up. On the long *News* page the f
 anywhere is an edit everywhere; delete it once and it is gone everywhere (Ctrl+Z brings it back); a new page arrives with
 it; a block added "at the end" goes above the footer; a page that ends with a footer is at least one screen tall.
 
+### "A header that gets out of the way"
+
+On a phone, the header Amaka built takes a fifth of the screen. She sets **When you scroll down → Slides away**: reading the
+news, it slides off; the moment she scrolls back up it is there again — and a parent using the keyboard who tabs into the menu
+gets it back too. On the home page she ticks **Over the first section**: the school photo now runs up under the header, the
+headline sits just below it, and the header fills in white once it is held. For the open-day week she presses **Add an
+announcement bar** — it is on every page, and a parent who closes it is not asked again. The admissions landing page gets no
+header at all: **Page settings → Show the header on this page**, unticked there only.
+
 ## 10. What is published
 
 Everything above becomes proper HTML5: `header`, `nav`, `main`, `aside`, `section`, `footer`; one `h1`; heading levels

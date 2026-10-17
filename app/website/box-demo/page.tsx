@@ -11,6 +11,7 @@
 import { SHARED_KEYS } from "@/lib/per-screen-note";
 import INSPECTOR from "@/config/inspector.json";
 const PAGE_ORDER = INSPECTOR.pageOrder; // LE8-2: "Move earlier" / "Move later" (RULE CFG)
+const PAGE_REGIONS = INSPECTOR.pageRegions; // PS-14: "Show the header / footer on this page" (RULE CFG)
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { LayoutGrid, Plus, Smartphone, Tablet, Laptop, Monitor, Tv, Maximize2, RotateCw, RotateCcw, Undo2, Redo2, Eye, ShieldCheck, X, Home, Trash2, Files, Download, Settings2, Palette, SlidersHorizontal, PanelRightClose, PanelRightOpen, AlertTriangle, ChevronUp, MoreHorizontal, ChevronLeft, ChevronRight } from "lucide-react";
 import { DEFAULT_THEME, resolveSiteTheme } from "@/lib/site-storage";
@@ -21,11 +22,11 @@ import {
   floatBox, unfloatBox, bringToFront, bringForward, sendBackward, sendToBack,
   resolveResponsive, updateBoxResponsive, clearOverride, hasOverride,
   gridColumns, setColumnFraction, pinBlockedBy, fixedBlockedBy, blockedByLabel, pinScopeWords, isFloating,
-  isSectionContentIn, sectionPlaceIn, insertSlot, pageEnd, defaultWhere, addInsideParent, placeSharing, retrackGridAt, type InsertWhere, isContainer, outerSpaceDefaults, spanAt, setSpan, lineUpWithGrid, linesAt, setLinesAt, fullWidthAt, setFreeInset, fitStepAt, fillsRows, fillHostOf,
+  isSectionContentIn, sectionPlaceIn, insertSlot, pageEnd, addAnnouncementBar, defaultWhere, addInsideParent, placeSharing, retrackGridAt, type InsertWhere, isContainer, outerSpaceDefaults, spanAt, setSpan, lineUpWithGrid, linesAt, setLinesAt, fullWidthAt, setFreeInset, fitStepAt, fillsRows, fillHostOf,
 } from "@/lib/box-model";
 import { blockForKind } from "@/lib/box-presets";
 import {
-  type BoxSite, freshSite, siteFonts, setSiteFonts, SAVED_SITE_FONTS, coerceSite, normalizeSite, setPageRoot, addPage, deletePage, renamePage, setHomePage, duplicatePage, emptyPageRoot, setSiteTheme, setPageGrid, movePage,
+  type BoxSite, freshSite, siteFonts, setSiteFonts, SAVED_SITE_FONTS, coerceSite, normalizeSite, setPageRoot, addPage, deletePage, renamePage, setHomePage, duplicatePage, emptyPageRoot, setSiteTheme, setPageGrid, movePage, hasSharedRegion, setRegionShown,
 } from "@/lib/box-site";
 import { columnsAt, resolvePageGrid, type PageGridSettings } from "@/lib/page-grid";
 import PageGridPanel from "@/components/website/box/PageGridPanel";
@@ -1334,6 +1335,12 @@ export default function BoxDemoPage() {
                 <button onClick={() => onMovePage(-1)} disabled={site.pages[0]?.id === activePage.id} className="flex items-center justify-center gap-1 text-xs px-2 py-1.5 rounded-lg border border-line text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-100 dark:hover:bg-white/10 disabled:opacity-40"><ChevronLeft className="w-3.5 h-3.5" aria-hidden="true" /> {PAGE_ORDER.earlier}</button>
                 <button onClick={() => onMovePage(1)} disabled={site.pages[site.pages.length - 1]?.id === activePage.id} className="flex items-center justify-center gap-1 text-xs px-2 py-1.5 rounded-lg border border-line text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-100 dark:hover:bg-white/10 disabled:opacity-40">{PAGE_ORDER.later} <ChevronRight className="w-3.5 h-3.5" aria-hidden="true" /></button>
               </div>
+              {(["header", "footer"] as const).filter((w) => hasSharedRegion(site, w)).map((w) => (
+                <label key={w} className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200">{/* PS-14 */}
+                  <input type="checkbox" checked={!activePage.away?.[w]} onChange={(e) => pushSite(setRegionShown(site, activePage.id, w, e.target.checked))} />
+                  {PAGE_REGIONS[w]}
+                </label>
+              ))}
               <button onClick={() => { const r = lineUpWithGrid(root, columnsAt(gridHere, bp), bp); if (r.moved) commit(r.root);
                 const screen = DEVICES.find((d) => d.id === device)?.label ?? "this screen";
                 setLineUpSaid(r.moved ? `${r.moved} block${r.moved === 1 ? "" : "s"} moved to the grid on ${screen}. Undo puts them back.` : `Everything on ${screen} is already on the grid.`); }}
@@ -1362,6 +1369,12 @@ export default function BoxDemoPage() {
                 <button onClick={() => onMovePage(-1)} disabled={site.pages[0]?.id === activePage.id} className="flex items-center justify-center gap-1 text-xs px-2 py-1.5 rounded-lg border border-line text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-100 dark:hover:bg-white/10 disabled:opacity-40"><ChevronLeft className="w-3.5 h-3.5" aria-hidden="true" /> {PAGE_ORDER.earlier}</button>
                 <button onClick={() => onMovePage(1)} disabled={site.pages[site.pages.length - 1]?.id === activePage.id} className="flex items-center justify-center gap-1 text-xs px-2 py-1.5 rounded-lg border border-line text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-100 dark:hover:bg-white/10 disabled:opacity-40">{PAGE_ORDER.later} <ChevronRight className="w-3.5 h-3.5" aria-hidden="true" /></button>
               </div>
+              {(["header", "footer"] as const).filter((w) => hasSharedRegion(site, w)).map((w) => (
+                <label key={w} className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200">{/* PS-14 */}
+                  <input type="checkbox" checked={!activePage.away?.[w]} onChange={(e) => pushSite(setRegionShown(site, activePage.id, w, e.target.checked))} />
+                  {PAGE_REGIONS[w]}
+                </label>
+              ))}
               <button onClick={() => { const r = lineUpWithGrid(root, columnsAt(gridHere, bp), bp); if (r.moved) commit(r.root);
                 const screen = DEVICES.find((d) => d.id === device)?.label ?? "this screen";
                 setLineUpSaid(r.moved ? `${r.moved} block${r.moved === 1 ? "" : "s"} moved to the grid on ${screen}. Undo puts them back.` : `Everything on ${screen} is already on the grid.`); }}
@@ -1491,7 +1504,7 @@ export default function BoxDemoPage() {
                   onSetSpan={(n) => commit(setSpan(root, selected.id, n, columnsAt(gridHere, bp), bp), `span:${selected.id}`)}
                   pageLines={(() => { const c = columnsAt(gridHere, bp), l = linesAt(root, selected.id, c, bp); if (!l) return undefined; const w = device === screenDevice ? fitW : DEVICES.find((d) => d.id === device)?.w, band = findParent(root, selected.id)?.parent; return { ...l, cols: c, drawnAcross: w && band ? fitStepAt(band, selected.id, w / 16, bp) ?? undefined : undefined }; })()}
                   onSetLines={(want) => commit(want === "full" ? fullWidthAt(root, selected.id, bp) : setLinesAt(root, selected.id, want, columnsAt(gridHere, bp), bp), `lines:${selected.id}`)}
-                  onSetFreeInset={linesAt(root, selected.id, columnsAt(gridHere, bp), bp) ? (side, v) => commit(side === "both" ? setFreeInset(setFreeInset(root, selected.id, "left", undefined, bp), selected.id, "right", undefined, bp) : setFreeInset(root, selected.id, side, v, bp), `free:${selected.id}`) : undefined}pinBlockedBy={blockedByLabel(pinBlockedBy(root, selected.id, bp))} fixedBlockedBy={blockedByLabel(fixedBlockedBy(root, selected.id, bp))} pinScope={pinScopeWords(root, selected.id, bp)} node={bp === "base" ? selected : resolveResponsive(selected, bp)} theme={renderTheme} onPatch={onPatch} onAddChild={addChildSection} onFloat={floatSelected} onUnfloat={unfloatSelected} onLayer={layerSelected} onAlignInRow={(j) => commit(alignInRow(root, selected.id, j, bp))} rowJustify={alignInRowOf(root, selected.id, bp)} onSectionWidth={pageBandOf(root, selected.id) ? (v) => commit(setSectionWidth(root, selected.id, v)) : undefined} sectionWidth={sectionWidthOf(root, selected.id)} canFloat={selected.id !== root.id} inGrid={gridTrack !== undefined} inMasonry={parentGrid?.rowFlow === "masonry"} gridTrack={gridTrack} onSetFraction={setFraction} onRetrack={retrackSelected} breakpoint={bp} overridden={hasOverride(selected, bp)} onResetOverride={resetOverride} pages={pageList} currentPageId={activePage.id} />
+                  onSetFreeInset={linesAt(root, selected.id, columnsAt(gridHere, bp), bp) ? (side, v) => commit(side === "both" ? setFreeInset(setFreeInset(root, selected.id, "left", undefined, bp), selected.id, "right", undefined, bp) : setFreeInset(root, selected.id, side, v, bp), `free:${selected.id}`) : undefined}pinBlockedBy={blockedByLabel(pinBlockedBy(root, selected.id, bp))} fixedBlockedBy={blockedByLabel(fixedBlockedBy(root, selected.id, bp))} pinScope={pinScopeWords(root, selected.id, bp)} node={bp === "base" ? selected : resolveResponsive(selected, bp)} theme={renderTheme} onPatch={onPatch} onAddChild={addChildSection} onAddAnnouncement={() => commit(addAnnouncementBar(root, selected.id))} onFloat={floatSelected} onUnfloat={unfloatSelected} onLayer={layerSelected} onAlignInRow={(j) => commit(alignInRow(root, selected.id, j, bp))} rowJustify={alignInRowOf(root, selected.id, bp)} onSectionWidth={pageBandOf(root, selected.id) ? (v) => commit(setSectionWidth(root, selected.id, v)) : undefined} sectionWidth={sectionWidthOf(root, selected.id)} canFloat={selected.id !== root.id} inGrid={gridTrack !== undefined} inMasonry={parentGrid?.rowFlow === "masonry"} gridTrack={gridTrack} onSetFraction={setFraction} onRetrack={retrackSelected} breakpoint={bp} overridden={hasOverride(selected, bp)} onResetOverride={resetOverride} pages={pageList} currentPageId={activePage.id} />
               ) : (
                 <div className="p-6 text-xs text-gray-400 text-center mt-6">Click a block to edit it — or drag a box on empty canvas to select several at once.</div>
               )}

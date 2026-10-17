@@ -22,7 +22,7 @@ import {
   updateBox, deleteBox, insertBox, pageEnd, moveBlock, canMoveBlock, moveAxis, duplicateBox, moveBox, cloneBox, findParent, isAncestor, isContainer, containerLabel, widthPct, stackWithBlock, fitBand, PILL, blockTypography,
   isFloating, floatBox, unfloatBox, groupBoxes, ungroupBoxes, bringToFront, sendToBack, bringForward, sendBackward, packRowLines, allocateLine, type LineFollower,
   shouldTakeMirrorBox, mirrorFlushSides, edgeSwipeSides, hostSizedFor, type MirrorBox, type MirrorChase, fadedPaint, boxOpacity, backgroundCss, treePaintLayerCss, radiusCSS, isClipped, SHADOW_CSS, videoEmbedSrc, sanitizeCssDeclarations, expandScopedCss, ACCORDION_CSS_PARTS, itemOverrideCss, itemHasOverride, itemNumberVars, richBody, componentTextCss, componentBoxCss, bgShowThroughCss, resizeTopEdge, blockContainmentCss, alertToastCss, treeHasToast, treeHasFixedHold, accordionClasses, bandClasses, advancedCssStyle, alertActionsHTML, hugsContent, itemFloatContextCss, COMPONENT_ITEM_SEL, clampContentScale, MIN_CONTENT_SCALE, isMultiItemComponent, comfortableWidth, remLen, rootFontPx, isDefiniteLen, addItemAfter, duplicateItem, duplicateChildItem, removeItem, removeChildItem, moveItem, moveChildItem, updateItem, updateChildItem, ALERT_SEVERITY_ICON, alertPartInline, alertIconInline, collectAlertItemStyles,
-  type Breakpoint, resolveResponsive, updateBoxResponsive, treePinArrivalCss, floatHoldCSS, canvasFixedStyle, capturesFixed, imageSizing, fillsRowsAnywhere, fillHostOf, importPhoto, treeItemEffectsCss, itemNeedsClass, floatZIndex, gridPlacementAt, masonryMeasureAttr, masonryMeasurePass, mirrorMeasuresNow, baseUnitParts, pinStackMarker, pinStackGroupMarker, pinStackPass, pinArrivalMarker, pinArrivalPass, isPager, pagerStripCss, pagerNavHTML, selectionChain, textLen, typoRole, typoRootVars, typoCascadeCss, bandEdgeCSS, LINK_COLOR_CSS, treeGridQueryCss, TYPE_UNIT_PROPERTY_CSS,
+  type Breakpoint, resolveResponsive, updateBoxResponsive, treePinArrivalCss, floatHoldCSS, canvasFixedStyle, capturesFixed, imageSizing, fillsRowsAnywhere, fillHostOf, importPhoto, treeItemEffectsCss, itemNeedsClass, floatZIndex, gridPlacementAt, masonryMeasureAttr, masonryMeasurePass, mirrorMeasuresNow, baseUnitParts, pinStackMarker, pinStackGroupMarker, pinStackPass, pinArrivalMarker, pinArrivalPass, headerMarkers, headerPass, underOverHeaderPad, isPager, pagerStripCss, pagerNavHTML, selectionChain, textLen, typoRole, typoRootVars, typoCascadeCss, bandEdgeCSS, LINK_COLOR_CSS, treeGridQueryCss, TYPE_UNIT_PROPERTY_CSS,
 } from "@/lib/box-model";
 import { ICON_SET } from "./icons";
 import { PortalMenu, MenuItem, MenuHeader, MenuSep, modalOpen, NON_TEXT_INPUTS } from "./ui";
@@ -1388,6 +1388,7 @@ export default function BoxCanvas({
       // because it needs the same triggers: a re-render, a resize, a font landing, a photo decoding.
       pinStackPass(host);
       pinArrivalPass(host); // RX4-13 — where each arrival starts; the export ships this function's source
+      headerPass(host); // LE-11 — over the first section, the last row held; the export ships this function's source (the away watcher stays off while you edit)
     };
     run();
     // A ResizeObserver catches what a render does not: a photo decoding, a web font landing, the device frame
@@ -3909,6 +3910,7 @@ export default function BoxCanvas({
       ...((m) => (m ? { "data-eu-pin": m } : {}))(pinStackMarker(rawNode, parent ?? undefined)),
       // …and WHICH stack it joins (2e): the window for a fixed bar, the box it travels inside for a sticky one.
       ...((g) => (g ? { "data-eu-pin-in": g } : {}))(pinStackGroupMarker(rawNode, parent ?? undefined)),
+      ...headerMarkers(rawNode, parent ?? undefined), // LE-11 — the header pass measures over-the-hero and the last row here too
       // RX4-13: the same arrival marker the export writes, so the canvas's arrival starts where the bar takes hold too.
       ...(pinArrivalMarker(rawNode) ? { "data-eu-arrive": "" } : {}),
     };
@@ -4027,6 +4029,7 @@ export default function BoxCanvas({
             ...(editable && kids.length === 0 ? { position: "relative" as const } : {}),
             ...canvasStyle,
             ...pagePinCover(node, parent?.id === root.id), // F1-b — after the band's own style, as the export does
+            ...(isContainer(node) ? underOverHeaderPad(parent, rawNode, { ...containerStyle(node, breakpoint, section), ...canvasStyle }.paddingTop, grand) : {}), // LE11-4 — the export writes the same
             // NOT the page root and NOT a row band. Both are invisible scaffolding rather than boxes anyone
             // added: the root carries the PAGE's own minimum height (roughly a viewport) and an 8rem courtesy
             // band would overrule it, collapsing an empty page to a strip.

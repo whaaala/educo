@@ -1,4 +1,4 @@
-import { createComponent, createContainer, createElement, type BoxNode } from "@/lib/box-model";
+import { createComponent, createContainer, createElement, ANNOUNCEMENT_BAR, type BoxNode } from "@/lib/box-model";
 import { ACCORDION_DESIGN_COUNT } from "@/lib/educo-ui/accordions";
 
 /**
@@ -221,7 +221,7 @@ const ALERT_CHOICES: AddChoice[] = [
   { id: "success", label: "Success", patch: { alertSeverity: "success", alertForm: "inline" } },
   { id: "warning", label: "Warning", patch: { alertSeverity: "warning", alertForm: "inline" } },
   { id: "error", label: "Error", patch: { alertSeverity: "danger", alertForm: "inline" } },
-  { id: "banner", label: "Announcement bar", patch: { alertSeverity: "brand", alertForm: "banner", width: "fill" } },
+  { id: "banner", label: "Announcement bar", patch: ANNOUNCEMENT_BAR }, // PS-10: the header's "Add an announcement bar" makes the same
   { id: "callout", label: "Docs callout", patch: { alertSeverity: "neutral", alertForm: "callout" } },
 ];
 

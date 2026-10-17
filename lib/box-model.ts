@@ -17,7 +17,7 @@ import { BREAKPOINTS_EM } from "@/lib/educo-ui/base";
 import { RUNG_MEASURE, RUNG_PX, COLUMN_FLOORS_REM, MEDIA, type RungName } from "@/lib/educo-ui/layout";
 import { hasItemEffects, itemEffectsCss, revealEffect, REVEAL_DUR, REVEAL_EASE, REVEAL_WAIT, shapeShadowFilter } from "@/lib/interactions";
 import { PAGE_Z, clampPageZ } from "@/lib/educo-ui/stacking";
-import { remLen, SHADOW_SCALE, SPACE_STEPS } from "@/lib/educo-ui/tokens";
+import { remLen, SHADOW_SCALE, SPACE_STEPS, DURATION, EASING } from "@/lib/educo-ui/tokens";
 import { contrastRatio, hexToRgb, oklchToRgb, rgbToHex, rgbToOklch } from "@/lib/educo-ui/color";
 import { colorToCSS } from "@/components/shared/ColorPalettePicker";
 import { PAGE_GRID_DEFAULT, columnsAt, gridTemplate, rowTrackCount } from "@/lib/page-grid";
@@ -449,6 +449,13 @@ export interface BoxNode {
   pinArrival?: "shadow" | "solid" | "glass" | "rule" | "condense";
   /** How much scrolling the arrival takes to complete, in the fluid base unit. Default 12 (~120px). */
   pinArrivalAfter?: number;
+  /** LE-11 · PO-7 / PN-3: a bar held at the TOP gets out of the way while the visitor scrolls down — slides off or fades —
+   *  and comes back on scroll up, when the focus goes into it, and at the page's end (`awayGone`). Absent: it stays. */
+  pinAway?: "slide" | "fade";
+  /** LE-11 · PS-7: a header held at the top lies over the first section — the band after it slides up under it (`--eu-over`). */
+  pinOver?: boolean;
+  /** LE-11 · PS-6: a held header keeps only its LAST row on screen; the rows above it (a top bar) scroll away (`--eu-pin-skip`). */
+  pinLastRow?: boolean;
   /**
    * WHERE A FLOATED BLOCK HOLDS ON SCREEN — px from the top-left of the box it is measured against.
    *
@@ -2302,7 +2309,10 @@ export function insertSlot(root: BoxNode, selectedId: string | null, where: Inse
   const here = findParent(root, selected.id);
   const at = (here?.parent.rowBand ? findParent(root, here.parent.id) : null) ?? here;
   if (!at) return { parentId: root.id, index: root.children?.length ?? 0 };
-  return { parentId: at.parent.id, index: at.index + (where === "before" ? 0 : 1) };
+  const index = at.index + (where === "before" ? 0 : 1);
+  // LE11-1: on the PAGE, content goes between the header and the footer — Before the header lands under it, After the footer above it
+  // (a block above the header ends the header's region, and a shared header would silently stop being shared on every page)
+  return at.parent.id === root.id ? { parentId: root.id, index: Math.min(pageEnd(root), Math.max(regionSpan(root, "header")[1], index)) } : { parentId: at.parent.id, index };
 }
 /** The choice a plain click makes — `paletteClickSlot`'s rule, named, so the menu shows what WILL happen. */
 export function defaultWhere(root: BoxNode, selectedId: string | null): InsertWhere {
@@ -6984,7 +6994,7 @@ const stickyEdge = (pin: NonNullable<BoxNode["pin"]>): "top" | "bottom" =>
  */
 export function pinStackAttr(node: BoxNode, parent?: BoxNode, bp: Breakpoint = "base"): "top" | "bottom" | null {
   if (parent && bandCarriesPin(parent, bp)?.id === node.id) return null;
-  const src = bandCarriesPin(node, bp) ?? node;
+  const src = bandCarriesPin(node, bp) ?? resolveResponsive(node, bp); // LE11-7: the pin AT this screen — one set while Mobile was edited lives there
   if (!src.pin) return null;
   if (src.position === "absolute" || node.position === "absolute") return null;
   /**
@@ -7021,7 +7031,7 @@ export function pinStackAttr(node: BoxNode, parent?: BoxNode, bp: Breakpoint = "
  */
 export function pinStackGroup(node: BoxNode, parent?: BoxNode, bp: Breakpoint = "base"): string | null {
   if (!pinStackAttr(node, parent, bp)) return null; // this element does not join a stack at all
-  const src = bandCarriesPin(node, bp) ?? node;
+  const src = bandCarriesPin(node, bp) ?? resolveResponsive(node, bp);
   if ((src.hold ?? "sticky") === "fixed") return "window";
   return parent?.id ?? "page";
 }
@@ -7157,6 +7167,98 @@ export function pinStackPass(root: ParentNode): void {
  * nothing at all. It re-runs whenever a height it measured could have changed — the window resizing, the web
  * fonts landing — because each of those lands after the first pass and silently invalidates it.
  */
+// ── THE HEADER, BEST-GRADE (BATCH LE-11) ─────────────────────────────────────────────────────────────────────
+/** The markers a bar held at the TOP carries for the header pass and script — on the element that carries `data-eu-pin`. */
+export function headerMarkers(node: BoxNode, parent?: BoxNode): Record<string, string> {
+  // LE11-7: the screen where it IS held at the top — a pin set while Mobile was edited is the phone's alone
+  const bp = PIN_RUNGS.find((b) => pinStackAttr(node, parent, b) === "top");
+  if (!bp) return {};
+  const src = bandCarriesPin(node, bp) ?? resolveResponsive(node, bp);
+  const out: Record<string, string> = {};
+  if (src.pinAway) out["data-eu-away"] = src.pinAway;
+  if (src.pinOver && (src.hold ?? "sticky") !== "fixed") out["data-eu-over"] = "";
+  if (src.pinLastRow) out["data-eu-lastrow"] = "";
+  return out;
+}
+/** Does this page need the header script? Zero JS stays the default. */
+export function headerScriptNeeded(root: BoxNode): boolean {
+  const walk = (n: BoxNode, parent?: BoxNode): boolean => Object.keys(headerMarkers(n, parent)).length > 0 || (n.children ?? []).some((c) => walk(c, n));
+  return walk(root);
+}
+/**
+ * PO-7: is a header that gets out of the way GONE right now? Only while the visitor scrolls DOWN, once past it — never with the focus
+ * inside it (a keyboard user Tabbing into the menu gets it back, WCAG 2.4.11) and never at the page's end (where the footer sits and
+ * a reader looks for the way on). Research: docs/web-anatomy/motion/library/1-held.md H5.
+ */
+export function awayGone(s: { y: number; lastY: number; h: number; vh: number; docH: number; focus: boolean }): boolean {
+  return !s.focus && s.y > s.lastY && s.y > s.h && s.y + s.vh < s.docH - 2;
+}
+/**
+ * The ONE measuring pass for the header (PS-6, PS-7): the height a header over the first section pulls the next band up by, and the
+ * height of the rows above a header's last row. The canvas calls it; the export ships its source (`pinStackPass`'s rule).
+ */
+export function headerPass(root: ParentNode): void {
+  const z = Number((root as Element).closest?.("[data-canvas-scale]")?.getAttribute("data-canvas-scale")) || 1;
+  root.querySelectorAll<HTMLElement>("[data-eu-over]").forEach((el) => {
+    const h = el.getBoundingClientRect().height / z + "px";
+    el.style.setProperty("--eu-over", h);
+    el.parentElement?.style.setProperty("--eu-over-h", h); // LE11-4: the section under it clears its words by this (`underOverHeaderPad`)
+  });
+  root.querySelectorAll<HTMLElement>("[data-eu-lastrow]").forEach((el) => {
+    const block = el.matches("header") ? el : (el.querySelector("header") as HTMLElement | null) ?? el;
+    const rows = Array.from(block.children).filter((c) => c.matches('[data-box-id], [class^="bx-"], [class*=" bx-"]') && c.getBoundingClientRect().height > 0);
+    const last = rows[rows.length - 1];
+    el.style.setProperty("--eu-pin-skip", rows.length > 1 && last ? (last.getBoundingClientRect().top - el.getBoundingClientRect().top) / z + "px" : "0px");
+  });
+}
+/** The script (and its few rules) a page with a header that moves ships: the measuring pass, and the away watcher. Motion from the
+ *  tokens; with reduced motion it goes and comes without moving. */
+export function headerScript(): string {
+  const t = `${DURATION.slow} ${EASING.standard}`;
+  return `<style>[data-eu-away]{transition:transform ${t},opacity ${t}}[data-eu-away="slide"][data-eu-gone]{transform:translateY(calc(-100% - var(--eu-pin-above, 0rem) - 1rem))}[data-eu-away="fade"][data-eu-gone]{opacity:0;pointer-events:none}@media (prefers-reduced-motion: reduce){[data-eu-away]{transition:none}}</style><script>(function(){if(window.__euHead)return;window.__euHead=1;
+var pass=${String(headerPass)};
+var gone=${String(awayGone)};
+var last=scrollY;
+function size(){try{pass(document);}catch(e){}}
+function on(){var y=scrollY,d=document.documentElement;document.querySelectorAll('[data-eu-away]').forEach(function(el){if(gone({y:y,lastY:last,h:el.offsetHeight,vh:innerHeight,docH:d.scrollHeight,focus:el.contains(document.activeElement)}))el.setAttribute('data-eu-gone','');else el.removeAttribute('data-eu-gone');});last=y;}
+addEventListener('scroll',on,{passive:true});document.addEventListener('focusin',on);
+addEventListener('resize',size);addEventListener('load',size);
+if(document.fonts&&document.fonts.ready)document.fonts.ready.then(size).catch(function(){});
+size();})();<\/script>`;
+}
+/** LE11-6 · does this header already carry an announcement bar — as a child, or as the one block of a child band (a Stack wraps each)? */
+export const hasAnnouncement = (h: BoxNode): boolean => (h.children ?? []).some((c) => c.component === "alert" || (!!c.rowBand && (c.children ?? []).length === 1 && c.children![0].component === "alert"));
+/** PS-10 · the Alert's "Announcement bar" (the catalogue's own choice reads this). */
+export const ANNOUNCEMENT_BAR: Partial<BoxNode> = { alertSeverity: "brand", alertForm: "banner", width: "fill" };
+/** PS-10 · an announcement bar as the header's FIRST row — closable, and it stays closed on every page (`alertPersist`). */
+export function addAnnouncementBar(root: BoxNode, headerId: string): BoxNode {
+  const bar = createComponent("alert", { ...ANNOUNCEMENT_BAR, alertDismiss: true, alertPersist: true });
+  const h = findBox(root, headerId);
+  if (!h) return root;
+  if (h.layout !== "grid" && (h.direction ?? "column") === "column") return insertBox(root, headerId, 0, bar);
+  // LE11-3: a Side by side (or grid) header holds ONE row — the bar beside its words was squeezed to a letter a line. The header
+  // becomes a column: the bar, then its old row (same layout, children and spacing); the header itself keeps its meaning and hold.
+  const row = createContainer(h.direction ?? "row", { layout: h.layout, wrap: h.wrap, gap: h.gap, gapX: h.gapX, gapY: h.gapY, align: h.align, justify: h.justify, columns: h.columns, rowFlow: h.rowFlow, width: "fill", children: h.children ?? [] });
+  return updateBox(root, headerId, { layout: "flex", direction: "column", wrap: false, gap: 0, gapX: undefined, gapY: undefined, align: "stretch", justify: "start", columns: undefined, rowFlow: undefined, children: [bar, row] });
+}
+/**
+ * LE11-4 · THE SECTION UNDER A HEADER THAT LIES OVER IT KEEPS ITS WORDS CLEAR: its background runs up under the header (PS-7), and its own
+ * top inner space grows by the header's measured height (`--eu-over-h`, set by `headerPass` on their shared parent) — the canvas and the
+ * export both call this. Without the script the header is not over it, so the extra is 0.
+ */
+export function underOverHeaderPad(parent: BoxNode | null | undefined, node: BoxNode, pt: CSSProperties["paddingTop"], grand?: BoxNode | null): CSSProperties {
+  // the section's own BLOCK takes it when a band holds just that one — its background then still runs up under the header
+  if (node.rowBand && (node.children ?? []).length === 1) return {};
+  const lone = !!parent?.rowBand && (parent.children ?? []).length === 1 && !!grand;
+  const kids = (lone ? grand!.children : parent?.children) ?? [];
+  const i = kids.findIndex((k) => k.id === (lone ? parent!.id : node.id));
+  const prev = i > 0 ? kids[i - 1] : undefined;
+  const src = prev ? bandCarriesPin(prev, "base") ?? prev : undefined;
+  if (!src?.pinOver || (src.hold ?? "sticky") === "fixed" || !src.pin) return {};
+  const own = pt == null || pt === 0 || pt === "" ? "0rem" : typeof pt === "number" ? `${pt}px` : pt;
+  return { paddingTop: `calc(${own} + var(--eu-over-h, 0rem))` };
+}
+
 export function pinStackScript(): string {
   return `<script>(function(){if(window.__euPinStack)return;window.__euPinStack=1;
 var pass=${String(pinStackPass)};
@@ -7335,8 +7437,12 @@ export function pinCSS(node: BoxNode, parent?: BoxNode, bp: Breakpoint = "base")
    * the state this is improving on rather than a regression. See `pinStackPass` for why a measurement is
    * unavoidable here.
    */
-  const stacked = `calc(var(--eu-pin-above, 0rem) + ${offset})`;
   const vertical = stickyEdge(src.pin);
+  // LE-11 · PS-6: held higher by the rows above its last one, so only the last stays on screen (`headerPass` measures them)
+  const skip = src.pinLastRow && vertical === "top" ? " - var(--eu-pin-skip, 0rem)" : "";
+  const stacked = `calc(var(--eu-pin-above, 0rem) + ${offset}${skip})`;
+  // LE-11 · PS-7: over the first section — the next band comes up under it by its own measured height (no script: below it, as before)
+  if (src.pinOver && !fixed && vertical === "top") css.marginBottom = "calc(-1 * var(--eu-over, 0rem))";
   // Fixed may hold a corner — two insets against the viewport. Sticky gets exactly one, resolved above.
   if (fixed) for (const edge of PIN_EDGES[src.pin]) css[edge] = edge === vertical ? stacked : offset;
   else css[vertical] = stacked;
