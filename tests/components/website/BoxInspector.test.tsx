@@ -3,6 +3,9 @@ import { render, screen, fireEvent, cleanup, within } from "@testing-library/rea
 import BoxInspector from "@/components/website/box/BoxInspector";
 import { DEFAULT_THEME } from "@/lib/site-storage";
 import { createContainer, createElement, createComponent, type BoxNode } from "@/lib/box-model";
+import userEvent from "@testing-library/user-event";
+import LAYOUT from "@/config/layout.json";
+import { SPACE_STEPS } from "@/lib/educo-ui/tokens";
 
 function renderFor(node: BoxNode, extra: Record<string, unknown> = {}) {
   const onPatch = vi.fn();
@@ -432,7 +435,7 @@ describe("BoxInspector — functionality audit (every remaining control)", () =>
     expect(onPatch).toHaveBeenCalledWith({ direction: "row" });
     fireEvent.click(screen.getByLabelText("Let blocks wrap to a new line"));
     expect(onPatch).toHaveBeenCalledWith({ wrap: true });
-    fireEvent.change(screen.getByLabelText("Space between blocks"), { target: { value: "20" } });
+    fireEvent.change(screen.getByLabelText("Space between blocks"), { target: { value: String(SPACE_STEPS.indexOf(20)) } }); // SP-4: the slider moves on the spacing scale
     expect(onPatch).toHaveBeenCalledWith({ gap: 20 });
     pickSelect("Position blocks", "Center");
     expect(onPatch).toHaveBeenCalledWith({ justify: "center" });
@@ -1177,5 +1180,88 @@ describe("LE1-4 · the Columns control tells the truth at a screen (found HEADED
   it("on the base the control shows the stored count", () => {
     renderFor(grid(), { breakpoint: "base" });
     expect(within(screen.getByRole("group", { name: "Columns" })).getByRole("button", { name: "Quarters" })).toHaveAttribute("aria-pressed", "true");
+  });
+});
+
+describe("BATCH LE-12 · sizes and grids in the Inspector", () => {
+  const stack = (extra: Partial<BoxNode> = {}) => createContainer("column", { id: "s", ...extra });
+  it("SZ-4: the Proportion gallery offers Free, every configured shape and Custom; a shape gives up the Height", () => {
+    const onPatch = renderFor(stack({ height: "20rem" }));
+    for (const r of LAYOUT.sizes.ratios) expect(screen.getByRole("button", { name: `${r.label} proportion` })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "16:9 proportion" }));
+    expect(onPatch).toHaveBeenLastCalledWith({ ratio: "16 / 9", height: undefined, contentScale: undefined });
+    fireEvent.click(screen.getByRole("button", { name: "Free proportion" }));
+    expect(onPatch).toHaveBeenLastCalledWith({ ratio: undefined });
+    fireEvent.click(screen.getByRole("button", { name: "Custom proportion" }));
+    expect(onPatch).toHaveBeenLastCalledWith(expect.objectContaining({ ratio: LAYOUT.sizes.customStart }));
+  });
+  it("LE12-4: every shape is drawn to fit its tile both ways (an SVG of its own proportion), so a wide one is never clipped to look like another", () => {
+    renderFor(stack());
+    for (const r of LAYOUT.sizes.ratios) {
+      const svg = screen.getByRole("button", { name: `${r.label} proportion` }).querySelector("svg[data-shape]");
+      expect(svg?.getAttribute("viewBox")).toBe(`0 0 ${r.value.replace(" / ", " ")}`);
+    }
+  });
+  it("SZ-4: Custom shows its two numbers; a typed Height clears the proportion", () => {
+    const onPatch = renderFor(stack({ ratio: "5 / 2" }));
+    expect(screen.getByLabelText("Proportion width")).toHaveValue(5);
+    fireEvent.change(screen.getByLabelText("Proportion height"), { target: { value: "1" } });
+    expect(onPatch).toHaveBeenLastCalledWith({ ratio: "5 / 1" });
+    fireEvent.change(screen.getByLabelText("Height"), { target: { value: "10rem" } });
+    expect(onPatch).toHaveBeenLastCalledWith(expect.objectContaining({ height: "10rem", ratio: undefined }));
+  });
+  it("SZ-3: Limits take a length (px made rem), refuse anything else, and clear when emptied", () => {
+    const onPatch = renderFor(stack({ maxHeight: "30rem" }));
+    fireEvent.change(screen.getByLabelText("Max width"), { target: { value: "640px" } });
+    expect(onPatch).toHaveBeenLastCalledWith({ maxWidth: "40rem" });
+    fireEvent.change(screen.getByLabelText("Min width"), { target: { value: "wide" } });
+    expect(onPatch).toHaveBeenCalledTimes(1);
+    fireEvent.change(screen.getByLabelText("Min height"), { target: { value: "20rem" } });
+    expect(onPatch).toHaveBeenLastCalledWith({ minHeight: 320 });
+    fireEvent.change(screen.getByLabelText("Max height"), { target: { value: "" } });
+    expect(onPatch).toHaveBeenLastCalledWith({ maxHeight: undefined });
+  });
+  it("GR-2: a Grid's Columns — a set number or As many as fit; with As many as fit the count, the ladder and Column widths stand aside", () => {
+    const cell = (id: string) => createContainer("column", { id, colSpan: 4 });
+    const grid = (extra: Partial<BoxNode> = {}) => createContainer("row", { id: "g", layout: "grid", columns: 12, children: [cell("a"), cell("b"), cell("c")], ...extra });
+    const onPatch = renderFor(grid());
+    fireEvent.click(screen.getByRole("button", { name: "As many as fit" }));
+    expect(onPatch).toHaveBeenLastCalledWith({ minCard: LAYOUT.sizes.autoFitStart });
+    expect(screen.getByLabelText("Columns in the row")).toBeInTheDocument();
+    cleanup();
+    const onFit = renderFor(grid({ minCard: "16rem" }));
+    expect(screen.queryByLabelText("Columns in the row")).toBeNull();
+    expect(screen.queryByRole("group", { name: "Column widths" })).toBeNull();
+    expect(screen.getByText(/at 16rem each/)).toBeInTheDocument();
+    fireEvent.change(screen.getByLabelText("Each at least"), { target: { value: "20rem" } });
+    expect(onFit).toHaveBeenLastCalledWith({ minCard: "20rem" });
+    fireEvent.click(screen.getByRole("button", { name: "A set number" }));
+    expect(onFit).toHaveBeenLastCalledWith({ minCard: undefined });
+  });
+  it("GR-2: a cell of an As many as fit grid is not offered a span, a start or rows", () => {
+    renderFor(createContainer("column", { id: "c" }), { inGrid: true, gridTrack: 12, inFitGrid: true });
+    expect(screen.queryByLabelText("Columns wide")).toBeNull();
+    expect(screen.queryByLabelText("Start at column")).toBeNull();
+    expect(screen.getAllByLabelText("Line up (across)").length).toBeGreaterThan(0);
+  });
+  it("SZ-3: a Grid column Between two widths; LE12-1: its set width typed key by key arrives whole", async () => {
+    const cell = (id: string) => createContainer("column", { id, colSpan: 4 });
+    const onPatch = renderFor(createContainer("row", { id: "g", layout: "grid", columns: 12, colSizes: ["12rem 18rem", "15rem"], children: [cell("a"), cell("b"), cell("c")] }));
+    expect(screen.getByLabelText("Column 1: at least")).toHaveValue("12rem");
+    fireEvent.change(screen.getByLabelText("Column 1: at most"), { target: { value: "20rem" } });
+    expect(onPatch).toHaveBeenLastCalledWith({ colSizes: ["12rem 20rem", "15rem", null] });
+    const set = screen.getByLabelText("Column 2: set width");
+    await userEvent.clear(set);
+    await userEvent.type(set, "22rem");
+    expect(onPatch).toHaveBeenLastCalledWith({ colSizes: ["12rem 18rem", "22rem", null] });
+  });
+  it("SP-4: the spacing sliders move on the spacing scale", () => {
+    const onPatch = renderFor(stack());
+    const inner = screen.getByLabelText("Inner spacing");
+    expect(inner).toHaveAttribute("max", String(SPACE_STEPS.length - 1));
+    fireEvent.change(inner, { target: { value: "3" } });
+    expect(onPatch).toHaveBeenLastCalledWith({ padding: SPACE_STEPS[3] });
+    fireEvent.change(screen.getByLabelText("Space between blocks"), { target: { value: "4" } });
+    expect(onPatch).toHaveBeenLastCalledWith(expect.objectContaining({ gap: SPACE_STEPS[4] }));
   });
 });

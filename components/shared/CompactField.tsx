@@ -7,7 +7,7 @@
  * labelled. Use `label` for a stacked label; omit it and pass `ariaLabel` for a bare input inside a grid cell.
  */
 
-import { useId, type ReactNode } from "react";
+import { useId, useState, type ReactNode } from "react";
 
 // Filled, token-driven controls — one clean look that re-skins with every theme (Light/Dark/Midnight/Purple).
 export const COMPACT_INPUT_CLS =
@@ -31,20 +31,28 @@ export interface CompactFieldProps {
   /** Stack the label centred + tiny (grid-cell style) instead of the default left-aligned label. */
   center?: boolean;
   helpText?: ReactNode;
+  /**
+   * LE12-1 · keep what is being TYPED while the stored value only takes a whole one (a length, a proportion): "2", "20", "20r" are
+   * not lengths yet, and a field fed back the stored value on every key could never be typed into. On leaving the field it shows
+   * what is stored again.
+   */
+  draft?: boolean;
 }
 
 export default function CompactField({
   label, ariaLabel, value, onChange, type = "text", placeholder,
-  min, max, step, disabled = false, inputClassName = "", center = false, helpText,
+  min, max, step, disabled = false, inputClassName = "", center = false, helpText, draft = false,
 }: CompactFieldProps) {
   const id = useId();
+  const [typed, setTyped] = useState<string | null>(null);
   const aria = ariaLabel ?? (typeof label === "string" ? label : undefined);
   const input = (
     <input
       id={id}
       type={type}
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
+      value={draft && typed !== null ? typed : value}
+      onChange={(e) => { if (draft) setTyped(e.target.value); onChange(e.target.value); }}
+      onBlur={draft ? () => setTyped(null) : undefined}
       placeholder={placeholder}
       min={min}
       max={max}

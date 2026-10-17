@@ -474,6 +474,45 @@ changes.
 
 [![The Page grid panel with Content width set to Centred at 75rem, and its hint](img/guide-content-width-panel.webp)](img/guide-content-width-panel.webp)
 
+### Sizes: a shape, limits, and grids that fit
+
+**A block that keeps its shape.** Select any block — a section, a box of words, a picture, a card — and pick a shape under
+**Design → Size → Proportion**: 1:1, 4:3, 3:2, 16:9, 2:1, 21:9, or the tall ones 3:4, 2:3, 4:5 and 9:16. Each is drawn as
+the shape it makes. The block is then as tall as its width says, on every screen: a 16:9 video box or hero, square staff
+portraits, a 2:1 band. **Custom** takes any two numbers, such as `5` : `2`. Words never get cut off: if a box has more
+words than its shape holds — on a narrow phone, say — it grows taller to hold them. A picture is cropped to the shape.
+Like any size, a proportion can differ by screen (16:9 on a desktop, square on a phone). **Free** turns it off. A shape and
+a **Height** are one choice: typing a Height turns the proportion off, and picking a shape clears the Height.
+
+[![The Proportion gallery: Free, 1:1, 4:3, 3:2, 16:9, 2:1, 21:9, 3:4, 2:3, 4:5, 9:16 and Custom, each drawn as its shape](img/guide-proportion.webp)](img/guide-proportion.webp)
+
+**Limits — never wider, never narrower.** Under the Proportion, **Limits** has **Min width**, **Max width**, **Min height**
+and **Max height**. Type a length — `40rem`, `65ch` (about 65 letters, a comfortable line), or a `%`. A quote or a form with
+**Max width 40rem** is never wider than that, and on a phone it simply takes the line. A **Min width** never pushes a block
+off the screen: on a phone narrower than it, the block takes the whole line. A **Max height** caps a block that would
+otherwise stretch — a full-screen hero that should stop at 40rem on a tall monitor — but never cuts words off: a block with
+more words than fit grows to hold them. Empty a field to remove the limit.
+
+[![Limits in the Inspector: Min width, Max width 40rem, Min height, Max height, and the hint](img/guide-limits.webp)](img/guide-limits.webp)
+
+**A sidebar between two widths.** On a row of the page, give one block a **Min width** and a **Max width** — `12rem` and
+`18rem` — and it takes its share of the row, but never less than 12rem or more than 18rem; the blocks beside it take the
+rest. Where the row is too narrow for both, they stack. In a **Grid**, the same is a fourth choice under **Column widths**:
+**Between**, with an *at least* and an *at most*.
+
+**As many cards as fit.** Select a **Grid** and set **Columns** to **As many as fit**, then **Each at least** to a card
+width such as `16rem`. The Grid puts as many blocks across as fit at that width — six on a wide monitor, three on a laptop,
+two on a tablet, one on a phone — all the same width and filling the row, on every screen, in the order you put them. A
+visitor with a bigger text size gets fewer across. **A set number** puts the column count (and each block's columns wide)
+back. Blocks in such a Grid are not offered *Columns wide* or *Start at column*: the Grid places them itself.
+
+[![A Grid's Columns set to As many as fit, each at least 16rem, with its hint](img/guide-as-many-as-fit.webp)](img/guide-as-many-as-fit.webp)
+
+**Spacing on the scale.** Every spacing slider — Inner spacing, Outer spacing, Space between blocks, Space across and down,
+and the Page grid's side space and gaps — moves in the steps of the spacing scale (0, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 2,
+2.5, 3, 4, 5, 6 rem), by dragging or with the arrow keys, the same steps the spacing handles on the canvas take. So spaces
+across the site match. To type an exact value instead, use the Top / Right / Bottom / Left fields, which take any number.
+
 ### What you get in the ZIP, and why it's built that way
 
 | | |

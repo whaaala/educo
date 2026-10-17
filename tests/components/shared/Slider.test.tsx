@@ -70,3 +70,21 @@ describe("Slider", () => {
     expect(slider).toHaveAttribute("max", "720");
   });
 });
+
+describe("SP-4 (BATCH LE-12) · a slider on a scale", () => {
+  const SCALE = [0, 4, 8, 12, 16, 24] as const;
+  it("moves on the scale's places only: the range is its places, a move writes the value at that place", () => {
+    const onChange = vi.fn();
+    render(<Slider label="Inner spacing" value={4} onChange={onChange} min={0} max={24} steps={SCALE} />);
+    const slider = screen.getByRole("slider");
+    expect(slider).toHaveAttribute("max", String(SCALE.length - 1));
+    expect(slider).toHaveValue("1");
+    fireEvent.change(slider, { target: { value: "3" } });
+    expect(onChange).toHaveBeenLastCalledWith(12);
+  });
+  it("a value between places reads as it is until moved; the thumb sits at the nearest place", () => {
+    render(<Slider label="Gap" value={13} onChange={vi.fn()} min={0} max={24} steps={SCALE} />);
+    expect(screen.getByRole("slider")).toHaveValue("3");
+    expect(screen.getByText("13")).toBeInTheDocument();
+  });
+});

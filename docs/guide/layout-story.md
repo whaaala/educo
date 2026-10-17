@@ -509,6 +509,28 @@ width → Edge to edge**; it stays that way whatever she later does to the site'
 
 [![The Preview at 1536 px: two sections whose colours run edge to edge, their headings starting on the same centred column](img/story-content-width.webp)](img/story-content-width.webp)
 
+### "A video box that keeps its shape"
+
+Amaka's welcome section has a photo of the school gate and, below it, a box for the open-day video. She wants both to be
+the shape of a screen on every device, never a letterbox on a phone and never a tall strip on a monitor. She selects each
+and picks **16:9** under **Proportion**. On the staffroom monitor they are wide; on her phone they are narrower and just as
+much shorter. For the staff page she picks **1:1** for each portrait. One box of words she set to **2:1** has a long
+paragraph in it: on her phone it is simply taller than 2:1, so no word is lost.
+
+[![The Preview on a 375 px phone: a section, a photo and a box of words, each keeping its proportion; the box of words taller where it needs to be](img/story-proportion.webp)](img/story-proportion.webp)
+
+### "Cards that fit the screen"
+
+The clubs page has six clubs. Instead of deciding how many go across on each screen, Amaka sets the Grid's **Columns** to
+**As many as fit, each at least 16rem**. The wide monitor shows all six in a row, her laptop four or five, the tablet three
+or two, and her phone one under another, always the same width and filling the row. Her quotation box she gives a **Max
+width** of `40rem`, so it never runs into a long line; and the news sidebar a **Min width** of `12rem` and a **Max width** of
+`18rem`, so it is never squeezed and never takes over.
+
+[![The Preview on a wide monitor: six club cards, all six fitting across at 16rem each](img/story-as-many-as-fit.webp)](img/story-as-many-as-fit.webp)
+
+[![The Preview at 1280 px: a quotation box stopped at 40rem, and below it a sidebar held at 18rem beside the stories](img/story-limits.webp)](img/story-limits.webp)
+
 [![The Preview at 1536 px: one section set Edge to edge with its heading at the left edge, the next on the centred column](img/story-content-width-optout.webp)](img/story-content-width-optout.webp)
 
 ## 10. What is published

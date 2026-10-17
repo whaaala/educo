@@ -126,7 +126,8 @@ inside.
 | **Position blocks**: Start · Center · End · Spread out · Even gaps | Where the blocks sit along the Direction when there is room to spare — at the start, the middle or the end, spread to both ends, or with even gaps around them. When the blocks already fill the row (two at 50 %, or one set to Fill) there is no room to place them in, and the Inspector says so: *"These blocks fill the row — give one a width to place them."* Set one to **Fit** or a smaller width and they move. |
 | **Let blocks wrap to a new line** | A row that runs out of room carries its blocks onto the next line instead of squeezing them. |
 | **Content width** (a section of the page): Edge to edge · Centred column | Edge to edge runs the section's content the full width; Centred column puts it on the centred column — the site's **Content width** when one is set (Page grid panel), which a section with no choice of its own follows; the Inspector says which. | Every screen |
-| **Column widths** (a Grid): Share · Fit content · Set width, one per column you see | Share takes a share of what the others leave; Fit content is as wide as what is in it; Set width is exactly the width typed (e.g. `15rem`). Drawn where the Grid shows all its columns; where it shows fewer (a phone) the columns are equal. Needs every block of the Grid to be the same number of columns wide. | Every screen |
+| **Column widths** (a Grid): Share · Fit content · Set width · Between, one per column you see | Share takes a share of what the others leave; Fit content is as wide as what is in it; Set width is exactly the width typed (e.g. `15rem`); Between is at least one width and at most another (`12rem` – `18rem`). Drawn where the Grid shows all its columns; where it shows fewer (a phone) the columns are equal. Needs every block of the Grid to be the same number of columns wide. | Every screen |
+| **Columns** (a Grid): A set number · As many as fit (+ Each at least, e.g. `16rem`) | A set number: the Grid's column count. As many as fit: as many blocks across as fit at that width on every screen, equal and filling the row, one a line on a narrow phone; the count, Column widths and each block's columns wide stand aside. | Every screen |
 | **Show one at a time** | Turns any container into a pager — children become pages, visitors swipe between them. |
 | **Edge shape**: Top · Bottom — Straight · Slope right · Slope left · Curve out · Curve in | Cuts the band's top or bottom edge into a slope or a curve, shown as little pictures; **Edge depth** sets how deep. The shape cuts the background, never the size; a Shadow follows the shape. |
 
@@ -146,6 +147,8 @@ inside.
 | **Rows tall** (page-grid rows) | How many grid rows this block spans. 1 is the default; 2 or more makes it cover multiple rows. | Per screen |
 | **Height** | A minimum height for the block, in rem or px. Not available on all block types. | Per screen |
 | **At least rows tall** (bands) | For a page-grid page's outer band — the band is at least this many row-heights tall. | Per screen |
+| **Proportion**: Free · 1:1 · 4:3 · 3:2 · 16:9 · 2:1 · 21:9 · 3:4 · 2:3 · 4:5 · 9:16 · Custom (w : h) | The block keeps this shape: as tall as its width says. Words that need more room make it taller, never cut; a picture is cropped to it. Picking one clears the Height; typing a Height clears it. Free turns it off. | Per screen |
+| **Limits**: Min width · Max width · Min height · Max height | A length (`40rem`, `65ch`, `80%`; px is made rem). Never wider than the screen; a Max height caps a stretched or full-screen block but never cuts words. On a row of the page, a Min / Max width makes a sidebar between two widths. Empty clears it. | Per screen |
 
 **Dragging an edge or a corner back.** Every edge and corner can be dragged back, in the same drag or a later one: the
 block — and every neighbour the drag moved — returns to the width and height it had and stores nothing new (no fixed
@@ -177,7 +180,7 @@ thresholds (the 2px, the 3rem and 14rem column floors) are set in `config/layout
 
 | Control | What it does | Notes |
 |---------|-------------|-------|
-| **Space between blocks** | The space between the blocks inside this container, across and down at once. A slider. None on a block made since 15 October 2026; about 1rem on one saved before. | Per screen |
+| **Space between blocks** | The space between the blocks inside this container, across and down at once. A slider on the spacing scale (0 · 0.25 · 0.5 · 0.75 · 1 · 1.25 · 1.5 · 2 · 2.5 · 3 · 4 · 5 · 6 rem — every spacing slider moves in these steps; the side fields take any value). None on a block made since 15 October 2026; about 1rem on one saved before. | Per screen |
 | **Space across** · **Space down** | The same space, across and down separately — "same as above" until you move one. | Per screen |
 | **Space between columns** (page-grid rows) | The gap between blocks side by side in a page-grid row (across). | Per screen |
 | **Space between rows** (page-grid rows) | The gap between wrapped lines of a page-grid row (down). | Per screen |

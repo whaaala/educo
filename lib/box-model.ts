@@ -349,8 +349,12 @@ export interface BoxNode {
   // ── sizing (any node) ──
   width?: string;           // "auto" | "fill" | "<n>%" | "<n>px" — flex child
   height?: string;          // "auto" | "fill" | "<n>px"
-  ratio?: string;           // a video's proportion, "16 / 9": with no height its height follows its width (RX3-2)
+  ratio?: string;           // a proportion, "16 / 9": its height follows its width — a video's (RX3-2), and any block's (SZ-4, `applyBoxSize`)
   minHeight?: number;       // px
+  minWidth?: string;        // SZ-3 · the narrowest it is drawn ("12rem", "40%") — never wider than its container (`applyBoxSize`)
+  maxWidth?: string;        // SZ-3 · the widest ("40rem", "65ch")
+  maxHeight?: string;       // SZ-3 · the tallest it is stretched or floored — never shorter than its words (`applyBoxSize`)
+  minCard?: string;         // GR-2 · a Grid of "as many as fit", each at least this wide ("16rem"): auto-fit on every screen (`gridAutoFit`)
   colSizes?: (string | null | undefined)[]; // a Grid's own column widths, one per column (AC-30): unset = a share, "fit" = its content, a length = that width (`gridColSizes`)
   colSpan?: number;         // grid child: columns to span
   rowSpan?: number;         // grid child: rows to span
@@ -3423,15 +3427,24 @@ export function gridSeenColumns(node: BoxNode): { seen: number; span: number } |
  */
 export function gridColSizes(node: BoxNode, bp: Breakpoint = "base"): string | null {
   const sizes = node.colSizes, seen = gridSeenColumns(node);
-  if (!sizes?.length || !seen || isMasonry(node, bp) || gridColumnsAt(node, bp) !== gridColumns(node)) return null;
+  if (!sizes?.length || !seen || isMasonry(node, bp) || gridAutoFit(node) || gridColumnsAt(node, bp) !== gridColumns(node)) return null;
   const inner = seen.span - 1, gap = u(gapOf(node).x), rest = Array(inner).fill("0px");
+  const less = (len: string) => (inner ? `max(0px, calc(${len} - ${inner} * ${gap}))` : len);
   const tracks = Array.from({ length: seen.seen }, (_, i) => {
     if (sizes[i] === "fit") return ["auto", ...rest];
+    const between = colBetween(sizes[i]); // SZ-3: AC-30's bounded column
+    if (between) return [`minmax(${less(between[0])}, ${less(between[1])})`, ...rest];
     const len = setLengthCss(sizes[i]);
-    if (len) return [inner ? `max(0px, calc(${len} - ${inner} * ${gap}))` : len, ...rest];
+    if (len) return [less(len), ...rest];
     return Array(seen.span).fill("minmax(0, 1fr)");
   }).flat();
   return tracks.every((t) => t === "minmax(0, 1fr)") ? null : tracks.join(" ");
+}
+
+/** SZ-3 · a Grid column "Between" two widths, stored "12rem 18rem" — the pair as CSS, or null (the smaller first; a trust boundary). */
+export function colBetween(token: string | null | undefined): [string, string] | null {
+  const parts = String(token ?? "").trim().split(/\s+/), a = setLengthCss(parts[0]), b = setLengthCss(parts[1]);
+  return parts.length === 2 && a && b && parseFloat(a) <= parseFloat(b) ? [a, b] : null;
 }
 
 export function gridColumnsAt(node: BoxNode, bp: Breakpoint = "base"): number {
@@ -3769,6 +3782,7 @@ export function hostsNarrowingGrid(node: BoxNode): boolean {
  */
 export function gridQueryCss(scope: string, node: BoxNode, cellScope: (id: string) => string, aboveThePhone: (css: string) => string, editorOnly: (scope: string) => string = () => "", onPage = false, onlyOn?: OnlyOn): string {
   if (node.rowBand) return rowQueryCss(node, cellScope, aboveThePhone, onPage, onlyOn);
+  if (gridAutoFit(node)) return ""; // GR-2: the browser fits the cards itself, on every screen
   const n = gridNarrowsAt(node); if (!n) return "";
   const kids = (node.children ?? []).filter((c) => !isFloating(c));
   const at = (track: number) => {
@@ -3877,7 +3891,7 @@ export function rowNarrowsAt(band: BoxNode, onPage = false): { ids: string[]; st
       const fixed = cols.reduce((t, k) => t + (setLengthRem(k.width) ?? 0), 0), w8 = setRowWeights(band, "base");
       const shared = cols.map((k, i) => ({ k, i })).filter(({ k }) => setLengthRem(k.width) === null);
       const P = shared.reduce((t, { k }) => t + (w8.get(k.id) ?? 1), 0) || 1;
-      const at = (w: number) => fixed + (n - 1) * gapFor(w) + edgeFor(w) + Math.max(0, ...shared.map(({ k, i }) => (Math.max(minFor(i, w), BLOCK_FLOOR_REM) * P) / (w8.get(k.id) ?? 1)));
+      const at = (w: number) => fixed + (n - 1) * gapFor(w) + edgeFor(w) + Math.max(0, ...shared.map(({ k, i }) => (Math.max(minFor(i, w), BLOCK_FLOOR_REM, limitRem(k.minWidth)) * P) / (w8.get(k.id) ?? 1)));
       let w = fixed + n * BLOCK_FLOOR_REM; for (let it = 0; it < 12; it++) w = at(w);
       out.push({ ids: cols.map((k) => k.id), steps: [{ lines: cols.map(() => 1), below: +w.toFixed(4) }] });
       continue;
@@ -4706,6 +4720,8 @@ export function imageSizing(node: BoxNode, fill = false): { height: string; aspe
 function ownImageSizing(node: BoxNode): { height: string; aspectRatio?: string } {
   const explicit = sizeToCSS(node.height);
   if (explicit) return { height: explicit };
+  const ratio = ratioCss(node.ratio); // SZ-4: a shape chosen for the picture, cropped to it (`object-fit: cover`)
+  if (ratio) return { height: "auto", aspectRatio: ratio };
   // No height asked for. Take the photo's own shape if we know it; otherwise fall back to the letterbox,
   // because an image of unknown shape with `height:auto` and `object-fit:cover` collapses to nothing.
   if (hasIntrinsicSize(node)) return { height: "auto", aspectRatio: `${node.imgW} / ${node.imgH}` };
@@ -5830,9 +5846,64 @@ export function setLengthCss(token: string | null | undefined): string | null {
 }
 /** …and in rem, for the fit rule's arithmetic (an `em` read at the page's 1rem). */
 const setLengthRem = (token: string | null | undefined): number | null => { const c = setLengthCss(token); return c ? parseFloat(c) : null; };
+/**
+ * SZ-4 (BATCH LE-12) · A PROPORTION as CSS — "16 / 9", and "16:9" read the same — or null for anything else (a stored value is a trust boundary).
+ */
+export function ratioCss(token: string | null | undefined): string | null {
+  const m = /^\s*(\d*\.?\d+)\s*[/:]\s*(\d*\.?\d+)\s*$/.exec(String(token ?? ""));
+  return m && +m[1] > 0 && +m[2] > 0 ? `${+m[1]} / ${+m[2]}` : null;
+}
+/** SZ-3 · A LIMIT — "40rem", "65ch", "80%", "320px" (made rem, rule 16) — or null for anything that is not a positive length. */
+export function limitCss(token: string | null | undefined): string | null {
+  const m = /^(\d*\.?\d+)(rem|em|ch|%|vw|vh|svh|dvh|px)$/i.exec(String(token ?? "").trim());
+  if (!m || !(+m[1] > 0)) return null;
+  return m[2].toLowerCase() === "px" ? remLen(+m[1]) : `${+m[1]}${m[2].toLowerCase()}`;
+}
+/** …in rem, for the fit rule's arithmetic (0 for a % or a screen unit, which follow the row). */
+const limitRem = (token: string | null | undefined): number => { const c = limitCss(token); return c && /r?em$/.test(c) ? parseFloat(c) : 0; };
+/** GR-2 · the smallest card width of a Grid set to "as many as fit" — null for a Grid of a set number of columns, or a masonry gallery. */
+export const gridAutoFit = (node: BoxNode): string | null => (node.layout === "grid" && node.rowFlow !== "masonry" ? limitCss(node.minCard) : null);
+const noFloor = (v: unknown) => v == null || v === 0 || v === "0" || v === "0px" || v === "auto" || v === "min-content";
+const cssOf = (v: unknown) => (typeof v === "number" ? `${v}px` : String(v));
+/**
+ * SZ-4 · SZ-3 (BATCH LE-12) · A BLOCK'S SHAPE AND LIMITS — the ONE emitter, applied LAST by the canvas (`wrapStyle`) and the export
+ * (`styleAt`) to a block's resolved style, so the two cannot disagree.
+ *  • A PROPORTION: `aspect-ratio`; its height is given up (a shape fills across, never down — css-layout 07, forced rule 2), so in a
+ *    column it does not grow into spare height and in a row or a grid it sits at its top instead of being stretched; never shorter
+ *    than its words (the automatic minimum, `overflow: clip` — LE12-5) unless Trim to size, or a floor the person set. A picture and a
+ *    video take it in their own sizing.
+ *  • A MIN / MAX WIDTH: never wider than its container — a min width is held under the max it may be (no sideways overflow).
+ *  • A MAX HEIGHT never cuts words (research H5, WCAG 1.4.4): it caps a stretched block, and a FLOOR or a set height becomes
+ *    `min(floor, max)` — the words still make the block taller.
+ * ponytail: a max height on a block that is both floored and stretched by its row caps the floor only.
+ */
+export function applyBoxSize(s: CSSProperties, node: BoxNode, parent: BoxNode | null): void {
+  if (!parent) return;
+  const ratio = node.type === "image" || node.type === "video" ? null : ratioCss(node.ratio);
+  if (ratio) {
+    const grid = parent.layout === "grid", isRow = !grid && (parent.direction ?? "column") === "row";
+    s.aspectRatio = ratio; delete s.height;
+    // LE12-5 (measured in Chrome): with a ratio, `min-content` IS the ratio's height and the words spill out; the automatic minimum is
+    // their height — but only while the box is no scroll container, so rounded corners clip with `clip`, never `hidden`
+    if (noFloor(s.minHeight) && !node.clip) s.minHeight = "auto";
+    if (s.overflow === "hidden" && !node.clip) s.overflow = "clip";
+    if (!grid && !isRow) s.flex = "0 0 auto";
+    if ((grid || isRow) && (!s.alignSelf || s.alignSelf === "stretch")) s.alignSelf = isRow ? "flex-start" : "start";
+  }
+  const minW = limitCss(node.minWidth), maxW = limitCss(node.maxWidth), maxH = limitCss(node.maxHeight);
+  const cap = () => (s.maxWidth && s.maxWidth !== "none" ? cssOf(s.maxWidth) : "100%");
+  if (maxW) s.maxWidth = `min(${cap()}, ${maxW})`;
+  if (minW) s.minWidth = `min(${cap()}, ${minW})`;
+  if (maxH) {
+    if (s.height != null && s.height !== "auto" && s.height !== "") s.height = `min(${cssOf(s.height)}, ${maxH})`;
+    if (!noFloor(s.minHeight)) s.minHeight = `min(${cssOf(s.minHeight)}, ${maxH})`;
+    else { s.maxHeight = maxH; if (!node.clip && !ratio) s.minHeight = "min-content"; }
+  }
+}
 /** Does any block of the row have a SET width, on any screen? */
 function holdsSetWidth(band: BoxNode): boolean {
-  return (band.children ?? []).some((k) => [k, ...Object.values(k.responsive ?? {})].some((r) => !!setLengthCss((r as Partial<BoxNode> | null)?.width)));
+  // SZ-3: a min or max width is a set width's bounded form (AC-30 bounded: a sidebar between 12rem and 18rem)
+  return (band.children ?? []).some((k) => [k, ...Object.values(k.responsive ?? {})].some((r) => { const o = r as Partial<BoxNode> | null; return !!setLengthCss(o?.width) || !!limitCss(o?.minWidth) || !!limitCss(o?.maxWidth); }));
 }
 /**
  * AC-30 · A ROW OF THE PAGE WITH A COLUMN OF A SET WIDTH (a 20rem sidebar, a logo) beside columns that share the rest — the real fix behind
@@ -6390,7 +6461,8 @@ function containerStyleOf(node: BoxNode, bp: Breakpoint = "base", section: Secti
     return {
       display: "grid",
       // Per RUNG, so a twelve-column row is twelve columns on a desktop and one on a phone (`gridColumnsAt`).
-      gridTemplateColumns: gridColSizes(node, bp) ?? `repeat(${gridColumnsAt(node, bp)}, minmax(0, 1fr))`, // AC-30: each column its own width
+      gridTemplateColumns: gridAutoFit(node) ? `repeat(auto-fit, minmax(min(100%, ${gridAutoFit(node)}), 1fr))` // GR-2: as many as fit, every screen
+        : gridColSizes(node, bp) ?? `repeat(${gridColumnsAt(node, bp)}, minmax(0, 1fr))`, // AC-30: each column its own width
       // The down-gap on a masonry grid is spent as EMPTY ROW UNITS by each cell's span, not as `row-gap` —
       // the number the user set still means exactly what it says, but it lands once per cell instead of once
       // per track, where an estimate of the fluid unit could compound (see `masonrySpanUnits`). Both longhands
@@ -6588,13 +6660,14 @@ export function childStyle(child: BoxNode, parent: BoxNode, bp: Breakpoint = "ba
     // row of the section's background showing beside the content. See `gridSpanAt`.
     const span = gridSpanAt(parent, child, bp);
     const place = start != null ? `${start} / span ${span}` : span > 1 ? `span ${span}` : undefined;
-    if (place) s.gridColumn = place;
+    const flows = !!gridAutoFit(parent); // GR-2: as many as fit — every cell one card, in order: no span, no start, no row
+    if (place && !flows) s.gridColumn = place;
     // The down axis. On a MASONRY grid it is computed, not stored: the cell claims as many measuring units as
     // its content is tall (`masonryRowSpan`), which is the mechanism itself. "Rows tall" and "Start at row"
     // are hidden while masonry is on for exactly this reason — they would be describing a ruler.
     const masonrySpan = masonryRowSpan(parent, child, bp);
     if (masonrySpan != null) { s.gridRow = `span ${masonrySpan}`; }
-    else {
+    else if (!flows) {
       // No rung re-fit and no clamp: rows are implicit, so the grid simply makes as many as the placement asks
       // for — a block on row 4 of a two-row grid creates rows 3 and 4 rather than overflowing.
       //

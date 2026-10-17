@@ -12,9 +12,9 @@ import { Plus, X, Tags, Rows3, Columns3, Upload, ArrowRight, AlignLeft, AlignCen
 import type { SiteTheme } from "@/lib/site-storage";
 import { perScreenBanner, perScreenDeviceTab } from "@/lib/per-screen-note";
 import type { BoxNode, FlexAlign, FlexJustify, AccPartStyle, Breakpoint, PagerNav, PinScopeWords, SectionFlag } from "@/lib/box-model";
-import { RUNG_LABEL } from "@/lib/educo-ui/layout";
-import { type ItemAction, gridSeenColumns, setLengthCss, TOAST_CORNERS, hasAnnouncement, fluidRemRange, isContainer, containerLabel, isFloating, isCssBg, addItem, removeItem, moveItem, updateItem, addChildItem, updateChildItem, removeChildItem, moveChildItem , isMultiItemComponent, hasIntrinsicSize, sizeToCSS, typedLength, GRID_MAX, COLUMN_FRACTIONS, columnFractionOf, canSetColumnFraction, gridColumnsAt, bandEdgeCSS, PIN_ARRIVALS, PIN_ARRIVAL_AFTER, pinArrivalHasEffect, linkLineGap, LINK_GAP_ACROSS, LINK_GAP_ACROSS_PHONE, spaceDefaults, outerDefaults, type SectionPlace, gapOf, importPhoto, refusedMotion, rowFilledByBlocks } from "@/lib/box-model";
-import { remLen } from "@/lib/educo-ui/tokens";
+import { RUNG_LABEL, SIZES } from "@/lib/educo-ui/layout";
+import { type ItemAction, gridSeenColumns, setLengthCss, ratioCss, limitCss, colBetween, gridAutoFit, TOAST_CORNERS, hasAnnouncement, fluidRemRange, isContainer, containerLabel, isFloating, isCssBg, addItem, removeItem, moveItem, updateItem, addChildItem, updateChildItem, removeChildItem, moveChildItem , isMultiItemComponent, hasIntrinsicSize, sizeToCSS, typedLength, GRID_MAX, COLUMN_FRACTIONS, columnFractionOf, canSetColumnFraction, gridColumnsAt, bandEdgeCSS, PIN_ARRIVALS, PIN_ARRIVAL_AFTER, pinArrivalHasEffect, linkLineGap, LINK_GAP_ACROSS, LINK_GAP_ACROSS_PHONE, spaceDefaults, outerDefaults, type SectionPlace, gapOf, importPhoto, refusedMotion, rowFilledByBlocks } from "@/lib/box-model";
+import { remLen, SPACE_STEPS } from "@/lib/educo-ui/tokens";
 import { ACCORDION_DESIGNS, ACCORDION_DESIGN_COUNT, ACCORDION_AXES } from "@/lib/educo-ui/accordions";
 import { ALERT_DESIGNS, ALERT_DESIGN_COUNT, ALERT_AXES } from "@/lib/educo-ui/alerts";
 import { COMPONENT_REGISTRY, isRegistryComponent, defaultComponentFields, renderComponent } from "@/lib/educo-ui/registry";
@@ -99,10 +99,12 @@ function ColumnFractions({ track, span, breakpoint, onSet }: { track: number; sp
 }
 
 // Reuses the shared <Slider> (labelled range control) instead of a raw <input type="range">.
-function Range({ title, value, min, max, fallback, onChange, unit = "px" }: { title: string; value?: number; min: number; max: number; fallback: number; onChange: (n: number) => void; unit?: string }) {
+function Range({ title, value, min, max, fallback, onChange, unit = "px", steps }: { title: string; value?: number; min: number; max: number; fallback: number; onChange: (n: number) => void; unit?: string; steps?: readonly number[] }) {
   const v = value ?? fallback;
-  return <Slider label={title} value={v} min={min} max={max} onChange={onChange} formatValue={unit === "rem" ? fluidRemRange : (x) => `${x}${unit}`} />; // phone → wide (G3c-10)
+  return <Slider label={title} value={v} min={min} max={max} steps={steps} onChange={onChange} formatValue={unit === "rem" ? fluidRemRange : (x) => `${x}${unit}`} />; // phone → wide (G3c-10)
 }
+/** SP-4 (BATCH LE-12) · the spacing scale up to `max` — the spacing sliders step on it, as the canvas handles do (`snapSpace`). */
+const spaceSteps = (max: number) => SPACE_STEPS.filter((v) => v <= max);
 
 /**
  * One AXIS of spacing — a slider that can also be handed back to "same as the spacing above".
@@ -119,7 +121,7 @@ function GapRange({ label, value, fallback, onChange, onMatch }: {
   const own = value != null;
   return (
     <div className="flex flex-col gap-0.5">
-      <Slider label={label} value={value ?? fallback} min={0} max={128} onChange={onChange} formatValue={fluidRemRange} /> {/* phone → wide (G3c-10) */}
+      <Slider label={label} value={value ?? fallback} min={0} max={128} steps={spaceSteps(128)} onChange={onChange} formatValue={fluidRemRange} /> {/* phone → wide (G3c-10); SP-4 */}
       <button
         type="button" onClick={onMatch} disabled={!own}
         aria-label={`${label} — use the same spacing as "Space between blocks"`}
@@ -231,7 +233,7 @@ function ColumnWidths({ node, onPatch }: { node: BoxNode; onPatch: (p: Partial<B
   // LE3-3: the columns a person SEES (a palette "3 across" is twelve tracks); an uneven grid has no one width a column
   if (!seen) return <p className="text-[11px] leading-snug text-gray-500 dark:text-gray-400 midnight:text-gray-400 purple:text-gray-400">{INSPECTOR.widths.colUneven}</p>;
   const cols = seen.seen;
-  const kind = (v: string | null | undefined) => (v === "fit" ? "fit" : setLengthCss(v) ? "set" : "share");
+  const kind = (v: string | null | undefined) => (v === "fit" ? "fit" : colBetween(v) ? "between" : setLengthCss(v) ? "set" : "share");
   const put = (i: number, v: string | undefined) => {
     const next = Array.from({ length: cols }, (_, j) => (j === i ? v : sizes[j] ?? undefined));
     onPatch({ colSizes: next.some((x) => x) ? next.map((x) => x ?? null) : undefined });
@@ -244,14 +246,75 @@ function ColumnWidths({ node, onPatch }: { node: BoxNode; onPatch: (p: Partial<B
         return (
           <div key={i} className="grid grid-cols-2 gap-1.5 items-end">
             <CompactSelect label={name} ariaLabel={`${name} width`} value={k}
-              onChange={(v) => put(i, v === "fit" ? "fit" : v === "set" ? INSPECTOR.widths.colStart : undefined)}
-              options={(["share", "fit", "set"] as const).map((v) => ({ value: v, label: INSPECTOR.widths.colChoices[v] }))} />
-            {k === "set" && <CompactField ariaLabel={`${name}: set width`} value={sizes[i] ?? ""} placeholder="15rem"
+              onChange={(v) => put(i, v === "fit" ? "fit" : v === "set" ? INSPECTOR.widths.colStart : v === "between" ? INSPECTOR.widths.colBetweenStart : undefined)}
+              options={[...(["share", "fit", "set"] as const).map((v) => ({ value: v, label: INSPECTOR.widths.colChoices[v] })), { value: "between", label: INSPECTOR.sizes.between }]} />
+            {k === "set" && <CompactField draft ariaLabel={`${name}: set width`} value={sizes[i] ?? ""} placeholder="15rem"
               onChange={(v) => put(i, setLengthCss(typedLength(v)) ? typedLength(v) : sizes[i] ?? undefined)} />}
+            {k === "between" && (() => { // SZ-3: AC-30's bounded column, minmax(at least, at most)
+              const [lo, hi] = colBetween(sizes[i])!, end = (j: 0 | 1, v: string) => { const t = typedLength(v.trim()), b = j ? `${lo} ${t}` : `${t} ${hi}`; put(i, colBetween(b) ? b : sizes[i] ?? undefined); };
+              return (
+                <div className="col-span-2 grid grid-cols-2 gap-1.5">
+                  <CompactField draft label={INSPECTOR.sizes.minWidth} ariaLabel={INSPECTOR.sizes.betweenFrom.replace("{name}", name)} value={lo} onChange={(v) => end(0, v)} />
+                  <CompactField draft label={INSPECTOR.sizes.maxWidth} ariaLabel={INSPECTOR.sizes.betweenTo.replace("{name}", name)} value={hi} onChange={(v) => end(1, v)} />
+                </div>
+              );
+            })()}
           </div>
         );
       })}
       <p className="text-[11px] leading-snug text-gray-500 dark:text-gray-400 midnight:text-gray-400 purple:text-gray-400">{INSPECTOR.widths.colHint}</p>
+    </div>
+  );
+}
+
+/**
+ * SZ-4 (BATCH LE-12) · A BLOCK'S PROPORTION — the shapes as live tiles (RULE S, config/layout.json `sizes.ratios`), Free, and Custom
+ * w : h. A shape gives up the block's Height (one decision: `applyBoxSize`). Words: config/inspector.json `sizes`.
+ */
+function ProportionControl({ node, onPatch }: { node: BoxNode; onPatch: (p: Partial<BoxNode>) => void }) {
+  const r = ratioCss(node.ratio), preset = SIZES.ratios.some((x) => x.value === r);
+  const [w, h] = (r ?? SIZES.customStart).split(" / ");
+  // LE12-4: an SVG `meet`s the tile both ways, so a wide shape is never clipped by a short tile (1:1 looked like 21:9)
+  const shape = (v: string) => {
+    const [a, b] = v.split(" / ").map(Number);
+    return <svg aria-hidden="true" data-shape={v} viewBox={`0 0 ${a} ${b}`} preserveAspectRatio="xMidYMid meet" className="!h-full w-full p-2"><rect width={a} height={b} rx={Math.min(a, b) / 12} vectorEffect="non-scaling-stroke" className="fill-brand/25 stroke-brand" /></svg>;
+  };
+  const custom = (j: 0 | 1, v: string) => { const next = ratioCss(j ? `${w} / ${v}` : `${v} / ${h}`); if (next) onPatch({ ratio: next }); };
+  return (
+    <div className="space-y-1.5">
+      <DesignGallery label={INSPECTOR.sizes.proportion} ariaLabel={INSPECTOR.sizes.proportion} itemNoun="proportion" value={!r ? "" : preset ? r : "custom"}
+        onPick={(id) => onPatch(!id ? { ratio: undefined } : { ratio: id === "custom" ? (r && !preset ? r : SIZES.customStart) : id, height: undefined, contentScale: undefined })}
+        groups={[{ items: [
+          { id: "", label: INSPECTOR.sizes.free, preview: () => <span aria-hidden="true" className="grid h-full w-full place-items-center p-2"><span className="block h-3/4 w-full rounded-sm border border-dashed border-brand" /></span> },
+          ...SIZES.ratios.map((x) => ({ id: x.value, label: x.label, preview: () => shape(x.value) })),
+          { id: "custom", label: INSPECTOR.sizes.custom, preview: () => shape(SIZES.customStart) },
+        ] }]} />
+      {r && !preset && (
+        <div className="grid grid-cols-2 gap-1.5">
+          <CompactField draft type="number" min={0.1} step={0.1} ariaLabel={INSPECTOR.sizes.customW} value={w} onChange={(v) => custom(0, v)} />
+          <CompactField draft type="number" min={0.1} step={0.1} ariaLabel={INSPECTOR.sizes.customH} value={h} onChange={(v) => custom(1, v)} />
+        </div>
+      )}
+      {r && <p className="text-[0.6875rem] text-muted">{INSPECTOR.sizes.proportionHint}</p>}
+    </div>
+  );
+}
+
+/** SZ-3 · A BLOCK'S LIMITS — Min / Max width and height (`applyBoxSize`); a field takes a length (px made rem), empty clears it. */
+function LimitsControl({ node, onPatch }: { node: BoxNode; onPatch: (p: Partial<BoxNode>) => void }) {
+  const put = (k: "minWidth" | "maxWidth" | "maxHeight", v: string) => { const t = typedLength(v.trim()); if (!t) onPatch({ [k]: undefined }); else if (limitCss(t)) onPatch({ [k]: limitCss(t)! }); };
+  const putMinH = (v: string) => { const t = setLengthCss(typedLength(v.trim())); if (!v.trim()) onPatch({ minHeight: undefined }); else if (t) onPatch({ minHeight: fromRem(parseFloat(t)) }); };
+  const S = INSPECTOR.sizes;
+  return (
+    <div className="space-y-1" role="group" aria-label={S.limits}>
+      <span className={label}>{S.limits}</span>
+      <div className="grid grid-cols-2 gap-1.5">
+        <CompactField draft label={S.minWidth} value={node.minWidth ?? ""} placeholder="none" onChange={(v) => put("minWidth", v)} />
+        <CompactField draft label={S.maxWidth} value={node.maxWidth ?? ""} placeholder="none" onChange={(v) => put("maxWidth", v)} />
+        <CompactField draft label={S.minHeight} value={node.minHeight != null ? `${toRem(node.minHeight)}rem` : ""} placeholder="none" onChange={putMinH} />
+        <CompactField draft label={S.maxHeight} value={node.maxHeight ?? ""} placeholder="none" onChange={(v) => put("maxHeight", v)} />
+      </div>
+      <p className="text-[0.6875rem] text-muted">{S.limitsHint}</p>
     </div>
   );
 }
@@ -277,7 +340,7 @@ function SideSpacing({ title, node, base, sides, onPatch, max = 96, defaults = [
   const hasDefault = defaults.some((d) => d > 0);
   return (
     <div className="space-y-1.5">
-      <Slider label={title} value={g} min={0} max={max} onChange={(n) => setPx(base, n)} formatValue={(x) => (set ? fluidRemRange(x) : `Default · ${fluidRemRange(x)}`)} />
+      <Slider label={title} value={g} min={0} max={max} steps={spaceSteps(max)} onChange={(n) => setPx(base, n)} formatValue={(x) => (set ? fluidRemRange(x) : `Default · ${fluidRemRange(x)}`)} />
       {hasDefault && (
         <button type="button" disabled={!set} onClick={() => onPatch({ [base]: undefined, [t]: undefined, [r]: undefined, [b]: undefined, [l]: undefined } as Partial<BoxNode>)}
           aria-label={`${title} — back to default`}
@@ -541,7 +604,7 @@ function AccPreview({ id, size, axes = [] }: { id: string; size: ThumbSize; axes
   );
 }
 
-export default function BoxInspector({ section = false, sectionPlace, outerDefault, fillHeight, pageSpan, onSetSpan, pageLines, onSetLines, onSetFreeInset, rowStepRem, node, theme, onPatch, onAddChild, onAddAnnouncement, onFloat, onUnfloat, onLayer, onAlignInRow, rowJustify, onSectionWidth, sectionWidth, siteWidth, sectionFollows, rowOfPage = false, canFloat = true, inGrid = false, inMasonry = false, gridTrack, onSetFraction, onRetrack, breakpoint = "base", overridden = false, onResetOverride, pages, currentPageId, pinBlockedBy = null, fixedBlockedBy = null, pinScope = null }: {
+export default function BoxInspector({ section = false, sectionPlace, outerDefault, fillHeight, pageSpan, onSetSpan, pageLines, onSetLines, onSetFreeInset, rowStepRem, node, theme, onPatch, onAddChild, onAddAnnouncement, onFloat, onUnfloat, onLayer, onAlignInRow, rowJustify, onSectionWidth, sectionWidth, siteWidth, sectionFollows, rowOfPage = false, canFloat = true, inGrid = false, inMasonry = false, inFitGrid = false, gridTrack, onSetFraction, onRetrack, breakpoint = "base", overridden = false, onResetOverride, pages, currentPageId, pinBlockedBy = null, fixedBlockedBy = null, pinScope = null }: {
   section?: SectionFlag; // the block is the content of a page section, so its default inner spacing is the gutter and the section space
   outerDefault?: [number, number, number, number]; // the outer space it really has by default (`outerSpaceDefaults`, G-3 (1)); else `outerDefaults`
   fillHeight?: { on: boolean }; // G-3d (2): a picture alone in a block spanning rows — "Fill the block's height"; absent where it does nothing
@@ -570,6 +633,8 @@ export default function BoxInspector({ section = false, sectionPlace, outerDefau
   inMasonry?: boolean;
   /** How many columns the PARENT row is cut into — the denominator every named fraction is measured against. */
   gridTrack?: number;
+  /** GR-2: its Grid puts as many across as fit — the cells flow one each, so span / start / rows do not apply */
+  inFitGrid?: boolean;
   /** A column of a page row on the page grid (G-3 (3)): how many of the page's columns it covers on this screen, and its setter. */
   pageSpan?: { value: number; cols: number }; onSetSpan?: (span: number) => void;
   pageLines?: { from: number; to: number; first: boolean; last: boolean; cols: number; drawnAcross?: number }; onSetLines?: (want: { from?: number; to?: number } | "full") => void;
@@ -1107,7 +1172,19 @@ export default function BoxInspector({ section = false, sectionPlace, outerDefau
                       across so re-cutting a row of thirds into twelfths does not MOVE anything. At a rung
                       there is no retrack (a rung holds style, never the row's children), so the count is a
                       plain override and the spans clamp to it. */}
-                  <span className={label}>Columns</span>
+                  {node.rowFlow !== "masonry" && <>
+                    <span className={label}>{INSPECTOR.sizes.columnsMode}</span>
+                    <Segmented full ariaLabel={`${INSPECTOR.sizes.columnsMode}: ${INSPECTOR.sizes.modeChoices.count} or ${INSPECTOR.sizes.modeChoices.fit}`} value={gridAutoFit(node) ? "fit" : "count"}
+                      onChange={(v) => onPatch({ minCard: v === "fit" ? (gridAutoFit(node) ?? SIZES.autoFitStart) : undefined })}
+                      options={(["count", "fit"] as const).map((v) => ({ value: v, label: INSPECTOR.sizes.modeChoices[v] }))} />
+                  </>}
+                  {gridAutoFit(node) ? (
+                    <div className="space-y-1">
+                      <CompactField draft label={INSPECTOR.sizes.minCard} value={node.minCard ?? ""} placeholder={SIZES.autoFitStart}
+                        onChange={(v) => { const t = limitCss(typedLength(v.trim())); if (t) onPatch({ minCard: t }); }} />
+                      <p className="text-[11px] leading-snug text-gray-500 dark:text-gray-400 midnight:text-gray-400 purple:text-gray-400">{INSPECTOR.sizes.fitHint.replace("{min}", gridAutoFit(node)!)}</p>
+                    </div>
+                  ) : <>
                   <Segmented full ariaLabel="Columns" value={String(gridColumnsAt(node, breakpoint))} /* LE1-4: the count DRAWN on this screen */
                     onChange={(v) => (onRetrack ?? ((n: number) => onPatch({ columns: n })))(Number(v))}
                     options={[{ value: "2", label: "Halves" }, { value: "3", label: "Thirds" }, { value: "4", label: "Quarters" }, { value: "6", label: "Sixths" }, { value: "12", label: "Twelve" }]} />
@@ -1118,6 +1195,7 @@ export default function BoxInspector({ section = false, sectionPlace, outerDefau
                     Narrow screens stack this row unless you set a count here with a device selected.
                   </p>
                   {node.rowFlow !== "masonry" && <ColumnWidths node={node} onPatch={onPatch} />}
+                  </>}
                   {/* A grid's own "Position blocks". The flex one distributes leftover space between tracks,
                       and 1fr tracks leave none — so it was inert here. This one places each block in its CELL. */}
                   <CompactSelect label="Position blocks" ariaLabel="Position blocks" value={node.justifyItems ?? "stretch"}
@@ -1167,7 +1245,7 @@ export default function BoxInspector({ section = false, sectionPlace, outerDefau
               {/* `align-items` lines blocks up across a top-to-bottom stack, but DOWN in a side-by-side row and in a grid
                   (R4-4) — the label names the direction the blocks really move. */}
               <CompactSelect label={node.layout === "grid" || node.direction === "row" ? "Line up (down)" : "Line up (across)"} ariaLabel="Line up" value={node.align ?? "stretch"} onChange={(v) => onPatch({ align: v as FlexAlign })} options={ALIGN_OPTS.map(([v, l]) => ({ value: v, label: l }))} />
-              <Range title="Space between blocks" value={node.gap} min={0} max={64} fallback={Math.max(gapOf({ ...node, gap: undefined }).x, gapOf({ ...node, gap: undefined }).y)} onChange={(n) => onPatch({ gap: n, gapX: undefined, gapY: undefined })} unit="rem" />
+              <Range title="Space between blocks" value={node.gap} min={0} max={64} steps={spaceSteps(64)} fallback={Math.max(gapOf({ ...node, gap: undefined }).x, gapOf({ ...node, gap: undefined }).y)} onChange={(n) => onPatch({ gap: n, gapX: undefined, gapY: undefined })} unit="rem" />
               {/* Across and down separately — the commonest grid there is wants air between its columns and
                   less between its rows, and one number cannot say that. Unset means "same as above".
                   SLIDERS, like the control above them. They were number boxes, so the only way to find the
@@ -1183,8 +1261,9 @@ export default function BoxInspector({ section = false, sectionPlace, outerDefau
 
           {inGrid && (
             <Accordion title="Grid cell" icon={LayoutGrid}>
-              <ColumnFractions track={gridTrack ?? 3} span={node.colSpan ?? 1} breakpoint={breakpoint} onSet={onSetFraction} />
+              {!inFitGrid && <ColumnFractions track={gridTrack ?? 3} span={node.colSpan ?? 1} breakpoint={breakpoint} onSet={onSetFraction} />}
               <div className="grid grid-cols-2 gap-2">
+                {!inFitGrid && <>
                 <CompactField label="Columns wide" ariaLabel="Columns wide" type="number" min={1} max={gridTrack ?? GRID_MAX} value={node.colSpan ?? 1} onChange={(v) => onPatch({ colSpan: Math.max(1, Number(v) || 1) })} />
                 {/* The OFFSET control, as an absolute start rather than Bootstrap's relative margin: "leave two
                     columns empty before this" is "begin at column 3", which is one number a user can read back
@@ -1205,6 +1284,7 @@ export default function BoxInspector({ section = false, sectionPlace, outerDefau
                   <CompactField label="Start at row" ariaLabel="Start at row" type="number" min={1} placeholder="auto"
                     value={node.rowStart ?? ""} onChange={(v) => onPatch({ rowStart: v === "" ? undefined : Math.max(1, Number(v) || 1) })} />
                 )}
+                </>}
                 {/* ONE source of truth with the nine squares below (R4-2): both place the cell across, so whichever was
                     used last wins — this shows the squares' choice, and choosing here clears the squares' across value. */}
                 <CompactSelect label="Line up (across)" ariaLabel="Line up (across)" value={node.placeX ?? node.justifySelf ?? "stretch"}
@@ -1315,7 +1395,9 @@ export default function BoxInspector({ section = false, sectionPlace, outerDefau
             {/* Typing a height (or clearing it) also clears any shrink a DRAG applied: the scale exists only to make
                 content fit a box you dragged smaller than it, so a height set by hand starts from full-size text
                 again. Without this the text stayed small with no visible reason once the height was cleared. */}
-            <CompactField label="Height" ariaLabel="Height" value={node.height ?? ""} onChange={(v) => onPatch({ height: typedLength(v) || undefined, contentScale: undefined })} placeholder="auto, 18rem or 40vh" />
+            <CompactField label="Height" ariaLabel="Height" value={node.height ?? ""} onChange={(v) => onPatch({ height: typedLength(v) || undefined, contentScale: undefined, ...(v.trim() ? { ratio: undefined } : {}) })} placeholder="auto, 18rem or 40vh" />
+            <ProportionControl node={node} onPatch={onPatch} />
+            <LimitsControl node={node} onPatch={onPatch} />
             {node.contentScale != null && node.contentScale < 1 && (
               <div className="flex items-center justify-between gap-2 rounded-lg bg-surface-2 px-2 py-1.5">
                 <span className="text-[0.6875rem] text-muted">

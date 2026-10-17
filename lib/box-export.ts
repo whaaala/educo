@@ -9,7 +9,7 @@
  */
 
 import type { CSSProperties } from "react";
-import { PILL, dividerThickness, borderLen, videoSizing, blockTypography,pinArrivalCss, pinArrivalKeyframes, floatHoldCSS,
+import { PILL, applyBoxSize, dividerThickness, borderLen, videoSizing, blockTypography,pinArrivalCss, pinArrivalKeyframes, floatHoldCSS,
   type BoxNode, type Breakpoint, type SectionFlag, BP_ORDER, containerStyle, childStyle, hostSizedFor, marginCSS, leafPaddingCSS, ownSidePadVars, outerSpaceCSS, pageBandInset, pagePinCover, sectionContent, sizeToCSS, radiusCSS, SHADOW_CSS, u, LIST_ITEM_GAP, textLen, baseUnit, fadedPaint, boxOpacity, backgroundCss, paintLayerCss,
   resolveResponsive, floatStacksOnMobile, floatingReserve, alertToastCss, accordionClasses, bandClasses, hasSiteMeasure, videoEmbedSrc, isContainer, sanitizeCssDeclarations, expandScopedCss, COMPONENT_PARTS, itemFloatContextCss, itemOverrideCss, itemNumberVars, richBody, plainBody, componentTextCss, componentBoxCss, renderAlertHTML, alertDismissScript, masonryMeasureAttr, masonryMeasureScript, pinStackMarker, pinStackGroupMarker, pinStackNeeded, pinStackScript, headerMarkers, headerScript, headerScriptNeeded, underOverHeaderPad, pinArrivalMarker, pinArrivalScript, treeHasArrival, isPager, pagerNavHTML, pagerScript, pagerStripCss, pagerSlideId, bgShowThroughCss, blockContainmentCss, COMPONENT_ITEM_SEL, remLen, imageSizing, fillsRowsAnywhere, fillHostOf, hasIntrinsicSize, itemNeedsClass, itemScope, floatZIndex, typoRole, typoRootVars, typoCascadeCss, bandEdgeCSS, LINK_COLOR_CSS, gridQueryCss, TYPE_UNIT_PROPERTY_CSS,
 } from "@/lib/box-model";
@@ -513,6 +513,7 @@ function styleAt(node: BoxNode, rawParent: BoxNode | null, bp: Breakpoint, theme
     if (paints && rendersNothing(r) && r.minHeight == null && r.height == null && belowFloor(cs.minHeight)) {
       cs.minHeight = remLen(Math.max(128, floatingReserve(r, bp))); // 8rem, in rem — never a stored pixel (field guide ②)
     }
+    applyBoxSize(cs, r, parent); // SZ-4 · SZ-3: its shape and limits, last — the canvas applies the same
     return cs;
   }
   // Elements apply their OWN minHeight/height (containers get it from containerStyle) so a height-resized
@@ -529,6 +530,7 @@ function styleAt(node: BoxNode, rawParent: BoxNode | null, bp: Breakpoint, theme
     const fp = (v?: string) => (v === "center" ? "center" : v === "end" ? "flex-end" : "flex-start");
     wrap.display = "flex"; wrap.flexDirection = "column"; wrap.justifyContent = fp(r.contentY); wrap.alignItems = fp(r.contentX);
   }
+  applyBoxSize(wrap, r, parent); // SZ-4 · SZ-3 — the canvas applies the same
   return wrap;
 }
 

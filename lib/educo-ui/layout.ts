@@ -224,3 +224,7 @@ const LAYOUT_TEMPLATE = `
 
 /** The layout layer as the export ships it. */
 export const LAYOUT_CSS = layoutCss();
+
+/** BATCH LE-12 · the Proportion gallery's shapes (SZ-4), Custom's first value, and the card width "As many as fit" starts at (GR-2) — config/layout.json `sizes`. */
+export const SIZES: Readonly<{ ratios: readonly { value: string; label: string }[]; customStart: string; autoFitStart: string }> = LAYOUT.sizes;
+if (!SIZES.ratios.length || SIZES.ratios.some((r) => !/^\d+(\.\d+)? \/ \d+(\.\d+)?$/.test(r.value))) throw new Error("config/layout.json: sizes.ratios need a value written \"w / h\"");

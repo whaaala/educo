@@ -1,4 +1,7 @@
 import { describe, it, expect, vi } from "vitest";
+import { SPACE_STEPS } from "@/lib/educo-ui/tokens"; // SP-4: the gap sliders move on the spacing scale
+/** SP-4: where a slider on the scale puts its thumb — the nearest place (a default off the scale, 17, reads its own number) */
+const placeOf = (v: number) => SPACE_STEPS.reduce((b, x, i) => (Math.abs(x - v) < Math.abs(SPACE_STEPS[b] - v) ? i : b), 0);
 import { render, screen, fireEvent } from "@testing-library/react";
 import PageGridPanel from "@/components/website/box/PageGridPanel";
 import BoxCanvas from "@/components/website/box/BoxCanvas";
@@ -96,19 +99,19 @@ describe("the page-grid panel", () => {
 
   it("G-3b (5): space between columns and between rows, each its own, each back to its default", () => {
     const p = panel();
-    expect(screen.getByLabelText("Space between columns")).toHaveValue(String(SPACE_GRID.columns));
-    expect(screen.getByLabelText("Space between rows")).toHaveValue(String(SPACE_GRID.stack));
-    fireEvent.change(screen.getByLabelText("Space between columns"), { target: { value: "40" } });
+    expect(screen.getByLabelText("Space between columns")).toHaveValue(String(placeOf(SPACE_GRID.columns)));
+    expect(screen.getByLabelText("Space between rows")).toHaveValue(String(placeOf(SPACE_GRID.stack)));
+    fireEvent.change(screen.getByLabelText("Space between columns"), { target: { value: String(SPACE_STEPS.indexOf(40)) } });
     expect(p.onChange).toHaveBeenLastCalledWith({ columnGap: 40 }, "pagegrid:columnGap");
-    fireEvent.change(screen.getByLabelText("Space between rows"), { target: { value: "0" } });
+    fireEvent.change(screen.getByLabelText("Space between rows"), { target: { value: String(SPACE_STEPS.indexOf(0)) } });
     expect(p.onChange).toHaveBeenLastCalledWith({ rowGap: 0 }, "pagegrid:rowGap");
   });
 
   it("G-3b (5): a site that set G-2's one gap keeps it in the direction NOT moved, and 'back to default' clears one only", () => {
     const p = panel({ grid: { blockGap: 24 } });
-    expect(screen.getByLabelText("Space between columns")).toHaveValue("24");
-    expect(screen.getByLabelText("Space between rows")).toHaveValue("24");
-    fireEvent.change(screen.getByLabelText("Space between columns"), { target: { value: "8" } });
+    expect(screen.getByLabelText("Space between columns")).toHaveValue(String(SPACE_STEPS.indexOf(24))); // SP-4: the thumb sits at the scale's place
+    expect(screen.getByLabelText("Space between rows")).toHaveValue(String(SPACE_STEPS.indexOf(24))); // SP-4: the thumb sits at the scale's place
+    fireEvent.change(screen.getByLabelText("Space between columns"), { target: { value: String(SPACE_STEPS.indexOf(8)) } });
     expect(p.onChange).toHaveBeenLastCalledWith({ columnGap: 8, rowGap: 24 }, "pagegrid:columnGap");
     fireEvent.click(screen.getByRole("button", { name: "Space between rows — back to default" }));
     expect(p.onChange).toHaveBeenLastCalledWith({ columnGap: 24 }, "pagegrid:rowGap");

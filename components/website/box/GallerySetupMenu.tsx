@@ -22,6 +22,7 @@ import { TWELFTHS_COLUMNS, type GalleryPhoto } from "@/lib/box-presets";
 import type { PagerNav } from "@/lib/box-model";
 import { PortalMenu } from "./ui";
 import Slider from "@/components/shared/Slider";
+import { SPACE_STEPS } from "@/lib/educo-ui/tokens";
 import type { MenuAnchor } from "./GridLayoutMenu";
 
 export const GALLERY_MENU_WIDTH = 300;
@@ -219,7 +220,7 @@ export default function GallerySetupMenu({ anchor, onClose, onPick, mode = "gall
 
         {/* ── 4 · spacing — shown here so whatever arrives is what was chosen ────────────────────── */}
         <div className="mt-3">
-          <Slider label="Space between" value={gap} min={0} max={48} onChange={setGap} formatValue={(x) => (x ? `${+(x / 16).toFixed(2)}rem` : "none")} />
+          <Slider label="Space between" value={gap} min={0} max={48} steps={SPACE_STEPS.filter((v) => v <= 48)} onChange={setGap} formatValue={(x) => (x ? `${+(x / 16).toFixed(2)}rem` : "none")} />
         </div>
         </>)}
 
