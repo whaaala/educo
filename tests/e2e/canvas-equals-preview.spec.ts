@@ -83,7 +83,9 @@ const boxes = (doc: Page | Frame, engine: "canvas" | "preview") => doc.evaluate(
   const Z = engine === "canvas" ? Number(first.closest<HTMLElement>("[data-canvas-scale]")?.dataset.canvasScale) || 1 : 1;
   const frame = engine === "canvas" ? first.closest<HTMLElement>("[data-canvas-scale]")!.getBoundingClientRect() : { left: 0, top: -scrollY };
   for (const e of els) {
-    const id = engine === "canvas" ? e.getAttribute("data-box-id")! : [...e.classList].find((c) => c.startsWith("bx-"))!.slice(3);
+    // LE13c-8: `[class*="bx-"]` also matches a class with "bx-" inside it — no block of ours; it crashed the guard 1 run in 3
+    const id = engine === "canvas" ? e.getAttribute("data-box-id")! : [...e.classList].find((c) => c.startsWith("bx-"))?.slice(3);
+    if (!id) continue;
     const r = e.getBoundingClientRect();
     if (r.width < 1 && r.height < 1) continue;
     out[id] = [(r.left - frame.left) / Z, (r.top - frame.top) / Z, r.width / Z, r.height / Z].map((v) => Math.round(v * 10) / 10);

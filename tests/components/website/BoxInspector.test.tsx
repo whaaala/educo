@@ -2,7 +2,7 @@ import { describe, it, expect, vi } from "vitest";
 import { render, screen, fireEvent, cleanup, within, waitFor } from "@testing-library/react";
 import BoxInspector from "@/components/website/box/BoxInspector";
 import { DEFAULT_THEME } from "@/lib/site-storage";
-import { createContainer, createElement, createComponent, type BoxNode } from "@/lib/box-model";
+import { createContainer, createElement, createComponent, fluidRemRange, type BoxNode } from "@/lib/box-model";
 import userEvent from "@testing-library/user-event";
 import LAYOUT from "@/config/layout.json";
 import { SPACE_STEPS } from "@/lib/educo-ui/tokens";
@@ -1388,6 +1388,23 @@ describe("BoxInspector — LE-13 flow and overlap", () => {
     const g2 = screen.getByRole("group", { name: W.shape });
     expect(within(g2).getByRole("button", { name: W.shapeChoices.round })).toHaveAttribute("aria-pressed", "true");
     fireEvent.click(within(g2).getByRole("button", { name: W.shapeChoices.box })); expect(atPhone).toHaveBeenLastCalledWith({ wrapShape: "box" }); // its box on this screen only
+  });
+  it("LE-13c: Space round it, only with the wrap on — on the spacing scale, the default shown, Back to default unsets it", () => {
+    renderFor(pic(), { parentFlow: "column", canWrapWords: true });
+    expect(screen.queryByLabelText(W.gap)).toBeNull(); // the wrap is Off: there is no space round it to set
+    cleanup();
+    const onPatch = renderFor(pic({ wrapAround: "start" }), { parentFlow: "column", canWrapWords: true });
+    const s = screen.getByLabelText(W.gap);
+    expect(s).toHaveAttribute("aria-valuetext", `${W.gapDefault} · ${LAYOUT.flow.wrapGapRem}rem`);
+    expect(screen.getByText(W.gapHint)).toBeInTheDocument();
+    const back = screen.getByRole("button", { name: `${W.gap} — ${W.gapBack}` });
+    expect(back).toBeDisabled(); // nothing of its own yet
+    fireEvent.change(s, { target: { value: String(SPACE_STEPS.indexOf(24)) } }); expect(onPatch).toHaveBeenLastCalledWith({ wrapGap: 24 });
+    fireEvent.change(s, { target: { value: "0" } }); expect(onPatch).toHaveBeenLastCalledWith({ wrapGap: 0 });
+    cleanup();
+    const own = renderFor(pic({ wrapAround: "end", wrapGap: 24 }), { parentFlow: "column", canWrapWords: true });
+    expect(screen.getByLabelText(W.gap)).toHaveAttribute("aria-valuetext", fluidRemRange(24));
+    fireEvent.click(screen.getByRole("button", { name: `${W.gap} — ${W.gapBack}` })); expect(own).toHaveBeenLastCalledWith({ wrapGap: undefined });
   });
   it("FL-6: When it doesn't fit on a Side by side — Scroll sideways, and back to new lines (Off stored on a screen)", () => {
     const sbs = (extra: Partial<BoxNode> = {}) => createContainer("row", { id: "s", children: [], ...extra });

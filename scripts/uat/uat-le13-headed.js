@@ -100,7 +100,7 @@ async function photoStory(page) {
   return { st, pic, t };
 }
 /** U1's geometry at one width: floated beside → the first words beside it and later words under it; taking the line → words below. */
-function wrapCheck(r, P, st, pic, side, t) {
+function wrapCheck(r, P, st, pic, side, t, gap = FLOW.wrapGapRem * REM) { // LE-13c: the picture's own Space round it, measured
   const L = P.flat();
   const floats = r[pic].fl ? r[pic].fl !== 'none' : r[pic].w < r[st].w - 20; // LE13b-11: what the browser says — a 10rem picture that stopped floating is still narrower than its Stack
   const bad = [];
@@ -111,8 +111,8 @@ function wrapCheck(r, P, st, pic, side, t) {
     const beside = L.filter((x) => x.t < r[pic].b - 2);
     const below = P.flatMap((p) => [...p].sort((x, y) => x.t - y.t).slice(0, -1)).filter((x) => x.t >= r[pic].b + 2); // LE13-7f: a paragraph's last line is short by nature
     if (!beside.length) bad.push('no words beside the picture');
-    if (side === 'start' && beside.some((x) => x.l < r[pic].r + FLOW.wrapGapRem * REM - 1.5)) bad.push(`a word touches the picture: ${Math.min(...beside.map((x) => x.l))} vs ${r[pic].r}`);
-    if (side === 'end' && beside.some((x) => x.r > r[pic].l - FLOW.wrapGapRem * REM + 1.5)) bad.push(`a word touches the picture: ${Math.max(...beside.map((x) => x.r))} vs ${r[pic].l}`);
+    if (side === 'start' && beside.some((x) => x.l < r[pic].r + gap - 1.5)) bad.push(`a word touches the picture: ${Math.min(...beside.map((x) => x.l))} vs ${r[pic].r}`);
+    if (side === 'end' && beside.some((x) => x.r > r[pic].l - gap + 1.5)) bad.push(`a word touches the picture: ${Math.max(...beside.map((x) => x.r))} vs ${r[pic].l}`);
     const reaches = side === 'start' || t.some((id) => r[id].pr > r[pic].l + 20); // LE13-7i: a paragraph capped at its measure short of an End picture has nothing to return under
     if (reaches && below.length && !below.some((x) => near(x.l, r[st].l, 3) && x.r > (side === 'start' ? r[pic].r : r[pic].l) + 20)) bad.push(`the words never return under the picture (${below.length} lines below its foot ${r[pic].b}: ${JSON.stringify(below.slice(0, 2))} · Stack ${r[st].l}–${r[st].r} · picture ${r[pic].l}–${r[pic].r})`); // LE13-7a: the line START, under it
   } else if (L.length && Math.min(...L.map((x) => x.t)) < r[pic].b - 1) bad.push(`words beside a full-line picture ${Math.min(...L.map((x) => x.t))} < ${r[pic].b}`);
@@ -136,8 +136,8 @@ async function discPng(page, d = DISC) {
 }
 /** Is the picture's circle followed? `circle` {cx, cy, R} in the frame's page coordinates; lines beside it must stay a gap off the
  *  circle (a line band is shortened by the float area nearest the centre), and they must come in over the box somewhere (not its box). */
-function shapeCheck(r, P, pic, side, circle, wantShape = true, ids = []) {
-  const gap = FLOW.wrapGapRem * REM, bad = [];
+function shapeCheck(r, P, pic, side, circle, wantShape = true, ids = [], gap = FLOW.wrapGapRem * REM) {
+  const bad = [];
   const beside = P.flat().filter((x) => x.t < r[pic].b - 2 && x.b > r[pic].t + 2);
   if (!beside.length) return { bad: ['no words beside the picture'] };
   let inOver = 0;
@@ -494,7 +494,9 @@ const JOBS = {
   },
 };
 
-(async () => {
+// LE-13c reuses the builders and the measurements (uat-le13c-headed.js); the jobs run only when this file is run
+module.exports = { photoStory, pick, sec, first, into, under, closeIns, words, rects, lines, canvasRects, canvasLines, wrapCheck, shapeCheck, circleStyle, circleOf, discPng, discOf, nodeIn, own, changed, CONTRAST, near, REM, LONG };
+if (require.main === module) (async () => {
   const names = Object.keys(JOBS).filter((n) => !ONLY.length || ONLY.includes(n));
   let slot = 0; const queue = [...names];
   const worker = async (s) => {
