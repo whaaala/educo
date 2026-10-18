@@ -72,6 +72,10 @@ const find = (st, id) => { let n = null; const w = (x) => { if (x.id === id) n =
   await selectBlock(pic); await inspector('Position'); await choose(F.wrap, F.wrapChoices.start); shot('wrap');
   // LE-13b · the Circle style and Words follow → Its round corners, with touches
   await choose(F.shape, F.shapeChoices.round); shot('words-follow');
+  // LE-13c · Space round it, a touch on the middle of its slider (a step of the spacing scale, not the default)
+  await tap(page.getByRole('slider', { name: F.gap, exact: true }).first()); shot('space-round');
+  const gap = own(find(await stored(page), pic), 'wrapGap');
+  ok('LE-13c Space round it set with a touch: a step of its own stored on the spacing scale', typeof gap === 'number' && gap > 0 && gap <= FLOW.wrapGapMax, `wrapGap ${gap}`);
   await tap(page.getByRole('tab', { name: 'Design' }).first()); await tap(page.getByRole('group', { name: 'Style presets' }).getByRole('button', { name: 'Circle style' }).first()); await close();
   const row = await addBlock('Side by side', 'End');
   await selectBlock(row).catch(() => {}); await inspector('Arrange');
@@ -90,7 +94,8 @@ const find = (st, id) => { let n = null; const w = (x) => { if (x.id === id) n =
     // the first LINE of words: a text run's own rectangle (LE13-17 — a range over the element returned the <p>'s box first)
     const tw = document.createTreeWalker(document.querySelector(`.bx-${t}`), NodeFilter.SHOW_TEXT); let n, line = null;
     while (!line && (n = tw.nextNode())) { if (!n.textContent.trim()) continue; const range = document.createRange(); range.selectNodeContents(n); line = [...range.getClientRects()].find((x) => x.width > 1) || null; }
-    return { shape: getComputedStyle(document.querySelector(`.bx-${p}`)).shapeOutside, vw: document.documentElement.clientWidth, sw: document.documentElement.scrollWidth, rem, s: r(s), p: r(p), line: line && { l: line.left, t: line.top },
+    const pc = getComputedStyle(document.querySelector(`.bx-${p}`));
+    return { shape: pc.shapeOutside, space: { shape: parseFloat(pc.shapeMargin) || 0, side: parseFloat(pc.marginInlineEnd), fl: pc.float }, vw: document.documentElement.clientWidth, sw: document.documentElement.scrollWidth, rem, s: r(s), p: r(p), line: line && { l: line.left, t: line.top },
       ox: getComputedStyle(row).overflowX, wrap: getComputedStyle(row).flexWrap, overlap: above ? +(above.getBoundingClientRect().bottom - row.getBoundingClientRect().top).toFixed(1) : null };
   }, [stack, pic, text, row]);
   const hide = page.getByRole('button', { name: 'Hide the preview controls' }).first(); if (await hide.isVisible().catch(() => false)) await tap(hide);
@@ -99,6 +104,9 @@ const find = (st, id) => { let n = null; const w = (x) => { if (x.id === id) n =
   // LE-13b: round — the first line starts inside where its box and the gap would put it (LE13b-12: not the bare box edge)
   const wrapOk = m.shape === 'border-box' && (floats ? m.line.t < m.p.b && m.line.l < m.p.r + FLOW.wrapGapRem * m.rem - 1 : m.line.t >= m.p.b - 1 && Math.abs(m.p.w - (m.p.b - m.p.t)) <= 1.5); // LE13b-11 / -13: under it, and the Circle stays round
   ok(`the app's Preview (${m.vw}px): the words ${floats ? 'BESIDE the round picture, following its curve' : 'under the picture, which stops floating and stays round'}`, wrapOk, JSON.stringify({ shape: m.shape, s: m.s, p: m.p, line: m.line }));
+  // LE-13c: where it floats, the space round the curve and beside it is the picture's own — not the default 1rem
+  ok(`LE-13c the app's Preview: ${floats ? 'the space round the curve is the picture\'s own, the same beside it' : 'the picture takes the line (no space to lay out)'}`,
+    !floats || (m.space.shape > 0 && Math.abs(m.space.shape - m.space.side) <= 0.5 && Math.abs(m.space.shape - FLOW.wrapGapRem * m.rem) > 0.5), JSON.stringify(m.space));
   ok('the Side by side is one line that scrolls, pulled up over the section above by the step; nothing sideways',
     m.ox === 'auto' && m.wrap === 'nowrap' && Math.abs(m.overlap - FLOW.overlapSteps[0] * m.rem) <= 1.5 && m.sw <= m.vw, JSON.stringify({ ox: m.ox, wrap: m.wrap, overlap: m.overlap, sw: m.sw, vw: m.vw }));
   ok('no console errors in the editor', !errors.length, errors.join(' | ') || 'none');

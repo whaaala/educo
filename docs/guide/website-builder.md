@@ -565,6 +565,15 @@ it; a picture with a width of its own (the Circle style's 10rem) keeps that widt
 
 [![Position → Words follow: Its box · Its round corners · A cut-out's outline](img/guide-words-follow.webp)](img/guide-words-follow.webp)
 
+**The space round it.** Under Words follow, **Space round it** sets how far the words keep from the picture — beside it,
+under it, and round its curve or its outline. It starts at the default, 1rem ("Default · 1rem"); drag it, or use the arrow
+keys, to step along the same spacing scale as every other space, from 0 (the words right up to the picture) to 2.8rem on a
+phone — the slider shows each step's size from a phone to a wide screen, as every space grows with the screen and with the
+reader's text size. Set it on **Mobile** to give a phone its own space.
+**Back to default** puts the 1rem back.
+
+[![Position → Space round it, under Words follow, with Back to default](img/guide-space-round.webp)](img/guide-space-round.webp)
+
 **A sideways strip.** Select a Side by side, open **Arrange → When it doesn't fit** and choose **Scroll sideways**: its
 blocks stay on one line that visitors swipe or scroll, a part of the next one showing, each swipe landing a block at the
 start. The page itself never scrolls sideways. Keyboard users reach the strip with Tab and move it with the arrow keys.

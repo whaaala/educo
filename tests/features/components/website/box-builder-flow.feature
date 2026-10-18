@@ -2,7 +2,7 @@ Feature: Flow and overlap — words round a picture, a sideways strip, a section
   A picture in a Stack lets the words after it run beside it and back under it (FL-3); a Side by side that does not fit keeps one
   line that scrolls sideways and snaps (FL-6); a page section is pulled up over the section above without covering it (PO-4).
   Words: config/inspector.json `flow` · numbers: config/layout.json `flow` (RULE CFG).
-  Guards: tests/unit/flow.test.ts · tests/components/website/BoxInspector.test.tsx (LE-13) · HEADED: scripts/uat/uat-le13-headed.js
+  Guards: tests/unit/flow.test.ts · tests/components/website/BoxInspector.test.tsx (LE-13) · HEADED: scripts/uat/uat-le13-headed.js · scripts/uat/uat-le13c-headed.js
 
   Scenario: words wrap round the head teacher's photo
     Given a Stack holding a picture and three paragraphs
@@ -74,6 +74,36 @@ Feature: Flow and overlap — words round a picture, a sideways strip, a section
     When I pick Wrap words round it → Start
     Then Words follow shows Its box, Its round corners and A cut-out's outline, Its box chosen
     And it works by keyboard, in light, dark, midnight and purple
+
+  # BATCH LE-13c · LE13b-15a — Space round it, per picture (the user 2026-10-18: Should, "a user can also do it through the UI").
+  # Words: config/inspector.json flow.gap* · numbers: config/layout.json flow.wrapGapRem (the default), flow.wrapGapMax.
+  Scenario: more space between the head teacher's photo and the words
+    Given a picture set to Wrap words round it → Start
+    Then its Space round it shows the default, config/layout.json flow.wrapGapRem
+    When I drag Space round it to a bigger step of the spacing scale
+    Then the words beside the picture and under it move that far away from it, on the canvas and in the Preview alike
+    And it follows the reader's text size and the screen like every other space (the spacing unit)
+    When I drag it to 0
+    Then the words come right up to the picture
+    When I pick Back to default
+    Then the space is config/layout.json flow.wrapGapRem again
+
+  Scenario: the space follows the picture's shape
+    Given a picture set to Wrap words round it with Words follow → Its round corners, or A cut-out's outline
+    When I set its Space round it
+    Then the words keep that space from the curve or the outline, not only from its box
+
+  Scenario: a different space on the phone
+    Given a picture with Space round it set on the Desktop screen
+    When I set another Space round it on the Mobile screen
+    Then a phone shows the Mobile space and a desktop the Desktop one
+
+  Scenario: Space round it is offered only with the wrap
+    Given a picture with Wrap words round it → Off
+    Then there is no Space round it
+    When I pick Wrap words round it → End
+    Then Space round it is shown under Words follow, works by keyboard and is readable in light, dark, midnight and purple
+    And a stored space that is not a number, below 0 or above config/layout.json flow.wrapGapMax is held inside 0 … flow.wrapGapMax
 
   Scenario: Wrap words round it is offered only where it can work
     Given a picture alone on its line in a Stack

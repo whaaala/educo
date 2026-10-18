@@ -391,6 +391,7 @@ export interface BoxNode {
   // config/layout.json flow.overlapSteps (PO-4; R-4 D2: a named control, never a free negative margin).
   wrapAround?: "start" | "end" | "off"; // "off" / scrollX false / overlapUp 0: Off on a screen whose base is on
   wrapShape?: "box" | "round" | "outline"; // FL-3b (LE-13b): what the words follow — its box (unset) · its round corners · a cut-out's outline
+  wrapGap?: number;         // LE-13c: Space round it — px on the spacing scale (`u()`), at most config flow.wrapGapMax; unset: config flow.wrapGapRem
   wrapOutline?: string;     // …the picture's traced outline, `polygon()` in % (`outlinePolygon`); the picture's own on every screen, like src
   scrollX?: boolean;
   overlapUp?: number;
@@ -7180,6 +7181,12 @@ export function flowsWords(node: BoxNode, bp: Breakpoint = "base"): boolean {
   if ((resolveResponsive(node, bp).direction ?? "column") !== "column") return false;
   return (node.children ?? []).some((c) => !!wrapSide(c.rowBand ? loneKid(c) : c, bp));
 }
+/** LE-13c · the space between a wrapped picture and its words on `bp`: its own on the spacing unit, held to 0 … config
+ *  flow.wrapGapMax (a trust boundary), else config's — the one value its margins and its shape-margin both use. */
+export function wrapGapAt(n: BoxNode, bp: Breakpoint = "base"): string {
+  const v = resolveResponsive(n, bp).wrapGap;
+  return typeof v === "number" && Number.isFinite(v) ? u(Math.min(FLOW.wrapGapMax, Math.max(0, v))) : `${FLOW.wrapGapRem}rem`;
+}
 /** FL-6 · a Side by side that keeps ONE line and scrolls sideways on `bp`. */
 export function stripsAt(node: BoxNode, bp: Breakpoint = "base"): boolean {
   return isSideBySide(node) && resolveResponsive(node, bp).scrollX === true;
@@ -7240,8 +7247,9 @@ function flowCSS(s: CSSProperties, child: BoxNode, parent: BoxNode, bp: Breakpoi
     const own = `min(${share}, calc(${PARAGRAPH_MEASURE} * ${FLOW.wrapMeasureShare}))`;
     // z-index 1 (LE13-8): the words' blocks still SPAN the picture's area (only their lines are shortened) and, positioned, were drawn
     // over it — a click on the picture landed on the words; the words never cover it, so lifting it changes nothing you can see
+    const gap = wrapGapAt(child, bp);
     Object.assign(s, { float: side === "start" ? "inline-start" : "inline-end", width: own, maxWidth: "100%", flex: undefined, alignSelf: undefined, zIndex: PAGE_Z.raised,
-      marginInlineStart: side === "end" ? `${FLOW.wrapGapRem}rem` : "0rem", marginInlineEnd: side === "start" ? `${FLOW.wrapGapRem}rem` : "0rem", marginBottom: `${FLOW.wrapGapRem}rem` });
+      marginInlineStart: side === "end" ? gap : "0rem", marginInlineEnd: side === "start" ? gap : "0rem", marginBottom: gap });
     delete s.marginLeft; delete s.marginRight; // the logical pair above is the whole of it (no physical side fighting it)
     Object.assign(s, wrapShapeCSS(child, bp));
   }
@@ -7280,8 +7288,8 @@ function flowCSS(s: CSSProperties, child: BoxNode, parent: BoxNode, bp: Breakpoi
 const OUTLINE = /^polygon\((?:\d{1,3}(?:\.\d)?% \d{1,3}(?:\.\d)?%, ){2,}\d{1,3}(?:\.\d)?% \d{1,3}(?:\.\d)?%\)$/;
 function wrapShapeCSS(child: BoxNode, bp: Breakpoint): CSSProperties {
   const shape = resolveResponsive(child, bp).wrapShape;
-  if (shape === "round") return { shapeOutside: "border-box", shapeMargin: `${FLOW.wrapGapRem}rem` };
-  if (shape === "outline" && OUTLINE.test(child.wrapOutline ?? "")) return { shapeOutside: child.wrapOutline, shapeMargin: `${FLOW.wrapGapRem}rem` };
+  if (shape === "round") return { shapeOutside: "border-box", shapeMargin: wrapGapAt(child, bp) };
+  if (shape === "outline" && OUTLINE.test(child.wrapOutline ?? "")) return { shapeOutside: child.wrapOutline, shapeMargin: wrapGapAt(child, bp) };
   return {};
 }
 /**

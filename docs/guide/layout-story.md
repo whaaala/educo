@@ -570,6 +570,13 @@ round photo stays round.
 
 [![The Preview at 1280 px: the letter's lines following a round photo of the head teacher](img/story-words-follow-round.webp)](img/story-words-follow-round.webp)
 
+The letter's first words sit close to the photo, and Amaka wants a little more air. Under **Words follow** she drags
+**Space round it** two steps along: the lines step back from the circle, beside it and under it, on every screen. On the
+phone, where space is short, she switches to **Mobile** and brings it back down — the desktop keeps its wider space.
+**Back to default** returns it to the builder's 1rem.
+
+[![The Preview at 1280 px: the same letter, its lines further from the round photo](img/story-space-round.webp)](img/story-space-round.webp)
+
 ### "A strip of events"
 
 Six events in a Side by side made six lines on a phone, and the page went on forever. Amaka selects the row, opens

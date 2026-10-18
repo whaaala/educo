@@ -1405,6 +1405,14 @@ export default function BoxInspector({ section = false, sectionPlace, outerDefau
                         }}
                         options={(["box", "round", "outline"] as const).map((v) => ({ value: v, label: FLOW_WORDS.shapeChoices[v] }))} />
                       <p className="text-[0.6875rem] leading-snug text-gray-500 dark:text-gray-400 midnight:text-slate-400 purple:text-purple-300">{FLOW_WORDS.shapeHint}</p>
+                      {/* LE-13c · the picture's own wrap gap (`wrapGap`) — on the spacing scale like every space; unset is config's (`wrapGapAt`), per screen */}
+                      <Slider label={FLOW_WORDS.gap} value={node.wrapGap ?? FLOW.wrapGapRem * 16} min={0} max={FLOW.wrapGapMax} steps={spaceSteps(FLOW.wrapGapMax)}
+                        onChange={(n) => onPatch({ wrapGap: n })} formatValue={(x) => (node.wrapGap != null ? fluidRemRange(x) : `${FLOW_WORDS.gapDefault} · ${FLOW.wrapGapRem}rem`)} />
+                      <button type="button" disabled={node.wrapGap == null} onClick={() => onPatch({ wrapGap: undefined })} aria-label={`${FLOW_WORDS.gap} — ${FLOW_WORDS.gapBack}`}
+                        className="pointer-coarse:min-h-11 text-[0.625rem] text-gray-500 hover:text-brand disabled:hover:text-gray-500 disabled:cursor-default dark:text-gray-400 midnight:text-slate-400 purple:text-purple-300">
+                        {node.wrapGap != null ? FLOW_WORDS.gapBackLabel : FLOW_WORDS.gapAtDefault}
+                      </button>
+                      <p className="text-[0.6875rem] leading-snug text-gray-500 dark:text-gray-400 midnight:text-slate-400 purple:text-purple-300">{FLOW_WORDS.gapHint}</p>
                     </>
                   )}
                 </div>

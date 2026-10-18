@@ -5,7 +5,7 @@
  */
 import { describe, it, expect } from "vitest";
 import { readFileSync } from "fs";
-import { createContainer, createElement, makeRowBand, insertBox, normalizeRowBands, childStyle, containerStyle, clampRowWidths, flowsWords, flowQueryCss, gridQueryCss, canWrapWords, canOverlapUp, stripsAnywhere, findBox, outlinePolygon, followsOutline, type BoxNode } from "@/lib/box-model";
+import { createContainer, createElement, makeRowBand, insertBox, normalizeRowBands, childStyle, containerStyle, clampRowWidths, flowsWords, flowQueryCss, gridQueryCss, canWrapWords, canOverlapUp, stripsAnywhere, findBox, outlinePolygon, followsOutline, u, type BoxNode } from "@/lib/box-model";
 import { emptyPageRoot, siteFromRoot } from "@/lib/box-site";
 import { renderSitePage, photosToFiles, addSrcset } from "@/lib/box-export";
 import { DEFAULT_THEME } from "@/lib/site-storage";
@@ -235,6 +235,39 @@ describe("FL-3b · the words follow its shape (BATCH LE-13b)", () => {
   });
 });
 
+describe("LE-13c · Space round it — the gap between a wrapped picture and its words, per picture (LE13b-15a)", () => {
+  const style = (extra: Partial<BoxNode>, bp: "base" | "phone" = "base") => {
+    const st = stackOf(pic(extra), text("t1"));
+    return childStyle(findBox(st, "pic")!, bandOf(st, "pic"), bp, false, st);
+  };
+  const POLY = "polygon(40% 0%, 60% 0%, 80% 50%, 60% 100%, 40% 100%, 20% 50%)";
+  it("its own space, on the spacing unit like every other space, on its open side and below; unset keeps config's", () => {
+    expect(style({ wrapGap: 24 })).toMatchObject({ marginInlineEnd: u(24), marginInlineStart: "0rem", marginBottom: u(24) });
+    expect(style({ wrapGap: 24, wrapAround: "end" })).toMatchObject({ marginInlineStart: u(24), marginInlineEnd: "0rem", marginBottom: u(24) });
+    expect(style({})).toMatchObject({ marginInlineEnd: `${F.wrapGapRem}rem`, marginBottom: `${F.wrapGapRem}rem` }); // saved pages keep theirs
+    expect(style({ wrapGap: 0 })).toMatchObject({ marginInlineEnd: u(0), marginBottom: u(0) }); // the words right up to it
+  });
+  it("the same space round its curve and its outline (shape-margin)", () => {
+    expect(style({ wrapGap: 32, wrapShape: "round", radius: 999 }).shapeMargin).toBe(u(32));
+    expect(style({ wrapGap: 32, wrapShape: "outline", wrapOutline: POLY }).shapeMargin).toBe(u(32));
+  });
+  it("per screen: another space on the phone", () => {
+    expect(style({ wrapGap: 32, responsive: { phone: { wrapGap: 8 } } }, "phone").marginInlineEnd).toBe(u(8));
+    expect(style({ wrapGap: 32, responsive: { phone: { wrapGap: 8 } } }, "base").marginInlineEnd).toBe(u(32));
+  });
+  it("a trust boundary: not a number is config's; below 0 or above config's flow.wrapGapMax is held inside it", () => {
+    for (const bad of ["12", NaN, Infinity, null]) expect(style({ wrapGap: bad as unknown as number }).marginInlineEnd).toBe(`${F.wrapGapRem}rem`);
+    expect(style({ wrapGap: -8 }).marginInlineEnd).toBe(u(0));
+    expect(style({ wrapGap: F.wrapGapMax * 10 }).marginInlineEnd).toBe(u(F.wrapGapMax));
+  });
+  it("published: the Preview gets the same space", () => {
+    const html = published(page(stackOf(pic({ wrapGap: 24, wrapShape: "round", radius: 999 }), text("t1"))));
+    const rule = ruleOf(html, "pic");
+    expect(rule).toContain(`margin-inline-end:${u(24)}`);
+    expect(rule).toContain(`shape-margin:${u(24)}`);
+  });
+});
+
 describe("RULE CFG · the numbers and words live in config", () => {
   const src = (f: string) => readFileSync(f, "utf8").replace(/\r\n/g, "\n");
   it("config/layout.json flow and config/inspector.json flow agree, one word per step", () => {
@@ -242,6 +275,7 @@ describe("RULE CFG · the numbers and words live in config", () => {
     expect(Object.keys(INSPECTOR.flow.shapeChoices)).toEqual(["box", "round", "outline"]);
     expect(F.shapeThreshold).toBeGreaterThan(0);
     expect(F.shapeThreshold).toBeLessThan(1);
+    expect(F.wrapGapMax).toBeGreaterThanOrEqual(F.wrapGapRem * 16); // the default sits inside the slider
   });
   it("no flow value is typed into the engine or the Inspector", () => {
     const model = src("lib/box-model.ts");
@@ -249,6 +283,6 @@ describe("RULE CFG · the numbers and words live in config", () => {
     expect(flow.length).toBeGreaterThan(500);
     for (const v of [F.stripCard, F.wrapWidth, `${F.wrapBelowRem}`, `${F.wrapGapRem}rem`, ...F.overlapSteps.map((n) => `${n}rem`)]) expect(flow).not.toContain(v);
     const insp = src("components/website/box/BoxInspector.tsx");
-    for (const w of [INSPECTOR.flow.wrap, INSPECTOR.flow.fit, INSPECTOR.flow.overlap, INSPECTOR.flow.fitChoices.scroll, INSPECTOR.flow.shape, INSPECTOR.flow.shapeChoices.outline]) expect(insp).not.toContain(w);
+    for (const w of [INSPECTOR.flow.wrap, INSPECTOR.flow.fit, INSPECTOR.flow.overlap, INSPECTOR.flow.fitChoices.scroll, INSPECTOR.flow.shape, INSPECTOR.flow.shapeChoices.outline, INSPECTOR.flow.gap, INSPECTOR.flow.gapHint]) expect(insp).not.toContain(w);
   });
 });
