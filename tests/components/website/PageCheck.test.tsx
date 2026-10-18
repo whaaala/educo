@@ -31,3 +31,17 @@ describe("LE1-6 · the measuring frame is the width under measure, whatever the 
     expect(frame?.style.minWidth).toBe("0");
   });
 });
+
+/** SE-4 · BATCH LE-9 — the reading order: named, a suggestion, and "Show me" selects the block an Order moved. */
+describe("Page check — a screen that shows blocks in a different order from the one they are read in", () => {
+  it("names the button moved on phones, as a suggestion, and Show me selects it", () => {
+    const btn = blockForKind("button", { text: "Apply now", responsive: { phone: { order: -1 } } } as Partial<BoxNode>);
+    const root = { ...emptyPageRoot(), children: [createContainer("column", { children: [blockForKind("heading", { text: "Welcome" } as Partial<BoxNode>), btn] })] };
+    const onShow = vi.fn();
+    render(<PageCheck root={root} isOpen onClose={() => {}} onShow={onShow} onPatch={() => {}} />);
+    const line = screen.getByText(/On phones, the .*Apply now.* is shown in a different place from where it is read/);
+    expect(line.textContent).toContain("a suggestion — it won't stop you publishing");
+    fireEvent.click(line.closest("li")!.querySelector("button")!);
+    expect(onShow).toHaveBeenCalledWith(btn.id);
+  });
+});

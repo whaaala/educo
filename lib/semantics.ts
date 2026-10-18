@@ -16,7 +16,8 @@
  * Pure: no React, no DOM (engine-stays-portable).
  */
 import type { CSSProperties } from "react";
-import { type BoxNode, type Breakpoint, BP_ORDER, regionBlock, regionSpan, isBare, isPageRow, resolveResponsive, baseUnitParts, pageRowCells, pageRowTracks, rowSide, bandGutter, longestWordRem, isContainer, pictureBehind, bgVideoSrc } from "./box-model";
+import { type BoxNode, type Breakpoint, BP_ORDER, regionBlock, regionSpan, isBare, isPageRow, resolveResponsive, baseUnitParts, pageRowCells, pageRowTracks, rowSide, bandGutter, longestWordRem, isContainer, pictureBehind, bgVideoSrc, isFloating, isPager, orderAt } from "./box-model";
+import { spaceName } from "./space-check";
 import { FONT_FAMILIES, familyOf, missingLetters } from "./educo-ui/fonts";
 import PAGE_CHECK from "../config/page-check.json";
 import { NARROWEST_PHONE_PX, RUNG_PX, RUNG_WORDS, type RungName } from "./educo-ui/layout";
@@ -255,7 +256,7 @@ export function resolvePage(root: BoxNode): PageSemantics {
 }
 
 /** Something only the user can fix — plain words, what to do, and whether it stops publishing. */
-export type PageIssue = { id: string; kind: "image-description" | "button-words" | "link-words" | "heading-jump" | "picture-missing" | "words-too-tight" | "words-at-edge" | "font-letters" | "link-page-gone" | "words-over-picture"; blocks: boolean; message: string; fix?: { level?: number; sideSpace?: number; font?: string } };
+export type PageIssue = { id: string; kind: "image-description" | "button-words" | "link-words" | "heading-jump" | "picture-missing" | "words-too-tight" | "words-at-edge" | "font-letters" | "link-page-gone" | "words-over-picture" | "reading-order"; blocks: boolean; message: string; fix?: { level?: number; sideSpace?: number; font?: string } };
 
 /** The site's heading + body fonts (CSS stacks) — what a block draws in when nothing above it sets a font. */
 export type SiteFonts = { heading: string; body: string };
@@ -365,6 +366,25 @@ export function pageCheck(root: BoxNode, sem: PageSemantics = resolvePage(root),
       const tight = kids.some((k) => { const c = cells.get(k.id); const share = c ? c.span / pageRowTracks(band) : 1; return (longestWordRem(k) / hiRem) * unit > share * W - give; });
       if (tight) out.push({ id: kids[0].id, kind: "words-too-tight", blocks: false, message: `On ${SCREEN_WORDS(bp)} these blocks sit side by side as you set them, but their words need more room than the narrowest of those screens has — some may break. Give them more room there, or put that screen back to its default.` });
     }
+  }
+  // SE-4 · BATCH LE-9 (WCAG 1.3.2 / 2.4.3): on a screen where Order draws a box's blocks in another order than the page's, each block
+  // an Order moved is named, with every screen it happens on — a screen reader and the Tab key follow the page, not what is seen
+  const moved = new Map<string, { by: BoxNode; bps: Breakpoint[] }>();
+  const sequence = (n: BoxNode) => {
+    const kids = (n.children ?? []).filter((c) => !c.hidden && !isFloating(c));
+    if (!isPager(n)) for (const bp of BP_ORDER) {
+      // LE9-3: hidden on this screen — the block, or the one block its section's place is read from
+      const drawn = kids.map((c) => orderAt(c, bp)).filter((o, j) => !resolveResponsive(kids[j], bp).hidden && !resolveResponsive(o.by, bp).hidden)
+        .map((o, i) => ({ i, ...o })).sort((a, b) => a.order - b.order || a.i - b.i);
+      if (drawn.every((d, i) => d.i === i)) continue;
+      for (const d of drawn) if (d.order) { const m = moved.get(d.by.id) ?? { by: d.by, bps: [] }; m.bps.push(bp); moved.set(d.by.id, m); }
+    }
+    kids.forEach(sequence);
+  };
+  sequence(root);
+  for (const [id, { by, bps }] of moved) {
+    const words = bps.map(SCREEN_WORDS), screens = bps.length === BP_ORDER.length ? PAGE_CHECK.readingOrder.everyScreen : words.length > 1 ? `${words.slice(0, -1).join(", ")} and ${words.at(-1)}` : words[0];
+    out.push({ id, kind: "reading-order", blocks: false, message: PAGE_CHECK.readingOrder.message.replace("{screens}", screens).replace("{block}", spaceName(by)) });
   }
   return out;
 }

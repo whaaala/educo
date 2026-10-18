@@ -8,6 +8,7 @@ Feature: Pages publish as correct HTML5, however they were built
   Decided with the user 2026-09-27 (A1 · B1 · C1), plan https://claude.ai/artifact/21gRsmKjw9RZTgdVbqNMmQ.
   Research: docs/web-anatomy/html-semantics.md. Engine: lib/semantics.ts (shared by the canvas and the export).
   Tests: tests/unit/semantics.test.ts · the export tests · scripts/uat (headed, built through the UI).
+  Guards: tests/unit/semantics.test.ts · tests/components/website/PageCheck.test.tsx · scripts/uat/uat-le9-headed.js
 
   # ── A1 · the main region is automatic ──
   Scenario: A page nobody labelled still has one main region
@@ -73,3 +74,36 @@ Feature: Pages publish as correct HTML5, however they were built
   Scenario: The canvas shows what publishes
     When I mark a block "Page header"
     Then the canvas renders the same <header> element the published page has
+
+  # ── SE-4 · BATCH LE-9 (signed 2026-10-17) · the reading order (WCAG 1.3.2 Meaningful Sequence · 2.4.3 Focus Order) ──
+  # A screen reader and the Tab key follow the page's own order; "Order" only moves what is SEEN. Research:
+  # docs/web-anatomy/css-layout/07-map.md ("a visual swap is reported, not failed"), layout-tiers/baseline-webflow-wix.md.
+  Scenario: Page check says when a screen shows blocks in a different order from the one they are read in
+    Given a Stack holding a heading, a paragraph and a button
+    And on phones the button's Order is set to -1
+    When I open the Page check
+    Then it says that on phones this button is shown in a different place from where it is read
+    And it is a suggestion — it does not stop publishing
+    And "Show me" selects the button
+
+  Scenario: The screens it happens on are named together
+    Given a block whose Order is set at the base, so every screen inherits it
+    And it is drawn in a different place from where it is read
+    When I open the Page check
+    Then one line names the block, with every screen it happens on
+
+  Scenario: An Order that does not change what is seen says nothing
+    Given the last block of a Stack set to Order 5
+    Then the Page check has no reading-order line
+    And a block hidden on a screen, or floating, is not counted on it
+
+  Scenario: A block alone in its section is reordered among the sections
+    Given three sections on the page, the last one's block set to Order -1 on phones
+    When I open the Page check
+    Then it names that block, and "Show me" selects it
+    And the Preview at a phone width draws it first, as the canvas does
+
+  Scenario: Putting the order back takes the line away
+    Given the Page check names a block for its order on phones
+    When I put its Order back to the default on phones
+    Then the reading-order line is gone

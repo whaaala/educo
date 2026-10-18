@@ -7370,6 +7370,15 @@ export function parentFlowOf(root: BoxNode, id: string, bp: Breakpoint = "base")
   return resolveResponsive(p, bp).direction === "row" ? "row" : "column";
 }
 
+/** SE-4 · the block whose Order places `child` among its siblings at `bp` — itself, or the one block alone in its section (RX3-6,
+ *  as `placeInSequence` reads it); `order` is that place, 0 when none is set. */
+export function orderAt(child: BoxNode, bp: Breakpoint): { by: BoxNode; order: number } {
+  const own = resolveResponsive(child, bp).order;
+  const kids = own == null && child.rowBand ? (child.children ?? []).filter((k) => !isFloating(k)) : [];
+  const by = kids.length === 1 ? kids[0] : child;
+  return { by, order: Math.round(resolveResponsive(by, bp).order ?? 0) };
+}
+
 function placeInSequence(s: CSSProperties, child: BoxNode, bp: Breakpoint = "base"): void {
   if (child.order != null) s.order = Math.round(child.order);
   // RX3-6 · A BLOCK ALONE IN ITS ROW BAND is reordered by its BAND. `normalizeRowBands` gives every stacked block a band of its
