@@ -1,9 +1,9 @@
-// PROBE — LE14-2 … 5 reproduced THROUGH THE UI (RULE Y): a Stack from the palette, two Headings dropped into it, the second
-// Heading's width set in the Inspector, both picked by a marquee, Ctrl+G, then Ctrl+Shift+G. localStorage only READ.
+// PROBE — LE14-2 … 5 reproduced THROUGH THE UI (RULE Y): a Heading, a Heading and a Text from the palette, each in its band,
+// both picked by a marquee, Ctrl+G, then Ctrl+Shift+G. localStorage only READ.
 //   NODE_PATH=node_modules BASE=http://localhost:3100 node scripts/uat/probe-le14-group.js
 const path = require('path'); const fs = require('fs');
 const H = require('./h.js');
-const { sleep, band, into, nodeOf, parentOf } = require('./uat-rx3-headed.js');
+const { sleep, band, nodeOf, parentOf } = require('./uat-rx3-headed.js');
 const OUT = path.join(__dirname, 'logs', 'le14'); fs.mkdirSync(OUT, { recursive: true });
 const shot = (page, name) => page.screenshot({ path: path.join(OUT, name + '.png') }).catch(() => {});
 const brief = (n) => n && { id: n.id.slice(-4), type: n.type, layout: n.layout, group: n.group, position: n.position, width: n.width, gap: n.gap, kids: (n.children || []).map((c) => c.id.slice(-4)) };

@@ -21,6 +21,9 @@ import { remLen, SHADOW_SCALE, SPACE_STEPS, DURATION, EASING } from "@/lib/educo
 import { contrastRatio, hexToRgb, oklchToRgb, rgbToHex, rgbToOklch } from "@/lib/educo-ui/color";
 import { colorToCSS } from "@/components/shared/ColorPalettePicker";
 import { PAGE_GRID_DEFAULT, columnsAt, gridTemplate, rowTrackCount } from "@/lib/page-grid";
+import INSPECTOR_WORDS from "@/config/inspector.json";
+/** ED-3b: what Copy style takes (RULE CFG). */
+const INSPECTOR_STYLE = INSPECTOR_WORDS.style;
 
 export type BoxType = "container" | "text" | "heading" | "button" | "link" | "image" | "video" | "icon" | "divider" | "list" | "embed" | "spacer" | "component";
 
@@ -183,6 +186,45 @@ const RUNG_CASCADE: Record<Breakpoint, (OverrideRung | LegacyRung)[]> = {
   tabletPortrait: ["tablet", "tabletLandscape", "tabletPortrait"],
   phone: ["tablet", "tabletLandscape", "tabletPortrait", "mobile", "phone"],
 };
+
+/** ED-7: an old saved slot stands for the screen it became — `mobile` IS the phone, `tablet` the tablet landscape. */
+const SLOT_SCREEN: Record<OverrideRung | LegacyRung, Breakpoint> = { wide: "wide", tablet: "tabletLandscape", tabletLandscape: "tabletLandscape", tabletPortrait: "tabletPortrait", mobile: "phone", phone: "phone" } as Record<OverrideRung | LegacyRung, Breakpoint>;
+
+/**
+ * ED-7 · WHERE A VALUE ON SCREEN `bp` COMES FROM: "here" (set on this screen — a clear counts, it overrides too), the
+ * wider screen it is inherited from, or "base" (the desktop's, or nothing set at all — no mark).
+ */
+export function fieldSource(node: BoxNode, bp: Breakpoint, key: keyof BoxNode): "here" | Breakpoint {
+  if (bp === "base") return "base";
+  const r = (node.responsive ?? {}) as Record<string, Record<string, unknown> | undefined>;
+  const chain = RUNG_CASCADE[bp];
+  for (let i = chain.length - 1; i >= 0; i--) {
+    if (r[chain[i]] && key in r[chain[i]]!) return SLOT_SCREEN[chain[i]] === bp ? "here" : SLOT_SCREEN[chain[i]];
+  }
+  return "base";
+}
+
+/** ED-7: the values set on screen `bp` itself, in the order they were set. */
+export function ownFields(node: BoxNode, bp: Breakpoint): (keyof BoxNode)[] {
+  if (bp === "base") return [];
+  const r = (node.responsive ?? {}) as Record<string, Record<string, unknown> | undefined>;
+  return [...new Set(RUNG_CASCADE[bp].filter((slot) => SLOT_SCREEN[slot] === bp).flatMap((slot) => Object.keys(r[slot] ?? {})))] as (keyof BoxNode)[];
+}
+
+/** ED-7: RESET ONE VALUE on screen `bp` — it is taken out of that screen's slots, so the screen shows what the wider ones have. */
+export function resetField(root: BoxNode, id: string, key: keyof BoxNode, bp: Breakpoint): BoxNode {
+  const n = findBox(root, id);
+  if (!n?.responsive || bp === "base") return root;
+  const responsive = { ...n.responsive } as Record<string, Record<string, unknown> | undefined>;
+  let changed = false;
+  for (const slot of RUNG_CASCADE[bp]) {
+    if (SLOT_SCREEN[slot] !== bp || !responsive[slot] || !(key in responsive[slot]!)) continue;
+    const { [key]: _gone, ...rest } = responsive[slot]!; void _gone;
+    responsive[slot] = rest; changed = true;
+    if (!Object.keys(rest).length) delete responsive[slot];
+  }
+  return changed ? updateBox(root, id, { responsive: responsive as ResponsiveMap }) : root;
+}
 
 /** V-5 · the screens a change made at `bp` shows on: `bp` itself, then every narrower screen that inherits it — read from the cascade. */
 export function screensReachedFrom(bp: Breakpoint): Breakpoint[] {
@@ -506,6 +548,7 @@ export interface BoxNode {
   left?: number;            // absolute only: X offset as % of the positioning parent's PADDING box, from its edge — what CSS does (E5c-8) (responsive)
   top?: number;             // absolute only: Y offset as % of the positioning parent's PADDING box, from its edge (E5c-8)
   zIndex?: number;          // absolute only: stacking order among floating siblings (higher = on top)
+  layerName?: string;       // EDITOR-ONLY: the name a person gave the block in the layers tree (ED-2b); the tree and the trail show it. No effect on the exported site.
   locked?: boolean;         // EDITOR-ONLY: freeze position + size (no drag / no resize / no nudge). Still selectable + content-editable. No effect on the exported site.
   group?: boolean;          // this container is a GROUP (created via "Group") — moves/locks as one unit; ungroup dissolves it.
   contentX?: "start" | "center" | "end"; // component only: horizontal position of the content inside the component
@@ -3005,40 +3048,212 @@ export function unfloatBox(root: BoxNode, id: string): BoxNode {
 }
 
 /**
- * GROUP the given boxes into ONE floating container (slide-style). The selected boxes are lifted out of the
- * flow and placed IN-FLOW inside a new `group` container that floats at `geom` (a bounding box measured by the
- * canvas). The group then moves + locks as a SINGLE unit, and because its children are in normal flow inside it
- * (not absolutely pinned) the group reflows + STACKS on narrow like everything else (Responsive Field Guide).
- * Children keep document order. Pure; `ungroupBoxes` reverses it.
+ * WHERE A SELECTION WOULD BE GROUPED (ED-12, BATCH LE-14): the container the blocks share and their SLOTS in it, in order.
+ * Blocks on one line (a band, a Side by side) or in one Stack share a parent; blocks one under the other each sit alone in
+ * a row band (the palette's way), so their BANDS are the slots. Anything else — two sections, a floating block, a Grid's
+ * cells — cannot be wrapped in place, and returns null.
+ * ponytail: a Grid's cells and floating blocks are not grouped; a person groups blocks in a line or a stack.
  */
-export function groupBoxes(root: BoxNode, ids: string[], geom: { left: number; top: number; width: string; height: number }): BoxNode {
-  const set = new Set(ids);
-  const ordered: string[] = [];
-  const collect = (n: BoxNode) => { if (set.has(n.id) && n.id !== root.id) ordered.push(n.id); (n.children ?? []).forEach(collect); };
-  collect(root); // tree/document order so the group's stack matches what the user saw
-  if (ordered.length < 2) return root; // need at least two boxes to form a group
-  const byId = new Map(ordered.map((id) => [id, findBox(root, id)!]));
-  const kids = ordered.map((id) => ({ ...byId.get(id)!, position: undefined, left: undefined, top: undefined, zIndex: undefined, width: "100%" }));
-  let next = root;
-  for (const id of ordered) next = removeBox(next, id); // pull each out of wherever it lives
-  const z = clampPageZ(floatingZRange(next).max + 1);
-  const group = createContainer("column", {
-    group: true, position: "absolute", left: geom.left, top: geom.top,
-    width: geom.width, height: remLen(Math.max(8, Math.round(geom.height)), rootFontPx()),
-    zIndex: z, gap: 12, padding: 0, align: "stretch", wrap: false, children: kids,
-  } as Partial<BoxNode>);
-  return insertBox(next, next.id, next.children?.length ?? 0, group); // the group floats at the page root
+function groupSlots(root: BoxNode, ids: string[]): { parent: BoxNode; slots: BoxNode[] } | null {
+  const uniq = [...new Set(ids)].filter((id) => id !== root.id);
+  if (uniq.length < 2) return null;
+  const at = uniq.map((id) => findParent(root, id));
+  if (at.some((i) => !i || isFloating(i.parent.children![i.index]))) return null;
+  const share = (xs: ({ parent: BoxNode; index: number } | null)[]) => xs.every((x) => x && x.parent.id === xs[0]!.parent.id);
+  let picked = at;
+  if (!share(at)) {
+    const lone = (i: { parent: BoxNode }) => i.parent.rowBand && (i.parent.children ?? []).filter((c) => !isFloating(c)).length === 1;
+    if (!at.every((i) => lone(i!))) return null;
+    picked = at.map((i) => findParent(root, i!.parent.id));
+    if (!share(picked)) return null;
+  }
+  const parent = picked[0]!.parent;
+  if (parent.layout === "grid") return null;
+  const slots = [...new Set(picked.map((i) => i!.index))].sort((x, y) => x - y).map((k) => parent.children![k]);
+  return { parent, slots };
 }
 
-/** UNGROUP: dissolve a `group` container, returning its children to the flow of the group's parent (they
- *  stack again as normal blocks). Pure. */
+/** The nearest group a block sits in (the one `groupBoxes` just made round it), or null. */
+export function groupAround(root: BoxNode, id: string): BoxNode | null {
+  for (let p = findParent(root, id); p; p = findParent(root, p.parent.id)) if (p.parent.group) return p.parent;
+  return null;
+}
+
+/** Whether `groupBoxes` can wrap these blocks in place (the Group action is offered, but cannot be pressed, when not). */
+export const canGroup = (root: BoxNode, ids: string[]): boolean => !!groupSlots(root, ids);
+
+const pctOf = (w?: string) => (w?.endsWith("%") && !Number.isNaN(parseFloat(w)) ? parseFloat(w) : null);
+const pct = (n: number) => `${Math.round(n * 100) / 100}%`;
+
+/**
+ * GROUP the given blocks IN PLACE (ED-12; design D1, signed 2026-10-18 — Figma Ctrl+G, the WordPress editor's Group). One
+ * container takes the first block's place in the parent they share and holds them in their order, running the parent's
+ * way: a Stack in a stack, a Side by side on a line. It adds no space and no look of its own, and nothing moves on the
+ * screen: on a line it is as wide as their shares together, and each share is restated as part of it (25 % of the line =
+ * 50 % of a group half the line wide). Pure; `ungroupBoxes` gives back the same tree. Not groupable → the root, unchanged.
+ */
+export function groupBoxes(root: BoxNode, ids: string[]): BoxNode {
+  const at = groupSlots(root, ids);
+  if (!at) return root;
+  const { parent, slots } = at;
+  const across = parent.rowBand || isSideBySide(parent);
+  const shares = slots.map((k) => pctOf(k.width));
+  const total = shares.every((x) => x != null) ? shares.reduce((x, y) => x! + y!, 0)! : null;
+  const group = across
+    ? createContainer("row", {
+        group: true, padding: 0, gap: 0, wrap: false, align: parent.align ?? "stretch", justify: "start",
+        width: total ? pct(total) : "auto",
+        children: total ? slots.map((k, i) => ({ ...k, width: pct((shares[i]! / total) * 100) })) : slots,
+      } as Partial<BoxNode>)
+    : createContainer("column", { group: true, padding: 0, gap: 0, wrap: false, align: "stretch", justify: "start", width: "fill", children: slots } as Partial<BoxNode>);
+  const out = new Set(slots.map((k) => k.id));
+  const children = (parent.children ?? []).flatMap((c) => (c.id === slots[0].id ? [group] : out.has(c.id) ? [] : [c]));
+  return updateBox(root, parent.id, { children });
+}
+
+/**
+ * UNGROUP: the group's blocks go back where the group was, in their order and at their own sizes — a share of the group
+ * restated as a share of the line again. A group alone in its row band hands its bands back in that band's place (the
+ * blocks were one under the other). A group saved before ED-12 floated at the page root: its blocks join the flow where
+ * it sat. Pure.
+ */
 export function ungroupBoxes(root: BoxNode, groupId: string): BoxNode {
   const group = findBox(root, groupId);
-  const info = findParent(root, groupId);
+  let info = findParent(root, groupId);
   if (!group || !info) return root;
-  const kids = (group.children ?? []).map((c) => ({ ...c, position: undefined, left: undefined, top: undefined, zIndex: undefined, width: c.width ?? "100%" }));
-  const children = (info.parent.children ?? []).flatMap((c) => (c.id === groupId ? kids : [c]));
+  const floated = isFloating(group);
+  const g = pctOf(group.width);
+  let kids = (group.children ?? []).map((c) => {
+    const k = floated ? { ...c, position: undefined, left: undefined, top: undefined, zIndex: undefined } : c;
+    const w = pctOf(k.width);
+    return !floated && g != null && w != null && (group.direction ?? "column") === "row" ? { ...k, width: pct((w * g) / 100) } : k;
+  });
+  let slot = groupId;
+  // one under the other: the group sits alone in a band of its own, and its blocks are bands — they take that band's place
+  if (info.parent.rowBand && (info.parent.children ?? []).length === 1 && kids.every((k) => k.rowBand)) {
+    slot = info.parent.id; info = findParent(root, slot)!;
+  } else if (info.parent.rowBand) kids = kids.flatMap((k) => (k.rowBand ? k.children ?? [] : [k])); // never a band in a band
+  const children = (info.parent.children ?? []).flatMap((c) => (c.id === slot ? kids : [c]));
   return updateBox(root, info.parent.id, { children });
+}
+
+/** ED-13: the fields among `keys` the selected blocks DIFFER in on screen `bp` (the bulk panel shows them as "Mixed"). */
+export function mixedFields(root: BoxNode, ids: string[], bp: Breakpoint, keys: (keyof BoxNode)[]): (keyof BoxNode)[] {
+  const nodes = ids.map((id) => findBox(root, id)).filter((n): n is BoxNode => !!n).map((n) => resolveResponsive(n, bp));
+  return keys.filter((k) => nodes.some((n) => JSON.stringify(n[k]) !== JSON.stringify(nodes[0][k])));
+}
+
+/**
+ * ED-13: MOVE SEVERAL BLOCKS ONE STEP TOGETHER, each through `moveBlock` — the one nearest the way they go first, so blocks
+ * next to each other move as one and none jumps over another. Nothing moves unless every one of them can.
+ */
+export function moveBlocks(root: BoxNode, ids: string[], step: -1 | 1): BoxNode {
+  const order: string[] = [];
+  const walk = (n: BoxNode) => { if (ids.includes(n.id)) order.push(n.id); (n.children ?? []).forEach(walk); };
+  walk(root);
+  if (step === 1) order.reverse();
+  let next = root;
+  for (const id of order) { if (!canMoveBlock(next, id, step)) return root; next = moveBlock(next, id, step); }
+  return next;
+}
+
+/** RC-7: the three kinds a person picks between — the palette's Stack, Side by side and Grid. */
+export type ContainerKind = "stack" | "row" | "grid";
+/** The kind a container is now, or null for one that has no kind to change (a block, a row band, a component). */
+export function kindOf(n: BoxNode): ContainerKind | null {
+  if (!isContainer(n) || n.rowBand || n.preset) return null;
+  return n.layout === "grid" ? "grid" : isSideBySide(n) ? "row" : "stack";
+}
+
+/**
+ * RC-7 · CHANGE A CONTAINER'S KIND AND KEEP WHAT IS IN IT (design D6, signed 2026-10-18 — the WordPress editor's Transform).
+ * The blocks come out of the bands a Stack keeps them in and go into the new kind in their order: a Stack bands them again
+ * (`normalizeRowBands`), a Side by side shares its line between the ones that filled one, a Grid gives each its own column on
+ * the way from a line (one column, nothing moved, from a stack). What has no meaning in the new kind is left behind and
+ * NAMED in `dropped` (config/inspector.json kind.dropped), never lost in silence. Pure; one commit is one undo step.
+ */
+export function changeKind(root: BoxNode, id: string, kind: ContainerKind): { root: BoxNode; dropped: string[] } {
+  const n = findBox(root, id);
+  const from = n ? kindOf(n) : null;
+  if (!n || !from || from === kind) return { root, dropped: [] };
+  const dropped = new Set<string>();
+  let blocks = (n.children ?? []).flatMap((c) => (c.rowBand ? c.children ?? [] : [c]));
+  if (kind !== "grid" && blocks.some((b) => b.colSpan || b.rowSpan || b.colStart || b.rowStart)) {
+    dropped.add("spans");
+    blocks = blocks.map((b) => ({ ...b, colSpan: undefined, rowSpan: undefined, colStart: undefined, rowStart: undefined }));
+  }
+  if (from === "row") {
+    // a share of the line means nothing one under the other, or in a cell: a block fills, a container its column
+    if (blocks.some((b) => (pctOf(b.width) ?? 100) < 100)) dropped.add("widths");
+    blocks = blocks.map((b) => ((pctOf(b.width) ?? 100) < 100 ? { ...b, width: isContainer(b) ? "100%" : "auto" } : b));
+  }
+  if (kind === "row") {
+    const fills = (b: BoxNode) => b.width == null || b.width === "fill" || b.width === "100%";
+    blocks = blocks.map((b) => (isContainer(b) && fills(b) ? { ...b, width: pct(100 / blocks.length) } : b));
+  }
+  const gridOnly = { columns: undefined, colSizes: undefined, minCard: undefined, rowFlow: undefined, justifyItems: undefined };
+  if (from === "grid" && (n.colSizes?.some((x) => x != null) || n.minCard || n.rowFlow)) dropped.add("columns");
+  const patch: Partial<BoxNode> =
+    kind === "grid" ? { layout: "grid", direction: "row", columns: from === "row" ? Math.max(1, Math.min(GRID_MAX, blocks.length)) : 1, children: blocks }
+    : { ...gridOnly, layout: "flex", direction: kind === "row" ? "row" : "column", wrap: kind === "row", children: blocks };
+  return { root: updateBox(root, id, patch), dropped: [...dropped] };
+}
+
+/** ED-3b: the look of `n` on screen `bp` — config/inspector.json `style` (every key, unset ones as unset), never its content. */
+export function copyStyle(n: BoxNode, bp: Breakpoint): Partial<BoxNode> {
+  const r = resolveResponsive(n, bp);
+  const keys = [...INSPECTOR_STYLE.box, ...INSPECTOR_STYLE.words, ...INSPECTOR_STYLE.container] as (keyof BoxNode)[];
+  return Object.fromEntries(keys.map((k) => [k, r[k]])) as Partial<BoxNode>;
+}
+
+/**
+ * ED-3b: PASTE A COPIED LOOK onto every block in `ids`, on screen `bp` only (design D4): the box's look on any block, the
+ * words' look where there are words (or a container, whose blocks inherit it), a container's spacing only on a container.
+ * Only what differs is written, so a paste on the phone leaves the desktop — and every value already alike — as it was.
+ */
+export function pasteStyle(root: BoxNode, ids: string[], style: Partial<BoxNode>, bp: Breakpoint): BoxNode {
+  let next = root;
+  for (const id of ids) {
+    const t = findBox(next, id);
+    if (!t || t.rowBand) continue;
+    const box = isContainer(t);
+    const keys = [...INSPECTOR_STYLE.box, ...(box || t.text != null ? INSPECTOR_STYLE.words : []), ...(box ? INSPECTOR_STYLE.container : [])] as (keyof BoxNode)[];
+    const now = resolveResponsive(t, bp);
+    const patch = Object.fromEntries(keys.filter((k) => JSON.stringify(now[k]) !== JSON.stringify(style[k])).map((k) => [k, style[k]])) as Partial<BoxNode>;
+    if (Object.keys(patch).length) next = updateBoxResponsive(next, id, patch, bp);
+  }
+  return next;
+}
+
+/** ED-2b: a block's own blocks as a person sees them — the row bands it keeps them in dissolved. */
+export const layerKids = (n: BoxNode): BoxNode[] => (n.children ?? []).flatMap((c) => (c.rowBand ? layerKids(c) : [c]));
+
+/** One row of the layers tree (ED-2b): the block, how deep it sits, the block it sits in (null: the page), how many it holds. */
+export interface LayerRow { node: BoxNode; level: number; parentId: string | null; kids: number }
+/** ED-2b: THE PAGE AS THE LAYERS TREE LISTS IT — every block in reading order, nested as built, row bands never shown. */
+export function layerRows(root: BoxNode): LayerRow[] {
+  const out: LayerRow[] = [];
+  const visit = (n: BoxNode, level: number, parentId: string | null) => {
+    for (const c of layerKids(n)) { out.push({ node: c, level, parentId, kids: layerKids(c).length }); visit(c, level + 1, c.id); }
+  };
+  visit(root, 1, null);
+  return out;
+}
+
+/**
+ * ED-2b · A ROW DRAGGED IN THE LAYERS TREE: `id` goes before or after `targetId` — beside it in the line or the stack it
+ * sits in (a block alone in its row band takes the band's place) — or inside it, at the end. Never into itself or a block
+ * it holds. The band the block leaves empty is pruned by the next commit (`normalizeRowBands`).
+ */
+export function moveLayer(root: BoxNode, id: string, targetId: string, place: "before" | "after" | "inside"): BoxNode {
+  const target = findBox(root, targetId);
+  if (!target || id === targetId || id === root.id) return root; // into a block it holds: `moveBox` refuses it
+  if (place === "inside") return isContainer(target) && !target.preset ? moveBox(root, id, targetId, target.children?.length ?? 0) : root;
+  const p = findParent(root, targetId);
+  if (!p) return root;
+  const slot = p.parent.rowBand && (p.parent.children ?? []).length === 1 ? findParent(root, p.parent.id) : p;
+  if (!slot) return root;
+  return moveBox(root, id, slot.parent.id, slot.index + (place === "after" ? 1 : 0));
 }
 
 /** Position a block within its own container (its row band / flex parent): sets the PARENT's justify-content

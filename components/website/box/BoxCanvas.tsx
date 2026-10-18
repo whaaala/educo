@@ -14,13 +14,13 @@ import { gapPatch, snapSpace, spacePatch, stepSpace, type SpaceSide } from "@/li
 import { resolvePage, pageFillCss, footerPushCss } from "@/lib/semantics";
 import { Fragment, useCallback, useEffect, useLayoutEffect, useMemo, useReducer, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import { createPortal } from "react-dom";
-import { Link2, Plus, ChevronUp, ChevronDown, Copy, Scissors, ClipboardPaste, Trash2, Upload, GripVertical, MoreVertical, Rows3, Columns3, Grid3x3, Type, Heading as HeadingIcon, MousePointerClick, Image as ImageIcon, Layers, BringToFront, SendToBack, Video as VideoIcon, Sparkles, Minus as MinusIcon, List as ListIcon, Code2, Star, Lock, LockOpen, Ungroup, ArrowUp, ArrowDown, ArrowLeft, ArrowRight, ArrowUpToLine, ArrowDownToLine } from "lucide-react";
+import { Link2, Plus, ChevronUp, ChevronDown, Copy, Scissors, ClipboardPaste, Trash2, Upload, GripVertical, MoreVertical, Rows3, Columns3, Grid3x3, Type, Heading as HeadingIcon, MousePointerClick, Image as ImageIcon, Layers, BringToFront, SendToBack, Video as VideoIcon, Sparkles, Minus as MinusIcon, List as ListIcon, Code2, Star, Lock, LockOpen, Ungroup, ArrowUp, ArrowDown, ArrowLeft, ArrowRight, ArrowUpToLine, ArrowDownToLine, Paintbrush } from "lucide-react";
 import type { SiteTheme } from "@/lib/site-storage";
 import {
   type BoxNode, type BoxType, frameCss, spanAt, setSpan,
   containerStyle, childStyle, marginCSS, leafPaddingCSS, ownSidePadVars, outerSpaceCSS, pageBandInset, pagePinCover, sectionContent, sizeToCSS, u, baseUnit, floatingReserve, floatStacksOnMobile, createContainer, createElement, createComponent,
   updateBox, deleteBox, insertBox, pageEnd, moveBlock, canMoveBlock, moveAxis, duplicateBox, moveBox, cloneBox, findParent, isAncestor, isContainer, containerLabel, widthPct, stackWithBlock, fitBand, PILL, blockTypography,
-  isFloating, floatBox, unfloatBox, groupBoxes, ungroupBoxes, bringToFront, sendToBack, bringForward, sendBackward, packRowLines, allocateLine, type LineFollower,
+  isFloating, floatBox, unfloatBox, groupBoxes, ungroupBoxes, groupAround, moveBlocks, copyStyle, pasteStyle, bringToFront, sendToBack, bringForward, sendBackward, packRowLines, allocateLine, type LineFollower,
   shouldTakeMirrorBox, mirrorFlushSides, edgeSwipeSides, hostSizedFor, type MirrorBox, type MirrorChase, fadedPaint, boxOpacity, backgroundCss, treePaintLayerCss, treeBgVideoCss, radiusCSS, isClipped, SHADOW_CSS, videoEmbedSrc, sanitizeCssDeclarations, expandScopedCss, ACCORDION_CSS_PARTS, itemOverrideCss, itemHasOverride, itemNumberVars, richBody, componentTextCss, componentBoxCss, bgShowThroughCss, resizeTopEdge, blockContainmentCss, alertToastCss, treeHasToast, treeHasFixedHold, accordionClasses, bandClasses, hasSiteMeasure, advancedCssStyle, applyBoxSize, alertActionsHTML, hugsContent, itemFloatContextCss, COMPONENT_ITEM_SEL, clampContentScale, MIN_CONTENT_SCALE, isMultiItemComponent, comfortableWidth, remLen, rootFontPx, isDefiniteLen, addItemAfter, duplicateItem, duplicateChildItem, removeItem, removeChildItem, moveItem, moveChildItem, updateItem, updateChildItem, ALERT_SEVERITY_ICON, alertPartInline, alertIconInline, collectAlertItemStyles,
   type Breakpoint, resolveResponsive, updateBoxResponsive, treePinArrivalCss, floatHoldCSS, canvasFixedStyle, capturesFixed, imageSizing, fillsRowsAnywhere, fillHostOf, importPhoto, traceOutline, followsOutline, treeItemEffectsCss, itemNeedsClass, floatZIndex, gridPlacementAt, masonryMeasureAttr, masonryMeasurePass, mirrorMeasuresNow, baseUnitParts, pinStackMarker, pinStackGroupMarker, pinStackPass, pinArrivalMarker, pinArrivalPass, headerMarkers, headerPass, underOverHeaderPad, isPager, pagerStripCss, pagerNavHTML, selectionChain, textLen, typoRole, typoRootVars, typoCascadeCss, bandEdgeCSS, LINK_COLOR_CSS, treeGridQueryCss, TYPE_UNIT_PROPERTY_CSS, stripsAnywhere,
 } from "@/lib/box-model";
@@ -226,22 +226,6 @@ export function measureFloatGeom(root: BoxNode, id: string): { parentId: string;
     width,
     height: r.height / Z, // stored as LAYOUT px
   };
-}
-
-/** Bounding box of several selected boxes, as a floating geom (left/top % of the ROOT padding box + width % +
- *  height px) — where a GROUP wrapping them should sit so it appears exactly over them. Null if <2 measurable. */
-export function measureGroupGeom(root: BoxNode, ids: string[]): { left: number; top: number; width: string; height: number } | null {
-  if (typeof document === "undefined") return null;
-  const picked = ids.filter((id) => id !== root.id);
-  if (picked.length < 2) return null;
-  const rootEl = document.querySelector<HTMLElement>(`[data-box-id="${root.id}"]`);
-  if (!rootEl) return null;
-  const Z = zoomOf(rootEl), { left: ox, top: oy, w: cw, h: ch } = placedIn(rootEl); // the padding box (E5c-8)
-  const rects = picked.map((id) => document.querySelector<HTMLElement>(`[data-box-id="${id}"]`)?.getBoundingClientRect()).filter(Boolean) as DOMRect[];
-  if (rects.length < 2) return null;
-  const minL = Math.min(...rects.map((r) => r.left)), minT = Math.min(...rects.map((r) => r.top));
-  const maxR = Math.max(...rects.map((r) => r.right)), maxB = Math.max(...rects.map((r) => r.bottom));
-  return { left: ((minL - ox) / cw) * 100, top: ((minT - oy) / ch) * 100, width: `${round1(((maxR - minL) / cw) * 100)}%`, height: (maxB - minT) / Z };
 }
 
 type Edge = "n" | "s" | "e" | "w" | "ne" | "nw" | "se" | "sw";
@@ -1070,6 +1054,7 @@ export default function BoxCanvas({
     if (names.length) warmIcons(names);
   }, [root]);
   const [clip, setClip] = useState<BoxNode | null>(null); // copy/cut clipboard (a cloned subtree)
+  const [styleClip, setStyleClip] = useState<Partial<BoxNode> | null>(null); // ED-3b: a copied LOOK (Copy style), never content
   const [marquee, setMarquee] = useState<{ x0: number; y0: number; x: number; y: number } | null>(null); // rubber-band rectangle (viewport coords) while marquee-selecting
 
   // Selection is a SET (marquee can pick many). selectedIds wins when provided; otherwise fall back to the
@@ -1175,16 +1160,14 @@ export default function BoxCanvas({
   // ── Floating layers (lift a section out of the flow to OVERLAP others) ──
   const floatNode = (id: string) => { const g = measureFloatGeom(rootRef.current, id); if (g) onChange(floatBox(rootRef.current, id, g.parentId, g.left, g.top, g.width, g.height)); };
   const unfloatNode = (id: string) => onChange(unfloatBox(rootRef.current, id));
-  // GROUP the selected boxes into one floating, movable, lockable unit — positioned over their measured
-  // bounding box so it appears exactly where they already sit, then selected as a single group.
+  // GROUP the selected blocks IN PLACE (ED-12): one group where the first one was, then selected as a single block.
   const groupSelected = () => {
     const ids = [...selSet].filter((id) => id !== rootRef.current.id);
-    const geom = measureGroupGeom(rootRef.current, ids);
-    if (!geom) return;
-    const next = groupBoxes(rootRef.current, ids, geom);
+    const next = groupBoxes(rootRef.current, ids);
+    if (next === rootRef.current) return;
     onChange(next);
-    const groupId = (next.children ?? []).filter(isFloating).slice(-1)[0]?.id; // the new group is root's last float
-    if (groupId) emitSelection([groupId]);
+    const g = groupAround(next, ids[0]);
+    if (g) emitSelection([g.id]);
   };
   const ungroupSelected = () => {
     const id = [...selSet][0];
@@ -1526,7 +1509,10 @@ export default function BoxCanvas({
       // arrows wrote `top`, which such a block ignores, so the keyboard could not move it at all (measured: 0px after six Shift+↓).
       const held = !!id && floating && !!rn.pin && rn.hold === "fixed";
       const nudgeHeld = (dx: number, dy: number) => onChange(writeBox(root, id!, dx ? { pinX: Math.max(0, (rn.pinX ?? 0) + dx) } : { pinY: Math.max(0, (rn.pinY ?? 0) + dy) }));
-      if (mod && k === "c") { if (id) { copyBox(id); e.preventDefault(); } }
+      // ED-3b: Ctrl+Alt+C / Ctrl+Alt+V copy and paste the LOOK (by the key's code: Ctrl+Alt is AltGr on some layouts, and the menu has both)
+      if (mod && e.altKey && e.code === "KeyC") { if (id) { const n0 = findByIdLocal(root, id); if (n0) setStyleClip(copyStyle(n0, breakpoint)); e.preventDefault(); } }
+      else if (mod && e.altKey && e.code === "KeyV") { if (styleClip && ids.length) { const next = pasteStyle(root, ids, styleClip, breakpoint); if (next !== root) onChange(next); e.preventDefault(); } }
+      else if (mod && k === "c") { if (id) { copyBox(id); e.preventDefault(); } }
       else if (mod && k === "x") { if (id) { cutBox(id); e.preventDefault(); } }
       else if (mod && k === "v") { if (clip) { pasteBox(id); e.preventDefault(); } }
       else if (mod && k === "d") { if (ids.length) { let next = root; for (const d of ids) next = duplicateBox(next, d); onChange(next); e.preventDefault(); } } // duplicate ALL selected
@@ -1548,6 +1534,12 @@ export default function BoxCanvas({
       }
       else if ((e.key === "Delete" || e.key === "Backspace") && ids.length) { let next = root; for (const d of ids) if (d !== root.id) next = deleteBox(next, d); onChange(next); select(null); e.preventDefault(); } // delete ALL selected
       // A flowing block moves the way its toolbar arrows do (E-5a, D4): ↑ ↓ where it moves up and down, ← → along a line.
+      // ED-13: several blocks selected, in the flow — an arrow moves them all one step together (the first one's way)
+      else if (ids.length > 1 && !mod && !e.altKey && e.key.startsWith("Arrow") && id && !floating && !ids.some((d) => findByIdLocal(root, d)?.locked || isFloating(findByIdLocal(root, d) ?? rn))) {
+        const along = moveAxis(root, id) === "horizontal" ? ["ArrowLeft", "ArrowRight"] : ["ArrowUp", "ArrowDown"];
+        const k2 = along.indexOf(e.key);
+        if (k2 >= 0) { const next = moveBlocks(root, ids, k2 ? 1 : -1); if (next !== root) onChange(next); e.preventDefault(); }
+      }
       else if (e.key === "ArrowUp" && !e.altKey && id && !rn.locked && (floating || moveAxis(root, id) === "vertical")) { if (held) nudgeHeld(0, -stepPx); else if (floating) { if (!pastPage(0, -stepPx)) onChange(writeBox(root, id, { top: round1((rn.top ?? 0) - stepPct("y")) })); } else onChange(moveBlock(root, id, -1)); e.preventDefault(); }
       else if (e.key === "ArrowDown" && !e.altKey && id && !rn.locked && (floating || moveAxis(root, id) === "vertical")) { if (held) nudgeHeld(0, stepPx); else if (floating) onChange(writeBox(root, id, { top: round1((rn.top ?? 0) + stepPct("y")) })); else onChange(moveBlock(root, id, 1)); e.preventDefault(); }
       else if (e.key === "ArrowLeft" && !e.altKey && id && !rn.locked && (floating || moveAxis(root, id) === "horizontal")) { if (held) nudgeHeld(-stepPx, 0); else if (floating) { if (!pastPage(-stepPx, 0)) onChange(writeBox(root, id, { left: round1((rn.left ?? 0) - stepPct("x")) })); } else onChange(moveBlock(root, id, -1)); e.preventDefault(); }
@@ -1573,7 +1565,7 @@ export default function BoxCanvas({
     };
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
-  }, [editable, selectedId, selectedIds, root, clip, onChange, breakpoint, pageGrid]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [editable, selectedId, selectedIds, root, clip, styleClip, onChange, breakpoint, pageGrid]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // (The ⋯ actions menu's outside-click / Escape / scroll / flip-and-fit behaviour lives in <PortalMenu>.)
 
@@ -3988,6 +3980,17 @@ export default function BoxCanvas({
        * Starting over is what clicking empty canvas is for, and that already clears the selection.
        */
       const chain = selectionChain(rootRef.current, deepest);
+      // SHIFT-CLICK ADDS TO THE SELECTION, OR TAKES ONE OUT (ED-13, LE14-7; Figma, Wix Studio). It picks the block of this chain
+      // that sits at the level of what is already selected — the same box holds them, bands aside — so two Headings in a Stack
+      // that fill it are picked without the Stack. Nothing at that level → the outermost, as a plain click takes.
+      if (e.shiftKey && selSet.size) {
+        const host = (id: string) => { let p = findParent(rootRef.current, id); while (p?.parent.rowBand) p = findParent(rootRef.current, p.parent.id); return p?.parent.id; };
+        const had = chain.find((c) => selSet.has(c));
+        const level = host([...selSet][0]);
+        const pick = had ?? chain.find((c) => host(c) === level) ?? chain[0] ?? deepest;
+        emitSelection(had ? [...selSet].filter((x) => x !== had) : [...selSet, pick]);
+        closeMenu(); return;
+      }
       const at = selSet.size === 1 ? chain.indexOf([...selSet][0]) : -1;
       const next = at < 0
         ? (chain[0] ?? deepest)                          // nothing of this chain selected → the outermost
@@ -4375,6 +4378,8 @@ export default function BoxCanvas({
               <Item onClick={() => copyBox(node.id)} Icon={Copy} label="Copy" hint="Ctrl+C" />
               <Item onClick={() => cutBox(node.id)} Icon={Scissors} label="Cut" hint="Ctrl+X" />
               <Item onClick={() => pasteBox(node.id)} Icon={ClipboardPaste} label="Paste" disabled={!clip} hint="Ctrl+V" />
+              <Item onClick={() => setStyleClip(copyStyle(node, breakpoint))} Icon={Paintbrush} label={INSPECTOR_WORDS.style.copy} hint={INSPECTOR_WORDS.style.copyHint} />
+              <Item onClick={() => { if (styleClip) onChange(pasteStyle(root, [node.id], styleClip, breakpoint)); }} Icon={Paintbrush} label={INSPECTOR_WORDS.style.paste} disabled={!styleClip} hint={INSPECTOR_WORDS.style.pasteHint} />
               <Item onClick={() => { onChange(deleteBox(root, node.id)); select(null); }} Icon={Trash2} label="Delete" danger hint="Del" />
             </>)}
           </PortalMenu>

@@ -49,6 +49,8 @@ name as a tooltip and for screen readers.
 
 Drag a tile onto the page and let go where the dashed marker shows, or click a tile to add it after the selected block.
 
+**Add | Layers** at the top switches the panel to the page's **layers**: every block in reading order, inside the box it sits in. A row selects its block, is dragged to move it (top or bottom of a row: before or after; the middle of a box: inside), renamed (**F2**), hidden on the screen being edited (the eye), locked (the padlock), and its **⋮** menu has Duplicate · Move up · Move down · Delete. **Select several** makes each tap add a block, for a touch screen.
+
 | Section | Block | What it makes |
 |---------|-------|--------------|
 | **Layout** | Stack | Things one under another. |
@@ -126,8 +128,7 @@ inside.
 
 | Control | What it does |
 |---------|-------------|
-| **Direction**: Top-to-bottom · Side-by-side | A Stack (blocks down the page) or a row (blocks across it). |
-| **Arrange as**: Free arrange · Grid | Free arrange follows Direction; Grid lays the blocks out across *and* down, in columns. |
+| **Kind**: Stack · Side by side · Grid | What the box is — blocks down the page, across it, or across *and* down in columns. Changing it keeps every block, in order (a Stack's blocks share the line as a Side by side; a Side by side becomes a Grid of a column each). What has no meaning in the new kind is named under it: *"Left behind: column spans."* One **Ctrl+Z** takes it back. A component's own box keeps **Direction** and **Arrange as**. |
 | **Position blocks**: Start · Center · End · Spread out · Space around each · Even spacing | Where the blocks sit along the Direction when there is room to spare — at the start, the middle or the end; spread to both ends; the same room on both sides of each block (half at the ends); or the same room everywhere, the ends included. When the blocks already fill the row (two at 50 %, or one set to Fill) there is no room to place them in, and the Inspector says so: *"These blocks fill the row — give one a width to place them."* Set one to **Fit** or a smaller width and they move. |
 | **Let blocks wrap to a new line** | A row that runs out of room carries its blocks onto the next line instead of squeezing them. |
 | **Wrapped lines**: Fill · Top · Middle · Bottom · Spread out · Even spacing (while wrap is on, a side-by-side row) | Where the lines sit when the box is taller than they need — give it a height to see it. Fill shares the height between them. |
@@ -279,6 +280,7 @@ words under it — so a handle lying over a block's first letters never stops yo
 | **Hidden on phone** (the name follows the device chip: phone, tablet…) | The block is gone at that screen — no space taken, nothing moved — on the canvas and on the published page. **Show hidden blocks** (the eye in the top bar) draws it faintly so you can select it. |
 | **Hidden everywhere** | Hides the block on every screen; tick it, then untick "Hidden on phone" at the Mobile chip to show it on phones only. |
 | The yellow note "Editing Phone…" | Says which screen your size, spacing and layout changes apply to, with **Reset phone changes to default**. |
+| **Set on Phone** (the name follows the screen) | Every value set on this screen, by name, each with its own **Reset** — the screen then shows what the wider screens have. On the other tabs the same values are marked **● Set here** beside their control (press it to reset), and a value taken from a wider screen says **From Tablet landscape**. |
 
 [![The Per-device tab at Full width: a note to switch to Tablet or Mobile, and Hidden everywhere](img/ref-inspector-device.webp)](img/ref-inspector-device.webp)
 
@@ -323,7 +325,11 @@ Each setting reads "At the default" or "Follows the default" until you change it
 | **Ctrl / Cmd Y** or **Ctrl / Cmd Shift Z** | Redo |
 | **Ctrl / Cmd D** | Duplicate selected block |
 | **Ctrl / Cmd C · X · V** | Copy · cut · paste a block |
-| **Ctrl / Cmd G** · **Ctrl / Cmd Shift G** | Group the selected blocks · Ungroup |
+| **Ctrl / Cmd G** · **Ctrl / Cmd Shift G** | Group the selected blocks where they are · Ungroup them back where they were |
+| **Shift + click** | Add a block to the selection, or take it out |
+| **Ctrl / Cmd Alt C** · **Ctrl / Cmd Alt V** | Copy a block's style · paste it onto the selected blocks (this screen only) |
+| **L** | Open the left panel's **Layers** |
+| **↑ ↓ ← → · Home · End · Enter · F2 · Shift F10** (in Layers) | Move between rows · open / close a box · first / last · select · rename · the row's menu |
 | **Ctrl / Cmd L** | Lock or unlock the selected blocks' position and size |
 | **Alt F** | Float the block, or put it back in the layout |
 | **Ctrl / Cmd ]** · **[** (Shift: to the front / back) | Bring a floating block forward · send it back |
@@ -335,7 +341,7 @@ Each setting reads "At the default" or "Follows the default" until you change it
 | **Tab** | Move focus to the next interactive element |
 | **Shift + drag edge** | Snap to half-column lines (page-grid rows) |
 | **Alt + drop / drag edge** | Free-position inside columns (page-grid rows) |
-| **↑ / ↓** (block selected) | Move a block in the layout one place earlier / later |
+| **↑ / ↓** (block selected) | Move a block in the layout one place earlier / later — several selected move together |
 | **↑ ↓ ← →** (floating block) | Nudge it 2px (12px with Shift) |
 | **↑ → / ↓ ←** (a spacing handle focused) | That space one step more / fewer (Shift: two); **Home** none, **End** the most |
 | **Shift / Alt / Alt + Shift** + drag a spacing handle | Bigger steps · the opposite side too · all four sides |

@@ -14,6 +14,7 @@ import { padSide } from "@/lib/box-model";
 import { ColorPickerPopover, colorToCSS } from "@/components/shared/ColorPalettePicker";
 import BackgroundPicker from "@/components/shared/BackgroundPicker";
 import INSPECTOR from "@/config/inspector.json";
+import Button from "@/components/shared/Button";
 
 const label = "text-[0.6875rem] font-medium text-gray-500 dark:text-gray-400";
 const section = "text-[0.6875rem] font-semibold uppercase tracking-wide text-gray-400 pt-1";
@@ -21,6 +22,8 @@ const inputCls = "w-full text-sm px-2.5 py-2 rounded-lg border border-gray-200 d
 // A stored spacing number is in the builder's base-10 steps; `u()` turns 10 of them into ≈0.625rem at the normal text
 // size, so a REAL rem is the number ÷ 16 (S1-b, the user 2026-09-30: the controls said "3.2rem" for a ~2rem gutter).
 const toRem = (px: number) => +(px / 16).toFixed(2);
+/** The fields this panel shows a value for — what `mixedFields` compares across the selection (ED-13). */
+export const BULK_FIELDS: (keyof BoxNode)[] = ["margin", "padding", "background", "borderWidth", "shadow", "radius", "opacity", "align"];
 
 /** A −/+ stepper row that repeatedly nudges a property on every selected box. */
 function Stepper({ title, onStep }: { title: string; onStep: (dir: -1 | 1) => void }) {
@@ -35,7 +38,7 @@ function Stepper({ title, onStep }: { title: string; onStep: (dir: -1 | 1) => vo
   );
 }
 
-export default function BulkInspector({ count, theme, sample, sampleSection = false, onStepWidth, onStepHeight, onPatch, onDuplicate, onDelete, onFloatAll, onGroup }: {
+export default function BulkInspector({ count, theme, sample, sampleSection = false, onStepWidth, onStepHeight, onPatch, onDuplicate, onDelete, onFloatAll, onGroup, canGroup = true, mixed = [] }: {
   count: number;
   theme: SiteTheme;
   sampleSection?: SectionFlag;                      // that box is the content of a page section (its default is the gutter)
@@ -46,12 +49,16 @@ export default function BulkInspector({ count, theme, sample, sampleSection = fa
   onDuplicate: () => void;
   onDelete: () => void;
   onFloatAll: () => void;
-  onGroup?: () => void;                          // combine all selected into ONE movable, lockable group
+  onGroup?: () => void;                          // wrap all selected in ONE block, in place (ED-12)
+  canGroup?: boolean;                            // false: the Group action is shown but cannot be pressed, and says why
+  mixed?: (keyof BoxNode)[];                     // the fields the selected blocks DIFFER in: they read "Mixed", never the first block's value (ED-13)
 }) {
   const s = sample ?? undefined;
   // What the first block ACTUALLY has, default included — never a size it does not have (c-24: this read 1.5rem
   // for blocks created with none).
   const pad = s ? (s.padding ?? padSide(s, "Top", sampleSection)) : 0;
+  // ED-13: what the first block has is not what they all have — a field they differ in says so
+  const shown = (key: keyof BoxNode, value: string) => (mixed.includes(key) ? INSPECTOR.group.mixed : value);
   return (
     <div className="p-4 space-y-3">
       <div className="flex items-center gap-1.5 text-[0.6875rem] font-semibold text-indigo-600 dark:text-indigo-300 midnight:text-indigo-300 purple:text-purple-200"><Layers className="w-3.5 h-3.5" aria-hidden="true" /> {count} blocks selected</div>
@@ -64,17 +71,17 @@ export default function BulkInspector({ count, theme, sample, sampleSection = fa
 
       {/* ── Shared spacing (seeded from the first selected box) ── */}
       <div className={section}>Spacing</div>
-      <label className="block"><span className={label}>Outer spacing: {toRem(s?.margin ?? 0)}rem</span>
+      <label className="block"><span className={label}>Outer spacing: {shown("margin", `${toRem(s?.margin ?? 0)}rem`)}</span>
         <input type="range" min={0} max={96} value={s?.margin ?? 0} onChange={(e) => onPatch({ margin: Number(e.target.value) })} aria-label="Outer spacing" className="w-full mt-1 accent-indigo-600" />
       </label>
-      <label className="block"><span className={label}>Inner spacing: {toRem(pad)}rem</span>
+      <label className="block"><span className={label}>Inner spacing: {shown("padding", `${toRem(pad)}rem`)}</span>
         <input type="range" min={0} max={96} value={pad} onChange={(e) => onPatch({ padding: Number(e.target.value) })} aria-label="Inner spacing" className="w-full mt-1 accent-indigo-600" />
       </label>
 
       {/* ── Shared look ── */}
       <div className={section}>Look</div>
       <div className="flex items-center justify-between gap-2">
-        <span className={label}>Background colour</span>
+        <span className={label}>Background colour{mixed.includes("background") ? ` · ${INSPECTOR.group.mixed}` : ""}</span>
         <ColorPickerPopover selectedColor={s?.background || theme.surface} onSelect={(c) => onPatch({ background: c })} mode="both" label="Background colour" align="right" width={272} portal>
           <button aria-label="Background colour" className="w-8 h-8 rounded-lg border border-gray-200 dark:border-white/10 shadow-sm" style={{ background: colorToCSS(s?.background || theme.surface) }} />
         </ColorPickerPopover>
@@ -86,22 +93,22 @@ export default function BulkInspector({ count, theme, sample, sampleSection = fa
           onSelectPhoto={(url) => onPatch({ bgImage: url, bgTile: undefined, bgSize: "cover" })}
           onClear={() => onPatch({ bgImage: undefined, bgTile: undefined, bgOverlay: undefined })} />
       </div>
-      <label className="block"><span className={label}>Border: {s?.borderWidth ?? 0}px</span>
+      <label className="block"><span className={label}>Border: {shown("borderWidth", `${s?.borderWidth ?? 0}px`)}</span>
         <input type="range" min={0} max={16} value={s?.borderWidth ?? 0} onChange={(e) => onPatch({ borderWidth: Number(e.target.value) })} aria-label="Border" className="w-full mt-1 accent-indigo-600" />
       </label>
       <div className="space-y-1">
-        <span className={label}>Shadow</span>
+        <span className={label}>Shadow{mixed.includes("shadow") ? ` · ${INSPECTOR.group.mixed}` : ""}</span>
         <div className="inline-flex w-full items-center gap-0.5 rounded-xl bg-gray-100 dark:bg-white/5 p-1">
-          {([["none", "None"], ["sm", "Soft"], ["md", "Medium"], ["lg", "Strong"], ["xl", "Bold"]] as const).map(([sh, l]) => <button key={sh} onClick={() => onPatch({ shadow: sh === "none" ? undefined : sh })} className={`flex-1 py-1 text-[0.6875rem] rounded-lg ${(s?.shadow ?? "none") === sh ? "bg-white dark:bg-white/15 text-gray-900 dark:text-white shadow-sm" : "text-gray-500 hover:text-gray-800 dark:hover:text-gray-200"}`}>{l}</button>)}
+          {([["none", "None"], ["sm", "Soft"], ["md", "Medium"], ["lg", "Strong"], ["xl", "Bold"]] as const).map(([sh, l]) => <button key={sh} onClick={() => onPatch({ shadow: sh === "none" ? undefined : sh })} className={`flex-1 py-1 text-[0.6875rem] rounded-lg ${!mixed.includes("shadow") && (s?.shadow ?? "none") === sh ? "bg-white dark:bg-white/15 text-gray-900 dark:text-white shadow-sm" : "text-gray-500 hover:text-gray-800 dark:hover:text-gray-200"}`}>{l}</button>)}
         </div>
       </div>
-      <label className="block"><span className={label}>Rounded corners: {s?.radius ?? 0}px</span>
+      <label className="block"><span className={label}>Rounded corners: {shown("radius", `${s?.radius ?? 0}px`)}</span>
         <input type="range" min={0} max={64} value={s?.radius ?? 0} onChange={(e) => onPatch({ radius: Number(e.target.value) })} aria-label="Rounded corners" className="w-full mt-1 accent-indigo-600" />
       </label>
-      <label className="block"><span className={label}>See-through: {s?.opacity ?? 100}%</span>
+      <label className="block"><span className={label}>See-through: {shown("opacity", `${s?.opacity ?? 100}%`)}</span>
         <input type="range" min={0} max={100} value={s?.opacity ?? 100} onChange={(e) => onPatch({ opacity: Number(e.target.value) })} aria-label="See-through" className="w-full mt-1 accent-indigo-600" />
       </label>
-      <label className="block"><span className={label}>Line up (across)</span>
+      <label className="block"><span className={label}>Line up (across){mixed.includes("align") ? ` · ${INSPECTOR.group.mixed}` : ""}</span>
         <select value={s?.align ?? "stretch"} onChange={(e) => onPatch({ align: e.target.value as FlexAlign })} aria-label="Line up" className={inputCls}>
           {Object.entries(INSPECTOR.align.lineUp).filter(([v]) => v !== "baseline").map(([v, l]) => <option key={v} value={v}>{l}</option>)}
         </select>
@@ -110,7 +117,10 @@ export default function BulkInspector({ count, theme, sample, sampleSection = fa
       {/* ── Bulk actions ── */}
       <div className={section}>Actions</div>
       {onGroup && (
-        <button onClick={onGroup} className="w-full flex items-center justify-center gap-2 py-2 rounded-lg bg-indigo-600 text-white text-xs font-medium hover:bg-indigo-700" title="Group into one movable, lockable unit (Ctrl+G)"><GroupIcon className="w-4 h-4" /> Group these {count}</button>
+        <div>
+          <Button onClick={onGroup} disabled={!canGroup} size="sm" className="w-full" title={INSPECTOR.group.hint} icon={<GroupIcon className="w-4 h-4" aria-hidden="true" />}>{INSPECTOR.group.action.replace("{count}", String(count))}</Button>
+          {!canGroup && <p className="mt-1 text-[0.625rem] text-gray-500 dark:text-gray-400 midnight:text-gray-400 purple:text-purple-200">{INSPECTOR.group.cannot}</p>}
+        </div>
       )}
       <div className="grid grid-cols-3 gap-1.5">
         <button onClick={onFloatAll} className="flex flex-col items-center gap-0.5 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-xs text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"><Layers className="w-4 h-4" /> Float</button>

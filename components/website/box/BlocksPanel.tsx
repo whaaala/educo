@@ -12,7 +12,7 @@
  * Purple automatically. The variation picker is a PortalMenu (portaled to <body>) so the scroll area never clips it.
  */
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import {
   LayoutPanelTop, Columns3, Rows3, MoveVertical, Minus, GalleryHorizontal, GalleryThumbnails, Sunrise,
   Heading as HeadingIcon, Pilcrow, MousePointerClick, ListOrdered, Link2,
@@ -28,6 +28,7 @@ import { PortalMenu, MenuItem, MenuHeader, Segmented, useSheetManners } from "./
 import GridLayoutMenu from "./GridLayoutMenu";
 import GallerySetupMenu from "./GallerySetupMenu";
 import { CHROME_Z } from "@/lib/educo-ui/stacking";
+import INSPECTOR from "@/config/inspector.json";
 
 /** The catalogue names its icon as a string so it can stay React-free; this maps those names to the icons. */
 export const COMPONENT_ICONS: Record<string, LucideIcon> = { PanelTopOpen, BellRing, LayoutGrid, MessageSquareQuote, Hash, BadgeCheck, Star };
@@ -114,7 +115,7 @@ type Anchor = { top: number; left: number; bottom: number; right: number };
 
 const WHERE_LABEL: Record<InsertWhere, string> = { before: "Before", after: "After", inside: "Inside", start: "Start", end: "End" };
 
-export default function BlocksPanel({ theme, onDragKind, onPick, defaultOpen = false, docked = false, onOpenChange, sheet = false, where }: {
+export default function BlocksPanel({ theme, onDragKind, onPick, defaultOpen = false, docked = false, onOpenChange, sheet = false, where, layers }: {
   theme?: SiteTheme;
   onDragKind?: (kind: string | null) => void;
   onPick?: (kind: string, patch?: Partial<BoxNode>) => void; // click-to-add with an optional style variation
@@ -133,10 +134,15 @@ export default function BlocksPanel({ theme, onDragKind, onPick, defaultOpen = f
    * sight above it (NN/g: partial height, a grab bar, Close, Back); its launcher waits bottom-right, where a thumb is.
    */
   sheet?: boolean;
+  /** ED-2b (LE-14): the layers tree — the panel's second view, Add | Layers (the L key opens it). */
+  layers?: ReactNode;
   /** WHERE the block goes, for what is selected: Before · After · Inside · Start · End (E-5a, D3). Absent with no selection. */
   where?: { value: InsertWhere; options: InsertWhere[]; onChange: (w: InsertWhere) => void };
 }) {
   const [open, setOpen] = useState(defaultOpen);
+  // ED-2b: which view the panel shows — adding blocks, or the page's layers. A ref for the key handler (rule 2).
+  const [view, setView] = useState<"add" | "layers">("add");
+  const viewRef = useRef(view); viewRef.current = view;
   useEffect(() => { onOpenChange?.(open); }, [open]);
   const [shown, setShown] = useState(defaultOpen); // drives the enter transition
   const [q, setQ] = useState("");
@@ -175,7 +181,8 @@ export default function BlocksPanel({ theme, onDragKind, onPick, defaultOpen = f
       const typing = !!t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.isContentEditable);
       if (e.key === "Escape") { if (open) { setOpen(false); setMenu(null); } return; }
       if (typing || e.metaKey || e.ctrlKey || e.altKey) return;
-      if (e.key === "b" || e.key === "B") { e.preventDefault(); setOpen((o) => !o); }
+      if (e.key === "b" || e.key === "B") { e.preventDefault(); setView("add"); setOpen((o) => !o); }
+      else if (layers && (e.key === "l" || e.key === "L")) { e.preventDefault(); setOpen((o) => !(o && viewRef.current === "layers")); setView("layers"); }
       else if (e.key === "/") { e.preventDefault(); setOpen(true); requestAnimationFrame(() => searchRef.current?.focus()); }
     };
     document.addEventListener("keydown", onKey);
@@ -267,12 +274,19 @@ export default function BlocksPanel({ theme, onDragKind, onPick, defaultOpen = f
           <div className="flex items-center gap-2.5 px-4 pt-3.5 pb-3">
             <span className="grid place-items-center w-8 h-8 rounded-xl bg-gradient-to-br from-brand to-brand-600 text-brand-fg shadow-sm"><Blocks className="w-[1.05rem] h-[1.05rem]" strokeWidth={1.9} /></span>
             <div className="flex-1 min-w-0">
-              <div className="text-sm font-bold text-ink leading-tight">Add a block</div>
-              <div className="text-[0.6875rem] text-muted leading-tight">{sheet ? "Tap a block to add it" : "Drag onto the page, or click to pick a style"}</div>
+              <div className="text-sm font-bold text-ink leading-tight">{view === "layers" ? INSPECTOR.layers.title : "Add a block"}</div>
+              {view === "add" && <div className="text-[0.6875rem] text-muted leading-tight">{sheet ? "Tap a block to add it" : "Drag onto the page, or click to pick a style"}</div>}
             </div>
             <button type="button" onClick={() => setOpen(false)} aria-label="Close blocks panel" title="Close (Esc)" className="shrink-0 p-1.5 rounded-lg pointer-coarse:min-w-11 pointer-coarse:min-h-11 grid place-items-center text-muted hover:text-ink hover:bg-surface-2 transition-colors"><X className="w-4 h-4" /></button>
           </div>
 
+          {layers && (
+            <div className="px-4 pb-3">
+              <Segmented full ariaLabel={INSPECTOR.layers.view} value={view} onChange={setView}
+                options={[{ value: "add" as const, label: INSPECTOR.layers.add, title: "B" }, { value: "layers" as const, label: INSPECTOR.layers.title, title: "L" }]} />
+            </div>
+          )}
+          {view === "layers" && layers ? layers : <>
           {/* WHERE IT GOES (E-5a, D3): shown for what is selected, set to what a plain tap does, and changed in one tap. */}
           {where && (
             <div className="px-4 pb-3 space-y-1">
@@ -340,6 +354,7 @@ export default function BlocksPanel({ theme, onDragKind, onPick, defaultOpen = f
               </div>
             )}
           </div>
+          </>}
         </div>
       )}
 

@@ -2,7 +2,7 @@ Feature: Box Builder — marquee multi-select + bulk edits
   As a website designer using the Box Builder (/website/box-demo)
   I want to select several sections at once and change them together
   So that I can align a whole group's size, spacing and look in one action instead of editing each
-  Guards: tests/components/website/BulkInspector.test.tsx
+  Guards: tests/components/website/BulkInspector.test.tsx · tests/unit/multi-select.test.ts (ED-13, BATCH LE-14) · HEADED: scripts/uat/uat-le14-headed.js
 
   Background:
     Given the Box Builder canvas with several sections
@@ -72,6 +72,29 @@ Feature: Box Builder — marquee multi-select + bulk edits
     Given several sections selected
     Then the bulk panel offers "Outer spacing", "Inner spacing", "Rounded corners" and "See-through"
     And setting each one sets the margin, the padding, the corner radius or the opacity of every selected section
+
+  # ── ED-13 (BATCH LE-14; design D2 signed 2026-10-18 — Figma, Wix Studio) ──────────────────────────────
+  Scenario: Shift-click adds a block to the selection, or takes it out
+    Given a Heading selected
+    When I Shift-click another Heading beside it
+    Then both are selected and the bulk panel says "2 blocks selected"
+    And Shift-clicking one of them again takes only that one out
+
+  Scenario: Shift-click picks the block at the level of the selection
+    Given two Headings inside a Stack that they fill, the first one selected
+    When I Shift-click the second
+    Then the second Heading is added, not the Stack round them
+
+  Scenario: A field the blocks differ in reads Mixed
+    Given two blocks selected, one with rounded corners and one without
+    Then the bulk panel's Rounded corners reads "Mixed", not the first block's value
+    And a field they share shows its value
+
+  Scenario: The arrows move every selected block together
+    Given two blocks next to each other selected, one under the other
+    When I press the down arrow
+    Then both move one place down together, in their order
+    And nothing moves when one of them is already at the end
 
   Scenario: Group the selection into one unit
     Given three sections selected where grouping is possible
