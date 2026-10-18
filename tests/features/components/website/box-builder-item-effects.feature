@@ -2,6 +2,7 @@ Feature: Box Builder — an item reacts and arrives on its own
   As a school putting a list of announcements or a set of FAQs on a page
   I want each row to be able to respond to a pointer and to arrive in its own right
   So that a list reads as a set of things rather than one undifferentiated lump
+  Guards: tests/unit/item-effects.test.ts
 
   Background:
     Given a multi-item component — an accordion of questions, or a stack of alert messages
@@ -41,6 +42,11 @@ Feature: Box Builder — an item reacts and arrives on its own
     Then the markup still stamps that row's per-item class
     # The class used to be stamped only for styling overrides, so an effect-only row had no selector for its
     # rule to attach to — the CSS would have been emitted and matched nothing.
+
+  Scenario: Every item's effect on the page is gathered, wherever it sits
+    Given a row holding an accordion whose first question glows and an alert whose message lifts
+    Then the page carries the question's glow and the message's lift
+    And a page whose items have no effect carries no item-effect CSS at all
 
   Scenario: An item's entrance brings its keyframes with it
     Then the page carries the @keyframes the animation names

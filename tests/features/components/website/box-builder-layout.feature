@@ -8,6 +8,9 @@ Feature: Placing blocks beside one another in the Box Builder
   The rule underneath, and it is the same one edge-anchored resize follows: a block arriving beside yours
   takes the EMPTY space, never space out of the block you already sized. A drop that renormalises the row
   silently shrinks something the user chose, and nothing on screen explains why it moved.
+  Guards: tests/unit/layout-decisions.test.ts
+  Guards: tests/unit/le1-adding-blocks.test.ts (LE-1)
+  Guards: tests/unit/advanced-css.test.ts (RX4-15, Advanced CSS on the canvas)
 
   Background:
     Given the Box Builder is open on a page
@@ -1066,6 +1069,19 @@ Feature: Placing blocks beside one another in the Box Builder
     Given a reader whose browser text is set to 24px
     Then the page gutter and the section, group and element gaps all grow with it between their bounds
     Because each is clamp(min, rem + cqw, max) — never a bare container term
+    And none of them reads the width of the browser window
+
+  Scenario: The pixel of slack is lent only where it is needed (decided 2026-09-28, D)
+    Given a row of columns I never sized by hand
+    Then no column lends any slack, because their floors are not a single word
+    And when the last column of a hand-sized row has a right margin I set, my margin is kept
+    And the slack is written in rem, never in pixels
+
+  Scenario: The page's type unit is measured on the page, not the window (decided 2026-09-28, A)
+    When I publish a page
+    Then the page itself is what the type unit is measured against, so a scrollbar does not change it
+    And the type unit and the spacing unit are both set on the page, starting from nothing stored in pixels
+    And text sizes are never smaller than the reader's own text size
 
   # ── A block under an icon, in a column stretched by its neighbour (E-0, asked by the user 2026-09-30) ──
 
@@ -1255,6 +1271,16 @@ Feature: Placing blocks beside one another in the Box Builder
     Then a message says it was not applied and to animate transform or opacity instead
     And neither reaches the canvas or the published page
 
+  Scenario: Advanced CSS shows on the canvas while I edit, exactly as it is published
+    # tests/unit/advanced-css.test.ts — it used to reach a plain section only once the site was published
+    Given a plain Stack selected
+    When I type "padding-top: 2rem; background-color: red" in its Advanced CSS
+    Then the canvas shows the padding and the red at once, as the published page does
+    And a design token written as "var(--eu-gap-section)" and a custom property such as "--eu-col-min: 20rem" reach the canvas as written
+    And odd spacing or a trailing semicolon does not stop a declaration applying
+    And what the published page refuses — a selector breaking out of the block, an outside url(), an animated layout — the canvas refuses too
+    And an empty Advanced CSS box changes nothing
+
   Scenario: A pattern opens the pattern editor (RX4-16)
     When I choose "Dot grid" from the Background library
     Then "Edit pattern CSS" is shown, never "Edit gradient"
@@ -1292,3 +1318,11 @@ Feature: Placing blocks beside one another in the Box Builder
     Then the block stretches with its row again
     And a block whose height or width I set by a drag keeps its pin
     And a page with no such pin opens exactly as it was saved
+
+  # LE1-4: the Grid tile's four across, on twelve tracks, drew four across on a phone after Thirds was chosen there.
+  Scenario: A column count I choose for one screen is the count that screen draws
+    Given a Grid of four cells across, added from the blocks panel
+    When I switch to Phone and choose Thirds for it
+    Then the phone shows three cells across
+    And the desktop still shows four across, exactly as before
+    And choosing a count at Desktop changes the Grid itself, as it always did

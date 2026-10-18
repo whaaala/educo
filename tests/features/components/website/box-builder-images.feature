@@ -2,6 +2,7 @@ Feature: Box Builder — images that describe themselves and hold their own shap
   As a school putting photographs on its website
   I want a picture to be described, to load sensibly, and to reserve its space before it arrives
   So that the page is readable to everyone and does not jump under the reader's eye as it loads
+  Guards: tests/unit/image-a11y.test.ts · tests/unit/image-intrinsic.test.ts · tests/unit/pictures-keep-their-shape.test.ts · tests/unit/photo-gallery.test.ts
 
   Background:
     Given an Image block on a page in the Box Builder
@@ -28,6 +29,11 @@ Feature: Box Builder — images that describe themselves and hold their own shap
     Then its thumbnail is loading="lazy" and decoding="async"
     And it still carries the alt text the user wrote
 
+  Scenario: An alert message's thumbnail follows the same policy
+    Given an alert message with an image
+    Then its thumbnail is loading="lazy" and decoding="async"
+    And it still carries the alt text the user wrote
+
   # ── What shape the picture is ──
   Scenario: The natural size is measured when the picture is added
     When I upload a photograph
@@ -39,6 +45,15 @@ Feature: Box Builder — images that describe themselves and hold their own shap
     When the browser cannot decode the file, or the decode never finishes
     Then the picture is still placed on the page
     And it simply keeps the fixed height it would have had before
+    And a picture that decodes as 0 × 0, like an SVG with no size of its own, or a measurement with only one side,
+      is never stored as a shape
+
+  Scenario: A new Image block's shape is found from its photograph, by whichever route it arrives
+    When I add an Image block from the palette and upload a photograph into it
+    Then the block holds no stored pixel height, and the picture takes its photograph's own shape
+    And a photograph dropped straight onto the canvas comes out the same shape
+    And while the block has no picture yet it is a visible box, 16.25rem tall, to drop one into
+    And "Fill" as a height fills the block
 
   Scenario: The space is reserved before the bytes arrive
     Given a photograph whose natural size is known
@@ -141,6 +156,39 @@ Feature: Box Builder — images that describe themselves and hold their own shap
     When I choose "Follow the picture" in the setup
     Then the gallery arrives with row heights following each photograph
 
+  Scenario Outline: Every gallery row adds up to the twelve
+    When I choose "<across> across" for seven photographs
+    Then every cell spans the same share of the twelve, one cell per photograph
+    And each Image block carries its photograph, its measured shape and its description, at its own height, uncropped
+
+    Examples:
+      | across |
+      | 2      |
+      | 3      |
+      | 4      |
+      | 6      |
+
+  Scenario: A count the twelve cannot share out is rounded to one it can
+    When I choose "5 across"
+    Then every cell's span divides the twelve exactly, rather than two cells coming out wider
+
+  Scenario: The gallery arrives square and with no space, unless the setup asked
+    When I add a gallery without choosing a gap
+    Then it has no gap, no inner space, no masonry, and no rounded corners on its cells or its pictures
+
+  Scenario: Two galleries never share an id
+    When I add two galleries of the same photographs
+    Then every block in one has a different id from every block in the other
+
+  Scenario: A drop that skips the setup still lands a real grid
+    When a Photo gallery arrives without the setup
+    Then it is an empty grid, with nothing odd inside it
+
+  Scenario: A photograph's remove ✕ can be found (D3-44)
+    Given the setup's thumbnails
+    Then a photograph's ✕ shows when I hover the photograph
+    And on a touch screen, which has no hover, it is always shown
+
   # ── G-3d (2) · a picture fills a block that spans rows (the user, 2026-10-05; G3d-1: centred crop for now) ──
   Scenario: A picture fills the block that spans rows
     Given a block on a page-grid row two rows tall holding only a picture, beside two short blocks of words
@@ -162,3 +210,22 @@ Feature: Box Builder — images that describe themselves and hold their own shap
     Given a picture filling a block two rows tall
     When the row stacks on a phone
     Then the block spans one row and the picture is its own height again
+
+  Scenario: A height I set on a filling picture is its least height
+    Given a picture filling a block two rows tall, with a height of 15rem set by hand
+    Then it fills the block but is never shorter than 15rem, and is 15rem wherever it does not fill
+
+  Scenario: The fill follows each screen
+    Given a picture filling a block two rows tall, whose block is one row tall on Mobile
+    Then it fills on the desktop and not on a phone
+    When I turn the fill off while editing Tablet portrait
+    Then it does not fill on a tablet in portrait or on a phone, and still fills on the wider screens
+    And on a page saved before the page grid the picture never fills
+
+  # BATCH LE-2 · rule 16 · RULE AF — on 3G a page that jumps as each photo lands loses the reader's line
+  Scenario: Every picture on every block keeps its shape while it loads
+    Given every tile of the blocks panel, in every one of its styles, holding sample photographs wherever it can hold one
+    When the page is published
+    Then every picture and every video reserves its box before a byte arrives — its width and height, a proportion, or a set height
+    And every photograph is cropped to its box, never squashed
+    And a block added to the panel later is checked the day it appears

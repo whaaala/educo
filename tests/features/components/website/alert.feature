@@ -4,6 +4,7 @@ Feature: Alert component (Educo UI)
   has no add / duplicate / delete / reorder and no on-canvas item toolbar. Its message still has editable,
   individually styleable PARTS, so it keeps per-part styling, per-item CSS, positioning and four-sided spacing.
   Component 2 of the builder.
+  Guards: tests/unit/alert-designs.test.ts
 
   Background:
     Given the Alert is a single clean component added from the Blocks palette
@@ -59,6 +60,20 @@ Feature: Alert component (Educo UI)
       | Top accent  |
       | Card        |
       | Glass       |
+
+  # ── The design gallery and its axes (lib/educo-ui/alerts.ts) ──
+  Scenario: The Alert's looks combine, so it offers far more than one list could
+    Given the Alert's design gallery
+    Then it shows at least twenty genuinely different designs, grouped under named headings, none of them empty
+    And the default look leads the gallery, and no two designs share an id or a name
+    And shape, border style, icon style, alignment, size and density are separate choices, not designs
+    And each of those choices starts with a "leave it alone" option and offers real alternatives
+    And designs times choices reach more than a hundred times as many looks as the Accordion's one list
+
+  Scenario: Every look in the picker draws, and every drawn look is in the picker
+    Then every design and every choice on every axis has styling behind it
+    And every Alert style is reachable from a design, an axis, the severity, the form factor or the actions placement
+    And no Alert design writes a colour of its own — the severity's accent colours every one, in every theme
 
   # ── Form factor + ask-on-add ──
   Scenario: The form factor is chosen up front and editable after

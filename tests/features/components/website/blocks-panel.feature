@@ -2,6 +2,7 @@ Feature: A floating Blocks panel — modern, spacious, out of the way
   As a teacher building a school website
   I want the insert palette to be a floating panel I open from a launcher icon
   So that the canvas keeps its full width and adding blocks feels modern and uncluttered
+  Guards: tests/unit/add-without-asking.test.ts · tests/unit/container-naming.test.ts · tests/unit/palette-click-slot.test.ts · tests/unit/le1-adding-blocks.test.ts (LE-1)
 
   Background:
     Given the Box Builder is open
@@ -58,6 +59,44 @@ Feature: A floating Blocks panel — modern, spacious, out of the way
     Then it adds the block (composites add directly; styled blocks open the portaled variation picker)
     And the panel stays open so I can add several blocks
 
+  # ── What a tile asks before it adds (tests/unit/add-without-asking.test.ts) ──
+  # A question has to be about the block's STRUCTURE, its CONTENT or its ROLE. A look on an empty box is none
+  # of those: there is nothing inside it yet to judge the look against.
+  Scenario Outline: A layout box, a picture or an icon adds straight away
+    Given the Blocks panel is open
+    When I click the "<tile>" tile
+    Then the block is added at once, with no menu of looks in the way
+
+    Examples:
+      | tile         |
+      | Stack        |
+      | Side by side |
+      | Image        |
+      | Icon         |
+
+  Scenario Outline: A block whose choice is its role still asks
+    Given the Blocks panel is open
+    When I click the "<tile>" tile
+    Then I am offered its starting points before it is added
+
+    Examples:
+      | tile    |
+      | Heading |
+      | Text    |
+      | Button  |
+      | Divider |
+
+  Scenario: A Grid still asks for its shape
+    When I click the "Grid" tile
+    Then I am asked for its shape, and every shape offered lays out real cells
+
+  Scenario: The looks of a box are in the Inspector, where they can be judged
+    Given a Stack, a picture or an icon on the page
+    When I select it
+    Then its looks are still offered in the Inspector
+    And a Stack has four of them — Plain, Card, Outline and Tinted — and no two make the same block
+    And "Plain" takes away a background, a border, a shadow and round corners I gave it
+
   Scenario: A block tile is still draggable onto the page
     Given the Blocks panel is open
     Then each tile is draggable and sets the palette block type on drag start
@@ -94,6 +133,14 @@ Feature: A floating Blocks panel — modern, spacious, out of the way
       | row           | Side by side |
       | grid          | Grid         |
 
+  Scenario: The old names do not come back
+    # tests/unit/container-naming.test.ts
+    Given the Blocks panel is open
+    Then no Layout tile is called "Section", "Columns" or "Row"
+    And no tile's hint reads "A band you fill with anything", which described the top bar's band
+    And a Grid is still called "Grid" when it carries a row direction left over from an earlier switch
+    And a container that has no direction stored is called "Stack"
+
   # ── Adding a block never moves your insertion point ──
   # Reported: "i can no longer add stack one after the other." Two deliberate behaviours were colliding. A
   # block is inserted into the SELECTED container — which is what makes "select a cell, add a Grid inside
@@ -121,6 +168,23 @@ Feature: A floating Blocks panel — modern, spacious, out of the way
     Given a Grid on the page and one of its cells selected
     When I click "Text" in the panel
     Then the Text lands INSIDE that cell
+
+  # L-1 · e-1 (tests/unit/palette-click-slot.test.ts): a Stack clicked with an Image grid cell selected went INSIDE the
+  # Image, which never draws a child — so nothing appeared.
+  Scenario: A picture or a text that is a grid cell gets the new block as the next cell
+    Given a Grid whose cells include a picture and a text
+    When I select the picture, or the text, and click "Stack" in the panel
+    Then the Stack lands right after it, as the next cell of the Grid, never inside it
+
+  Scenario: A selected Grid gets the new block as its next cell
+    Given a Grid with two cells, and the Grid itself selected
+    When I click "Text" in the panel
+    Then the Text lands as the Grid's third cell
+
+  Scenario: With nothing selected, a click adds to the end of the page
+    Given nothing on the page is selected
+    When I click a block tile
+    Then the block lands at the end of the page
 
   # LE-1 (E2-20): "Side by side" made an empty row that clicked tiles landed AFTER, never inside.
   Scenario: Blocks clicked after "Side by side" go into it, side by side

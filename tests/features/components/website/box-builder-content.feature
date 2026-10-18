@@ -2,6 +2,7 @@ Feature: Box Builder — content types & links
   As a website designer using the Box Builder
   I want the blocks people actually put on pages, and real links
   So that I can build complete pages, not just text/heading/button/image
+  Guards: tests/unit/icon-block.test.ts · tests/unit/link-readable.test.ts · tests/unit/video-proportion.test.ts
 
   Background:
     Given the Box Builder add menu (⋯ → Add inside)
@@ -23,6 +24,24 @@ Feature: Box Builder — content types & links
     When I paste a YouTube or Vimeo URL
     Then it renders as an embedded player
     And a direct .mp4 URL renders an inline <video> player
+
+  # RX3-9 · RULE AF — measured 2026-10-16: one YouTube embed took a page from 5.1 KB to 993.5 KB compressed
+  Scenario: A YouTube or Vimeo video costs nothing until the visitor asks for it
+    Given a Video block holding a YouTube address
+    When the page is published
+    Then it is a link to the video showing the video's picture, which loads lazily, and there is no player yet
+    And the link is named "Play the video" and carries the player's address for when it is pressed
+    And its own address is the video's page, so without script it still opens the video
+    And the small script that does this ships once however many videos the page holds, and not at all on a page with none
+
+  # RX3-2 · LE-1 · rule 16 — a "16:9" that stored 315px was 1.19 wide-to-tall at 375 and 6.10 at 1920
+  Scenario: A video keeps its proportion on every screen
+    Given a Video block I have just added
+    Then it publishes the proportion set in config/layout.json and no height
+    And every proportion style publishes its ratio and no height
+    And choosing 16:9 after Portrait makes the video full width again
+    And the video's picture carries its own width and height, so its shape is known before it loads
+    But a height I typed myself is still honoured, so pages already saved keep theirs
 
   Scenario: Icon element from a curated set
     Given an Icon element
@@ -83,6 +102,8 @@ Feature: Box Builder — content types & links
       dark page: measured on every dressed page, the indigo read 3.02:1 on Midnight and
       2.9:1 on Dark. The link now has its own token — the brand moved in lightness until
       it reads — and both engines fall back to it before the brand.
+    And the published link's colour is the link token, falling back to the brand
+    And a Stat's number — the brand used as words — reads through the link token too (#139)
 
   Scenario: An Icon publishes the box it is drawn in
     Given an Icon block left at its default size
@@ -90,6 +111,8 @@ Feature: Box Builder — content types & links
     And it adds no leading of its own above or below
     Because the inline SVG used to sit in a normal line box on the published page and came out 40px tall for a 32px icon
       (measured by the dressed sweep, canvas ≠ export in the block itself)
+    When I give the Icon a colour of its own and a size of 48
+    Then it publishes in that colour, and its size in the spacing unit — never a pixel
 
   Scenario: A block that draws something is never treated as an empty box
     Given an Icon, a List or a Divider — blocks that draw their own content and hold no words or picture

@@ -2,6 +2,7 @@ Feature: Box Builder — the page can never cover the editor
   As a teacher building a page with overlapping blocks
   I want the controls for the block I selected to stay reachable
   So that I am never left looking at something I cannot edit or delete
+  Guards: tests/unit/stacking.test.ts
 
   Background:
     Given a page where blocks can be lifted onto their own layer and stacked
@@ -36,6 +37,27 @@ Feature: Box Builder — the page can never cover the editor
     Given a block with a stacking order of 3
     Then it renders as 3
     # The clamp is a ceiling, not a rewrite.
+
+  Scenario: Send to back is bounded too, and "behind its siblings" is still allowed
+    Given a floating block
+    When a user presses "Send to back" a hundred times
+    Then its stacking order is below its siblings but no lower than the page's floor
+
+  Scenario: A broken stacking value falls back instead of reaching the page
+    Given a block whose stored stacking order is missing, not a number, or endless
+    Then it renders on the page's "raised" layer
+    And a fraction is rounded down to a whole number
+
+  Scenario: The layers are in the order the reader and the gestures need
+    Then on the page: the base, then raised blocks, then sticky bars, then overlays, then a dimmed backdrop, then a toast
+    And in the editor: a block's outline under its bar, the handles under the toolbar, the narrow-screen drawer over the
+      toolbar and the panel, then the selection box, the snap guides, the drop zone, the drag ghost, and the cursor veil on top
+    And a toast notice on the page sits on the page's toast layer
+
+  Scenario: Nothing in the published site reaches the editor's range
+    Given a page with a block whose stored stacking order is forty thousand
+    When the site is exported
+    Then every stacking order in its files is at or below the page ceiling
 
   # ── What the ladder alone could not fix ──
   Scenario: A neighbour cannot bury the controls of the block being edited

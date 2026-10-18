@@ -1,6 +1,7 @@
 Feature: The page uses its space (BATCH F-1)
   The whole page uses its width and height where it makes sense — sections, rows and components — unless the space was
   chosen by the person building it (the user, 2026-10-01). Measured by the page audit's W19 on every swept page.
+  Guards: tests/unit/component-fills-its-line.test.ts
 
   Scenario: A component dropped on the page fills its line
     Given an empty page in the website builder
@@ -24,6 +25,18 @@ Feature: The page uses its space (BATCH F-1)
     When I drag the outer edge of the last column inward
     Then a space opens at that edge and stays there
     And the other column does not grow into it
+    And the same holds in a row whose columns wrap onto more than one line
+
+  # F1-e — the same rule after the page's own drop pass, at every screen
+  Scenario: A component that hugs what it holds is never stretched
+    Given a Stat, a Badge or a Rating dropped on the page
+    Then it hugs what it holds at every screen size, the phone included
+    And nothing forces it to the width of the line
+
+  Scenario: Columns that leave part of their line empty do not grow into it
+    Given a row of three columns where one was deleted, leaving two of three
+    Then the two keep their shares and the empty part of the line stays empty
+    But columns I sized by hand that still fill the line may take what a wrap leaves, because no space was chosen
 
   # L-8 (BATCH LE-2): the same rule down a column
   Scenario: A space I open at the bottom of a column stays

@@ -4,7 +4,7 @@ Feature: The website builder inside the Educo app (BATCH E-5d)
   So that I can keep it up to date without finding a computer
 
   # The app shows the real web editor in a WebView (CLAUDE.md rule 20). Phone (isTablet=false) and tablet (isTablet=true).
-  # Guards: apps/mobile/__tests__/site-editor/SiteEditor.test.tsx · tests/e2e/phone-editing.spec.ts (E5d-3) ·
+  # Guards: apps/mobile/__tests__/site-editor/SiteEditor.test.tsx · tests/e2e/phone-editing.spec.ts (E5d-3) · tests/unit/edge-swipe.test.ts (E5d-3) ·
   # HEADED: scripts/uat/uat-e5d-headed.js on emulator-5554 (tablet) and emulator-5556 (phone)
 
   Scenario: Opening the builder from More
@@ -33,6 +33,16 @@ Feature: The website builder inside the Educo app (BATCH E-5d)
     When I drag its right handle
     Then the block resizes and the builder stays open
     # E5d-3, the user's decision 2026-10-08: a handle within 32px of the window's edge is not drawn
+
+  Scenario: Only the side that is too close to the edge loses its handle
+    Given a block on a phone or a tablet
+    When the handle on its left side would sit closer than 32px to the screen's edge
+    Then only its left handle is left out — on a tablet that includes a block in the page's 2rem gutter
+    When the handle on its right side would sit closer than 32px to the screen's edge
+    Then only its right handle is left out
+    When a block runs across the whole phone
+    Then both side handles are left out
+    But a block whose handles have 32px of room on both sides keeps every handle
 
   Scenario: My work survives the app being closed
     Given I typed in a block and paused

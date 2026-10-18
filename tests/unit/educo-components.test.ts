@@ -87,7 +87,9 @@ describe("Educo UI component styles", () => {
     // animation, not an element, and CSS has nowhere to put a scope on them. The @keyframes rule ITSELF is
     // still checked for a scoped name below, so an unscoped animation cannot sneak in behind this.
     const selectors = COMPONENT_CSS.split("{").slice(0, -1).map((s) => s.split("}").pop()!.trim()).filter(Boolean);
-    const isKeyframeStep = (sel: string) => /^(from|to|d+%)(s*,s*(from|to|d+%))*$/.test(sel);
+    const isKeyframeStep = (sel: string) => /^(from|to|\d+%)(\s*,\s*(from|to|\d+%))*$/.test(sel);
+    // BDD1-2: the pattern lost its backslashes once and "50%" stopped counting as a step — pinned here
+    expect([isKeyframeStep("50%"), isKeyframeStep("from, 40%"), isKeyframeStep(".eu-root p")]).toEqual([true, true, false]);
     for (const sel of selectors) {
       if (sel.startsWith("/*") || sel.startsWith("@") || isKeyframeStep(sel)) continue;
       expect(sel.includes(".eu-root"), `unscoped selector: "${sel}"`).toBe(true);
@@ -97,7 +99,8 @@ describe("Educo UI component styles", () => {
   it("names every animation after the component that owns it, so nothing collides globally", () => {
     // @keyframes names are GLOBAL — they are the one thing in this stylesheet that cannot be scoped by a
     // selector, so the convention is the guard: every animation is prefixed `eu-`.
-    const names = [...COMPONENT_CSS.matchAll(/@keyframess+([w-]+)/g)].map((m) => m[1]);
+    const names = [...COMPONENT_CSS.matchAll(/@keyframes\s+([\w-]+)/g)].map((m) => m[1]);
+    expect(names.length, "BDD1-1: the sheet's animations are found at all").toBeGreaterThan(0);
     for (const n of names) expect(n.startsWith("eu-"), `animation "${n}" must be namespaced`).toBe(true);
     expect(new Set(names).size, "no duplicate animation names").toBe(names.length);
   });
@@ -111,7 +114,7 @@ describe("Educo UI component styles", () => {
   it("stylesheet(theme) now bundles tokens + base + components", () => {
     const css = stylesheet(DEFAULT_THEME);
     expect(css).toContain("--eu-color-primary-500:#"); // tokens
-    expect(css).toContain(".eu-container");            // base
+    expect(css).toContain(".eu-root { container-type: inline-size; }"); // base (BDD1-3: was .eu-container, found only in a comment)
     expect(css).toContain(".eu-btn--primary");         // components
   });
 

@@ -2,6 +2,7 @@ Feature: Box Builder — every screen size has a layer of its own
   As a teacher tuning how a page looks on different screens
   I want the width I am previewing to be the width I am editing
   So that fixing one screen does not silently change another
+  Guards: tests/unit/responsive-rungs.test.ts
 
   Background:
     Given the builder previews a page at Mobile, Tablet, Laptop, Desktop, Wide and Full width

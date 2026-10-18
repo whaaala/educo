@@ -2,6 +2,7 @@ Feature: Box Builder — what a visitor actually downloads
   As a parent opening a school's website on a phone, on a rural connection
   I want the page to be small
   So that it opens before I give up on it
+  Guards: tests/unit/perf-budget.test.ts · tests/unit/css-subset.test.ts
 
   Background:
     Given a site exported from the Box Builder as a folder of files
@@ -42,6 +43,28 @@ Feature: Box Builder — what a visitor actually downloads
     Then it is kept whatever the page contains
     # `:is(.eu-a, .eu-b) .eu-c` matches with only ONE of a and b present. Under-shipping is a broken page on
     # a school's live site; over-shipping is a few bytes.
+
+  Scenario: A page never loses a rule it needs
+    Given a page whose markup uses some of the design system's classes
+    Then every rule that mentions one of those classes is kept, and a class that is not ours counts for nothing
+    And a list of selectors is kept when any one of them is on the page
+    And a rule that names none of our classes is kept, because it cannot be attributed
+    And animations and fonts are kept exactly as written, because a kept rule may name them
+    And a rule inside a media query is subset too, and the media query goes when nothing in it survives
+    And the stylesheet that comes out always has balanced braces, whatever the page holds
+
+  Scenario: The page root alone does not pull a component in
+    Given a page that carries only the page root
+    Then a rule for an alert inside the page root is not shipped
+
+  Scenario: A comment can neither save a rule nor reach the visitor
+    Given a rule whose comment has a comma in it, for a component the page does not use
+    Then that rule is not shipped
+    And the comments of the rules that are kept are stripped out
+
+  Scenario: Even the richest page is far smaller than the whole library
+    Given a page with an alert, an accordion, a card, a button, a statistic, a quote and a rating
+    Then the CSS inlined into it is under half the component library
 
   Scenario: A second page costs only that page
     When the site has more than one page

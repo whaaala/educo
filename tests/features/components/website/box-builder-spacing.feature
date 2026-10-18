@@ -2,6 +2,7 @@ Feature: Spacing — none unless I add it (since 2026-10-15); a saved page keeps
   As a teacher building a page
   I want every section, block and coloured box to arrive with sensible space around it
   So that my words never sit against an edge, and I only touch spacing when I want something different
+  Guards: tests/unit/space-by-default.test.ts · tests/unit/space-handles.test.ts · tests/unit/space-check.test.ts · tests/components/website/PageCheck.test.tsx
 
   # BUILT 2026-09-30 (batch S-1, docs/TASK_TREE.md). The user's values: side gutter 2rem (≈22px on a 360px phone, fluid) ·
   # section space 1rem above and below · header/footer bar 1rem · stack gap 1rem · column and grid gap 1rem · inner
@@ -87,6 +88,14 @@ Feature: Spacing — none unless I add it (since 2026-10-15); a saved page keeps
     Then the space steps up one step, then a bigger step, then goes to 0
     And the selected block does not move
 
+  Scenario: A handle stays on the spacing scale, from none up to 6rem
+    Given a selected Stack
+    When I drag a handle past the largest step, or press End
+    Then the space stops at 6rem
+    When I drag it back past nothing, or press Arrow Down at 0
+    Then the space stops at 0 and never goes below it
+    And a space that sat between two steps moves to the next step up or down, and a bigger step with Shift is two steps
+
   Scenario: A button and a component keep the inner space their design stores
     When I select a Button, or a Card
     Then it shows its outer space handles but no inner space handles
@@ -141,6 +150,11 @@ Feature: Spacing — none unless I add it (since 2026-10-15); a saved page keeps
     Then it suggests adding space at the sides, and it does not stop me publishing
     When I press "Add space at the sides"
     Then the words are at least 1rem from the page's edge on a phone
+
+  Scenario: The page check measures every screen at its own width, whatever width I am editing at (LE1-6)
+    Given I am editing the page at Mobile, 375px wide
+    When I open Page check
+    Then each screen it measures is measured at that screen's own width, not squeezed to 375px
 
   Scenario: Space between rows spaces the page's own rows on a new page
     Given two Stacks one under the other on a page made now
@@ -300,6 +314,34 @@ Feature: Spacing — none unless I add it (since 2026-10-15); a saved page keeps
     When I build a grid of three across and two down with a Card in each cell
     Then the cells are the default column gap apart across
     And the default stack gap apart down
+
+  # L2-b — a gutter lies BETWEEN columns, so a row of one column has none
+  Scenario: A row holding one column has no gutter
+    Given a row of the page holding a single column
+    Then the column fills the row exactly, with no gutter reaching past either side
+    And a floating block beside it does not count as a second column
+
+  # E0-b — a line of menu links
+  Scenario: Links in a menu are spaced by the menu's gap only
+    Given a menu holding a line of four links
+    Then the links are 2rem apart, on the canvas and on the published page
+    And they take no columns' gutter on top of it, so they are not 3rem apart
+    But a row of columns still keeps its gutter
+
+  # E0-h — a column stretched by a taller neighbour
+  Scenario: A column made taller by its neighbour keeps its blocks at the top
+    Given two columns side by side, the second taller than the first
+    And the first column holds an icon above a paragraph
+    Then the icon keeps its size at the top and the last block takes the spare height, so no space opens between them
+    And a column holding a single Card still fills its height, so a row of Cards stays equal height
+    And a box whose height I set shares its height between its blocks as before
+
+  # L3-r — a Divider's thickness is its line
+  Scenario: A thicker Divider stays level with the words beside it
+    When I set a Divider's thickness anywhere from 1 to 20
+    Then the Divider has no space at its sides, so its line starts where the words beside it start
+    And it keeps half a stack gap above and below it, so I can still drop a block under it
+    But a box with a real border keeps its inner padding
 
   # ── Inner padding of a box that can be seen ──
 
@@ -476,6 +518,16 @@ Feature: Spacing — none unless I add it (since 2026-10-15); a saved page keeps
     Then it lists each one, naming the block and the screen sizes it happens at
     And "Show me" selects that block
     And once I add the space, it is no longer listed
+
+  # LE1-5 · LE1-7 — what the Page check calls the blocks it lists
+  Scenario: The Page check names each block the way the panel does, and tells two of a kind apart
+    Given a page with a section, a Side by side, a Stack, a Grid, a Text, a Heading and an Accordion
+    When the Page check lists them
+    Then a band of the page is called a "section", never "Side by side"
+    And the containers are called "Side by side", "Stack" and "Grid", an element by its kind and a component by its name
+    And a block with words is quoted by its first words — the whole of a short one, the start of a long one
+    And a section with no words of its own is quoted by the first words inside it
+    And the screens it happens on read as one sentence, such as "phones, tablets held upright and desktops"
 
   Scenario: The Page check finds a column too narrow for its words
     Given a Side by side of four blocks, one holding a long word

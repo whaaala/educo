@@ -3,6 +3,7 @@ Feature: The page grid (AC-37b)
   The space at the sides is the sections' own padding and the space between blocks is the blocks' own,
   so the whole page is the user's to use. Pages saved before the grid keep exactly the spacing they had.
   Plan: https://claude.ai/artifact/Q5rAsZNSJJBXrnBTJf9zBN · decisions: docs/TASK_TREE.md AC-37b
+  Guards: tests/unit/page-grid.test.ts · tests/components/website/PageGridPanel.test.tsx
 
   # ── G-1 · the page grid in the engine ─────────────────────────────────────────────────────────────
 
@@ -366,3 +367,184 @@ Feature: The page grid (AC-37b)
     When I set its Columns to 3 of 6 at Mobile
     Then on the phone it is half the line
     And one Undo gives the whole line back
+
+  # ── What the HEADED UAT and the Preview found along the way ─────────────────────────────────────
+
+  Scenario: A right-to-left page does not scroll sideways
+    Given a page written right to left
+    Then the "Skip to content" link waits off the side the page starts from
+    And the page never scrolls sideways because of it
+
+  Scenario: A coloured section keeps the room round its words
+    Given a row of two to four sections side by side on a page-grid page
+    Then the page's edges keep the side space, on the first and the last section, and the sections meet one gap apart
+    And a section I give a colour keeps its own inner space, so its words never touch its own edge
+    And a row of one section keeps the side space on the section itself, so its colour still reaches the edge
+
+  Scenario: A row steps down only when its blocks really need the room
+    Given four Stats a quarter each on a row of a page-grid page
+    Then each step is worked out from the room the words have on that screen, plus the Stat's own padding and the page's side space
+    And they stay two across on a 360 px phone
+    And on a stepped line no block is drawn wider than its line, even at 200 % text
+    And a page saved before the page grid keeps the steps it always had
+
+  Scenario: A gap I opened by dragging the first block's left edge stays mine
+    Given two blocks side by side on a page-grid page
+    When I drag the first block's left edge in, leaving a gap before it
+    Then the gap is still there on the canvas and in the Preview
+    And the row keeps the site's side space as well
+
+  Scenario: A picture not uploaded yet keeps its place on the published page
+    Given a picture block on a page-grid page with no image chosen yet
+    When I publish the page
+    Then a soft placeholder the same size as on the canvas holds its place, and a height I set is kept
+    And a screen reader hears "Picture to come"
+    And once I choose an image the page shows the image, with its description, and no placeholder
+
+  Scenario: Page check points out a missing picture and words squeezed on phones
+    Given a page-grid page
+    Then Page check lists a picture that has no image yet, without stopping me publishing
+    And when widths I set for phones leave the words too little room there, it says so "On phones"
+    And when the widths I set for phones fit the words, it says nothing
+
+  Scenario: The page keeps the same frame on all four sides
+    Given a new page with a heading and some words
+    Then the page keeps the side space above its first section and below its last, as it does at its sides
+    And a coloured or picture section at the top or the bottom still reaches the edge on that side
+    And a component keeps the frame outside its own box, and a lone heading keeps it beside its words
+    And when I set the site's side space to 0, the frame is 0 on all four sides
+    And a page saved before the page grid gets no frame
+
+  Scenario: The panel says what the fit rule draws on this screen
+    Given two halves on a row of a page-grid page
+    Then on a phone the panel says they are drawn one a line
+    And on a desktop, where the fit rule does nothing, it says nothing
+    And when I set their widths on the phone myself, the fit rule stands aside there and the panel says nothing
+
+  Scenario: A width set for phones sets the fit rule aside on phones only
+    Given two halves on a row of a page-grid page
+    When I set their widths at Mobile
+    Then the fit rule no longer steps them on a phone
+    And on a tablet, a laptop and a desktop it still steps them as before, on the canvas and on the published page
+
+  Scenario: A block moved by Order takes the margins of the place it is drawn in
+    Given three blocks on a row of a page-grid page
+    When I set the third block's Order to come first, for every screen or at Tablet landscape only
+    Then it takes the first place's side space and the others shift along with theirs
+    And where I did not set the order, it keeps its own place's margins
+
+  Scenario: A page's own grid stays its own
+    Given a page that uses its own grid with nothing changed from the defaults
+    Then it keeps 12 columns even when the site's grid has 10
+    And settings I clear are not stored, so a site grid with nothing set is the default grid
+
+  # ── The page-grid panel, control by control (tests/components/website/PageGridPanel.test.tsx) ──────
+
+  Scenario: The panel never runs off the foot of the screen (LE3-5)
+    Given the page-grid panel is open under its button
+    Then it ends at the foot of the screen and scrolls, so its last controls can always be reached
+
+  Scenario: Content width — Full width, or Centred, then a slider (AC-9)
+    Given the page-grid panel is open on a site with no content width
+    Then there is no "Content width" slider
+    When I choose "Centred"
+    Then the content width is set to the start width in config/layout.json
+    And with a content width set the slider shows it, and "Full width" clears it again
+
+  Scenario: The panel opens on the screen I am editing
+    Given I am editing the page at Phone
+    When I open the page-grid panel
+    Then it shows "Columns on Phone" at 6
+    When I press "one fewer"
+    Then the phone has 5 columns
+
+  Scenario: Another screen sets its own columns, and can follow Desktop again
+    Given the Wide screen has its own 16 columns
+    When I press "Follow Desktop"
+    Then Wide follows Desktop again
+    When I pick Desktop and press "one more"
+    Then Desktop has 13 columns and Wide's own setting is kept
+
+  Scenario: The panel says what each default is, and the side space can go to 0
+    Given the page-grid panel is open on a page saved before 2026-10-15
+    Then the side space reads its default range in rem, phone to wide
+    And the space between columns reads its default range in rem
+    When I set the side space to 0
+    Then the side space is 0
+
+  Scenario: On a page made now every default reads 0 (E6-6)
+    Given the page-grid panel is open on a page made now
+    Then the side space and both gaps read "Default · 0rem"
+    And their "back to default" buttons are disabled, because they are at the default
+
+  Scenario: A site that set one gap for both keeps it in the direction I do not move (G-3b)
+    Given a site that set one gap of 1.5rem for both directions
+    Then both gap sliders show 1.5rem
+    When I move "Space between columns" to 0.5rem
+    Then the space between rows stays 1.5rem
+    When I press "Space between rows — back to default"
+    Then only the space between rows goes back to its default
+
+  Scenario: Focusing a space slider from the keyboard shades its space on the canvas (E6-5)
+    Given the page-grid panel is open
+    When I Tab onto the side space, the space between columns or the space between rows
+    Then the canvas shades that space
+    When I Tab away, or press anywhere but on that slider
+    Then the shading goes, and pressing on the slider itself keeps it
+
+  Scenario: Row lines are a viewing choice, and changing the row height turns them on (E6-10)
+    Given the page-grid panel is open with row lines off
+    When I tick "Row lines in the guides"
+    Then row lines are drawn
+    When I change "Row height" with the row lines off
+    Then the row lines are switched on so I can see the change
+
+  Scenario: Rows are chosen like columns (E6-10)
+    Given a page 30rem tall with row lines of 1.5rem
+    Then "Rows on this page" reads 20
+    When I press "one fewer"
+    Then the page is divided into 19 rows
+    When I type 5 rows
+    Then each row is 6rem, even though that is past the end of the Row height slider
+
+  Scenario: Escape closes the panel even when the focus has fallen out of it (G3c-11)
+    Given the page-grid panel is open and I pressed a "Back to default" that then disabled itself
+    When I press Escape
+    Then the panel closes
+    But an Escape pressed while I am typing in another field on the page leaves the panel open
+
+  Scenario: The guides follow the site's side space, in the page's own unit
+    Given the layout guides are on
+    Then the shaded side strips are as wide as the site's own side space
+    And they are measured in the page's own text size, not a fallback
+    And the guides are hidden from screen readers and never catch a click
+    And the column and row lines are drawn on whole screen pixels, so they stay sharp
+
+  Scenario Outline: The guides can be seen on the <theme> website theme
+    Given the layout guides are on a page in the <theme> theme
+    Then the lines stand out from the page at 3:1 or more
+    And the label on them reads at 4.5:1 or more
+
+    Examples:
+      | theme    |
+      | light    |
+      | dark     |
+      | midnight |
+      | purple   |
+
+  Scenario Outline: Alt and an arrow on a column of a page row (G-3)
+    Given two columns side by side, each half of a 12-column page row, and the first selected
+    When I press <keys>
+    Then the first column takes <width> of the row and a screen reader hears "<said>"
+
+    Examples:
+      | keys                  | width  | said                |
+      | Alt and right         | 58.33% | 7 of 12 columns     |
+      | Alt and left          | 41.67% | 5 of 12 columns     |
+      | Alt, Shift and right  | 54.17% | 6½ of 12 columns    |
+
+  Scenario: Alt and an arrow work while a toolbar button holds the focus, and only on the page grid (G3-3)
+    Given a column of a page row selected, and the focus left on a toolbar button
+    When I press Alt and the right arrow
+    Then the column takes one column more
+    But on a page without the page grid, Alt and an arrow change nothing

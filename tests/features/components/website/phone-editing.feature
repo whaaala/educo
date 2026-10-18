@@ -1,6 +1,7 @@
 Feature: Building a page on a phone (BATCH E-5a)
   The user's decisions D1 · D3 · D4 · D5 · D6, from the research in docs/web-anatomy/phone-editing.md.
   Guarded by tests/e2e/phone-editing.spec.ts on every screen; driven headed by scripts/uat/uat-e5a-headed.js.
+  Guards: tests/unit/insert-slot.test.ts · tests/unit/move-block.test.ts
 
   Scenario: A phone edits the page at its own width
     Given I open the builder on a phone (under 600px wide)
@@ -28,6 +29,19 @@ Feature: Building a page on a phone (BATCH E-5a)
       | Start  | at the top of the page                           |
       | End    | at the bottom of the page                        |
 
+  Scenario: Where a choice lands when the selected block is inside a Stack, or holds nothing
+    Given I have selected a heading inside a Stack
+    When I choose "Before" or "After" and add a block
+    Then it lands just above or just below the heading, inside the same Stack
+    When I select a text, which holds nothing, and choose "Inside"
+    Then it lands where "After" would put it
+    And with nothing selected, a new block lands at the bottom of the page
+
+  Scenario: The menu starts on what a plain click would do
+    Then with nothing selected it shows "End"
+    And with a block selected it shows "After", which lands exactly where a plain click on a tile does
+    And with a Grid selected it shows "Inside", which also lands exactly where a plain click does
+
   Scenario: An empty box says where to add
     Given an empty box on a touch screen
     Then it shows a quiet "Drop a block here" that is not a button
@@ -42,6 +56,15 @@ Feature: Building a page on a phone (BATCH E-5a)
     And a block sharing a line offers "Move left" and "Move right" instead
     And the block's menu also has "Move to top" and "Move to bottom"
     And Undo puts it back
+
+  Scenario: The arrows on a block sharing a line, and inside a Stack
+    Given two blocks share a line
+    When I move the second one left
+    Then the two swap places on that line, and the lines of the page stay where they were
+    And the first one cannot move left any further, but can move right
+    Given a heading and a text inside a Stack
+    When I move the text up
+    Then it moves above the heading, inside the Stack
 
   Scenario: Widths a finger can choose
     Given I have selected a block on a phone
