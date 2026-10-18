@@ -175,4 +175,18 @@ test.describe("canvas zoom", () => {
     expect(await sc.evaluate((e) => Math.round(e.scrollLeft))).toBe(550);
     expect(await page.locator(".outline-indigo-500").count(), "panning selected nothing and drew no box").toBe(0);
   });
+
+  test("LE13-5: Space presses a button the KEYBOARD reached, with the pointer resting on the page; a clicked toolbar button pans", async ({ page }) => {
+    await open(page);
+    const zoomIn = page.getByRole("button", { name: "Zoom canvas in" });
+    await zoomIn.focus(); await page.keyboard.press("Shift+Tab"); await page.keyboard.press("Tab"); // reached by the keyboard
+    await overCanvas(page);
+    const before = await readout(page);
+    await page.keyboard.press("Space"); await page.waitForTimeout(300);
+    expect(await readout(page), "Space pressed the keyboard-focused button").not.toBe(before);
+    await zoomIn.click(); await overCanvas(page); // Z1-g: focus left by a CLICK, the pointer moved onto the page
+    const after = await readout(page);
+    await page.keyboard.press("Space"); await page.waitForTimeout(300);
+    expect(await readout(page), "Space was the pan, not a second press").toBe(after);
+  });
 });

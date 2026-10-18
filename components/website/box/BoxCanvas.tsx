@@ -22,9 +22,10 @@ import {
   updateBox, deleteBox, insertBox, pageEnd, moveBlock, canMoveBlock, moveAxis, duplicateBox, moveBox, cloneBox, findParent, isAncestor, isContainer, containerLabel, widthPct, stackWithBlock, fitBand, PILL, blockTypography,
   isFloating, floatBox, unfloatBox, groupBoxes, ungroupBoxes, bringToFront, sendToBack, bringForward, sendBackward, packRowLines, allocateLine, type LineFollower,
   shouldTakeMirrorBox, mirrorFlushSides, edgeSwipeSides, hostSizedFor, type MirrorBox, type MirrorChase, fadedPaint, boxOpacity, backgroundCss, treePaintLayerCss, radiusCSS, isClipped, SHADOW_CSS, videoEmbedSrc, sanitizeCssDeclarations, expandScopedCss, ACCORDION_CSS_PARTS, itemOverrideCss, itemHasOverride, itemNumberVars, richBody, componentTextCss, componentBoxCss, bgShowThroughCss, resizeTopEdge, blockContainmentCss, alertToastCss, treeHasToast, treeHasFixedHold, accordionClasses, bandClasses, hasSiteMeasure, advancedCssStyle, applyBoxSize, alertActionsHTML, hugsContent, itemFloatContextCss, COMPONENT_ITEM_SEL, clampContentScale, MIN_CONTENT_SCALE, isMultiItemComponent, comfortableWidth, remLen, rootFontPx, isDefiniteLen, addItemAfter, duplicateItem, duplicateChildItem, removeItem, removeChildItem, moveItem, moveChildItem, updateItem, updateChildItem, ALERT_SEVERITY_ICON, alertPartInline, alertIconInline, collectAlertItemStyles,
-  type Breakpoint, resolveResponsive, updateBoxResponsive, treePinArrivalCss, floatHoldCSS, canvasFixedStyle, capturesFixed, imageSizing, fillsRowsAnywhere, fillHostOf, importPhoto, treeItemEffectsCss, itemNeedsClass, floatZIndex, gridPlacementAt, masonryMeasureAttr, masonryMeasurePass, mirrorMeasuresNow, baseUnitParts, pinStackMarker, pinStackGroupMarker, pinStackPass, pinArrivalMarker, pinArrivalPass, headerMarkers, headerPass, underOverHeaderPad, isPager, pagerStripCss, pagerNavHTML, selectionChain, textLen, typoRole, typoRootVars, typoCascadeCss, bandEdgeCSS, LINK_COLOR_CSS, treeGridQueryCss, TYPE_UNIT_PROPERTY_CSS,
+  type Breakpoint, resolveResponsive, updateBoxResponsive, treePinArrivalCss, floatHoldCSS, canvasFixedStyle, capturesFixed, imageSizing, fillsRowsAnywhere, fillHostOf, importPhoto, treeItemEffectsCss, itemNeedsClass, floatZIndex, gridPlacementAt, masonryMeasureAttr, masonryMeasurePass, mirrorMeasuresNow, baseUnitParts, pinStackMarker, pinStackGroupMarker, pinStackPass, pinArrivalMarker, pinArrivalPass, headerMarkers, headerPass, underOverHeaderPad, isPager, pagerStripCss, pagerNavHTML, selectionChain, textLen, typoRole, typoRootVars, typoCascadeCss, bandEdgeCSS, LINK_COLOR_CSS, treeGridQueryCss, TYPE_UNIT_PROPERTY_CSS, stripsAnywhere,
 } from "@/lib/box-model";
 import { ICON_SET } from "./icons";
+import INSPECTOR_WORDS from "@/config/inspector.json";
 import { PortalMenu, MenuItem, MenuHeader, MenuSep, modalOpen, NON_TEXT_INPUTS } from "./ui";
 import GridLayoutMenu, { type MenuAnchor } from "./GridLayoutMenu";
 import GallerySetupMenu from "./GallerySetupMenu";
@@ -4005,6 +4006,8 @@ export default function BoxCanvas({
           data-box-id={node.id}
           {...semProps}
           {...heldAttr}
+          // FL-6 · a sideways strip is a named, focusable region — the same attributes the export writes
+          {...(stripsAnywhere(node) ? { tabIndex: 0, ...(Tag === "div" ? { role: "region" } : {}), ...((semProps as { "aria-label"?: string })["aria-label"] ? {} : { "aria-label": INSPECTOR_WORDS.flow.stripLabel }) } : {})}
           // The SAME marker the exported page carries, carrying the same number — see `masonryMeasureAttr`.
           data-eu-masonry={masonryMeasureAttr(node) ?? undefined}
           id={node.anchor || undefined}
@@ -5230,6 +5233,8 @@ function ElementView({ node, headingLevel, theme, editable, selected, onText, on
         ? <div className="w-full" style={{ height: sizeToCSS(node.height) ?? 260, pointerEvents: editable ? "none" : "auto" }} dangerouslySetInnerHTML={{ __html: node.html }} />
         : <div className="w-full flex items-center justify-center gap-1.5 text-gray-400 border border-dashed border-gray-300 dark:border-gray-600 rounded-lg" style={{ height: sizeToCSS(node.height) ?? 120, fontSize: u(12) }}><Code2 className="w-4 h-4" /> Paste HTML / embed code in the inspector</div>;
     default:
-      return <p style={{ color: node.color || typoRole.color("muted"), fontSize: node.fontSize != null ? textLen(node.fontSize) : typoRole.size(1), textAlign: align, width: "100%", ...typoStyle(node, "body", 400) }}><EditableText value={node.text} editable={editable} onChange={onText} placeholder="Add text" /></p>;
+      // LE13-4 · THE <p> ITSELF is the words, as the export writes it — an inline-block span inside it was one box placed beside a
+      // floated picture, so its lines never ran back under it: measured HEADED, the canvas's first line at +0, the Preview's at +528
+      return <EditableText as="p" style={{ color: node.color || typoRole.color("muted"), fontSize: node.fontSize != null ? textLen(node.fontSize) : typoRole.size(1), textAlign: align, width: "100%", ...typoStyle(node, "body", 400) }} value={node.text} editable={editable} onChange={onText} placeholder="Add text" />;
   }
 }

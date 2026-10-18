@@ -57,7 +57,7 @@ export function loadIconSource(src: IconSource): Promise<void> {
     loadedSources.add(src);
     delete pending[src];
     emit();
-  });
+  }).catch(() => { delete pending[src]; }); // LE13-20 · a chunk that did not arrive (a dropped connection) is tried again next time
   pending[src] = p;
   return p;
 }

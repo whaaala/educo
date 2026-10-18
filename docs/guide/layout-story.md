@@ -551,6 +551,34 @@ the header she pushes the third of four menu links the same way, so **Admissions
 
 [![The Preview at 1280 px: a menu with its last two links at the right end, and three cards whose buttons line up at their foot](img/story-push-far-end.webp)](img/story-push-far-end.webp)
 
+### "Words round the head teacher's photo"
+
+The head teacher's letter is three paragraphs, with a photo above them that left a wide empty space beside it. Amaka
+selects the photo, opens **Position** and sets **Wrap words round it → Start**: the photo moves to the left and the letter's
+first lines run beside it, then back under it across the full width, like a page in a magazine. On a phone the photo
+would leave too thin a column, so there it takes the whole line and the letter follows it. She never has to arrange it per
+screen.
+
+[![The Preview at 1280 px: a photo on the left with the letter's first lines beside it and the rest running under it](img/story-wrap-photo.webp)](img/story-wrap-photo.webp)
+
+### "A strip of events"
+
+Six events in a Side by side made six lines on a phone, and the page went on forever. Amaka selects the row, opens
+**Arrange** and sets **When it doesn't fit → Scroll sideways**: the events sit on one line, a part of the next one showing,
+and a swipe moves them one at a time. A visitor with a keyboard tabs to the strip and moves it with the arrow keys. She
+wants the desktop to show them all, so she sets it on Mobile only.
+
+[![The Preview at 1280 px: events on one line with a scroll bar, the last one cut at the edge](img/story-event-strip.webp)](img/story-event-strip.webp)
+
+### "Cards over the hero"
+
+Under the blue hero sit three cards, Admissions, Term dates and Fees. Amaka wants them to rise into the hero, as on a lot of
+school sites. She selects the cards' section and sets **Arrange → Overlap the section above → Medium**: the cards move
+up over the hero's foot and are drawn in front of it. The hero grows by the same amount, so its last words still end above
+the cards, on every screen.
+
+[![The Preview on a phone: the cards drawn over the blue hero's foot, the hero's words above them](img/story-cards-over-hero.webp)](img/story-cards-over-hero.webp)
+
 ## 10. What is published
 
 Everything above becomes proper HTML5: `header`, `nav`, `main`, `aside`, `section`, `footer`; one `h1`; heading levels

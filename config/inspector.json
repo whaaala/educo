@@ -80,5 +80,19 @@
     "wrappedHint": "Where the lines sit when the box is taller than they need — give it a height to see it.",
     "inCell": { "stretch": "Fill the cell", "start": "Left", "center": "Center", "end": "Right" },
     "inRow": { "start": "Left", "center": "Center", "end": "Right", "between": "Spread" }
+  },
+  "flow": {
+    "$comment": "BATCH LE-13: FL-3 Wrap words round it (a picture in a Stack), FL-6 When it doesn't fit (a Side by side), PO-4 Overlap the section above (a page section). Keys are the stored values; overlapSteps are the words of config/layout.json flow.overlapSteps, one each, in the same order.",
+    "wrap": "Wrap words round it",
+    "wrapChoices": { "off": "Off", "start": "Start", "end": "End" },
+    "wrapHint": "The words after this picture run beside it and then back under it. On a narrow screen the picture takes the whole line and the words follow it.",
+    "fit": "When it doesn't fit",
+    "fitChoices": { "wrap": "Wrap to new lines", "scroll": "Scroll sideways" },
+    "fitHint": "Scroll sideways keeps every block on one line that visitors swipe or scroll, a part of the next one showing. Keyboard users reach it with Tab and move it with the arrow keys.",
+    "stripLabel": "Scrolls sideways",
+    "overlap": "Overlap the section above",
+    "overlapOff": "Off",
+    "overlapSteps": ["Small", "Medium", "Large", "Extra large"],
+    "overlapHint": "This section moves up over the bottom of the one above it, in front of it. The section above grows by the same amount, so nothing in it is covered."
   }
 }
