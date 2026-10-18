@@ -26,16 +26,20 @@ describe("area progress — the percentage left is counted, never guessed", () =
     expect(p.left).toBeLessThanOrEqual(p.total);
   });
 
+  // LE-14's close (2026-10-18) broke both of these: they named LE-14, and a named batch closes one day — they take the first OPEN one
+  const OPEN = areaProgress(TREE, "Website layout").essentials.find((b) => !b.done && b.changes > 0)!;
+  const esc = (id: string) => id.replace(/[-.]/g, "\\$&");
+
   it("a batch heading that loses its change count is caught", () => {
-    const broken = TREE.replace(/(\*\*BATCH LE-14 · [^\n]*?)\d+ changes/, "$1");
-    expect(areaProgress(broken, "Website layout").essentials.find((b) => b.id === "LE-14")?.counted).toBe(false);
+    const broken = TREE.replace(new RegExp(`(\\*\\*BATCH ${esc(OPEN.id)} · [^\\n]*?)\\d+ changes`), "$1");
+    expect(areaProgress(broken, "Website layout").essentials.find((b) => b.id === OPEN.id)?.counted).toBe(false);
   });
 
   it("closing a batch lowers what is left by its changes", () => {
     const before = areaProgress(TREE, "Website layout");
-    const closed = TREE.replace("- `[ ]` **BATCH LE-14 · ", "- `[x]` **BATCH LE-14 · ");
+    const closed = TREE.replace(`- \`[ ]\` **BATCH ${OPEN.id} · `, `- \`[x]\` **BATCH ${OPEN.id} · `);
     const after = areaProgress(closed, "Website layout");
-    const le14 = before.essentials.find((b) => b.id === "LE-14")!;
-    expect(before.left - after.left).toBe(le14.changes);
+    expect(OPEN.changes).toBeGreaterThan(0);
+    expect(before.left - after.left).toBe(OPEN.changes);
   });
 });

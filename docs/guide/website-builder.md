@@ -882,7 +882,10 @@ take the first block's value for everyone's. The arrow keys move them all one pl
 
 **Ctrl+G** (or **Group these 2** in the Inspector) wraps the picked blocks in one block, **right where they are**: the
 group takes the first one's place, keeps them in their order, and adds no space and no look of its own. Nothing moves
-on the page, and the published page reads in the same order. Blocks side by side are grouped side by side, each
+on the page, and the published page reads in the same order.
+
+[![Two headings grouped where they were; the Text below them has not moved](img/guide-group-in-place.webp)](img/guide-group-in-place.webp)
+ Blocks side by side are grouped side by side, each
 keeping its share of the line. **Ctrl+Shift+G** ungroups: the blocks go back exactly where they were. Blocks in two
 different places — one in each of two sections — cannot be grouped, and the button says so.
 
@@ -892,6 +895,8 @@ Select a Stack, a Side by side or a Grid, and choose under **Kind** in the Inspe
 keeps every block, in order: a Stack becomes a Side by side whose blocks share the line, a Side by side becomes a Grid
 with a column for each. If something has no meaning in the new kind — a block spanning two columns of a Grid that
 becomes a Stack — a line under **Kind** says what was left behind. **Ctrl+Z** takes it back.
+
+[![Kind: Stack · Side by side · Grid, and "Left behind: column spans."](img/guide-kind.webp)](img/guide-kind.webp)
 
 ### Copying a look
 
@@ -907,7 +912,11 @@ press it to take that one value back to what the wider screens have. A value the
 where from, for example **From Tablet landscape**. The **Per‑device** tab lists everything set on the screen you are
 editing, each with its own **Reset**. On the desktop nothing is marked: it is where every screen starts.
 
+[![Set here under Rounded corners and See-through on the phone screen](img/guide-set-here.webp)](img/guide-set-here.webp)
+
 ### The page's layers
+
+[![The Layers view: Stack, with Heading and Text inside it, then Button](img/guide-layers.webp)](img/guide-layers.webp)
 
 Press **L**, or open the left panel and choose **Layers**. Every block of the page is listed in reading order, inside
 the box it sits in. Click a row to select its block (it is brought into view); select a block on the page and its row

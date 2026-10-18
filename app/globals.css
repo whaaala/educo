@@ -74,7 +74,7 @@ html.purple {
   --eu-color-surface: #ffffff;
   --eu-color-surface-2: #f3f4f6;
   --eu-color-text: #111827;       /* gray-900 — primary/heading text */
-  --eu-color-muted: #6b7280;
+  --eu-color-muted: #5f6673;      /* LE14-10: #6b7280 read 4.39 : 1 on surface-2 (an unpressed Segmented option); this is 5.25 : 1 there, 5.78 on white */
   --eu-color-border: #e5e7eb;
   --eu-color-brand: #3b82f6;
   --eu-color-brand-600: #2563eb;

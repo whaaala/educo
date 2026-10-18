@@ -143,6 +143,7 @@ export default function BlocksPanel({ theme, onDragKind, onPick, defaultOpen = f
   // ED-2b: which view the panel shows — adding blocks, or the page's layers. A ref for the key handler (rule 2).
   const [view, setView] = useState<"add" | "layers">("add");
   const viewRef = useRef(view); viewRef.current = view;
+  const hasLayers = useRef(!!layers); hasLayers.current = !!layers; // the L key needs only whether a tree was given (rule 2)
   useEffect(() => { onOpenChange?.(open); }, [open]);
   const [shown, setShown] = useState(defaultOpen); // drives the enter transition
   const [q, setQ] = useState("");
@@ -182,7 +183,7 @@ export default function BlocksPanel({ theme, onDragKind, onPick, defaultOpen = f
       if (e.key === "Escape") { if (open) { setOpen(false); setMenu(null); } return; }
       if (typing || e.metaKey || e.ctrlKey || e.altKey) return;
       if (e.key === "b" || e.key === "B") { e.preventDefault(); setView("add"); setOpen((o) => !o); }
-      else if (layers && (e.key === "l" || e.key === "L")) { e.preventDefault(); setOpen((o) => !(o && viewRef.current === "layers")); setView("layers"); }
+      else if (hasLayers.current && (e.key === "l" || e.key === "L")) { e.preventDefault(); setOpen((o) => !(o && viewRef.current === "layers")); setView("layers"); }
       else if (e.key === "/") { e.preventDefault(); setOpen(true); requestAnimationFrame(() => searchRef.current?.focus()); }
     };
     document.addEventListener("keydown", onKey);

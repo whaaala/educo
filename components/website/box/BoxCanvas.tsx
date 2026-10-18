@@ -1457,7 +1457,9 @@ export default function BoxCanvas({
       const ae = document.activeElement as HTMLElement | null;
       const holdsText = !!ae && (ae.isContentEditable || ["INPUT", "TEXTAREA", "SELECT"].includes(ae.tagName));
       if (holdsText && ae && (ae === target || ae.contains(target))) return; // aimed at the text being edited
-      if (target.closest(KEEPS_DEFAULT)) return; // it needs the focus the default would give it
+      // LE14-11: a SHIFT-click on a block's words adds the block to the selection (ED-13) — it never puts a caret there,
+      // or the keys meant for the selection (Ctrl+G, the arrows, Delete) are taken as typing
+      if (target.closest(KEEPS_DEFAULT) && !(e.shiftKey && target.closest("[contenteditable]"))) return; // it needs the focus the default would give it
       if (holdsText && ae) {
         ae.blur(); // blur FIRST: the block commits its text on blur, and that must read the real DOM
         // The range is dropped too, because Chrome restores focus to whatever the document's selection points
