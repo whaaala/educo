@@ -10,6 +10,7 @@
 
 import { SHARED_KEYS } from "@/lib/per-screen-note";
 import INSPECTOR from "@/config/inspector.json";
+import Button from "@/components/shared/Button";
 const PAGE_ORDER = INSPECTOR.pageOrder; // LE8-2: "Move earlier" / "Move later" (RULE CFG)
 const PAGE_REGIONS = INSPECTOR.pageRegions; // PS-14: "Show the header / footer on this page" (RULE CFG)
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -34,7 +35,8 @@ import PageGridPanel from "@/components/website/box/PageGridPanel";
 import { CHROME_Z } from "@/lib/educo-ui/stacking";
 import { renderSitePage, renderSiteFiles, siteFileMap, downloadSite, fontFamiliesInSite } from "@/lib/box-export";
 import { embedFontCss, fontFiles } from "@/lib/educo-ui/font-embed";
-import { photosAsFiles } from "@/lib/export-photos";
+import { photosAsFiles, videosAsFiles } from "@/lib/export-photos";
+import { mediaUrl } from "@/lib/media-store";
 import { warmIcons, hasIcon } from "@/lib/educo-ui/icon-svg";
 import BoxCanvas, { measureFloatGeom, measureFixedGeom, measureGroupGeom, type SpaceShadeKind } from "@/components/website/box/BoxCanvas";
 import BoxInspector from "@/components/website/box/BoxInspector";
@@ -323,6 +325,7 @@ export default function BoxDemoPage() {
    * backstop for when it happens anyway — a page of very many pictures, or a browser with a smaller store.
    */
   const [saveError, setSaveError] = useState<string | null>(null);
+  const [videoMissing, setVideoMissing] = useState(0); // MS-5b: uploaded videos the last download could not include
   useEffect(() => {
     if (!site) return;
     try {
@@ -456,10 +459,25 @@ export default function BoxDemoPage() {
   }, [preview, fontFamilyKey, addPreviewFonts]);
   // LE-1: the Page check measures the PUBLISHED page — rendered only while it is open
   const checkHTML = useMemo(() => (pageCheckOpen && site && activePage ? renderSitePage(site, renderTheme, activePage.id, { inlineShared: true }) : ""), [pageCheckOpen, site, activePage, renderTheme]);
-  const previewHTML = useMemo(
+  const publishedHTML = useMemo(
     () => (preview && site && activePage ? renderSitePage(site, renderTheme, activePage.id, { inlineShared: true }) : ""),
     [preview, site, activePage, renderTheme],
   );
+  // MS-5b · an UPLOADED background video is a file of the download (`videos/<hash>.mp4`); in the Preview it plays from this
+  // browser's media store — the same page, the same markup, only the address resolved.
+  const [videoUrls, setVideoUrls] = useState<Record<string, string>>({});
+  useEffect(() => {
+    const files = [...new Set([...publishedHTML.matchAll(/videos\/([0-9a-f]{64}\.(?:mp4|webm))/g)].map((m) => m[1]))].filter((f) => !videoUrls[`videos/${f}`]);
+    if (!files.length) return;
+    let live = true;
+    Promise.all(files.map(async (f) => [`videos/${f}`, await mediaUrl(`media:${f}`)] as const)).then((got) => {
+      const found: Record<string, string> = {};
+      for (const [f, u] of got) if (u) found[f] = u;
+      if (live && Object.keys(found).length) setVideoUrls((prev) => ({ ...prev, ...found }));
+    });
+    return () => { live = false; };
+  }, [publishedHTML, videoUrls]);
+  const previewHTML = useMemo(() => publishedHTML.replace(/videos\/[0-9a-f]{64}\.(?:mp4|webm)/g, (f) => videoUrls[f] ?? f), [publishedHTML, videoUrls]);
 
 
 
@@ -866,7 +884,11 @@ export default function BoxDemoPage() {
     const fonts = await fontFiles(fontFamiliesInSite(site, renderTheme));
     // A multi-page site is several files, so it arrives as a ZIP to unzip and upload.
     // RA-8: photos as files with narrower copies for phones, instead of data: URIs inside the pages.
-    downloadSite({ ...(await photosAsFiles(renderSiteFiles(site, renderTheme, fonts.css))), ...fonts.files }, "site.zip");
+    const text = renderSiteFiles(site, renderTheme, fonts.css);
+    // MS-5b: the uploaded background videos ride along as files; one this browser does not hold is SAID, never a silent hole
+    const videos = await videosAsFiles(text);
+    setVideoMissing(videos.missing.length);
+    downloadSite({ ...(await photosAsFiles(text)), ...fonts.files, ...videos.files }, "site.zip");
   };
 
   // Click-to-add from the palette: insert into the selected container (or the page) with an optional style.
@@ -1241,6 +1263,14 @@ export default function BoxDemoPage() {
         <div role="alert" className="shrink-0 flex items-center gap-2 px-4 py-2 text-xs font-medium bg-red-50 text-red-800 border-b border-red-200 dark:bg-red-950/50 dark:text-red-200 dark:border-red-900 midnight:bg-red-950/50 midnight:text-red-200 midnight:border-red-900 purple:bg-red-950/50 purple:text-red-200 purple:border-red-900">
           <AlertTriangle className="w-4 h-4 shrink-0" aria-hidden="true" />
           <span>{saveError}</span>
+        </div>
+      )}
+      {/* MS-5b: the download went ahead, but some uploaded background videos are not in this browser — said, with what to do */}
+      {videoMissing > 0 && (
+        <div role="status" className="shrink-0 flex items-center gap-2 px-4 py-2 text-xs font-medium bg-amber-50 text-amber-900 border-b border-amber-200 dark:bg-amber-950/50 dark:text-amber-100 dark:border-amber-900 midnight:bg-amber-950/50 midnight:text-amber-100 midnight:border-amber-900 purple:bg-amber-950/50 purple:text-amber-100 purple:border-amber-900">
+          <AlertTriangle className="w-4 h-4 shrink-0" aria-hidden="true" />
+          <span className="flex-1">{INSPECTOR.bgVideo.missing.replace("{count}", String(videoMissing))}</span>
+          <Button variant="ghost" size="sm" onClick={() => setVideoMissing(0)}>{INSPECTOR.bgVideo.dismiss}</Button>
         </div>
       )}
       {/* ── Top app bar ── */}

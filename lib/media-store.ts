@@ -57,6 +57,22 @@ export async function getMedia(ref: string, db: MediaBackend = idb()): Promise<B
   try { return await db.get(ref); } catch { return null; }
 }
 
+/**
+ * A URL the canvas and the Preview can play `ref` from: a link is itself; an uploaded video is an object URL of its stored bytes,
+ * made once per page load. ponytail: never revoked — a handful of videos for the editor's lifetime.
+ */
+const urls = new Map<string, Promise<string | null>>();
+export function mediaUrl(ref: string, db?: MediaBackend): Promise<string | null> {
+  if (!isMediaRef(ref)) return Promise.resolve(ref);
+  let u = urls.get(ref);
+  if (!u) {
+    u = getMedia(ref, db).then((b) => (b ? URL.createObjectURL(b) : null));
+    u.then((v) => { if (!v) urls.delete(ref); }); // not in this browser yet — ask again next time
+    urls.set(ref, u);
+  }
+  return u;
+}
+
 // ── IndexedDB, the browser's backend ──
 const DB = "educo-media", STORE = "files";
 let opened: Promise<IDBDatabase> | null = null;

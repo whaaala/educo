@@ -12,7 +12,7 @@ import { Plus, X, Tags, Rows3, Columns3, Upload, ArrowRight, AlignLeft, AlignCen
 import type { SiteTheme } from "@/lib/site-storage";
 import { perScreenBanner, perScreenDeviceTab } from "@/lib/per-screen-note";
 import type { BoxNode, FlexAlign, FlexJustify, FlexLines, AccPartStyle, Breakpoint, PagerNav, PinScopeWords, SectionFlag } from "@/lib/box-model";
-import { RUNG_LABEL, SIZES, FLOW } from "@/lib/educo-ui/layout";
+import { RUNG_LABEL, SIZES, FLOW, MEDIA } from "@/lib/educo-ui/layout";
 import { type ItemAction, traceOutline, gridSeenColumns, setLengthCss, ratioCss, limitCss, colBetween, gridAutoFit, TOAST_CORNERS, hasAnnouncement, fluidRemRange, isContainer, containerLabel, isFloating, isCssBg, addItem, removeItem, moveItem, updateItem, addChildItem, updateChildItem, removeChildItem, moveChildItem , isMultiItemComponent, hasIntrinsicSize, sizeToCSS, typedLength, GRID_MAX, COLUMN_FRACTIONS, columnFractionOf, canSetColumnFraction, gridColumnsAt, bandEdgeCSS, PIN_ARRIVALS, PIN_ARRIVAL_AFTER, pinArrivalHasEffect, linkLineGap, LINK_GAP_ACROSS, LINK_GAP_ACROSS_PHONE, spaceDefaults, outerDefaults, type SectionPlace, gapOf, importPhoto, refusedMotion, rowFilledByBlocks, isSideBySide } from "@/lib/box-model";
 import { remLen, SPACE_STEPS } from "@/lib/educo-ui/tokens";
 import { ACCORDION_DESIGNS, ACCORDION_DESIGN_COUNT, ACCORDION_AXES } from "@/lib/educo-ui/accordions";
@@ -29,6 +29,7 @@ import BackgroundPicker from "@/components/shared/BackgroundPicker";
 import GradientEditor, { parseGradient } from "@/components/shared/GradientEditor";
 import { Tabs, Accordion, Segmented, ToolBtn, type SegOption } from "./ui";
 import EducoColorField from "@/components/shared/EducoColorField";
+import { BackgroundVideoControls } from "@/components/website/box/BackgroundVideo";
 import Slider from "@/components/shared/Slider";
 import CompactField from "@/components/shared/CompactField";
 import { rowsOf, rowsToMinHeight } from "@/lib/page-grid";
@@ -1679,10 +1680,12 @@ export default function BoxInspector({ section = false, sectionPlace, outerDefau
                   <input type="checkbox" checked={node.bgAttach === "fixed"} onChange={(e) => onPatch({ bgAttach: e.target.checked ? "fixed" : undefined })} aria-label="Fixed background (parallax)" className="accent-indigo-600" />
                   Fixed (parallax scroll)
                 </label>
-                <ColorRow title="Tint over background" value={node.bgOverlay} fallback="#00000066" onSelect={(c) => onPatch({ bgOverlay: c })} />
+                <ColorRow title="Tint over background" value={node.bgOverlay} fallback={MEDIA.tintStart} onSelect={(c) => onPatch({ bgOverlay: c })} />
                 <button onClick={() => onPatch({ bgImage: undefined, bgTile: undefined, bgOverlay: undefined, bgPosition: undefined, bgRepeat: undefined, bgAttach: undefined })} className="text-[0.6875rem] text-red-500 hover:underline">Remove background</button>
               </>
             )}
+            {/* MS-5b · a video behind a section or any container — uploaded or linked, with its poster */}
+            {container && <BackgroundVideoControls node={node} onPatch={onPatch} />}
           </Accordion>
         </div>
       )}

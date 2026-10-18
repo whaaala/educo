@@ -4,6 +4,24 @@
  * reads from a `--eu-*` token, so switching a theme restyles all of them; scoped under `.eu-root`;
  * states (hover/focus/disabled) use the motion + focus rules from `base.ts`. More components follow.
  */
+import { MEDIA } from "@/lib/educo-ui/layout";
+
+/**
+ * MS-5b · the background video's rules for a scope — the published page reads them under `.eu-root` (COMPONENT_CSS), the canvas
+ * under `.eu-tokens`, so the two cannot differ. Behind the block's content and over its colour; the shade carries the overlay.
+ */
+export function bgVideoCss(scope: string): string {
+  return `
+/* ── Background video (MS-5b) — behind the block's content, over its colour; the shade carries the overlay ── */
+${scope} .eu-bgvideo, ${scope} .eu-bgvideo__shade { position: absolute; inset: 0; inline-size: 100%; block-size: 100%; z-index: -1; pointer-events: none; border-radius: inherit; }
+${scope} .eu-bgvideo { object-fit: cover; }
+/* Over a photograph the user chose no theme token can predict what is behind it — the pager's disc (config/layout.json media) */
+${scope} .eu-bgvideo__toggle { position: absolute; inset-block-end: var(--eu-space-3); inset-inline-end: var(--eu-space-3); z-index: 1;
+  inline-size: 2.75rem; block-size: 2.75rem; border-radius: 50%; border: 1px solid ${MEDIA.pagerArrowEdge}; background: ${MEDIA.pagerArrowFill};
+  color: ${MEDIA.pagerDotFill}; font: inherit; font-size: 1rem; line-height: 1; padding: 0; cursor: pointer; }
+${scope} .eu-bgvideo__toggle:focus-visible { outline: 0.125rem solid ${MEDIA.pagerDotFill}; outline-offset: 0.125rem; box-shadow: 0 0 0 0.3rem ${MEDIA.pagerDotRing}; }
+`;
+}
 
 export const COMPONENT_CSS = `
 /* ── Button ────────────────────────────────────────────────────────────────── */
@@ -629,6 +647,7 @@ export const COMPONENT_CSS = `
   .eu-root .eu-navbar { flex-wrap: wrap; gap: var(--eu-space-3); }
   .eu-root .eu-navbar__links { margin-inline-start: 0; width: 100%; }
 }
+${bgVideoCss(".eu-root")}
 `.trim();
 
 /** The component layer on its own (base.ts owns reset/utilities; tokens.ts owns the variables). */

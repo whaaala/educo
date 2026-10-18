@@ -6,6 +6,7 @@
  * everything into bytes for the ZIP. Kept outside the engine so the engine stays portable (rule 20).
  */
 import { PHOTO_QUALITY } from "@/lib/box-model";
+import { getMedia, bytesOf as blobBytes, type MediaBackend } from "@/lib/media-store";
 import { PHOTO_WIDTHS, PHOTO_IMG, SHARED_STYLESHEET, addSrcset, photosToFiles, sizesFromWidths, sizesScreens, type SiteFiles } from "@/lib/box-export";
 
 const bytesOf = (dataUri: string): Uint8Array => {
@@ -85,6 +86,25 @@ export async function measuredSizes(files: SiteFiles, photos: Record<string, str
     out[name] = await measurePage(html, files[SHARED_STYLESHEET] ?? "", photos).catch(() => []);
   }
   return out;
+}
+
+/** A published page's uploaded videos (`videos/<sha-256>.<ext>`, MS-5b) — the same pattern `mediaFile` writes. */
+const VIDEO_FILE = /videos\/([0-9a-f]{64}\.(?:mp4|webm))/g;
+
+/**
+ * MS-5b · the uploaded background videos the pages name, as bytes for the ZIP, read from this browser's media store. A video
+ * this browser does not hold (the site was built elsewhere, or its storage was cleared) is listed in `missing` — the page then
+ * shows its poster, and the editor says so rather than shipping a silent hole.
+ */
+export async function videosAsFiles(files: SiteFiles, db?: MediaBackend): Promise<{ files: Record<string, Uint8Array>; missing: string[] }> {
+  const names = new Set(Object.values(files).flatMap((t) => [...t.matchAll(VIDEO_FILE)].map((m) => m[1])));
+  const out: Record<string, Uint8Array> = {}, missing: string[] = [];
+  for (const name of names) {
+    const blob = await getMedia(`media:${name}`, db);
+    if (blob) out[`videos/${name}`] = new Uint8Array(await blobBytes(blob));
+    else missing.push(`videos/${name}`);
+  }
+  return { files: out, missing };
 }
 
 /**

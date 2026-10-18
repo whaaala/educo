@@ -348,6 +348,8 @@ export interface BoxNode {
   bgAttach?: "fixed";       // background-attachment: "fixed" gives a parallax-style locked background
   bgTile?: string;          // pattern tile size (background-size) — when set, the bgImage repeats instead of covering
   bgOverlay?: string;       // overlay drawn over the image (colour hex or gradient) for readability
+  bgVideo?: string;         // MS-5b · a background video: `media:<hash>.<ext>` (uploaded, in the media store) or an https .mp4 / .webm link
+  bgVideoPoster?: string;   // its poster (a downscaled photo data URL): what shows before it plays, and instead of it
 
   // ── sizing (any node) ──
   width?: string;           // "auto" | "fill" | "<n>%" | "<n>px" — flex child
@@ -1118,7 +1120,7 @@ export function backgroundCss(node: BoxNode, colors?: { background?: string; bgO
   const s: CSSProperties = {};
   const layers: string[] = [];
   const asGradient = (v: string) => { const css = colorToCSS(v); return css.startsWith("linear-gradient") ? css : `linear-gradient(${css}, ${css})`; };
-  if (c.bgOverlay) layers.push(asGradient(c.bgOverlay));
+  if (c.bgOverlay && !bgVideoSrc(node)) layers.push(asGradient(c.bgOverlay)); // over a video it is a shade of its own (`bgVideoShade`)
   if (node.bgImage) layers.push(bgImageLayer(node.bgImage)); // gradient/pattern passes through; URL gets url("…")
   const baseGrad = c.background?.startsWith("gradient:");
   if (baseGrad && !node.bgImage) layers.push(colorToCSS(c.background!));
@@ -4709,6 +4711,27 @@ export const isMediaRef = (v?: string): v is string => !!v && MEDIA_REF.test(v);
 export const mediaFile = (v?: string): string | null => (isMediaRef(v) ? `videos/${v.slice(6)}` : null);
 /** A background video's LINK must be the file itself — a YouTube / Vimeo page cannot play behind a block. */
 export const isVideoFileUrl = (v?: string): boolean => !!v && /^https:\/\/[^\s"'<>]+\.(mp4|webm)(\?[^\s"'<>]*)?$/i.test(v);
+/** A block's background video as the published page names it — the download's file, or the link — or null (none, or not playable). */
+export const bgVideoSrc = (node: BoxNode): string | null => mediaFile(node.bgVideo) ?? (isVideoFileUrl(node.bgVideo) ? node.bgVideo! : null);
+/**
+ * The overlay over a background VIDEO (MS-5b): the video covers the block's own background, so the overlay is drawn on a
+ * shade above the video and under the content — the canvas and the export both read it here. undefined when there is none.
+ */
+export function bgVideoShade(node: BoxNode): string | undefined {
+  if (!bgVideoSrc(node) || !node.bgOverlay) return undefined;
+  const css = colorToCSS(node.bgOverlay); // ponytail: See-through does not fade a video, so not its shade either
+  return css.startsWith("linear-gradient") ? css : `linear-gradient(${css}, ${css})`;
+}
+/** The box that holds a background video: relative only at ZERO specificity (a pinned or free block keeps its own, LE5-4), isolated. */
+export const bgVideoBoxCss = (selector: string, node: BoxNode): string =>
+  bgVideoSrc(node) ? `:where(${selector}){position:relative}${selector}{isolation:isolate}` : "";
+/** Every video box in a tree for the canvas's one stylesheet, plus the video's own rules (`shared`) once — or nothing at all. */
+export function treeBgVideoCss(root: BoxNode, scopeFor: (id: string) => string, shared: string): string {
+  const boxes: string[] = [];
+  const walk = (n: BoxNode) => { const c = bgVideoBoxCss(scopeFor(n.id), n); if (c) boxes.push(c); (n.children ?? []).forEach(walk); };
+  walk(root);
+  return boxes.length ? shared + boxes.join("") : "";
+}
 
 export function sizeToCSS(token?: string): string | undefined {
   if (!token || token === "auto") return undefined;

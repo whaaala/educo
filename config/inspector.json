@@ -97,5 +97,6 @@
     "overlapOff": "Off",
     "overlapSteps": ["Small", "Medium", "Large", "Extra large"],
     "overlapHint": "This section moves up over the bottom of the one above it, in front of it. The section above grows by the same amount, so nothing in it is covered."
-  }
+  },
+  "bgVideo": {"$comment":"MS-5b (BATCH LE-5): the words of a background video — the published Pause / Play button (its name for a screen reader; the visible mark is a symbol) and the Inspector's Background → Video controls.","pause":"Pause background video","play":"Play background video","heading":"Video","upload":"Upload a video","replace":"Replace the video","address":"Video address","addressPlaceholder":"https://…/loop.mp4","notAFile":"A background needs the video FILE — an address ending .mp4 or .webm. A YouTube or Vimeo page cannot play behind a block; use a Video block for those.","poster":"Upload a poster","posterHint":"What phones on Save-Data or a slow connection, and readers who asked for less motion, see — taken from the first frame unless you choose one.","remove":"Remove video","uploaded":"Uploaded video","saving":"Keeping the video…","missing":"This browser does not have {count} of the uploaded background videos, so the download shows their poster instead — upload the video again in this browser to include it.","dismiss":"Dismiss"}
 }

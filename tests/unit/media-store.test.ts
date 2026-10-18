@@ -83,3 +83,21 @@ describe("mediaFile — where the download puts it", () => {
     expect(isMediaRef("media:../../x.mp4")).toBe(false);
   });
 });
+
+describe("videosAsFiles — the download carries the uploaded videos the pages name", () => {
+  it("each named video is a file in the ZIP; one this browser does not hold is listed as missing", async () => {
+    const { videosAsFiles } = await import("@/lib/export-photos");
+    const db = memory();
+    const r = await putMedia(video("loop bytes"), db);
+    if (!("ref" in r)) throw new Error("not stored");
+    const kept = mediaFile(r.ref)!, gone = `videos/${"c".repeat(64)}.webm`;
+    const out = await videosAsFiles({ "index.html": `<video data-src="${kept}"></video><video data-src="${gone}"></video>`, "styles.css": "" }, db);
+    expect(Object.keys(out.files)).toEqual([kept]);
+    expect(new TextDecoder().decode(out.files[kept])).toBe("loop bytes");
+    expect(out.missing).toEqual([gone]);
+  });
+  it("a site with no uploaded video adds nothing", async () => {
+    const { videosAsFiles } = await import("@/lib/export-photos");
+    expect(await videosAsFiles({ "index.html": `<video data-src="https://e.org/a.mp4"></video>` }, memory())).toEqual({ files: {}, missing: [] });
+  });
+});

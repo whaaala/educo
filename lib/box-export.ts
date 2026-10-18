@@ -9,7 +9,7 @@
  */
 
 import type { CSSProperties } from "react";
-import { PILL, applyBoxSize, dividerThickness, borderLen, videoSizing, blockTypography,pinArrivalCss, pinArrivalKeyframes, floatHoldCSS,
+import { PILL, applyBoxSize, bgVideoSrc, bgVideoShade, bgVideoBoxCss, dividerThickness, borderLen, videoSizing, blockTypography,pinArrivalCss, pinArrivalKeyframes, floatHoldCSS,
   type BoxNode, type Breakpoint, type SectionFlag, BP_ORDER, containerStyle, childStyle, hostSizedFor, marginCSS, leafPaddingCSS, ownSidePadVars, outerSpaceCSS, pageBandInset, pagePinCover, sectionContent, sizeToCSS, radiusCSS, SHADOW_CSS, u, LIST_ITEM_GAP, textLen, baseUnit, fadedPaint, boxOpacity, backgroundCss, paintLayerCss,
   resolveResponsive, floatStacksOnMobile, floatingReserve, alertToastCss, accordionClasses, bandClasses, hasSiteMeasure, videoEmbedSrc, isContainer, sanitizeCssDeclarations, expandScopedCss, COMPONENT_PARTS, itemFloatContextCss, itemOverrideCss, itemNumberVars, richBody, plainBody, componentTextCss, componentBoxCss, renderAlertHTML, alertDismissScript, masonryMeasureAttr, masonryMeasureScript, pinStackMarker, pinStackGroupMarker, pinStackNeeded, pinStackScript, headerMarkers, headerScript, headerScriptNeeded, underOverHeaderPad, pinArrivalMarker, pinArrivalScript, treeHasArrival, isPager, pagerNavHTML, pagerScript, pagerStripCss, pagerSlideId, bgShowThroughCss, blockContainmentCss, COMPONENT_ITEM_SEL, remLen, imageSizing, fillsRowsAnywhere, fillHostOf, hasIntrinsicSize, itemNeedsClass, itemScope, floatZIndex, typoRole, typoRootVars, typoCascadeCss, bandEdgeCSS, LINK_COLOR_CSS, gridQueryCss, TYPE_UNIT_PROPERTY_CSS, stripsAnywhere,
 } from "@/lib/box-model";
@@ -578,6 +578,8 @@ function renderNode(node: BoxNode, rawParent: BoxNode | null, theme: SiteTheme, 
   // fades and its contents do not. Same emitter the canvas injects — canvas = export, including this.
   const paintLayer = paintLayerCss(`.${cls}`, r);
   if (paintLayer) sheet.rungs.phone.push(paintLayer);
+  const videoBox = bgVideoBoxCss(`.${cls}`, r); // MS-5b: the box a background video plays inside
+  if (videoBox) sheet.rungs.phone.push(videoBox);
   // Entrance (Round 1b). The keyframes are global, so the ids used are collected and emitted ONCE at assembly.
   // A COMPONENT passes its item selector, so "arrive one after another" staggers the accordion rows or the
   // alert messages — its wrapper's direct children are a <style> tag and the component itself.
@@ -629,9 +631,11 @@ function renderNode(node: BoxNode, rawParent: BoxNode | null, theme: SiteTheme, 
       kidList.splice(run.start, run.end - run.start, `<nav class="eu-menu"${lbl ? ` aria-label="${esc(lbl)}"` : ""}><ul class="eu-list eu-menu">${kidList.slice(run.start, run.end).join("")}</ul></nav>`);
     }
     const mw = rawParent === null ? SEM?.mainWrap : null;
-    const kids = mw
+    const bgv = bgVideoHTML(r); // MS-5b: behind everything the block holds, so it is first
+    const held = (mw
       ? kidList.slice(0, mw.start).join("") + `<main class="eu-main"><span id="main" tabindex="-1" class="eu-main-start"></span>${kidList.slice(mw.start, mw.end).join("")}</main>` + kidList.slice(mw.end).join("")
-      : kidList.join("");
+      : kidList.join(""));
+    const kids = bgv + held;
     // MASONRY, measured (C). The marker and the script ride WITH the gallery, in the same shape the Alert's
     // dismiss script uses: one guarded global, so ten measured galleries still run one copy, and a page with
     // none ships no script at all. The attribute's value is the down-gap in row units — the one number the
@@ -650,9 +654,9 @@ function renderNode(node: BoxNode, rawParent: BoxNode | null, theme: SiteTheme, 
       // `tabindex="0"` + a label is the whole keyboard story, and it needs no script at all: an overflow
       // container is not focusable by default, and once it is, one arrow key moves exactly one page —
       // measured, with the page itself never moving.
-      return wrapLi(`<${el}${idAttr}${semAttr} class="${allCls}">`
+      return wrapLi(`<${el}${idAttr}${semAttr} class="${allCls}">${bgv}` // the video behind the strip, never a page of it
         + `<div data-eu-pager${auto} tabindex="0" role="group" aria-roledescription="carousel"`
-        + ` aria-label="One at a time" style="${styleString(pagerStripCss(r))}">${kids}</div>`
+        + ` aria-label="One at a time" style="${styleString(pagerStripCss(r))}">${held}</div>`
         + `${nav}${script}</${el}>`);
     }
     // FL-6 · a sideways strip is a NAMED, FOCUSABLE region: Tab reaches it and the arrow keys scroll it, no script (WCAG 2.1.1)
@@ -769,13 +773,44 @@ export function videoScript(): string {
 }
 const hasHostedVideo = (n: BoxNode): boolean => (n.type === "video" && !!videoEmbedSrc(n.src)) || (n.children ?? []).some(hasHostedVideo);
 
+/**
+ * MS-5b · a block's background video: first inside the block, behind its content (`.eu-bgvideo`, COMPONENT_CSS), the overlay
+ * on a shade above it, and a Play / Pause button (WCAG 2.2.2). No `src`, no `autoplay`: `bgVideoScript` starts it — so a page
+ * whose script never runs, a reader who asked for less motion, and a phone on Save-Data or a slow connection see the poster.
+ */
+function bgVideoHTML(r: BoxNode): string {
+  const src = bgVideoSrc(r);
+  if (!src) return "";
+  const W = INSPECTOR.bgVideo, shade = bgVideoShade(r);
+  return `<video class="eu-bgvideo" muted loop playsinline disablepictureinpicture preload="none" aria-hidden="true" tabindex="-1"`
+    + `${r.bgVideoPoster ? ` poster="${esc(r.bgVideoPoster)}"` : ""} data-src="${esc(src)}"></video>`
+    + (shade ? `<span class="eu-bgvideo__shade" aria-hidden="true" style="background:${esc(shade)}"></span>` : "")
+    + `<button type="button" class="eu-bgvideo__toggle" aria-label="${esc(W.play)}" data-eu-bgv-play="${esc(W.play)}" data-eu-bgv-pause="${esc(W.pause)}">&#9654;</button>`;
+}
+/**
+ * The one script every page with a background video carries. It plays a video only while it is on screen, and only when the
+ * reader allows motion and the connection can carry it (`saveData`, a 2g / 3g `effectiveType`); the button always works —
+ * Play loads it on demand, Pause stops it and keeps it stopped. The words ride on the button (config/inspector.json bgVideo).
+ */
+export function bgVideoScript(): string {
+  return `<script>(function(){` // emitted once per page by renderPageHTML, so no run-once flag
+    + `var still=matchMedia('(prefers-reduced-motion: reduce)').matches,c=navigator.connection,thin=!!c&&(!!c.saveData||/(^|-)(2g|3g)$/.test(c.effectiveType||''));`
+    + `document.querySelectorAll('video.eu-bgvideo').forEach(function(v){var b=v.parentNode.querySelector('.eu-bgvideo__toggle'),on=false,held=still||thin;`
+    + `function show(p){on=p;if(!b)return;b.setAttribute('aria-label',b.getAttribute(p?'data-eu-bgv-pause':'data-eu-bgv-play'));b.innerHTML=p?'&#10074;&#10074;':'&#9654;';}`
+    + `function play(){if(!v.getAttribute('src'))v.setAttribute('src',v.getAttribute('data-src'));var q=v.play();show(true);if(q&&q.catch)q.catch(function(){show(false);});}`
+    + `if(b)b.addEventListener('click',function(){if(on){held=true;v.pause();show(false);}else{held=false;play();}});`
+    + `if('IntersectionObserver' in window)new IntersectionObserver(function(es){es.forEach(function(e){if(held)return;if(e.isIntersecting)play();else if(on){v.pause();show(false);}});}).observe(v);`
+    + `else if(!held)play();});})();<\/script>`;
+}
+const hasBgVideo = (n: BoxNode): boolean => !!bgVideoSrc(n) || (n.children ?? []).some(hasBgVideo);
+
 export function renderPageHTML(root: BoxNode, theme: SiteTheme, pageMap: Map<string, string> = new Map(), sheet?: Sheet): string {
   /**
    * STACKED PINS (Step 2c) ride with the PAGE, not with a block — because the thing being measured is the
    * relationship BETWEEN blocks, and no one of them owns it. `pinStackNeeded` is what keeps zero-JS the
    * default: fewer than two bars at one edge and nothing is emitted at all, at any rung.
    */
-  const stack = (pinStackNeeded(root) ? pinStackScript() : "") + (treeHasArrival(root) ? pinArrivalScript() : "") + (hasHostedVideo(root) ? videoScript() : "") + (scrollRevealNeeded(root) ? revealOnceScript() : "") + (headerScriptNeeded(root) ? headerScript() : "");
+  const stack = (pinStackNeeded(root) ? pinStackScript() : "") + (treeHasArrival(root) ? pinArrivalScript() : "") + (hasHostedVideo(root) ? videoScript() : "") + (hasBgVideo(root) ? bgVideoScript() : "") + (scrollRevealNeeded(root) ? revealOnceScript() : "") + (headerScriptNeeded(root) ? headerScript() : "");
   const prev = SEM; SEM = resolvePage(root);
   try {
     if (sheet) return SKIP_LINK_HTML + renderNode(root, null, theme, pageMap, sheet) + stack; // shared sheet → caller emits the CSS
