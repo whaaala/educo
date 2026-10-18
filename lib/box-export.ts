@@ -18,6 +18,7 @@ import { iconSvg } from "@/lib/educo-ui/icon-svg";
 import INSPECTOR from "@/config/inspector.json";
 import { resolvePage, pageFillCss, footerPushCss, type PageSemantics } from "@/lib/semantics";
 import { PAGE_Z_CEILING } from "@/lib/educo-ui/stacking";
+import { MEDIA, RUNG_PX, NARROWEST_PHONE_PX } from "@/lib/educo-ui/layout";
 import type { BoxSite } from "@/lib/box-site";
 import type { SiteTheme } from "@/lib/site-storage";
 import { colorToCSS } from "@/components/shared/ColorPalettePicker";
@@ -1054,25 +1055,61 @@ export function photosToFiles(files: SiteFiles): { files: SiteFiles; photos: Rec
   return { files: out, photos };
 }
 
-/** The narrower copies the export makes of each photo, for phones (360–412 CSS px at 1–2× density). */
-export const PHOTO_WIDTHS = [480, 960];
+/** The narrower copies the export makes of each photo — config/layout.json media.photoWidths (RULE CFG, LE5-1). */
+export const PHOTO_WIDTHS: readonly number[] = MEDIA.photoWidths;
+
+/** A photo's `<img>` in an exported page — `src` need not come first: an accordion's picture is `<img class=… src=…>` (A1-13). */
+export const PHOTO_IMG = /<img ([^>]*?)src="(images\/[^"]+)"([^>]*)>/g;
+
+/**
+ * AC-22 · the screens a picture is measured at: both edges of every rung of config/layout.json, from the narrowest phone
+ * (RULE AF) to `media.sizesWideTo` — so a picture that grows inside a rung is caught at its widest.
+ */
+export function sizesScreens(): [number, number][] {
+  const from = Object.values(RUNG_PX);
+  return from.map((px, i) => [i === 0 ? NARROWEST_PHONE_PX : px, i < from.length - 1 ? from[i + 1] - 1 : MEDIA.sizesWideTo]);
+}
+
+/**
+ * AC-22 · a picture's MEASURED widths → its `sizes`. `rungs` ascending: `below` is the next rung's first px (null on the last),
+ * `share` the most of the window the picture took inside the rung. `fixedLastPx`: the last rung's width when it stayed the same
+ * at both its edges (held by the content width) — written in rem. Shares round UP (a copy a little too big, never blurry);
+ * a hidden picture asks for the smallest copy (1vw). Conditions are `max-width` in em, not range syntax, so the old Android
+ * WebViews of RULE AF read them.
+ */
+export function sizesFromWidths(rungs: { below: number | null; share: number }[], fixedLastPx?: number): string {
+  // nowhere to be seen on ANY screen = shown only once opened (a closed accordion, a tab): its size is not knowable here
+  if (rungs.every((r) => !(r.share > 0))) return "100vw";
+  const vw = (s: number) => `${Math.max(1, Math.ceil(s * 100 - 1e-6))}vw`;
+  const last = fixedLastPx ? `${Math.ceil((fixedLastPx / 16) * 4) / 4}rem` : vw(rungs[rungs.length - 1].share);
+  const parts: { below: number; value: string }[] = [];
+  for (const r of rungs.slice(0, -1)) {
+    const value = vw(r.share);
+    if (parts.length && parts[parts.length - 1].value === value) parts[parts.length - 1].below = r.below!;
+    else parts.push({ below: r.below!, value });
+  }
+  while (parts.length && parts[parts.length - 1].value === last) parts.pop();
+  return [...parts.map((p) => `(max-width: ${+((p.below - 1) / 16).toFixed(4)}em) ${p.value}`), last].join(", ");
+}
 
 /**
  * Give every `<img>` of a photo with narrower copies a `srcset`, so a phone fetches the copy its screen needs
  * instead of the 1600px original. `copies` maps a photo's file to its widths, widest (the original) last.
- * A lazy picture says `sizes="auto"` — the browser measures the box it actually lays out (Chrome 126+, so
- * every updated Android WebView); anything else falls back to the window's width.
+ * `sizes` (AC-22) gives each page's photos, in `PHOTO_IMG` order, the list measured from the layout; a picture with none
+ * keeps the window's width. A lazy picture puts `auto` first — the browser measures the box it actually lays out
+ * (Chrome 126+) — with the measured list as the fallback everywhere else.
  */
-export function addSrcset(files: SiteFiles, copies: Record<string, { w: number; file: string }[]>): SiteFiles {
+export function addSrcset(files: SiteFiles, copies: Record<string, { w: number; file: string }[]>, sizes: Record<string, (string | null)[]> = {}): SiteFiles {
   const out: SiteFiles = {};
   for (const [name, text] of Object.entries(files)) {
-    // `src` need not come first: an accordion's picture is `<img class="eu-accordion__media" src=…>` (A1-13).
-    out[name] = text.replace(/<img ([^>]*?)src="(images\/[^"]+)"([^>]*)>/g, (tag, before: string, file: string, rest: string) => {
+    let i = 0;
+    out[name] = text.replace(PHOTO_IMG, (tag, before: string, file: string, rest: string) => {
+      const measured = sizes[name]?.[i++] ?? "100vw";
       const list = copies[file];
       if (!list || list.length < 2) return tag;
       const srcset = list.map((c) => `${c.file} ${c.w}w`).join(", ");
-      const sizes = /loading="lazy"/.test(before + rest) ? "auto, 100vw" : "100vw";
-      return `<img ${before}src="${file}" srcset="${srcset}" sizes="${sizes}"${rest}>`;
+      const size = /loading="lazy"/.test(before + rest) ? `auto, ${measured}` : measured;
+      return `<img ${before}src="${file}" srcset="${srcset}" sizes="${size}"${rest}>`;
     });
   }
   return out;

@@ -1176,7 +1176,8 @@ export function paintLayerCss(selector: string, node: BoxNode): string {
     .map(([k, v]) => `${k.replace(/[A-Z]/g, (m) => `-${m.toLowerCase()}`)}:${v}`)
     .join(";");
   const a = paintAlpha(node);
-  return `${selector}{position:relative;isolation:isolate}`
+  // `:where()` — zero specificity, so a block's OWN position (a pinned bar's sticky, a free block's absolute) wins (LE5-4)
+  return `:where(${selector}){position:relative}${selector}{isolation:isolate}`
     + `${selector}::before{content:"";position:absolute;inset:0;z-index:${PAGE_Z.behind};pointer-events:none;`
     + `border-radius:inherit;opacity:${a};${decls}${edgeClip(node) ? `;clip-path:${edgeClip(node)}` : ""}}`;
 }
@@ -4700,6 +4701,14 @@ export function videoSizing(node: BoxNode): { height?: string; aspectRatio?: str
   const h = sizeToCSS(node.height);
   return h ? { height: h } : { aspectRatio: node.ratio ?? MEDIA.videoRatio };
 }
+
+/** MS-5b · an UPLOADED video, as a block stores it: `media:<sha-256>.<mp4|webm>` — the bytes live in the media store. */
+export const MEDIA_REF = /^media:([0-9a-f]{64})\.(mp4|webm)$/;
+export const isMediaRef = (v?: string): v is string => !!v && MEDIA_REF.test(v);
+/** Where the download puts an uploaded video; null for a link (it plays from where it is). */
+export const mediaFile = (v?: string): string | null => (isMediaRef(v) ? `videos/${v.slice(6)}` : null);
+/** A background video's LINK must be the file itself — a YouTube / Vimeo page cannot play behind a block. */
+export const isVideoFileUrl = (v?: string): boolean => !!v && /^https:\/\/[^\s"'<>]+\.(mp4|webm)(\?[^\s"'<>]*)?$/i.test(v);
 
 export function sizeToCSS(token?: string): string | undefined {
   if (!token || token === "auto") return undefined;
