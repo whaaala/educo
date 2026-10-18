@@ -7,8 +7,8 @@
  * — the real CSS still runs under the hood. Colours reuse the shared ColorPickerPopover.
  */
 
-import { useState, useRef, useId } from "react";
-import { Plus, X, Tags, Rows3, Columns3, Upload, ArrowRight, AlignLeft, AlignCenter, AlignRight, AlignHorizontalSpaceBetween, Layers, Move, BringToFront, SendToBack, ChevronUp, ChevronDown, Italic, Underline, LayoutGrid, Maximize2, Sparkles, Paintbrush, Ruler, Type as TypeIcon, MonitorSmartphone, Bookmark, Lock, LockOpen } from "lucide-react";
+import { useState, useRef, useId, useEffect } from "react";
+import { Plus, X, Tags, Rows3, Columns3, Upload, ArrowRight, AlignLeft, AlignCenter, AlignRight, AlignHorizontalSpaceBetween, Layers, Move, BringToFront, SendToBack, ChevronUp, ChevronDown, Italic, Underline, LayoutGrid, Maximize2, Sparkles, Paintbrush, Ruler, Type as TypeIcon, MonitorSmartphone, Bookmark, Lock, LockOpen, ChevronRight } from "lucide-react";
 import type { SiteTheme } from "@/lib/site-storage";
 import { perScreenBanner, perScreenDeviceTab } from "@/lib/per-screen-note";
 import type { BoxNode, FlexAlign, FlexJustify, FlexLines, AccPartStyle, Breakpoint, PagerNav, PinScopeWords, SectionFlag } from "@/lib/box-model";
@@ -610,7 +610,22 @@ function AccPreview({ id, size, axes = [] }: { id: string; size: ThumbSize; axes
   );
 }
 
-export default function BoxInspector({ section = false, sectionPlace, outerDefault, fillHeight, pageSpan, onSetSpan, pageLines, onSetLines, onSetFreeInset, rowStepRem, node, theme, onPatch, onAddChild, onAddAnnouncement, onFloat, onUnfloat, onLayer, onAlignInRow, rowJustify, onSectionWidth, sectionWidth, siteWidth, sectionFollows, rowOfPage = false, canFloat = true, parentFlow, canWrapWords = false, canOverlapUp = false, inGrid = false, inMasonry = false, inFitGrid = false, gridTrack, onSetFraction, onRetrack, breakpoint = "base", overridden = false, onResetOverride, pages, currentPageId, pinBlockedBy = null, fixedBlockedBy = null, pinScope = null }: {
+/**
+ * What the Inspector CALLS a block — its header and the trail of blocks round it read the same name.
+ * A design-system TREE (Card, Quote, Stat, Badge, Rating) is structurally a container, so it used to say
+ * "Editing: Section" — telling a user they had selected something they had not. `preset` knows what it
+ * really is, and a `component` node knows its own name, so both say what the user actually picked.
+ */
+function blockLabel(node: BoxNode): string {
+  return catalogueEntry(node.preset)?.label ?? catalogueEntry(node.component)?.label ?? (isContainer(node) ? containerLabel(node) : node.type.charAt(0).toUpperCase() + node.type.slice(1));
+}
+const TRAIL = INSPECTOR.trail;
+
+export default function BoxInspector({ trail = [], onSelectBlock, section = false, sectionPlace, outerDefault, fillHeight, pageSpan, onSetSpan, pageLines, onSetLines, onSetFreeInset, rowStepRem, node, theme, onPatch, onAddChild, onAddAnnouncement, onFloat, onUnfloat, onLayer, onAlignInRow, rowJustify, onSectionWidth, sectionWidth, siteWidth, sectionFollows, rowOfPage = false, canFloat = true, parentFlow, canWrapWords = false, canOverlapUp = false, inGrid = false, inMasonry = false, inFitGrid = false, gridTrack, onSetFraction, onRetrack, breakpoint = "base", overridden = false, onResetOverride, pages, currentPageId, pinBlockedBy = null, fixedBlockedBy = null, pinScope = null }: {
+  /** ED-2 (LE-10): the blocks round this one, outermost first (`selectionChain` without the block itself) — the same
+   *  blocks Escape steps out through. Each is a button that selects it (`onSelectBlock`). */
+  trail?: BoxNode[];
+  onSelectBlock?: (id: string) => void;
   section?: SectionFlag; // the block is the content of a page section, so its default inner spacing is the gutter and the section space
   outerDefault?: [number, number, number, number]; // the outer space it really has by default (`outerSpaceDefaults`, G-3 (1)); else `outerDefaults`
   fillHeight?: { on: boolean }; // G-3d (2): a picture alone in a block spanning rows — "Fill the block's height"; absent where it does nothing
@@ -688,14 +703,13 @@ export default function BoxInspector({ section = false, sectionPlace, outerDefau
   /** Does this block hold a line of links or buttons side by side (a menu)? Its gaps are the links' spacing. */
   const holdsLinks = (node.children ?? []).some((k) => linkLineGap(k, node) != null);
   const textual = node.type === "text" || node.type === "heading" || node.type === "button" || node.type === "link" || node.type === "list";
-  // A design-system TREE (Card, Quote, Stat, Badge, Rating) is structurally a container, so it used to say
-  // "Editing: Section" — telling a user they had selected something they had not. `preset` knows what it
-  // really is, and a `component` node knows its own name, so both say what the user actually picked.
-  const presetEntry = catalogueEntry(node.preset);
-  const componentEntry = catalogueEntry(node.component);
-  const typeLabel = presetEntry?.label
-    ?? componentEntry?.label
-    ?? (container ? containerLabel(node) : node.type);
+  const typeLabel = blockLabel(node);
+  // A block chosen in the trail is re-rendered here as the selection: the keyboard focus follows it to its name, so
+  // the next Tab carries on from where the person is instead of from the top of the page.
+  const currentRef = useRef<HTMLElement>(null);
+  const focusCurrent = useRef(false);
+  useEffect(() => { if (focusCurrent.current) { focusCurrent.current = false; currentRef.current?.focus(); } }, [node.id]);
+  const current = <b ref={currentRef} tabIndex={-1} aria-current={trail.length ? "location" : undefined} className="text-ink rounded outline-none focus-visible:ring-2 focus-visible:ring-brand">{typeLabel}</b>;
 
   // The ladder names the rungs; repeating them here is how the chips and the model drifted apart before.
   // The `?? ""` is not decoration: an unrecognised rung used to reach `.toLowerCase()` on undefined and take
@@ -761,7 +775,22 @@ export default function BoxInspector({ section = false, sectionPlace, outerDefau
 
   return (
     <div className="p-3.5 space-y-3">
-      <div className="text-[0.6875rem] text-muted px-0.5">Editing: <b className="text-ink capitalize">{typeLabel}</b></div>
+      <div className="text-[0.6875rem] text-muted px-0.5">{TRAIL.lead}{" "}
+        {trail.length > 0 && onSelectBlock ? (
+          <nav aria-label={TRAIL.label} className="inline">
+            <ol className="inline">
+              {trail.map((n) => (
+                <li key={n.id} className="inline-flex items-center">
+                  <button type="button" onClick={() => { focusCurrent.current = true; onSelectBlock(n.id); }}
+                    className="pointer-coarse:min-h-11 rounded underline decoration-dotted underline-offset-2 hover:text-ink hover:decoration-solid focus-visible:outline-2 focus-visible:outline-brand">{blockLabel(n)}</button>
+                  <ChevronRight aria-hidden="true" className="w-3 h-3 mx-0.5 shrink-0" />
+                </li>
+              ))}
+              <li className="inline">{current}</li>
+            </ol>
+          </nav>
+        ) : current}
+      </div>
 
       {container && onAddChild && (
         <button onClick={onAddChild} className="w-full flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-sm font-semibold bg-gradient-to-br from-brand to-brand-600 text-brand-fg shadow-sm hover:brightness-105 transition">
