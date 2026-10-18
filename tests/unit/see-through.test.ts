@@ -168,3 +168,19 @@ describe("a background IMAGE fades on a layer of its own", () => {
     expect(css).not.toContain("#mid::before");
   });
 });
+
+describe("LE5-4 · a see-through box keeps its OWN position", () => {
+  // Measured 2026-10-18: a pinned header with a see-through photo published `.bx-hdr{position:sticky}` and then the layer's
+  // `.bx-hdr{position:relative}` — same specificity, later wins, so the header stopped sticking. The layer's fallback is :where().
+  it("a pinned, see-through header still publishes as sticky — the layer's position never outranks the block's", () => {
+    const hdr = { ...createContainer("row"), id: "hdr", pin: "top", opacity: 60, bgImage: "https://example.org/a.jpg" } as BoxNode;
+    const root = { ...createContainer("column"), id: "r", children: [hdr, { ...createContainer("column"), id: "b", height: 3000 }] } as BoxNode;
+    const html = renderSitePage(siteFromRoot(root), DEFAULT_THEME, siteFromRoot(root).homeId, { inlineShared: true });
+    const rules = [...html.matchAll(/\.bx-hdr\{([^}]*)\}/g)].map((m) => m[1]); // LE5-5: a `}` prefix ate the brace before, skipping the rule that mattered
+    const last = rules.map((r) => r.match(/position:([a-z]+)/)?.[1]).filter(Boolean).pop();
+    expect(last).toBe("sticky");
+  });
+  it("the layer's own rule says position only at zero specificity", () => {
+    expect(paintLayerCss(".x", { ...createContainer("column"), opacity: 50, bgImage: "https://e.org/a.jpg" } as BoxNode)).toMatch(/^:where\(\.x\)\{position:relative\}\.x\{isolation:isolate\}/);
+  });
+});

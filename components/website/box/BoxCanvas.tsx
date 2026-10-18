@@ -21,7 +21,7 @@ import {
   containerStyle, childStyle, marginCSS, leafPaddingCSS, ownSidePadVars, outerSpaceCSS, pageBandInset, pagePinCover, sectionContent, sizeToCSS, u, baseUnit, floatingReserve, floatStacksOnMobile, createContainer, createElement, createComponent,
   updateBox, deleteBox, insertBox, pageEnd, moveBlock, canMoveBlock, moveAxis, duplicateBox, moveBox, cloneBox, findParent, isAncestor, isContainer, containerLabel, widthPct, stackWithBlock, fitBand, PILL, blockTypography,
   isFloating, floatBox, unfloatBox, groupBoxes, ungroupBoxes, bringToFront, sendToBack, bringForward, sendBackward, packRowLines, allocateLine, type LineFollower,
-  shouldTakeMirrorBox, mirrorFlushSides, edgeSwipeSides, hostSizedFor, type MirrorBox, type MirrorChase, fadedPaint, boxOpacity, backgroundCss, treePaintLayerCss, radiusCSS, isClipped, SHADOW_CSS, videoEmbedSrc, sanitizeCssDeclarations, expandScopedCss, ACCORDION_CSS_PARTS, itemOverrideCss, itemHasOverride, itemNumberVars, richBody, componentTextCss, componentBoxCss, bgShowThroughCss, resizeTopEdge, blockContainmentCss, alertToastCss, treeHasToast, treeHasFixedHold, accordionClasses, bandClasses, hasSiteMeasure, advancedCssStyle, applyBoxSize, alertActionsHTML, hugsContent, itemFloatContextCss, COMPONENT_ITEM_SEL, clampContentScale, MIN_CONTENT_SCALE, isMultiItemComponent, comfortableWidth, remLen, rootFontPx, isDefiniteLen, addItemAfter, duplicateItem, duplicateChildItem, removeItem, removeChildItem, moveItem, moveChildItem, updateItem, updateChildItem, ALERT_SEVERITY_ICON, alertPartInline, alertIconInline, collectAlertItemStyles,
+  shouldTakeMirrorBox, mirrorFlushSides, edgeSwipeSides, hostSizedFor, type MirrorBox, type MirrorChase, fadedPaint, boxOpacity, backgroundCss, treePaintLayerCss, treeBgVideoCss, radiusCSS, isClipped, SHADOW_CSS, videoEmbedSrc, sanitizeCssDeclarations, expandScopedCss, ACCORDION_CSS_PARTS, itemOverrideCss, itemHasOverride, itemNumberVars, richBody, componentTextCss, componentBoxCss, bgShowThroughCss, resizeTopEdge, blockContainmentCss, alertToastCss, treeHasToast, treeHasFixedHold, accordionClasses, bandClasses, hasSiteMeasure, advancedCssStyle, applyBoxSize, alertActionsHTML, hugsContent, itemFloatContextCss, COMPONENT_ITEM_SEL, clampContentScale, MIN_CONTENT_SCALE, isMultiItemComponent, comfortableWidth, remLen, rootFontPx, isDefiniteLen, addItemAfter, duplicateItem, duplicateChildItem, removeItem, removeChildItem, moveItem, moveChildItem, updateItem, updateChildItem, ALERT_SEVERITY_ICON, alertPartInline, alertIconInline, collectAlertItemStyles,
   type Breakpoint, resolveResponsive, updateBoxResponsive, treePinArrivalCss, floatHoldCSS, canvasFixedStyle, capturesFixed, imageSizing, fillsRowsAnywhere, fillHostOf, importPhoto, traceOutline, followsOutline, treeItemEffectsCss, itemNeedsClass, floatZIndex, gridPlacementAt, masonryMeasureAttr, masonryMeasurePass, mirrorMeasuresNow, baseUnitParts, pinStackMarker, pinStackGroupMarker, pinStackPass, pinArrivalMarker, pinArrivalPass, headerMarkers, headerPass, underOverHeaderPad, isPager, pagerStripCss, pagerNavHTML, selectionChain, textLen, typoRole, typoRootVars, typoCascadeCss, bandEdgeCSS, LINK_COLOR_CSS, treeGridQueryCss, TYPE_UNIT_PROPERTY_CSS, stripsAnywhere,
 } from "@/lib/box-model";
 import { ICON_SET } from "./icons";
@@ -32,7 +32,8 @@ import GallerySetupMenu from "./GallerySetupMenu";
 import { blockForKind, nodeForPhotos, photoGallery, PHOTO_SETUP, type GalleryPhoto } from "@/lib/box-presets";
 import { treeHoverCss, treeRevealCss, scrollRevealNeeded, revealOnceWire, REVEAL_WAIT } from "@/lib/interactions";
 import { colorToCSS } from "@/components/shared/ColorPalettePicker";
-import { COMPONENT_CSS } from "@/lib/educo-ui/components";
+import { COMPONENT_CSS, bgVideoCss } from "@/lib/educo-ui/components";
+import { CanvasBgVideo } from "@/components/website/box/BackgroundVideo";
 import { EDITOR_DOCK_PX, layoutCss, mediaBelow, RESIZE, RUNG_MEASURE, RUNG_PX } from "@/lib/educo-ui/layout";
 import { CHROME_Z } from "@/lib/educo-ui/stacking";
 import { iconSvg, onIconsLoaded, warmIcons, hasIcon } from "@/lib/educo-ui/icon-svg";
@@ -4065,6 +4066,8 @@ export default function BoxCanvas({
               strip's declarations come from `pagerStripCss`, which the export calls too, and the nav
               markup from `pagerNavHTML` — one emitter each, so the builder cannot drift from the page.
               The strip really scrolls here, so the pages are edited exactly where a visitor meets them. */}
+          {/* MS-5b · its background video, first and behind — where the export puts it, never inside a pager's strip */}
+          <CanvasBgVideo node={node} />
           {isPager(node) ? (
             <>
               <div
@@ -4470,6 +4473,8 @@ export default function BoxCanvas({
           // The pinned block’s ARRIVAL, from the same resolver the export uses.
           + treePinArrivalCss(root, scopeFor)
           + treePaintLayerCss(root, scopeFor)
+          // MS-5b · a background video: its box and its own rules, from the emitters the export uses
+          + treeBgVideoCss(root, scopeFor, bgVideoCss(".eu-tokens"))
           // A grid narrowing by ITS OWN box (#111), from the emitter the export uses. The canvas draws a rung by its
           // preset, not by a media query, so "above the phone" is decided here: the two-across rule is left out
           // entirely at the phone preset and unguarded at every other.

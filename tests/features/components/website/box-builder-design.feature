@@ -219,3 +219,8 @@ Feature: Box Builder — modern look & feel, blocks palette, plain language
     When the page is shown on a phone
     Then a size of 16 or less never shrinks below itself, and a larger one keeps at least half of what it has above 16
     And a heading is never smaller than the body text beside it
+
+  Scenario: A see-through bar that is pinned still stays put (LE5-4)
+    Given a header pinned to the top, See-through 60, with a photo behind it
+    When the page is published and scrolled
+    Then the header stays at the top — the see-through layer never takes away the block's own position

@@ -11,6 +11,19 @@ const PER = INSPECTOR.perScreen;
 /** The keys a change still writes for EVERY screen, whichever screen is being edited (the words, links, pictures and effects). */
 export const SHARED_KEYS: ReadonlySet<string> = new Set(PER.sharedKeys);
 
+/**
+ * A change made while another screen is being edited, split into what every screen gets (`shared`) and what this screen keeps
+ * (`own`). LE5-18: a tint that ARRIVES in the same change as a background video goes wherever the video goes — every screen —
+ * or a desktop visitor would get the video with no tint (measured on the phone emulator, 2026-10-18). A tint changed on its own
+ * stays this screen's, as before.
+ */
+export function splitPatch<T extends object>(patch: T): { shared: Partial<T>; own: Partial<T> } {
+  const shared: Partial<T> = {}, own: Partial<T> = {};
+  const withVideo = "bgVideo" in patch && !!(patch as { bgVideo?: unknown }).bgVideo;
+  for (const [k, v] of Object.entries(patch)) ((SHARED_KEYS.has(k) || (withVideo && k === "bgOverlay")) ? shared : own)[k as keyof T] = v as never;
+  return { shared, own };
+}
+
 const words = (bp: Breakpoint) => RUNG_WORDS[bp === "base" ? "desktop" : bp];
 const list = (xs: string[]) => (xs.length < 2 ? xs.join("") : `${xs.slice(0, -1).join(", ")} and ${xs[xs.length - 1]}`);
 

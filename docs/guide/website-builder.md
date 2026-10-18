@@ -586,7 +586,8 @@ section above grows by the same amount, so nothing in it is covered. Set **Off**
 | **Each page carries only the styles it uses** | A term‑dates page of text and a table doesn't download the accordion, the alert or the rating — and a page with one accordion doesn't download the other twenty‑eight accordion designs either. A page of text ends up around 1.4 KB; a busy page with an alert, an accordion, a card and a photo, around 10 KB. |
 | **The next page is already on its way** | While a visitor reads one page, the browser quietly fetches the others in the background. Clicking a link then feels instant. |
 | **Photos are their own files, in `images/`** | The words of a page arrive first and the photos follow, so a parent on a slow connection can start reading straight away. A photo used on several pages is one file, downloaded once. A photo lower down the page isn't downloaded until the visitor scrolls to it. |
-| **A phone gets a phone-sized photo** | Every photo wider than 480 pixels also comes in a 480 and a 960 pixel copy. A phone downloads the copy that fits its screen, not the full 1600 pixels a large monitor needs. |
+| **Every screen gets the photo size it shows** | Every photo wider than 480 pixels also comes in a 480 and a 960 pixel copy. When you export, the builder lays each page out at every screen size and measures how wide each photo really is there: the whole width on a phone, a third of the row on a desktop, a card in a grid. The page tells the browser exactly that, so a phone downloads the small copy, and a desktop showing three photos across downloads the 960 copy, not the full 1600 pixels. |
+| **Background videos are their own files, in `videos/`** | A video you uploaded travels in the ZIP. One you linked plays from its address. Each comes with its poster photo in `images/`. |
 | **Fonts are their own files, in `fonts/`** | A visitor only downloads the letters the page uses. An English page needs the basic Latin letters, about 44 KB. A page with Yoruba ẹ ọ ṣ, Hausa ɓ ɗ ƙ or Twi ɛ ɔ downloads one more small file, so those letters appear in your typeface too, never in a different font halfway through a word. |
 
 **Your fonts travel with the site.** The typefaces you chose are inside the ZIP, in `fonts/`, so the published site looks exactly like the one you designed. They are *not* loaded from Google: that would mean every visitor's IP address is sent to a third party, which is a data-protection question no school should be handed without being asked. Nothing is loaded from a third party for fonts or tracking. The few small scripts some blocks need are built into the pages themselves, and the pictures you uploaded travel in `images/`. Stock photos and embedded videos still load from where they live, so those need a connection.
@@ -594,6 +595,38 @@ section above grows by the same amount, so nothing in it is covered. Set **Off**
 **Why it's built this way: a parent on a 3G phone.** Before this change a typical school page weighed about 500 KB, because every font and photo was packed inside the page. On a slow 3G connection the first words took about 14 seconds to appear. With fonts and photos as separate files, the first words arrive in about 4 to 5 seconds — measured on six pages built in the builder, each now around 100 KB.
 
 ![A page made in the builder, downloaded, and opened on an Android phone: the heading in the school's font, a line of Yoruba and Twi — Ẹ kú àárọ̀, ọmọ wa ṣe dáadáa, Ɛte sɛn — with every letter in the chosen typeface, and the photo below](img/guide-export-phone.webp)
+
+### A video behind a section
+
+**What you want:** the top of your home page with a few seconds of the school field, the choir or the classroom
+moving quietly behind the welcome words.
+
+**What you do:** select the section, open **Design → Background**, and find **Video** at the bottom.
+
+| Control | What it does |
+|---|---|
+| **Upload a video** | Pick an `.mp4` or `.webm` file from your computer or phone, up to 20 MB. A loop of 5 to 10 seconds is plenty. The video is kept in this browser, and your page only remembers which video it is. |
+| **Video address** | Or paste the address of a video file that is already online. It must end in `.mp4` or `.webm`. A YouTube or Vimeo page cannot play behind a section; use a **Video** block for those. |
+| **Upload a poster** | The still picture shown before the video plays, and instead of it. The builder takes one from the first frame for you; upload your own to choose a better moment. |
+| **Tint over background** | A colour laid over the video and under your words, so they stay readable. A dark tint (60 % black) arrives with the video, and the words turn light to read on it — enough that they stay readable even on the brightest frame. Change its colour or strength, or open its palette and choose **Clear** to take it off. The same happens when you add a background photo. |
+| **Remove video** | Takes the video and its poster off. **Ctrl+Z** brings them back. |
+
+**What you see:** on the canvas the video plays, silent, behind the section's words. In **Preview**, and on your
+published site, a small round **Play / Pause** button sits in the corner. Visitors can reach it with the Tab key
+and stop the video at any time.
+
+**If your words might be hard to read:** a picture moves and changes, so nobody can promise every frame is readable. The tint is what keeps them readable. If you take the tint off, the **Page check** names the block and tells you how to put one back.
+
+**What a visitor on a phone sees:** the video only plays when it costs them nothing they didn't choose.
+- A visitor whose phone is set to **reduce motion** sees the poster.
+- So does a visitor on **data saver** or a slow 2G or 3G connection. The video isn't downloaded at all.
+- Either of them can still press **Play**.
+- The video never has sound, and screen readers skip it, because it is decoration. Anything a visitor needs to
+  know belongs in the words.
+
+**If you move to another computer:** an uploaded video lives in the browser you uploaded it from. Export from
+another browser and the builder tells you which videos it could not include. The site then shows their posters.
+Upload the video again there, or use a video address, which works from anywhere.
 
 ### Fonts that write your language
 

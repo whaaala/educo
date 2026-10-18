@@ -9,7 +9,7 @@
  */
 
 import type { CSSProperties } from "react";
-import { PILL, applyBoxSize, dividerThickness, borderLen, videoSizing, blockTypography,pinArrivalCss, pinArrivalKeyframes, floatHoldCSS,
+import { PILL, applyBoxSize, bgVideoSrc, bgVideoShade, bgVideoBoxCss, dividerThickness, borderLen, videoSizing, blockTypography,pinArrivalCss, pinArrivalKeyframes, floatHoldCSS,
   type BoxNode, type Breakpoint, type SectionFlag, BP_ORDER, containerStyle, childStyle, hostSizedFor, marginCSS, leafPaddingCSS, ownSidePadVars, outerSpaceCSS, pageBandInset, pagePinCover, sectionContent, sizeToCSS, radiusCSS, SHADOW_CSS, u, LIST_ITEM_GAP, textLen, baseUnit, fadedPaint, boxOpacity, backgroundCss, paintLayerCss,
   resolveResponsive, floatStacksOnMobile, floatingReserve, alertToastCss, accordionClasses, bandClasses, hasSiteMeasure, videoEmbedSrc, isContainer, sanitizeCssDeclarations, expandScopedCss, COMPONENT_PARTS, itemFloatContextCss, itemOverrideCss, itemNumberVars, richBody, plainBody, componentTextCss, componentBoxCss, renderAlertHTML, alertDismissScript, masonryMeasureAttr, masonryMeasureScript, pinStackMarker, pinStackGroupMarker, pinStackNeeded, pinStackScript, headerMarkers, headerScript, headerScriptNeeded, underOverHeaderPad, pinArrivalMarker, pinArrivalScript, treeHasArrival, isPager, pagerNavHTML, pagerScript, pagerStripCss, pagerSlideId, bgShowThroughCss, blockContainmentCss, COMPONENT_ITEM_SEL, remLen, imageSizing, fillsRowsAnywhere, fillHostOf, hasIntrinsicSize, itemNeedsClass, itemScope, floatZIndex, typoRole, typoRootVars, typoCascadeCss, bandEdgeCSS, LINK_COLOR_CSS, gridQueryCss, TYPE_UNIT_PROPERTY_CSS, stripsAnywhere,
 } from "@/lib/box-model";
@@ -18,6 +18,7 @@ import { iconSvg } from "@/lib/educo-ui/icon-svg";
 import INSPECTOR from "@/config/inspector.json";
 import { resolvePage, pageFillCss, footerPushCss, type PageSemantics } from "@/lib/semantics";
 import { PAGE_Z_CEILING } from "@/lib/educo-ui/stacking";
+import { MEDIA, RUNG_PX, NARROWEST_PHONE_PX } from "@/lib/educo-ui/layout";
 import type { BoxSite } from "@/lib/box-site";
 import type { SiteTheme } from "@/lib/site-storage";
 import { colorToCSS } from "@/components/shared/ColorPalettePicker";
@@ -577,6 +578,8 @@ function renderNode(node: BoxNode, rawParent: BoxNode | null, theme: SiteTheme, 
   // fades and its contents do not. Same emitter the canvas injects — canvas = export, including this.
   const paintLayer = paintLayerCss(`.${cls}`, r);
   if (paintLayer) sheet.rungs.phone.push(paintLayer);
+  const videoBox = bgVideoBoxCss(`.${cls}`, r); // MS-5b: the box a background video plays inside
+  if (videoBox) sheet.rungs.phone.push(videoBox);
   // Entrance (Round 1b). The keyframes are global, so the ids used are collected and emitted ONCE at assembly.
   // A COMPONENT passes its item selector, so "arrive one after another" staggers the accordion rows or the
   // alert messages — its wrapper's direct children are a <style> tag and the component itself.
@@ -628,9 +631,11 @@ function renderNode(node: BoxNode, rawParent: BoxNode | null, theme: SiteTheme, 
       kidList.splice(run.start, run.end - run.start, `<nav class="eu-menu"${lbl ? ` aria-label="${esc(lbl)}"` : ""}><ul class="eu-list eu-menu">${kidList.slice(run.start, run.end).join("")}</ul></nav>`);
     }
     const mw = rawParent === null ? SEM?.mainWrap : null;
-    const kids = mw
+    const bgv = bgVideoHTML(r); // MS-5b: behind everything the block holds, so it is first
+    const held = (mw
       ? kidList.slice(0, mw.start).join("") + `<main class="eu-main"><span id="main" tabindex="-1" class="eu-main-start"></span>${kidList.slice(mw.start, mw.end).join("")}</main>` + kidList.slice(mw.end).join("")
-      : kidList.join("");
+      : kidList.join(""));
+    const kids = bgv + held;
     // MASONRY, measured (C). The marker and the script ride WITH the gallery, in the same shape the Alert's
     // dismiss script uses: one guarded global, so ten measured galleries still run one copy, and a page with
     // none ships no script at all. The attribute's value is the down-gap in row units — the one number the
@@ -649,9 +654,9 @@ function renderNode(node: BoxNode, rawParent: BoxNode | null, theme: SiteTheme, 
       // `tabindex="0"` + a label is the whole keyboard story, and it needs no script at all: an overflow
       // container is not focusable by default, and once it is, one arrow key moves exactly one page —
       // measured, with the page itself never moving.
-      return wrapLi(`<${el}${idAttr}${semAttr} class="${allCls}">`
+      return wrapLi(`<${el}${idAttr}${semAttr} class="${allCls}">${bgv}` // the video behind the strip, never a page of it
         + `<div data-eu-pager${auto} tabindex="0" role="group" aria-roledescription="carousel"`
-        + ` aria-label="One at a time" style="${styleString(pagerStripCss(r))}">${kids}</div>`
+        + ` aria-label="One at a time" style="${styleString(pagerStripCss(r))}">${held}</div>`
         + `${nav}${script}</${el}>`);
     }
     // FL-6 · a sideways strip is a NAMED, FOCUSABLE region: Tab reaches it and the arrow keys scroll it, no script (WCAG 2.1.1)
@@ -768,13 +773,44 @@ export function videoScript(): string {
 }
 const hasHostedVideo = (n: BoxNode): boolean => (n.type === "video" && !!videoEmbedSrc(n.src)) || (n.children ?? []).some(hasHostedVideo);
 
+/**
+ * MS-5b · a block's background video: first inside the block, behind its content (`.eu-bgvideo`, COMPONENT_CSS), the overlay
+ * on a shade above it, and a Play / Pause button (WCAG 2.2.2). No `src`, no `autoplay`: `bgVideoScript` starts it — so a page
+ * whose script never runs, a reader who asked for less motion, and a phone on Save-Data or a slow connection see the poster.
+ */
+function bgVideoHTML(r: BoxNode): string {
+  const src = bgVideoSrc(r);
+  if (!src) return "";
+  const W = INSPECTOR.bgVideo, shade = bgVideoShade(r);
+  return `<video class="eu-bgvideo" muted loop playsinline disablepictureinpicture preload="none" aria-hidden="true" tabindex="-1"`
+    + `${r.bgVideoPoster ? ` poster="${esc(r.bgVideoPoster)}"` : ""} data-src="${esc(src)}"></video>`
+    + (shade ? `<span class="eu-bgvideo__shade" aria-hidden="true" style="background:${esc(shade)}"></span>` : "")
+    + `<button type="button" class="eu-bgvideo__toggle" aria-label="${esc(W.play)}" data-eu-bgv-play="${esc(W.play)}" data-eu-bgv-pause="${esc(W.pause)}">&#9654;</button>`;
+}
+/**
+ * The one script every page with a background video carries. It plays a video only while it is on screen, and only when the
+ * reader allows motion and the connection can carry it (`saveData`, a 2g / 3g `effectiveType`); the button always works —
+ * Play loads it on demand, Pause stops it and keeps it stopped. The words ride on the button (config/inspector.json bgVideo).
+ */
+export function bgVideoScript(): string {
+  return `<script>(function(){` // emitted once per page by renderPageHTML, so no run-once flag
+    + `var still=matchMedia('(prefers-reduced-motion: reduce)').matches,c=navigator.connection,thin=!!c&&(!!c.saveData||/(^|-)(2g|3g)$/.test(c.effectiveType||''));`
+    + `document.querySelectorAll('video.eu-bgvideo').forEach(function(v){var b=v.parentNode.querySelector('.eu-bgvideo__toggle'),on=false,held=still||thin;`
+    + `function show(p){on=p;if(!b)return;b.setAttribute('aria-label',b.getAttribute(p?'data-eu-bgv-pause':'data-eu-bgv-play'));b.innerHTML=p?'&#10074;&#10074;':'&#9654;';}`
+    + `function play(){if(!v.getAttribute('src'))v.setAttribute('src',v.getAttribute('data-src'));var q=v.play();show(true);if(q&&q.catch)q.catch(function(){show(false);});}`
+    + `if(b)b.addEventListener('click',function(){if(on){held=true;v.pause();show(false);}else{held=false;play();}});`
+    + `if('IntersectionObserver' in window)new IntersectionObserver(function(es){es.forEach(function(e){if(held)return;if(e.isIntersecting)play();else if(on){v.pause();show(false);}});}).observe(v);`
+    + `else if(!held)play();});})();<\/script>`;
+}
+const hasBgVideo = (n: BoxNode): boolean => !!bgVideoSrc(n) || (n.children ?? []).some(hasBgVideo);
+
 export function renderPageHTML(root: BoxNode, theme: SiteTheme, pageMap: Map<string, string> = new Map(), sheet?: Sheet): string {
   /**
    * STACKED PINS (Step 2c) ride with the PAGE, not with a block — because the thing being measured is the
    * relationship BETWEEN blocks, and no one of them owns it. `pinStackNeeded` is what keeps zero-JS the
    * default: fewer than two bars at one edge and nothing is emitted at all, at any rung.
    */
-  const stack = (pinStackNeeded(root) ? pinStackScript() : "") + (treeHasArrival(root) ? pinArrivalScript() : "") + (hasHostedVideo(root) ? videoScript() : "") + (scrollRevealNeeded(root) ? revealOnceScript() : "") + (headerScriptNeeded(root) ? headerScript() : "");
+  const stack = (pinStackNeeded(root) ? pinStackScript() : "") + (treeHasArrival(root) ? pinArrivalScript() : "") + (hasHostedVideo(root) ? videoScript() : "") + (hasBgVideo(root) ? bgVideoScript() : "") + (scrollRevealNeeded(root) ? revealOnceScript() : "") + (headerScriptNeeded(root) ? headerScript() : "");
   const prev = SEM; SEM = resolvePage(root);
   try {
     if (sheet) return SKIP_LINK_HTML + renderNode(root, null, theme, pageMap, sheet) + stack; // shared sheet → caller emits the CSS
@@ -1054,25 +1090,61 @@ export function photosToFiles(files: SiteFiles): { files: SiteFiles; photos: Rec
   return { files: out, photos };
 }
 
-/** The narrower copies the export makes of each photo, for phones (360–412 CSS px at 1–2× density). */
-export const PHOTO_WIDTHS = [480, 960];
+/** The narrower copies the export makes of each photo — config/layout.json media.photoWidths (RULE CFG, LE5-1). */
+export const PHOTO_WIDTHS: readonly number[] = MEDIA.photoWidths;
+
+/** A photo's `<img>` in an exported page — `src` need not come first: an accordion's picture is `<img class=… src=…>` (A1-13). */
+export const PHOTO_IMG = /<img ([^>]*?)src="(images\/[^"]+)"([^>]*)>/g;
+
+/**
+ * AC-22 · the screens a picture is measured at: both edges of every rung of config/layout.json, from the narrowest phone
+ * (RULE AF) to `media.sizesWideTo` — so a picture that grows inside a rung is caught at its widest.
+ */
+export function sizesScreens(): [number, number][] {
+  const from = Object.values(RUNG_PX);
+  return from.map((px, i) => [i === 0 ? NARROWEST_PHONE_PX : px, i < from.length - 1 ? from[i + 1] - 1 : MEDIA.sizesWideTo]);
+}
+
+/**
+ * AC-22 · a picture's MEASURED widths → its `sizes`. `rungs` ascending: `below` is the next rung's first px (null on the last),
+ * `share` the most of the window the picture took inside the rung. `fixedLastPx`: the last rung's width when it stayed the same
+ * at both its edges (held by the content width) — written in rem. Shares round UP (a copy a little too big, never blurry);
+ * a hidden picture asks for the smallest copy (1vw). Conditions are `max-width` in em, not range syntax, so the old Android
+ * WebViews of RULE AF read them.
+ */
+export function sizesFromWidths(rungs: { below: number | null; share: number }[], fixedLastPx?: number): string {
+  // nowhere to be seen on ANY screen = shown only once opened (a closed accordion, a tab): its size is not knowable here
+  if (rungs.every((r) => !(r.share > 0))) return "100vw";
+  const vw = (s: number) => `${Math.max(1, Math.ceil(s * 100 - 1e-6))}vw`;
+  const last = fixedLastPx ? `${Math.ceil((fixedLastPx / 16) * 4) / 4}rem` : vw(rungs[rungs.length - 1].share);
+  const parts: { below: number; value: string }[] = [];
+  for (const r of rungs.slice(0, -1)) {
+    const value = vw(r.share);
+    if (parts.length && parts[parts.length - 1].value === value) parts[parts.length - 1].below = r.below!;
+    else parts.push({ below: r.below!, value });
+  }
+  while (parts.length && parts[parts.length - 1].value === last) parts.pop();
+  return [...parts.map((p) => `(max-width: ${+((p.below - 1) / 16).toFixed(4)}em) ${p.value}`), last].join(", ");
+}
 
 /**
  * Give every `<img>` of a photo with narrower copies a `srcset`, so a phone fetches the copy its screen needs
  * instead of the 1600px original. `copies` maps a photo's file to its widths, widest (the original) last.
- * A lazy picture says `sizes="auto"` — the browser measures the box it actually lays out (Chrome 126+, so
- * every updated Android WebView); anything else falls back to the window's width.
+ * `sizes` (AC-22) gives each page's photos, in `PHOTO_IMG` order, the list measured from the layout; a picture with none
+ * keeps the window's width. A lazy picture puts `auto` first — the browser measures the box it actually lays out
+ * (Chrome 126+) — with the measured list as the fallback everywhere else.
  */
-export function addSrcset(files: SiteFiles, copies: Record<string, { w: number; file: string }[]>): SiteFiles {
+export function addSrcset(files: SiteFiles, copies: Record<string, { w: number; file: string }[]>, sizes: Record<string, (string | null)[]> = {}): SiteFiles {
   const out: SiteFiles = {};
   for (const [name, text] of Object.entries(files)) {
-    // `src` need not come first: an accordion's picture is `<img class="eu-accordion__media" src=…>` (A1-13).
-    out[name] = text.replace(/<img ([^>]*?)src="(images\/[^"]+)"([^>]*)>/g, (tag, before: string, file: string, rest: string) => {
+    let i = 0;
+    out[name] = text.replace(PHOTO_IMG, (tag, before: string, file: string, rest: string) => {
+      const measured = sizes[name]?.[i++] ?? "100vw";
       const list = copies[file];
       if (!list || list.length < 2) return tag;
       const srcset = list.map((c) => `${c.file} ${c.w}w`).join(", ");
-      const sizes = /loading="lazy"/.test(before + rest) ? "auto, 100vw" : "100vw";
-      return `<img ${before}src="${file}" srcset="${srcset}" sizes="${sizes}"${rest}>`;
+      const size = /loading="lazy"/.test(before + rest) ? `auto, ${measured}` : measured;
+      return `<img ${before}src="${file}" srcset="${srcset}" sizes="${size}"${rest}>`;
     });
   }
   return out;

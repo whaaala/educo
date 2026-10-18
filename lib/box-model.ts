@@ -348,6 +348,8 @@ export interface BoxNode {
   bgAttach?: "fixed";       // background-attachment: "fixed" gives a parallax-style locked background
   bgTile?: string;          // pattern tile size (background-size) — when set, the bgImage repeats instead of covering
   bgOverlay?: string;       // overlay drawn over the image (colour hex or gradient) for readability
+  bgVideo?: string;         // MS-5b · a background video: `media:<hash>.<ext>` (uploaded, in the media store) or an https .mp4 / .webm link
+  bgVideoPoster?: string;   // its poster (a downscaled photo data URL): what shows before it plays, and instead of it
 
   // ── sizing (any node) ──
   width?: string;           // "auto" | "fill" | "<n>%" | "<n>px" — flex child
@@ -1118,7 +1120,7 @@ export function backgroundCss(node: BoxNode, colors?: { background?: string; bgO
   const s: CSSProperties = {};
   const layers: string[] = [];
   const asGradient = (v: string) => { const css = colorToCSS(v); return css.startsWith("linear-gradient") ? css : `linear-gradient(${css}, ${css})`; };
-  if (c.bgOverlay) layers.push(asGradient(c.bgOverlay));
+  if (c.bgOverlay && !bgVideoSrc(node)) layers.push(asGradient(c.bgOverlay)); // over a video it is a shade of its own (`bgVideoShade`)
   if (node.bgImage) layers.push(bgImageLayer(node.bgImage)); // gradient/pattern passes through; URL gets url("…")
   const baseGrad = c.background?.startsWith("gradient:");
   if (baseGrad && !node.bgImage) layers.push(colorToCSS(c.background!));
@@ -1176,7 +1178,8 @@ export function paintLayerCss(selector: string, node: BoxNode): string {
     .map(([k, v]) => `${k.replace(/[A-Z]/g, (m) => `-${m.toLowerCase()}`)}:${v}`)
     .join(";");
   const a = paintAlpha(node);
-  return `${selector}{position:relative;isolation:isolate}`
+  // `:where()` — zero specificity, so a block's OWN position (a pinned bar's sticky, a free block's absolute) wins (LE5-4)
+  return `:where(${selector}){position:relative}${selector}{isolation:isolate}`
     + `${selector}::before{content:"";position:absolute;inset:0;z-index:${PAGE_Z.behind};pointer-events:none;`
     + `border-radius:inherit;opacity:${a};${decls}${edgeClip(node) ? `;clip-path:${edgeClip(node)}` : ""}}`;
 }
@@ -4701,6 +4704,52 @@ export function videoSizing(node: BoxNode): { height?: string; aspectRatio?: str
   return h ? { height: h } : { aspectRatio: node.ratio ?? MEDIA.videoRatio };
 }
 
+/** MS-5b · an UPLOADED video, as a block stores it: `media:<sha-256>.<mp4|webm>` — the bytes live in the media store. */
+export const MEDIA_REF = /^media:([0-9a-f]{64})\.(mp4|webm)$/;
+export const isMediaRef = (v?: string): v is string => !!v && MEDIA_REF.test(v);
+/** Where the download puts an uploaded video; null for a link (it plays from where it is). */
+export const mediaFile = (v?: string): string | null => (isMediaRef(v) ? `videos/${v.slice(6)}` : null);
+/** A background video's LINK must be the file itself — a YouTube / Vimeo page cannot play behind a block. */
+export const isVideoFileUrl = (v?: string): boolean => !!v && /^https:\/\/[^\s"'<>]+\.(mp4|webm)(\?[^\s"'<>]*)?$/i.test(v);
+/** A block's background video as the published page names it — the download's file, or the link — or null (none, or not playable). */
+export const bgVideoSrc = (node: BoxNode): string | null => mediaFile(node.bgVideo) ?? (isVideoFileUrl(node.bgVideo) ? node.bgVideo! : null);
+/**
+ * The overlay over a background VIDEO (MS-5b): the video covers the block's own background, so the overlay is drawn on a
+ * shade above the video and under the content — the canvas and the export both read it here. undefined when there is none.
+ */
+export function bgVideoShade(node: BoxNode): string | undefined {
+  if (!bgVideoSrc(node) || !node.bgOverlay) return undefined;
+  const css = colorToCSS(node.bgOverlay); // ponytail: See-through does not fade a video, so not its shade either
+  return css.startsWith("linear-gradient") ? css : `linear-gradient(${css}, ${css})`;
+}
+/** LE5-14 · a PICTURE behind a block's words: a background video, or a background photo (never a gradient or a pattern). */
+export const pictureBehind = (node: BoxNode): boolean => !!bgVideoSrc(node) || (!!node.bgImage && !isCssBg(node.bgImage));
+/**
+ * LE5-14 · what the words over a picture are really read against at WORST: the tint laid over the frame least kind to it — a
+ * dark tint over a white frame, a light one over a black frame. A picture can be any colour, so this is the background the words
+ * must still read on (pass 7 measured: a 40 % black tint read as solid black gave mid-grey words that vanish on a bright frame).
+ * null for a tint that is not a plain colour (a gradient).
+ */
+export function tintOverWorstFrame(tint: string): string | null {
+  const m = /^#([0-9a-f]{6})([0-9a-f]{2})?$/i.exec(tint.trim());
+  if (!m) return null;
+  const a = m[2] ? parseInt(m[2], 16) / 255 : 1, c = hexToRgb(`#${m[1]}`);
+  const frame = contrastRatio("#ffffff", `#${m[1]}`) > contrastRatio("#000000", `#${m[1]}`) ? 255 : 0;
+  return rgbToHex({ r: c.r * a + frame * (1 - a), g: c.g * a + frame * (1 - a), b: c.b * a + frame * (1 - a) });
+}
+/** LE5-14 (the user 2026-10-18) · the tint that ARRIVES with a picture added to a block that has none — config media.tintStart. */
+export const tintFor = (node: BoxNode): Partial<BoxNode> => (node.bgOverlay ? {} : { bgOverlay: MEDIA.tintStart });
+/** The box that holds a background video: relative only at ZERO specificity (a pinned or free block keeps its own, LE5-4), isolated. */
+export const bgVideoBoxCss = (selector: string, node: BoxNode): string =>
+  bgVideoSrc(node) ? `:where(${selector}){position:relative;min-block-size:calc(${MEDIA.videoDiscRem}rem + 2 * var(--eu-space-3))}${selector}{isolation:isolate}` : ""; // LE5-10: room for the disc
+/** Every video box in a tree for the canvas's one stylesheet, plus the video's own rules (`shared`) once — or nothing at all. */
+export function treeBgVideoCss(root: BoxNode, scopeFor: (id: string) => string, shared: string): string {
+  const boxes: string[] = [];
+  const walk = (n: BoxNode) => { const c = bgVideoBoxCss(scopeFor(n.id), n); if (c) boxes.push(c); (n.children ?? []).forEach(walk); };
+  walk(root);
+  return boxes.length ? shared + boxes.join("") : "";
+}
+
 export function sizeToCSS(token?: string): string | undefined {
   if (!token || token === "auto") return undefined;
   if (token === "fill") return "100%";
@@ -6480,7 +6529,11 @@ export function rowFilledByBlocks(node: BoxNode): boolean {
 }
 
 export function containerStyle(node: BoxNode, bp: Breakpoint = "base", section: SectionFlag = false): CSSProperties {
-  const scheme = node.bgImage ? null : bandScheme(node.background);
+  // LE5-14: over a picture the words read on its TINT over the worst frame (`tintOverWorstFrame`), never on the colour the picture
+  // covers; a picture with no tint, or a gradient tint / background, imposes nothing
+  const worst = pictureBehind(node) && node.bgOverlay ? tintOverWorstFrame(node.bgOverlay) : null;
+  const scheme = pictureBehind(node) ? (worst ? bandScheme(worst) : null)
+    : node.bgImage ? null : bandScheme(node.background);
   const s = { ...containerStyleOf(node, bp, section), ...pageFrameEnds(node), ...pageMeasure(node) };
   const lines = listLinesGap(node);
   return { ...s, ...(lines ?? {}), ...((scheme?.vars ?? {}) as CSSProperties) };

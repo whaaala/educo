@@ -7,5 +7,7 @@
     "screens": [[360, 640], [640, 360]],
     "message": "The bars held on screen ({bars}) cover more than a quarter of a {screens} screen, so little is left to read. Let one scroll away (Keep only the last row on screen, or When you scroll down), or make them shorter."
   },
-  "pageGone": "This {block} goes to a page that was deleted, so it takes visitors nowhere. Choose where it goes under Link, or delete it."
+  "pageGone": "This {block} goes to a page that was deleted, so it takes visitors nowhere. Choose where it goes under Link, or delete it.",
+  "wordsOverPicture": "The words on this block sit over a {picture} with no tint, so on a bright or busy part of it they may not be readable. Add a Tint over background (Design → Background) — a dark tint gives light words.",
+  "pictureWords": { "video": "video", "photo": "photo" }
 }
