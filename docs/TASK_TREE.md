@@ -2173,7 +2173,7 @@ Risks and distribution (section 2): RK-1 · Developing countries (section 3): AF
   - `[x]` A1b-12 (NOT A BUG, measured) · the dark U3 screenshot looked like "Mine is Lora" overlapped the heading behind the panel;
     `probe-a1b-overlap.js` with the panel closed: the three blocks stacked, 0 of 3 pairs intersect — the selection handles made it
     look so
-- `[x]` (CLOSED 2026-10-16 — the five changes built; web HEADED 101 / 0, the emulators phone 12 / 0 · tablet 5 / 0, U1 76 / 0, the docs 289 / 0; ledger A2-1 … A2-28 closed or moved by the user (A2-7 second half · A2-14 → ED-1, A2-27 → VB-7); gate green; PR into master) (OPENED 2026-10-16 on `app/layout-shell`, cut from master `55c912d` after PR #12 merged) **BATCH A-2 · The app's layout: breakpoints, a height class, tabs and list-detail** (area: app layout · queued 2026-10-15 —
+- `[x]` (CLOSED 2026-10-16 — the five changes built; web HEADED 101 / 0, the emulators phone 12 / 0 · tablet 5 / 0, U1 76 / 0, the docs 289 / 0; ledger A2-1 … A2-28 closed or moved by the user (A2-7 second half · A2-14 → ED-1, A2-27 → VB-7); gate green; PR into master) (OPENED 2026-10-16 on `app/layout-shell`, cut from master `55c912d` after PR #12 merged) **BATCH A-2 · The app's layout: breakpoints, a height class, tabs and list-detail** (area: app layout · 5 changes · queued 2026-10-15 —
   the user's decisions 1–3) — rule 18's rungs move to 600 / 840 / 1200 / 1600 (CLAUDE.md, the engine, saved pages still read) +
   a height class for short screens; then on SAMPLE data: the navigation shell as data per role (tab bar → rail → sidebar) and the
   list-detail container (list first on a phone, split from the medium class, a URL per detail).
@@ -4748,7 +4748,7 @@ Risks and distribution (section 2): RK-1 · Developing countries (section 3): AF
   - `[ ]` ED-10 · shared appearance styles linked across blocks
   - `[ ]` ED-11 · lock a block against moving or editing
   - `[ ]` PD-10 · a print layout (Nice)
-- `[ ]` **BATCH M-1 · The L-2 fixes in the phone and tablet app** (its first piece, the site shown in the app, → BATCH LE-6, essentials, the user 2026-10-16; the native layer stays here) (area: `apps/mobile/` · MUST BE DONE, NOT STARTED — the
+- `[ ]` **BATCH M-1 · The L-2 fixes in the phone and tablet app** (its first piece, the site shown in the app, → BATCH LE-6, essentials, the user 2026-10-16; the native layer stays here) (area: `apps/mobile/` · 1 change (split when it opens) · MUST BE DONE, NOT STARTED — the
   user, 2026-10-01: "Yes, I want something built in mobile for this, but… just have this noted that it must be done", so
   we do not get carried away). What it holds, to be planned when it opens (phone AND tablet, `isTablet`, Jest + both
   emulators): a school's site shown inside the Educo app as a WEBVIEW over the real export (rule 20), so the L-2 fixes

@@ -41,6 +41,8 @@ Run through this checklist BEFORE telling the user it's done:
   through the interface. **Could not reproduce what the user reported? Then you did not build it their way.**
 - [ ] **⛔ RULE X — YOU SAW IT IN THE UI, ONE PASS PER BATCH** — every change in the batch, however small, driven in a real browser from the user's point of view, each checklist line ticked with what you saw, before the next batch opens. Typecheck + the related unit guard still run after EVERY change. Each one checked in EVERY combination it can appear in (themes · 375/768/1280+ · device presets · every entry point · each state ON and OFF), trying hard to break it. State what you drove and what you saw. **The user must never be the one who finds it.** See [docs/UAT_EVERY_CHANGE.md](docs/UAT_EVERY_CHANGE.md).
 - [ ] **⛔ THE TASK TREE IS UP TO DATE** — [docs/TASK_TREE.md](docs/TASK_TREE.md) shows what this change closed (with its commit or measurement), every new promise made along the way, and **YOU ARE HERE** on the next leaf. Work is not done while the tree still describes the state before it. **Done is done everywhere:** every other line that tracks the same work (its copy, its parent, its question, a "→ BATCH" hand-off) is ticked in the same change.
+- [ ] **⛔ RULE PROGRESS — SAY HOW MUCH OF THE AREA IS LEFT** — `node scripts/area-progress.js "<area>"`: the % of the area's
+  Must + essential Should left, the Nice / Great batches waiting, and the total before → after if work was added. Every area.
 - [ ] **⛔ RULE M — PONYTAIL CHECKED ON THE DIFF** — nothing in the change that was not needed (no unasked-for feature, file,
   option, abstraction or dependency), the shortest diff that fixes the root cause, deliberate limits marked `ponytail:`. Never
   cut: understanding the problem, validation at trust boundaries, error handling that prevents data loss, security, accessibility.
@@ -689,6 +691,17 @@ Run through this checklist BEFORE telling the user it's done:
   its musts and essential shoulds COMPLETELY — every screen size and breakpoint, every theme, the web AND the `apps/mobile/` app on
   phone and tablet, HEADED — then the next area; the nice and great lines stay mapped in the tree under their tier, and the area
   is RE-OPENED for them later, never forgotten. The tiers are proposed by the session and signed by the user before the build.
+  **Every new line is tiered the moment it is written** (the user, 2026-10-18): a request, a found gap or an idea goes into the
+  ledger with "Must, Should, Nice or Great?" asked in the reply — with the session's recommendation measured against RULE BEST —
+  and the Nice / Great lines are recorded under their tier and left for the area's re-opening, never built in the essentials.
+- **RULE PROGRESS — EVERY CLOSE SAYS HOW MUCH OF THE AREA IS LEFT (MANDATORY — the user, 2026-10-18: "always show what percentage
+  of work we have left… so we don't start adding more and more work to it… for everything we are doing, going forward").** Every
+  reply that finishes an action, a batch or a session, in EVERY area (layout, effects, components, the app, docs, research…),
+  states: **where we are** (the area, the open batch) · **the percentage of the area's essentials left**, from
+  `node scripts/area-progress.js "<area>"` (changes in the AREA MAP's Must + essential Should batches; closed batches count as
+  done) · how many Nice / Great batches wait for the re-opening · and, when work was ADDED this session, the total before and
+  after, so scope growth is seen the day it happens. Never an estimate by eye. **Guarded:** `tests/unit/area-progress.test.ts`
+  fails when a batch on an area's map cannot be found or has no "N changes".
 - **RULE BEST — A MUST-HAVE STANDS NEXT TO THE BEST, NEVER "JUST ENOUGH" (MANDATORY — the user, 2026-10-17: "a must-have must be
   extremely more than average… we want to be next to whatever the best could be out there… multiple combinations… including all the
   components").** Applies to every area — layout, effects, every component, the app — now and from now on.
