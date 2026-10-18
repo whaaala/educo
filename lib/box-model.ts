@@ -4724,6 +4724,19 @@ export function bgVideoShade(node: BoxNode): string | undefined {
 }
 /** LE5-14 · a PICTURE behind a block's words: a background video, or a background photo (never a gradient or a pattern). */
 export const pictureBehind = (node: BoxNode): boolean => !!bgVideoSrc(node) || (!!node.bgImage && !isCssBg(node.bgImage));
+/**
+ * LE5-14 · what the words over a picture are really read against at WORST: the tint laid over the frame least kind to it — a
+ * dark tint over a white frame, a light one over a black frame. A picture can be any colour, so this is the background the words
+ * must still read on (pass 7 measured: a 40 % black tint read as solid black gave mid-grey words that vanish on a bright frame).
+ * null for a tint that is not a plain colour (a gradient).
+ */
+export function tintOverWorstFrame(tint: string): string | null {
+  const m = /^#([0-9a-f]{6})([0-9a-f]{2})?$/i.exec(tint.trim());
+  if (!m) return null;
+  const a = m[2] ? parseInt(m[2], 16) / 255 : 1, c = hexToRgb(`#${m[1]}`);
+  const frame = contrastRatio("#ffffff", `#${m[1]}`) > contrastRatio("#000000", `#${m[1]}`) ? 255 : 0;
+  return rgbToHex({ r: c.r * a + frame * (1 - a), g: c.g * a + frame * (1 - a), b: c.b * a + frame * (1 - a) });
+}
 /** LE5-14 (the user 2026-10-18) · the tint that ARRIVES with a picture added to a block that has none — config media.tintStart. */
 export const tintFor = (node: BoxNode): Partial<BoxNode> => (node.bgOverlay ? {} : { bgOverlay: MEDIA.tintStart });
 /** The box that holds a background video: relative only at ZERO specificity (a pinned or free block keeps its own, LE5-4), isolated. */
@@ -6516,9 +6529,10 @@ export function rowFilledByBlocks(node: BoxNode): boolean {
 }
 
 export function containerStyle(node: BoxNode, bp: Breakpoint = "base", section: SectionFlag = false): CSSProperties {
-  // LE5-14: over a picture the words read on its TINT (what is really behind them; its alpha dropped), not on the colour it
-  // covers; a picture with no tint, or a gradient / pattern, imposes nothing
-  const scheme = pictureBehind(node) ? (node.bgOverlay ? bandScheme(node.bgOverlay.replace(/^(#[0-9a-f]{6})[0-9a-f]{2}$/i, "$1")) : null)
+  // LE5-14: over a picture the words read on its TINT over the worst frame (`tintOverWorstFrame`), never on the colour the picture
+  // covers; a picture with no tint, or a gradient tint / background, imposes nothing
+  const worst = pictureBehind(node) && node.bgOverlay ? tintOverWorstFrame(node.bgOverlay) : null;
+  const scheme = pictureBehind(node) ? (worst ? bandScheme(worst) : null)
     : node.bgImage ? null : bandScheme(node.background);
   const s = { ...containerStyleOf(node, bp, section), ...pageFrameEnds(node), ...pageMeasure(node) };
   const lines = listLinesGap(node);

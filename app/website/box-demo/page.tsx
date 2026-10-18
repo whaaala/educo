@@ -8,7 +8,7 @@
  * The whole site persists to localStorage.
  */
 
-import { SHARED_KEYS } from "@/lib/per-screen-note";
+import { splitPatch } from "@/lib/per-screen-note";
 import INSPECTOR from "@/config/inspector.json";
 import Button from "@/components/shared/Button";
 const PAGE_ORDER = INSPECTOR.pageOrder; // LE8-2: "Move earlier" / "Move later" (RULE CFG)
@@ -745,11 +745,9 @@ export default function BoxDemoPage() {
   // had just tuned, with nothing on screen to say so. "Full width" is a preview convenience with no rung of
   // its own, so it edits the desktop base — the same thing it shows.
   const bp: Breakpoint = DEVICE_RUNG[device];
-  const CONTENT_KEYS = SHARED_KEYS; // config/inspector.json (RULE CFG): words, links, pictures — and the effects, published for every screen (LE2-4)
   const patchAt = (base: BoxNode, id: string, patch: Partial<BoxNode>): BoxNode => {
     if (bp === "base") return updateBox(base, id, patch);
-    const content: Partial<BoxNode> = {}, style: Partial<BoxNode> = {};
-    for (const [k, v] of Object.entries(patch)) (CONTENT_KEYS.has(k) ? content : style)[k as keyof BoxNode] = v as never;
+    const { shared: content, own: style } = splitPatch(patch); // config/inspector.json sharedKeys (RULE CFG; LE2-4), and LE5-18's tint riding with a video
     let next = base;
     if (Object.keys(content).length) next = updateBox(next, id, content);
     if (Object.keys(style).length) next = updateBoxResponsive(next, id, style, bp);

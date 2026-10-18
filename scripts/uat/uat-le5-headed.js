@@ -250,14 +250,32 @@ const JOBS = {
     // LE5-14 · the tint that ARRIVED (the section had none), the words light on it, Clear takes it off, the Page check then names it
     const fresh = await heroSection(page); await uploadVideo(page, fresh.sec, await webm(page));
     const arrived = nodeIn(await site(page), fresh.sec)?.bgOverlay;
-    const wordsL = await page.evaluate((id) => { const h = document.querySelector(`[data-box-id="${id}"]`); const cx = Object.assign(document.createElement('canvas'), { width: 1, height: 1 }).getContext('2d', { willReadFrequently: true }); cx.fillStyle = getComputedStyle(h.querySelector('h1,h2,h3') || h).color; cx.fillRect(0, 0, 1, 1); const [r, g, b] = cx.getImageData(0, 0, 1, 1).data; return +((0.2126 * r + 0.7152 * g + 0.0722 * b) / 255).toFixed(2); }, fresh.h);
-    rec(J, 'U5 LE5-14 a tint ARRIVES with the video, and the words are light on it', arrived === MEDIA.tintStart && wordsL > 0.75, `tint ${arrived} · words lightness ${wordsL}`);
+    const wordsL = await page.evaluate((id) => { const h = document.querySelector(`[data-box-id="${id}"]`); const cx = Object.assign(document.createElement('canvas'), { width: 1, height: 1 }).getContext('2d', { willReadFrequently: true }); cx.fillStyle = getComputedStyle(h.querySelector('h1,h2,h3') || h).color; cx.fillRect(0, 0, 1, 1); const [r, g, b] = cx.getImageData(0, 0, 1, 1).data; const q = (x) => { x /= 255; return x <= 0.03928 ? x / 12.92 : ((x + 0.055) / 1.055) ** 2.4; }; return +(0.2126 * q(r) + 0.7152 * q(g) + 0.0722 * q(b)).toFixed(4); }, fresh.h);
+    // the promise, measured on what is drawn: the words against the tint over the BRIGHTEST frame (white) reach 4.5 : 1
+    const worst = (() => { const a = parseInt(MEDIA.tintStart.slice(7, 9) || 'ff', 16) / 255; return 255 * (1 - a); })();
+    const lumOf = (v) => { const q = (x) => { x /= 255; return x <= 0.03928 ? x / 12.92 : ((x + 0.055) / 1.055) ** 2.4; }; return q(v); };
+    const onWorst = +((Math.max(wordsL, lumOf(worst)) + 0.05) / (Math.min(wordsL, lumOf(worst)) + 0.05)).toFixed(2);
+    rec(J, 'U5 LE5-14 a tint ARRIVES with the video, and the words reach 4.5 : 1 on it over the brightest frame', arrived === MEDIA.tintStart && onWorst >= 4.5, `tint ${arrived} · words luminance ${wordsL} · ${onWorst}:1 on the tint over white`);
     await videoPanel(page, fresh.sec); await ins(page).getByRole('button', { name: 'Tint over background palette' }).click(); await sleep(page, 300);
     await page.getByRole('button', { name: 'Clear Tint over background — no colour' }).click(); await sleep(page, 500);
     const cleared = nodeIn(await site(page), fresh.sec)?.bgOverlay === undefined;
     await deselect(page); await H.panel(page, false); await page.getByRole('button', { name: /^Page check/ }).first().click(); const dlg = page.getByRole('dialog').filter({ hasText: 'Page check' }).first(); await dlg.waitFor(); await sleep(page, 1500);
     const said = (await dlg.innerText()).replace(/\s+/g, ' '); await shot(page, 'U5-page-check'); await page.keyboard.press('Escape'); await sleep(page, 400);
     rec(J, 'U5 LE5-14 Clear takes the tint off, and the Page check then names words over a video with no tint', cleared && /sit over a video with no tint/.test(said), `cleared ${cleared} · ${said.match(/The words on this block[^.]*\./)?.[0] || said.slice(0, 120)}`);
+  },
+
+  async phoneTint(page, J) {
+    // LE5-12 + LE5-18 · built on a laptop, then a video linked while editing the PHONE screen (a 375 window): the video and the
+    // tint that arrives with it are the block's on every screen — then a tint changed there is the phone's own
+    await routeLink(page); const { sec } = await heroSection(page);
+    await page.setViewportSize({ width: 375, height: 800 }); await sleep(page, 800);
+    await videoPanel(page, sec); const addr = ins(page).getByLabel(W.address, { exact: true }); await addr.fill(LINK); await addr.blur(); await sleep(page, 1500);
+    let n = nodeIn(await site(page), sec);
+    rec(J, 'U5 LE5-12/18 on the phone screen: the video AND its arriving tint are the block\'s on every screen (the base)', n?.bgVideo === LINK && n?.bgOverlay === MEDIA.tintStart, `base video ${n?.bgVideo === LINK} · base tint ${n?.bgOverlay} · phone's own ${JSON.stringify(n?.responsive || {})}`);
+    await videoPanel(page, sec); const hex = ins(page).getByLabel('Tint over background hex value').first(); await hex.fill('#ffffff99'); await hex.press('Enter'); await sleep(page, 800);
+    n = nodeIn(await site(page), sec); const phoneOwn = Object.values(n?.responsive || {}).some((r) => r?.bgOverlay === '#ffffff99');
+    rec(J, 'U5 LE5-18 a tint changed later on the phone screen is the phone\'s own; the base keeps the arriving one', phoneOwn && n?.bgOverlay === MEDIA.tintStart, `base ${n?.bgOverlay} · phone's own ${phoneOwn}`);
+    await shot(page, 'U5-phone-tint');
   },
 
   async photoTint(page, J) {

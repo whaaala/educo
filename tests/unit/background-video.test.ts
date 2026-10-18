@@ -1,6 +1,8 @@
 import { describe, it, expect } from "vitest";
-import { createContainer, createElement, backgroundCss, bgVideoSrc, tintFor, containerStyle, bandScheme, type BoxNode } from "@/lib/box-model";
+import { createContainer, createElement, backgroundCss, bgVideoSrc, tintFor, containerStyle, bandScheme, tintOverWorstFrame, type BoxNode } from "@/lib/box-model";
+import { contrastRatio } from "@/lib/educo-ui/color";
 import { pageCheck } from "@/lib/semantics";
+import { splitPatch } from "@/lib/per-screen-note";
 import { renderSitePage, photosToFiles } from "@/lib/box-export";
 import { siteFromRoot } from "@/lib/box-site";
 import { DEFAULT_THEME } from "@/lib/site-storage";
@@ -143,17 +145,28 @@ describe("LE5-14 · words over a video or a photo stay readable (the user 2026-1
     expect(tintFor(over({}))).toEqual({ bgOverlay: LAYOUT.media.tintStart });
     expect(tintFor(over({ bgOverlay: "#ffffff33" }))).toEqual({});
   });
-  it("under a video, the words read on the TINT, not on the background colour it covers", () => {
+  it("the worst frame: a dark tint over WHITE, a light tint over BLACK (a 60 % black over white is #666666)", () => {
+    expect(tintOverWorstFrame("#00000099")).toBe("#666666");
+    expect(tintOverWorstFrame("#ffffffcc")).toBe("#cccccc");
+    expect(tintOverWorstFrame("#000000")).toBe("#000000");
+    expect(tintOverWorstFrame("gradient:#000:#fff")).toBeNull();
+  });
+  it("under a video, the words read on the tint over its worst frame — not on the background colour it covers", () => {
     const st = containerStyle(over({ bgVideo: `media:${H}.mp4`, bgOverlay: "#000000aa", background: "#f5f5f5" })) as Record<string, string>;
-    expect(st).toMatchObject(bandScheme("#000000")!.vars);
+    expect(st).toMatchObject(bandScheme(tintOverWorstFrame("#000000aa")!)!.vars);
+  });
+  it("THE PROMISE: with the tint that arrives, the words reach 4.5 : 1 on the brightest frame a picture can have", () => {
+    const st = containerStyle(over({ bgVideo: `media:${H}.mp4`, bgOverlay: LAYOUT.media.tintStart })) as Record<string, string>;
+    expect(contrastRatio(st["--bx-text"], tintOverWorstFrame(LAYOUT.media.tintStart)!)).toBeGreaterThanOrEqual(4.5);
+    expect(contrastRatio(st["--bx-text"], "#000000")).toBeGreaterThanOrEqual(4.5); // …and on the darkest
   });
   it("a light tint gives dark words", () => {
     const st = containerStyle(over({ bgVideo: `media:${H}.mp4`, bgOverlay: "#ffffffcc" })) as Record<string, string>;
-    expect(st).toMatchObject(bandScheme("#ffffff")!.vars);
+    expect(contrastRatio(st["--bx-text"], "#ffffff")).toBeGreaterThan(contrastRatio(st["--bx-text"], "#000000"));
   });
   it("a photo the same way", () => {
     const st = containerStyle(over({ bgImage: "https://e.org/a.jpg", bgOverlay: "#000000aa", background: "#f5f5f5" })) as Record<string, string>;
-    expect(st).toMatchObject(bandScheme("#000000")!.vars);
+    expect(st).toMatchObject(bandScheme(tintOverWorstFrame("#000000aa")!)!.vars);
   });
   it("with no tint, the colour the picture covers imposes nothing (as a photo always has)", () => {
     const st = containerStyle(over({ bgVideo: `media:${H}.mp4` })) as Record<string, string>;
@@ -166,5 +179,17 @@ describe("LE5-14 · words over a video or a photo stay readable (the user 2026-1
     expect(kinds(over({ bgVideo: `media:${H}.mp4`, bgOverlay: "#00000066" }))).toEqual([]);
     expect(kinds(over({ bgImage: "linear-gradient(red, blue)" }))).toEqual([]);
     expect(kinds(over({ bgVideo: `media:${H}.mp4`, children: [] }))).toEqual([]);
+  });
+});
+
+describe("LE5-18 · the tint that arrives with a video goes to every screen with it", () => {
+  // Measured 2026-10-18 on the phone emulator: the video (shared, LE5-12) reached every screen, the tint that arrived with it only the
+  // phone's — a desktop visitor got the video untinted.
+  it("in the same change as a video, the tint is shared", () => {
+    expect(splitPatch({ bgVideo: "https://e.org/a.mp4", bgOverlay: "#00000099" })).toEqual({ shared: { bgVideo: "https://e.org/a.mp4", bgOverlay: "#00000099" }, own: {} });
+  });
+  it("a tint changed on its own stays this screen's; removing the video does not carry the tint", () => {
+    expect(splitPatch({ bgOverlay: "#ffffff55" })).toEqual({ shared: {}, own: { bgOverlay: "#ffffff55" } });
+    expect(splitPatch({ bgVideo: undefined, bgOverlay: undefined }).own).toEqual({ bgOverlay: undefined });
   });
 });

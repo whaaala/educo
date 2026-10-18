@@ -103,3 +103,9 @@ Feature: A background video behind any block — uploaded or linked (MS-5b, BATC
     Given I am editing the Mobile screen
     When I add a background video
     Then the desktop and the published page have it too
+
+  Scenario: The tint that arrives with a video on the phone screen reaches every screen too (LE5-18)
+    Given I am editing the Mobile screen
+    When I add a background video to a block with no tint
+    Then the video AND its tint are the block's on every screen
+    But a tint I change later while editing the Mobile screen is the phone's own

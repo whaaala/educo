@@ -608,7 +608,7 @@ moving quietly behind the welcome words.
 | **Upload a video** | Pick an `.mp4` or `.webm` file from your computer or phone, up to 20 MB. A loop of 5 to 10 seconds is plenty. The video is kept in this browser, and your page only remembers which video it is. |
 | **Video address** | Or paste the address of a video file that is already online. It must end in `.mp4` or `.webm`. A YouTube or Vimeo page cannot play behind a section; use a **Video** block for those. |
 | **Upload a poster** | The still picture shown before the video plays, and instead of it. The builder takes one from the first frame for you; upload your own to choose a better moment. |
-| **Tint over background** | A colour laid over the video and under your words, so they stay readable. A dark tint arrives with the video, and the words turn light to read on it. Change its colour or strength, or open its palette and choose **Clear** to take it off. The same happens when you add a background photo. |
+| **Tint over background** | A colour laid over the video and under your words, so they stay readable. A dark tint (60 % black) arrives with the video, and the words turn light to read on it — enough that they stay readable even on the brightest frame. Change its colour or strength, or open its palette and choose **Clear** to take it off. The same happens when you add a background photo. |
 | **Remove video** | Takes the video and its poster off. **Ctrl+Z** brings them back. |
 
 **What you see:** on the canvas the video plays, silent, behind the section's words. In **Preview**, and on your
