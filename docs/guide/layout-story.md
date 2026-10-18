@@ -561,6 +561,15 @@ screen.
 
 [![The Preview at 1280 px: a photo on the left with the letter's first lines beside it and the rest running under it](img/story-wrap-photo.webp)](img/story-wrap-photo.webp)
 
+The photo is a portrait, and Amaka wants it round. She picks the Image's **Circle** style, then in **Position** sets
+**Words follow → Its round corners**: the letter's lines now start where the circle curves, closer at its top and bottom,
+further out at its middle, always the same small gap away. For the sports page she uploads a cut-out of the trophy — a PNG
+with a clear background — sets **Wrap words round it → End** and **Words follow → A cut-out's outline**, and the report's
+lines run right up to the trophy's edge. On a phone both pictures stop floating and the words follow them — and the
+round photo stays round.
+
+[![The Preview at 1280 px: the letter's lines following a round photo of the head teacher](img/story-words-follow-round.webp)](img/story-words-follow-round.webp)
+
 ### "A strip of events"
 
 Six events in a Side by side made six lines on a phone, and the page went on forever. Amaka selects the row, opens

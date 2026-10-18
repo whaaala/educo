@@ -55,6 +55,7 @@ const BROWSER_ALLOWED = new Set([
   // Genuinely browser-only, and each needs a React Native equivalent on the day:
   "measureImage",   // new Image() + decode
   "importPhoto",    // FileReader + a canvas to downscale through
+  "traceOutline",   // new Image() + a canvas to read a cut-out's pixels (FL-3b, LE-13b)
   "rootFontPx",     // the reader's own text size
   "downloadSite",   // Blob + createObjectURL + a clicked <a>; on a phone this is the share sheet instead
 ]);

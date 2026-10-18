@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from "vitest";
-import { render, screen, fireEvent, cleanup, within } from "@testing-library/react";
+import { render, screen, fireEvent, cleanup, within, waitFor } from "@testing-library/react";
 import BoxInspector from "@/components/website/box/BoxInspector";
 import { DEFAULT_THEME } from "@/lib/site-storage";
 import { createContainer, createElement, createComponent, type BoxNode } from "@/lib/box-model";
@@ -7,6 +7,10 @@ import userEvent from "@testing-library/user-event";
 import LAYOUT from "@/config/layout.json";
 import { SPACE_STEPS } from "@/lib/educo-ui/tokens";
 import INSPECTOR_WORDS from "@/config/inspector.json";
+
+// FL-3b (LE-13b): jsdom draws no canvas, so the outline tracer answers for it — the tracing itself is tests/unit/flow.test.ts
+const TRACED = "polygon(40% 0%, 60% 0%, 80% 50%, 60% 100%, 40% 100%, 20% 50%)";
+vi.mock("@/lib/box-model", async (real) => ({ ...(await real<typeof import("@/lib/box-model")>()), traceOutline: vi.fn(async (src: string) => (src === "untraceable.png" ? undefined : TRACED)) }));
 
 function renderFor(node: BoxNode, extra: Record<string, unknown> = {}) {
   const onPatch = vi.fn();
@@ -1353,6 +1357,37 @@ describe("BoxInspector — LE-13 flow and overlap", () => {
     cleanup();
     renderFor(pic(), { parentFlow: "row" });
     expect(screen.queryByRole("group", { name: W.wrap })).toBeNull();
+  });
+  it("FL-3b (LE-13b): Words follow, only with the wrap on — its box, its round corners, a cut-out's outline (traced); its box stored as unset", async () => {
+    renderFor(pic(), { parentFlow: "column", canWrapWords: true });
+    expect(screen.queryByRole("group", { name: W.shape })).toBeNull(); // the wrap is Off: there is nothing for the words to follow
+    cleanup();
+    const onPatch = renderFor(pic({ wrapAround: "start" }), { parentFlow: "column", canWrapWords: true });
+    const g = screen.getByRole("group", { name: W.shape });
+    expect(within(g).getAllByRole("button").map((b) => b.textContent)).toEqual(Object.values(W.shapeChoices));
+    expect(within(g).getByRole("button", { name: W.shapeChoices.box })).toHaveAttribute("aria-pressed", "true");
+    expect(screen.getByText(W.shapeHint)).toBeInTheDocument();
+    fireEvent.click(within(g).getByRole("button", { name: W.shapeChoices.round })); expect(onPatch).toHaveBeenLastCalledWith({ wrapShape: "round" });
+    fireEvent.click(within(g).getByRole("button", { name: W.shapeChoices.box })); expect(onPatch).toHaveBeenLastCalledWith({ wrapShape: undefined });
+    cleanup();
+    // A cut-out's outline: the picture is traced, and the shape and its outline land in ONE patch (one undo step)
+    const traced = renderFor(pic({ wrapAround: "start", src: "cutout.png" }), { parentFlow: "column", canWrapWords: true });
+    fireEvent.click(within(screen.getByRole("group", { name: W.shape })).getByRole("button", { name: W.shapeChoices.outline }));
+    await waitFor(() => expect(traced).toHaveBeenLastCalledWith({ wrapShape: "outline", wrapOutline: TRACED }));
+    cleanup();
+    // already traced: not traced again · cannot be traced: the choice is still kept (the words keep to its box)
+    const kept = renderFor(pic({ wrapAround: "start", src: "cutout.png", wrapOutline: TRACED }), { parentFlow: "column", canWrapWords: true });
+    fireEvent.click(within(screen.getByRole("group", { name: W.shape })).getByRole("button", { name: W.shapeChoices.outline }));
+    expect(kept).toHaveBeenLastCalledWith({ wrapShape: "outline" });
+    cleanup();
+    const plain = renderFor(pic({ wrapAround: "start", src: "untraceable.png" }), { parentFlow: "column", canWrapWords: true });
+    fireEvent.click(within(screen.getByRole("group", { name: W.shape })).getByRole("button", { name: W.shapeChoices.outline }));
+    await waitFor(() => expect(plain).toHaveBeenLastCalledWith({ wrapShape: "outline" }));
+    cleanup();
+    const atPhone = renderFor(pic({ wrapAround: "end", wrapShape: "round" }), { parentFlow: "column", canWrapWords: true, breakpoint: "phone" });
+    const g2 = screen.getByRole("group", { name: W.shape });
+    expect(within(g2).getByRole("button", { name: W.shapeChoices.round })).toHaveAttribute("aria-pressed", "true");
+    fireEvent.click(within(g2).getByRole("button", { name: W.shapeChoices.box })); expect(atPhone).toHaveBeenLastCalledWith({ wrapShape: "box" }); // its box on this screen only
   });
   it("FL-6: When it doesn't fit on a Side by side — Scroll sideways, and back to new lines (Off stored on a screen)", () => {
     const sbs = (extra: Partial<BoxNode> = {}) => createContainer("row", { id: "s", children: [], ...extra });

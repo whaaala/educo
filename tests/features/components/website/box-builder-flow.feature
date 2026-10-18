@@ -28,6 +28,53 @@ Feature: Flow and overlap — words round a picture, a sideways strip, a section
     And at a phone width where its Stack is at least that wide the words run beside it
     And from the tablet up the picture does not float
 
+  # BATCH LE-13b · FL-3b — the rest of the signed FL-3, "round its shape" (the user 2026-10-18: "build it now").
+  # Words: config/inspector.json flow.shape* · numbers: config/layout.json flow.shapeThreshold, the gap flow.wrapGapRem.
+  Scenario: the words follow a round head-teacher photo
+    Given a picture set to Wrap words round it → Start, its corners rounded to a circle
+    When I pick Words follow → Its round corners
+    Then the lines beside the picture start where its curve is, a gap of config/layout.json flow.wrapGapRem away from it
+    And the lines beside the middle of the circle are shorter than the lines beside its top and bottom
+    And the canvas and the Preview draw the same lines
+
+  Scenario: the words follow a cut-out picture's outline
+    Given a picture with a see-through background, uploaded, set to Wrap words round it → Start
+    When I pick Words follow → A cut-out's outline
+    Then the builder traces what is drawn in the picture into an outline, row by row (config/layout.json flow.outlineRows,
+      a pixel counts when it is more opaque than flow.shapeThreshold)
+    And the lines run up to the edge of what is drawn, a gap of config/layout.json flow.wrapGapRem away from it, at every width
+    And where the picture is see-through the words come in close
+    And the published page fetches nothing more for the outline: it is part of the page, and the picture keeps its phone copies
+    # LE13b-9, measured 2026-10-18: Chrome lays a shape-outside IMAGE on a non-replaced float out at the image's own pixel size,
+    # so a url() shape on the picture's (fluid) box never matched it — the outline is a polygon in %, which scales with the box.
+
+  Scenario: a new picture brings its own outline
+    Given a picture following A cut-out's outline
+    When I replace it with another cut-out
+    Then the words follow the new picture's outline, not the old one's
+
+  Scenario: Words follow its box, as before
+    Given a picture set to Wrap words round it with rounded corners
+    When I pick Words follow → Its box
+    Then the words keep to the picture's rectangle, as they did before LE-13b
+
+  Scenario: a picture whose outline cannot be traced keeps to its box
+    Given a picture the browser cannot read back (from another site with no permission), or a stored outline that is not one
+    When it is set to A cut-out's outline
+    Then the words keep to the picture's rectangle and nothing breaks
+
+  Scenario: the shape gives way on a narrow screen with the float
+    Given a picture set to Wrap words round it and Words follow → Its round corners
+    When its Stack is narrower than config/layout.json flow.wrapBelowRem
+    Then the picture is the whole width of the line and the words follow it under it
+
+  Scenario: Words follow is offered only with the wrap
+    Given a picture alone on its line in a Stack with Wrap words round it → Off
+    Then there is no Words follow
+    When I pick Wrap words round it → Start
+    Then Words follow shows Its box, Its round corners and A cut-out's outline, Its box chosen
+    And it works by keyboard, in light, dark, midnight and purple
+
   Scenario: Wrap words round it is offered only where it can work
     Given a picture alone on its line in a Stack
     Then its Arrange shows Wrap words round it

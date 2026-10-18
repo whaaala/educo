@@ -8,8 +8,18 @@
 //   stripPhone U2 · FL-6 set on Mobile only: a strip on the phone, wrapped lines on a desktop
 //   overlap    U3 · PO-4 a coloured hero and a section of three cards → Medium: in front, nothing covered; Off on Mobile only
 //   chrome     U4 · the three controls by keyboard in four editor themes × 375 · 768 · 1280 · 1536; hints readable; only where they work
+//              (LE-13b U6: + Words follow, only with the wrap on)
+// BATCH LE-13b · FL-3b, words follow its shape (checklist U1 … U6 of LE-13b):
+//   shapeRound  U1 · the Circle style + Wrap → Start + Words follow → Its round corners: the lines follow the curve, a gap away;
+//               canvas == Preview; below flow.wrapBelowRem the whole line (U4); 200 % text
+//   shapeEnd    U1 · the same at End, the curve on the other side
+//   shapeCut    U2 · a PNG disc on clear, uploaded, Start, A cut-out's outline: traced to a polygon, the lines follow the disc; the
+//               DOWNLOADED site served over HTTP: the outline in the page, the picture fetched once at 375 and 1280; replaced by another
+//               cut-out: a new outline (LE13b-9 — a url() shape is laid out at the image's own pixel size in Chrome, so it is traced)
+//   shapePhone  U5 · Its round corners on the Mobile screen only: the curve on a phone, the box from the tablet up
 //   NODE_PATH=node_modules BASE=http://localhost:3100 node scripts/uat/uat-le13-headed.js [--only=wrap,strip]
-const path = require('path'); const fs = require('fs');
+const path = require('path'); const fs = require('fs'); const http = require('http');
+const { unzipSync, strFromU8 } = require('fflate');
 const H = require('./h.js'); const P = require('./pages.js').helpers;
 const { WIDTHS } = require('./screens.js');
 const X = require('./uat-rx3-headed.js'); const { site, sleep, deselect, at, ins, pvOpen, pvAt, pvClose, chip } = X;
@@ -67,7 +77,7 @@ async function sideBySide(page, tiles) {
 }
 const rects = (f, ids) => f.evaluate((ids) => {
   const out = { vw: document.documentElement.clientWidth, sw: document.documentElement.scrollWidth };
-  for (const id of ids) { const e = document.querySelector(`.bx-${id}`); const r = e?.getBoundingClientRect(); const p = e?.matches('p') ? e : e?.querySelector('p'); out[id] = r ? { pr: +(p || e).getBoundingClientRect().right.toFixed(1), l: +r.left.toFixed(1), r: +r.right.toFixed(1), t: +(r.top + scrollY).toFixed(1), b: +(r.bottom + scrollY).toFixed(1), w: +r.width.toFixed(1), h: +r.height.toFixed(1) } : null; }
+  for (const id of ids) { const e = document.querySelector(`.bx-${id}`); const r = e?.getBoundingClientRect(); const p = e?.matches('p') ? e : e?.querySelector('p'); out[id] = r ? { fl: getComputedStyle(e).float, pr: +(p || e).getBoundingClientRect().right.toFixed(1), l: +r.left.toFixed(1), r: +r.right.toFixed(1), t: +(r.top + scrollY).toFixed(1), b: +(r.bottom + scrollY).toFixed(1), w: +r.width.toFixed(1), h: +r.height.toFixed(1) } : null; }
   return out;
 }, ids);
 /** The LINES of a block's words (each text run's own rectangles, page coordinates) — `sel` finds the block in either renderer. */
@@ -92,7 +102,7 @@ async function photoStory(page) {
 /** U1's geometry at one width: floated beside → the first words beside it and later words under it; taking the line → words below. */
 function wrapCheck(r, P, st, pic, side, t) {
   const L = P.flat();
-  const floats = r[pic].w < r[st].w - 20;
+  const floats = r[pic].fl ? r[pic].fl !== 'none' : r[pic].w < r[st].w - 20; // LE13b-11: what the browser says — a 10rem picture that stopped floating is still narrower than its Stack
   const bad = [];
   if (r.sw > r.vw) bad.push(`sideways ${r.sw}`);
   if (floats) {
@@ -109,7 +119,177 @@ function wrapCheck(r, P, st, pic, side, t) {
   return { floats, bad };
 }
 
+/** A text's contrast against the first opaque background behind it, measured on what is drawn (run in the page). */
+const CONTRAST = (el) => {
+  const cx = Object.assign(document.createElement('canvas'), { width: 1, height: 1 }).getContext('2d', { willReadFrequently: true });
+  const rgb = (c) => { cx.clearRect(0, 0, 1, 1); cx.fillStyle = '#000'; cx.fillStyle = c; cx.fillRect(0, 0, 1, 1); return [...cx.getImageData(0, 0, 1, 1).data]; };
+  let bg = null; for (let e = el; e && !bg; e = e.parentElement) { const c = rgb(getComputedStyle(e).backgroundColor); if (c[3] === 255) bg = c; }
+  const lum = ([r, g, b]) => { const q = (x) => { x /= 255; return x <= 0.03928 ? x / 12.92 : ((x + 0.055) / 1.055) ** 2.4; }; return 0.2126 * q(r) + 0.7152 * q(g) + 0.0722 * q(b); };
+  const [a, b] = [lum(rgb(getComputedStyle(el).color)), lum(bg || [255, 255, 255])].sort((x, y) => y - x); return +((a + 0.05) / (b + 0.05)).toFixed(2);
+};
+// ── LE-13b · the words follow its shape ──────────────────────────────────────────────────────────────────────────────────────
+/** A disc on a clear 600 × 400 PNG — a cut-out made in the page's own canvas (no dependency), saved for the Upload. */
+const DISC = { w: 600, h: 400, r: 180, cx: 300, name: 'disc' }, DISC2 = { w: 600, h: 400, r: 110, cx: 140, name: 'disc-left' };
+async function discPng(page, d = DISC) {
+  const b64 = await page.evaluate((d) => { const c = Object.assign(document.createElement('canvas'), { width: d.w, height: d.h }); const x = c.getContext('2d'); x.fillStyle = '#1d4ed8'; x.beginPath(); x.arc(d.cx, d.h / 2, d.r, 0, Math.PI * 2); x.fill(); return c.toDataURL('image/png').split(',')[1]; }, d);
+  const p = path.join(OUT, `${d.name}.png`); fs.writeFileSync(p, Buffer.from(b64, 'base64')); return p;
+}
+/** Is the picture's circle followed? `circle` {cx, cy, R} in the frame's page coordinates; lines beside it must stay a gap off the
+ *  circle (a line band is shortened by the float area nearest the centre), and they must come in over the box somewhere (not its box). */
+function shapeCheck(r, P, pic, side, circle, wantShape = true, ids = []) {
+  const gap = FLOW.wrapGapRem * REM, bad = [];
+  const beside = P.flat().filter((x) => x.t < r[pic].b - 2 && x.b > r[pic].t + 2);
+  if (!beside.length) return { bad: ['no words beside the picture'] };
+  let inOver = 0;
+  for (const x of beside) {
+    const dy = x.b < circle.cy ? circle.cy - x.b : x.t > circle.cy ? x.t - circle.cy : 0;
+    const chord = dy < circle.R ? Math.sqrt(circle.R ** 2 - dy ** 2) : null;
+    if (side === 'start') {
+      if (chord != null && x.l < circle.cx + chord + gap - 2) bad.push(`a line at ${x.t} starts ${x.l}, inside the curve + gap ${(circle.cx + chord + gap).toFixed(1)} (picture ${r[pic].l}–${r[pic].r} × ${r[pic].t}–${r[pic].b})`);
+      if (x.l < r[pic].r + gap - 1) inOver++;
+    } else {
+      if (chord != null && x.r > circle.cx - chord - gap + 2) bad.push(`a line at ${x.t} ends ${x.r}, inside the curve + gap ${(circle.cx - chord - gap).toFixed(1)} (picture ${r[pic].l}–${r[pic].r} × ${r[pic].t}–${r[pic].b})`);
+      if (x.r > r[pic].l - gap + 1) inOver++;
+    }
+  }
+  // LE13b-6 · at End a paragraph capped at its reading width may stop short of the picture: then nothing can come in over its box
+  const reaches = side === 'start' || !ids.length || ids.some((id) => r[id] && r[id].pr > r[pic].l - gap + 1);
+  if (wantShape && reaches && !inOver) bad.push(`no line comes in over the picture's box (${beside.length} beside) — its box, not its shape`);
+  if (!wantShape && inOver) bad.push(`${inOver} lines come in over the box — a shape where its box was asked for`);
+  return { bad, beside: beside.length, inOver, reaches };
+}
+const circleOf = (rc) => ({ cx: rc.l + rc.w / 2, cy: rc.t + rc.h / 2, R: Math.min(rc.w, rc.h) / 2 });
+const discOf = (rc, d = DISC) => { const s = rc.w / d.w; return { cx: rc.l + d.cx * s, cy: rc.t + rc.h / 2, R: d.r * s }; };
+/** The Image's Circle style (radius 999, 10rem × 10rem) — how a person makes a round head-teacher photo. */
+async function circleStyle(page, pic) { await at(page, pic, 'Design'); await ins(page).getByRole('group', { name: 'Style presets' }).getByRole('button', { name: 'Circle style' }).first().click(); await sleep(page, 500); }
+/** Every width of screens.js: the shape where it floats, the whole line below wrapBelowRem; canvas == Preview at 1280. */
+async function shapeSweep(page, J, { st, pic, t }, side, label, geo, tag, opts = {}) {
+  const bad = []; let floated = 0, full = 0, short = 0; let f = await pvOpen(page);
+  for (const w of WIDTHS) {
+    f = await pvAt(page, w); const r = await rects(f, [st, pic, ...t]); const P = await Promise.all(t.map((id) => lines(f, id)));
+    const floats = r[pic].fl !== 'none';
+    const shaped = opts.shapedAt ? opts.shapedAt(w) : true;
+    if (!floats && opts.round && Math.abs(r[pic].w - r[pic].h) > 1) bad.push(`${w}: the round picture is ${r[pic].w} × ${r[pic].h} where it takes the line — not round (LE13b-11)`);
+    if (floats) { floated++; const c = shapeCheck(r, P, pic, side, geo(r[pic]), shaped, t); if (!c.reaches) short++; bad.push(...c.bad.map((b) => `${w}: ${b}`)); if (c.bad.length) { await pvShot(page, `${tag}-FAIL-${w}`); fs.writeFileSync(path.join(OUT, `${tag}-FAIL-${w}.json`), JSON.stringify({ r, P }, null, 1)); } }
+    else { full++; const c = wrapCheck(r, P, st, pic, side, t); bad.push(...c.bad.map((b) => `${w}: ${b}`)); }
+    if (r.sw > r.vw) bad.push(`${w}: sideways ${r.sw}`);
+    if (floats && r[st].w < FLOW.wrapBelowRem * REM - 1) bad.push(`${w}: floats in a ${r[st].w}px Stack`);
+    if ([375, 768, 1280, 1920].includes(w)) await pvShot(page, `${tag}-${w}`);
+  }
+  rec(J, `${label} at ${WIDTHS.length} widths: the lines follow its shape a gap away where it floats (${floated}${short ? `, ${short} where its capped paragraphs stop short of it` : ''}), the whole line below ${FLOW.wrapBelowRem}rem (${full}), never sideways`, !bad.length && floated > 0 && (opts.noFull || full > 0), bad.slice(0, 3).join(' | ') || 'ok');
+  if (!opts.skip200) {
+    f = await pvAt(page, 1280); await f.evaluate(() => { document.documentElement.style.fontSize = '200%'; }); await sleep(page, 400);
+    const r = await rects(f, [st, pic, ...t]); const P = await Promise.all(t.map((id) => lines(f, id)));
+    const c = r[pic].fl !== 'none' ? shapeCheck(r, P, pic, side, geo(r[pic]), true, t) : wrapCheck(r, P, st, pic, side, t);
+    await pvShot(page, `${tag}-1280-200pct`); await f.evaluate(() => { document.documentElement.style.fontSize = ''; });
+    rec(J, `${label} at 200 % text: still laid out, never sideways`, !c.bad.length && r.sw <= r.vw, c.bad.join(' | ') || 'ok');
+  }
+  await pvClose(page, 1366);
+}
+/** The canvas draws the same lines as the Preview at 1280: each beside-line's start (or end) within 2px, relative to the Stack. */
+async function canvasMatches(page, J, { st, pic, t }, side, label) {
+  await chip(page, 'Desktop (1280px)'); await deselect(page); await sleep(page, 500);
+  const cv = await canvasRects(page, [st, pic]); const cl = await canvasLines(page, t[0]);
+  let f = await pvOpen(page); f = await pvAt(page, 1280); const r = await rects(f, [st, pic]); const pl = await lines(f, t[0]); await pvClose(page, 1366);
+  const k = Math.min(cl.length, pl.length, 6); const d = [];
+  for (let i = 0; i < k; i++) d.push(+(side === 'start' ? (cl[i].l - cv[st].l) - (pl[i].l - r[st].l) : (cv[st].r - cl[i].r) - (r[st].r - pl[i].r)).toFixed(1));
+  rec(J, `${label} canvas == Preview at 1280: the first ${k} lines of the first paragraph start where the Preview's do (±2px)`, k >= 3 && d.every((x) => Math.abs(x) <= 2), `differences ${d.join(' ')}`);
+}
+/** Serve a folder over HTTP — the downloaded site, as a host would. */
+function serve(dir, port) {
+  const types = { '.html': 'text/html', '.css': 'text/css', '.png': 'image/png', '.webp': 'image/webp', '.jpg': 'image/jpeg', '.js': 'text/javascript', '.woff2': 'font/woff2' };
+  const srv = http.createServer((q, s) => { const f = path.join(dir, decodeURIComponent(q.url.split('?')[0]).replace(/^\/+/, '') || 'index.html'); if (!f.startsWith(dir) || !fs.existsSync(f) || fs.statSync(f).isDirectory()) { s.writeHead(404); return s.end(); } s.writeHead(200, { 'content-type': types[path.extname(f)] || 'application/octet-stream' }); fs.createReadStream(f).pipe(s); });
+  return new Promise((ok) => srv.listen(port, () => ok(srv)));
+}
+async function downloadSite(page) {
+  await H.panel(page, false); const [dl] = await Promise.all([page.waitForEvent('download'), page.getByRole('button', { name: 'Export' }).first().click()]);
+  const zip = path.join(OUT, `site-${Date.now()}.zip`); await dl.saveAs(zip); const files = unzipSync(fs.readFileSync(zip));
+  const dir = path.join(OUT, `site-${Date.now()}`); for (const [n, b] of Object.entries(files)) { const p = path.join(dir, n); fs.mkdirSync(path.dirname(p), { recursive: true }); fs.writeFileSync(p, b); }
+  return { dir, files };
+}
+
 const JOBS = {
+  async shapeRound(page, J) {
+    const story = await photoStory(page); const { pic } = story;
+    await circleStyle(page, pic);
+    await pick(page, pic, 'Position', W.wrap, W.wrapChoices.start);
+    await pick(page, pic, 'Position', W.shape, W.shapeChoices.round); await shot(page, 'LE13b-U1-round-inspector');
+    const n = nodeIn(await site(page), pic).n;
+    rec(J, 'LE13b U1 stored: the Circle style and Words follow → Its round corners', own(n, 'wrapShape') === 'round' && n.radius >= 999, `wrapShape ${own(n, 'wrapShape')} · radius ${n.radius} · width ${n.width}`);
+    await canvasMatches(page, J, story, 'start', 'LE13b U1 round');
+    await shapeSweep(page, J, story, 'start', 'LE13b U1/U4 round, Start', circleOf, 'LE13b-U1-round', { round: true });
+    // back to its box: the lines keep to the rectangle (U3)
+    await pick(page, pic, 'Position', W.shape, W.shapeChoices.box);
+    rec(J, 'LE13b U3 Its box: nothing stored', own(nodeIn(await site(page), pic).n, 'wrapShape') == null, `wrapShape ${own(nodeIn(await site(page), pic).n, 'wrapShape')}`);
+    let f = await pvOpen(page); f = await pvAt(page, 1280); const r = await rects(f, [story.st, pic, ...story.t]); const P = await Promise.all(story.t.map((id) => lines(f, id)));
+    const c = shapeCheck(r, P, pic, 'start', circleOf(r[pic]), false); await pvShot(page, 'LE13b-U3-box-1280'); await pvClose(page, 1366);
+    rec(J, 'LE13b U3 Its box at 1280: no line comes in over the rounded picture\'s box', !c.bad.length, c.bad.join(' | ') || `${c.beside} lines beside, all off the box`);
+  },
+
+  async shapeEnd(page, J) {
+    const story = await photoStory(page); const { pic } = story;
+    await circleStyle(page, pic);
+    await pick(page, pic, 'Position', W.wrap, W.wrapChoices.end);
+    await pick(page, pic, 'Position', W.shape, W.shapeChoices.round);
+    await canvasMatches(page, J, story, 'end', 'LE13b U1 round, End');
+    await shapeSweep(page, J, story, 'end', 'LE13b U1/U4 round, End', circleOf, 'LE13b-U1-end', { skip200: true, round: true });
+  },
+
+  async shapeCut(page, J) {
+    const story = await photoStory(page); const { st, pic, t } = story;
+    const upload = async (file) => { await H.select(page, pic); await page.locator('input[aria-label="Upload image"]').last().setInputFiles(file); await sleep(page, 2500); };
+    await upload(await discPng(page));
+    let n = nodeIn(await site(page), pic).n;
+    rec(J, 'LE13b U2 the cut-out uploaded through the Image (kept see-through: PNG or WebP, its own size recorded)', /^data:image\/(png|webp)/.test(n?.src || '') && n.imgW === DISC.w && n.imgH === DISC.h, `src ${String(n?.src).slice(0, 22)} · ${n?.imgW} × ${n?.imgH}`);
+    await pick(page, pic, 'Position', W.wrap, W.wrapChoices.start);
+    await pick(page, pic, 'Position', W.shape, W.shapeChoices.outline); await sleep(page, 800); await shot(page, 'LE13b-U2-outline-inspector');
+    n = nodeIn(await site(page), pic).n; const first = n?.wrapOutline;
+    rec(J, 'LE13b U2 stored: Words follow → A cut-out\'s outline, and the outline traced from the picture (a polygon in %)', own(n, 'wrapShape') === 'outline' && /^polygon\(/.test(first || ''), `wrapShape ${own(n, 'wrapShape')} · ${String(first).slice(0, 70)}… (${(first || '').split(',').length} points)`);
+    await canvasMatches(page, J, story, 'start', 'LE13b U2 outline');
+    await shapeSweep(page, J, story, 'start', 'LE13b U2/U4 outline, Start', discOf, 'LE13b-U2-outline', { skip200: true });
+    // the published site: download, serve over HTTP — the outline is in the page; the picture is one file with its phone copies
+    const { dir, files } = await downloadSite(page);
+    const html = strFromU8(files['index.html'] || Object.entries(files).find(([k]) => k.endsWith('.html'))[1]);
+    const pics = Object.keys(files).filter((k) => k.startsWith('images/')); const main = pics.find((k) => !/-\d+\./.test(k));
+    rec(J, 'LE13b U2 the download: the outline is a polygon in the page (no image fetched for it), the picture one file with its copies', /shape-outside:polygon\(/.test(html) && !/shape-outside:\s*url\(/.test(html) && !/data:image\//.test(html) && pics.length >= 2, `files ${pics.join(', ')}`);
+    const PORT = 3300; const srv = await serve(dir, PORT);
+    try {
+      for (const vw of [375, 1280]) {
+        const ctx = await page.context().browser().newContext({ viewport: { width: vw, height: 860 } }); const pg = await ctx.newPage(); const got = [];
+        pg.on('request', (q) => { if (/\/images\//.test(q.url())) got.push(q.url().replace(/^.*\/images\//, 'images/')); });
+        await pg.goto(`http://localhost:${PORT}/index.html`); await pg.waitForLoadState('networkidle'); await pg.evaluate(() => window.scrollTo(0, document.body.scrollHeight)); await pg.waitForTimeout(800);
+        const mine = got.filter((u) => u.split('?')[0].replace(/-\d+(\.\w+)$/, '$1') === main);
+        await pg.screenshot({ path: path.join(OUT, `LE13b-U2-served-${vw}.png`) });
+        rec(J, `LE13b U2 the served site at ${vw}: the picture fetched ONCE (its file or one copy)`, mine.length === 1, `${mine.length} requests: ${mine.join(', ')}`);
+        if (vw === 1280) {
+          const r = await rects(pg, [st, pic, ...t]); const P = await Promise.all(t.map((id) => lines(pg, id))); const c = shapeCheck(r, P, pic, 'start', discOf(r[pic]), true, t);
+          rec(J, 'LE13b U2 the served site at 1280 (HTTP): the lines follow the disc', !c.bad.length, c.bad.slice(0, 2).join(' | ') || `${c.beside} beside, ${c.inOver} over the box`);
+        }
+        await ctx.close();
+      }
+    } finally { srv.close(); }
+    // a NEW picture brings its own outline: replaced through the Image's Replace, the old outline does not stay
+    await chip(page, 'Desktop (1280px)'); await upload(await discPng(page, DISC2));
+    n = nodeIn(await site(page), pic).n;
+    rec(J, 'LE13b U2 replaced by another cut-out: a new outline is traced, the old one gone', /^polygon\(/.test(n?.wrapOutline || '') && n.wrapOutline !== first, `${String(n?.wrapOutline).slice(0, 60)}…`);
+    let f = await pvOpen(page); f = await pvAt(page, 1280);
+    const r = await rects(f, [st, pic, ...t]); const P = await Promise.all(t.map((id) => lines(f, id))); const c = shapeCheck(r, P, pic, 'start', discOf(r[pic], DISC2), true, t);
+    await pvShot(page, 'LE13b-U2-replaced-1280'); await pvClose(page, 1366);
+    rec(J, 'LE13b U2 the Preview at 1280 follows the NEW picture\'s disc', !c.bad.length, c.bad.slice(0, 2).join(' | ') || `${c.beside} beside, ${c.inOver} over the box`);
+  },
+
+  async shapePhone(page, J) {
+    const story = await photoStory(page); const { pic } = story;
+    await pick(page, pic, 'Position', W.wrap, W.wrapChoices.start);
+    // LE13b-13: the Circle style made on the MOBILE screen, as the app makes it — its 10rem is the phone's own
+    await chip(page, 'Mobile (375px)'); await circleStyle(page, pic); await pick(page, pic, 'Position', W.shape, W.shapeChoices.round); await chip(page, 'Desktop (1280px)');
+    const n = nodeIn(await site(page), pic).n;
+    rec(J, 'LE13b U5 stored on the phone only: Its round corners', n?.wrapShape == null && Object.values(n?.responsive || {}).some((o) => o?.wrapShape === 'round'), JSON.stringify(n?.responsive || {}));
+    const phoneTo = require('../../config/layout.json').rungs.tabletPortrait.from;
+    // the Circle picture is 10rem: in a phone's Stack ≥ wrapBelowRem it floats with the curve; from the tablet up, its box
+    await shapeSweep(page, J, story, 'start', 'LE13b U5 phone only', circleOf, 'LE13b-U5-phone', { shapedAt: (w) => w < phoneTo, skip200: true, noFull: true, round: true });
+  },
+
   async wrap(page, J) {
     const { st, pic, t } = await photoStory(page);
     await pick(page, pic, 'Position', W.wrap, W.wrapChoices.start); await shot(page, 'U1-wrap-inspector');
@@ -281,21 +461,27 @@ const JOBS = {
             if (cur !== id) { await closeIns(page); await sec(page, id, section); cur = id; } const b = ins(page).getByRole('group', { name: group, exact: true }).getByRole('button', { name: choice, exact: true }); // LE13-7d
             const was = nodeIn(await site(page), id).n;
             await b.scrollIntoViewIfNeeded(); await b.focus(); await page.keyboard.press('Shift+Tab'); await page.keyboard.press('Tab'); await page.keyboard.press(want === undefined ? 'Space' : 'Enter'); await sleep(page, 400);
-            const v = changed(was, nodeIn(await site(page), id).n, prop); ev.push(`${prop} ${v}`); if (v !== want && !(want === undefined && (v === 'off' || v === false || v === 0 || v == null))) ok = false; // LE13-7e
+            const v = changed(was, nodeIn(await site(page), id).n, prop); ev.push(`${prop} ${v}`); if (v !== want && !(want === undefined && (v === 'off' || v === 'box' || v === false || v === 0 || v == null))) ok = false; // LE13-7e
           };
+          // LE-13b U6 · Words follow only with the wrap on (the picture starts unwrapped on each width: the last key below sets Off)
+          { if (cur !== pic) { await closeIns(page); await sec(page, pic, 'Position'); cur = pic; } const none = await ins(page).getByRole('group', { name: W.shape, exact: true }).count(); ev.push(`shape group with the wrap off ${none}`); if (none) ok = false; }
           await key(pic, 'Position', W.wrap, W.wrapChoices.end, 'wrapAround', 'end');
+          await key(pic, 'Position', W.shape, W.shapeChoices.round, 'wrapShape', 'round');
+          await key(pic, 'Position', W.shape, W.shapeChoices.outline, 'wrapShape', 'outline');
+          await key(pic, 'Position', W.shape, W.shapeChoices.box, 'wrapShape', undefined);
+          {
+            const g = ins(page).getByRole('group', { name: W.shape, exact: true }).first();
+            const clipped = await g.evaluate((el) => [...el.querySelectorAll('button')].filter((b) => b.scrollWidth > b.clientWidth + 1).map((b) => b.textContent));
+            ev.push(`shape clipped ${clipped.length}`); if (clipped.length) ok = false;
+            const sh = await ins(page).getByText(W.shapeHint).first().evaluate(CONTRAST); ev.push(`shape hint ${sh}:1`); if (sh < 4.5) ok = false;
+            if (w === 375 || w === 1536) await shot(page, `LE13b-U6-${theme}-${w}-shape`);
+          }
           await key(pic, 'Position', W.wrap, W.wrapChoices.off, 'wrapAround', undefined);
           await key(row, 'Arrange', W.fit, W.fitChoices.scroll, 'scrollX', true);
           await key(row, 'Arrange', W.fit, W.fitChoices.wrap, 'scrollX', undefined);
           await key(sbsHost, 'Arrange', W.overlap, W.overlapSteps[0], 'overlapUp', FLOW.overlapSteps[0]);
           // the hints' contrast, measured on what is drawn, and nothing clipped in the three rows
-          const cr = await ins(page).getByText(W.overlapHint).first().evaluate((el) => {
-            const cx = Object.assign(document.createElement('canvas'), { width: 1, height: 1 }).getContext('2d', { willReadFrequently: true });
-            const rgb = (c) => { cx.clearRect(0, 0, 1, 1); cx.fillStyle = '#000'; cx.fillStyle = c; cx.fillRect(0, 0, 1, 1); return [...cx.getImageData(0, 0, 1, 1).data]; };
-            let bg = null; for (let e = el; e && !bg; e = e.parentElement) { const c = rgb(getComputedStyle(e).backgroundColor); if (c[3] === 255) bg = c; }
-            const lum = ([r, g, b]) => { const q = (x) => { x /= 255; return x <= 0.03928 ? x / 12.92 : ((x + 0.055) / 1.055) ** 2.4; }; return 0.2126 * q(r) + 0.7152 * q(g) + 0.0722 * q(b); };
-            const [a, b] = [lum(rgb(getComputedStyle(el).color)), lum(bg || [255, 255, 255])].sort((x, y) => y - x); return +((a + 0.05) / (b + 0.05)).toFixed(2);
-          }); ev.push(`hint ${cr}:1`); if (cr < 4.5) ok = false;
+          const cr = await ins(page).getByText(W.overlapHint).first().evaluate(CONTRAST); ev.push(`hint ${cr}:1`); if (cr < 4.5) ok = false;
           const clipped = await ins(page).getByRole('group', { name: W.overlap, exact: true }).first().evaluate((g) => [...g.querySelectorAll('button')].filter((b) => b.scrollWidth > b.clientWidth + 1).map((b) => b.textContent));
           ev.push(`clipped ${clipped.length}`); if (clipped.length) ok = false;
           if (w === 375 || w === 1536) await shot(page, `U4-${theme}-${w}-overlap`);

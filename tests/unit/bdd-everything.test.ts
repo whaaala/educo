@@ -18,10 +18,11 @@ const rel = (p: string) => relative(ROOT, p).replace(/\\/g, "/");
 
 export const testFiles = (): string[] =>
   ["tests/unit", "tests/components"].flatMap((d) => walk(join(ROOT, d), (n) => /\.test\.tsx?$/.test(n))).map(rel).sort();
-const FEATURES = walk(join(ROOT, "tests/features"), (n) => n.endsWith(".feature")).map((p) => readFileSync(p, "utf8")).join("\n");
+const read = (p: string) => readFileSync(p, "utf8").replace(/\r\n/g, "\n"); // a CRLF checkout reads the same (source-reading-tests)
+const FEATURES = walk(join(ROOT, "tests/features"), (n) => n.endsWith(".feature")).map(read).join("\n");
 export const unnamed = (files: string[], features = FEATURES): string[] => files.filter((f) => !features.includes(basename(f)));
 
-const BACKLOG: string[] = JSON.parse(readFileSync(join(ROOT, "config/bdd.json"), "utf8")).backlog;
+const BACKLOG: string[] = JSON.parse(read(join(ROOT, "config/bdd.json"))).backlog;
 
 describe("RULE BDD — every test is named by a .feature", () => {
   it("no test outside the frozen backlog lacks its .feature", () => {

@@ -375,7 +375,7 @@ instead of its rectangle.
 ```
 
 **Stored:** **PARTLY.** `advanced-css/04` (Natours Stories: text round a circle), `area-v/AXIS-MAP.md` (shape-outside as
-a section-shape value, 19 pens), AC-8 GAP. **Missing:** reference boxes, margin-box clipping, image threshold, the narrow-
+a section-shape value, 19 pens), AC-8 GAP. **Added 2026-10-18 (BATCH LE-13b, MDN shape-outside):** a `<shape-box>` value "includes any curvature created by the border-radius property" — so `shape-outside: border-box` on a float follows its own rounded corners (a circle-cropped photo), and `shape-margin` then gives an even gap round the curve; `margin-box` instead adds the margins to the radii (lopsided where the float has margin on one side only). An `url()` shape is laid out over the float's content box like `object-fit: fill`, so it matches a picture shown at its own proportion; a data: URL needs no CORS. **MEASURED 2026-10-18 (LE13b-9), Chromium 145 and Chrome 155:** on a NON-replaced float (a `<div>`, as a builder's block wrapper is) an image shape is laid out at the image's OWN pixel size, not fitted to the box — a 600 × 400 disc on a 240 × 160 div left the words at the box edge, the same disc on a 600 × 400 div or on an `<img>` was followed (and MDN's small balloon "works" on a div only because it is small). CORS headers changed nothing. So a builder whose picture box is fluid cannot use `url()`: it traces the picture's alpha into `polygon()` in % (rows of leftmost / rightmost opaque pixels), which scales with any box, fetches nothing and needs no CORS (`outlinePolygon` / `traceOutline`, lib/box-model.ts). **Missing:** reference boxes, margin-box clipping, image threshold, the narrow-
 screen fallback.
 
 ### 3.7 Logical properties and values

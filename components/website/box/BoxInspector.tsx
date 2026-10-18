@@ -13,7 +13,7 @@ import type { SiteTheme } from "@/lib/site-storage";
 import { perScreenBanner, perScreenDeviceTab } from "@/lib/per-screen-note";
 import type { BoxNode, FlexAlign, FlexJustify, FlexLines, AccPartStyle, Breakpoint, PagerNav, PinScopeWords, SectionFlag } from "@/lib/box-model";
 import { RUNG_LABEL, SIZES, FLOW } from "@/lib/educo-ui/layout";
-import { type ItemAction, gridSeenColumns, setLengthCss, ratioCss, limitCss, colBetween, gridAutoFit, TOAST_CORNERS, hasAnnouncement, fluidRemRange, isContainer, containerLabel, isFloating, isCssBg, addItem, removeItem, moveItem, updateItem, addChildItem, updateChildItem, removeChildItem, moveChildItem , isMultiItemComponent, hasIntrinsicSize, sizeToCSS, typedLength, GRID_MAX, COLUMN_FRACTIONS, columnFractionOf, canSetColumnFraction, gridColumnsAt, bandEdgeCSS, PIN_ARRIVALS, PIN_ARRIVAL_AFTER, pinArrivalHasEffect, linkLineGap, LINK_GAP_ACROSS, LINK_GAP_ACROSS_PHONE, spaceDefaults, outerDefaults, type SectionPlace, gapOf, importPhoto, refusedMotion, rowFilledByBlocks, isSideBySide } from "@/lib/box-model";
+import { type ItemAction, traceOutline, gridSeenColumns, setLengthCss, ratioCss, limitCss, colBetween, gridAutoFit, TOAST_CORNERS, hasAnnouncement, fluidRemRange, isContainer, containerLabel, isFloating, isCssBg, addItem, removeItem, moveItem, updateItem, addChildItem, updateChildItem, removeChildItem, moveChildItem , isMultiItemComponent, hasIntrinsicSize, sizeToCSS, typedLength, GRID_MAX, COLUMN_FRACTIONS, columnFractionOf, canSetColumnFraction, gridColumnsAt, bandEdgeCSS, PIN_ARRIVALS, PIN_ARRIVAL_AFTER, pinArrivalHasEffect, linkLineGap, LINK_GAP_ACROSS, LINK_GAP_ACROSS_PHONE, spaceDefaults, outerDefaults, type SectionPlace, gapOf, importPhoto, refusedMotion, rowFilledByBlocks, isSideBySide } from "@/lib/box-model";
 import { remLen, SPACE_STEPS } from "@/lib/educo-ui/tokens";
 import { ACCORDION_DESIGNS, ACCORDION_DESIGN_COUNT, ACCORDION_AXES } from "@/lib/educo-ui/accordions";
 import { ALERT_DESIGNS, ALERT_DESIGN_COUNT, ALERT_AXES } from "@/lib/educo-ui/alerts";
@@ -1392,6 +1392,20 @@ export default function BoxInspector({ section = false, sectionPlace, outerDefau
                     onChange={(v) => onPatch({ wrapAround: v === "off" ? (breakpoint === "base" ? undefined : "off") : v as "start" | "end" })}
                     options={(["off", "start", "end"] as const).map((v) => ({ value: v, label: FLOW_WORDS.wrapChoices[v] }))} />
                   <p className="text-[0.6875rem] leading-snug text-gray-500 dark:text-gray-400 midnight:text-slate-400 purple:text-purple-300">{FLOW_WORDS.wrapHint}</p>
+                  {/* FL-3b (LE-13b) · what the words follow — only while they wrap; its box is unset on the base, stored on a screen */}
+                  {(node.wrapAround === "start" || node.wrapAround === "end") && (
+                    <>
+                      <span className={label}>{FLOW_WORDS.shape}</span>
+                      <Segmented full ariaLabel={FLOW_WORDS.shape} value={node.wrapShape === "round" || node.wrapShape === "outline" ? node.wrapShape : "box"}
+                        onChange={(v) => {
+                          // "outline": traced from the picture once, then it lands WITH the choice — one undo step (LE13b-9)
+                          if (v === "outline" && node.src && !node.wrapOutline) void traceOutline(node.src).then((o) => onPatch({ wrapShape: "outline", ...(o ? { wrapOutline: o } : {}) }));
+                          else onPatch({ wrapShape: v === "box" ? (breakpoint === "base" ? undefined : "box") : v as "round" | "outline" });
+                        }}
+                        options={(["box", "round", "outline"] as const).map((v) => ({ value: v, label: FLOW_WORDS.shapeChoices[v] }))} />
+                      <p className="text-[0.6875rem] leading-snug text-gray-500 dark:text-gray-400 midnight:text-slate-400 purple:text-purple-300">{FLOW_WORDS.shapeHint}</p>
+                    </>
+                  )}
                 </div>
               )}
               <CompactField label="Order" ariaLabel="Order" type="number" placeholder="auto" value={node.order ?? ""}

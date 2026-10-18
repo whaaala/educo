@@ -549,9 +549,21 @@ does not offer it, because there it would change nothing.
 **Design → Position → Wrap words round it**: **Start** puts it at the start of the line, **End** at the end, and the words
 after it run beside it and then back under it to their full width, with a little room between. A new picture takes 40% of
 the line (Width shows its default 100%); give it a width of your own — `40%`, `16rem` — and it keeps that. On a narrow
-screen (a Stack under 30rem) the picture takes the whole line and the words follow it. **Off** puts it back.
+screen (a Stack under 30rem) the picture stops floating — the whole line, or its own width if you gave it one in rem — and
+the words follow it. **Off** puts it back.
 
 [![Position → Wrap words round it: Off · Start · End, and its hint](img/guide-wrap-words.webp)](img/guide-wrap-words.webp)
+
+**Words that follow its shape.** Once the words wrap, **Words follow** says what they keep to. **Its box** (the start) keeps
+them to the picture's rectangle. **Its round corners** follows the corners you gave it — choose the Image's **Circle** style
+for a round head-teacher photo, or **Outline & effects → Rounded corners** — and the lines start where the curve is, the same
+little room away all round. **A cut-out's outline** follows what is drawn in a picture with a see-through background (a PNG
+cut-out of a pupil, a trophy, the school badge): when you choose it, the builder traces what is drawn in the picture, and the
+words come in close wherever the picture is clear. The outline is written into the page, so a visitor downloads nothing more
+for it. Replace the picture and the new one is traced. On a narrow screen the picture stops floating and the words go under
+it; a picture with a width of its own (the Circle style's 10rem) keeps that width there, so a round photo stays round.
+
+[![Position → Words follow: Its box · Its round corners · A cut-out's outline](img/guide-words-follow.webp)](img/guide-words-follow.webp)
 
 **A sideways strip.** Select a Side by side, open **Arrange → When it doesn't fit** and choose **Scroll sideways**: its
 blocks stay on one line that visitors swipe or scroll, a part of the next one showing, each swipe landing a block at the
