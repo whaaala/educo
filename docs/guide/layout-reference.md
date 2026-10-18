@@ -106,6 +106,11 @@ The **⋮ Block actions** menu:
 
 Click a block to select it; click again to go inside it; **Escape** steps back out one level.
 
+**The trail** — the top line of the Inspector, "Editing: Stack › Side by side › **Heading**", names the boxes around
+the selected block, outermost first, ending with the block itself. Each name before it is a button that selects
+that box (click, tap, or **Tab** then **Enter**). It lists the same boxes **Escape** steps out through; a block
+straight on the page shows its name alone.
+
 ---
 
 ## Inspector — Design tab

@@ -19,7 +19,7 @@ import { DEFAULT_THEME, resolveSiteTheme } from "@/lib/site-storage";
 import { THEMES, type ThemeId } from "@/lib/theme-config";
 import { EDITOR_DOCK_PX, mediaBelow as below, RUNG_LABEL, RUNG_ORDER, RUNG_PX } from "@/lib/educo-ui/layout";
 import {
-  type BoxNode, type Breakpoint, createContainer, findBox, findParent, updateBox, insertBox, fitBand, deleteBox, duplicateBox, widthPct, makeRowBand, normalizeRowBands, markPageGrid, groupBoxes, alignInRow, alignInRowOf, setSectionWidth, sectionWidthOf, hasSiteMeasure, pageBandOf,
+  type BoxNode, type Breakpoint, createContainer, findBox, findParent, selectionChain, updateBox, insertBox, fitBand, deleteBox, duplicateBox, widthPct, makeRowBand, normalizeRowBands, markPageGrid, groupBoxes, alignInRow, alignInRowOf, setSectionWidth, sectionWidthOf, hasSiteMeasure, pageBandOf,
   floatBox, unfloatBox, bringToFront, bringForward, sendBackward, sendToBack,
   resolveResponsive, updateBoxResponsive, clearOverride, hasOverride,
   gridColumns, setColumnFraction, pinBlockedBy, fixedBlockedBy, blockedByLabel, pinScopeWords, isFloating,
@@ -1526,7 +1526,7 @@ export default function BoxDemoPage() {
               {bulk ? (
                 <BulkInspector sampleSection={isSectionContentIn(root, selectedIds[0])} count={selectedIds.length} theme={renderTheme} sample={(() => { const f = findBox(root, selectedIds[0]); return f ? resolveResponsive(f, bp) : null; })()} onStepWidth={bulkStepWidth} onStepHeight={bulkStepHeight} onPatch={bulkPatch} onDuplicate={bulkDuplicate} onDelete={bulkDelete} onFloatAll={bulkFloat} onGroup={bulkGroup} />
               ) : selected ? (
-                <BoxInspector section={isSectionContentIn(root, selected.id)} sectionPlace={sectionPlaceIn(root, selected.id)} outerDefault={outerSpaceDefaults(root, selected.id)}
+                <BoxInspector trail={selectionChain(root, selected.id).slice(0, -1).map((id) => findBox(root, id)).filter((n): n is BoxNode => !!n).map((n) => (bp === "base" ? n : resolveResponsive(n, bp)))} onSelectBlock={(id) => selectByUser([id])} section={isSectionContentIn(root, selected.id)} sectionPlace={sectionPlaceIn(root, selected.id)} outerDefault={outerSpaceDefaults(root, selected.id)}
                   fillHeight={(() => { const p = fillHostOf(parentGrid, parentGrid && findParent(root, parentGrid.id)?.parent); return selected.type === "image" && p && fillsRows(p, bp, true) ? { on: resolveResponsive(selected, bp).fillHeight !== false } : undefined; })()}
                   pageSpan={(() => { const c = columnsAt(gridHere, bp), v = spanAt(root, selected.id, c, bp); return v === null ? undefined : { value: v, cols: c }; })()}
                   rowStepRem={root.pageGrid ? gridHere.rowStepRem ?? 1.5 : undefined}

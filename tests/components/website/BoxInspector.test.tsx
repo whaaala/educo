@@ -1438,3 +1438,56 @@ describe("BoxInspector — LE-13 flow and overlap", () => {
     expect(screen.queryByRole("group", { name: W.overlap })).toBeNull();
   });
 });
+
+// ED-2 (BATCH LE-10) — where am I: the blocks round the selection, named and clickable (box-builder-where-am-i.feature).
+describe("BoxInspector — the trail of blocks round the selection (LE-10)", () => {
+  const T = INSPECTOR_WORDS.trail;
+  const stack = createContainer("column", { id: "stack" });
+  const sbs = createContainer("row", { id: "sbs" });
+  const heading = createElement("heading", { id: "h", text: "Welcome" });
+
+  it("names the blocks round it outermost first, after the lead, and marks the selection as where you are", () => {
+    cleanup();
+    renderFor(heading, { trail: [stack, sbs], onSelectBlock: vi.fn() });
+    const nav = screen.getByRole("navigation", { name: T.label });
+    const items = within(nav).getAllByRole("listitem").map((li) => li.textContent?.trim());
+    expect(items).toEqual(["Stack", "Side by side", "Heading"]); // the words as drawn — LE10-1: CSS capitalize showed "Side By Side"
+    expect(within(nav).getByText("Heading")).toHaveAttribute("aria-current", "location");
+    // …and drawn as written: a `capitalize` class turns "Side by side" into "Side By Side", which jsdom cannot see
+    expect(screen.getByText(new RegExp(`^${T.lead}`)).querySelector(".capitalize")).toBeNull();
+    expect(screen.getByText(new RegExp(`^${T.lead}`)).textContent).toContain("Side by side");
+  });
+
+  it("a block in the trail is a button that selects it", () => {
+    cleanup();
+    const onSelectBlock = vi.fn();
+    renderFor(heading, { trail: [stack, sbs], onSelectBlock });
+    fireEvent.click(screen.getByRole("button", { name: "Stack" }));
+    expect(onSelectBlock).toHaveBeenCalledWith("stack");
+    fireEvent.click(screen.getByRole("button", { name: "Side by side" }));
+    expect(onSelectBlock).toHaveBeenLastCalledWith("sbs");
+  });
+
+  it("the selection itself is not a button — it is where you already are", () => {
+    cleanup();
+    renderFor(heading, { trail: [stack, sbs], onSelectBlock: vi.fn() });
+    expect(screen.queryByRole("button", { name: /heading/i })).toBeNull();
+  });
+
+  it("a block at the top of the page shows the lead and its name, and no trail", () => {
+    cleanup();
+    renderFor(heading, { trail: [], onSelectBlock: vi.fn() });
+    expect(screen.queryByRole("navigation", { name: T.label })).toBeNull();
+    expect(screen.getByText(new RegExp(`^${T.lead}`)).textContent).toContain("Heading");
+  });
+
+  it("after a click the keyboard focus lands on the newly selected block's name", async () => {
+    cleanup();
+    const onSelectBlock = vi.fn();
+    const { rerender } = render(<BoxInspector node={heading} theme={DEFAULT_THEME} onPatch={vi.fn()} trail={[stack, sbs]} onSelectBlock={onSelectBlock} />);
+    fireEvent.click(screen.getByRole("button", { name: "Side by side" }));
+    rerender(<BoxInspector node={sbs} theme={DEFAULT_THEME} onPatch={vi.fn()} trail={[stack]} onSelectBlock={onSelectBlock} />);
+    await waitFor(() => expect(document.activeElement?.textContent).toBe("Side by side"));
+    expect(document.activeElement).toHaveAttribute("aria-current", "location");
+  });
+});

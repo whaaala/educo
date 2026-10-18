@@ -845,6 +845,22 @@ If you'd rather place something completely freely, use **Placement → Floating*
 
 Click once for the outer box, click again to go inside, **Escape** to step back out — see the reference, [Block toolbar](./layout-reference.md#block-toolbar).
 
+**Where am I?** A heading three boxes deep shows one outline on the canvas, and nothing else tells you what it
+sits in. So the top of the Inspector names the boxes around it, outermost first:
+
+> Editing: Stack › Side by side › **Heading**
+
+[![A heading selected on the canvas; the Inspector's top line reads "Editing: Stack › Side by side › Heading", Stack and Side by side underlined as buttons](img/guide-selection-trail.webp)](img/guide-selection-trail.webp)
+
+The last name is the block you have selected. Every name before it is a button: click **Stack** and the Stack
+is selected — on the canvas and in the Inspector — without hunting for its edge. It works with a tap on a phone or
+tablet, and with the keyboard (**Tab** to a name, **Enter** to select it; the focus moves to the new name, so the
+next **Tab** carries on from there).
+
+The trail lists exactly the boxes **Escape** steps out through, in the same order. A block straight on the page
+has nothing around it, so it reads just "Editing: Heading". Choosing from the trail only changes what is selected,
+so **Ctrl+Z** still undoes your last real change.
+
 ---
 
 ## 11. Keyboard shortcuts
