@@ -119,6 +119,7 @@ describe("docs-guard", () => {
       "Columns on …": "Columns on ${", // Stepper label={`Columns on ${screen}`}
       "Columns (of 12)": "Columns (of ${pageSpan.cols})", // the Size section's span field, 12 being the page's count
       "Phone · Tablet · Laptop · Desktop · Wide": "Phone", // the five device chips, one label each
+      "Set on Phone": "Set on {screen}", // LE-14 ED-7: the Per-device list's title, config/inspector.json marks.listTitle with the screen's name
     };
     const files: string[] = [];
     const walk = (dir: string) => { for (const f of readdirSync(dir, { withFileTypes: true })) {

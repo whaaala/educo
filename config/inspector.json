@@ -105,5 +105,61 @@
     "overlapHint": "This section moves up over the bottom of the one above it, in front of it. The section above grows by the same amount, so nothing in it is covered."
   },
   "bgVideo": {"$comment":"MS-5b (BATCH LE-5): the words of a background video — the published Pause / Play button (its name for a screen reader; the visible mark is a symbol) and the Inspector's Background → Video controls.","pause":"Pause background video","play":"Play background video","heading":"Video","upload":"Upload a video","replace":"Replace the video","address":"Video address","addressPlaceholder":"https://…/loop.mp4","notAFile":"A background needs the video FILE — an address ending .mp4 or .webm. A YouTube or Vimeo page cannot play behind a block; use a Video block for those.","poster":"Upload a poster","posterHint":"What phones on Save-Data or a slow connection, and readers who asked for less motion, see — taken from the first frame unless you choose one.","remove":"Remove video","uploaded":"Uploaded video","saving":"Keeping the video…","missing":"This browser does not have {count} of the uploaded background videos, so the download shows their poster instead — upload the video again in this browser to include it.","dismiss":"Dismiss"},
-  "trail": {"$comment":"ED-2 (BATCH LE-10): the Inspector names the blocks round the selection, outermost first — lead before them, label the trail's name for a screen reader (box-builder-where-am-i.feature).","lead":"Editing:","label":"Blocks around this one"}
+  "trail": {"$comment":"ED-2 (BATCH LE-10): the Inspector names the blocks round the selection, outermost first — lead before them, label the trail's name for a screen reader (box-builder-where-am-i.feature).","lead":"Editing:","label":"Blocks around this one"},
+  "group": {
+    "$comment": "BATCH LE-14 ED-12: the bulk panel's Group action. {count} is how many blocks are selected. ED-13: mixed — what a field shows when the selected blocks differ in it.",
+    "action": "Group these {count}",
+    "hint": "Wraps them in one block, right where they are (Ctrl+G). Ctrl+Shift+G ungroups.",
+    "cannot": "To group blocks, pick ones side by side on one line, or one under the other in the same place.",
+    "mixed": "Mixed"
+  },
+  "kind": {
+    "$comment": "BATCH LE-14 RC-7: a container's kind, changed with its blocks kept (changeKind). dropped: what did not carry over, by the key changeKind names; {list} is them joined.",
+    "label": "Kind",
+    "choices": { "stack": "Stack", "row": "Side by side", "grid": "Grid" },
+    "dropped": { "spans": "column spans", "widths": "widths set as shares of the line", "columns": "the Grid's column settings" },
+    "left": "Left behind: {list}."
+  },
+  "style": {
+    "$comment": "BATCH LE-14 ED-3b: what Copy style takes (the LOOK, never the content, the size or the place). box: every block; words: a block with words, or a container (its blocks inherit them); container: only a container. copy / paste: the menu items; hints their keys.",
+    "box": ["background", "bgImage", "bgSize", "bgPosition", "bgRepeat", "bgAttach", "bgTile", "bgOverlay", "padding", "paddingTop", "paddingRight", "paddingBottom", "paddingLeft", "margin", "marginTop", "marginRight", "marginBottom", "marginLeft", "radius", "radiusTopLeft", "radiusTopRight", "radiusBottomRight", "radiusBottomLeft", "borderWidth", "borderColor", "borderStyle", "shadow", "opacity", "hoverEffect"],
+    "words": ["color", "fontFamily", "fontSize", "fontWeight", "bold", "italic", "underline", "textTransform", "textAlign", "lineHeight", "letterSpacing"],
+    "container": ["gap", "gapX", "gapY", "align", "justify"],
+    "copy": "Copy style",
+    "paste": "Paste style",
+    "copyHint": "Ctrl+Alt+C",
+    "pasteHint": "Ctrl+Alt+V"
+  },
+  "marks": {
+    "$comment": "BATCH LE-14 ED-7: what a value on a screen other than the desktop says about itself. {screen} is the screen's name (config/layout.json rungs), {name} the value's. names: the plain name of a value the list shows; one not named here is shown in words split from its key.",
+    "here": "Set here",
+    "from": "From {screen}",
+    "resetLabel": "{name} is set on {screen} — reset it to what wider screens have",
+    "listTitle": "Set on {screen}",
+    "none": "Nothing is set on {screen} — it shows what the wider screens have.",
+    "reset": "Reset",
+    "names": { "background": "Background colour", "bgImage": "Background picture", "opacity": "See-through", "radius": "Rounded corners", "shadow": "Shadow", "padding": "Inner spacing", "margin": "Outer spacing", "gap": "Space between blocks", "fontSize": "Text size", "color": "Text colour", "borderWidth": "Border", "align": "Line up", "justify": "Position blocks", "hidden": "Hidden", "rotate": "Turn" }
+  },
+  "layers": {
+    "$comment": "BATCH LE-14 ED-2b: the layers tree in the left panel (Add | Layers; the L key opens it). {name} is the block's name, {screen} the screen being edited.",
+    "title": "Layers",
+    "add": "Add",
+    "view": "Show",
+    "hint": "Drag a row to move its block — onto the middle of a box to put it inside. F2 renames.",
+    "empty": "The page is empty — add a block from Add.",
+    "hide": "Hide {name} on {screen}",
+    "show": "Show {name} on {screen}",
+    "hiddenHere": "hidden on {screen}",
+    "lock": "Lock {name}",
+    "unlock": "Unlock {name}",
+    "locked": "locked",
+    "more": "More for {name}",
+    "rename": "Rename {name}",
+    "duplicate": "Duplicate",
+    "moveUp": "Move up",
+    "moveDown": "Move down",
+    "delete": "Delete",
+    "everyScreen": "every screen",
+    "several": "Select several — each tap adds a block"
+  }
 }

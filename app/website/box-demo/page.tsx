@@ -19,7 +19,7 @@ import { DEFAULT_THEME, resolveSiteTheme } from "@/lib/site-storage";
 import { THEMES, type ThemeId } from "@/lib/theme-config";
 import { EDITOR_DOCK_PX, mediaBelow as below, RUNG_LABEL, RUNG_ORDER, RUNG_PX } from "@/lib/educo-ui/layout";
 import {
-  type BoxNode, type Breakpoint, createContainer, findBox, findParent, selectionChain, updateBox, insertBox, fitBand, deleteBox, duplicateBox, widthPct, makeRowBand, normalizeRowBands, markPageGrid, groupBoxes, alignInRow, alignInRowOf, setSectionWidth, sectionWidthOf, hasSiteMeasure, pageBandOf,
+  type BoxNode, type Breakpoint, createContainer, findBox, findParent, selectionChain, updateBox, insertBox, fitBand, deleteBox, duplicateBox, widthPct, makeRowBand, normalizeRowBands, markPageGrid, groupBoxes, groupAround, canGroup, mixedFields, changeKind, resetField, alignInRow, alignInRowOf, setSectionWidth, sectionWidthOf, hasSiteMeasure, pageBandOf,
   floatBox, unfloatBox, bringToFront, bringForward, sendBackward, sendToBack,
   resolveResponsive, updateBoxResponsive, clearOverride, hasOverride,
   gridColumns, setColumnFraction, pinBlockedBy, fixedBlockedBy, blockedByLabel, pinScopeWords, isFloating,
@@ -38,9 +38,10 @@ import { embedFontCss, fontFiles } from "@/lib/educo-ui/font-embed";
 import { photosAsFiles, videosAsFiles } from "@/lib/export-photos";
 import { mediaUrl } from "@/lib/media-store";
 import { warmIcons, hasIcon } from "@/lib/educo-ui/icon-svg";
-import BoxCanvas, { measureFloatGeom, measureFixedGeom, measureGroupGeom, type SpaceShadeKind } from "@/components/website/box/BoxCanvas";
+import BoxCanvas, { measureFloatGeom, measureFixedGeom, type SpaceShadeKind } from "@/components/website/box/BoxCanvas";
 import BoxInspector from "@/components/website/box/BoxInspector";
-import BulkInspector from "@/components/website/box/BulkInspector";
+import LayersPanel from "@/components/website/box/LayersPanel";
+import BulkInspector, { BULK_FIELDS } from "@/components/website/box/BulkInspector";
 import BlocksPanel, { LAUNCHER_GUTTER_REM, PANEL_GUTTER_REM } from "@/components/website/box/BlocksPanel";
 import ThemeSwitcher from "@/components/shared/ThemeSwitcher";
 import { ToolBtn, ToolDivider, Segmented, PortalMenu, MenuItem, modalOpen, useSheetManners, NON_TEXT_INPUTS } from "@/components/website/box/ui";
@@ -855,12 +856,11 @@ export default function BoxDemoPage() {
   const bulkDelete = () => { commit(selectedIds.reduce((next, id) => (id !== root.id ? deleteBox(next, id) : next), root)); setSelectedIds([]); };
   const bulkFloat = () => { commit(selectedIds.reduce((next, id) => { const g = measureFloatGeom(next, id); return g ? floatBox(next, id, g.parentId, g.left, g.top, g.width, g.height) : next; }, root)); };
   const bulkGroup = () => {
-    const g = measureGroupGeom(root, selectedIds);
-    if (!g) return;
-    const next = groupBoxes(root, selectedIds, g);
+    const next = groupBoxes(root, selectedIds);
+    if (next === root) return;
     commit(next);
-    const groupId = (next.children ?? []).filter((c) => c.position === "absolute").slice(-1)[0]?.id; // new group = root's last float
-    if (groupId) setSelectedIds([groupId]);
+    const g = groupAround(next, selectedIds[0]);
+    if (g) setSelectedIds([g.id]);
   };
 
   // Non-lucide icons (Brands/Google/Ionicons) load lazily, so warm every icon the site uses BEFORE
@@ -1510,7 +1510,9 @@ export default function BoxDemoPage() {
             </PortalMenu>
           )}
           <BlocksPanel theme={renderTheme} onPick={insertBlock} docked={wideScreen} onOpenChange={setBlocksOpen} sheet={screenDevice !== null}
-            where={whereOptions.length ? { value: whereFor(selected?.id ?? null), options: whereOptions, onChange: (w) => setWhereChoice({ for: selected?.id ?? null, where: w }) } : undefined} />
+            where={whereOptions.length ? { value: whereFor(selected?.id ?? null), options: whereOptions, onChange: (w) => setWhereChoice({ for: selected?.id ?? null, where: w }) } : undefined}
+            layers={<LayersPanel root={root} selectedIds={selectedIds} breakpoint={bp} onChange={commit}
+              onSelect={(id, add) => { selectByUser(add ? (selectedIds.includes(id) ? selectedIds.filter((x) => x !== id) : [...selectedIds, id]) : [id]); document.querySelector(`[data-box-id="${id}"]`)?.scrollIntoView({ block: "nearest", inline: "nearest" }); }} />} />
         </div>
 
         {inspectorOpen && (
@@ -1524,7 +1526,7 @@ export default function BoxDemoPage() {
             </div>
             <div className="flex-1 overflow-y-auto">
               {bulk ? (
-                <BulkInspector sampleSection={isSectionContentIn(root, selectedIds[0])} count={selectedIds.length} theme={renderTheme} sample={(() => { const f = findBox(root, selectedIds[0]); return f ? resolveResponsive(f, bp) : null; })()} onStepWidth={bulkStepWidth} onStepHeight={bulkStepHeight} onPatch={bulkPatch} onDuplicate={bulkDuplicate} onDelete={bulkDelete} onFloatAll={bulkFloat} onGroup={bulkGroup} />
+                <BulkInspector sampleSection={isSectionContentIn(root, selectedIds[0])} count={selectedIds.length} theme={renderTheme} sample={(() => { const f = findBox(root, selectedIds[0]); return f ? resolveResponsive(f, bp) : null; })()} onStepWidth={bulkStepWidth} onStepHeight={bulkStepHeight} onPatch={bulkPatch} onDuplicate={bulkDuplicate} onDelete={bulkDelete} onFloatAll={bulkFloat} onGroup={bulkGroup} canGroup={canGroup(root, selectedIds)} mixed={mixedFields(root, selectedIds, bp, BULK_FIELDS)} />
               ) : selected ? (
                 <BoxInspector trail={selectionChain(root, selected.id).slice(0, -1).map((id) => findBox(root, id)).filter((n): n is BoxNode => !!n).map((n) => (bp === "base" ? n : resolveResponsive(n, bp)))} onSelectBlock={(id) => selectByUser([id])} section={isSectionContentIn(root, selected.id)} sectionPlace={sectionPlaceIn(root, selected.id)} outerDefault={outerSpaceDefaults(root, selected.id)}
                   fillHeight={(() => { const p = fillHostOf(parentGrid, parentGrid && findParent(root, parentGrid.id)?.parent); return selected.type === "image" && p && fillsRows(p, bp, true) ? { on: resolveResponsive(selected, bp).fillHeight !== false } : undefined; })()}
@@ -1533,7 +1535,7 @@ export default function BoxDemoPage() {
                   onSetSpan={(n) => commit(setSpan(root, selected.id, n, columnsAt(gridHere, bp), bp), `span:${selected.id}`)}
                   pageLines={(() => { const c = columnsAt(gridHere, bp), l = linesAt(root, selected.id, c, bp); if (!l) return undefined; const w = device === screenDevice ? fitW : DEVICES.find((d) => d.id === device)?.w, band = findParent(root, selected.id)?.parent; return { ...l, cols: c, drawnAcross: w && band ? fitStepAt(band, selected.id, w / 16, bp) ?? undefined : undefined }; })()}
                   onSetLines={(want) => commit(want === "full" ? fullWidthAt(root, selected.id, bp) : setLinesAt(root, selected.id, want, columnsAt(gridHere, bp), bp), `lines:${selected.id}`)}
-                  onSetFreeInset={linesAt(root, selected.id, columnsAt(gridHere, bp), bp) ? (side, v) => commit(side === "both" ? setFreeInset(setFreeInset(root, selected.id, "left", undefined, bp), selected.id, "right", undefined, bp) : setFreeInset(root, selected.id, side, v, bp), `free:${selected.id}`) : undefined}pinBlockedBy={blockedByLabel(pinBlockedBy(root, selected.id, bp))} fixedBlockedBy={blockedByLabel(fixedBlockedBy(root, selected.id, bp))} pinScope={pinScopeWords(root, selected.id, bp)} node={bp === "base" ? selected : resolveResponsive(selected, bp)} theme={renderTheme} onPatch={onPatch} onAddChild={addChildSection} onAddAnnouncement={() => commit(addAnnouncementBar(root, selected.id))} onFloat={floatSelected} onUnfloat={unfloatSelected} onLayer={layerSelected} onAlignInRow={(j) => commit(alignInRow(root, selected.id, j, bp))} rowJustify={alignInRowOf(root, selected.id, bp)} onSectionWidth={pageBandOf(root, selected.id) ? (v) => commit(setSectionWidth(root, selected.id, v)) : undefined} sectionWidth={sectionWidthOf(root, selected.id)} siteWidth={hasSiteMeasure(root) ? root.gridSpace?.measure : undefined} sectionFollows={pageBandOf(root, selected.id)?.sectionWidth === undefined} rowOfPage={!!findParent(root, selected.id)?.parent.pageRow} canFloat={selected.id !== root.id} parentFlow={parentFlowOf(root, selected.id, bp)} canWrapWords={canWrapWords(root, selected.id, bp)} canOverlapUp={canOverlapUp(root, selected.id)} inGrid={gridTrack !== undefined} inMasonry={parentGrid?.rowFlow === "masonry"} inFitGrid={!!parentGrid && !!gridAutoFit(parentGrid)} gridTrack={gridTrack} onSetFraction={setFraction} onRetrack={retrackSelected} breakpoint={bp} overridden={hasOverride(selected, bp)} onResetOverride={resetOverride} pages={pageList} currentPageId={activePage.id} />
+                  onSetFreeInset={linesAt(root, selected.id, columnsAt(gridHere, bp), bp) ? (side, v) => commit(side === "both" ? setFreeInset(setFreeInset(root, selected.id, "left", undefined, bp), selected.id, "right", undefined, bp) : setFreeInset(root, selected.id, side, v, bp), `free:${selected.id}`) : undefined}pinBlockedBy={blockedByLabel(pinBlockedBy(root, selected.id, bp))} fixedBlockedBy={blockedByLabel(fixedBlockedBy(root, selected.id, bp))} pinScope={pinScopeWords(root, selected.id, bp)} node={bp === "base" ? selected : resolveResponsive(selected, bp)} theme={renderTheme} onPatch={onPatch} onAddChild={addChildSection} onAddAnnouncement={() => commit(addAnnouncementBar(root, selected.id))} onFloat={floatSelected} onUnfloat={unfloatSelected} onLayer={layerSelected} onAlignInRow={(j) => commit(alignInRow(root, selected.id, j, bp))} rowJustify={alignInRowOf(root, selected.id, bp)} onSectionWidth={pageBandOf(root, selected.id) ? (v) => commit(setSectionWidth(root, selected.id, v)) : undefined} sectionWidth={sectionWidthOf(root, selected.id)} siteWidth={hasSiteMeasure(root) ? root.gridSpace?.measure : undefined} sectionFollows={pageBandOf(root, selected.id)?.sectionWidth === undefined} rowOfPage={!!findParent(root, selected.id)?.parent.pageRow} canFloat={selected.id !== root.id} parentFlow={parentFlowOf(root, selected.id, bp)} canWrapWords={canWrapWords(root, selected.id, bp)} canOverlapUp={canOverlapUp(root, selected.id)} inGrid={gridTrack !== undefined} inMasonry={parentGrid?.rowFlow === "masonry"} inFitGrid={!!parentGrid && !!gridAutoFit(parentGrid)} gridTrack={gridTrack} onSetFraction={setFraction} onRetrack={retrackSelected} onKind={(k) => { const r = changeKind(root, selected.id, k); if (r.root !== root) commit(r.root); return r.dropped; }} breakpoint={bp} overridden={hasOverride(selected, bp)} onResetOverride={resetOverride} onResetField={(k) => commit(resetField(root, selected.id, k, bp))} pages={pageList} currentPageId={activePage.id} />
               ) : (
                 <div className="p-6 text-xs text-gray-400 text-center mt-6">Click a block to edit it — or drag a box on empty canvas to select several at once.</div>
               )}

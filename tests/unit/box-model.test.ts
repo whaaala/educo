@@ -7,7 +7,7 @@ import {
   findBox, findParent, isAncestor, updateBox, insertBox, removeBox, deleteBox, stackWithBlock, moveBoxStep, moveBox,
   containerStyle, childStyle, paddingCSS, marginCSS, sizeToCSS, flexForWidth, fillMainAxis, u, newBoxId, dropIndexAmong, EMPTY_BOX_MIN, fitRowWidths,
   makeRowBand, normalizeRowBands, clampRowWidths, widthPct, fitBand, packRowLines, allocateLine, aloneOnItsLine, blockTypography,
-  isFloating, floatBox, unfloatBox, groupBoxes, ungroupBoxes, alignInRow, alignInRowOf, bringToFront, sendToBack, bringForward, sendBackward, floatingZRange, cloneBox,
+  isFloating, floatBox, unfloatBox, groupBoxes, alignInRow, alignInRowOf, bringToFront, sendToBack, bringForward, sendBackward, floatingZRange, cloneBox,
   isCssBg, bgImageLayer, renderAlertHTML, bgShowThroughCss,
   radiusCSS, isClipped, SHADOW_CSS, videoEmbedSrc,
   resolveResponsive, updateBoxResponsive, hasOverride, clearOverride, BP_ORDER,
@@ -388,25 +388,7 @@ describe("box-model — mutations are immutable and correct", () => {
     }
   });
 
-  it("groupBoxes wraps selected boxes in ONE floating group container (children in-flow, full-width); ungroup reverses it", () => {
-    let root = createContainer("column", { id: "root", children: [] } as Partial<BoxNode>);
-    for (const id of ["a", "b", "c"]) { root = insertBox(root, "root", root.children?.length ?? 0, createComponent("card", { id } as Partial<BoxNode>)); root = normalizeRowBands(root, 0); }
-    const grouped = groupBoxes(root, ["a", "c"], { left: 12, top: 8, width: "40%", height: 300 });
-    // 'a' and 'c' left the flow; a new floating GROUP holds them; 'b' stays a normal row
-    expect(findParent(grouped, "a")!.parent.group).toBe(true);
-    const group = grouped.children!.find((r) => r.group)!;
-    expect(group).toBeTruthy();
-    expect(group.position).toBe("absolute");                 // it FLOATS (movable as one unit)
-    expect(group.left).toBe(12); expect(group.top).toBe(8); expect(group.width).toBe("40%");
-    expect(group.children!.map((c) => c.id)).toEqual(["a", "c"]); // document order preserved
-    expect(group.children!.every((c) => c.position === undefined && c.width === "100%")).toBe(true); // in-flow inside
-    expect(findBox(grouped, "b")).toBeTruthy();              // 'b' untouched
-    // ungroup → the two return to the flow, group gone
-    const back = ungroupBoxes(grouped, group.id);
-    expect(back.children!.some((r) => r.group)).toBe(false);
-    expect(findBox(back, "a")).toBeTruthy(); expect(findBox(back, "c")).toBeTruthy();
-    expect(findBox(back, "a")!.position).toBeUndefined();     // back in normal flow
-  });
+  // groupBoxes / ungroupBoxes: tests/unit/group-in-place.test.ts (ED-12 — a group wraps the blocks IN PLACE, BATCH LE-14)
 
   it("alignInRow positions a (hugging) block by setting its parent row's justify; alignInRowOf reads it back", () => {
     let root = createContainer("column", { id: "root", children: [] } as Partial<BoxNode>);
@@ -444,7 +426,7 @@ describe("box-model — mutations are immutable and correct", () => {
   it("groupBoxes needs at least two boxes (a single selection is a no-op)", () => {
     let root = createContainer("column", { id: "root", children: [] } as Partial<BoxNode>);
     root = insertBox(root, "root", 0, createComponent("card", { id: "a" } as Partial<BoxNode>));
-    expect(groupBoxes(root, ["a"], { left: 0, top: 0, width: "50%", height: 100 })).toBe(root);
+    expect(groupBoxes(root, ["a"])).toBe(root);
   });
 
   it("a row that WRAPS is left over-full on purpose; one that cannot wrap is still scaled to fit", () => {

@@ -7,13 +7,13 @@
  * — the real CSS still runs under the hood. Colours reuse the shared ColorPickerPopover.
  */
 
-import { useState, useRef, useId, useEffect } from "react";
-import { Plus, X, Tags, Rows3, Columns3, Upload, ArrowRight, AlignLeft, AlignCenter, AlignRight, AlignHorizontalSpaceBetween, Layers, Move, BringToFront, SendToBack, ChevronUp, ChevronDown, Italic, Underline, LayoutGrid, Maximize2, Sparkles, Paintbrush, Ruler, Type as TypeIcon, MonitorSmartphone, Bookmark, Lock, LockOpen, ChevronRight } from "lucide-react";
+import { useState, useRef, useId, useEffect, createContext, useContext } from "react";
+import { Plus, X, Tags, Rows3, Columns3, Upload, ArrowRight, AlignLeft, AlignCenter, AlignRight, AlignHorizontalSpaceBetween, Layers, Move, BringToFront, SendToBack, ChevronUp, ChevronDown, Italic, Underline, LayoutGrid, Maximize2, Sparkles, Paintbrush, Ruler, Type as TypeIcon, MonitorSmartphone, Bookmark, Lock, LockOpen, ChevronRight, CircleDot, CornerLeftUp } from "lucide-react";
 import type { SiteTheme } from "@/lib/site-storage";
 import { perScreenBanner, perScreenDeviceTab } from "@/lib/per-screen-note";
 import type { BoxNode, FlexAlign, FlexJustify, FlexLines, AccPartStyle, Breakpoint, PagerNav, PinScopeWords, SectionFlag } from "@/lib/box-model";
 import { RUNG_LABEL, SIZES, FLOW, MEDIA } from "@/lib/educo-ui/layout";
-import { type ItemAction, traceOutline, gridSeenColumns, setLengthCss, ratioCss, limitCss, colBetween, gridAutoFit, TOAST_CORNERS, hasAnnouncement, fluidRemRange, isContainer, containerLabel, isFloating, isCssBg, addItem, removeItem, moveItem, updateItem, addChildItem, updateChildItem, removeChildItem, moveChildItem , isMultiItemComponent, hasIntrinsicSize, sizeToCSS, typedLength, GRID_MAX, COLUMN_FRACTIONS, tintFor, columnFractionOf, canSetColumnFraction, gridColumnsAt, bandEdgeCSS, PIN_ARRIVALS, PIN_ARRIVAL_AFTER, pinArrivalHasEffect, linkLineGap, LINK_GAP_ACROSS, LINK_GAP_ACROSS_PHONE, spaceDefaults, outerDefaults, type SectionPlace, gapOf, importPhoto, refusedMotion, rowFilledByBlocks, isSideBySide } from "@/lib/box-model";
+import { type ItemAction, traceOutline, gridSeenColumns, setLengthCss, ratioCss, limitCss, colBetween, gridAutoFit, TOAST_CORNERS, hasAnnouncement, fluidRemRange, isContainer, containerLabel, isFloating, isCssBg, addItem, removeItem, moveItem, updateItem, addChildItem, updateChildItem, removeChildItem, moveChildItem , isMultiItemComponent, hasIntrinsicSize, sizeToCSS, typedLength, GRID_MAX, COLUMN_FRACTIONS, tintFor, columnFractionOf, canSetColumnFraction, gridColumnsAt, bandEdgeCSS, PIN_ARRIVALS, PIN_ARRIVAL_AFTER, pinArrivalHasEffect, linkLineGap, LINK_GAP_ACROSS, LINK_GAP_ACROSS_PHONE, spaceDefaults, outerDefaults, type SectionPlace, gapOf, importPhoto, refusedMotion, rowFilledByBlocks, isSideBySide, kindOf, type ContainerKind, fieldSource, ownFields } from "@/lib/box-model";
 import { remLen, SPACE_STEPS } from "@/lib/educo-ui/tokens";
 import { ACCORDION_DESIGNS, ACCORDION_DESIGN_COUNT, ACCORDION_AXES } from "@/lib/educo-ui/accordions";
 import { ALERT_DESIGNS, ALERT_DESIGN_COUNT, ALERT_AXES } from "@/lib/educo-ui/alerts";
@@ -105,9 +105,30 @@ function ColumnFractions({ track, span, breakpoint, onSet }: { track: number; sp
 }
 
 // Reuses the shared <Slider> (labelled range control) instead of a raw <input type="range">.
-function Range({ title, value, min, max, fallback, onChange, unit = "px", steps }: { title: string; value?: number; min: number; max: number; fallback: number; onChange: (n: number) => void; unit?: string; steps?: readonly number[] }) {
+/**
+ * ED-7 · WHERE THE VALUE ON THIS SCREEN COMES FROM, beside its control (Webflow's blue / amber labels; design D5). Set on this
+ * screen → a "Set here" button that resets it; from a wider screen → that screen named; the desktop, or nothing set → nothing.
+ * Never colour alone: an icon and words. The Inspector provides what it needs through `MarkContext`.
+ */
+const MarkContext = createContext<{ node: BoxNode; breakpoint: Breakpoint; onReset?: (key: keyof BoxNode) => void } | null>(null);
+const MARKS = INSPECTOR.marks;
+const fieldName = (key: string) => (MARKS.names as Record<string, string>)[key] ?? key.replace(/([A-Z])/g, " $1").replace(/^./, (c) => c.toUpperCase());
+function FieldMark({ field, name }: { field: keyof BoxNode; name: string }) {
+  const ctx = useContext(MarkContext);
+  if (!ctx || ctx.breakpoint === "base") return null;
+  const from = fieldSource(ctx.node, ctx.breakpoint, field);
+  if (from === "base") return null;
+  const screen = RUNG_LABEL[ctx.breakpoint] ?? "";
+  const cls = "pointer-coarse:min-h-11 inline-flex items-center gap-1 text-[0.625rem] font-medium";
+  return from === "here"
+    ? <button type="button" onClick={() => ctx.onReset?.(field)} disabled={!ctx.onReset} aria-label={MARKS.resetLabel.replace("{name}", name).replace("{screen}", screen)} title={MARKS.resetLabel.replace("{name}", name).replace("{screen}", screen)}
+        className={`${cls} self-start text-blue-700 hover:underline dark:text-blue-300 midnight:text-cyan-300 purple:text-pink-200`}><CircleDot className="w-3 h-3" aria-hidden="true" />{MARKS.here}</button>
+    : <span className={`${cls} self-start text-amber-700 dark:text-amber-300 midnight:text-amber-300 purple:text-amber-300`}><CornerLeftUp className="w-3 h-3" aria-hidden="true" />{MARKS.from.replace("{screen}", RUNG_LABEL[from as Exclude<Breakpoint, "base">] ?? from)}</span>;
+}
+function Range({ title, value, min, max, fallback, onChange, unit = "px", steps, field }: { title: string; value?: number; min: number; max: number; fallback: number; onChange: (n: number) => void; unit?: string; steps?: readonly number[]; field?: keyof BoxNode }) {
   const v = value ?? fallback;
-  return <Slider label={title} value={v} min={min} max={max} steps={steps} onChange={onChange} formatValue={unit === "rem" ? fluidRemRange : (x) => `${x}${unit}`} />; // phone → wide (G3c-10)
+  const slider = <Slider label={title} value={v} min={min} max={max} steps={steps} onChange={onChange} formatValue={unit === "rem" ? fluidRemRange : (x) => `${x}${unit}`} />; // phone → wide (G3c-10)
+  return field ? <div className="flex flex-col gap-0.5">{slider}<FieldMark field={field} name={title} /></div> : slider;
 }
 /** SP-4 (BATCH LE-12) · the spacing scale up to `max` — the spacing sliders step on it, as the canvas handles do (`snapSpace`). */
 const spaceSteps = (max: number) => SPACE_STEPS.filter((v) => v <= max);
@@ -616,12 +637,13 @@ function AccPreview({ id, size, axes = [] }: { id: string; size: ThumbSize; axes
  * "Editing: Section" — telling a user they had selected something they had not. `preset` knows what it
  * really is, and a `component` node knows its own name, so both say what the user actually picked.
  */
-function blockLabel(node: BoxNode): string {
+export function blockLabel(node: BoxNode): string {
+  if (node.layerName) return node.layerName; // ED-2b: the name a person gave it in the layers tree
   return catalogueEntry(node.preset)?.label ?? catalogueEntry(node.component)?.label ?? (isContainer(node) ? containerLabel(node) : node.type.charAt(0).toUpperCase() + node.type.slice(1));
 }
 const TRAIL = INSPECTOR.trail;
 
-export default function BoxInspector({ trail = [], onSelectBlock, section = false, sectionPlace, outerDefault, fillHeight, pageSpan, onSetSpan, pageLines, onSetLines, onSetFreeInset, rowStepRem, node, theme, onPatch, onAddChild, onAddAnnouncement, onFloat, onUnfloat, onLayer, onAlignInRow, rowJustify, onSectionWidth, sectionWidth, siteWidth, sectionFollows, rowOfPage = false, canFloat = true, parentFlow, canWrapWords = false, canOverlapUp = false, inGrid = false, inMasonry = false, inFitGrid = false, gridTrack, onSetFraction, onRetrack, breakpoint = "base", overridden = false, onResetOverride, pages, currentPageId, pinBlockedBy = null, fixedBlockedBy = null, pinScope = null }: {
+export default function BoxInspector({ trail = [], onSelectBlock, section = false, sectionPlace, outerDefault, fillHeight, pageSpan, onSetSpan, pageLines, onSetLines, onSetFreeInset, rowStepRem, node, theme, onPatch, onAddChild, onAddAnnouncement, onFloat, onUnfloat, onLayer, onAlignInRow, rowJustify, onSectionWidth, sectionWidth, siteWidth, sectionFollows, rowOfPage = false, canFloat = true, parentFlow, canWrapWords = false, canOverlapUp = false, inGrid = false, inMasonry = false, inFitGrid = false, gridTrack, onSetFraction, onRetrack, onKind, breakpoint = "base", overridden = false, onResetOverride, onResetField, pages, currentPageId, pinBlockedBy = null, fixedBlockedBy = null, pinScope = null }: {
   /** ED-2 (LE-10): the blocks round this one, outermost first (`selectionChain` without the block itself) — the same
    *  blocks Escape steps out through. Each is a button that selects it (`onSelectBlock`). */
   trail?: BoxNode[];
@@ -672,9 +694,11 @@ export default function BoxInspector({ trail = [], onSelectBlock, section = fals
   onSetFraction?: (num: number, den: number) => void;
   /** Re-cut THIS row into `columns`, carrying every child's placement across so the row does not move. */
   onRetrack?: (columns: number) => void;
+  onKind?: (kind: ContainerKind) => string[];   // RC-7: change this container's kind, its blocks kept; returns what was left behind
   breakpoint?: Breakpoint;
   overridden?: boolean;
   onResetOverride?: () => void;
+  onResetField?: (key: keyof BoxNode) => void; // ED-7: reset ONE value on this screen (the "Set here" mark)
   pages?: { id: string; name: string }[];
   currentPageId?: string;
   /**
@@ -699,6 +723,9 @@ export default function BoxInspector({ trail = [], onSelectBlock, section = fals
   const presets = getPresets(presetKindFor(node), theme);
   const container = isContainer(node);
   const isGrid = node.layout === "grid";
+  // RC-7: a Stack, a Side by side or a Grid is changed to another kind in one choice, its blocks kept (`changeKind`)
+  const kind = onKind ? kindOf(node) : null;
+  const [leftBehind, setLeftBehind] = useState<{ id: string; list: string[] } | null>(null);
   const floating = isFloating(node);
   /** Does this block hold a line of links or buttons side by side (a menu)? Its gaps are the links' spacing. */
   const holdsLinks = (node.children ?? []).some((k) => linkLineGap(k, node) != null);
@@ -752,7 +779,7 @@ export default function BoxInspector({ trail = [], onSelectBlock, section = fals
           style on its own keeps its own look.
         </p>
       )}
-      <Range title="Text size" value={node.fontSize} min={10} max={72} fallback={node.type === "heading" ? 32 : 16} onChange={(n) => onPatch({ fontSize: n })} unit="rem" />
+      <Range field="fontSize" title="Text size" value={node.fontSize} min={10} max={72} fallback={node.type === "heading" ? 32 : 16} onChange={(n) => onPatch({ fontSize: n })} unit="rem" />
       <ColorRow title="Text colour" value={node.color} fallback={theme.text} onSelect={(c) => onPatch({ color: c })} />
       <CompactSelect label="Font" ariaLabel="Font" value={node.fontFamily ?? ""} onChange={(v) => onPatch({ fontFamily: v || undefined })}
         options={[{ value: "", label: "Theme default" }, ...familyOptions()]} />
@@ -774,6 +801,7 @@ export default function BoxInspector({ trail = [], onSelectBlock, section = fals
   );
 
   return (
+    <MarkContext.Provider value={{ node, breakpoint, onReset: onResetField }}>
     <div className="p-3.5 space-y-3">
       <div className="text-[0.6875rem] text-muted px-0.5">{TRAIL.lead}{" "}
         {trail.length > 0 && onSelectBlock ? (
@@ -942,7 +970,7 @@ export default function BoxInspector({ trail = [], onSelectBlock, section = fals
                             { value: "bottom-left", label: "↙", title: "Bottom-left corner" }, { value: "bottom-right", label: "↘", title: "Bottom-right corner" },
                           ]} />
                         {node.pinX == null && node.pinY == null && (
-                          <Range title="Distance from the edge" value={node.pinOffset} min={0} max={120} fallback={0} onChange={(n) => onPatch({ pinOffset: n || undefined })} unit="rem" />
+                          <Range field="pinOffset" title="Distance from the edge" value={node.pinOffset} min={0} max={120} fallback={0} onChange={(n) => onPatch({ pinOffset: n || undefined })} unit="rem" />
                         )}
                       </>
                     )}
@@ -1005,7 +1033,7 @@ export default function BoxInspector({ trail = [], onSelectBlock, section = fals
                         : [{ value: "top", label: "Top" }, { value: "bottom", label: "Bottom" }]} />
                   )}
                   {node.pin && (
-                    <Range title="Distance from the edge" value={node.pinOffset} min={0} max={120} fallback={0} onChange={(n) => onPatch({ pinOffset: n || undefined })} unit="rem" />
+                    <Range field="pinOffset" title="Distance from the edge" value={node.pinOffset} min={0} max={120} fallback={0} onChange={(n) => onPatch({ pinOffset: n || undefined })} unit="rem" />
                   )}
                   {/* AXIS 3 — THE ARRIVAL. A bar that looks the same held as it did in the page tells the
                       reader nothing about what just happened. Nothing is the default: rule 11, nothing
@@ -1022,7 +1050,7 @@ export default function BoxInspector({ trail = [], onSelectBlock, section = fals
                       />
                       {everyScreen}
                       {node.pinArrival && (
-                        <Range title="Takes hold over" value={node.pinArrivalAfter} min={40} max={600} fallback={PIN_ARRIVAL_AFTER}
+                        <Range field="pinArrivalAfter" title="Takes hold over" value={node.pinArrivalAfter} min={40} max={600} fallback={PIN_ARRIVAL_AFTER}
                           onChange={(n) => onPatch({ pinArrivalAfter: n === PIN_ARRIVAL_AFTER ? undefined : n })} unit="px of scrolling" />
                       )}
                       {/* A CONTROL THAT APPEARS TO WORK AND DOES NOTHING IS THE DEFECT THIS PROJECT MEETS
@@ -1170,7 +1198,7 @@ export default function BoxInspector({ trail = [], onSelectBlock, section = fals
                   ))}
                 </div>
                 {(node.edgeTop || node.edgeBottom) && (
-                  <Range title="Edge depth" value={node.edgeDepth} min={0} max={30} fallback={6} onChange={(n) => onPatch({ edgeDepth: n })} unit="%" />
+                  <Range field="edgeDepth" title="Edge depth" value={node.edgeDepth} min={0} max={30} fallback={6} onChange={(n) => onPatch({ edgeDepth: n })} unit="%" />
                 )}
               </div>
               {/* PO-4 · pulled up over the section above, in front of it — that section grows by as much, so nothing is covered (per screen) */}
@@ -1203,7 +1231,7 @@ export default function BoxInspector({ trail = [], onSelectBlock, section = fals
                   <Segmented full ariaLabel="Moving between them" value={node.pagerNav ?? "dots"}
                     onChange={(v) => onPatch({ pagerNav: v === "dots" ? undefined : (v as PagerNav) })}
                     options={[{ value: "dots", label: "Dots" }, { value: "arrows", label: "Arrows" }, { value: "both", label: "Both" }, { value: "none", label: "None" }]} />
-                  <Range title="Move on its own every" value={node.pagerAuto ?? 0} min={0} max={15} fallback={0}
+                  <Range field="pagerAuto" title="Move on its own every" value={node.pagerAuto ?? 0} min={0} max={15} fallback={0}
                     onChange={(n) => onPatch({ pagerAuto: n > 0 ? n : undefined })} unit="s" />
                   <p className="text-[11px] leading-snug text-gray-500 dark:text-gray-400">
                     {node.pagerAuto
@@ -1212,8 +1240,16 @@ export default function BoxInspector({ trail = [], onSelectBlock, section = fals
                   </p>
                 </div>
               ) : null}
+              {kind ? (<>
+                <span className={label}>{INSPECTOR.kind.label}</span>
+                <Segmented full ariaLabel={INSPECTOR.kind.label} value={kind} onChange={(v) => setLeftBehind({ id: node.id, list: onKind!(v as ContainerKind) })}
+                  options={(Object.keys(INSPECTOR.kind.choices) as ContainerKind[]).map((v) => ({ value: v, label: INSPECTOR.kind.choices[v] }))} />
+                <p role="status" className="text-[0.6875rem] leading-snug text-amber-700 dark:text-amber-300 midnight:text-amber-300 purple:text-amber-300">
+                  {leftBehind?.id === node.id && leftBehind.list.length ? INSPECTOR.kind.left.replace("{list}", leftBehind.list.map((k) => INSPECTOR.kind.dropped[k as keyof typeof INSPECTOR.kind.dropped] ?? k).join(", ")) : null}
+                </p>
+              </>) : (
               <Segmented full ariaLabel="Arrange as" value={isGrid ? "grid" : "flex"} onChange={(v) => onPatch({ layout: v as "flex" | "grid" })}
-                options={[{ value: "flex", label: "Free arrange" }, { value: "grid", label: "Grid" }]} />
+                options={[{ value: "flex", label: "Free arrange" }, { value: "grid", label: "Grid" }]} />)}
               {isGrid ? (
                 <div className="space-y-1">
                   {/* Named fractions on top, the raw twelve underneath — the plan's decision, made visible.
@@ -1284,8 +1320,8 @@ export default function BoxInspector({ trail = [], onSelectBlock, section = fals
                 </div>
               ) : (
                 <>
-                  <Segmented full ariaLabel="Direction" value={node.direction === "row" ? "row" : "column"} onChange={(v) => onPatch({ direction: v as "row" | "column" })}
-                    options={[{ value: "column", label: "Top-to-bottom", Icon: Rows3 }, { value: "row", label: "Side-by-side", Icon: Columns3 }]} />
+                  {!kind && <Segmented full ariaLabel="Direction" value={node.direction === "row" ? "row" : "column"} onChange={(v) => onPatch({ direction: v as "row" | "column" })}
+                    options={[{ value: "column", label: "Top-to-bottom", Icon: Rows3 }, { value: "row", label: "Side-by-side", Icon: Columns3 }]} />}
                   <CompactSelect label="Position blocks" ariaLabel="Position blocks" value={node.justify ?? "start"} onChange={(v) => onPatch({ justify: v as FlexJustify })} options={JUSTIFY_OPTS.map(([v, l]) => ({ value: v, label: l }))} />
                   {rowFilledByBlocks(node) && <p role="note" className="text-[0.6875rem] leading-snug text-amber-700 dark:text-amber-300 midnight:text-amber-300 purple:text-amber-300">These blocks fill the row — give one a width to place them.</p>}
                   {/* FL-6 · a Side by side that does not fit: new lines, or one line that scrolls sideways (per screen) */}
@@ -1311,7 +1347,7 @@ export default function BoxInspector({ trail = [], onSelectBlock, section = fals
               {/* `align-items` lines blocks up across a top-to-bottom stack, but DOWN in a side-by-side row and in a grid
                   (R4-4) — the label names the direction the blocks really move. */}
               <CompactSelect label={node.layout === "grid" || node.direction === "row" ? "Line up (down)" : "Line up (across)"} ariaLabel="Line up" value={node.align ?? "stretch"} onChange={(v) => onPatch({ align: v as FlexAlign })} options={ALIGN_OPTS.filter(([v]) => v !== "baseline" || node.layout === "grid" || node.direction === "row").map(([v, l]) => ({ value: v, label: l }))} />
-              <Range title="Space between blocks" value={node.gap} min={0} max={64} steps={spaceSteps(64)} fallback={Math.max(gapOf({ ...node, gap: undefined }).x, gapOf({ ...node, gap: undefined }).y)} onChange={(n) => onPatch({ gap: n, gapX: undefined, gapY: undefined })} unit="rem" />
+              <Range field="gap" title="Space between blocks" value={node.gap} min={0} max={64} steps={spaceSteps(64)} fallback={Math.max(gapOf({ ...node, gap: undefined }).x, gapOf({ ...node, gap: undefined }).y)} onChange={(n) => onPatch({ gap: n, gapX: undefined, gapY: undefined })} unit="rem" />
               {/* Across and down separately — the commonest grid there is wants air between its columns and
                   less between its rows, and one number cannot say that. Unset means "same as above".
                   SLIDERS, like the control above them. They were number boxes, so the only way to find the
@@ -1605,7 +1641,7 @@ export default function BoxInspector({ trail = [], onSelectBlock, section = fals
                 )}
               </>
             )}
-            <Range title="Rounded corners" value={node.radius} min={0} max={64} fallback={0} onChange={(n) => onPatch({ radius: n })} />
+            <Range field="radius" title="Rounded corners" value={node.radius} min={0} max={64} fallback={0} onChange={(n) => onPatch({ radius: n })} />
             <div className="grid grid-cols-4 gap-1">
               {([["TL", "radiusTopLeft", "top-left"], ["TR", "radiusTopRight", "top-right"], ["BR", "radiusBottomRight", "bottom-right"], ["BL", "radiusBottomLeft", "bottom-left"]] as const).map(([lab, key, full]) => (
                 <label key={key} className="flex flex-col items-center gap-0.5">
@@ -1615,7 +1651,7 @@ export default function BoxInspector({ trail = [], onSelectBlock, section = fals
               ))}
             </div>
             <div className="grid grid-cols-2 gap-2">
-              <Range title="Border" value={node.borderWidth} min={0} max={16} fallback={0} onChange={(n) => onPatch({ borderWidth: n })} />
+              <Range field="borderWidth" title="Border" value={node.borderWidth} min={0} max={16} fallback={0} onChange={(n) => onPatch({ borderWidth: n })} />
               <CompactSelect label="Border style" ariaLabel="Border style" value={node.borderStyle ?? "solid"} onChange={(v) => onPatch({ borderStyle: v as BoxNode["borderStyle"] })} options={[{ value: "solid", label: "Solid" }, { value: "dashed", label: "Dashed" }, { value: "dotted", label: "Dotted" }]} />
             </div>
             {!!node.borderWidth && <ColorRow title="Border colour" value={node.borderColor} fallback={theme.text} onSelect={(c) => onPatch({ borderColor: c })} />}
@@ -1623,8 +1659,8 @@ export default function BoxInspector({ trail = [], onSelectBlock, section = fals
               <span className={label}>Shadow</span>
               <Segmented full ariaLabel="Shadow" value={node.shadow ?? "none"} onChange={(v) => onPatch({ shadow: v === "none" ? undefined : (v as BoxNode["shadow"]) })} options={SHADOW_OPTS} />
             </div>
-            <Range title="Tilt" value={node.rotate} min={-180} max={180} fallback={0} onChange={(n) => onPatch({ rotate: n })} unit="°" />
-            <Range title="See-through" value={node.opacity} min={0} max={100} fallback={100} onChange={(n) => onPatch({ opacity: n })} unit="%" />
+            <Range field="rotate" title="Tilt" value={node.rotate} min={-180} max={180} fallback={0} onChange={(n) => onPatch({ rotate: n })} unit="°" />
+            <Range field="opacity" title="See-through" value={node.opacity} min={0} max={100} fallback={100} onChange={(n) => onPatch({ opacity: n })} unit="%" />
             {/* WHAT "SEE-THROUGH" MEANS ON A BOX THAT HOLDS THINGS: this box, not its contents. CSS opacity
                 fades an element AND everything inside it, and no setting on a child can undo it — so a
                 see-through section used to drag every card, heading and photo in it down with the background.
@@ -1824,7 +1860,7 @@ export default function BoxInspector({ trail = [], onSelectBlock, section = fals
                       {/* Same reusable IconPicker as the accordion — all four libraries (lucide + Brands + Google + Ionicons). */}
                       <IconPicker ariaLabel="Icon" value={node.icon ?? "Star"} allowClear={false} onChange={(v) => onPatch({ icon: v ?? "Star" })} />
                     </div>
-                    <Range title="Icon size" value={node.fontSize} min={12} max={120} fallback={32} onChange={(n) => onPatch({ fontSize: n })} unit="rem" />
+                    <Range field="fontSize" title="Icon size" value={node.fontSize} min={12} max={120} fallback={32} onChange={(n) => onPatch({ fontSize: n })} unit="rem" />
                     <ColorRow title="Icon colour" value={node.color} fallback={theme.primary} onSelect={(c) => onPatch({ color: c })} />
                     {AlignRow()}
                   </>
@@ -1832,7 +1868,7 @@ export default function BoxInspector({ trail = [], onSelectBlock, section = fals
                 {node.type === "divider" && (
                   <>
                     <ColorRow title="Line colour" value={node.color} fallback={theme.textMuted} onSelect={(c) => onPatch({ color: c })} />
-                    <Range title="Thickness" value={node.borderWidth} min={1} max={20} fallback={2} onChange={(n) => onPatch({ borderWidth: n })} />
+                    <Range field="borderWidth" title="Thickness" value={node.borderWidth} min={1} max={20} fallback={2} onChange={(n) => onPatch({ borderWidth: n })} />
                   </>
                 )}
                 {node.type === "list" && (
@@ -1979,7 +2015,7 @@ export default function BoxInspector({ trail = [], onSelectBlock, section = fals
                         {/* Auto-dismiss: a countdown bar appears and the message hides itself. It PAUSES while
                             the reader hovers or tabs into it — an auto-hiding message that cannot be held still
                             is a WCAG 2.2.1 failure. Zero is off, and off ships no script. */}
-                        <Range title="Hide itself after" value={node.alertAutoSeconds} min={0} max={30} fallback={0}
+                        <Range field="alertAutoSeconds" title="Hide itself after" value={node.alertAutoSeconds} min={0} max={30} fallback={0}
                           unit="s" onChange={(n) => onPatch({ alertAutoSeconds: n || undefined })} />
                         {!!node.alertAutoSeconds && (
                           <p className="text-[0.625rem] text-gray-500 dark:text-gray-400">Shows a countdown bar. Pauses while a visitor hovers or tabs into it.</p>
@@ -2215,7 +2251,7 @@ export default function BoxInspector({ trail = [], onSelectBlock, section = fals
                 <Accordion title="Typography" icon={TypeIcon}>
                   <CompactSelect label="Font" ariaLabel="Font" value={node.fontFamily ?? ""} onChange={(v) => onPatch({ fontFamily: v || undefined })}
                     options={[{ value: "", label: "Theme default" }, ...familyOptions()]} />
-                  <Range title="Text size" value={node.fontSize} min={10} max={48} fallback={16} onChange={(n) => onPatch({ fontSize: n })} unit="rem" />
+                  <Range field="fontSize" title="Text size" value={node.fontSize} min={10} max={48} fallback={16} onChange={(n) => onPatch({ fontSize: n })} unit="rem" />
                   <div className="grid grid-cols-2 gap-2">
                     <CompactSelect label="Boldness" ariaLabel="Boldness" value={node.fontWeight?.toString() ?? ""} onChange={(v) => onPatch({ fontWeight: v === "" ? undefined : Number(v) })} options={WEIGHT_OPTS.map(([v, l]) => ({ value: v, label: l }))} />
                     <CompactSelect label="Capitalisation" ariaLabel="Capitalisation" value={node.textTransform ?? "none"} onChange={(v) => onPatch({ textTransform: v as BoxNode["textTransform"] })} options={TRANSFORM_OPTS.map(([v, l]) => ({ value: v, label: l }))} />
@@ -2263,8 +2299,19 @@ export default function BoxInspector({ trail = [], onSelectBlock, section = fals
         <div className="space-y-3">
           <p className="text-[0.6875rem] text-gray-500 dark:text-gray-400 midnight:text-cyan-200/80 purple:text-pink-200/80 flex items-start gap-1.5"><MonitorSmartphone aria-hidden="true" className="w-3.5 h-3.5 mt-0.5 shrink-0" /> {breakpoint === "base" ? "Switch the screen-size buttons at the top to Tablet or Mobile to fine-tune those sizes. Text and content stay the same everywhere." : perScreenDeviceTab(breakpoint, bpLabel)}</p>
           <label className="pointer-coarse:min-h-11 flex items-center gap-2 text-xs text-gray-600 dark:text-gray-300"><input type="checkbox" checked={!!node.hidden} onChange={(e) => onPatch({ hidden: e.target.checked || undefined })} /> Hidden {breakpoint === "base" ? "everywhere" : `on ${bpLabel.toLowerCase()}`}</label>
+          {breakpoint !== "base" && (() => { const own = ownFields(node, breakpoint); const screen = bpLabel; return (
+            <section aria-label={MARKS.listTitle.replace("{screen}", screen)} className="space-y-1">
+              <h3 className="text-[0.6875rem] font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400 midnight:text-gray-400 purple:text-purple-200">{MARKS.listTitle.replace("{screen}", screen)}</h3>
+              {own.length ? <ul className="space-y-0.5">{own.map((k) => (
+                <li key={k} className="flex items-center justify-between gap-2 text-xs text-gray-700 dark:text-gray-200 midnight:text-gray-200 purple:text-purple-100">
+                  <span className="inline-flex items-center gap-1"><CircleDot className="w-3 h-3 text-blue-700 dark:text-blue-300 midnight:text-cyan-300 purple:text-pink-200" aria-hidden="true" />{fieldName(k)}</span>
+                  {onResetField && <button type="button" onClick={() => onResetField(k)} aria-label={MARKS.resetLabel.replace("{name}", fieldName(k)).replace("{screen}", screen)} className="pointer-coarse:min-h-11 text-[0.6875rem] text-blue-700 underline hover:no-underline dark:text-blue-300 midnight:text-cyan-300 purple:text-pink-200">{MARKS.reset}</button>}
+                </li>))}</ul>
+                : <p className="text-[0.6875rem] text-gray-500 dark:text-gray-400 midnight:text-gray-400 purple:text-purple-200">{MARKS.none.replace("{screen}", screen)}</p>}
+            </section>); })()}
         </div>
       )}
     </div>
+    </MarkContext.Provider>
   );
 }

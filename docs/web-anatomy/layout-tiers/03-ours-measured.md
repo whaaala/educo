@@ -112,6 +112,9 @@ claim: **SB-4** (HAS → PARTLY), **PD-3** (HAS → GAP) and **SP-2** (PARTLY �
 | ED-4 | PARTLY | **PARTLY** | 8 uneven grid splits. Hero and Rotating hero tiles. Plain / Card / Outline / Tinted styles. No section or page library: "+ page" adds an empty page. | yes |
 | ED-5 | HAS | **HAS** | Shift+G toggles guides false → true → false. No rulers. (ED-5-guides) | yes |
 | ED-6 | PARTLY | **PARTLY** | "Page check, 2 to do" opens Needs your words (picture description, words at the edge) and Fixed for you. There is no overflow check. | yes |
+| ED-7 | PARTLY | **PARTLY** | (row added 2026-10-18, LE14-1) Only the whole block's "Reset phone changes". After BATCH LE-14, HEADED (`uat-le14-headed.js` H5): "Set here" beside Rounded corners and See-through on the phone, "From Tablet portrait" for a tablet value, its reset one undo step, the Per-device list. | yes |
+| ED-12 | PARTLY | **PARTLY** | (row added 2026-10-18, LE14-1) Measured through the UI (`probe-le14-group.js`): Ctrl+G made Text · [floating group, gap 12] · Heading · Heading, each Heading 100 %. After BATCH LE-14, HEADED H1: Heading · Heading · Text kept, every block within 1 px, Ctrl+Shift+G gives back the same tree. | yes |
+| ED-13 | PARTLY | **PARTLY** | (row added 2026-10-18, LE14-1) Marquee only. After BATCH LE-14, HEADED H2: Shift-click adds and takes out, two Headings in a Stack picked without it, "Rounded corners: Mixed", ↓ moves both. | yes |
 
 ## The matrix rows (04-matrix.md: no code claim)
 

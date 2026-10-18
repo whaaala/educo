@@ -37,6 +37,7 @@ rem (`typedLength` BM:4409) · "Show the whole picture" writes rem (BI:1479).
 | RC-4 | HAS | automatic; "Order" per device (BI:1136) | mobile-first `@media` (BX:636); 10rem floor (BM:3684) | `order` can split visual and reading order (SE-4) |
 | RC-5 | HAS | "Space between blocks" / "Space across" / "Space down" (BI:1056-1066); page grid gaps (PGP:135) | `gap` (BM:5148) | per screen |
 | RC-6 | HAS | "Add inside" (BC:4299, BI:646, BP:279) | recursive (BX:590) | any depth, container queries |
+| RC-7 | PARTLY (row added 2026-10-18, LE14-1) | "Arrange as" Free / Grid, "Direction" | a flip of `layout` / `direction` that kept a Stack's row bands (LE14-8) | after BATCH LE-14: "Kind" Stack · Side by side · Grid (`changeKind`), its blocks kept, what is left behind said |
 | GR-1 | HAS | "Grid" → "Choose a layout"; "Columns" Halves … Twelve; "Columns in the row" 1–12 (BI:989-1002) | `repeat(N)` (BM:6046); `gridQueryCss` (BM:3595) | re-cut only at Desktop |
 | GR-2 | PARTLY (engine-only) | no minimum-card-width control | `CELL_MIN_REM = 12` (BM:3245) | RULE UI gap |
 | GR-3 | HAS | "Columns wide" / "Rows tall" (BI:1074-1086); "Rows tall" on page rows (BI:1167) | `span n` | hidden in masonry |
@@ -96,3 +97,6 @@ rem (`typedLength` BM:4409) · "Show the whole picture" writes rem (BI:1479).
 | ED-4 | PARTLY | "Choose a layout" + uneven splits; Hero / Rotating hero / Gallery / Slider; Card / Outline / Tinted | ordinary trees | no section / page library |
 | ED-5 | HAS | "Layout guides" (Shift+G), snapping (Shift half-lines, Alt free), float guides | editor only | no rulers |
 | ED-6 | PARTLY | "Page check" + badge; words-at-edge, words-too-tight; Inspector warnings | — | no overflow / cramped-column check outside page rows (S-3 → LE-1) |
+| ED-7 | PARTLY (row added 2026-10-18, LE14-1) | "Reset phone changes to default" (the whole block) | `hasOverride` | no per-value mark — after BATCH LE-14: "● Set here" / "From …" beside each slider, the Per-device list, each value's own Reset (`fieldSource`, `resetField`) |
+| ED-12 | PARTLY (row added 2026-10-18, LE14-1) | Ctrl+G / Ctrl+Shift+G, "Group these N" | `groupBoxes` lifted the blocks into a FLOATING group at the page root, gap 12, widths 100 % (LE14-2 … 6) | after BATCH LE-14: wrapped IN PLACE, no space, own widths, ungroup back where they were |
+| ED-13 | PARTLY (row added 2026-10-18, LE14-1) | marquee, `BulkInspector` (sizes, spacing, look, Float / Duplicate / Delete / Group) | — | marquee only, the first block's values shown as everyone's (LE14-7) — after BATCH LE-14: Shift-click, "Mixed", the arrows move them together, Select several in Layers for touch |

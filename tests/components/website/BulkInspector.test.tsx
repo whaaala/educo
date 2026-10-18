@@ -1,7 +1,9 @@
 import { describe, it, expect, vi } from "vitest";
+import INSPECTOR from "@/config/inspector.json";
 import { render, screen, fireEvent } from "@testing-library/react";
 import BulkInspector from "@/components/website/box/BulkInspector";
 import { DEFAULT_THEME } from "@/lib/site-storage";
+import type { BoxNode } from "@/lib/box-model";
 
 function setup(overrides: Partial<Parameters<typeof BulkInspector>[0]> = {}) {
   const props = {
@@ -59,6 +61,31 @@ describe("BulkInspector (multi-select bulk edits)", () => {
     setup({ count: 3, onGroup });
     fireEvent.click(screen.getByRole("button", { name: /Group these 3/ }));
     expect(onGroup).toHaveBeenCalled();
+  });
+
+  // LE-14 ED-12: blocks in two places cannot be wrapped in one — the action stays in view, cannot be pressed, and says why
+  it("shows Group as not pressable, with the reason, when the blocks cannot be grouped (LE-14)", () => {
+    const onGroup = vi.fn();
+    setup({ count: 2, onGroup, canGroup: false });
+    const b = screen.getByRole("button", { name: /Group these 2/ });
+    expect(b).toBeDisabled();
+    fireEvent.click(b);
+    expect(onGroup).not.toHaveBeenCalled();
+    expect(screen.getByText(INSPECTOR.group.cannot)).toBeInTheDocument();
+  });
+
+  it("says no reason when the blocks can be grouped (LE-14)", () => {
+    setup({ count: 2, onGroup: vi.fn() });
+    expect(screen.getByRole("button", { name: /Group these 2/ })).toBeEnabled();
+    expect(screen.queryByText(INSPECTOR.group.cannot)).not.toBeInTheDocument();
+  });
+
+  // LE-14 ED-13: the first block's value is not everyone's — a field the selection differs in says "Mixed"
+  it("a field the selected blocks differ in reads Mixed; a shared one shows its value (LE-14)", () => {
+    setup({ sample: { id: "a", type: "heading", radius: 12, opacity: 80 } as BoxNode, mixed: ["radius"] });
+    expect(screen.getByText(`Rounded corners: ${INSPECTOR.group.mixed}`)).toBeInTheDocument();
+    expect(screen.queryByText("Rounded corners: 12px")).not.toBeInTheDocument();
+    expect(screen.getByText("See-through: 80%")).toBeInTheDocument();
   });
 
   it("hides the Group action when no onGroup handler is provided", () => {

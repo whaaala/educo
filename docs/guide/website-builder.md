@@ -307,7 +307,7 @@ Sometimes you want to place things freely (overlap a badge on an image, arrange 
 - **Floating a box takes its contents with it.** Float a grid and every cell goes too, keeping the arrangement it already had — you are moving the whole thing, not scattering it. None of the children become floating in their own right, so they still behave as a grid inside their new position.
 - **Returning it puts everything back.** Switch a floated box back to *In the layout* and it lands exactly where it started, cells and all — and nothing else on the page is altered, including the height you set on the section around it. Floating and returning is a round trip, never an edit.
 - **Or float just one piece.** Float a single cell and only that cell leaves the flow; its siblings and the grid around them do not move.
-- **Group blocks (like slides):** marquee‑select several blocks (drag a box around them on empty canvas), then **Group these N** (or **Ctrl+G**). The group moves and locks as one unit; its contents still reflow responsively. **Ungroup** with **Ctrl+Shift+G** or the block's ⋮ **Block actions** menu.
+- **Group blocks:** pick them (**Shift‑click** each, or drag a box around them), then **Group these N** or **Ctrl+G**. The group is made right where they are — nothing moves — and you move, style or copy it as one block. **Ctrl+Shift+G** ungroups. See [Working with several blocks](#10h-several-blocks-at-once-and-the-pages-layers).
 - **Lock position & size:** select a block → **Lock position & size** (or **Ctrl+L**). It can't be moved or resized by accident, but its content and colours stay editable. Unlock the same way.
 - **Copy, paste & place a whole group:** select a group and **Ctrl+C**, then **Ctrl+V**. The whole group copies as one unit — every component inside it, with fresh identities (the copy is independent of the original). A **floating** block or group pastes **slightly offset** so it doesn't hide the original, stays **floating and selected**, so you can immediately **drag it or arrow‑nudge it** into the exact position you want. A block that sits **in the layout** is pasted straight after the selected block — or inside it, if the selected block is a container.
 
@@ -863,6 +863,71 @@ so **Ctrl+Z** still undoes your last real change.
 
 ---
 
+## 10h. Several blocks at once, and the page's layers
+
+Amaka's page has three cards that should look alike, a welcome heading that belongs with its line of words, and a
+Stack she now wants side by side. None of it means building anything again.
+
+### Picking several blocks
+
+Click one block, then **Shift‑click** the others — each Shift‑click adds a block, or takes it out again. It picks the
+block at the same level as the first one, so two headings inside a Stack are picked without the Stack round them.
+You can also drag a box around blocks from the grey space beside the page. On a phone or a tablet, where there is no
+Shift key, open **Layers** and switch on **Select several**: each tap on a row then adds that block.
+
+With several picked, the Inspector edits them all at once. A setting they do not share reads **Mixed**, so you never
+take the first block's value for everyone's. The arrow keys move them all one place together.
+
+### Grouping
+
+**Ctrl+G** (or **Group these 2** in the Inspector) wraps the picked blocks in one block, **right where they are**: the
+group takes the first one's place, keeps them in their order, and adds no space and no look of its own. Nothing moves
+on the page, and the published page reads in the same order.
+
+[![Two headings grouped where they were; the Text below them has not moved](img/guide-group-in-place.webp)](img/guide-group-in-place.webp)
+ Blocks side by side are grouped side by side, each
+keeping its share of the line. **Ctrl+Shift+G** ungroups: the blocks go back exactly where they were. Blocks in two
+different places — one in each of two sections — cannot be grouped, and the button says so.
+
+### Changing what a box is
+
+Select a Stack, a Side by side or a Grid, and choose under **Kind** in the Inspector. The box becomes the new kind and
+keeps every block, in order: a Stack becomes a Side by side whose blocks share the line, a Side by side becomes a Grid
+with a column for each. If something has no meaning in the new kind — a block spanning two columns of a Grid that
+becomes a Stack — a line under **Kind** says what was left behind. **Ctrl+Z** takes it back.
+
+[![Kind: Stack · Side by side · Grid, and "Left behind: column spans."](img/guide-kind.webp)](img/guide-kind.webp)
+
+### Copying a look
+
+Select the block whose look you like and press **Ctrl+Alt+C** (or **Copy style** in its ⋮ menu). Select another — or
+several — and press **Ctrl+Alt+V** (**Paste style**). The background, corners, border, spacing, shadow and the look of
+the words come across; the words themselves, the pictures and the size stay the block's own. A box's own spacing
+between its blocks is only pasted onto another box. Pasted while you edit the phone, only the phone changes.
+
+### Set here, or from a wider screen
+
+While you edit the phone or a tablet, a value you set on that screen is marked **● Set here** beside its control —
+press it to take that one value back to what the wider screens have. A value the screen takes from a wider one says
+where from, for example **From Tablet landscape**. The **Per‑device** tab lists everything set on the screen you are
+editing, each with its own **Reset**. On the desktop nothing is marked: it is where every screen starts.
+
+[![Set here under Rounded corners and See-through on the phone screen](img/guide-set-here.webp)](img/guide-set-here.webp)
+
+### The page's layers
+
+[![The Layers view: Stack, with Heading and Text inside it, then Button](img/guide-layers.webp)](img/guide-layers.webp)
+
+Press **L**, or open the left panel and choose **Layers**. Every block of the page is listed in reading order, inside
+the box it sits in. Click a row to select its block (it is brought into view); select a block on the page and its row
+is marked. Drag a row to move its block — onto the top or bottom of a row to put it before or after, onto the middle of
+a box to put it inside. Each row can be **renamed** (double‑click, or **F2**: the Inspector's trail then uses the name),
+**hidden** on the screen you are editing, and **locked** so it cannot be moved or resized by accident; its **⋮** menu
+has Duplicate, Move up, Move down and Delete. With the keyboard: **↑ ↓** move between rows, **→** opens a box or goes
+into it, **←** closes it or goes to the box it is in, **Home / End**, **Enter** selects, **Shift+F10** opens the menu.
+
+---
+
 ## 11. Keyboard shortcuts
 
 | Action | Shortcut |
@@ -875,7 +940,11 @@ so **Ctrl+Z** still undoes your last real change.
 | Move a block in the layout one place earlier / later | ↑ / ↓ |
 | Nudge a floating block 2px (12px with Shift) | ↑ ↓ ← → |
 | Float ⇄ flow | Alt+F |
-| Group / Ungroup | Ctrl+G / Ctrl+Shift+G |
+| Group / Ungroup (in place) | Ctrl+G / Ctrl+Shift+G |
+| Add a block to the selection, or take it out | Shift+click |
+| Copy / paste a block's style | Ctrl+Alt+C / Ctrl+Alt+V |
+| Open the page's layers | L |
+| In the layers: rename · open the row's menu | F2 · Shift+F10 |
 | Lock / Unlock | Ctrl+L |
 | Bring forward / to front (floating) | Ctrl+] / Ctrl+Shift+] |
 | Send backward / to back (floating) | Ctrl+[ / Ctrl+Shift+[ |

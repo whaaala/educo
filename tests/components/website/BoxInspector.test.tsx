@@ -1491,3 +1491,65 @@ describe("BoxInspector — the trail of blocks round the selection (LE-10)", () 
     expect(document.activeElement).toHaveAttribute("aria-current", "location");
   });
 });
+
+// LE-14 RC-7: a Stack, a Side by side or a Grid changes kind in one choice; what is left behind is said, aloud
+describe("BoxInspector — RC-7 · Kind (LE-14)", () => {
+  const K = INSPECTOR_WORDS.kind;
+  it("a Stack shows Kind with Stack chosen, in place of Arrange as and Direction", () => {
+    renderFor(createContainer("column", { id: "s" } as Partial<BoxNode>), { onKind: vi.fn(() => []) });
+    const kind = screen.getByRole("group", { name: K.label });
+    expect(within(kind).getByRole("button", { name: K.choices.stack })).toHaveAttribute("aria-pressed", "true");
+    expect(screen.queryByRole("group", { name: "Arrange as" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("group", { name: "Direction" })).not.toBeInTheDocument();
+  });
+  it("choosing Grid asks for a Grid, and what was left behind is read out", () => {
+    const onKind = vi.fn(() => ["spans"]);
+    renderFor(createContainer("column", { id: "s" } as Partial<BoxNode>), { onKind });
+    fireEvent.click(within(screen.getByRole("group", { name: K.label })).getByRole("button", { name: K.choices.grid }));
+    expect(onKind).toHaveBeenCalledWith("grid");
+    expect(screen.getByRole("status")).toHaveTextContent(K.left.replace("{list}", K.dropped.spans));
+  });
+  it("nothing left behind: the status line is empty", () => {
+    renderFor(createContainer("column", { id: "s" } as Partial<BoxNode>), { onKind: vi.fn(() => []) });
+    fireEvent.click(within(screen.getByRole("group", { name: K.label })).getByRole("button", { name: K.choices.row }));
+    expect(screen.getByRole("status")).toHaveTextContent("");
+  });
+});
+
+// LE-14 ED-7: a value on a screen other than the desktop says where it comes from; "Set here" resets that one value
+describe("BoxInspector — ED-7 · Set here / From a wider screen (LE-14)", () => {
+  const M = INSPECTOR_WORDS.marks;
+  const SCREEN = Object.fromEntries(Object.entries(LAYOUT.rungs).map(([k, v]) => [k, v.label])) as Record<string, string>;
+  const card = (responsive: BoxNode["responsive"]) => createContainer("column", { id: "s", radius: 8, opacity: 90, responsive } as Partial<BoxNode>);
+  const resetName = (name: string, screen: string) => M.resetLabel.replace("{name}", name).replace("{screen}", screen);
+  it("set on the phone: Rounded corners shows Set here, a button naming it and the screen, that resets it", () => {
+    const onResetField = vi.fn();
+    renderFor(card({ phone: { radius: 4 } }), { breakpoint: "phone", onResetField });
+    const b = screen.getByRole("button", { name: resetName("Rounded corners", SCREEN.phone) });
+    expect(b).toHaveTextContent(M.here);
+    fireEvent.click(b);
+    expect(onResetField).toHaveBeenCalledWith("radius");
+  });
+  it("set on the tablet, seen on the phone: names the tablet, and is no button", () => {
+    renderFor(card({ tabletLandscape: { radius: 24 } }), { breakpoint: "phone", onResetField: vi.fn() });
+    expect(screen.getByText(M.from.replace("{screen}", SCREEN.tabletLandscape))).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: resetName("Rounded corners", SCREEN.phone) })).not.toBeInTheDocument();
+  });
+  it("on the desktop: no mark at all", () => {
+    renderFor(card({ phone: { radius: 4 } }), { breakpoint: "base", onResetField: vi.fn() });
+    expect(screen.queryByText(M.here)).not.toBeInTheDocument();
+  });
+  it("the Per-device tab lists what is set on this screen, each with its reset; nothing set says so", () => {
+    const onResetField = vi.fn();
+    renderFor(card({ phone: { radius: 4, opacity: 50 } }), { breakpoint: "phone", onResetField });
+    openDevice();
+    const list = screen.getByRole("region", { name: M.listTitle.replace("{screen}", SCREEN.phone) });
+    expect(within(list).getAllByRole("listitem").map((li) => li.textContent)).toEqual([`${M.names.radius}${M.reset}`, `${M.names.opacity}${M.reset}`]);
+    fireEvent.click(within(list).getByRole("button", { name: resetName(M.names.opacity, SCREEN.phone) }));
+    expect(onResetField).toHaveBeenCalledWith("opacity");
+    cleanup();
+    renderFor(card(undefined), { breakpoint: "phone", onResetField });
+    openDevice();
+    expect(screen.getByText(M.none.replace("{screen}", SCREEN.phone))).toBeInTheDocument();
+  });
+});

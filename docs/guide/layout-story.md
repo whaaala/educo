@@ -765,6 +765,37 @@ in [The website builder in the Educo app](website-builder-in-the-app).
 
 ---
 
+## 13. Changing a page without building it again
+
+Amaka has a finished page, and three changes to make to it.
+
+**"These two headings belong together."** She clicks the first, **Shift‑clicks** the second, and presses **Ctrl+G**.
+Nothing on the page moves: the two are now one block, right where they were, and she can give that block a
+background or move it as one. **Ctrl+Shift+G** would put them back exactly as they were.
+
+[![Two headings grouped where they were; the Text below them has not moved](img/guide-group-in-place.webp)](img/guide-group-in-place.webp)
+
+**"This should run across, not down."** She selects the Stack and picks **Side by side** under **Kind**. Its blocks
+stay, in their order, and now share the line. Later she makes it a **Grid**; when she turns it back into a Stack, a
+line under Kind tells her the one thing that could not come along — a block that spanned two columns.
+
+[![Kind: Stack · Side by side · Grid, and "Left behind: column spans."](img/guide-kind.webp)](img/guide-kind.webp)
+
+**"Where did that block go?"** On a long page she presses **L**. The left panel lists every block, inside the box it
+sits in. She clicks a row to find the block, renames the Stack "Welcome", hides one line on phones, and drags a
+button into the box above it — all from the list.
+
+[![The Layers view: Stack, with Heading and Text inside it, then Button](img/guide-layers.webp)](img/guide-layers.webp)
+
+While she works on the phone screen, the Inspector marks what she has set there — **● Set here**, which she can press to
+undo just that one value — and says where everything else comes from.
+
+[![Set here under Rounded corners and See-through on the phone screen](img/guide-set-here.webp)](img/guide-set-here.webp)
+
+The details, and every key, are in [Several blocks at once, and the page's layers](website-builder#10h-several-blocks-at-once-and-the-pages-layers).
+
+---
+
 ## What comes next
 
 The reference page ([Layout — reference](layout-reference)) lists every control in the Layout panels by its exact
