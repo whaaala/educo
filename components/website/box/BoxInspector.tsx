@@ -12,8 +12,8 @@ import { Plus, X, Tags, Rows3, Columns3, Upload, ArrowRight, AlignLeft, AlignCen
 import type { SiteTheme } from "@/lib/site-storage";
 import { perScreenBanner, perScreenDeviceTab } from "@/lib/per-screen-note";
 import type { BoxNode, FlexAlign, FlexJustify, FlexLines, AccPartStyle, Breakpoint, PagerNav, PinScopeWords, SectionFlag } from "@/lib/box-model";
-import { RUNG_LABEL, SIZES } from "@/lib/educo-ui/layout";
-import { type ItemAction, gridSeenColumns, setLengthCss, ratioCss, limitCss, colBetween, gridAutoFit, TOAST_CORNERS, hasAnnouncement, fluidRemRange, isContainer, containerLabel, isFloating, isCssBg, addItem, removeItem, moveItem, updateItem, addChildItem, updateChildItem, removeChildItem, moveChildItem , isMultiItemComponent, hasIntrinsicSize, sizeToCSS, typedLength, GRID_MAX, COLUMN_FRACTIONS, columnFractionOf, canSetColumnFraction, gridColumnsAt, bandEdgeCSS, PIN_ARRIVALS, PIN_ARRIVAL_AFTER, pinArrivalHasEffect, linkLineGap, LINK_GAP_ACROSS, LINK_GAP_ACROSS_PHONE, spaceDefaults, outerDefaults, type SectionPlace, gapOf, importPhoto, refusedMotion, rowFilledByBlocks } from "@/lib/box-model";
+import { RUNG_LABEL, SIZES, FLOW } from "@/lib/educo-ui/layout";
+import { type ItemAction, gridSeenColumns, setLengthCss, ratioCss, limitCss, colBetween, gridAutoFit, TOAST_CORNERS, hasAnnouncement, fluidRemRange, isContainer, containerLabel, isFloating, isCssBg, addItem, removeItem, moveItem, updateItem, addChildItem, updateChildItem, removeChildItem, moveChildItem , isMultiItemComponent, hasIntrinsicSize, sizeToCSS, typedLength, GRID_MAX, COLUMN_FRACTIONS, columnFractionOf, canSetColumnFraction, gridColumnsAt, bandEdgeCSS, PIN_ARRIVALS, PIN_ARRIVAL_AFTER, pinArrivalHasEffect, linkLineGap, LINK_GAP_ACROSS, LINK_GAP_ACROSS_PHONE, spaceDefaults, outerDefaults, type SectionPlace, gapOf, importPhoto, refusedMotion, rowFilledByBlocks, isSideBySide } from "@/lib/box-model";
 import { remLen, SPACE_STEPS } from "@/lib/educo-ui/tokens";
 import { ACCORDION_DESIGNS, ACCORDION_DESIGN_COUNT, ACCORDION_AXES } from "@/lib/educo-ui/accordions";
 import { ALERT_DESIGNS, ALERT_DESIGN_COUNT, ALERT_AXES } from "@/lib/educo-ui/alerts";
@@ -50,6 +50,7 @@ const fromRem = (rem: number) => Math.round(rem * 16);
 // Plain-language option lists (value = the real CSS token, label = what the user reads).
 // BATCH LE-4: the words of every alignment choice live in config/inspector.json `align`, keyed by the stored value (RULE CFG).
 const ALIGN_WORDS = INSPECTOR.align;
+const FLOW_WORDS = INSPECTOR.flow; // BATCH LE-13 (RULE CFG)
 const JUSTIFY_OPTS = Object.entries(ALIGN_WORDS.justify) as [FlexJustify, string][];
 const ALIGN_OPTS = Object.entries(ALIGN_WORDS.lineUp) as [FlexAlign, string][];
 const LINES_OPTS = Object.entries(ALIGN_WORDS.wrappedChoices) as [FlexLines, string][];
@@ -608,7 +609,7 @@ function AccPreview({ id, size, axes = [] }: { id: string; size: ThumbSize; axes
   );
 }
 
-export default function BoxInspector({ section = false, sectionPlace, outerDefault, fillHeight, pageSpan, onSetSpan, pageLines, onSetLines, onSetFreeInset, rowStepRem, node, theme, onPatch, onAddChild, onAddAnnouncement, onFloat, onUnfloat, onLayer, onAlignInRow, rowJustify, onSectionWidth, sectionWidth, siteWidth, sectionFollows, rowOfPage = false, canFloat = true, parentFlow, inGrid = false, inMasonry = false, inFitGrid = false, gridTrack, onSetFraction, onRetrack, breakpoint = "base", overridden = false, onResetOverride, pages, currentPageId, pinBlockedBy = null, fixedBlockedBy = null, pinScope = null }: {
+export default function BoxInspector({ section = false, sectionPlace, outerDefault, fillHeight, pageSpan, onSetSpan, pageLines, onSetLines, onSetFreeInset, rowStepRem, node, theme, onPatch, onAddChild, onAddAnnouncement, onFloat, onUnfloat, onLayer, onAlignInRow, rowJustify, onSectionWidth, sectionWidth, siteWidth, sectionFollows, rowOfPage = false, canFloat = true, parentFlow, canWrapWords = false, canOverlapUp = false, inGrid = false, inMasonry = false, inFitGrid = false, gridTrack, onSetFraction, onRetrack, breakpoint = "base", overridden = false, onResetOverride, pages, currentPageId, pinBlockedBy = null, fixedBlockedBy = null, pinScope = null }: {
   section?: SectionFlag; // the block is the content of a page section, so its default inner spacing is the gutter and the section space
   outerDefault?: [number, number, number, number]; // the outer space it really has by default (`outerSpaceDefaults`, G-3 (1)); else `outerDefaults`
   fillHeight?: { on: boolean }; // G-3d (2): a picture alone in a block spanning rows — "Fill the block's height"; absent where it does nothing
@@ -634,6 +635,8 @@ export default function BoxInspector({ section = false, sectionPlace, outerDefau
   canFloat?: boolean;
   /** LE-4: how the PARENT lays its blocks out — a block's Across / Down and Push to the far end are read against it. */
   parentFlow?: "row" | "column" | "grid";
+  /** LE-13: a picture alone on its line in a Stack (FL-3, `wrapAround`) · a section of the page with one above (PO-4, `overlapUp`) */
+  canWrapWords?: boolean; canOverlapUp?: boolean;
   inGrid?: boolean;
   /** Is the PARENT row a masonry gallery? Its cells have no rows to be tall in or to start at. */
   inMasonry?: boolean;
@@ -1140,6 +1143,16 @@ export default function BoxInspector({ section = false, sectionPlace, outerDefau
                   <Range title="Edge depth" value={node.edgeDepth} min={0} max={30} fallback={6} onChange={(n) => onPatch({ edgeDepth: n })} unit="%" />
                 )}
               </div>
+              {/* PO-4 · pulled up over the section above, in front of it — that section grows by as much, so nothing is covered (per screen) */}
+              {canOverlapUp && (
+                <div className="space-y-1">
+                  <span className={label}>{FLOW_WORDS.overlap}</span>
+                  <Segmented full ariaLabel={FLOW_WORDS.overlap} value={String(node.overlapUp && FLOW.overlapSteps.includes(node.overlapUp) ? node.overlapUp : 0)}
+                    onChange={(v) => onPatch({ overlapUp: Number(v) || (breakpoint === "base" ? undefined : 0) })}
+                    options={[{ value: "0", label: FLOW_WORDS.overlapOff }, ...FLOW.overlapSteps.map((n, i) => ({ value: String(n), label: FLOW_WORDS.overlapSteps[i] ?? `${n}rem` }))]} />
+                  <p className="text-[0.6875rem] leading-snug text-gray-500 dark:text-gray-400 midnight:text-slate-400 purple:text-purple-300">{FLOW_WORDS.overlapHint}</p>
+                </div>
+              )}
               {/* SHOW ONE AT A TIME sits ABOVE "Arrange as", because it answers a different question: not
                   how the blocks inside are arranged, but whether they are all on screen at once. With it
                   on, each block in this box becomes a page a visitor swipes or arrows between — and each
@@ -1245,7 +1258,17 @@ export default function BoxInspector({ section = false, sectionPlace, outerDefau
                     options={[{ value: "column", label: "Top-to-bottom", Icon: Rows3 }, { value: "row", label: "Side-by-side", Icon: Columns3 }]} />
                   <CompactSelect label="Position blocks" ariaLabel="Position blocks" value={node.justify ?? "start"} onChange={(v) => onPatch({ justify: v as FlexJustify })} options={JUSTIFY_OPTS.map(([v, l]) => ({ value: v, label: l }))} />
                   {rowFilledByBlocks(node) && <p role="note" className="text-[0.6875rem] leading-snug text-amber-700 dark:text-amber-300 midnight:text-amber-300 purple:text-amber-300">These blocks fill the row — give one a width to place them.</p>}
-                  <label className="pointer-coarse:min-h-11 flex items-center gap-2 text-xs text-gray-600 dark:text-gray-300"><input type="checkbox" checked={!!node.wrap} onChange={(e) => onPatch({ wrap: e.target.checked })} /> Let blocks wrap to a new line</label>
+                  {/* FL-6 · a Side by side that does not fit: new lines, or one line that scrolls sideways (per screen) */}
+                  {isSideBySide(node) ? (
+                    <div className="space-y-1">
+                      <span className={label}>{FLOW_WORDS.fit}</span>
+                      <Segmented full ariaLabel={FLOW_WORDS.fit} value={node.scrollX ? "scroll" : "wrap"}
+                        onChange={(v) => onPatch(v === "scroll" ? { scrollX: true } : { scrollX: breakpoint === "base" ? undefined : false, wrap: true })}
+                        options={(["wrap", "scroll"] as const).map((v) => ({ value: v, label: FLOW_WORDS.fitChoices[v] }))} />
+                      <p className="text-[0.6875rem] leading-snug text-gray-500 dark:text-gray-400 midnight:text-slate-400 purple:text-purple-300">{FLOW_WORDS.fitHint}</p>
+                    </div>
+                  ) : null}
+                  {!node.scrollX && <label className="pointer-coarse:min-h-11 flex items-center gap-2 text-xs text-gray-600 dark:text-gray-300"><input type="checkbox" checked={!!node.wrap} onChange={(e) => onPatch({ wrap: e.target.checked })} /> Let blocks wrap to a new line</label>}
                   {/* AC-25 · where the LINES sit in a taller box — offered only while a side-by-side row wraps; anywhere else it does nothing */}
                   {node.wrap && node.direction === "row" && (
                     <>
@@ -1361,6 +1384,16 @@ export default function BoxInspector({ section = false, sectionPlace, outerDefau
                 );
               })()}
               <p className="text-[0.6875rem] leading-snug text-gray-500 dark:text-gray-400 midnight:text-slate-400 purple:text-purple-300">{ALIGN_WORDS.placeHint}</p>
+              {/* FL-3 · words round a picture — only a picture alone on its line in a Stack (`canWrapWords`), per screen */}
+              {canWrapWords && (
+                <div className="space-y-1">
+                  <span className={label}>{FLOW_WORDS.wrap}</span>
+                  <Segmented full ariaLabel={FLOW_WORDS.wrap} value={node.wrapAround === "start" || node.wrapAround === "end" ? node.wrapAround : "off"}
+                    onChange={(v) => onPatch({ wrapAround: v === "off" ? (breakpoint === "base" ? undefined : "off") : v as "start" | "end" })}
+                    options={(["off", "start", "end"] as const).map((v) => ({ value: v, label: FLOW_WORDS.wrapChoices[v] }))} />
+                  <p className="text-[0.6875rem] leading-snug text-gray-500 dark:text-gray-400 midnight:text-slate-400 purple:text-purple-300">{FLOW_WORDS.wrapHint}</p>
+                </div>
+              )}
               <CompactField label="Order" ariaLabel="Order" type="number" placeholder="auto" value={node.order ?? ""}
                 onChange={(v) => onPatch({ order: v === "" ? undefined : Number(v) || 0 })} />
             </Accordion>

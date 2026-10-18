@@ -13,8 +13,8 @@
 import type { CSSProperties } from "react";
 import { isRegistryComponent, defaultComponentFields, defaultComponentWidth, componentIsColumn, HUGS_BY_NATURE } from "@/lib/educo-ui/registry";
 import { iconSvg } from "@/lib/educo-ui/icon-svg";
-import { BREAKPOINTS_EM } from "@/lib/educo-ui/base";
-import { RUNG_MEASURE, RUNG_PX, COLUMN_FLOORS_REM, MEDIA, type RungName } from "@/lib/educo-ui/layout";
+import { BREAKPOINTS_EM, PARAGRAPH_MEASURE } from "@/lib/educo-ui/base";
+import { RUNG_MEASURE, RUNG_PX, COLUMN_FLOORS_REM, MEDIA, FLOW, type RungName } from "@/lib/educo-ui/layout";
 import { hasItemEffects, itemEffectsCss, revealEffect, REVEAL_DUR, REVEAL_EASE, REVEAL_WAIT, shapeShadowFilter } from "@/lib/interactions";
 import { PAGE_Z, clampPageZ } from "@/lib/educo-ui/stacking";
 import { remLen, SHADOW_SCALE, SPACE_STEPS, DURATION, EASING } from "@/lib/educo-ui/tokens";
@@ -384,6 +384,12 @@ export interface BoxNode {
   // their head. It supersedes `push` (still read, so no saved page changes).
   placeX?: "start" | "center" | "end" | "stretch"; // across the parent — stretch = Fill (AC-27)
   placeY?: "start" | "center" | "end" | "stretch"; // down the parent
+  // BATCH LE-13 (`flowCSS`), each per screen: a picture in a Stack the words run round (FL-3, logical sides) · a Side by side that
+  // keeps one line and scrolls sideways instead of wrapping (FL-6) · a page section pulled up over the one above, in rem — one of
+  // config/layout.json flow.overlapSteps (PO-4; R-4 D2: a named control, never a free negative margin).
+  wrapAround?: "start" | "end" | "off"; // "off" / scrollX false / overlapUp 0: Off on a screen whose base is on
+  scrollX?: boolean;
+  overlapUp?: number;
   clip?: boolean;           // allow sizing SMALLER than content (min:0) and hide overflow; default off = hug content
   baseFont?: number;        // page root only: the global base unit in px (default 10); rendered as rem so it scales with the browser font size (WCAG)
   spaced?: boolean;         // made under SPACE BY DEFAULT (2026-09-30): unset spacing reads `spaceDefaults`; saved pages lack it and keep theirs
@@ -2668,6 +2674,7 @@ export function clampRowWidths(row: BoxNode): BoxNode {
    * neighbour goes to the next line; narrow and it comes back, with nothing remembered and nothing moved.
    */
   if (row.rowBand || row.wrap) return row;
+  if (stripsAnywhere(row)) return row; // FL-6: a sideways strip is MEANT to run past the line — each block keeps its width
   return fitRowWidths(row);
 }
 
@@ -3785,7 +3792,7 @@ export function hostsNarrowingGrid(node: BoxNode): boolean {
  * share of the height to it (116px drawn, 174px published). The export passes nothing and carries none of it.
  */
 export function gridQueryCss(scope: string, node: BoxNode, cellScope: (id: string) => string, aboveThePhone: (css: string) => string, editorOnly: (scope: string) => string = () => "", onPage = false, onlyOn?: OnlyOn): string {
-  if (node.rowBand) return rowQueryCss(node, cellScope, aboveThePhone, onPage, onlyOn);
+  if (node.rowBand) return rowQueryCss(node, cellScope, aboveThePhone, onPage, onlyOn) + flowQueryCss(node, cellScope); // + FL-3
   if (gridAutoFit(node)) return ""; // GR-2: the browser fits the cards itself, on every screen
   const n = gridNarrowsAt(node); if (!n) return "";
   const kids = (node.children ?? []).filter((c) => !isFloating(c));
@@ -6524,6 +6531,9 @@ function containerStyleOf(node: BoxNode, bp: Breakpoint = "base", section: Secti
     return { display: "grid", gridTemplateColumns: gridTemplate(pageRowTracks(node)), ...gapCSS(node), alignItems: ALIGN_CSS[node.align ?? "stretch"],
       ...(hostsNarrowingGrid(node) ? { containerType: "inline-size" as const } : {}), ...paddingCSS(node, section), minHeight: minH };
   }
+  return { ...flexBoxCSS(node, minH, section), ...flowContainerCSS(node, bp) };
+}
+function flexBoxCSS(node: BoxNode, minH: CSSProperties["minHeight"], section: SectionFlag): CSSProperties {
   return {
     display: "flex",
     flexDirection: node.direction ?? "column",
@@ -6990,6 +7000,7 @@ export function childStyle(child: BoxNode, parent: BoxNode, bp: Breakpoint = "ba
   if (child.rowBand && fillsRows(parent, bp)) s.flex = "1 0 auto";
   const host = fillHostOf(parent, grand), own = ownImageSizing(child).height;
   if (child.type === "image" && host && fillsRows(host, bp)) Object.assign(s, parent.rowBand ? { alignSelf: "stretch", minHeight: own === "auto" ? undefined : own } : { flex: `1 0 ${own}` });
+  flowCSS(s, child, parent, bp, grand); // BATCH LE-13 — last: a float, a strip's block or an overlap is what this block now IS
   return s;
 }
 
@@ -7062,6 +7073,134 @@ function gutterCSS(s: CSSProperties, child: BoxNode, parent: BoxNode, bp: Breakp
  * BEFORE this in both the canvas's wrapStyle and the export's styleAt, so a push cleanly overrides a margin
  * instead of the two silently coexisting as different properties that resolve to the same edge.
  */
+// ── Flow and overlap (BATCH LE-13) ───────────────────────────────────────────
+
+/** The one in-flow block of a row band, or null when it holds more (or none). */
+function loneKid(band: BoxNode): BoxNode | null {
+  const kids = (band.children ?? []).filter((k) => !isFloating(k));
+  return band.rowBand && kids.length === 1 ? kids[0] : null;
+}
+/** FL-3 · a picture the words run round on `bp`, and to which side; anything else stored is Off (a trust boundary). */
+export function wrapSide(n: BoxNode | null | undefined, bp: Breakpoint = "base"): "start" | "end" | undefined {
+  if (!n || n.type !== "image") return undefined;
+  const w = resolveResponsive(n, bp).wrapAround;
+  return w === "start" || w === "end" ? w : undefined;
+}
+/**
+ * FL-3 · DOES THIS STACK LET WORDS FLOW ROUND A PICTURE on `bp`? Then it is a block formatting context (`flow-root`) and its bands
+ * of one block are drawn as BLOCKS — a flex row is a formatting context of its own, so words could never wrap under a picture
+ * (CSS Flexbox: `float` does nothing on a flex item; measured RX-3 `03-ours-measured.md` FL-3, LE13-1).
+ */
+export function flowsWords(node: BoxNode, bp: Breakpoint = "base"): boolean {
+  if (!isContainer(node) || node.rowBand || node.layout === "grid" || isPager(node)) return false;
+  if ((resolveResponsive(node, bp).direction ?? "column") !== "column") return false;
+  return (node.children ?? []).some((c) => !!wrapSide(c.rowBand ? loneKid(c) : c, bp));
+}
+/** FL-6 · a Side by side that keeps ONE line and scrolls sideways on `bp`. */
+export function stripsAt(node: BoxNode, bp: Breakpoint = "base"): boolean {
+  return isSideBySide(node) && resolveResponsive(node, bp).scrollX === true;
+}
+/** …on any screen: it is then a named, focusable region (WCAG 2.1.1), and its widths are never re-fitted to the line. */
+export function stripsAnywhere(node: BoxNode): boolean {
+  return isSideBySide(node) && (node.scrollX === true || Object.values(node.responsive ?? {}).some((o) => o?.scrollX === true));
+}
+/** PO-4 · how far (rem) a section is pulled up over the one above on `bp` — only a step of config/layout.json flow.overlapSteps. */
+export function overlapAt(n: BoxNode | null | undefined, bp: Breakpoint = "base"): number | undefined {
+  const v = n ? resolveResponsive(n, bp).overlapUp : undefined;
+  return v != null && FLOW.overlapSteps.includes(v) ? v : undefined;
+}
+/** PO-4 · a page band's overlap: its own, or that of the one section it holds (a band is scaffolding no one selects). */
+function bandOverlap(band: BoxNode | undefined, bp: Breakpoint): number | undefined {
+  if (!band) return undefined;
+  return overlapAt(band, bp) ?? overlapAt(loneKid(band), bp);
+}
+
+/** FL-3 · FL-6 · the container's own side: a Stack the words flow in, a Side by side that scrolls sideways. */
+function flowContainerCSS(node: BoxNode, bp: Breakpoint): CSSProperties {
+  if (flowsWords(node, bp)) {
+    // `inline-size`: the picture asks THIS box how wide it is (`flowQueryCss`), never the screen — the Stack fills its line anyway
+    return { display: "flow-root", ...(hugsContent(node) ? {} : { containerType: "inline-size" as const }) };
+  }
+  if (stripsAt(node, bp)) {
+    // The pager's model (`pagerStripCss`) on a flex line: one line, its own scroll, each block landing at the start. `contain`, so a
+    // swipe at the strip's end does not carry on and scroll the page; the scrollbar stays — it is a mouse's way to move it.
+    return { flexWrap: "nowrap", overflowX: "auto", overflowY: "hidden", scrollSnapType: "x mandatory", overscrollBehaviorX: "contain" };
+  }
+  return {};
+}
+
+/**
+ * BATCH LE-13 · A CHILD'S SIDE OF FLOW AND OVERLAP, applied last in `childStyle` (the canvas and the export both call it):
+ *  FL-3 a band of one block in a flowing Stack is a BLOCK (the Stack's gap becomes its top margin); the picture floats to its
+ *       logical side at a share of the line, with space on its open side and below;
+ *  FL-6 a block of a strip keeps its width (its own in rem, else config `flow.stripCard`, a peek on a phone) and snaps to the start;
+ *  PO-4 a page band whose section overlaps is pulled up and drawn in front; the section above grows at its foot by the same amount.
+ */
+function flowCSS(s: CSSProperties, child: BoxNode, parent: BoxNode, bp: Breakpoint, grand?: BoxNode | null): void {
+  if (child.rowBand && flowsWords(parent, bp) && loneKid(child)) {
+    const kids = (parent.children ?? []).filter((k) => !isFloating(k));
+    // `align-content` NORMAL: on a block box any other value makes it a formatting context of its own (CSS Box Alignment 3, Chrome
+    // 123+), which held the picture's float inside its band and put the words under it — measured, the band 395px tall
+    s.display = "block"; s.alignContent = "normal";
+    if (kids.findIndex((k) => k.id === child.id) > 0 && gapOf(resolveResponsive(parent, bp)).y) s.marginTop = u(gapOf(resolveResponsive(parent, bp)).y);
+  }
+  const host = parent.rowBand ? grand : parent;
+  const side = (parent.rowBand ? loneKid(parent)?.id === child.id : true) && host && flowsWords(host, bp) ? wrapSide(child, bp) : undefined;
+  if (side) {
+    // its own share of the line when it has one (a rem width, or a % short of the whole line — a new picture is 100%), else config's
+    const w = (child.width ?? "").trim(), share = /^\d*\.?\d+rem$/.test(w) || (/^\d*\.?\d+%$/.test(w) && parseFloat(w) < 100) ? w : FLOW.wrapWidth;
+    // LE13-6 · …never more than a share of the words' READING width, or a wide Stack (1600px+) left a capped paragraph no room beside it
+    const own = `min(${share}, calc(${PARAGRAPH_MEASURE} * ${FLOW.wrapMeasureShare}))`;
+    // z-index 1 (LE13-8): the words' blocks still SPAN the picture's area (only their lines are shortened) and, positioned, were drawn
+    // over it — a click on the picture landed on the words; the words never cover it, so lifting it changes nothing you can see
+    Object.assign(s, { float: side === "start" ? "inline-start" : "inline-end", width: own, maxWidth: "100%", flex: undefined, alignSelf: undefined, zIndex: 1,
+      marginInlineStart: side === "end" ? `${FLOW.wrapGapRem}rem` : "0rem", marginInlineEnd: side === "start" ? `${FLOW.wrapGapRem}rem` : "0rem", marginBottom: `${FLOW.wrapGapRem}rem` });
+    delete s.marginLeft; delete s.marginRight; // the logical pair above is the whole of it (no physical side fighting it)
+  }
+  if (stripsAt(parent, bp) && !isFloating(child)) {
+    const w = definiteLength(child.width) ?? FLOW.stripCard;
+    Object.assign(s, { flex: `0 0 ${w}`, width: w, maxWidth: "100%", minWidth: 0, scrollSnapAlign: "start" });
+  }
+  // PO-4 — a band in a column of bands (the page's; the control is offered only there, `canOverlapUp`)
+  if (child.rowBand && !parent.rowBand && parent.layout !== "grid") {
+    const bands = (parent.children ?? []).filter((k) => !isFloating(k));
+    const i = bands.findIndex((k) => k.id === child.id), x = i > 0 ? bandOverlap(child, bp) : undefined;
+    if (x != null && !s.position) Object.assign(s, { marginTop: `-${x}rem`, position: "relative", zIndex: 1 });
+    // the section above holds more than one block: the BAND grows (its one section grows instead — just below)
+    const below = bandOverlap(bands[i + 1], bp);
+    if (below != null && !loneKid(child)) s.paddingBottom = `calc(${String(paddingCSS(child).paddingBottom ?? "0rem")} + ${below}rem)`;
+  }
+  if (parent.rowBand && grand && !grand.rowBand && grand.layout !== "grid" && loneKid(parent)?.id === child.id && isContainer(child)) {
+    const bands = (grand.children ?? []).filter((k) => !isFloating(k));
+    const below = bandOverlap(bands[bands.findIndex((k) => k.id === parent.id) + 1], bp);
+    if (below != null) {
+      const r = resolveResponsive(child, bp);
+      s.paddingBottom = `calc(${String(paddingCSS(r, sectionContent(r, false, true, parent)).paddingBottom ?? "0rem")} + ${below}rem)`;
+    }
+  }
+}
+/** FL-3 · below config `flow.wrapBelowRem` of its Stack, a wrapped picture takes the whole line and the words follow it (RULE AF). */
+export function flowQueryCss(band: BoxNode, cellScope: (id: string) => string): string {
+  const k = loneKid(band);
+  if (!wrapSide(k)) return "";
+  return `@container (max-width:${FLOW.wrapBelowRem - 0.01}rem){${cellScope(k!.id)}{float:none !important;width:100% !important;margin-inline:0 !important}}`;
+}
+
+/** The control's home (LE-13 U4): a picture alone in its band in a Stack (FL-3) · a section of the page with one above it (PO-4). */
+export function canWrapWords(root: BoxNode, id: string, bp: Breakpoint = "base"): boolean {
+  const n = findBox(root, id);
+  if (n?.type !== "image" || isFloating(n)) return false;
+  const p = findParent(root, id)?.parent;
+  const host = p?.rowBand && loneKid(p)?.id === id ? findParent(root, p.id)?.parent : p?.rowBand ? undefined : p;
+  return !!host && host.id !== root.id && !host.rowBand && host.layout !== "grid" && !isPager(host) && (resolveResponsive(host, bp).direction ?? "column") === "column";
+}
+export function canOverlapUp(root: BoxNode, id: string): boolean {
+  const band = findParent(root, id)?.parent;
+  if (!band?.rowBand || loneKid(band)?.id !== id || !isContainer(findBox(root, id)!)) return false;
+  const bands = (root.children ?? []).filter((k) => !isFloating(k));
+  return bands.findIndex((k) => k.id === band.id) > 0;
+}
+
 /** A block that takes its parent's main-axis free room with an AUTO MARGIN (LE4-1): the nine squares' Start / Middle / End
  *  on that axis (Push to the far end is its End), or the legacy `push`. Fill grows instead, so it is not one. */
 function placesOnMain(k: BoxNode, isRow: boolean, bp: Breakpoint): boolean {

@@ -228,3 +228,8 @@ export const LAYOUT_CSS = layoutCss();
 /** BATCH LE-12 · the Proportion gallery's shapes (SZ-4), Custom's first value, and the card width "As many as fit" starts at (GR-2) — config/layout.json `sizes`. */
 export const SIZES: Readonly<{ ratios: readonly { value: string; label: string }[]; customStart: string; autoFitStart: string }> = LAYOUT.sizes;
 if (!SIZES.ratios.length || SIZES.ratios.some((r) => !/^\d+(\.\d+)? \/ \d+(\.\d+)?$/.test(r.value))) throw new Error("config/layout.json: sizes.ratios need a value written \"w / h\"");
+
+/** BATCH LE-13 · how words flow round a picture (FL-3), a sideways strip's blocks (FL-6), and the overlap steps (PO-4) — config/layout.json `flow`. */
+export const FLOW: Readonly<{ wrapWidth: string; wrapGapRem: number; wrapBelowRem: number; wrapMeasureShare: number; stripCard: string; overlapSteps: readonly number[] }> = LAYOUT.flow;
+if (!FLOW.overlapSteps.length || FLOW.overlapSteps.some((n, i) => !(n > 0) || (i > 0 && n <= FLOW.overlapSteps[i - 1]))) throw new Error("config/layout.json: flow.overlapSteps need positive rem numbers, smallest first");
+if (!(FLOW.wrapGapRem >= 0) || !(FLOW.wrapBelowRem > 0) || !(FLOW.wrapMeasureShare > 0 && FLOW.wrapMeasureShare < 1)) throw new Error("config/layout.json: flow.wrapGapRem, flow.wrapBelowRem and flow.wrapMeasureShare (0 … 1) need numbers");

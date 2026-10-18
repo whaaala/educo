@@ -1332,3 +1332,57 @@ describe("BoxInspector — LE-4 the alignment panel", () => {
     pickSelect(A.wrappedLines as string, A.wrappedChoices.stretch); expect(onPatch).toHaveBeenLastCalledWith({ alignContent: undefined });
   });
 });
+
+// BATCH LE-13 · flow and overlap — Wrap words round it (FL-3), When it doesn't fit (FL-6), Overlap the section above (PO-4).
+// Words: config/inspector.json `flow`, steps: config/layout.json `flow.overlapSteps`. Engine: tests/unit/flow.test.ts.
+describe("BoxInspector — LE-13 flow and overlap", () => {
+  const W = INSPECTOR_WORDS.flow;
+  const pic = (extra: Partial<BoxNode> = {}) => createElement("image", { id: "p", ...extra } as Partial<BoxNode>);
+  it("FL-3: Wrap words round it, only where it can work; Off on a screen whose base wraps is stored as off", () => {
+    const onPatch = renderFor(pic(), { parentFlow: "column", canWrapWords: true });
+    const g = screen.getByRole("group", { name: W.wrap });
+    expect(within(g).getByRole("button", { name: W.wrapChoices.off })).toHaveAttribute("aria-pressed", "true");
+    expect(screen.getByText(W.wrapHint)).toBeInTheDocument();
+    fireEvent.click(within(g).getByRole("button", { name: W.wrapChoices.start })); expect(onPatch).toHaveBeenLastCalledWith({ wrapAround: "start" });
+    fireEvent.click(within(g).getByRole("button", { name: W.wrapChoices.off })); expect(onPatch).toHaveBeenLastCalledWith({ wrapAround: undefined });
+    cleanup();
+    const atPhone = renderFor(pic({ wrapAround: "end" }), { parentFlow: "column", canWrapWords: true, breakpoint: "phone" });
+    const g2 = screen.getByRole("group", { name: W.wrap });
+    expect(within(g2).getByRole("button", { name: W.wrapChoices.end })).toHaveAttribute("aria-pressed", "true");
+    fireEvent.click(within(g2).getByRole("button", { name: W.wrapChoices.off })); expect(atPhone).toHaveBeenLastCalledWith({ wrapAround: "off" });
+    cleanup();
+    renderFor(pic(), { parentFlow: "row" });
+    expect(screen.queryByRole("group", { name: W.wrap })).toBeNull();
+  });
+  it("FL-6: When it doesn't fit on a Side by side — Scroll sideways, and back to new lines (Off stored on a screen)", () => {
+    const sbs = (extra: Partial<BoxNode> = {}) => createContainer("row", { id: "s", children: [], ...extra });
+    const onPatch = renderFor(sbs());
+    const g = screen.getByRole("group", { name: W.fit });
+    fireEvent.click(within(g).getByRole("button", { name: W.fitChoices.scroll })); expect(onPatch).toHaveBeenLastCalledWith({ scrollX: true });
+    expect(screen.getByText(W.fitHint)).toBeInTheDocument();
+    cleanup();
+    const atPhone = renderFor(sbs({ scrollX: true }), { breakpoint: "phone" });
+    const g2 = screen.getByRole("group", { name: W.fit });
+    expect(within(g2).getByRole("button", { name: W.fitChoices.scroll })).toHaveAttribute("aria-pressed", "true");
+    expect(screen.queryByRole("checkbox", { name: /Let blocks wrap/ })).toBeNull(); // a strip does not wrap — the old box would contradict it
+    fireEvent.click(within(g2).getByRole("button", { name: W.fitChoices.wrap })); expect(atPhone).toHaveBeenLastCalledWith({ scrollX: false, wrap: true });
+    cleanup();
+    renderFor(createContainer("column", { id: "c", children: [] }));
+    expect(screen.queryByRole("group", { name: W.fit })).toBeNull();
+  });
+  it("PO-4: Overlap the section above — Off and config's steps in their words; only where it can work", () => {
+    const sec = (extra: Partial<BoxNode> = {}) => createContainer("row", { id: "s", children: [], ...extra });
+    const onPatch = renderFor(sec(), { canOverlapUp: true });
+    const g = screen.getByRole("group", { name: W.overlap });
+    expect(within(g).getAllByRole("button").map((b) => b.textContent)).toEqual([W.overlapOff, ...W.overlapSteps]);
+    fireEvent.click(within(g).getByRole("button", { name: W.overlapSteps[1] })); expect(onPatch).toHaveBeenLastCalledWith({ overlapUp: LAYOUT.flow.overlapSteps[1] });
+    cleanup();
+    const atPhone = renderFor(sec({ overlapUp: LAYOUT.flow.overlapSteps[2] }), { canOverlapUp: true, breakpoint: "phone" });
+    const g2 = screen.getByRole("group", { name: W.overlap });
+    expect(within(g2).getByRole("button", { name: W.overlapSteps[2] })).toHaveAttribute("aria-pressed", "true");
+    fireEvent.click(within(g2).getByRole("button", { name: W.overlapOff })); expect(atPhone).toHaveBeenLastCalledWith({ overlapUp: 0 });
+    cleanup();
+    renderFor(sec());
+    expect(screen.queryByRole("group", { name: W.overlap })).toBeNull();
+  });
+});

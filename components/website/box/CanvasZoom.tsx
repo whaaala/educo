@@ -18,6 +18,8 @@ import { ZOOM_MAX, ZOOM_MENU, ZOOM_MIN, anchorDelta, clampZoom, readZoom, stepZo
 
 const local = () => { try { return typeof window === "undefined" ? undefined : window.localStorage; } catch { return undefined; } };
 const editable = (t: EventTarget | null) => t instanceof HTMLElement && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName));
+/** Was this element focused by the KEYBOARD? (`:focus-visible`; a selector an engine does not know reads as no.) */
+const keyboardFocused = (t: Element) => { try { return t.matches(":focus-visible"); } catch { return false; } };
 type Anchor = { lx: number; ly: number; clientX: number; clientY: number };
 
 export function useCanvasZoom({ device, fit, scroller, frame, selectedId, ready }: {
@@ -110,7 +112,9 @@ export function useCanvasZoom({ device, fit, scroller, frame, selectedId, ready 
       // Space on a focused button or link IN THE PAGE still presses it. A toolbar button outside it keeps focus after a
       // click (a device chosen, then the pointer moved onto the page): there Space is the pan, and the key is kept from
       // pressing that button again (Z1-g).
-      else if (e.code === "Space" && !e.shiftKey && !(e.target instanceof Element && sc.contains(e.target) && e.target.closest("button, a, [role=button], [role=menuitem]"))) {
+      // LE13-5: …and so does a button the KEYBOARD reached (`:focus-visible`) anywhere — Tab into the Inspector with the pointer
+      // resting on the page, and Space pressed nothing (WCAG 2.1.1). A button a mouse clicked is not focus-visible: Z1-g holds.
+      else if (e.code === "Space" && !e.shiftKey && !(e.target instanceof Element && e.target.closest("button, a, [role=button], [role=menuitem]") && (sc.contains(e.target) || keyboardFocused(e.target)))) {
         e.preventDefault(); space = true; sc.style.cursor = "grab";
       }
     };

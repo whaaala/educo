@@ -11,10 +11,11 @@
 import type { CSSProperties } from "react";
 import { PILL, applyBoxSize, dividerThickness, borderLen, videoSizing, blockTypography,pinArrivalCss, pinArrivalKeyframes, floatHoldCSS,
   type BoxNode, type Breakpoint, type SectionFlag, BP_ORDER, containerStyle, childStyle, hostSizedFor, marginCSS, leafPaddingCSS, ownSidePadVars, outerSpaceCSS, pageBandInset, pagePinCover, sectionContent, sizeToCSS, radiusCSS, SHADOW_CSS, u, LIST_ITEM_GAP, textLen, baseUnit, fadedPaint, boxOpacity, backgroundCss, paintLayerCss,
-  resolveResponsive, floatStacksOnMobile, floatingReserve, alertToastCss, accordionClasses, bandClasses, hasSiteMeasure, videoEmbedSrc, isContainer, sanitizeCssDeclarations, expandScopedCss, COMPONENT_PARTS, itemFloatContextCss, itemOverrideCss, itemNumberVars, richBody, plainBody, componentTextCss, componentBoxCss, renderAlertHTML, alertDismissScript, masonryMeasureAttr, masonryMeasureScript, pinStackMarker, pinStackGroupMarker, pinStackNeeded, pinStackScript, headerMarkers, headerScript, headerScriptNeeded, underOverHeaderPad, pinArrivalMarker, pinArrivalScript, treeHasArrival, isPager, pagerNavHTML, pagerScript, pagerStripCss, pagerSlideId, bgShowThroughCss, blockContainmentCss, COMPONENT_ITEM_SEL, remLen, imageSizing, fillsRowsAnywhere, fillHostOf, hasIntrinsicSize, itemNeedsClass, itemScope, floatZIndex, typoRole, typoRootVars, typoCascadeCss, bandEdgeCSS, LINK_COLOR_CSS, gridQueryCss, TYPE_UNIT_PROPERTY_CSS,
+  resolveResponsive, floatStacksOnMobile, floatingReserve, alertToastCss, accordionClasses, bandClasses, hasSiteMeasure, videoEmbedSrc, isContainer, sanitizeCssDeclarations, expandScopedCss, COMPONENT_PARTS, itemFloatContextCss, itemOverrideCss, itemNumberVars, richBody, plainBody, componentTextCss, componentBoxCss, renderAlertHTML, alertDismissScript, masonryMeasureAttr, masonryMeasureScript, pinStackMarker, pinStackGroupMarker, pinStackNeeded, pinStackScript, headerMarkers, headerScript, headerScriptNeeded, underOverHeaderPad, pinArrivalMarker, pinArrivalScript, treeHasArrival, isPager, pagerNavHTML, pagerScript, pagerStripCss, pagerSlideId, bgShowThroughCss, blockContainmentCss, COMPONENT_ITEM_SEL, remLen, imageSizing, fillsRowsAnywhere, fillHostOf, hasIntrinsicSize, itemNeedsClass, itemScope, floatZIndex, typoRole, typoRootVars, typoCascadeCss, bandEdgeCSS, LINK_COLOR_CSS, gridQueryCss, TYPE_UNIT_PROPERTY_CSS, stripsAnywhere,
 } from "@/lib/box-model";
 import { isRegistryComponent, renderComponent, componentScripts } from "@/lib/educo-ui/registry";
 import { iconSvg } from "@/lib/educo-ui/icon-svg";
+import INSPECTOR from "@/config/inspector.json";
 import { resolvePage, pageFillCss, footerPushCss, type PageSemantics } from "@/lib/semantics";
 import { PAGE_Z_CEILING } from "@/lib/educo-ui/stacking";
 import type { BoxSite } from "@/lib/box-site";
@@ -653,7 +654,9 @@ function renderNode(node: BoxNode, rawParent: BoxNode | null, theme: SiteTheme, 
         + ` aria-label="One at a time" style="${styleString(pagerStripCss(r))}">${kids}</div>`
         + `${nav}${script}</${el}>`);
     }
-    return wrapLi(`<${el}${idAttr}${semAttr} class="${allCls}">${kids}</${el}>`);
+    // FL-6 · a sideways strip is a NAMED, FOCUSABLE region: Tab reaches it and the arrow keys scroll it, no script (WCAG 2.1.1)
+    const strip = stripsAnywhere(r) ? ` tabindex="0"${el === "div" ? ` role="region"` : ""}${sem?.label ? "" : ` aria-label="${esc(INSPECTOR.flow.stripLabel)}"`}` : "";
+    return wrapLi(`<${el}${idAttr}${semAttr}${strip} class="${allCls}">${kids}</${el}>`);
   }
   const fill = fillsRowsAnywhere(fillHostOf(rawParent, grand));
   if (node.responsive) sheet.overrides.push(...elementByRung(cls, (bp) => elementHTML(resolveResponsive(node, bp), theme, pageMap, fill))); // LE2-1
