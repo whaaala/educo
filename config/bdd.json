@@ -108,7 +108,6 @@
     "tests/unit/storage/supabase-client.test.ts",
     "tests/unit/table-ops.test.ts",
     "tests/unit/task-tree-batches.test.ts",
-    "tests/unit/test-scripts.test.ts",
     "tests/unit/whiteboard/whiteboard-templates.test.ts",
     "tests/unit/whiteboard/whiteboard-types.test.ts",
     "tests/unit/whiteboard/whiteboard-utils.test.ts"

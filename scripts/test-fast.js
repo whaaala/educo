@@ -28,6 +28,8 @@ const { existsSync, readFileSync } = require("node:fs");
 
 const PORT = Number(process.env.TEST_PORT ?? 3100);
 const BASE_URL = `http://localhost:${PORT}`;
+// The build folder `next build` writes and `next start` serves — `.next`, or a second one beside it (next.config.ts, LE13c-10).
+const DIST = process.env.NEXT_DIST_DIR || ".next";
 const isWindows = process.platform === "win32";
 const npx = isWindows ? "npx.cmd" : "npx";
 // Node 20 refuses to spawn a `.cmd` without a shell (EINVAL), so Windows needs one. The arguments here are
@@ -204,12 +206,12 @@ function portTaken(timeoutMs = 2_000) {
  */
 function assertServingThisBuild(html) {
   let id = "";
-  try { id = readFileSync(".next/BUILD_ID", "utf8").trim(); } catch { /* no build to compare against */ }
+  try { id = readFileSync(`${DIST}/BUILD_ID`, "utf8").trim(); } catch { /* no build to compare against */ }
   if (!id) return;
   if (html.includes(id)) return;
   throw new Error(
     `${BASE_URL} is NOT serving this build.\n` +
-    `  .next/BUILD_ID is ${id}, and the page the server returned does not carry it.\n` +
+    `  ${DIST}/BUILD_ID is ${id}, and the page the server returned does not carry it.\n` +
     "  Almost always a `next start` left over from an earlier run holding the port. It answers 200, so every\n" +
     "  suite would silently test the WRONG build and fail on its own wait. Free the port and run again:\n" +
     `    netstat -ano | grep ":${PORT} .*LISTENING"   then   taskkill /pid <pid> /T /F     (Windows)\n` +
@@ -239,7 +241,7 @@ function stop(child) {
  * regression or a flaky wait. It cost an afternoon once; the runner detects it now rather than trusting
  * `--no-build`.
  */
-const devContaminated = () => existsSync(".next/server/chunks/ssr/[turbopack]_runtime.js");
+const devContaminated = () => existsSync(`${DIST}/server/chunks/ssr/[turbopack]_runtime.js`);
 
 (async () => {
   let build = !skipBuild;

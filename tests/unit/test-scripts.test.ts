@@ -96,6 +96,12 @@ describe("the browser suites are the same on both paths", () => {
       .toBeTruthy();
     expect(pkg.scripts["test:fast"]).toContain("scripts/test-fast.js");
   });
+
+  // LE13c-10: with NEXT_DIST_DIR=.next-b the server served .next-b and the runner compared .next/BUILD_ID — it refused every run
+  it("compares the build folder the server was started from (NEXT_DIST_DIR, else .next)", () => {
+    expect(fastRunner).toMatch(/process\.env\.NEXT_DIST_DIR \|\| "\.next"/);
+    expect(fastRunner, "a folder named by hand instead of the one the server serves").not.toMatch(/(readFileSync|existsSync)\(\s*["'`]\.next\//);
+  });
 });
 
 /**
