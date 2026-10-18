@@ -47,6 +47,8 @@ Website layout — ESSENTIALS NOW (RULE TIERS, signed by the user 2026-10-16; ev
 
 App layout / app builder: A-2 (closed 2026-10-16) → A-3 → M-1 (the builder's site inside the app)
 
+Testing — BDD (RULE BDD, 2026-10-18): BDD-1 (tier and order TO SIGN by the user)
+
 AREA V (colour, effects, motion): RX-4 (the tiers, signed; its 26 bugs fixed, HEADED) → RX-5 (RULE BEST: the Musts raised to the best — VE-6 … VE-13, SIGNED 2026-10-17 — CLOSED) → VE-1 … VE-13 (the essentials, after LE-10, BEFORE components) → then the rest: VB-1 → VB-2 → VB-3 → VB-4 → S-4 (section transitions) → VB-6 → VB-7 (the Educo app's colours) · VB-5 (the Educo app's own motion, its own branch) · U-1 (surface what is built)
 
 Research (after R-1's "enough"): RX-1 → RX-2 · Documentation: D-1 · Components: CP-1 · Templates: T-1 · Semantic layer: SM-1 · LLM builder: LLM-1
@@ -363,6 +365,13 @@ Risks and distribution (section 2): RK-1 · Developing countries (section 3): AF
   - `[ ]` AX-7 · a colour-vision preview
   - `[ ]` AX-1+ · a text-zoom preview (Webflow's 9 / 24 / 32 px)
   - `[?]` ED-5b · every container shows ITS OWN structure when selected (the user asked 2026-10-18: "should each stack not have its own grid and row… for a whole page, a section, a component, to show exactly where we can add items… is that not a must?") — measured 2026-10-18: the layout guides are drawn ONCE over the page (`BoxCanvas.tsx` `<LayoutGuides>`), empty boxes / cells show "Drop a block here", a drag shows its insertion line; nothing draws a section's, a Stack's, a Grid's or a component's own lines — proposal: a Grid its columns, rows and cells (empty and filled), a Stack / Side by side its slots (where a drop lands) and its gaps, a section the page columns inside it, a component its parts; Must by RULE BEST (Webflow draws a selected Grid's lines and cells; Figma / Framer a frame's own layout grid) — TO BE SIGNED by the user (tier and this batch), research-check first (RULE RS)
+- `[ ]` **BATCH BDD-1 · Every test named by its .feature: the backlog** (area: testing — BDD · 6 changes, queued 2026-10-18 by RULE BDD — the user: "every functionality, everything we do should have [a BDD] scenario… it must be followed"; TIER TO SIGN — proposed Must for the website builder's guards (changes 1 · 3), Should for the rest; ORDER TO SIGN — proposed: after LE-13b, before LE-5) — measured 2026-10-18: 193 of 254 test files named by no `.feature`, frozen in `config/bdd.json` (only shrinks, `tests/unit/bdd-everything.test.ts`)
+  - `[ ]` (1) the website builder's unit guards in `tests/unit/` — scenarios written or the existing `.feature` given its `Guards:` line
+  - `[ ]` (2) the rest of `tests/unit/` (storage, communication, parents, whiteboard, the project's own rule and tree guards)
+  - `[ ]` (3) `tests/components/website/` (13)
+  - `[ ]` (4) `tests/components/shared/` and its editors (40)
+  - `[ ]` (5) `tests/components/communication/` incl. call-ui (14)
+  - `[ ]` (6) `tests/components/app-shell` · `settings` and a last count: `config/bdd.json` backlog empty
 - `[ ]` **BATCH VE-6 · Effects, best-grade: page transitions and loading** (area: AREA V — transitions + loading · Must · 6 changes — SIGNED by the user 2026-10-17 ("go" on RX-5: E4 · E5 · E6 · L1 · L2 · L3 as recommended) — RULE BEST — `docs/web-anatomy/effects-tiers.md` §RX-5, leaders `effects-tiers/leaders.md`)
   - `[ ]` PT-4 · wipe / curtain between pages (a gallery ≥ 10 transitions with VE-1 / VE-5; leader Framer ~4–6 + 3 masks)
   - `[ ]` PT-6 · a shared-element morph (a card's picture grows into its page)

@@ -20,6 +20,9 @@ Run through this checklist BEFORE writing any code:
 - [ ] **⛔ RULE CFG — NOTHING HARD-CODED: DATA IN CONFIGURATION, NEVER IN CODE** (the user, 2026-10-16) — every value that
   could ever change (breakpoints, sizes, menus, roles, labels, lists, limits, thresholds, sample data) is read from a
   configuration file; changing it never means touching code. Name the config file each new value goes in.
+- [ ] **⛔ RULE BDD — THE `.feature` FIRST, FOR EVERYTHING** (the user, 2026-10-18: "every functionality, everything we do should
+  have [a BDD] scenario… it must be followed") — before any code, test or script, its scenarios go in `tests/features/`, and the
+  `.feature` names its guards on a `Guards:` line. No exceptions for tools, scripts or "small" fixes.
 - [ ] **Check existing shared components** — search `components/shared/` for `Button`, `FormDropdown`, `CustomDropdown`, `FormInput`, `Modal`, `EditorDialog`, `ColorPickerPopover`, `DataTable`, etc. NEVER duplicate what exists.
 - [ ] **IMPLEMENT for ALL platforms AND screen sizes** — web (desktop 1280px+, tablet 768px, mobile 375px) AND React Native mobile/tablet app (`apps/mobile/`). Every feature MUST be built for BOTH web responsive AND the native mobile/tablet app. Neither is optional.
 - [ ] **Plan for ALL themes** — check `lib/theme-config.ts` for available themes. Every UI element must work in ALL of them.
@@ -148,6 +151,12 @@ Run through this checklist BEFORE telling the user it's done:
 - **UI Visual** — Playwright MCP or browser verification of every visual state and interaction
 - **UAT** — test as the end user (a teacher): is it intuitive? Does the flow make sense?
 - BDD with Gherkin `.feature` files as single source of truth
+- **RULE BDD — EVERY FUNCTION STARTS FROM ITS SCENARIO (MANDATORY — the user, 2026-10-18: "we should always write [a BDD]
+  scenario… that was a rule that we created. That must be followed").** Every feature, fix, script, tool and guard — product or
+  project tooling, web or `apps/mobile/` — is written as Gherkin scenarios FIRST, then its guard red, then the code. The `.feature`
+  names its tests on a `Guards:` line. **Guarded:** `tests/unit/bdd-everything.test.ts` fails on any test file no `.feature`
+  names; the 193 written before the rule (measured 2026-10-18, of 254) are the frozen backlog in `config/bdd.json`, which only
+  shrinks (BATCH BDD-1). Measured, 2026-10-18: a session wrote `scripts/area-progress.js` and its unit test with no `.feature`.
 - Web: `npx vitest run` | Mobile: `cd apps/mobile && npx jest`
 - Mobile tests cover BOTH `isTablet=true` and `isTablet=false`
 - Feature files in `tests/features/` — one per component/module
