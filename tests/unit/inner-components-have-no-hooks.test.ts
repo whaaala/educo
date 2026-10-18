@@ -49,17 +49,28 @@ const HOOK_CALL = /\buse[A-Z]\w*\s*\(/;
  * "Inside" is read from the indentation: a top-level declaration starts at column 0, so anything indented
  * is nested in something. The body runs to the first line that closes at the same indentation.
  */
+/**
+ * An indented capitalised component, in each shape a component is written (BDD1-37: only `function Name(` was
+ * read, so `const Name = (…) => {…}` and `const Name = function (…) {…}` slipped through):
+ *   function Name(  ·  const Name = (…) =>  ·  const Name = async (…) =>  ·  const Name = function  ·  const Name = memo((…) =>
+ */
+const INNER_DECL = /^(\s+)(?:function\s+([A-Z]\w*)\s*[(<]|(?:const|let|var)\s+([A-Z]\w*)\s*(?::[^=]+)?=\s*(?:(?:React\.)?(?:memo|forwardRef)\s*\(\s*)?(?:async\s+)?(?:function\b|\(|[a-z_]\w*\s*=>))/;
+
 function innerComponents(src: string): { name: string; body: string; line: number }[] {
   const lines = src.split("\n");
   const found: { name: string; body: string; line: number }[] = [];
   for (let i = 0; i < lines.length; i++) {
-    const m = /^(\s+)function ([A-Z]\w*)\s*\(/.exec(lines[i]);
+    const m = INNER_DECL.exec(lines[i]);
     if (!m) continue;
-    const [, indent, name] = m;
-    const close = `${indent}}`;
+    const indent = m[1];
+    const name = m[2] ?? m[3];
+    // A body closes on its own indentation: `}` for a function, `};` / `});` / `})` for an arrow or a memo().
+    const closes = [`${indent}}`, `${indent}};`, `${indent}})`, `${indent}});`, `${indent})`, `${indent});`];
     let end = lines.length - 1;
-    for (let j = i + 1; j < lines.length; j++) {
-      if (lines[j] === close) { end = j; break; }
+    // A one-line arrow (`const A = () => <b/>;`) has no body below it.
+    if (/;\s*$/.test(lines[i]) && !/[{(]\s*$/.test(lines[i])) end = i;
+    else for (let j = i + 1; j < lines.length; j++) {
+      if (closes.includes(lines[j])) { end = j; break; }
     }
     found.push({ name, body: lines.slice(i, end + 1).join("\n"), line: i + 1 });
   }
@@ -73,6 +84,36 @@ describe("components declared inside other components", () => {
     const all = FILES.flatMap((f) => innerComponents(readFileSync(resolve(process.cwd(), f), "utf8").replace(/\r\n/g, "\n")));
     expect(all.length, "inner components are expected to exist — they are legal, just not with hooks")
       .toBeGreaterThan(0);
+  });
+
+  it("the scan reads every shape a component is written in — function, arrow, function expression, memo", () => {
+    // BDD1-37: a planted arrow component that calls a hook must be caught, not only `function Name(`.
+    const planted = [
+      "export function Outer() {",
+      "  function Decl() {",
+      "    const [a] = useState(0);",
+      "    return a;",
+      "  }",
+      "  const Arrow = ({ n }: { n: number }) => {",
+      "    const r = useRef(n);",
+      "    return r.current;",
+      "  };",
+      "  const Expr = function () {",
+      "    useEffect(() => {});",
+      "    return null;",
+      "  };",
+      "  const Memo = memo((p: { x: number }) => {",
+      "    const v = useMemo(() => p.x, [p.x]);",
+      "    return v;",
+      "  });",
+      "  const Pure = () => <b />;",
+      "  const width = (3 + 4);",
+      "  return <Decl />;",
+      "}",
+    ].join("\n");
+    const found = innerComponents(planted);
+    expect(found.map((c) => c.name)).toEqual(["Decl", "Arrow", "Expr", "Memo", "Pure"]);
+    expect(found.filter((c) => HOOK_CALL.test(c.body)).map((c) => c.name)).toEqual(["Decl", "Arrow", "Expr", "Memo"]);
   });
 
   it.each(FILES)("%s: no inner component calls a hook", (file) => {

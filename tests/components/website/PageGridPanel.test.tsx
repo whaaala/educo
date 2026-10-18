@@ -1,4 +1,5 @@
 import { describe, it, expect, vi } from "vitest";
+import { useState } from "react";
 import { SPACE_STEPS } from "@/lib/educo-ui/tokens"; // SP-4: the gap sliders move on the spacing scale
 /** SP-4: where a slider on the scale puts its thumb — the nearest place (a default off the scale, 17, reads its own number) */
 const placeOf = (v: number) => SPACE_STEPS.reduce((b, x, i) => (Math.abs(x - v) < Math.abs(SPACE_STEPS[b] - v) ? i : b), 0);
@@ -117,14 +118,16 @@ describe("the page-grid panel", () => {
     expect(p.onChange).toHaveBeenLastCalledWith({ columnGap: 24 }, "pagegrid:rowGap");
   });
 
-  it("this page's own grid, Reset, and Escape returning focus", () => {
+  it("this page's own grid, Reset, and Escape inside the panel hands the close to its host once (the host's onClose returns focus to its button)", () => {
     const p = panel();
+    const d = screen.getByRole("dialog", { name: "Page grid" });
+    expect(d.contains(document.activeElement)).toBe(true); // BDD1-17: on open, focus moves into the panel
     fireEvent.click(screen.getByLabelText("This page uses its own grid"));
     expect(p.onOwnPage).toHaveBeenCalledWith(true);
     fireEvent.click(screen.getByRole("button", { name: "Reset to default" }));
     expect(p.onChange).toHaveBeenCalledWith(undefined);
-    fireEvent.keyDown(screen.getByRole("dialog", { name: "Page grid" }), { key: "Escape" });
-    expect(p.onClose).toHaveBeenCalled();
+    fireEvent.keyDown(document.activeElement!, { key: "Escape" }); // pressed where the keyboard user's focus is
+    expect(p.onClose).toHaveBeenCalledTimes(1);
   });
 
   it("row lines are a viewing choice; changing the row height turns them on, so the change is seen (E6-10)", () => {
@@ -231,18 +234,32 @@ describe("G-3 (3) · Alt ← / → on a column of a page row", () => {
 
 describe("G3c-11 · Escape closes the panel even when focus has fallen out of it", () => {
   it("after 'Back to default' disables itself, Escape on the page closes the panel", () => {
-    const p = panel({ grid: { sideSpace: 40 } });
-    const back = screen.getAllByRole("button", { name: "Back to default" })[0];
-    back.focus(); fireEvent.click(back); back.blur(); // the button it was on is now disabled: focus is on the body
+    // BDD1-18: a host that holds the grid, so the click really re-renders the panel and the button really disables
+    const onClose = vi.fn();
+    function Host() {
+      const [grid, setGrid] = useState<Parameters<typeof PageGridPanel>[0]["grid"]>({ sideSpace: 40 });
+      return <PageGridPanel grid={grid} ownPage={false} breakpoint="base" rows={false} onRows={() => {}} onOwnPage={() => {}} onClose={onClose} onChange={(g) => setGrid(g ?? {})} />;
+    }
+    render(<Host />);
+    const back = screen.getByRole("button", { name: "Back to default" });
+    back.focus(); fireEvent.click(back);
+    expect(back).toBeDisabled();
+    expect(back).toHaveTextContent("At the default");
+    // a browser moves focus off a control that became disabled (focus fixup); jsdom does not (and will not blur a disabled
+    // control either), so that one step is done by hand: focus rests on the page body, as it does in the browser
+    // (jsdom's body is not focusable; focusing a throw-away control and removing it is its own fixup to the body)
+    if (document.activeElement === back) { const t = document.createElement("button"); document.body.appendChild(t); t.focus(); t.remove(); }
     expect(document.activeElement).toBe(document.body);
     fireEvent.keyDown(document, { key: "Escape" });
-    expect(p.onClose).toHaveBeenCalled();
+    expect(onClose).toHaveBeenCalledTimes(1);
   });
   it("an Escape while something else on the page has focus is not the panel's", () => {
     const p = panel();
-    const other = document.createElement("input"); document.body.appendChild(other); other.focus();
-    fireEvent.keyDown(other, { key: "Escape" });
-    expect(p.onClose).not.toHaveBeenCalled();
-    other.remove();
+    const other = document.createElement("input"); document.body.appendChild(other);
+    try {
+      other.focus();
+      fireEvent.keyDown(other, { key: "Escape" });
+      expect(p.onClose).not.toHaveBeenCalled();
+    } finally { other.remove(); }
   });
 });

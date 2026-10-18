@@ -73,7 +73,12 @@ describe("Educo UI colour — WCAG contrast", () => {
   it("passesAA reflects the 4.5 / 3.0 thresholds", () => {
     expect(passesAA("#0f172a", "#ffffff")).toBe(true);   // dark text on white
     expect(passesAA("#9ca3af", "#ffffff")).toBe(false);  // light grey on white fails body
-    expect(passesAA("#9ca3af", "#ffffff", true)).toBe(false);
+    expect(passesAA("#9ca3af", "#ffffff", true)).toBe(false); // ~2.5:1 — fails large text too
+    // BDD1-5: a mid grey between the two thresholds (~3.95:1) — large text (3.0) passes where body (4.5) fails
+    expect(contrastRatio("#808080", "#ffffff")).toBeGreaterThan(3);
+    expect(contrastRatio("#808080", "#ffffff")).toBeLessThan(4.5);
+    expect(passesAA("#808080", "#ffffff")).toBe(false);
+    expect(passesAA("#808080", "#ffffff", true)).toBe(true);
   });
 });
 

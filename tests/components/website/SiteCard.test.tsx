@@ -29,10 +29,16 @@ describe("SiteCard", () => {
 
   it("exposes Open and Delete in the actions menu", async () => {
     const user = userEvent.setup();
-    const { site, onDelete } = renderCard();
+    const { site, onOpen, onDelete } = renderCard();
     await user.click(screen.getByLabelText("Actions for Greenfield Academy"));
-    const menu = screen.getByRole("menu");
-    await user.click(within(menu).getByText("Delete"));
+    // Open, from the menu, opens this site and nothing else (BDD1-12)
+    await user.click(within(screen.getByRole("menu")).getByRole("menuitem", { name: /Open/ }));
+    expect(onOpen).toHaveBeenCalledTimes(1);
+    expect(onOpen).toHaveBeenCalledWith(site.id);
+    expect(onDelete).not.toHaveBeenCalled();
+    expect(screen.queryByRole("menu")).toBeNull(); // the menu closes behind it
+    await user.click(screen.getByLabelText("Actions for Greenfield Academy"));
+    await user.click(within(screen.getByRole("menu")).getByRole("menuitem", { name: /Delete/ }));
     expect(onDelete).toHaveBeenCalledWith(site.id);
   });
 

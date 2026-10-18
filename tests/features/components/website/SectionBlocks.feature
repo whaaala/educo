@@ -13,21 +13,25 @@ Feature: Blocks that flow inside a section
     When I press "Add Text block"
     Then the section holds one block, a text
 
-  Scenario: A block is shown, and can be deleted
-    Given a section holding a heading "My heading"
+  Scenario: Blocks are shown one under another, and one can be deleted
+    Given a section holding a heading "My heading" and a text "My text"
     Then "My heading" is shown
-    When I press "Delete block"
-    Then the section holds no blocks
+    And both blocks sit in one column flow, neither positioned on top of the page, so they cannot overlap
+    When I press "Delete block" on the heading
+    Then the section holds only "My text"
 
   Scenario: Aligning a block steps it from left to centre
     Given a section holding a heading aligned left
     When I press its Align button
     Then the heading is centred
 
-  Scenario: A block moves down with a button, not only by dragging
+  Scenario: A block moves down or up with a button, not only by dragging
     Given a section holding the texts "first" and "second", in that order
     When I press "Move block down" on "first"
     Then "second" comes first
+    When I press "Move block up" on "second"
+    Then "second" comes first
+    And the first block cannot move up and the last cannot move down
 
   Scenario: A visitor sees the blocks and none of the controls
     Given a section holding a text "Read only text" that is only shown

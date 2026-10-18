@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect, beforeEach, vi } from "vitest";
 import {
   siteStorage,
   createSite,
@@ -182,14 +182,23 @@ describe("site-storage — persistence (localStorage CRUD)", () => {
     expect(siteStorage.get(site.id)?.theme.primary).toBe("#123456");
   });
 
-  it("save() updates an existing site and bumps updatedAt", async () => {
-    const site = siteStorage.create("School A");
-    const original = site.updatedAt;
-    await new Promise((r) => setTimeout(r, 5));
-    const saved = siteStorage.save({ ...site, name: "School A (renamed)" });
-    expect(siteStorage.get(site.id)!.name).toBe("School A (renamed)");
-    expect(saved.updatedAt >= original).toBe(true);
-    expect(siteStorage.list().length).toBe(1);
+  it("save() updates an existing site and bumps updatedAt", () => {
+    // The clock is pinned, then moved: `>=` used to pass when save() left updatedAt alone (BDD1-33).
+    vi.useFakeTimers({ toFake: ["Date"] });
+    try {
+      vi.setSystemTime(new Date("2026-01-01T00:00:00.000Z"));
+      const site = siteStorage.create("School A");
+      const original = site.updatedAt;
+      vi.setSystemTime(new Date("2026-01-01T00:00:05.000Z"));
+      const saved = siteStorage.save({ ...site, name: "School A (renamed)" });
+      expect(siteStorage.get(site.id)!.name).toBe("School A (renamed)");
+      expect(saved.updatedAt > original).toBe(true);
+      expect(saved.updatedAt).toBe("2026-01-01T00:00:05.000Z");
+      expect(siteStorage.get(site.id)!.updatedAt).toBe("2026-01-01T00:00:05.000Z");
+      expect(siteStorage.list().length).toBe(1);
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it("remove() deletes a site", () => {

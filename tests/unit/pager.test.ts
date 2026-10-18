@@ -1,4 +1,5 @@
 import { describe, it, expect } from "vitest";
+import LAYOUT from "@/config/layout.json";
 import {
   isPager, pagerSlideId, pagerStripCss, pagerNavHTML, pagerScript, pagerWire,
   containerStyle, childStyle, createContainer, createElement,
@@ -173,8 +174,11 @@ describe("the controls read over any photograph", () => {
 
   it("pairs a light mark with a dark edge, so it survives a dark photo AND a pale one", () => {
     const html = nav3();
-    expect(html, "white fill for a dark picture").toContain("background:#fff");
-    expect(html, "and a dark ring for a pale one").toContain("rgba(0,0,0,.45)");
+    // BDD1-26: the pair is config/layout.json media (RULE CFG), in OKLCH — never a hex or an rgba() (rule 17)
+    expect(html, "white fill for a dark picture").toContain(`background:${LAYOUT.media.pagerDotFill}`);
+    expect(html, "and a dark ring for a pale one").toContain(`1px ${LAYOUT.media.pagerDotRing}`);
+    expect(LAYOUT.media.pagerDotFill).toMatch(/^oklch\(/);
+    expect(html).not.toMatch(/[:\s]#[0-9a-f]{3,8}\b|rgba?\(/i); // a colour value, not an `&#8249;` entity
   });
 
   it("sits clear of the bottom edge, so a full-screen page does not hide it under the fold", () => {

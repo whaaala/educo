@@ -1004,11 +1004,11 @@ describe("box-model — layout CSS mapping", () => {
     expect(childStyle(createElement("text", { height: "fill" } as Partial<BoxNode>), col).flex).toBe("1 1 0%");
     expect(childStyle(createElement("text", { height: "auto" } as Partial<BoxNode>), col).flex).toBe("0 0 auto");
     // cross axis (width) is applied as a plain size
-    expect(childStyle(createElement("text", { width: "200px" } as Partial<BoxNode>), col).width).toBe("200px");
+    expect(childStyle(createElement("text", { width: "200px" } as Partial<BoxNode>), col).width).toBe(remLen(200)); // a stored px publishes in rem (BDD1-23, rule 16)
 
     const row = createContainer("row");
     expect(childStyle(createElement("text", { width: "fill" } as Partial<BoxNode>), row).flex).toBe("1 1 0%");
-    expect(childStyle(createElement("text", { height: "120px" } as Partial<BoxNode>), row).height).toBe("120px");
+    expect(childStyle(createElement("text", { height: "120px" } as Partial<BoxNode>), row).height).toBe(remLen(120)); // in rem (BDD1-23)
   });
 
   it("a child with no main-size FILLS a DEFINITE-height parent (follows it), but HUGS a hug-content parent", () => {
@@ -1073,7 +1073,7 @@ describe("box-model — layout CSS mapping", () => {
   it("sizeToCSS + flexForWidth translate width tokens", () => {
     expect(sizeToCSS("auto")).toBeUndefined();
     expect(sizeToCSS("fill")).toBe("100%");
-    expect(sizeToCSS("240px")).toBe("240px");
+    expect(sizeToCSS("240px")).toBe(remLen(240)); // BDD1-23: a stored px comes out in rem (rule 16)
     expect(flexForWidth("fill")).toBe("1 1 0%");
     expect(flexForWidth("40%")).toBe("0 1 40%"); // fixed share but may SHRINK to fit (never overflows off the page)
     expect(flexForWidth("auto")).toBe("0 0 auto");

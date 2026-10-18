@@ -33,7 +33,9 @@ describe("photoGallery", () => {
       const g = photoGallery(photos(7), { across });
       expect(g.children, `${across} across: one cell per photo`).toHaveLength(7);
       expect(new Set((g.children ?? []).map((c) => c.colSpan)), `${across} across: every cell the same span`).toEqual(new Set([GRID_MAX / across]));
-      expect((GRID_MAX / across) * across, "and the row adds up to the twelve").toBe(GRID_MAX);
+      // BDD1-27: the first row, as the preset BUILT it, adds up to the grid's own columns — not arithmetic on the input.
+      const row = (g.children ?? []).slice(0, across).reduce((n, c) => n + (c.colSpan ?? 0), 0);
+      expect(row, `${across} across: the first row adds up to the grid's columns`).toBe(g.columns);
     }
   });
 

@@ -27,13 +27,24 @@ describe("SectionBlocks (flowing blocks inside a section)", () => {
     expect(next[0].type).toBe("text");
   });
 
-  it("renders an existing block and deletes it (blocks flow, never overlap)", async () => {
+  it("renders existing blocks in one column flow — no absolute positioning, so they cannot overlap (the jsdom-checkable part) — and deletes one", async () => {
     const user = userEvent.setup();
     const b = createSectionBlock("heading"); b.text = "My heading";
-    const { onChange } = setup([b]);
+    const t = createSectionBlock("text"); t.text = "My text";
+    const { onChange } = setup([b, t]);
     expect(screen.getByText("My heading")).toBeInTheDocument();
-    await user.click(screen.getByLabelText("Delete block"));
-    expect(onChange.mock.calls.at(-1)![0]).toHaveLength(0);
+    // BDD1-15: each block's wrapper is an in-flow sibling of a flex column; none is lifted out of the flow
+    const wrappers = ["My heading", "My text"].map((s) => screen.getByText(s).closest<HTMLElement>("[class*='group/blk']")!);
+    expect(wrappers[0].parentElement).toBe(wrappers[1].parentElement);
+    expect(wrappers[0].parentElement).toHaveClass("flex", "flex-col");
+    for (const w of wrappers) {
+      expect(w.className.split(/\s+/)).not.toContain("absolute");
+      expect(w.className.split(/\s+/)).not.toContain("fixed");
+      expect(w.style.position).toBe("");
+      expect([w.style.top, w.style.left, w.style.transform]).toEqual(["", "", ""]);
+    }
+    await user.click(screen.getAllByLabelText("Delete block")[0]);
+    expect(onChange.mock.calls.at(-1)![0].map((x: SectionBlock) => x.text)).toEqual(["My text"]);
   });
 
   it("cycles a block's alignment (left → center)", async () => {
@@ -50,8 +61,16 @@ describe("SectionBlocks (flowing blocks inside a section)", () => {
     const c = createSectionBlock("text"); c.text = "second";
     const { onChange } = setup([a, c]);
     await user.click(screen.getAllByLabelText("Move block down")[0]); // move "first" down
-    const next = onChange.mock.calls.at(-1)![0];
-    expect(next[0].text).toBe("second");
+    expect(onChange).toHaveBeenCalledTimes(1);
+    expect(onChange.mock.calls.at(-1)![0].map((x: SectionBlock) => x.text)).toEqual(["second", "first"]);
+    // BDD1-16: up on the second block moves it above the first
+    onChange.mockClear();
+    await user.click(screen.getAllByLabelText("Move block up")[1]);
+    expect(onChange).toHaveBeenCalledTimes(1);
+    expect(onChange.mock.calls.at(-1)![0].map((x: SectionBlock) => x.text)).toEqual(["second", "first"]);
+    // the ends cannot move past the edge
+    expect(screen.getAllByLabelText("Move block up")[0]).toBeDisabled();
+    expect(screen.getAllByLabelText("Move block down")[1]).toBeDisabled();
   });
 
   it("renders nothing when not editable and there are no blocks", () => {

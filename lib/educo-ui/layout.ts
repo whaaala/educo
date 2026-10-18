@@ -68,7 +68,7 @@ export const APP_TILES: Readonly<{ minWidth: number; maxAcross: number }> = LAYO
 /** The narrowest phone a row must still fit, in px (RULE AF). */
 export const NARROWEST_PHONE_PX: number = LAYOUT.narrowestPhone;
 /** A video's proportions — its height follows its width (RX3-2). */
-export const MEDIA: Readonly<{ videoRatio: string; portraitRatio: string; portraitWidthRem: number }> = LAYOUT.media;
+export const MEDIA: Readonly<{ videoRatio: string; portraitRatio: string; portraitWidthRem: number; pagerDotFill: string; pagerDotRing: string; pagerArrowFill: string; pagerArrowEdge: string }> = LAYOUT.media;
 /** AC-9 · the site's one content width (rem): its slider's bounds, start and step (RULE CFG). */
 export const CONTENT_WIDTH: Readonly<{ minRem: number; maxRem: number; startRem: number; stepRem: number }> = LAYOUT.contentWidth;
 if (!(CONTENT_WIDTH.minRem > 0 && CONTENT_WIDTH.minRem <= CONTENT_WIDTH.startRem && CONTENT_WIDTH.startRem <= CONTENT_WIDTH.maxRem && CONTENT_WIDTH.stepRem > 0)) throw new Error("config/layout.json: contentWidth needs 0 < minRem ≤ startRem ≤ maxRem and stepRem > 0");

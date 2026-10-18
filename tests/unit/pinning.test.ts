@@ -565,7 +565,7 @@ describe("clause 5 — a FIXED block carries its own width", () => {
   });
 
   it("an explicit size is kept", () => {
-    expect(pinCSS(box({ pin: "bottom-right", hold: "fixed", width: "56px" })).width).toBe("56px");
+    expect(pinCSS(box({ pin: "bottom-right", hold: "fixed", width: "56px" })).width).toBe("3.5rem"); // 56px in rem (BDD1-23, rule 16)
   });
 
   it("a block told to HUG its content keeps hugging — a chat bubble is as wide as what is in it", () => {

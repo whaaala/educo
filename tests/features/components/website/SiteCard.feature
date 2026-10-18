@@ -11,6 +11,11 @@ Feature: A site's card in the list of my websites
     When I press the "Open Greenfield Academy" card
     Then that site opens in the builder
 
+  Scenario: The actions menu opens the site, and only opens it
+    When I open "Actions for Greenfield Academy" and choose Open
+    Then that site opens in the builder, once
+    And it is not deleted, and the menu closes
+
   Scenario: The actions menu deletes the site, and only deletes it
     When I open "Actions for Greenfield Academy" and choose Delete
     Then the site is deleted once

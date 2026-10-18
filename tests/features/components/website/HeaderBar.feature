@@ -18,9 +18,12 @@ Feature: The freeform site header — elements placed anywhere on the header ban
       | Add header text     | text            |
       | Add navigation menu | navigation menu |
 
-  Scenario: A selected element can be deleted
+  Scenario: A selected element shows how to move it, and can be deleted
     Given the header is being edited
-    When I click the "Apply now" button and press "Delete element"
+    And no element is selected, so no move hint and no "Delete element" are shown
+    When I click the "Apply now" button
+    Then its toolbar says "Drag the element to move it" and the element takes the move cursor
+    When I press "Delete element"
     Then the header has one element fewer
 
   Scenario: A selected button's text can be made bigger

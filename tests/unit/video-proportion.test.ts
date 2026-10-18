@@ -3,7 +3,7 @@ import type { BoxNode } from "@/lib/box-model";
 import { createElement } from "@/lib/box-model";
 import { getPresets } from "@/lib/box-presets";
 import { siteFromRoot } from "@/lib/box-site";
-import { renderSitePage } from "@/lib/box-export";
+import { renderSitePage, videoScript } from "@/lib/box-export";
 import { DEFAULT_THEME } from "@/lib/site-storage";
 import LAYOUT from "@/config/layout.json";
 
@@ -38,7 +38,8 @@ describe("RX3-9: a YouTube or Vimeo video costs nothing until the visitor asks f
     const two = { id: "root", type: "container", direction: "column", children: [{ ...createElement("video"), src: YT }, { ...createElement("video"), src: "https://vimeo.com/76979871" }] } as unknown as BoxNode;
     const site = siteFromRoot(two);
     const html = renderSitePage(site, DEFAULT_THEME, site.homeId, { inlineShared: true });
-    expect(html.split("window.__euVideo)return").length - 1).toBe(1);
+    // BDD1-30: counted as the script the product ships (videoScript()), so a reformat of its source cannot redden this
+    expect(html.split(videoScript()).length - 1, "one copy of the video script for two videos").toBe(1);
     expect(page({ ...createElement("text") } as BoxNode)).not.toContain("__euVideo");
   });
 });

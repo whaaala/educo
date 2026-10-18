@@ -1,5 +1,8 @@
 import { describe, it, expect } from "vitest";
-import { createContainer, createElement, fadeColor, fadedPaint, paintAlpha, boxOpacity, fadesPaintOnly, paintsViaLayer, paintLayerCss, treePaintLayerCss, backgroundCss, type BoxNode } from "@/lib/box-model";
+import { createContainer, createElement, fadeColor, fadedPaint, paintAlpha, boxOpacity, fadesPaintOnly, paintsViaLayer, paintLayerCss, treePaintLayerCss, backgroundCss, radiusCSS, SHADOW_CSS, type BoxNode } from "@/lib/box-model";
+import { renderSitePage } from "@/lib/box-export";
+import { siteFromRoot } from "@/lib/box-site";
+import { DEFAULT_THEME } from "@/lib/site-storage";
 
 /**
  * SEE-THROUGH — a box fades, its contents do not.
@@ -57,17 +60,34 @@ describe("what a see-through box fades", () => {
   it("a child can be see-through on its own, and protects ITS content in turn", () => {
     const grandchild = createContainer("column", { background: "#111111" });
     const child = createContainer("column", { background: "#ffffff", opacity: 50, children: [grandchild] });
-    section({ children: [child] });
-    expect(fadedPaint(child).background).toBe("rgba(255, 255, 255, 0.5)");
-    expect(boxOpacity(child), "the same rule one level down").toBeUndefined();
-    expect(fadedPaint(grandchild).background, "and its own content is untouched").toBe("#111111");
+    // BDD1-9: the child is checked AS IT SITS inside a see-through parent, read back out of that parent's tree.
+    const parent = section({ opacity: 30, children: [child] });
+    const inParent = parent.children![0];
+    const inChild = inParent.children![0];
+    expect(boxOpacity(parent), "the parent pushes nothing down the tree").toBeUndefined();
+    expect(fadedPaint(inParent).background, "the child fades by its OWN setting, not its parent's").toBe("rgba(255, 255, 255, 0.5)");
+    expect(boxOpacity(inParent), "the same rule one level down").toBeUndefined();
+    expect(fadedPaint(inChild).background, "and its own content is untouched").toBe("#111111");
+    expect(boxOpacity(inChild)).toBeUndefined();
   });
 
   it("border and overlay fade with the box; the radius, shadow and content do not care", () => {
-    const n = section({ opacity: 25, borderColor: "#000000", bgOverlay: "#ff0000" });
+    const content = createElement("text", { id: "inside", text: "Hello" } as Partial<BoxNode>);
+    const look = { borderColor: "#000000", borderWidth: 2, bgOverlay: "#ff0000", radius: 16, shadow: "md" as const };
+    const n = section({ id: "faded", opacity: 25, ...look, children: [content] } as Partial<BoxNode>);
+    const solid = section({ id: "solid", ...look } as Partial<BoxNode>);
     const p = fadedPaint(n);
     expect(p.borderColor).toBe("rgba(0, 0, 0, 0.25)");
     expect(p.bgOverlay).toBe("rgba(255, 0, 0, 0.25)");
+    // BDD1-8: the radius and the shadow are the same as on the solid box, and both reach the published page.
+    expect(radiusCSS(n), "the radius does not care about the fade").toBe(radiusCSS(solid));
+    const site = siteFromRoot(createContainer("column", { id: "root", children: [n] } as Partial<BoxNode>));
+    const html = renderSitePage(site, DEFAULT_THEME, site.homeId, { inlineShared: true });
+    expect(html, "the faded box still publishes its rounded corners").toContain(`border-radius:${radiusCSS(n)}`);
+    expect(html, "…and its shadow, unfaded").toContain(`box-shadow:${SHADOW_CSS.md}`);
+    expect(boxOpacity(n), "no opacity, so the content inside is not faded either").toBeUndefined();
+    expect(boxOpacity(content)).toBeUndefined();
+    expect(html).not.toMatch(/(^|[;"{\s])opacity:0\.25/);
   });
 });
 

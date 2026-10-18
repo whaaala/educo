@@ -22,7 +22,8 @@ Feature: Box Builder — content types & links
   Scenario: Video embeds YouTube / Vimeo, or plays a direct file
     Given a Video element
     When I paste a YouTube or Vimeo URL
-    Then it renders as an embedded player
+    Then on the canvas it renders as an embedded player
+    And on the published page it is the video's still and a play mark until clicked (next scenario, RX3-9)
     And a direct .mp4 URL renders an inline <video> player
 
   # RX3-9 · RULE AF — measured 2026-10-16: one YouTube embed took a page from 5.1 KB to 993.5 KB compressed

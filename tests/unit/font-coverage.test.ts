@@ -11,9 +11,13 @@ describe("font coverage (A-1b)", () => {
     expect(FONT_FAMILIES.filter((f) => !writes[f.name]).map((f) => f.name)).toEqual([]);
   });
 
-  it("the eight families that write all four region languages (A1b-3: Libre Baskerville was dropped by a Vietnamese test)", () => {
+  it("the eight families that write all four region languages — Libre Baskerville included, though it lacks Vietnamese (A1b-3: a Vietnamese test once wrongly dropped it)", () => {
     const all = FONT_FAMILIES.filter((f) => regionLanguages(f.stack)?.length === REGION_LANGUAGES.length).map((f) => f.name);
     expect(all).toEqual(["Inter", "Montserrat", "Merriweather", "EB Garamond", "Libre Baskerville", "Noto Serif", "Anton", "Great Vibes"]);
+    // BDD1-7: the measured data says Libre Baskerville has no Vietnamese — so it is in the eight only because
+    // Vietnamese is not one of the region's four (the A1b-3 bug was counting it in).
+    expect(coverage.writes["Libre Baskerville" as keyof typeof coverage.writes]).not.toContain("Vietnamese");
+    expect(REGION_LANGUAGES).not.toContain("Vietnamese");
   });
 
   // A1b-5: Inter was in the picker but not in the editor's Google Fonts link, so the canvas drew "Inter" from some other copy

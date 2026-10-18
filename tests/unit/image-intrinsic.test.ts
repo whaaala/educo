@@ -76,7 +76,7 @@ describe("an image block as it is actually CREATED", () => {
   });
 
   it("…and a height the user really does type still crops, exactly as before", () => {
-    expect(imageSizing({ ...createElement("image"), imgW: 4, imgH: 3, height: "420px" })).toEqual({ height: "420px" });
+    expect(imageSizing({ ...createElement("image"), imgW: 4, imgH: 3, height: "420px" })).toEqual({ height: "26.25rem" }); // 420px in rem (BDD1-23, rule 16)
   });
 
   it("…while a block with no picture yet still has a visible box to drop one into", () => {
@@ -88,7 +88,7 @@ describe("an image block as it is actually CREATED", () => {
 describe("imageSizing", () => {
   it("keeps a height the user set, because cropping to a shape is a design choice", () => {
     expect(imageSizing(imageNode({ height: "420px", imgW: 1600, imgH: 900 })))
-      .toEqual({ height: "420px" });
+      .toEqual({ height: "26.25rem" }); // 420px in rem (BDD1-23)
   });
 
   it("takes the photo's own shape when no height is asked for", () => {
@@ -137,7 +137,7 @@ describe("the exported <img>", () => {
 
   it("still crops to the height the user chose", () => {
     const html = pageWith({ height: "420px", imgW: 1600, imgH: 900 });
-    expect(html).toContain("height:420px");
+    expect(html).toContain("height:26.25rem"); // the 420px the user typed, in rem (BDD1-23)
     expect(html).toContain("object-fit:cover");
   });
 

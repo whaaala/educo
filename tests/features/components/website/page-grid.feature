@@ -149,7 +149,9 @@ Feature: The page grid (AC-37b)
   Scenario: The panel is reachable by keyboard and screen reader
     Given the page-grid panel is open
     Then every field has a visible label and can be changed with the keyboard
-    And Escape closes the panel and returns focus to the "Layout guides" switch
+    And the focus is inside the panel when it opens
+    And Escape pressed there closes the panel, once
+    And the builder then returns focus to the "Layout guides" switch (the host's close, in the box-demo page)
 
   # ── G-3 · placing on columns and rows ─────────────────────────────────────────────────────────────
 
@@ -508,7 +510,8 @@ Feature: The page grid (AC-37b)
     Then each row is 6rem, even though that is past the end of the Row height slider
 
   Scenario: Escape closes the panel even when the focus has fallen out of it (G3c-11)
-    Given the page-grid panel is open and I pressed a "Back to default" that then disabled itself
+    Given the page-grid panel is open and I pressed a "Back to default" that then disabled itself and reads "At the default"
+    And the focus has fallen to the page
     When I press Escape
     Then the panel closes
     But an Escape pressed while I am typing in another field on the page leaves the panel open

@@ -4,11 +4,15 @@ Feature: The header element's settings panel
   The header band's own height is set here too. Every element but the logo can be deleted.
   Guards: tests/components/website/HeaderInspector.test.tsx
 
-  Scenario: A text element — its words, font, bold and link
+  Scenario: A text element — its words, font, size, colour, bold and link
     Given a header text element reading "Hello" is selected
     When I replace its words with "Hi"
-    Then the header text changes
+    Then the header text becomes "Hi"
     And the panel offers a Font family and a Link
+    When I move Font size from 18 to 24
+    Then the text's size becomes 24
+    When I open Text colour and type the colour "#123456"
+    Then the text's colour becomes "#123456"
     When I tick bold
     Then the text is made bold
 

@@ -8,9 +8,7 @@ Feature: Placing blocks beside one another in the Box Builder
   The rule underneath, and it is the same one edge-anchored resize follows: a block arriving beside yours
   takes the EMPTY space, never space out of the block you already sized. A drop that renormalises the row
   silently shrinks something the user chose, and nothing on screen explains why it moved.
-  Guards: tests/unit/layout-decisions.test.ts
-  Guards: tests/unit/le1-adding-blocks.test.ts (LE-1)
-  Guards: tests/unit/advanced-css.test.ts (RX4-15, Advanced CSS on the canvas)
+  Guards: tests/unit/layout-decisions.test.ts · tests/unit/le1-adding-blocks.test.ts (LE-1) · tests/unit/advanced-css.test.ts (RX4-15, Advanced CSS on the canvas)
 
   Background:
     Given the Box Builder is open on a page

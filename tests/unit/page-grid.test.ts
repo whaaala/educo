@@ -6,7 +6,7 @@ import { emptyPageRoot as newPageRoot, siteFromRoot, setPageGrid, applyPageGrid,
 import { renderSitePage, SKIP_LINK_CSS } from "@/lib/box-export";
 import { DEFAULT_THEME } from "@/lib/site-storage";
 import { pageCheck } from "@/lib/semantics";
-import { RUNG_PX } from "@/lib/educo-ui/layout";
+import { RUNG_PX, RUNG_EM } from "@/lib/educo-ui/layout";
 import { PAGE_GRID_DEFAULT, columnsAt, spanOf, snapShare, spanLabel, spanText, resolvePageGrid, gridSpaceOf, gridTemplate, spanOfWidth, spanOfRect, snapEdgePx, rowsToMinHeight, rowsOf, rowTrackCount } from "@/lib/page-grid";
 
 /**
@@ -761,7 +761,7 @@ describe("G3b-11 · a width set for a screen wins there (the user: \"your settin
     rowQueryCss(band, (id) => `#${id}`, (c) => c, true, (c, screens) => { seen = screens; return c; });
     expect(seen).toEqual(["tabletPortrait", "tabletLandscape", "base", "wide"]);
     const site = siteFromRoot(root); const html = renderSitePage(site, DEFAULT_THEME, site.homeId, { inlineShared: true });
-    expect(html).toMatch(/@media \(min-width:37\.5em\)\{@container/);
+    expect(html).toContain(`@media (min-width:${RUNG_EM.tabletPortrait}em){@container`); // the tablet edge, read from config/layout.json (BDD1-25)
   });
 });
 
