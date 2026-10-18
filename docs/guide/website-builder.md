@@ -543,6 +543,27 @@ they are — a tag cloud or a logo wall in a section with a height: **Fill** (th
 **Line up (down) → Text lines up** puts their first lines of words on one line, whatever their sizes. A top-to-bottom stack
 does not offer it, because there it would change nothing.
 
+### Words round a picture, a sideways strip, a section over the one above
+
+**Words round a picture.** Put a picture and some paragraphs in a top-to-bottom Stack, select the picture and open
+**Design → Position → Wrap words round it**: **Start** puts it at the start of the line, **End** at the end, and the words
+after it run beside it and then back under it to their full width, with a little room between. A new picture takes 40% of
+the line (Width shows its default 100%); give it a width of your own — `40%`, `16rem` — and it keeps that. On a narrow
+screen (a Stack under 30rem) the picture takes the whole line and the words follow it. **Off** puts it back.
+
+[![Position → Wrap words round it: Off · Start · End, and its hint](img/guide-wrap-words.webp)](img/guide-wrap-words.webp)
+
+**A sideways strip.** Select a Side by side, open **Arrange → When it doesn't fit** and choose **Scroll sideways**: its
+blocks stay on one line that visitors swipe or scroll, a part of the next one showing, each swipe landing a block at the
+start. The page itself never scrolls sideways. Keyboard users reach the strip with Tab and move it with the arrow keys.
+Choose it on Mobile only and a phone gets the strip while a desktop keeps wrapped lines. **Wrap to new lines** puts it back.
+
+**A section over the one above.** Select a section of the page (not the first) and open **Arrange → Overlap the section
+above**: **Small · Medium · Large · Extra large** pull it up over the foot of the section above and draw it in front. The
+section above grows by the same amount, so nothing in it is covered. Set **Off** on Mobile to keep a phone plain.
+
+[![Arrange → Overlap the section above: Off · Small · Medium · Large · Extra large, and its hint](img/guide-overlap-above.webp)](img/guide-overlap-above.webp)
+
 ### What you get in the ZIP, and why it's built that way
 
 | | |

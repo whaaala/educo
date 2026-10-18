@@ -123,9 +123,10 @@ describe("docs-guard", () => {
     const files: string[] = [];
     const walk = (dir: string) => { for (const f of readdirSync(dir, { withFileTypes: true })) {
       const p = join(dir, f.name);
-      if (f.isDirectory()) walk(p); else if (/\.tsx?$/.test(f.name)) files.push(p);
+      if (f.isDirectory()) walk(p); else if (/\.(tsx?|json)$/.test(f.name)) files.push(p);
     } };
-    ["components/website", "app/website/box-demo", "lib", "components/shared"].forEach((d) => walk(join(__dirname, "../..", d)));
+    // config/ holds the Inspector's words (RULE CFG, e.g. config/inspector.json flow) — what the builder shows comes from there too
+    ["components/website", "app/website/box-demo", "lib", "components/shared", "config"].forEach((d) => walk(join(__dirname, "../..", d)));
     const norm = (s: string) => s.toLowerCase().replace(/&apos;|[’']/g, "'").replace(/&amp;|&/g, "and").replace(/\s+/g, " ");
     const src = norm(files.map((f) => readFileSync(f, "utf8")).join("\n"));
     const md = readFileSync(join(GUIDE_DIR, "layout-reference.md"), "utf8").replace(/\r\n/g, "\n");

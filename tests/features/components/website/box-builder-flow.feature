@@ -21,6 +21,13 @@ Feature: Flow and overlap — words round a picture, a sideways strip, a section
     Then the picture is the whole width of the line and the words follow it
     And nothing runs off the side of the page
 
+  Scenario: words round a picture on the phone only (LE13-19)
+    Given a picture whose Wrap words round it → Start is set on the Mobile screen only, as the app sets it
+    When the Preview is at a phone width where its Stack is narrower than config/layout.json flow.wrapBelowRem
+    Then the picture is the whole width of the line and the words follow it
+    And at a phone width where its Stack is at least that wide the words run beside it
+    And from the tablet up the picture does not float
+
   Scenario: Wrap words round it is offered only where it can work
     Given a picture alone on its line in a Stack
     Then its Arrange shows Wrap words round it

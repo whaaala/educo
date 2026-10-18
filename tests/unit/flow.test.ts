@@ -66,6 +66,12 @@ describe("FL-3 · words wrap round a picture", () => {
     expect(gridQueryCss("#b", bandOf(st, "pic"), (id) => `#${id}`, (c) => c)).toContain(q); // the canvas's and the export's emitter
     expect(flowQueryCss(bandOf(stackOf(pic({ wrapAround: undefined }), text("t1")), "pic"), (id) => id)).toBe("");
   });
+  it("LE13-19: wrapped on ONE screen only (the app edits the phone's), the narrow Stack still gives the picture the whole line", () => {
+    for (const bp of ["phone", "tabletPortrait", "mobile"] as const) {
+      const st = stackOf(pic({ wrapAround: undefined, responsive: { [bp]: { wrapAround: "start" } } } as Partial<BoxNode>), text("t1"));
+      expect(flowQueryCss(bandOf(st, "pic"), (id) => `#${id}`), bp).toContain("float:none !important");
+    }
+  });
   it("the Stack's space between blocks survives the flow, as the top margin of every band after the first", () => {
     const st = stackOf(pic(), text("t1"));
     const gapped = { ...st, gap: 16 };
@@ -155,7 +161,7 @@ describe("PO-4 · a section over the one above", () => {
 });
 
 describe("RULE CFG · the numbers and words live in config", () => {
-  const src = (f: string) => readFileSync(f, "utf8").replace(/\r/g, "");
+  const src = (f: string) => readFileSync(f, "utf8").replace(/\r\n/g, "\n");
   it("config/layout.json flow and config/inspector.json flow agree, one word per step", () => {
     expect(INSPECTOR.flow.overlapSteps).toHaveLength(F.overlapSteps.length);
   });

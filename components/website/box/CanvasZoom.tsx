@@ -18,8 +18,6 @@ import { ZOOM_MAX, ZOOM_MENU, ZOOM_MIN, anchorDelta, clampZoom, readZoom, stepZo
 
 const local = () => { try { return typeof window === "undefined" ? undefined : window.localStorage; } catch { return undefined; } };
 const editable = (t: EventTarget | null) => t instanceof HTMLElement && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName));
-/** Was this element focused by the KEYBOARD? (`:focus-visible`; a selector an engine does not know reads as no.) */
-const keyboardFocused = (t: Element) => { try { return t.matches(":focus-visible"); } catch { return false; } };
 type Anchor = { lx: number; ly: number; clientX: number; clientY: number };
 
 export function useCanvasZoom({ device, fit, scroller, frame, selectedId, ready }: {
@@ -87,7 +85,12 @@ export function useCanvasZoom({ device, fit, scroller, frame, selectedId, ready 
     // and toolbar are drawn in a layer outside the canvas element, and enter/leave events said the pointer had left the
     // canvas whenever it crossed them — so Ctrl + over a selected block zoomed the browser instead (Z1-h).
     let at: { x: number; y: number } | null = null, space = false;
+    // LE13-15 · the element the KEYBOARD focused (a focus after a key, before any pointer press) — not `:focus-visible`, which
+    // Chrome turns on for a CLICKED button once any key is pressed (Ctrl + = to zoom), so Space pressed it instead of panning
+    let byPointer = false, keyFocus: EventTarget | null = null;
     const onPoint = (e: PointerEvent) => { at = { x: e.clientX, y: e.clientY }; };
+    const onPress = (e: PointerEvent) => { onPoint(e); byPointer = true; keyFocus = null; };
+    const onFocus = (e: FocusEvent) => { keyFocus = byPointer ? null : e.target; };
     const inCanvas = () => {
       if (sc.contains(document.activeElement)) return true;
       if (!at) return false;
@@ -97,6 +100,7 @@ export function useCanvasZoom({ device, fit, scroller, frame, selectedId, ready 
       return !document.elementFromPoint(at.x, at.y)?.closest('[role="dialog"], [role="menu"], [role="listbox"]');
     };
     const onKey = (e: KeyboardEvent) => {
+      byPointer = false;
       if (!inCanvas()) return;
       const mod = e.ctrlKey || e.metaKey;
       if (mod && !e.altKey) {
@@ -112,9 +116,9 @@ export function useCanvasZoom({ device, fit, scroller, frame, selectedId, ready 
       // Space on a focused button or link IN THE PAGE still presses it. A toolbar button outside it keeps focus after a
       // click (a device chosen, then the pointer moved onto the page): there Space is the pan, and the key is kept from
       // pressing that button again (Z1-g).
-      // LE13-5: …and so does a button the KEYBOARD reached (`:focus-visible`) anywhere — Tab into the Inspector with the pointer
-      // resting on the page, and Space pressed nothing (WCAG 2.1.1). A button a mouse clicked is not focus-visible: Z1-g holds.
-      else if (e.code === "Space" && !e.shiftKey && !(e.target instanceof Element && e.target.closest("button, a, [role=button], [role=menuitem]") && (sc.contains(e.target) || keyboardFocused(e.target)))) {
+      // LE13-5: …and so does a button the KEYBOARD reached anywhere (`keyFocus`) — Tab into the Inspector with the pointer
+      // resting on the page, and Space pressed nothing (WCAG 2.1.1). A button a pointer pressed is not one: Z1-g holds.
+      else if (e.code === "Space" && !e.shiftKey && !(e.target instanceof Element && e.target.closest("button, a, [role=button], [role=menuitem]") && (sc.contains(e.target) || e.target === keyFocus))) {
         e.preventDefault(); space = true; sc.style.cursor = "grab";
       }
     };
@@ -162,13 +166,13 @@ export function useCanvasZoom({ device, fit, scroller, frame, selectedId, ready 
     };
     // The middle button's own autoscroll would fight the pan.
     const onAux = (e: MouseEvent) => { if (e.button === 1) e.preventDefault(); };
-    window.addEventListener("pointermove", onPoint, true); window.addEventListener("pointerdown", onPoint, true);
+    window.addEventListener("pointermove", onPoint, true); window.addEventListener("pointerdown", onPress, true); window.addEventListener("focusin", onFocus, true);
     sc.addEventListener("wheel", onWheel, { passive: false });
     sc.addEventListener("pointerdown", onDown, true); sc.addEventListener("mousedown", onAux, true);
     window.addEventListener("pointermove", onMove); window.addEventListener("pointerup", onUp); window.addEventListener("pointercancel", onUp);
     window.addEventListener("keydown", onKey, true); window.addEventListener("keyup", onKeyUp, true);
     return () => {
-      window.removeEventListener("pointermove", onPoint, true); window.removeEventListener("pointerdown", onPoint, true);
+      window.removeEventListener("pointermove", onPoint, true); window.removeEventListener("pointerdown", onPress, true); window.removeEventListener("focusin", onFocus, true);
       sc.removeEventListener("wheel", onWheel); sc.removeEventListener("pointerdown", onDown, true); sc.removeEventListener("mousedown", onAux, true);
       window.removeEventListener("pointermove", onMove); window.removeEventListener("pointerup", onUp); window.removeEventListener("pointercancel", onUp);
       window.removeEventListener("keydown", onKey, true); window.removeEventListener("keyup", onKeyUp, true);

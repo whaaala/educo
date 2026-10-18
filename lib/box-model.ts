@@ -7153,7 +7153,7 @@ function flowCSS(s: CSSProperties, child: BoxNode, parent: BoxNode, bp: Breakpoi
     const own = `min(${share}, calc(${PARAGRAPH_MEASURE} * ${FLOW.wrapMeasureShare}))`;
     // z-index 1 (LE13-8): the words' blocks still SPAN the picture's area (only their lines are shortened) and, positioned, were drawn
     // over it — a click on the picture landed on the words; the words never cover it, so lifting it changes nothing you can see
-    Object.assign(s, { float: side === "start" ? "inline-start" : "inline-end", width: own, maxWidth: "100%", flex: undefined, alignSelf: undefined, zIndex: 1,
+    Object.assign(s, { float: side === "start" ? "inline-start" : "inline-end", width: own, maxWidth: "100%", flex: undefined, alignSelf: undefined, zIndex: PAGE_Z.raised,
       marginInlineStart: side === "end" ? `${FLOW.wrapGapRem}rem` : "0rem", marginInlineEnd: side === "start" ? `${FLOW.wrapGapRem}rem` : "0rem", marginBottom: `${FLOW.wrapGapRem}rem` });
     delete s.marginLeft; delete s.marginRight; // the logical pair above is the whole of it (no physical side fighting it)
   }
@@ -7165,7 +7165,7 @@ function flowCSS(s: CSSProperties, child: BoxNode, parent: BoxNode, bp: Breakpoi
   if (child.rowBand && !parent.rowBand && parent.layout !== "grid") {
     const bands = (parent.children ?? []).filter((k) => !isFloating(k));
     const i = bands.findIndex((k) => k.id === child.id), x = i > 0 ? bandOverlap(child, bp) : undefined;
-    if (x != null && !s.position) Object.assign(s, { marginTop: `-${x}rem`, position: "relative", zIndex: 1 });
+    if (x != null && !s.position) Object.assign(s, { marginTop: `-${x}rem`, position: "relative", zIndex: PAGE_Z.raised });
     // the section above holds more than one block: the BAND grows (its one section grows instead — just below)
     const below = bandOverlap(bands[i + 1], bp);
     if (below != null && !loneKid(child)) s.paddingBottom = `calc(${String(paddingCSS(child).paddingBottom ?? "0rem")} + ${below}rem)`;
@@ -7182,7 +7182,9 @@ function flowCSS(s: CSSProperties, child: BoxNode, parent: BoxNode, bp: Breakpoi
 /** FL-3 · below config `flow.wrapBelowRem` of its Stack, a wrapped picture takes the whole line and the words follow it (RULE AF). */
 export function flowQueryCss(band: BoxNode, cellScope: (id: string) => string): string {
   const k = loneKid(band);
-  if (!wrapSide(k)) return "";
+  // on ANY screen (LE13-19): the app edits the phone's own screen, and a picture wrapped there alone kept floating in a narrow Stack
+  const anywhere = k?.type === "image" && Object.values(k.responsive ?? {}).some((o) => o?.wrapAround === "start" || o?.wrapAround === "end");
+  if (!wrapSide(k) && !anywhere) return "";
   return `@container (max-width:${FLOW.wrapBelowRem - 0.01}rem){${cellScope(k!.id)}{float:none !important;width:100% !important;margin-inline:0 !important}}`;
 }
 
