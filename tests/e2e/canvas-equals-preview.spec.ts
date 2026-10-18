@@ -97,6 +97,9 @@ async function previewAt(page: Page, w: number): Promise<Frame> {
   let f = (await (await page.$('iframe[title="Site preview"]'))!.contentFrame())!;
   const inner = await f.evaluate(() => document.documentElement.clientWidth);
   if (inner !== w) { await page.setViewportSize({ width: w + (w - inner), height: 900 }); await page.waitForTimeout(400); f = (await (await page.$('iframe[title="Site preview"]'))!.contentFrame())!; }
+  // LE13c-9: the Preview's fonts are embedded when `embedFontCss` returns (E4-5, `#eu-preview-fonts`); under the full gate's load that
+  // came after the first width was measured, so 375 read the fallback font (170.7 vs 183.3 wide). Every page here uses a web font.
+  await f.waitForFunction(() => !!document.getElementById("eu-preview-fonts"), null, { timeout: 20000 });
   await f.evaluate(async () => { await document.fonts.ready; scrollTo(0, 0); });
   await page.waitForTimeout(300);
   return f;

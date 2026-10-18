@@ -3,6 +3,7 @@ import { readFileSync } from "fs";
 import { join } from "path";
 import { resolvePage, pageCheck, corrections } from "@/lib/semantics";
 import type { BoxNode } from "@/lib/box-model";
+import PC from "@/config/page-check.json"; // LE9-6: the config as the code reads it
 
 /** Behaviours: tests/features/components/website/box-builder-semantics.feature */
 let n = 0;
@@ -245,5 +246,44 @@ describe("words at the page's edge (E-6)", () => {
   it("a page with no words, and a page saved before, are never asked", () => {
     expect(wordsAtEdge(page([mkBand([mkStack("column")])]))).toBeNull();
     expect(wordsAtEdge(old(page([mkBand([mkStack("column", { children: [words()] })])])))).toBeNull();
+  });
+});
+
+/** SE-4 · BATCH LE-9 — "Page check, the reading order" (box-builder-semantics.feature, the five SE-4 scenarios). */
+describe("SE-4 — a screen that shows blocks in a different order from the one they are read in", () => {
+  const el = (type: BoxNode["type"], text: string, p: Partial<BoxNode> = {}): BoxNode => ({ id: p.id ?? `e${++n}`, type, text, ...p } as BoxNode);
+  const order = (o: number | null) => ({ responsive: { phone: { order: o } } } as Partial<BoxNode>);
+  const reading = (root: BoxNode) => pageCheck(root).filter((i) => i.kind === "reading-order");
+  it("on phones a button set to Order -1: named, on phones only, a suggestion, its id for Show me", () => {
+    const r = reading(page(box({}, [heading("Welcome"), el("text", "Our school is open"), el("button", "Apply now", { id: "btn", ...order(-1) })])));
+    expect(r.map((i) => i.id)).toEqual(["btn"]);
+    expect(r[0].blocks).toBe(false);
+    expect(r[0].message).toContain("phones");
+    expect(r[0].message).toContain("Apply now");
+    expect(r[0].message).not.toContain("desktops");
+  });
+  it("an Order at the base is one line naming every screen it happens on", () => {
+    const r = reading(page(box({}, [heading("A"), el("text", "B", { id: "t", order: -1 })])));
+    expect(r.map((i) => i.id)).toEqual(["t"]);
+    expect(r[0].message).toContain(PC.readingOrder.everyScreen);
+  });
+  it("an Order that changes nothing seen, a block hidden on that screen, a floating block: nothing", () => {
+    expect(reading(page(box({}, [heading("A"), el("text", "B", { order: 5 })])))).toEqual([]);
+    expect(reading(page(box({}, [heading("A"), el("text", "B", { responsive: { phone: { order: -1, hidden: true } } } as Partial<BoxNode>)])))).toEqual([]);
+    expect(reading(page(box({}, [heading("A"), el("text", "B", { order: -1, position: "absolute" } as Partial<BoxNode>)])))).toEqual([]);
+    // LE9-3 (found HEADED): a Stack built through the UI holds each block in a band of its own — hidden on phones INSIDE its band
+    expect(reading(page(box({}, [band(heading("A")), band(el("text", "B", { responsive: { phone: { order: -1, hidden: true } } } as Partial<BoxNode>))])))).toEqual([]);
+  });
+  it("a block alone in its section is reordered among the sections — it is the one named", () => {
+    const r = reading(page(band(heading("One")), band(heading("Two")), band(el("text", "Three", { id: "z", ...order(-1) }))));
+    expect(r.map((i) => i.id)).toEqual(["z"]);
+  });
+  it("put back to the default on phones (a clear is stored as null): the line is gone", () => {
+    expect(reading(page(box({}, [heading("A"), el("text", "B", order(null))])))).toEqual([]);
+  });
+  it("its words are configuration (RULE CFG)", () => {
+    const r = reading(page(box({}, [heading("A"), el("text", "B", order(-1))])));
+    const [before] = PC.readingOrder.message.split("{block}");
+    expect(r[0].message.startsWith(before.replace("{screens}", "phones"))).toBe(true);
   });
 });

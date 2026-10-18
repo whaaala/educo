@@ -773,7 +773,7 @@ A grid keeps its count while each cell still has about 12rem — three cards sta
 
 **If you placed the cells yourself, the placement is released when the row narrows.** *Start at column* and *Start at row* are written in the wide row's twelve columns, and there is nowhere to put "column 9" in a row that now has fewer. So at those sizes the cells simply **flow** — one after another, in the order you added them, wrapping onto new rows. **Setting Columns for a device works the same way.** Your *Start at column* was written in the twelve-column row's units, so it's released there too and the cells flow. If you want an exact placement at that size, set **Start at column** on the cell *while that device is picked* — then it's read in that row's own units and honoured exactly.
 
-Everything in this section is per‑device. Setting **Order** on a phone is what puts the photo above the words there and beside them on a desktop.
+Everything in this section is per‑device. Setting **Order** on a phone is what puts the photo above the words there and beside them on a desktop. It moves only what is seen — a screen reader and the Tab key still follow the page — so the **Page check** names a block whose Order makes the two differ (§14b).
 
 ---
 
@@ -1064,6 +1064,17 @@ Your page is published as proper HTML5, however you built it — you do not need
   the letters and a font of the same kind that has them: *"DM Sans has no ẹ ọ ṣ … Inter has them."* One click, **Use
   Inter for this block**, changes that block's font. To change it everywhere, use **Site fonts** in Page settings. This
   one is a suggestion too.
+- **Shown in one order, read in another.** **Order** moves what a visitor *sees* on a screen — the photo above the
+  words on a phone, say. Someone using a screen reader, or moving through the page with the Tab key, still meets the
+  blocks in the order they sit in the page. When an Order makes the two differ, the Page check names the block with its
+  first words and the screens it happens on: *"On phones, the Button (“Apply now”) is shown in a different place from
+  where it is read."* Often that is what you want — then leave it. If the block's place matters (a button that only
+  makes sense after the words before it), move it in the page instead, or put its Order back to the default on that
+  screen, and the line goes. **Show me** selects the block itself, even when it is the only block in its section. An
+  Order that changes nothing you see (the last block set to 5), a floating block, or a block hidden on that screen is
+  not listed. A suggestion too.
+
+[![The Page check: "On phones, the Button (“Apply now”) is shown in a different place from where it is read — screen readers and the Tab key still meet it where it sits in the page", a suggestion, with Show me](img/guide-page-check-order.webp)](img/guide-page-check-order.webp)
 
 [![The Page check: "Needs your words (2)", two pictures each asking "What does the picture show?" with Save description, It's only decoration and Show me](img/guide-page-check.webp)](img/guide-page-check.webp)
 
