@@ -230,6 +230,7 @@ export const SIZES: Readonly<{ ratios: readonly { value: string; label: string }
 if (!SIZES.ratios.length || SIZES.ratios.some((r) => !/^\d+(\.\d+)? \/ \d+(\.\d+)?$/.test(r.value))) throw new Error("config/layout.json: sizes.ratios need a value written \"w / h\"");
 
 /** BATCH LE-13 · how words flow round a picture (FL-3), a sideways strip's blocks (FL-6), and the overlap steps (PO-4) — config/layout.json `flow`. */
-export const FLOW: Readonly<{ wrapWidth: string; wrapGapRem: number; wrapBelowRem: number; wrapMeasureShare: number; stripCard: string; overlapSteps: readonly number[] }> = LAYOUT.flow;
+export const FLOW: Readonly<{ wrapWidth: string; wrapGapRem: number; wrapBelowRem: number; wrapMeasureShare: number; shapeThreshold: number; outlineRows: number; stripCard: string; overlapSteps: readonly number[] }> = LAYOUT.flow;
+if (!(FLOW.shapeThreshold > 0 && FLOW.shapeThreshold < 1) || !(Number.isInteger(FLOW.outlineRows) && FLOW.outlineRows >= 4)) throw new Error("config/layout.json: flow.shapeThreshold needs a number between 0 and 1, flow.outlineRows a whole number of 4 or more");
 if (!FLOW.overlapSteps.length || FLOW.overlapSteps.some((n, i) => !(n > 0) || (i > 0 && n <= FLOW.overlapSteps[i - 1]))) throw new Error("config/layout.json: flow.overlapSteps need positive rem numbers, smallest first");
 if (!(FLOW.wrapGapRem >= 0) || !(FLOW.wrapBelowRem > 0) || !(FLOW.wrapMeasureShare > 0 && FLOW.wrapMeasureShare < 1)) throw new Error("config/layout.json: flow.wrapGapRem, flow.wrapBelowRem and flow.wrapMeasureShare (0 … 1) need numbers");

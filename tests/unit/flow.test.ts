@@ -5,9 +5,9 @@
  */
 import { describe, it, expect } from "vitest";
 import { readFileSync } from "fs";
-import { createContainer, createElement, makeRowBand, insertBox, normalizeRowBands, childStyle, containerStyle, clampRowWidths, flowsWords, flowQueryCss, gridQueryCss, canWrapWords, canOverlapUp, stripsAnywhere, findBox, type BoxNode } from "@/lib/box-model";
+import { createContainer, createElement, makeRowBand, insertBox, normalizeRowBands, childStyle, containerStyle, clampRowWidths, flowsWords, flowQueryCss, gridQueryCss, canWrapWords, canOverlapUp, stripsAnywhere, findBox, outlinePolygon, followsOutline, type BoxNode } from "@/lib/box-model";
 import { emptyPageRoot, siteFromRoot } from "@/lib/box-site";
-import { renderSitePage } from "@/lib/box-export";
+import { renderSitePage, photosToFiles, addSrcset } from "@/lib/box-export";
 import { DEFAULT_THEME } from "@/lib/site-storage";
 import LAYOUT from "@/config/layout.json";
 import { PARAGRAPH_MEASURE } from "@/lib/educo-ui/base";
@@ -62,9 +62,20 @@ describe("FL-3 · words wrap round a picture", () => {
   it("below config's width of its Stack the picture takes the whole line (a container query, the same rule on both paths)", () => {
     const st = stackOf(pic(), text("t1"));
     const q = flowQueryCss(bandOf(st, "pic"), (id) => `#${id}`);
-    expect(q).toBe(`@container (max-width:${F.wrapBelowRem - 0.01}rem){#pic{float:none !important;width:100% !important;margin-inline:0 !important}}`);
+    expect(q).toBe(`@container (max-width:${F.wrapBelowRem - 0.01}rem){#pic{float:none !important;width:var(--bx-wrap-narrow, 100%) !important;margin-inline:0 !important}}`);
     expect(gridQueryCss("#b", bandOf(st, "pic"), (id) => `#${id}`, (c) => c)).toContain(q); // the canvas's and the export's emitter
     expect(flowQueryCss(bandOf(stackOf(pic({ wrapAround: undefined }), text("t1")), "pic"), (id) => id)).toBe("");
+  });
+  it("LE13b-11 / -13: …but a picture with its OWN width in rem keeps it there, on the screen that has it (a circle never a pill)", () => {
+    const st = stackOf(pic({ width: "10rem", height: "10rem", radius: 999 }), text("t1"));
+    expect(flowQueryCss(bandOf(st, "pic"), (id) => `#${id}`)).toContain("#pic{float:none !important;width:var(--bx-wrap-narrow, 100%) !important;margin-inline:0 !important}");
+    const at = (n: BoxNode, bp: "base" | "phone") => { const s = stackOf(n, text("t1")); return childStyle(findBox(s, "pic")!, bandOf(s, "pic"), bp, false, s) as Record<string, unknown>; };
+    expect(at(pic({ width: "10rem" }), "base")["--bx-wrap-narrow"]).toBe("min(100%, 10rem)");
+    // the app edits the phone's own screen: the Circle style's width is the phone's, and the phone keeps it (LE13b-13)
+    expect(at(pic({ responsive: { phone: { width: "10rem" } } }), "phone")["--bx-wrap-narrow"]).toBe("min(100%, 10rem)");
+    // a share of the line (a %), or no width, still takes the whole line there, as before
+    expect(at(pic({ width: "30%" }), "base")["--bx-wrap-narrow"]).toBeUndefined();
+    expect(at(pic(), "base")["--bx-wrap-narrow"]).toBeUndefined();
   });
   it("LE13-19: wrapped on ONE screen only (the app edits the phone's), the narrow Stack still gives the picture the whole line", () => {
     for (const bp of ["phone", "tabletPortrait", "mobile"] as const) {
@@ -160,10 +171,77 @@ describe("PO-4 · a section over the one above", () => {
   });
 });
 
+describe("FL-3b · the words follow its shape (BATCH LE-13b)", () => {
+  const style = (extra: Partial<BoxNode>, bp: "base" | "phone" = "base") => {
+    const st = stackOf(pic(extra), text("t1"));
+    return childStyle(findBox(st, "pic")!, bandOf(st, "pic"), bp, false, st);
+  };
+  it("Its round corners: the outline is the picture's own border box, which carries its corner radius, a wrap gap away", () => {
+    expect(style({ wrapShape: "round", radius: 999 })).toMatchObject({ shapeOutside: "border-box", shapeMargin: `${F.wrapGapRem}rem` });
+  });
+  const POLY = "polygon(40% 0%, 60% 0%, 80% 50%, 60% 100%, 40% 100%, 20% 50%)";
+  it("A cut-out's outline: the picture's traced outline, a polygon in % that scales with its box, a wrap gap away (LE13b-9)", () => {
+    expect(style({ wrapShape: "outline", wrapOutline: POLY })).toEqual(expect.objectContaining({ shapeOutside: POLY, shapeMargin: `${F.wrapGapRem}rem` }));
+    // LE13b-8 / -9: no image is fetched for it, and no bare number goes out for React to give a "px"
+    expect(style({ wrapShape: "outline", wrapOutline: POLY })).not.toHaveProperty("shapeImageThreshold");
+  });
+  it("Its box, nothing, anything else stored (a trust boundary), no outline traced, or no wrap: no shape — the box as before", () => {
+    for (const w of [undefined, "box", "star"] as const) expect(style({ wrapShape: w as BoxNode["wrapShape"], wrapOutline: POLY }).shapeOutside).toBeUndefined();
+    expect(style({ wrapShape: "outline" }).shapeOutside).toBeUndefined();
+    for (const bad of ["url(x.png)", "polygon(0% 0%, 100% 0%)", "polygon(0% 0%, 9% 9%, 1% 1%); color:red", "circle(50%)"]) expect(style({ wrapShape: "outline", wrapOutline: bad }).shapeOutside).toBeUndefined();
+    expect(style({ wrapShape: "round", wrapAround: undefined }).shapeOutside).toBeUndefined();
+  });
+  it("tracing: each row's leftmost and rightmost pixel more opaque than config's threshold, in % of the picture", () => {
+    const disc = (w: number, h: number, r: number) => { const a = new Uint8ClampedArray(w * h * 4); for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) if ((x + 0.5 - w / 2) ** 2 + (y + 0.5 - h / 2) ** 2 <= r * r) a[(y * w + x) * 4 + 3] = 255; return a; };
+    const pts = (p: string) => [...p.matchAll(/([\d.]+)% ([\d.]+)%/g)].map((m) => [Number(m[1]), Number(m[2])]);
+    const d = pts(outlinePolygon(disc(120, 80, 36), 120, 80)!);
+    const xAt = (y: number) => d.filter(([x, py]) => x > 50 && py <= y).sort((p, q) => p[1] - q[1]).at(-1)![0]; // the right edge is a step: the band holding y
+    expect(xAt(50)).toBeCloseTo(80, 0); // beside the middle: the disc's right edge, (60 + 36) / 120
+    expect(xAt(10)).toBeLessThan(70); // near the top the disc is narrow
+    expect(Math.min(...d.map(([x]) => x))).toBeCloseTo(20, 0);
+    expect(outlinePolygon(new Uint8ClampedArray(40 * 40 * 4), 40, 40)).toBeUndefined(); // all clear: nothing to follow
+    expect(outlinePolygon(new Uint8ClampedArray(40 * 40 * 4).fill(255), 40, 40)).toBe("polygon(100% 0%, 100% 100%, 0% 100%, 0% 0%)"); // opaque: its box
+    const half = new Uint8ClampedArray(40 * 40 * 4).fill(Math.floor(F.shapeThreshold * 255)); // exactly the threshold: not opaque enough
+    expect(outlinePolygon(half, 40, 40)).toBeUndefined();
+    expect(outlinePolygon(new Uint8ClampedArray(40 * 40 * 4).fill(Math.ceil(F.shapeThreshold * 255)), 40, 40)).toMatch(/^polygon/); // just over it: in
+    expect(outlinePolygon(disc(120, 80, 36), 120, 80)).toMatch(/^polygon\(/); // the traced outline passes the engine's own check
+    expect(style({ wrapShape: "outline", wrapOutline: outlinePolygon(disc(120, 80, 36), 120, 80) }).shapeOutside).toMatch(/^polygon\(/);
+  });
+  it("per screen: round corners on the phone only", () => {
+    expect(style({ responsive: { phone: { wrapShape: "round" } } }, "phone").shapeOutside).toBe("border-box");
+    expect(style({ responsive: { phone: { wrapShape: "round" } } }, "base").shapeOutside).toBeUndefined();
+  });
+  it("published: the outline is in the page, and the picture is one file that keeps its phone copies (nothing fetched twice, RULE AF)", () => {
+    const uri = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUg==";
+    const html = published(page(stackOf(pic({ src: uri, wrapShape: "outline", wrapOutline: POLY }), text("t1"))));
+    expect(ruleOf(html, "pic")).toContain(`shape-outside:${POLY}`);
+    const { files, photos } = photosToFiles({ "index.html": html });
+    const [file] = Object.keys(photos);
+    expect(Object.keys(photos)).toHaveLength(1);
+    expect(files["index.html"]).not.toMatch(/shape-outside:\s*url\(/);
+    const out = addSrcset(files, { [file]: [{ w: 480, file: "s-480.webp" }, { w: 900, file }] })["index.html"];
+    expect(out).toContain("s-480.webp"); // a phone still gets the narrow copy of a cut-out
+    expect(out).not.toContain("crossorigin");
+  });
+  it("a picture that follows its outline on any screen is traced again when it is replaced; one that does not, never", () => {
+    expect(followsOutline(pic({ wrapShape: "outline" }))).toBe(true);
+    expect(followsOutline(pic({ responsive: { phone: { wrapShape: "outline" } } }))).toBe(true);
+    expect(followsOutline(pic({ wrapShape: "round", responsive: { tablet: { wrapShape: "box" } } }))).toBe(false);
+    const canvas = readFileSync("components/website/box/BoxCanvas.tsx", "utf8").replace(/\r\n/g, "\n");
+    expect(canvas).toMatch(/followsOutline\(node\) \? await traceOutline\(src\) : undefined/); // the upload asks it, and clears a stale one
+  });
+  it("the outline is the picture's own on every screen (config/inspector.json perScreen.sharedKeys)", () => {
+    expect(INSPECTOR.perScreen.sharedKeys).toContain("wrapOutline");
+  });
+});
+
 describe("RULE CFG · the numbers and words live in config", () => {
   const src = (f: string) => readFileSync(f, "utf8").replace(/\r\n/g, "\n");
   it("config/layout.json flow and config/inspector.json flow agree, one word per step", () => {
     expect(INSPECTOR.flow.overlapSteps).toHaveLength(F.overlapSteps.length);
+    expect(Object.keys(INSPECTOR.flow.shapeChoices)).toEqual(["box", "round", "outline"]);
+    expect(F.shapeThreshold).toBeGreaterThan(0);
+    expect(F.shapeThreshold).toBeLessThan(1);
   });
   it("no flow value is typed into the engine or the Inspector", () => {
     const model = src("lib/box-model.ts");
@@ -171,6 +249,6 @@ describe("RULE CFG · the numbers and words live in config", () => {
     expect(flow.length).toBeGreaterThan(500);
     for (const v of [F.stripCard, F.wrapWidth, `${F.wrapBelowRem}`, `${F.wrapGapRem}rem`, ...F.overlapSteps.map((n) => `${n}rem`)]) expect(flow).not.toContain(v);
     const insp = src("components/website/box/BoxInspector.tsx");
-    for (const w of [INSPECTOR.flow.wrap, INSPECTOR.flow.fit, INSPECTOR.flow.overlap, INSPECTOR.flow.fitChoices.scroll]) expect(insp).not.toContain(w);
+    for (const w of [INSPECTOR.flow.wrap, INSPECTOR.flow.fit, INSPECTOR.flow.overlap, INSPECTOR.flow.fitChoices.scroll, INSPECTOR.flow.shape, INSPECTOR.flow.shapeChoices.outline]) expect(insp).not.toContain(w);
   });
 });

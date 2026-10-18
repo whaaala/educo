@@ -36,7 +36,9 @@ const find = (st, id) => { let n = null; const w = (x) => { if (x.id === id) n =
   await page.evaluate(() => { localStorage.removeItem('educo_box_site_v1'); location.reload(); }).catch(() => {}); // an EMPTY site, as BATCH E-5d
   await u.sleep(2000); await browser.close().catch(() => {});
   ({ browser, page } = await editorPage(d, port, 60000));
-  await page.waitForFunction(() => !!document.querySelector('[aria-label="Open blocks panel"]'), null, { timeout: 90000 });
+  // LE13b-14 · once, after a cold boot, the editor took over 90 s to show its blocks panel (Metro had bundled in 18 s) — measured here
+  const t0 = Date.now(); await page.waitForFunction(() => !!document.querySelector('[aria-label="Open blocks panel"]'), null, { timeout: 90000 });
+  console.log(`NOTE [${which}] the editor was ready ${((Date.now() - t0) / 1000).toFixed(1)} s after its reload`);
   const errors = []; page.on('console', (m) => { if (m.type() === 'error') errors.push(m.text().slice(0, 160)); });
   const tap = async (loc) => { await loc.scrollIntoViewIfNeeded().catch(() => {}); await u.sleep(300); await touch(d, page, loc); await u.sleep(900); };
   const addBlock = async (tile, where) => {
@@ -67,14 +69,17 @@ const find = (st, id) => { let n = null; const w = (x) => { if (x.id === id) n =
   const pic = await addBlock('Image', 'Inside');
   // the picture fills the Stack, so there is no Stack left to tap: the words go AFTER the picture, as a person adds them
   const text = await addBlock('Text', 'After');
-  await selectBlock(pic); await inspector('Position'); await choose(F.wrap, F.wrapChoices.start); shot('wrap'); await close();
+  await selectBlock(pic); await inspector('Position'); await choose(F.wrap, F.wrapChoices.start); shot('wrap');
+  // LE-13b · the Circle style and Words follow → Its round corners, with touches
+  await choose(F.shape, F.shapeChoices.round); shot('words-follow');
+  await tap(page.getByRole('tab', { name: 'Design' }).first()); await tap(page.getByRole('group', { name: 'Style presets' }).getByRole('button', { name: 'Circle style' }).first()); await close();
   const row = await addBlock('Side by side', 'End');
   await selectBlock(row).catch(() => {}); await inspector('Arrange');
   await choose(F.fit, F.fitChoices.scroll); await choose(F.overlap, F.overlapSteps[0]); shot('strip-overlap'); await close();
   const st = await stored(page);
-  ok('made in the app with touches: the picture Wrap → Start, the Side by side Scroll sideways and Overlap → the first step',
-    own(find(st, pic), 'wrapAround') === 'start' && own(find(st, row), 'scrollX') === true && own(find(st, row), 'overlapUp') === FLOW.overlapSteps[0],
-    `${own(find(st, pic), 'wrapAround')} · scrollX ${own(find(st, row), 'scrollX')} · overlapUp ${own(find(st, row), 'overlapUp')}`);
+  ok('made in the app with touches: the picture Wrap → Start, the Circle style, Words follow → Its round corners, the Side by side Scroll sideways and Overlap → the first step',
+    own(find(st, pic), 'wrapAround') === 'start' && own(find(st, pic), 'wrapShape') === 'round' && own(find(st, pic), 'radius') >= 999 && own(find(st, row), 'scrollX') === true && own(find(st, row), 'overlapUp') === FLOW.overlapSteps[0],
+    `${own(find(st, pic), 'wrapAround')} · ${own(find(st, pic), 'wrapShape')} · radius ${own(find(st, pic), 'radius')} · scrollX ${own(find(st, row), 'scrollX')} · overlapUp ${own(find(st, row), 'overlapUp')}`);
   // the app's Preview
   let fr = null;
   for (let i = 0; i < 3 && !fr; i++) { await tap(page.getByRole('button', { name: /^\s*Preview\s*$/ }).first()); await page.waitForSelector('iframe', { timeout: 8000 }).catch(() => {}); await u.sleep(2500); fr = page.frames().find((f) => f !== page.mainFrame()) || null; }
@@ -85,14 +90,15 @@ const find = (st, id) => { let n = null; const w = (x) => { if (x.id === id) n =
     // the first LINE of words: a text run's own rectangle (LE13-17 — a range over the element returned the <p>'s box first)
     const tw = document.createTreeWalker(document.querySelector(`.bx-${t}`), NodeFilter.SHOW_TEXT); let n, line = null;
     while (!line && (n = tw.nextNode())) { if (!n.textContent.trim()) continue; const range = document.createRange(); range.selectNodeContents(n); line = [...range.getClientRects()].find((x) => x.width > 1) || null; }
-    return { vw: document.documentElement.clientWidth, sw: document.documentElement.scrollWidth, rem, s: r(s), p: r(p), line: line && { l: line.left, t: line.top },
+    return { shape: getComputedStyle(document.querySelector(`.bx-${p}`)).shapeOutside, vw: document.documentElement.clientWidth, sw: document.documentElement.scrollWidth, rem, s: r(s), p: r(p), line: line && { l: line.left, t: line.top },
       ox: getComputedStyle(row).overflowX, wrap: getComputedStyle(row).flexWrap, overlap: above ? +(above.getBoundingClientRect().bottom - row.getBoundingClientRect().top).toFixed(1) : null };
   }, [stack, pic, text, row]);
   const hide = page.getByRole('button', { name: 'Hide the preview controls' }).first(); if (await hide.isVisible().catch(() => false)) await tap(hide);
   await u.sleep(800); shot('preview');
   const floats = m.s.w >= FLOW.wrapBelowRem * m.rem;
-  const wrapOk = floats ? m.line.t < m.p.b && m.line.l >= m.p.r : m.line.t >= m.p.b - 1 && Math.abs(m.p.w - m.s.w) <= 1.5;
-  ok(`the app's Preview (${m.vw}px): the words ${floats ? 'BESIDE the picture' : 'under the picture, which takes the line'}`, wrapOk, JSON.stringify({ s: m.s, p: m.p, line: m.line }));
+  // LE-13b: round — the first line starts inside where its box and the gap would put it (LE13b-12: not the bare box edge)
+  const wrapOk = m.shape === 'border-box' && (floats ? m.line.t < m.p.b && m.line.l < m.p.r + FLOW.wrapGapRem * m.rem - 1 : m.line.t >= m.p.b - 1 && Math.abs(m.p.w - (m.p.b - m.p.t)) <= 1.5); // LE13b-11 / -13: under it, and the Circle stays round
+  ok(`the app's Preview (${m.vw}px): the words ${floats ? 'BESIDE the round picture, following its curve' : 'under the picture, which stops floating and stays round'}`, wrapOk, JSON.stringify({ shape: m.shape, s: m.s, p: m.p, line: m.line }));
   ok('the Side by side is one line that scrolls, pulled up over the section above by the step; nothing sideways',
     m.ox === 'auto' && m.wrap === 'nowrap' && Math.abs(m.overlap - FLOW.overlapSteps[0] * m.rem) <= 1.5 && m.sw <= m.vw, JSON.stringify({ ox: m.ox, wrap: m.wrap, overlap: m.overlap, sw: m.sw, vw: m.vw }));
   ok('no console errors in the editor', !errors.length, errors.join(' | ') || 'none');

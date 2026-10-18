@@ -20,6 +20,9 @@ Run through this checklist BEFORE writing any code:
 - [ ] **⛔ RULE CFG — NOTHING HARD-CODED: DATA IN CONFIGURATION, NEVER IN CODE** (the user, 2026-10-16) — every value that
   could ever change (breakpoints, sizes, menus, roles, labels, lists, limits, thresholds, sample data) is read from a
   configuration file; changing it never means touching code. Name the config file each new value goes in.
+- [ ] **⛔ RULE BDD — THE `.feature` FIRST, FOR EVERYTHING** (the user, 2026-10-18: "every functionality, everything we do should
+  have [a BDD] scenario… it must be followed") — before any code, test or script, its scenarios go in `tests/features/`, and the
+  `.feature` names its guards on a `Guards:` line. No exceptions for tools, scripts or "small" fixes.
 - [ ] **Check existing shared components** — search `components/shared/` for `Button`, `FormDropdown`, `CustomDropdown`, `FormInput`, `Modal`, `EditorDialog`, `ColorPickerPopover`, `DataTable`, etc. NEVER duplicate what exists.
 - [ ] **IMPLEMENT for ALL platforms AND screen sizes** — web (desktop 1280px+, tablet 768px, mobile 375px) AND React Native mobile/tablet app (`apps/mobile/`). Every feature MUST be built for BOTH web responsive AND the native mobile/tablet app. Neither is optional.
 - [ ] **Plan for ALL themes** — check `lib/theme-config.ts` for available themes. Every UI element must work in ALL of them.
@@ -41,6 +44,8 @@ Run through this checklist BEFORE telling the user it's done:
   through the interface. **Could not reproduce what the user reported? Then you did not build it their way.**
 - [ ] **⛔ RULE X — YOU SAW IT IN THE UI, ONE PASS PER BATCH** — every change in the batch, however small, driven in a real browser from the user's point of view, each checklist line ticked with what you saw, before the next batch opens. Typecheck + the related unit guard still run after EVERY change. Each one checked in EVERY combination it can appear in (themes · 375/768/1280+ · device presets · every entry point · each state ON and OFF), trying hard to break it. State what you drove and what you saw. **The user must never be the one who finds it.** See [docs/UAT_EVERY_CHANGE.md](docs/UAT_EVERY_CHANGE.md).
 - [ ] **⛔ THE TASK TREE IS UP TO DATE** — [docs/TASK_TREE.md](docs/TASK_TREE.md) shows what this change closed (with its commit or measurement), every new promise made along the way, and **YOU ARE HERE** on the next leaf. Work is not done while the tree still describes the state before it. **Done is done everywhere:** every other line that tracks the same work (its copy, its parent, its question, a "→ BATCH" hand-off) is ticked in the same change.
+- [ ] **⛔ RULE PROGRESS — SAY HOW MUCH OF THE AREA IS LEFT** — `node scripts/area-progress.js "<area>"`: the % of the area's
+  Must + essential Should left, the Nice / Great batches waiting, and the total before → after if work was added. Every area.
 - [ ] **⛔ RULE M — PONYTAIL CHECKED ON THE DIFF** — nothing in the change that was not needed (no unasked-for feature, file,
   option, abstraction or dependency), the shortest diff that fixes the root cause, deliberate limits marked `ponytail:`. Never
   cut: understanding the problem, validation at trust boundaries, error handling that prevents data loss, security, accessibility.
@@ -146,6 +151,12 @@ Run through this checklist BEFORE telling the user it's done:
 - **UI Visual** — Playwright MCP or browser verification of every visual state and interaction
 - **UAT** — test as the end user (a teacher): is it intuitive? Does the flow make sense?
 - BDD with Gherkin `.feature` files as single source of truth
+- **RULE BDD — EVERY FUNCTION STARTS FROM ITS SCENARIO (MANDATORY — the user, 2026-10-18: "we should always write [a BDD]
+  scenario… that was a rule that we created. That must be followed").** Every feature, fix, script, tool and guard — product or
+  project tooling, web or `apps/mobile/` — is written as Gherkin scenarios FIRST, then its guard red, then the code. The `.feature`
+  names its tests on a `Guards:` line. **Guarded:** `tests/unit/bdd-everything.test.ts` fails on any test file no `.feature`
+  names; the 193 written before the rule (measured 2026-10-18, of 254) are the frozen backlog in `config/bdd.json`, which only
+  shrinks (BATCH BDD-1). Measured, 2026-10-18: a session wrote `scripts/area-progress.js` and its unit test with no `.feature`.
 - Web: `npx vitest run` | Mobile: `cd apps/mobile && npx jest`
 - Mobile tests cover BOTH `isTablet=true` and `isTablet=false`
 - Feature files in `tests/features/` — one per component/module
@@ -689,6 +700,17 @@ Run through this checklist BEFORE telling the user it's done:
   its musts and essential shoulds COMPLETELY — every screen size and breakpoint, every theme, the web AND the `apps/mobile/` app on
   phone and tablet, HEADED — then the next area; the nice and great lines stay mapped in the tree under their tier, and the area
   is RE-OPENED for them later, never forgotten. The tiers are proposed by the session and signed by the user before the build.
+  **Every new line is tiered the moment it is written** (the user, 2026-10-18): a request, a found gap or an idea goes into the
+  ledger with "Must, Should, Nice or Great?" asked in the reply — with the session's recommendation measured against RULE BEST —
+  and the Nice / Great lines are recorded under their tier and left for the area's re-opening, never built in the essentials.
+- **RULE PROGRESS — EVERY CLOSE SAYS HOW MUCH OF THE AREA IS LEFT (MANDATORY — the user, 2026-10-18: "always show what percentage
+  of work we have left… so we don't start adding more and more work to it… for everything we are doing, going forward").** Every
+  reply that finishes an action, a batch or a session, in EVERY area (layout, effects, components, the app, docs, research…),
+  states: **where we are** (the area, the open batch) · **the percentage of the area's essentials left**, from
+  `node scripts/area-progress.js "<area>"` (changes in the AREA MAP's Must + essential Should batches; closed batches count as
+  done) · how many Nice / Great batches wait for the re-opening · and, when work was ADDED this session, the total before and
+  after, so scope growth is seen the day it happens. Never an estimate by eye. **Guarded:** `tests/unit/area-progress.test.ts`
+  fails when a batch on an area's map cannot be found or has no "N changes".
 - **RULE BEST — A MUST-HAVE STANDS NEXT TO THE BEST, NEVER "JUST ENOUGH" (MANDATORY — the user, 2026-10-17: "a must-have must be
   extremely more than average… we want to be next to whatever the best could be out there… multiple combinations… including all the
   components").** Applies to every area — layout, effects, every component, the app — now and from now on.

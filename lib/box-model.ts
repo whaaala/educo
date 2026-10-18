@@ -388,6 +388,8 @@ export interface BoxNode {
   // keeps one line and scrolls sideways instead of wrapping (FL-6) · a page section pulled up over the one above, in rem — one of
   // config/layout.json flow.overlapSteps (PO-4; R-4 D2: a named control, never a free negative margin).
   wrapAround?: "start" | "end" | "off"; // "off" / scrollX false / overlapUp 0: Off on a screen whose base is on
+  wrapShape?: "box" | "round" | "outline"; // FL-3b (LE-13b): what the words follow — its box (unset) · its round corners · a cut-out's outline
+  wrapOutline?: string;     // …the picture's traced outline, `polygon()` in % (`outlinePolygon`); the picture's own on every screen, like src
   scrollX?: boolean;
   overlapUp?: number;
   clip?: boolean;           // allow sizing SMALLER than content (min:0) and hide overflow; default off = hug content
@@ -4861,6 +4863,33 @@ export async function importPhoto(file: File): Promise<{ src: string; imgW?: num
   }
 }
 
+/**
+ * FL-3b · A picture's outline, traced from its own pixels (`outlinePolygon`) — read once, when "A cut-out's outline" is chosen or the
+ * picture is replaced, and stored on it. Total like `importPhoto`: a picture the browser will not let a canvas read (another site, no
+ * CORS) or cannot decode comes back undefined, and the words keep to its box. Read at most config `flow.outlineRows` × 8 pixels tall.
+ */
+/** …does this picture follow its outline on any screen? Then a new picture is traced as it lands (its old outline never stays). */
+export function followsOutline(n: BoxNode): boolean {
+  return n.wrapShape === "outline" || Object.values(n.responsive ?? {}).some((o) => o?.wrapShape === "outline");
+}
+export async function traceOutline(src: string): Promise<string | undefined> {
+  if (typeof document === "undefined" || !src) return undefined;
+  try {
+    const img = await new Promise<HTMLImageElement>((resolve, reject) => {
+      const i = new Image(); i.crossOrigin = "anonymous";
+      i.onload = () => resolve(i); i.onerror = () => reject(new Error("decode")); i.src = src;
+    });
+    const scale = Math.min(1, (FLOW.outlineRows * 8) / img.naturalHeight);
+    const w = Math.max(1, Math.round(img.naturalWidth * scale)), h = Math.max(1, Math.round(img.naturalHeight * scale));
+    const ctx = Object.assign(document.createElement("canvas"), { width: w, height: h }).getContext("2d", { willReadFrequently: true });
+    if (!ctx) return undefined;
+    ctx.drawImage(img, 0, 0, w, h);
+    return outlinePolygon(ctx.getImageData(0, 0, w, h).data, w, h);
+  } catch {
+    return undefined;
+  }
+}
+
 /** flex behaviour for a child inside a flex parent, derived from its main-size token.
  *  An explicit size is a FIXED share (no grow/shrink) so a section keeps exactly the width you give it —
  *  you can resize it narrower to open space, and drop another section into that space. `fill` grows to
@@ -7148,7 +7177,10 @@ function flowCSS(s: CSSProperties, child: BoxNode, parent: BoxNode, bp: Breakpoi
   const side = (parent.rowBand ? loneKid(parent)?.id === child.id : true) && host && flowsWords(host, bp) ? wrapSide(child, bp) : undefined;
   if (side) {
     // its own share of the line when it has one (a rem width, or a % short of the whole line — a new picture is 100%), else config's
-    const w = (child.width ?? "").trim(), share = /^\d*\.?\d+rem$/.test(w) || (/^\d*\.?\d+%$/.test(w) && parseFloat(w) < 100) ? w : FLOW.wrapWidth;
+    const w = (resolveResponsive(child, bp).width ?? "").trim(), share = /^\d*\.?\d+rem$/.test(w) || (/^\d*\.?\d+%$/.test(w) && parseFloat(w) < 100) ? w : FLOW.wrapWidth;
+    // LE13b-11 / -13 · where the narrow rule (`flowQueryCss`, one rule for every screen) gives it the line, a width of its OWN in rem on
+    // THIS screen is kept — a 10rem circle stretched to the line was a pill; the app stores the Circle style on the phone's screen
+    if (/^\d*\.?\d+rem$/.test(w)) (s as Record<string, string>)["--bx-wrap-narrow"] = `min(100%, ${w})`;
     // LE13-6 · …never more than a share of the words' READING width, or a wide Stack (1600px+) left a capped paragraph no room beside it
     const own = `min(${share}, calc(${PARAGRAPH_MEASURE} * ${FLOW.wrapMeasureShare}))`;
     // z-index 1 (LE13-8): the words' blocks still SPAN the picture's area (only their lines are shortened) and, positioned, were drawn
@@ -7156,6 +7188,7 @@ function flowCSS(s: CSSProperties, child: BoxNode, parent: BoxNode, bp: Breakpoi
     Object.assign(s, { float: side === "start" ? "inline-start" : "inline-end", width: own, maxWidth: "100%", flex: undefined, alignSelf: undefined, zIndex: PAGE_Z.raised,
       marginInlineStart: side === "end" ? `${FLOW.wrapGapRem}rem` : "0rem", marginInlineEnd: side === "start" ? `${FLOW.wrapGapRem}rem` : "0rem", marginBottom: `${FLOW.wrapGapRem}rem` });
     delete s.marginLeft; delete s.marginRight; // the logical pair above is the whole of it (no physical side fighting it)
+    Object.assign(s, wrapShapeCSS(child, bp));
   }
   if (stripsAt(parent, bp) && !isFloating(child)) {
     const w = definiteLength(child.width) ?? FLOW.stripCard;
@@ -7179,13 +7212,54 @@ function flowCSS(s: CSSProperties, child: BoxNode, parent: BoxNode, bp: Breakpoi
     }
   }
 }
+/**
+ * FL-3b (LE-13b) · WHAT THE WORDS FOLLOW, on a picture that floats. `shape-outside` works only on a float, so the narrow rule's
+ * `float: none` (`flowQueryCss`) turns it off with the float. The gap is `shape-margin`, even all round the curve (a `margin-box`
+ * shape would add the float's one-sided margins to its radii). Anything else stored is its box (a trust boundary).
+ *  round   — the border box, which carries the picture's own corner radius (`decorCss` / `decorStyle` paint it on this same wrapper);
+ *  outline — the picture's traced outline (`outlinePolygon`), a `polygon()` in % that scales with the box. Not `url(src)`: measured
+ *            2026-10-18 (LE13b-9), Chrome lays an image shape on a non-replaced float out at the image's OWN pixel size, so on the
+ *            picture's fluid box it never matched; a polygon also fetches nothing and needs no CORS. Not traced yet: its box.
+ * ponytail: the outline maps onto the box as the picture was uploaded — a picture cropped to another proportion is not followed exactly.
+ */
+const OUTLINE = /^polygon\((?:\d{1,3}(?:\.\d)?% \d{1,3}(?:\.\d)?%, ){2,}\d{1,3}(?:\.\d)?% \d{1,3}(?:\.\d)?%\)$/;
+function wrapShapeCSS(child: BoxNode, bp: Breakpoint): CSSProperties {
+  const shape = resolveResponsive(child, bp).wrapShape;
+  if (shape === "round") return { shapeOutside: "border-box", shapeMargin: `${FLOW.wrapGapRem}rem` };
+  if (shape === "outline" && OUTLINE.test(child.wrapOutline ?? "")) return { shapeOutside: child.wrapOutline, shapeMargin: `${FLOW.wrapGapRem}rem` };
+  return {};
+}
+/**
+ * FL-3b · A PICTURE'S OUTLINE from its pixels (RGBA, row by row): in config `flow.outlineRows` bands from top to bottom, the leftmost
+ * and rightmost pixel more opaque than `flow.shapeThreshold` — all a float needs, since a line is shortened by the band it sits in.
+ * Down the right edge, up the left, in % of the picture; a straight run is one edge. Nothing opaque: undefined (nothing to follow).
+ */
+export function outlinePolygon(rgba: ArrayLike<number>, w: number, h: number): string | undefined {
+  const cut = FLOW.shapeThreshold * 255, rows = Math.min(FLOW.outlineRows, h), right: number[][] = [], left: number[][] = [];
+  for (let i = 0; i < rows; i++) {
+    const y0 = Math.floor((i * h) / rows), y1 = Math.floor(((i + 1) * h) / rows);
+    let l = w, r = -1;
+    for (let y = y0; y < y1; y++) {
+      for (let x = 0; x < l; x++) if (rgba[(y * w + x) * 4 + 3] > cut) { l = x; break; }
+      for (let x = w - 1; x > r; x--) if (rgba[(y * w + x) * 4 + 3] > cut) { r = x; break; }
+    }
+    if (r < 0) continue;
+    right.push([(r + 1) / w, y0 / h], [(r + 1) / w, y1 / h]);
+    left.push([l / w, y0 / h], [l / w, y1 / h]);
+  }
+  if (!right.length) return undefined;
+  const all = [...right, ...left.reverse()].map(([x, y]) => [Math.round(x * 1000) / 10, Math.round(y * 1000) / 10]);
+  const pts = all.filter((p, i) => { const a = all[i - 1], b = all[(i + 1) % all.length]; return !(a && a[0] === p[0] && a[1] === p[1]) && !(a && b && a[0] === p[0] && b[0] === p[0]); });
+  return `polygon(${pts.map(([x, y]) => `${x}% ${y}%`).join(", ")})`;
+}
 /** FL-3 · below config `flow.wrapBelowRem` of its Stack, a wrapped picture takes the whole line and the words follow it (RULE AF). */
 export function flowQueryCss(band: BoxNode, cellScope: (id: string) => string): string {
   const k = loneKid(band);
   // on ANY screen (LE13-19): the app edits the phone's own screen, and a picture wrapped there alone kept floating in a narrow Stack
   const anywhere = k?.type === "image" && Object.values(k.responsive ?? {}).some((o) => o?.wrapAround === "start" || o?.wrapAround === "end");
   if (!wrapSide(k) && !anywhere) return "";
-  return `@container (max-width:${FLOW.wrapBelowRem - 0.01}rem){${cellScope(k!.id)}{float:none !important;width:100% !important;margin-inline:0 !important}}`;
+  // LE13b-11 / -13 · the line, or the picture's own rem width on the screen being drawn (`flowCSS` sets --bx-wrap-narrow per screen)
+  return `@container (max-width:${FLOW.wrapBelowRem - 0.01}rem){${cellScope(k!.id)}{float:none !important;width:var(--bx-wrap-narrow, 100%) !important;margin-inline:0 !important}}`;
 }
 
 /** The control's home (LE-13 U4): a picture alone in its band in a Stack (FL-3) · a section of the page with one above it (PO-4). */
