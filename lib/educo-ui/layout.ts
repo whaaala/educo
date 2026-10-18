@@ -70,7 +70,7 @@ export const NARROWEST_PHONE_PX: number = LAYOUT.narrowestPhone;
 /** A video's proportions — its height follows its width (RX3-2). */
 export const MEDIA: Readonly<{ videoRatio: string; portraitRatio: string; portraitWidthRem: number; pagerDotFill: string; pagerDotRing: string; pagerArrowFill: string; pagerArrowEdge: string;
   /** AC-22 · the download's narrower photo copies (px, ascending) and the widest screen it measures a picture at */ photoWidths: readonly number[]; sizesWideTo: number;
-  /** MS-5b · an uploaded background video's cap and kinds */ videoMaxMb: number; videoTypes: readonly string[]; /** LE5-6 · where a tint starts */ tintStart: string }> = LAYOUT.media;
+  /** MS-5b · an uploaded background video's cap and kinds */ videoMaxMb: number; videoTypes: readonly string[]; /** LE5-6 · where a tint starts */ tintStart: string; /** LE5-10 · the video's disc, rem */ videoDiscRem: number }> = LAYOUT.media;
 if (!(MEDIA.photoWidths.length && MEDIA.photoWidths.every((w, i, a) => w > 0 && (i === 0 || w > a[i - 1])) && MEDIA.sizesWideTo > RUNG_PX.wide && MEDIA.videoMaxMb > 0 && MEDIA.videoTypes.length)) throw new Error("config/layout.json: media needs photoWidths ascending > 0, sizesWideTo past the wide rung, videoMaxMb > 0 and videoTypes");
 /** AC-9 · the site's one content width (rem): its slider's bounds, start and step (RULE CFG). */
 export const CONTENT_WIDTH: Readonly<{ minRem: number; maxRem: number; startRem: number; stepRem: number }> = LAYOUT.contentWidth;

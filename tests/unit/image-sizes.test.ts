@@ -16,7 +16,7 @@ describe("the copy widths and the measured screens are configuration (LE5-1)", (
     expect(PHOTO_WIDTHS).toEqual(LAYOUT.media.photoWidths);
   });
   it("neither list is typed into the export", () => {
-    const src = readFileSync("lib/box-export.ts", "utf8");
+    const src = readFileSync("lib/box-export.ts", "utf8").replace(/\r\n/g, "\n"); // LE5-16: a CRLF checkout reads the same
     expect(src).not.toMatch(/PHOTO_WIDTHS[^=\n]*=\s*\[/); // LE5-2: past a type annotation too
     expect(src).not.toMatch(/\b2560\b/);
   });

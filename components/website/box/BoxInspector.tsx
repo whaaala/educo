@@ -13,7 +13,7 @@ import type { SiteTheme } from "@/lib/site-storage";
 import { perScreenBanner, perScreenDeviceTab } from "@/lib/per-screen-note";
 import type { BoxNode, FlexAlign, FlexJustify, FlexLines, AccPartStyle, Breakpoint, PagerNav, PinScopeWords, SectionFlag } from "@/lib/box-model";
 import { RUNG_LABEL, SIZES, FLOW, MEDIA } from "@/lib/educo-ui/layout";
-import { type ItemAction, traceOutline, gridSeenColumns, setLengthCss, ratioCss, limitCss, colBetween, gridAutoFit, TOAST_CORNERS, hasAnnouncement, fluidRemRange, isContainer, containerLabel, isFloating, isCssBg, addItem, removeItem, moveItem, updateItem, addChildItem, updateChildItem, removeChildItem, moveChildItem , isMultiItemComponent, hasIntrinsicSize, sizeToCSS, typedLength, GRID_MAX, COLUMN_FRACTIONS, columnFractionOf, canSetColumnFraction, gridColumnsAt, bandEdgeCSS, PIN_ARRIVALS, PIN_ARRIVAL_AFTER, pinArrivalHasEffect, linkLineGap, LINK_GAP_ACROSS, LINK_GAP_ACROSS_PHONE, spaceDefaults, outerDefaults, type SectionPlace, gapOf, importPhoto, refusedMotion, rowFilledByBlocks, isSideBySide } from "@/lib/box-model";
+import { type ItemAction, traceOutline, gridSeenColumns, setLengthCss, ratioCss, limitCss, colBetween, gridAutoFit, TOAST_CORNERS, hasAnnouncement, fluidRemRange, isContainer, containerLabel, isFloating, isCssBg, addItem, removeItem, moveItem, updateItem, addChildItem, updateChildItem, removeChildItem, moveChildItem , isMultiItemComponent, hasIntrinsicSize, sizeToCSS, typedLength, GRID_MAX, COLUMN_FRACTIONS, tintFor, columnFractionOf, canSetColumnFraction, gridColumnsAt, bandEdgeCSS, PIN_ARRIVALS, PIN_ARRIVAL_AFTER, pinArrivalHasEffect, linkLineGap, LINK_GAP_ACROSS, LINK_GAP_ACROSS_PHONE, spaceDefaults, outerDefaults, type SectionPlace, gapOf, importPhoto, refusedMotion, rowFilledByBlocks, isSideBySide } from "@/lib/box-model";
 import { remLen, SPACE_STEPS } from "@/lib/educo-ui/tokens";
 import { ACCORDION_DESIGNS, ACCORDION_DESIGN_COUNT, ACCORDION_AXES } from "@/lib/educo-ui/accordions";
 import { ALERT_DESIGNS, ALERT_DESIGN_COUNT, ALERT_AXES } from "@/lib/educo-ui/alerts";
@@ -1627,13 +1627,13 @@ export default function BoxInspector({ section = false, sectionPlace, outerDefau
             <div className="space-y-1"><span className={label}>Background library</span>
               <BackgroundPicker ariaLabel="Background library" value={node.bgImage}
                 onSelect={(p) => onPatch({ bgImage: p.css, bgTile: p.tile, bgSize: undefined })}
-                onSelectPhoto={(url) => onPatch({ bgImage: url, bgTile: undefined, bgSize: "cover" })}
+                onSelectPhoto={(url) => onPatch({ bgImage: url, bgTile: undefined, bgSize: "cover", ...tintFor(node) })} /* LE5-14: a tint arrives with a photo */
                 onClear={() => onPatch({ bgImage: undefined, bgTile: undefined, bgOverlay: undefined })} />
             </div>
             {/* Photo: paste a URL or upload (data URL) */}
-            <CompactField ariaLabel="Background image URL" value={node.bgImage && /^https?:/.test(node.bgImage) ? node.bgImage : ""} placeholder={node.bgImage?.startsWith("data:") ? "Uploaded picture — or paste a URL" : "Paste an image URL…"} onChange={(v) => onPatch({ bgImage: v || undefined, bgTile: undefined })} />
+            <CompactField ariaLabel="Background image URL" value={node.bgImage && /^https?:/.test(node.bgImage) ? node.bgImage : ""} placeholder={node.bgImage?.startsWith("data:") ? "Uploaded picture — or paste a URL" : "Paste an image URL…"} onChange={(v) => onPatch({ bgImage: v || undefined, bgTile: undefined, ...(v ? tintFor(node) : {}) })} />
             <button onClick={() => fileRef.current?.click()} className="w-full flex items-center justify-center gap-2 text-sm px-3 py-2 pointer-coarse:min-h-11 rounded-lg border border-dashed border-gray-300 dark:border-white/15 hover:bg-gray-50 dark:hover:bg-white/5 text-gray-700 dark:text-gray-200"><Upload className="w-3.5 h-3.5" /> {node.bgImage ? "Replace with an upload" : "Upload an image"}</button>
-            <input ref={fileRef} type="file" accept="image/*" className="hidden" aria-label="Upload background image" onChange={async (e) => { const f = e.target.files?.[0]; if (!f) return; e.target.value = ""; /* A1-12: resized to 1600px like every other upload, never the raw file */ const { src } = await importPhoto(f); if (src) onPatch({ bgImage: src, bgTile: undefined }); }} />
+            <input ref={fileRef} type="file" accept="image/*" className="hidden" aria-label="Upload background image" onChange={async (e) => { const f = e.target.files?.[0]; if (!f) return; e.target.value = ""; /* A1-12: resized to 1600px like every other upload, never the raw file */ const { src } = await importPhoto(f); if (src) onPatch({ bgImage: src, bgTile: undefined, ...tintFor(node) }); }} />
             {node.bgImage && (
               <>
                 {/* Fit / position / repeat — how the background sits on the block. Applies to a photo/URL
@@ -1680,7 +1680,7 @@ export default function BoxInspector({ section = false, sectionPlace, outerDefau
                   <input type="checkbox" checked={node.bgAttach === "fixed"} onChange={(e) => onPatch({ bgAttach: e.target.checked ? "fixed" : undefined })} aria-label="Fixed background (parallax)" className="accent-indigo-600" />
                   Fixed (parallax scroll)
                 </label>
-                <ColorRow title="Tint over background" value={node.bgOverlay} fallback={MEDIA.tintStart} onSelect={(c) => onPatch({ bgOverlay: c })} />
+                <ColorRow title="Tint over background" value={node.bgOverlay} fallback={MEDIA.tintStart} onSelect={(c) => onPatch({ bgOverlay: c })} onClear={() => onPatch({ bgOverlay: undefined })} /> {/* LE5-14: the tint that arrives can be taken off */}
                 <button onClick={() => onPatch({ bgImage: undefined, bgTile: undefined, bgOverlay: undefined, bgPosition: undefined, bgRepeat: undefined, bgAttach: undefined })} className="text-[0.6875rem] text-red-500 hover:underline">Remove background</button>
               </>
             )}

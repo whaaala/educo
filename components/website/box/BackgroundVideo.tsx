@@ -9,7 +9,7 @@
  */
 import { useEffect, useId, useRef, useState } from "react";
 import { Film, ImagePlus, Upload } from "lucide-react";
-import { bgVideoShade, bgVideoSrc, importPhoto, isMediaRef, isVideoFileUrl, type BoxNode } from "@/lib/box-model";
+import { bgVideoShade, bgVideoSrc, importPhoto, isMediaRef, isVideoFileUrl, tintFor, type BoxNode } from "@/lib/box-model";
 import { mediaUrl, putMedia } from "@/lib/media-store";
 import CompactField from "@/components/shared/CompactField";
 import EducoColorField from "@/components/shared/EducoColorField";
@@ -62,7 +62,7 @@ export function BackgroundVideoControls({ node, onPatch }: { node: BoxNode; onPa
     if ("error" in kept) { setProblem(kept.error); setBusy(false); return; }
     const frame = await firstFrame(f);
     const poster = frame ? (await importPhoto(frame)).src || undefined : undefined;
-    onPatch({ bgVideo: kept.ref, bgVideoPoster: poster });
+    onPatch({ bgVideo: kept.ref, bgVideoPoster: poster, ...tintFor(node) }); // LE5-14: a tint arrives with it
     setBusy(false);
   };
   const address = (v: string) => {
@@ -70,7 +70,7 @@ export function BackgroundVideoControls({ node, onPatch }: { node: BoxNode; onPa
     if (!url) { setProblem(null); if (!isMediaRef(node.bgVideo)) onPatch({ bgVideo: undefined }); return; }
     if (!isVideoFileUrl(url)) { setProblem(W.notAFile); return; }
     setProblem(null);
-    onPatch({ bgVideo: url });
+    onPatch({ bgVideo: url, ...tintFor(node) });
   };
 
   return (
@@ -94,7 +94,7 @@ export function BackgroundVideoControls({ node, onPatch }: { node: BoxNode; onPa
             onChange={async (e) => { const f = e.target.files?.[0]; e.target.value = ""; if (!f) return; const { src } = await importPhoto(f); if (src) onPatch({ bgVideoPoster: src }); }} />
           <p className="text-[0.625rem] text-muted">{W.posterHint}</p>
           {/* With a photo the tint already sits under "Tint over background"; a video alone needs it here */}
-          {!node.bgImage && <EducoColorField label="Tint over background" ariaLabel="Tint over background" value={node.bgOverlay || MEDIA.tintStart} onChange={(c) => onPatch({ bgOverlay: c })} />}
+          {!node.bgImage && <EducoColorField label="Tint over background" ariaLabel="Tint over background" value={node.bgOverlay ?? ""} onChange={(c) => onPatch({ bgOverlay: c })} onClear={() => onPatch({ bgOverlay: undefined })} />}
           <button type="button" onClick={() => { setProblem(null); onPatch({ bgVideo: undefined, bgVideoPoster: undefined }); }} className="text-[0.6875rem] text-red-600 dark:text-red-400 midnight:text-red-300 purple:text-red-300 hover:underline">{W.remove}</button>
         </>
       )}

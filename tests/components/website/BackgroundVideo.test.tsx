@@ -3,6 +3,7 @@ import { useState } from "react";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { createContainer, type BoxNode } from "@/lib/box-model";
 import INSPECTOR from "@/config/inspector.json";
+import LAYOUT from "@/config/layout.json";
 
 /**
  * MS-5b-b · Background → Video in the Inspector (BATCH LE-5). Scenarios: tests/features/components/website/background-video.feature
@@ -121,5 +122,32 @@ describe("LE5-7 · a poster that cannot be made never loses the upload", () => {
     fireEvent.change(screen.getByLabelText(W.upload, { selector: "input" }), { target: { files: [new File(["x"], "loop.mp4", { type: "video/mp4" })] } });
     await waitFor(() => expect(node().bgVideo).toMatch(/^media:/), { timeout: 3000 });
     expect(node().bgVideoPoster).toBeUndefined();
+  });
+});
+
+describe("LE5-14 · a tint arrives with the video (the user 2026-10-18)", () => {
+  it("a linked video brings the starting tint when the block has none", () => {
+    const node = mount();
+    fireEvent.change(screen.getByLabelText(W.address), { target: { value: "https://example.org/loop.mp4" } });
+    expect(node().bgOverlay).toBe(LAYOUT.media.tintStart);
+  });
+  it("an uploaded one too", async () => {
+    const node = mount();
+    fireEvent.change(screen.getByLabelText(W.upload, { selector: "input" }), { target: { files: [new File(["x"], "loop.mp4", { type: "video/mp4" })] } });
+    await waitFor(() => expect(node().bgOverlay).toBe(LAYOUT.media.tintStart), { timeout: 3000 });
+  });
+  it("a tint the user already set is kept", () => {
+    const node = mount({ bgOverlay: "#ffffff55" });
+    fireEvent.change(screen.getByLabelText(W.address), { target: { value: "https://example.org/loop.mp4" } });
+    expect(node().bgOverlay).toBe("#ffffff55");
+  });
+});
+
+describe("LE5-14 · the tint that arrives can be taken off", () => {
+  it("Clear in the tint's palette removes it", () => {
+    const node = mount({ bgVideo: "https://example.org/loop.mp4", bgOverlay: LAYOUT.media.tintStart });
+    fireEvent.click(screen.getByLabelText("Tint over background palette", { selector: "button" }));
+    fireEvent.click(screen.getByLabelText("Clear Tint over background — no colour"));
+    expect(node().bgOverlay).toBeUndefined();
   });
 });

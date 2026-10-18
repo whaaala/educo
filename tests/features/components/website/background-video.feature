@@ -77,3 +77,29 @@ Feature: A background video behind any block — uploaded or linked (MS-5b, BATC
   Scenario: The Preview plays it as the visitor will (canvas == Preview)
     When I open Preview at every width of scripts/uat/screens.js
     Then the video plays behind the block, covering it, with the content on top, the same as the canvas
+
+  # ── Words stay readable over a picture (LE5-14 · the user 2026-10-18: "a tint arrives + the Page check") ──
+  Scenario: A tint arrives with a video or a photo
+    Given a section with words and no tint
+    When I add a background video (uploaded or linked) or a background photo
+    Then a dark tint (config/layout.json media.tintStart) arrives with it
+    And a tint I had already set is kept
+
+  Scenario: The words read on the tint, not on the colour the picture covers
+    Given a section with a dark background colour, a video and a light tint
+    Then its words are dark, chosen for the tint — the colour underneath is hidden by the video
+
+  Scenario: The tint can be changed or taken off
+    When I open Tint over background and choose Clear
+    Then the block has no tint
+
+  Scenario: The Page check names words over a picture with no tint
+    Given a block with words over a video or a photo, and its tint taken off
+    Then the Page check says the words may not be readable, and how to add a tint
+    And it says nothing for a tinted block, a gradient, or a block with no words
+
+  # ── One video for every screen (LE5-12) ──
+  Scenario: A video added while editing the phone screen is the block's on every screen
+    Given I am editing the Mobile screen
+    When I add a background video
+    Then the desktop and the published page have it too

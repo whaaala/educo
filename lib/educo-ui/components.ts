@@ -5,6 +5,7 @@
  * states (hover/focus/disabled) use the motion + focus rules from `base.ts`. More components follow.
  */
 import { MEDIA } from "@/lib/educo-ui/layout";
+import { PAGE_Z } from "@/lib/educo-ui/stacking";
 
 /**
  * MS-5b · the background video's rules for a scope — the published page reads them under `.eu-root` (COMPONENT_CSS), the canvas
@@ -13,11 +14,11 @@ import { MEDIA } from "@/lib/educo-ui/layout";
 export function bgVideoCss(scope: string): string {
   return `
 /* ── Background video (MS-5b) — behind the block's content, over its colour; the shade carries the overlay ── */
-${scope} .eu-bgvideo, ${scope} .eu-bgvideo__shade { position: absolute; inset: 0; inline-size: 100%; block-size: 100%; z-index: -1; pointer-events: none; border-radius: inherit; }
+${scope} .eu-bgvideo, ${scope} .eu-bgvideo__shade { position: absolute; inset: 0; inline-size: 100%; block-size: 100%; z-index: ${PAGE_Z.behind}; pointer-events: none; border-radius: inherit; }
 ${scope} .eu-bgvideo { object-fit: cover; }
 /* Over a photograph the user chose no theme token can predict what is behind it — the pager's disc (config/layout.json media) */
-${scope} .eu-bgvideo__toggle { position: absolute; inset-block-end: var(--eu-space-3); inset-inline-end: var(--eu-space-3); z-index: 1;
-  inline-size: 2.75rem; block-size: 2.75rem; border-radius: 50%; border: 1px solid ${MEDIA.pagerArrowEdge}; background: ${MEDIA.pagerArrowFill};
+${scope} .eu-bgvideo__toggle { position: absolute; inset-block-end: var(--eu-space-3); inset-inline-end: var(--eu-space-3); z-index: ${PAGE_Z.raised};
+  inline-size: ${MEDIA.videoDiscRem}rem; block-size: ${MEDIA.videoDiscRem}rem; border-radius: 50%; border: 1px solid ${MEDIA.pagerArrowEdge}; background: ${MEDIA.pagerArrowFill};
   color: ${MEDIA.pagerDotFill}; font: inherit; font-size: 1rem; line-height: 1; padding: 0; cursor: pointer; }
 ${scope} .eu-bgvideo__toggle:focus-visible { outline: 0.125rem solid ${MEDIA.pagerDotFill}; outline-offset: 0.125rem; box-shadow: 0 0 0 0.3rem ${MEDIA.pagerDotRing}; }
 `;

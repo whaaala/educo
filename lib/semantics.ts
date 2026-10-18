@@ -16,7 +16,7 @@
  * Pure: no React, no DOM (engine-stays-portable).
  */
 import type { CSSProperties } from "react";
-import { type BoxNode, type Breakpoint, BP_ORDER, regionBlock, regionSpan, isBare, isPageRow, resolveResponsive, baseUnitParts, pageRowCells, pageRowTracks, rowSide, bandGutter, longestWordRem } from "./box-model";
+import { type BoxNode, type Breakpoint, BP_ORDER, regionBlock, regionSpan, isBare, isPageRow, resolveResponsive, baseUnitParts, pageRowCells, pageRowTracks, rowSide, bandGutter, longestWordRem, isContainer, pictureBehind, bgVideoSrc } from "./box-model";
 import { FONT_FAMILIES, familyOf, missingLetters } from "./educo-ui/fonts";
 import PAGE_CHECK from "../config/page-check.json";
 import { NARROWEST_PHONE_PX, RUNG_PX, RUNG_WORDS, type RungName } from "./educo-ui/layout";
@@ -255,7 +255,7 @@ export function resolvePage(root: BoxNode): PageSemantics {
 }
 
 /** Something only the user can fix — plain words, what to do, and whether it stops publishing. */
-export type PageIssue = { id: string; kind: "image-description" | "button-words" | "link-words" | "heading-jump" | "picture-missing" | "words-too-tight" | "words-at-edge" | "font-letters" | "link-page-gone"; blocks: boolean; message: string; fix?: { level?: number; sideSpace?: number; font?: string } };
+export type PageIssue = { id: string; kind: "image-description" | "button-words" | "link-words" | "heading-jump" | "picture-missing" | "words-too-tight" | "words-at-edge" | "font-letters" | "link-page-gone" | "words-over-picture"; blocks: boolean; message: string; fix?: { level?: number; sideSpace?: number; font?: string } };
 
 /** The site's heading + body fonts (CSS stacks) — what a block draws in when nothing above it sets a font. */
 export type SiteFonts = { heading: string; body: string };
@@ -304,6 +304,8 @@ export function wordsAtEdge(root: BoxNode): string | null {
   return null;
 }
 
+const wordsIn = (n: BoxNode): boolean => hasText(n) || (n.children ?? []).some(wordsIn);
+
 /** `pages`: the site's page ids — a link to one not among them was deleted (LE8-3). */
 export function pageCheck(root: BoxNode, sem: PageSemantics = resolvePage(root), fonts?: SiteFonts, pages?: ReadonlySet<string>): PageIssue[] {
   const out: PageIssue[] = [];
@@ -328,6 +330,9 @@ export function pageCheck(root: BoxNode, sem: PageSemantics = resolvePage(root),
         out.push({ id: c.id, kind: "picture-missing", blocks: false, message: "This picture has no image yet — visitors see an empty box. Upload one, or delete the block." });
       if (c.type === "image" && c.src && c.alt === undefined)
         out.push({ id: c.id, kind: "image-description", blocks: true, message: "Describe this picture for people who can't see it — or mark it as only decoration." });
+      // LE5-14: words over a video or a photo with no tint — a moving or chosen picture cannot be measured, the tint carries it
+      if (isContainer(c) && pictureBehind(c) && !c.bgOverlay && wordsIn(c))
+        out.push({ id: c.id, kind: "words-over-picture", blocks: false, message: PAGE_CHECK.wordsOverPicture.replace("{picture}", bgVideoSrc(c) ? PAGE_CHECK.pictureWords.video : PAGE_CHECK.pictureWords.photo) });
       if (c.type === "link" && !hasText(c))
         out.push({ id: c.id, kind: "link-words", blocks: true, message: "This link has no words, so nobody knows where it goes. Add words to it." });
       if (pages && (c.type === "link" || c.type === "button") && c.href?.startsWith("page:") && !pages.has(c.href.slice(5))) // LE8-3: published as a dead "#"

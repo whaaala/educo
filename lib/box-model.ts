@@ -4722,9 +4722,13 @@ export function bgVideoShade(node: BoxNode): string | undefined {
   const css = colorToCSS(node.bgOverlay); // ponytail: See-through does not fade a video, so not its shade either
   return css.startsWith("linear-gradient") ? css : `linear-gradient(${css}, ${css})`;
 }
+/** LE5-14 · a PICTURE behind a block's words: a background video, or a background photo (never a gradient or a pattern). */
+export const pictureBehind = (node: BoxNode): boolean => !!bgVideoSrc(node) || (!!node.bgImage && !isCssBg(node.bgImage));
+/** LE5-14 (the user 2026-10-18) · the tint that ARRIVES with a picture added to a block that has none — config media.tintStart. */
+export const tintFor = (node: BoxNode): Partial<BoxNode> => (node.bgOverlay ? {} : { bgOverlay: MEDIA.tintStart });
 /** The box that holds a background video: relative only at ZERO specificity (a pinned or free block keeps its own, LE5-4), isolated. */
 export const bgVideoBoxCss = (selector: string, node: BoxNode): string =>
-  bgVideoSrc(node) ? `:where(${selector}){position:relative}${selector}{isolation:isolate}` : "";
+  bgVideoSrc(node) ? `:where(${selector}){position:relative;min-block-size:calc(${MEDIA.videoDiscRem}rem + 2 * var(--eu-space-3))}${selector}{isolation:isolate}` : ""; // LE5-10: room for the disc
 /** Every video box in a tree for the canvas's one stylesheet, plus the video's own rules (`shared`) once — or nothing at all. */
 export function treeBgVideoCss(root: BoxNode, scopeFor: (id: string) => string, shared: string): string {
   const boxes: string[] = [];
@@ -6512,7 +6516,10 @@ export function rowFilledByBlocks(node: BoxNode): boolean {
 }
 
 export function containerStyle(node: BoxNode, bp: Breakpoint = "base", section: SectionFlag = false): CSSProperties {
-  const scheme = node.bgImage ? null : bandScheme(node.background);
+  // LE5-14: over a picture the words read on its TINT (what is really behind them; its alpha dropped), not on the colour it
+  // covers; a picture with no tint, or a gradient / pattern, imposes nothing
+  const scheme = pictureBehind(node) ? (node.bgOverlay ? bandScheme(node.bgOverlay.replace(/^(#[0-9a-f]{6})[0-9a-f]{2}$/i, "$1")) : null)
+    : node.bgImage ? null : bandScheme(node.background);
   const s = { ...containerStyleOf(node, bp, section), ...pageFrameEnds(node), ...pageMeasure(node) };
   const lines = listLinesGap(node);
   return { ...s, ...(lines ?? {}), ...((scheme?.vars ?? {}) as CSSProperties) };
