@@ -4172,8 +4172,8 @@ export function pagerNavHTML(node: BoxNode): string {
         // indigo on a dark navy hero. White reads on a dark photograph, the ring reads on a pale one, and
         // between them the pair is legible on any picture at all.
         `<a href="#${pagerSlideId(s)}" data-eu-pager-dot="${i}" aria-label="Show ${i + 1} of ${slides.length}"`
-        + ` style="width:.7rem;height:.7rem;border-radius:50%;background:#fff;opacity:.55;`
-        + `box-shadow:0 0 0 1px rgba(0,0,0,.45)"></a>`).join("")
+        + ` style="width:.7rem;height:.7rem;border-radius:50%;background:${MEDIA.pagerDotFill};opacity:.55;`
+        + `box-shadow:0 0 0 1px ${MEDIA.pagerDotRing}"></a>`).join("")
       + `</div>`
     : "";
 
@@ -4187,16 +4187,16 @@ export function pagerNavHTML(node: BoxNode): string {
     `<a href="#" hidden data-eu-pager-${dir} aria-label="${dir === "prev" ? "Show the previous one" : "Show the next one"}"`
     // Same reasoning as the dots: white on a soft dark disc, so it reads over any photograph, rather
     // than `currentColor` — which on an `<a>` is the link colour and came out indigo on a navy hero.
-    + ` style="width:2.25rem;height:2.25rem;border-radius:50%;border:1px solid rgba(255,255,255,.7);`
-    + `background:rgba(0,0,0,.3);text-align:center;line-height:2.15rem;text-decoration:none;color:#fff">`
+    + ` style="width:2.25rem;height:2.25rem;border-radius:50%;border:1px solid ${MEDIA.pagerArrowEdge};`
+    + `background:${MEDIA.pagerArrowFill};text-align:center;line-height:2.15rem;text-decoration:none;color:${MEDIA.pagerDotFill}">`
     + `${dir === "prev" ? "&#8249;" : "&#8250;"}</a>`;
   // PAUSE (RX4-5, WCAG 2.2.2): a pager that moves on its own gets a real, labelled button that holds it still. It ships
   // hidden like the arrows — only the script can stop the timer — and the script shows it only when something is moving
   // (never under reduced motion, where nothing moves). Its label says what pressing it does: "Pause", then "Play".
   const pause = auto
     ? `<button type="button" hidden data-eu-pager-pause aria-label="Pause"`
-      + ` style="width:2.25rem;height:2.25rem;border-radius:50%;border:1px solid rgba(255,255,255,.7);`
-      + `background:rgba(0,0,0,.3);color:#fff;font:inherit;line-height:1;cursor:pointer;padding:0">&#10074;&#10074;</button>`
+      + ` style="width:2.25rem;height:2.25rem;border-radius:50%;border:1px solid ${MEDIA.pagerArrowEdge};`
+      + `background:${MEDIA.pagerArrowFill};color:${MEDIA.pagerDotFill};font:inherit;line-height:1;cursor:pointer;padding:0">&#10074;&#10074;</button>`
     : "";
   const body = (wants("arrows") ? `${arrow("prev")}${dots}${arrow("next")}` : dots) + pause;
 
@@ -4704,7 +4704,9 @@ export function videoSizing(node: BoxNode): { height?: string; aspectRatio?: str
 export function sizeToCSS(token?: string): string | undefined {
   if (!token || token === "auto") return undefined;
   if (token === "fill") return "100%";
-  return token; // already "<n>%" or "<n>px"
+  // BDD1-23 · a height stored in px by an older page reaches the page in rem (rule 16), as every new one does
+  const px = /^(-?\d*\.?\d+)px$/.exec(token);
+  return px ? remLen(+px[1]) : token;
 }
 
 /** Does this image know what shape it really is? Both dimensions must be real pixels — an SVG with no

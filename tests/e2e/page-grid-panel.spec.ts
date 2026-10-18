@@ -50,6 +50,14 @@ for (const [w, h] of [[375, 812], [768, 1024], [1024, 768], [1280, 800], [1536, 
   });
 }
 
+test("Escape closes the panel and the builder gives focus back to the Layout guides switch (BDD1-40, WCAG 2.4.3)", async ({ page }) => {
+  const panel = await open(page, 1280, 800, ["Stack"]);
+  await panel.getByLabel("Space between rows", { exact: true }).focus();
+  await page.keyboard.press("Escape");
+  await expect(panel).toBeHidden();
+  await expect(page.getByRole("button", { name: "Layout guides" }).filter({ visible: true }).first()).toBeFocused();
+});
+
 test("each space slider shades the space it moves, with its size, and the rows slider spaces the page's own rows (E6-5)", async ({ page }) => {
   const panel = await open(page, 1897, 1000, ["Stack", "Stack"]);
   const shade = (kind: string) => page.locator(`[data-space-shade="${kind}"] [data-shade]`);

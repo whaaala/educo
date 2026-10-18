@@ -106,13 +106,39 @@ function functions(src: string): { name: string; body: string }[] {
 /** A real browser touch — `document.`, `window.`, `getComputedStyle`, `new Image`, `FileReader`, an element type. */
 const DOM = /\bdocument\s*\.|\bwindow\s*\.|\bgetComputedStyle\s*\(|new\s+Image\s*\(|\bFileReader\b|\bHTMLElement\b/;
 
+/**
+ * Every WHOLE import statement from "react" — a statement, not a line (BDD1-38: `import {\n  useState\n} from "react"`
+ * put "react" on a line that does not start with `import`, so a line-by-line read never saw it). A statement runs from
+ * `import` to its first module specifier, never across a `;`; side-effect imports (`import "react"`) count too.
+ */
+function reactImports(src: string): string[] {
+  const re = /^import\b(?:[^;"'`]*?\bfrom\s*)?\s*["']([^"']+)["']/gm;
+  return [...src.matchAll(re)].filter((m) => m[1] === "react").map((m) => m[0].replace(/\s+/g, " "));
+}
+
 describe("the engine the mobile builder will be built on", () => {
+  it("the import reader sees a statement split over lines, and tells a type import from a value import", () => {
+    const planted = [
+      'import type { CSSProperties } from "react";',
+      'import { foo } from "./foo";',
+      "import {",
+      "  useState,",
+      "  useEffect,",
+      '} from "react";',
+      'import "react";',
+      "import type {",
+      "  ReactNode,",
+      "} from 'react';",
+    ].join("\n");
+    const found = reactImports(planted);
+    expect(found).toHaveLength(4);
+    expect(found.filter((s) => !/^import\s+type\b/.test(s))).toEqual(['import { useState, useEffect, } from "react"', 'import "react"']);
+  });
+
   it("never imports React as a value — only as a type, which compiles away", () => {
     for (const file of ENGINE) {
-      const src = read(file);
-      const imports = src.split("\n").filter((l) => /^import\b/.test(l) && /["']react["']/.test(l));
-      for (const line of imports) {
-        expect(line.trim(), `${file} imports React at runtime: React Native has React, but this line is the thin end of importing react-dom`)
+      for (const statement of reactImports(read(file))) {
+        expect(statement, `${file} imports React at runtime: React Native has React, but this line is the thin end of importing react-dom`)
           .toMatch(/^import\s+type\b/);
       }
     }

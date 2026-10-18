@@ -148,8 +148,14 @@ describe("what a page emits stays on the page ladder", () => {
     const files = renderSiteFiles(siteFromRoot(root, "Home"), DEFAULT_THEME);
 
     const all = Object.values(files).join("\n");
-    for (const m of all.matchAll(/z-index\s*:\s*(-?\d+)/g)) {
-      const z = Number(m[1]);
+    const zs = [...all.matchAll(/z-index\s*:\s*(-?\d+)/g)].map((m) => Number(m[1]));
+    // BDD1-11: an export that wrote no z-index at all would pass the loop below without checking anything — the
+    // floated block's own layer (its `.bx-t` rule), clamped onto the page ladder, must be among what was checked.
+    expect(zs.length, "the export wrote no z-index at all, so nothing below was checked").toBeGreaterThan(0);
+    const floated = /\.bx-t\{[^}]*z-index\s*:\s*(-?\d+)/.exec(all)?.[1];
+    expect(floated, "the floated block publishes its layer").toBeDefined();
+    expect(Number(floated), "…clamped onto the page ladder").toBe(clampPageZ(40_000, PAGE_Z.raised));
+    for (const z of zs) {
       expect(z, `an exported rule used z-index:${z}, which is inside the editor's range`).toBeLessThan(CHROME_Z_FLOOR);
       expect(z).toBeLessThanOrEqual(PAGE_Z_CEILING);
     }

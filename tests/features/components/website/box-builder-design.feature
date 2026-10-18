@@ -2,6 +2,7 @@ Feature: Box Builder — modern look & feel, blocks palette, plain language
   As a website designer using the Box Builder
   I want a clean, modern editor with human-friendly labels and a drag-from blocks palette
   So that building a page feels premium and a normal (non-developer) user understands every control
+  Guards: tests/unit/see-through.test.ts (See-through) · tests/unit/backgrounds.test.ts (Background library) · tests/unit/icon-svg-load.test.ts (Icon library)
 
   # ── Clean & airy shell ──
   Scenario: A modern app-bar and three-panel layout
@@ -66,6 +67,13 @@ Feature: Box Builder — modern look & feel, blocks palette, plain language
     And the heavy icon sets load lazily per source, so the builder stays fast
     And a chosen icon renders identically on the canvas AND in the exported HTML
 
+  # LE13-20 · RULE AF — a failed load used to stay "pending" for good, so the set never arrived
+  Scenario: An icon set whose download fails is tried again
+    Given the connection drops while an icon set is loading
+    Then nothing breaks: the load ends quietly and the set is not counted as loaded
+    When the icons are asked for again with the connection back
+    Then the set loads
+
   Scenario: The icon picker is always fully visible and modern
     When the picker opens near the bottom of the screen
     Then it flips toward whichever side has more room and never runs off-screen
@@ -94,6 +102,13 @@ Feature: Box Builder — modern look & feel, blocks palette, plain language
     And options can be browsed by category (Themed, Gradients, Mesh, Patterns) and by mood (Warm, Cool, Dark, Light, Vibrant)
     And gradients/mesh/patterns are pure CSS and export fully self-contained (gradients raw, patterns tiled)
     And patterns follow the block's colour (currentColor) so they re-theme
+
+  Scenario: Every background in the library is well-formed and grows with the reader's text
+    Then the library holds at least 120 backgrounds: 60 or more gradients, 15 or more mesh gradients and 20 or more patterns
+    And every background has its own id, a name and its look, and belongs to a category the picker lists
+    And no background ends in a plain colour layer, which would blank the whole background
+    And every pattern carries a tile, sized in rem, so it grows when the reader enlarges their text
+    And no background is sized in pixels except a one-pixel hairline
 
   Scenario: Photos come from a live search, not a bundle
     Given the picker's "Photos" tab
@@ -143,6 +158,33 @@ Feature: Box Builder — modern look & feel, blocks palette, plain language
   Scenario: The published page fades the same way
     Then the exported page carries the fade in the colour, not as an opacity on the box
     Because an opacity there would fade the contents that the canvas showed as solid
+
+  Scenario: A see-through element fades whole
+    When I set See-through on a Text
+    Then the Text and its words fade together
+    Because an element's own words ARE its content, so there is nothing inside it to protect
+
+  Scenario: The border and the colour overlay fade with the box
+    Given a section with a background colour, a border and a colour overlay
+    When I set See-through to 25%
+    Then its background, its border and its overlay all fade to 25%
+    And a photograph background softens on a layer of its own while the border fades in its own colour
+
+  Scenario Outline: See-through fades every kind of colour I can choose (<colour>)
+    Given a box whose background is <colour>
+    When I set See-through to 50%
+    Then the colour is drawn half see-through and is still <colour>
+    Examples:
+      | colour                      |
+      | a six-digit colour          |
+      | a three-digit colour        |
+      | a gradient, both its stops  |
+      | a theme colour              |
+
+  Scenario: A box that is not see-through is left exactly as it was
+    Given a box at 100%, with a background colour or a photograph
+    Then nothing is added to it: no extra layer, no opacity, and its colours are unchanged
+    And a box with only a colour never needs a layer of its own, because the colour itself carries the fade
 
   # ── Floating a parent ──────────────────────────────────────────────────────
 

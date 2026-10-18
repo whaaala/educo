@@ -43,16 +43,18 @@ describe("a column nobody sized takes what is left of its line (B, c-7 decided B
   // that do not (a column deleted); the line wrapped by floors at a narrower rung is the same CSS at every rung
   const shapes: [string, string[]][] = [["two halves", ["50%", "50%"]], ["three thirds", ["33.33%", "33.33%", "33.34%"]], ["two of three left", ["33.33%", "33.33%"]], ["four quarters", ["25%", "25%", "25%", "25%"]], ["70 / 30", ["70%", "30%"]]];
   for (const [name, widths] of shapes) {
+    // BDD1-10: whether the shares fill the line is a fact of the SHAPE, so the test's name says which case it checks
+    const full = widths.reduce((n, w) => n + parseFloat(w), 0) > 99.5;
     it(`${name}, nobody sized any: grows when line is full (bandIsCompact — grow spends nothing), stays put when partial (partial means user-left or deleted space)`, () => {
       const band = makeRowBand(widths.map((w) => col(w)));
-      const full = widths.reduce((n, w) => n + parseFloat(w), 0) > 99.5;
       // full line: grow=1 is safe (sub-pixel rounding only), and ensures fill after a wrap or floor
       // partial line: grow=0 (narrowing would be counteracted — un-narrowable regression)
       for (const c of band.children!) for (const bp of ["base", "tabletLandscape"] as const) expect(grows(childStyle(c, band, bp).flex)).toBe(full);
     });
-    it(`${name}, sized by hand and still filling the line: they may take what a wrap leaves (no space was chosen)`, () => {
+    it(full
+      ? `${name}, sized by hand and still filling the line: they may take what a wrap leaves (no space was chosen)`
+      : `${name}, sized by hand leaving part of the line empty: that space was chosen, so nobody grows into it`, () => {
       const band = makeRowBand(widths.map((w) => col(w, { widthByHand: true })));
-      const full = widths.reduce((n, w) => n + parseFloat(w), 0) > 99.5;
       expect(bandHoldsChosenSpace(band)).toBe(!full);
       for (const c of band.children!) expect(grows(childStyle(c, band).flex)).toBe(full);
     });

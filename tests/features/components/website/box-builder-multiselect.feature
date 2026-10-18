@@ -2,6 +2,7 @@ Feature: Box Builder — marquee multi-select + bulk edits
   As a website designer using the Box Builder (/website/box-demo)
   I want to select several sections at once and change them together
   So that I can align a whole group's size, spacing and look in one action instead of editing each
+  Guards: tests/components/website/BulkInspector.test.tsx
 
   Background:
     Given the Box Builder canvas with several sections
@@ -66,6 +67,17 @@ Feature: Box Builder — marquee multi-select + bulk edits
     Given several sections selected
     When I choose Float, Duplicate or Delete in the bulk panel (or press Delete / Ctrl+D)
     Then the action is applied to every selected section at once
+
+  Scenario: The bulk panel's controls are named in plain words
+    Given several sections selected
+    Then the bulk panel offers "Outer spacing", "Inner spacing", "Rounded corners" and "See-through"
+    And setting each one sets the margin, the padding, the corner radius or the opacity of every selected section
+
+  Scenario: Group the selection into one unit
+    Given three sections selected where grouping is possible
+    When I press "Group these 3"
+    Then the three are combined into one unit
+    But where grouping is not possible, no Group action is shown
 
   # ── Undo / responsive / accessible ──────────────────────────────────────────
   Scenario: A bulk edit is a single undo step

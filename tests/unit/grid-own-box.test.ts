@@ -110,8 +110,13 @@ describe("the box holding such a grid is its query container — in both engines
     for (const [spans, free] of cases) expect(gridLeftoverAt(gridOf(...spans)), `${spans.join(" + ")} of 12`).toBe(free);
     // The arithmetic it replaces, `used % track`, is right only when the cells pack tightly: it says 8 for 8 + 8, where 4
     // are free, and 5 for 7 + 6 + 6, where nothing is free at all — the two sixes fill the second row.
-    expect((12 - ((8 + 8) % 12)) % 12).toBe(8);
-    expect((12 - ((7 + 6 + 6) % 12)) % 12).toBe(5);
+    // BDD1-24: measured on the product's own grid (its track count, its cells' spans), so it fails if gridLeftoverAt
+    // ever falls back to the modulus.
+    const modulus = (g: BoxNode) => { const t = gridColumnsAt(g); const used = (g.children ?? []).reduce((s, c) => s + (c.colSpan ?? 0), 0); return (t - (used % t)) % t; };
+    for (const spans of [[8, 8], [7, 6, 6]]) {
+      const g = gridOf(...spans);
+      expect(gridLeftoverAt(g), `${spans.join(" + ")}: the row-by-row count, not the modulus`).not.toBe(modulus(g));
+    }
     expect(gridLeftoverAt(createContainer("column", { layout: "grid", columns: 12, children: [] } as Partial<BoxNode>))).toBe(0);
     // WHERE THE LADDER NARROWED THE GRID the last row is always filled (the cell that ends it stretches), whatever the
     // spans were on the desktop — so at every narrowed rung there is nothing to offer, for every arrangement above.

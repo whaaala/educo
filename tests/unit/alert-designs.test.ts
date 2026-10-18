@@ -4,8 +4,9 @@ import { ACCORDION_DESIGN_COUNT } from "@/lib/educo-ui/accordions";
 import { COMPONENT_CSS } from "@/lib/educo-ui/components";
 
 /**
- * The Alert's design catalogue. It grew from 7 to 54 because the Alert is the block a school reaches for most
- * and had the thinnest wardrobe in the builder — the Accordion already offered 54.
+ * The Alert's design catalogue. It grew from 7 because the Alert is the block a school reaches for most and had
+ * the thinnest wardrobe in the builder. An earlier 54 were cut to the genuinely distinct looks (ALERT_DESIGN_COUNT,
+ * counted from the groups in lib/educo-ui/alerts.ts — 23 today, the default look included), with the modifiers moved to their own axes.
  */
 describe("alert designs", () => {
   it("offers far MORE than the Accordion, because its looks combine", () => {
@@ -52,8 +53,11 @@ describe("alert designs", () => {
     expect(new Set(labels).size, "two designs sharing a name would be indistinguishable").toBe(labels.length);
   });
 
-  it("is grouped, so 54 designs stay navigable", () => {
+  it(`is grouped, so all ${ALERT_DESIGN_COUNT} designs stay navigable`, () => {
     expect(ALERT_DESIGNS.length).toBeGreaterThanOrEqual(4);
+    // BDD1-6: the count in the name is the catalogue's own — every design sits in exactly one group
+    expect(ALERT_DESIGNS.flatMap((g) => g.items).length).toBe(ALERT_DESIGN_COUNT);
+    expect(ALERT_DESIGN_IDS.length).toBe(ALERT_DESIGN_COUNT);
     for (const g of ALERT_DESIGNS) {
       expect(g.group, "every group is named").toBeTruthy();
       expect(g.items.length, `${g.group} must not be empty`).toBeGreaterThan(0);

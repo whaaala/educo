@@ -2,6 +2,7 @@ Feature: Box Builder — multi-page site, preview & export
   As a website designer using the Box Builder
   I want multiple pages, a visitor preview, links between pages, and an HTML export
   So that the box engine produces an actual website, not just one isolated canvas
+  Guards: tests/unit/header-spreads.test.ts · tests/unit/box-site.test.ts
 
   Background:
     Given the Box Builder loads a SITE — an ordered list of pages, each its own box tree, with one home page
@@ -13,6 +14,24 @@ Feature: Box Builder — multi-page site, preview & export
     And clicking a page tab switches the canvas to that page (selection clears)
     And the page-settings popover renames it (re-slugged), duplicates it, sets it as home, or deletes it
     And the last remaining page can never be deleted; deleting the home page reassigns home
+
+  Scenario: Page addresses are made from their names
+    # tests/unit/box-site.test.ts
+    When I add a page called "About Us"
+    Then its address is "about-us"
+    And a second page called "About Us" gets "about-us-2", never the same address twice
+    And spaces and punctuation round a name are dropped, and an empty name gets the address "page"
+    And renaming a page keeps its own address when the new name gives the same one
+    And a duplicated page lands right after the original, named as a copy, with its own address
+
+  Scenario: The site's own settings stay with the site
+    # tests/unit/box-site.test.ts (G2-1)
+    Given a site with its website theme set to Dark and a page grid of ten columns
+    When I delete one of its pages
+    Then the theme and the page grid are unchanged
+    When I set the website theme to Purple and the site is saved and loaded again
+    Then its theme is still Purple
+    And a new site has no theme of its own, so it shows in Light
 
   Scenario: Each page has its own undo history within the site, saved together
     When I edit one page then switch to another
@@ -243,6 +262,17 @@ Feature: Box Builder — multi-page site, preview & export
     And "Position in row" shows "Spread", and I can set it back to "Left"
     And a line I set to "Left" myself stays where I put it
     And a page footer spreads the same way
+    And the items of a spread line sit on one centre line
+    But a header line holding one item — a floating block beside it does not count — is left as it was
+    And a line of two items outside a header or footer still starts at the left
+
+  Scenario: A button's words are not underlined, and an underline I asked for stays (L2-g)
+    Given a header with an "Apply now" Button and a "Term dates" Link set to Underline
+    When the published page is opened
+    Then "Apply now" is not underlined
+    And "Term dates" is underlined
+    Because the shared typography after the button wrote an empty underline setting that erased the button's own,
+      and the browser underlines every link
 
   Scenario: A block's handles never draw outside the canvas
     When a selected block is scrolled under the toolbar or beside the Inspector

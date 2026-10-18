@@ -2,6 +2,7 @@ Feature: Box Builder — responsive per-breakpoint overrides
   As a website designer using the Box Builder
   I want to tune each screen size independently
   So that my layout looks right on desktop, tablet and mobile — not just one width
+  Guards: tests/unit/le2-controls.test.ts (LE-2 · V-5)
 
   Background:
     Given the Box Builder with a Desktop / Tablet / Mobile preview switcher
@@ -90,6 +91,16 @@ Feature: Box Builder — responsive per-breakpoint overrides
     When I switch to Mobile and give them a colour, a text size and a background
     Then the canvas at Mobile and the Preview at every phone width show them
     And the Preview at 600 and wider shows the desktop look
+
+  Scenario: A look set at Tablet landscape reaches the tablets and the phones, never the desktop (LE2-1)
+    Given a Heading
+    When I switch to Tablet landscape and give it a colour
+    Then the Preview shows that colour on tablets and phones, and the desktop colour from 1200 up
+    And a block I set nothing on per screen publishes no extra rule for any screen
+
+  Scenario: The per-device banner reads as one plain sentence (LE2-8)
+    When I edit at Mobile, either Tablet, or Big desktop
+    Then the banner says what changes and where in one sentence, with at most one "unless"
 
   Scenario: An effect is the same on every screen, and says so (LE2-4)
     Given I am editing at Mobile

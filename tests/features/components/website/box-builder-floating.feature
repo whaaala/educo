@@ -2,6 +2,7 @@ Feature: Box Builder — floating layers (free overlap)
   As a website designer using the Box Builder (/website/box-demo)
   I want to lift a section out of the flow onto its own free-floating layer
   So that I can position it ON TOP of other sections and overlap them freely — from any edge — for creative layouts
+  Guards: tests/unit/caret-follows-selection.test.ts
 
   Background:
     Given the Box Builder canvas with a page that is a vertical stack of row bands
@@ -150,6 +151,17 @@ Feature: Box Builder — floating layers (free overlap)
       with no .focus() call and no Selection call anywhere in the trace. Clearing
       up afterwards lost that race three different ways, one of them leaving the
       caret stranded permanently, so the default action is refused instead.
+
+  Scenario: Taking the caret away never sets off a loop
+    # tests/unit/caret-follows-selection.test.ts — asserted on the code's shape, because the loop resisted every
+    # attempt to reproduce it in a fixture.
+    Given a page with text blocks inside boxes
+    When I select one block after another, by clicking and from the keyboard
+    Then the caret is taken out of a block I did not choose at the moment the selection changes
+    And clicking into the text I am already typing in keeps the caret there
+    And the builder never stops with "Maximum update depth exceeded"
+    Because the first fix took the caret away from something that WATCHED the selection — taking the
+      caret away moved focus, which changed the selection, which ran it again
 
   # ── Stacked pins (Phase 3 · Step 2c) ───────────────────────────────────────
   # tests/e2e/pins-stack.spec.ts

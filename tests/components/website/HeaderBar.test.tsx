@@ -28,11 +28,17 @@ describe("HeaderBar (freeform header)", () => {
     expect(next.some((e: { type: string }) => e.type === "text")).toBe(true);
   });
 
-  it("selecting an element reveals move + delete controls; delete removes it", async () => {
+  it("selecting an element reveals its move affordance (drag hint + move cursor) and delete control; delete removes it", async () => {
     const user = userEvent.setup();
     const { layout, onChange } = setup();
+    const el = screen.getByRole("button", { name: /button header element/i });
+    expect(screen.queryByTitle("Drag the element to move it")).toBeNull(); // nothing before it is selected
+    expect(screen.queryByLabelText("Delete element")).toBeNull();
     // click the CTA button element to select it
     await user.click(screen.getByText("Apply now"));
+    // the move control is the element itself: the toolbar says so and the element takes the move cursor (BDD1-14)
+    expect(screen.getByTitle("Drag the element to move it")).toBeInTheDocument();
+    expect(el).toHaveClass("cursor-move");
     const del = screen.getByLabelText("Delete element");
     await user.click(del);
     const next = onChange.mock.calls.at(-1)![0];

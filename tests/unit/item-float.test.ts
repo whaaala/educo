@@ -3,6 +3,7 @@ import {
   itemOverrideCss, itemFloatContextCss, itemFloatReserveRem, itemIsFloating, isMultiItemComponent, hasItemParts,
   itemHasOverride, side4Css,
   COMPONENT_ITEM_PARTS, COMPONENT_PARTS, COMPONENT_ITEM_SEL, createComponent, createContainer, FLOAT_MIN_VISIBLE_REM,
+  MULTI_ITEM_COMPONENTS,
   type ComponentItem, type BoxNode,
 } from "@/lib/box-model";
 import { renderSitePage } from "@/lib/box-export";
@@ -28,13 +29,17 @@ const exportDoc = (root: BoxNode) => {
 //
 // Note "has item parts" is not the same question as "holds a list". The Alert is a single message — it has
 // parts to style and position, but no list to add to or reorder (user decision, 2026-09-05).
+//
+// BDD1-29: MULTI_ITEM was a copy of WITH_PARTS, so "every multi-item component" ran on the alert. It is now READ from
+// the product's own list, and the placement loops below run on WITH_PARTS — every component with item parts, the
+// single-message alert included — and say so in their names.
 const WITH_PARTS = Object.keys(COMPONENT_ITEM_PARTS);
-const MULTI_ITEM = WITH_PARTS;
+const MULTI_ITEM = [...MULTI_ITEM_COMPONENTS];
 
 const plain = (): ComponentItem => ({ id: "i1", title: "T", body: "B" });
 const floated = (): ComponentItem => ({ id: "i1", title: "T", body: "B", float: { x: 6, y: 3, z: 2 } });
 
-describe("RULE N — every multi-item component can float and place its items", () => {
+describe("RULE N — every component with item parts can float and place its items", () => {
   it("registers the same components for parts, CSS parts and item selectors", () => {
     expect(WITH_PARTS.length).toBeGreaterThanOrEqual(2); // accordion + alert today
     for (const name of WITH_PARTS) {
@@ -52,7 +57,17 @@ describe("RULE N — every multi-item component can float and place its items", 
     expect(hasItemParts("card")).toBe(false);
   });
 
-  for (const component of MULTI_ITEM) {
+  it("every multi-item component (the product's own list) has item parts, and the alert is not one of them", () => {
+    expect(MULTI_ITEM.length).toBeGreaterThan(0);
+    for (const name of MULTI_ITEM) {
+      expect(isMultiItemComponent(name), `${name}: holds a list`).toBe(true);
+      expect(WITH_PARTS, `${name}: a list component has item parts to place`).toContain(name);
+    }
+    expect(MULTI_ITEM).not.toContain("alert");
+    expect(WITH_PARTS.filter((n) => !isMultiItemComponent(n)), "parts without a list — the single message").toContain("alert");
+  });
+
+  for (const component of WITH_PARTS) {
     it(`${component}: nothing floats by default — an item stays in the normal stack`, () => {
       const css = itemOverrideCss(".it", plain(), { component });
       expect(itemIsFloating(plain())).toBe(false);
@@ -160,7 +175,7 @@ describe("RULE N — a floated item always stays INSIDE its component box", () =
 
     it(`${component}: a floated item can never be wider than the room beside it`, () => {
       const css = itemOverrideCss(".it", floated(), { component });
-      expect(css).toContain("max-width:calc(100% - min(6rem, calc(100% - 8rem))) !important");
+      expect(css).toContain(`max-width:calc(100% - min(6rem, calc(100% - ${FLOAT_MIN_VISIBLE_REM}rem))) !important`);
     });
 
     it(`${component}: an X beyond the box is clamped so the item stays visible and inside`, () => {

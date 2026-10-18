@@ -3,6 +3,7 @@ Feature: Design-system components are fully-editable trees
   I want every piece inside a component (a card's title, body, button; a badge's text; a rating's stars)
   to be individually selectable and fully editable
   So that I can change everything about a component without being limited to preset controls
+  Guards: tests/unit/box-presets.test.ts (how each component's tree is built)
 
   Background:
     Given the Box Builder is open with an empty page
@@ -27,9 +28,11 @@ Feature: Design-system components are fully-editable trees
     And clicking any one of them selects only that element
     And the inspector shows that element's FULL controls (text align, bold/italic/underline, colour, size, font, spacing, link)
 
-  Scenario: A Badge is a single fully-editable text element styled as a pill
+  Scenario: A Badge is a padded pill around one fully-editable text element
+    # tests/unit/box-presets.test.ts — it was one text element carrying padding, but a text never draws padding,
+    # so the pill had no breathing room and clipped its own words. The padding lives on the pill's box.
     When I add a "Badge"
-    Then it is a text element with a pill background and full corner radius
+    Then it is a pill-shaped box with padding round a text element
     And I can change its text, colour, size, alignment and radius directly
 
   Scenario: A Rating is a row of five individually-editable star icons

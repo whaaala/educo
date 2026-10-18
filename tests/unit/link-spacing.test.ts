@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { createContainer, createElement, makeRowBand, childStyle, containerStyle, u, type BoxNode } from "@/lib/box-model";
+import { RUNG_EM } from "@/lib/educo-ui/layout";
 
 /**
  * LINKS ARE ALWAYS SPACED, AND THE PERSON CHOOSES HOW MUCH (user, 2026-09-27).
@@ -86,7 +87,7 @@ describe("…and the published page carries it", () => {
     const plain = lineRule(doc(menu().list));
     // mobile-first: the phone's 1rem is the base rule (F-1), 2rem arrives at the tablet rung and up
     expect(plain).toMatch(/column-gap:1rem/); expect(plain).toMatch(/row-gap:0\.75rem/);
-    expect(doc(menu().list)).toMatch(/@media \(min-width:37\.5em\)\{\.bx-line\{column-gap:2rem/);
+    expect(doc(menu().list)).toContain(`@media (min-width:${RUNG_EM.tabletPortrait}em){.bx-line{column-gap:2rem`); // the edge from config/layout.json (BDD1-25)
     expect(lineRule(doc(menu({ gapX: 40 }).list))).toContain(`column-gap:${u(40)}`);
   });
 });

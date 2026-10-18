@@ -20,7 +20,10 @@ export const testFiles = (): string[] =>
   ["tests/unit", "tests/components"].flatMap((d) => walk(join(ROOT, d), (n) => /\.test\.tsx?$/.test(n))).map(rel).sort();
 const read = (p: string) => readFileSync(p, "utf8").replace(/\r\n/g, "\n"); // a CRLF checkout reads the same (source-reading-tests)
 const FEATURES = walk(join(ROOT, "tests/features"), (n) => n.endsWith(".feature")).map(read).join("\n");
-export const unnamed = (files: string[], features = FEATURES): string[] => files.filter((f) => !features.includes(basename(f)));
+// BDD1-32: the name must stand alone — "layout-config.test.ts" on a Guards line once counted as naming parents/config.test.ts
+const named = (features: string, f: string) =>
+  new RegExp(`(^|[\\s/·(\`'"])${basename(f).replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}(?=$|[\\s·),;:\`'"])`, "m").test(features);
+export const unnamed = (files: string[], features = FEATURES): string[] => files.filter((f) => !named(features, f));
 
 const BACKLOG: string[] = JSON.parse(read(join(ROOT, "config/bdd.json"))).backlog;
 
@@ -35,5 +38,7 @@ describe("RULE BDD — every test is named by a .feature", () => {
   it("is able to fail: a test no .feature names is caught", () => {
     expect(unnamed(["tests/unit/no-such-guard-yet.test.ts"])).toEqual(["tests/unit/no-such-guard-yet.test.ts"]);
     expect(unnamed(["tests/unit/area-progress.test.ts"])).toEqual([]);
+    expect(unnamed(["tests/unit/parents/config.test.ts"], "  Guards: tests/unit/layout-config.test.ts")).toEqual(["tests/unit/parents/config.test.ts"]);
+    expect(unnamed(["tests/unit/parents/config.test.ts"], "  Guards: tests/unit/parents/config.test.ts · x")).toEqual([]);
   });
 });

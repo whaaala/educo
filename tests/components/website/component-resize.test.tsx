@@ -1,11 +1,13 @@
 import { describe, it, expect, vi } from "vitest";
-import { render, cleanup } from "@testing-library/react";
+import { render, cleanup, fireEvent, screen } from "@testing-library/react";
 import BoxCanvas from "@/components/website/box/BoxCanvas";
 import { DEFAULT_THEME } from "@/lib/site-storage";
 import { createContainer, createComponent, componentBoxCss, resizeTopEdge, hugsContent, blockContainmentCss, clampFloatGeom, floatBox, findBox, widthPct, isFloating, isClipped, clampContentScale, MIN_CONTENT_SCALE, comfortableWidth, COMFORTABLE_LINES, PLACEMENT_INSET_PCT, type BoxNode } from "@/lib/box-model";
 import { renderSitePage } from "@/lib/box-export";
 import { HUGS_BY_NATURE } from "@/lib/educo-ui/registry";
 import { siteFromRoot } from "@/lib/box-site";
+import { ALL_COMPONENTS } from "@/lib/component-catalogue";
+import { remLen } from "@/lib/educo-ui/tokens";
 
 /** One page through the SHIPPING export path — the app no longer emits the single-document shape. */
 const exportDoc = (root: BoxNode) => {
@@ -13,9 +15,9 @@ const exportDoc = (root: BoxNode) => {
   return renderSitePage(site, DEFAULT_THEME, site.homeId, { inlineShared: true });
 };
 
-// Every component offered in the Blocks palette. A new component MUST be added here — the rule it guards
-// (RULE G: the component itself resizes from all four sides) applies to every component we add.
-const COMPONENTS = ["accordion", "alert", "card", "quote", "stat", "badge", "rating"];
+// Every component offered in the Blocks palette, ENUMERATED from the catalogue (BDD1-20) — a component added later is
+// covered the day it appears, because the rule it guards (RULE G: the component itself resizes) applies to all of them.
+const COMPONENTS = ALL_COMPONENTS;
 
 /** A page whose single block is a height- and width-resized instance of `component`. */
 function pageWith(component: string): BoxNode {
@@ -70,7 +72,9 @@ describe("Component sizing — the component itself fills its block (RULE G)", (
     it(`${component}: the exported HTML carries the same fill, so canvas === export`, () => {
       const html = exportDoc(pageWith(component));
       expect(html).toMatch(/height:\s*100%/);
-      expect(html).toContain("200px");
+      // BDD1-23: the STORED "200px" height (an older page) publishes in rem — rule 16, `sizeToCSS` — never as a pixel
+      expect(html).toContain(`min-height:${remLen(200)}`);
+      expect(html).not.toContain("200px");
     });
   }
 
@@ -300,9 +304,18 @@ describe("Resizing a component never crops it (RULE G)", () => {
   // content needs instead, so there is nothing to crop.
   for (const component of COMPONENTS) {
     it(`${component}: a height-resized block is not marked as clipped`, () => {
-      const sized = createComponent(component, { id: "tgt", width: "fill", height: "200px" });
-      expect(sized.clip).toBeUndefined();
-      expect(isClipped(sized)).toBe(false);
+      // BDD1-21: the height is DRAGGED on the canvas (its bottom-edge handle), the way a user resizes it.
+      cleanup();
+      const onChange = vi.fn();
+      const root = createContainer("column", { id: "page", children: [createContainer("row", { id: "row", children: [createComponent(component, { id: "tgt", width: "fill" })] })] });
+      render(<BoxCanvas root={root} theme={DEFAULT_THEME} onChange={onChange} selectedId="tgt" onSelectId={vi.fn()} />);
+      fireEvent.mouseDown(screen.getByLabelText("Resize bottom edge"), { clientX: 0, clientY: 0 });
+      fireEvent.mouseMove(document, { clientX: 0, clientY: 120 });
+      fireEvent.mouseUp(document);
+      const resized = findBox(onChange.mock.calls.at(-1)![0], "tgt")!;
+      expect(resized.height, `${component}: the drag set a height`).toMatch(/rem$/);
+      expect(resized.clip).toBeUndefined();
+      expect(isClipped(resized)).toBe(false);
     });
 
     it(`${component}: an explicitly clipped block still clips (the setting is honoured)`, () => {
@@ -363,7 +376,7 @@ describe("Narrowing a component scales its text once wrapping gets untidy (RULE 
   });
 
   it("never proposes a width narrower than the longest unbreakable word", () => {
-    // A long single word (200px) beats the 400/2 = 200 share here, and must win outright when it is larger.
+    // A long single word wins outright when it is wider than the share: 320px beats 400/2 = 200, and 250px beats 100/2 = 50.
     expect(comfortableWidth(400, 320)).toBe(320);
     expect(comfortableWidth(100, 250)).toBe(250);
   });

@@ -23,8 +23,9 @@ const files = (dir: string): string[] => {
 };
 
 const edges = [...Object.values(LAYOUT.rungs).map((r) => r.from).filter((px) => px > 0), LAYOUT.editor.dockFrom];
-const em = (n: number) => String(+n.toFixed(4)).replace(".", "\\.");
-/** The forms an edge takes when it is typed in by hand: `37.5em`, `37.49em`, `min-[37.5em]`, `width < 600`. */
+// `\\?` before the dot: an edge typed into a REGEX literal is `37\.5em` in the source, and is the same copy (BDD1-25)
+const em = (n: number) => String(+n.toFixed(4)).replace(".", "\\\\?\\.");
+/** The forms an edge takes when it is typed in by hand: `37.5em`, `37\.5em`, `37.49em`, `min-[37.5em]`, `width < 600`. */
 const emForms = edges.flatMap((px) => [
   new RegExp(`(?<![\\d.])${em(px / 16)}em\\b`), // not the 75em inside 1.75em
   new RegExp(`(?<![\\d.])${em(px / 16 - 0.01)}em\\b`),

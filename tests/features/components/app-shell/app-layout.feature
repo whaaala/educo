@@ -1,6 +1,7 @@
 Feature: The app's layout — screen classes, the navigation shell and list-detail (BATCH A-2)
   Every screen edge, place and word comes from config/layout.json, config/app-shell.json and config/sample-lists.json
   (RULE CFG). The same rules run on the web sample page (/app-preview/<role>) and in the Educo app (apps/mobile).
+  Guards: tests/unit/window-class.test.ts
 
   Background:
     Given the rungs start at 600, 840, 1200 and 1600 px and the height classes at 480 and 900 px (config/layout.json)
@@ -27,6 +28,17 @@ Feature: The app's layout — screen classes, the navigation shell and list-deta
     When the window is a phone
     Then the bar shows the first four places and "More"
     And "More" opens a menu of the other three, by keyboard too, and Escape gives focus back to "More"
+
+  Scenario: a bar makes room for bigger text
+    Given a 375 px phone
+    Then the bar has room for five places at normal text size
+    And at 200 % text it has room for two
+    And it never offers fewer than two places or more than five, however narrow or wide the window
+
+  Scenario: a window's height has a class of its own
+    When the window grows taller, from very short past 480 px and then past 900 px
+    Then its height class goes from compact to medium to expanded
+    And a window shorter than 480 px keeps the bar at any width short of a desktop
 
   Scenario: the place you are on is marked
     When I open "Classes" and then one class inside it

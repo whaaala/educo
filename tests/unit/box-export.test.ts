@@ -50,6 +50,13 @@ describe("box-export — static HTML", () => {
     const withFonts = renderSitePage(site, DEFAULT_THEME, site.homeId, { inlineShared: true, fontCss: face });
     expect(withFonts).toContain(face);
     expect(withFonts.indexOf(face)).toBeLessThan(withFonts.indexOf("--eu-"));   // defined before any rule asks for it
+    // …and the DOWNLOAD ships that same @font-face, also ahead of every rule (BDD1-34: the download was never rendered)
+    const sheet = Object.entries(renderSiteFiles(site, DEFAULT_THEME, face)).find(([p]) => p.endsWith(".css"))?.[1] ?? "";
+    expect(sheet).toContain(face);
+    expect(sheet.indexOf(face)).toBeLessThan(sheet.indexOf("--eu-"));
+    // the font block the download ships is the one the preview inlines — same text, same place (first)
+    const previewShared = withFonts.slice(withFonts.indexOf(face), withFonts.indexOf("--eu-"));
+    expect(sheet.slice(sheet.indexOf(face), sheet.indexOf("--eu-"))).toBe(previewShared);
     expect(renderSitePage(site, DEFAULT_THEME, site.homeId, { inlineShared: true })).not.toContain("@font-face{font-family:'Poppins'");
   });
 
@@ -445,10 +452,11 @@ describe("box-export — static HTML", () => {
     // styles are class rules (so media queries can override them); every base rule caps at its container
     // …except a band with a gutter (S1-a), which reaches half a gap past each side ON PURPOSE so its outer columns meet
     // the edge; the body's overflow-x:clip below keeps that from ever scrolling.
-    for (const m of html.matchAll(/\.bx-[A-Za-z0-9_-]+\{([^}]*)\}/g)) {
+    const rules = [...html.matchAll(/\.bx-[A-Za-z0-9_-]+\{([^}]*)\}/g)];
+    expect(rules.length, "no .bx- rule matched — the loop below would pass on nothing (BDD1-35)").toBeGreaterThan(0);
+    for (const m of rules) {
       if (m[1].includes("max-width:none")) expect(m[1]).toMatch(/width:calc\(100% \+ /);
       else expect(m[1]).toMatch(/max-width:(100%|calc\(100% - )/); // a column in that band: the line less one gap
-
     }
     // No inline LAYOUT/paint styles a media query could never beat. CSS custom-property data vars (--eu-n ordinals) are exempt.
     for (const m of html.matchAll(/\sstyle="([^"]*)"/g))
@@ -568,9 +576,12 @@ describe("rows of four or more in the published page (#78)", () => {
   const words = () => createElement("text", { text: "Words" } as Partial<BoxNode>);
   const doc = () => pageDoc(createContainer("column", { id: "page", children: [makeRowBand(["c0", "c1", "c2", "c3", "c4"].map((id) =>
     createContainer("column", { id, width: "20%", children: [words()] } as Partial<BoxNode>)), 0)] } as Partial<BoxNode>));
-  const ruleIn = (css: string, id: string) => (css.match(new RegExp(`\.bx-${id}\{([^}]*)\}`)) ?? [])[1] ?? "";
+  const ruleIn = (css: string, id: string) => (css.match(new RegExp(`\\.bx-${id}\\{([^}]*)\\}`)) ?? [])[1] ?? "";
   it("a tablet held upright gets 3 + 2 (each line full); a laptop takes the row back to five across on one line", () => {
     const d = doc();
+    // the class selector is matched LITERALLY — `.` is a dot, not any character (BDD1-36)
+    expect(ruleIn("#bx-c0{flex:1 1 20%}", "c0")).toBe("");
+    expect(ruleIn(".bx-c0{flex:1 1 20%}", "c0")).toBe("flex:1 1 20%");
     // the whole rung block: from its query to the next query (a block's own rules may end in "}}")
     const block = (em: number) => { const at = d.indexOf(`@media (min-width:${em}em){`); return at < 0 ? "" : d.slice(at, d.indexOf("@media", at + 1)); };
     const tablet = block(BREAKPOINTS_EM.tabletPortrait), laptop = block(BREAKPOINTS_EM.tabletLandscape);

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { render, screen, fireEvent } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import HeaderInspector from "@/components/website/HeaderInspector";
 import { createSite, type HeaderEl } from "@/lib/site-storage";
@@ -29,12 +29,21 @@ describe("HeaderInspector", () => {
   it("text element: edits text, exposes font family, size, bold, colour, link", async () => {
     const user = userEvent.setup();
     const { onChange } = setup({ id: "t1", type: "text", x: 10, y: 30, text: "Hello" });
-    // text input
-    await user.clear(screen.getByDisplayValue("Hello"));
-    await user.type(screen.getByRole("textbox"), "Hi");
-    expect(onChange).toHaveBeenCalled();
+    // text input: the new words reach onChange as the element's text (BDD1-13)
+    fireEvent.change(screen.getByDisplayValue("Hello"), { target: { value: "Hi" } });
+    expect(onChange).toHaveBeenLastCalledWith({ text: "Hi" });
     // font family select present
     expect(screen.getByText("Font family")).toBeInTheDocument();
+    // font size: the slider reads the fallback and sets the element's size (BDD1-13)
+    const size = screen.getByLabelText("Font size");
+    expect(size).toHaveValue("18");
+    fireEvent.change(size, { target: { value: "24" } });
+    expect(onChange).toHaveBeenLastCalledWith({ fontSize: 24 });
+    // colour: the swatch opens the shared picker, and a colour typed there becomes the element's colour (BDD1-13)
+    await user.click(screen.getByRole("button", { name: "Text colour" }));
+    const hex = (await screen.findAllByDisplayValue(/^#/)).find((i) => (i as HTMLInputElement).type === "text")!; // the picker's "Custom" hex field
+    fireEvent.change(hex, { target: { value: "#123456" } });
+    expect(onChange).toHaveBeenLastCalledWith({ color: "#123456" });
     // bold toggle (the only checkbox before a link is set)
     await user.click(screen.getByRole("checkbox"));
     expect(onChange).toHaveBeenCalledWith({ bold: true });

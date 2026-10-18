@@ -179,13 +179,22 @@ describe("the layout-property animation guard", () => {
       "transition: top 200ms",
       "transition: margin-left 1s",
       "transition-property: padding",
-      "animation: grow 2s",           // named below with a layout property
       "transition: font-size 0.4s",
       "transition: flex-basis 0.3s",
     ]) {
-      const out = sanitizeCssDeclarations(bad.includes("animation:") ? "transition: height 1s" : bad);
-      expect(out, `"${bad}" must be refused`).toBe("");
+      expect(sanitizeCssDeclarations(bad), `"${bad}" must be refused`).toBe("");
     }
+  });
+
+  it("reads ANIMATION values too — a layout property named there is refused, a keyframe name is kept", () => {
+    // BDD1-4: the guard reads the tokens of `animation` / `animation-name` exactly as it reads `transition`.
+    // A keyframe name like `grow` is not a property, and Advanced CSS cannot define keyframes ({ } is refused),
+    // so the name alone is kept — the guard cannot (and does not pretend to) look inside keyframes.
+    for (const bad of ["animation: height 2s", "animation-name: width", "animation: 1s ease margin-left"]) {
+      expect(sanitizeCssDeclarations(bad), `"${bad}" must be refused`).toBe("");
+    }
+    expect(animatesLayout("animation", "height 2s")).toBe(true);
+    expect(sanitizeCssDeclarations("animation: grow 2s")).toContain("animation: grow 2s");
   });
 
   it("refuses `transition: all`, which sweeps in every layout property by definition", () => {

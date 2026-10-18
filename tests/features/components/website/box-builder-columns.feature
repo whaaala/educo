@@ -8,6 +8,7 @@ Feature: The twelve-column grid in the Box Builder
 
   Every control here is per-rung: set it once, override it on the device where it matters. That works with no
   extra machinery because each one is a field on the block, and `responsive` already carries block fields.
+  Guards: tests/unit/twelve-columns.test.ts · tests/unit/band-edges.test.ts · tests/unit/screen-height.test.ts · tests/unit/masonry.test.ts · tests/unit/pager.test.ts · tests/unit/grid-own-box.test.ts · tests/unit/side-by-side-row.test.ts · tests/unit/place-in-parent.test.ts
 
   Background:
     Given the Box Builder is open on a page
@@ -139,6 +140,33 @@ Feature: The twelve-column grid in the Box Builder
     Then it starts at column 9 instead
     And the row does not grow wider than the page
 
+  Scenario: A block added to a grid arrives a usable width
+    Given a twelve-column row holding a cell eight columns wide and one four wide
+    When I add a block to the row
+    Then it takes four columns, like the cell already there, never a one-column sliver
+    And a block added to an empty row takes all twelve
+    And a block I move in keeps the width it already had
+    And a block added to a side-by-side row that is not a grid is given no columns at all
+
+  Scenario: A grid's blocks sit straight in its cells
+    Given a twelve-column row of blocks four columns wide
+    Then nothing is put between the row and its blocks, so each block takes the columns it asks for
+    And the blocks inside each cell are still laid out in rows of their own
+
+  Scenario: A block can take any rectangle of columns and rows
+    Given a twelve-column row
+    When I start a block at column 5 and row 3, four columns wide and two rows tall
+    Then it covers exactly that rectangle
+    And a block with only a height in rows, or only a starting row, gets just what it was given
+    And a starting row past the rows in use makes a new row rather than being clamped
+
+  Scenario: Every layout in the picker fills the row, and each add is its own
+    When I open the Grid picker
+    Then every layout it offers adds up to the twelve columns
+    And choosing Sidebar right gives a cell eight columns wide and one four wide
+    And choosing the same layout twice gives two rows whose cells are separate blocks
+    And the layouts are not offered under Styles, which restyles a row without replacing what is in it
+
   Scenario: The image above the words on a phone, beside them on a desktop
     Given a photo and a paragraph side by side
     And the Phone device is selected
@@ -175,6 +203,24 @@ Feature: The twelve-column grid in the Box Builder
     Then the curve keeps its shape without a single media query
     Because it is expressed entirely in percentages
 
+  Scenario: Nothing is shaped until I choose a shape
+    Given a section whose edges are both Straight
+    When I set an edge depth
+    Then the section is still a plain rectangle
+
+  Scenario: Each shape does what its name says
+    Given a section 10 deep at the top
+    Then Slope right starts at the very top on the left and falls as it goes right, and Slope left the other way
+    And Curve in is deepest in the middle and flat where it meets both sides
+    And Curve out bulges the other way, its ends cut in and its middle at the edge, never outside the section
+    And a shape on the bottom edge cuts upward from the bottom, mirroring the top
+    And every shape runs the full width, so no sliver of background is left at either side
+
+  Scenario: A sloped top and a curved bottom on one section
+    When I give a section a sloped top and a curved bottom
+    Then both edges are shaped at once, each the way I chose, and the section keeps a body between them
+    And the published page carries the same shape
+
   # ── A section measured against the screen ──────────────────────────────────
 
   Scenario: A full-screen hero
@@ -197,6 +243,12 @@ Feature: The twelve-column grid in the Box Builder
     Then it is still one screen tall
     Because a hero is empty right up until you fill it
 
+  Scenario: A screen height works on a grid too, and reaches the published page
+    When I set a grid's Screen height to Half screen
+    Then the grid is at least half the screen tall
+    And a full-screen section is one screen tall on the published page too
+    And a section I never set to a screen height is left at its own height
+
   # ── Where a block sits — nine positions, one control ───────────────────────
 
   Scenario: Putting a block in a corner
@@ -218,6 +270,13 @@ Feature: The twelve-column grid in the Box Builder
   Scenario: One axis at a time
     When I set only the across position
     Then the down position is left alone rather than being guessed
+
+  Scenario: A position I choose wins over the older Push control
+    # tests/unit/place-in-parent.test.ts
+    Given a block in a side-by-side row that was pushed to the end with the older Push control
+    When I choose left-middle in Position
+    Then the block sits at the left of the row, halfway down, because the position decides
+    But a page that only ever used Push keeps its block pushed to the end, exactly as it was
 
   Scenario: Inside a grid, a block is positioned within its own cell
     Given a block that takes four of the twelve columns
@@ -499,6 +558,23 @@ Feature: The twelve-column grid in the Box Builder
     Then the layout is exactly what it was
     And the saved page carries no trace of the setting
 
+  Scenario: Each block's height is worked out the way the page will draw it
+    Given Row heights is "Follow the picture" on a row of photographs
+    Then a tall photo is given more room than a wide one in the same row
+    And a photo is found however deep inside its block it sits
+    And a height I typed on a block wins over the photo's shape, with the block's own inner spacing added
+    And the same photo is given less room on a tablet, where its column is narrower, and more on a big desktop
+    And the grid's own inner spacing is taken off before the columns are shared out
+    And nothing is ever too short for what it holds, and nothing is given a height of zero
+    And the canvas and the published page give every block exactly the same height
+
+  Scenario: Measuring on the page again and again never makes the gallery grow
+    Given "Measure on the page" is ticked
+    When the page is measured once, and then again after a resize
+    Then every block keeps the height it was given the first time
+    And when the window narrows to one column, every block gives its measured height back
+    And ten galleries on a page still ship one copy of the script
+
   # ── What masonry uncovered ────────────────────────────────────────────────
 
   Scenario: The editor's page column is the width the device chip asks for
@@ -546,6 +622,18 @@ Feature: The twelve-column grid in the Box Builder
   Scenario: Which page you are on is announced, not only coloured
     Then the current dot is marked for a screen reader as well as shaded
 
+  Scenario: One page is not a pager
+    Given a box set to "Show one at a time" with only one block in it
+    Then no dots or arrows are shown, because there is nothing to move between
+    And a heading or a picture cannot be set to show one at a time, only a box
+
+  Scenario: The dots and arrows can be seen over any photograph
+    Given a slider of photographs with dots and arrows
+    Then each control is a light mark with a dark ring, so it shows on a dark photo and a pale one
+    And it sits clear of the bottom of a full-screen page, so it is never under the fold
+    And clicks anywhere else on the page reach the page underneath
+    And ten sliders on a page still ship one copy of the script
+
   Scenario: Nothing is added to my site unless it is needed
     Given I choose "None" and leave it to the visitor to move
     Then the published page contains no script at all
@@ -585,6 +673,15 @@ Feature: The twelve-column grid in the Box Builder
     When I add a Rotating hero and choose my photos
     Then each page is its own full screen with its own words
     And I edit the second one's words on the canvas like any other block
+
+  Scenario: A hero with no photograph is still readable
+    When I add a Hero and skip choosing a photo
+    Then it has a background of its own, so its white words never sit on nothing
+
+  Scenario: Every photo tile gives me a block even if I skip its setup
+    When I add a Slider, a Hero or a Rotating hero and close the photo setup
+    Then a real block is still added to the page
+    And a Slider carries no spacing and no rounding until I add some
 
   Scenario: Setting the column count for a device does not pile the cells up
     Given a twelve-column row with cells I started at columns 1, 5 and 9
@@ -654,6 +751,20 @@ Feature: The twelve-column grid in the Box Builder
     And a masonry gallery and a pager keep their tracks
     Because a per-device setting always wins, and a masonry track is a ruler, not a row.
 
+  Scenario: How many cells a grid gives up depends on how many it has
+    Given a grid of three cells of four columns
+    Then in its own box it goes two across below three cells' room and one across below two cells' room
+    And at two across the cell left alone on the last row fills that row
+    And a grid of two cells, or of an eleven-and-one split, only ever goes to one across
+    And a grid of one cell never narrows
+
+  Scenario: The box around a narrowing grid is what it measures, nested grids too
+    Given a grid inside a section, and another grid inside one of its cells
+    Then the section around each grid is the box it measures, on the canvas and on the published page
+    And a box that only hugs its content, the grid itself, or a section holding only words is not
+    And a bar fixed to the screen inside such a section stays on the screen
+    And on the published page these rules come after every screen size's rules, so they win
+
   # ── BATCH L-5 · resize round trips (2026-10-16): every gesture out and back comes home ──────────────────────────────
 
   Scenario: A height dragged back to what its words need stores no floor (#42)
@@ -687,6 +798,13 @@ Feature: The twelve-column grid in the Box Builder
     Then the two blocks sit beside each other, half the line each, directly inside it
     And dragging the edge between them moves only that edge, and dragging it back brings both home
     And a Side by side saved before this keeps the blocks it has
+
+  Scenario: A third block added to a Side by side makes thirds, and tidying it twice changes nothing
+    Given a "Side by side" block holding two blocks, half the line each
+    When I add a third block inside it
+    Then the three share the line in equal thirds, never more than the whole line
+    And opening and saving the page again leaves the blocks exactly where they are
+    And a component built on its own row, such as a Rating, is left exactly as it was built
 
   Scenario: A left edge squeezes its neighbour down to that neighbour's own floor (#84)
     Given three stacks side by side, the first one sized by hand to 180px
