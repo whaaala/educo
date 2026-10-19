@@ -796,6 +796,24 @@ The details, and every key, are in [Several blocks at once, and the page's layer
 
 ---
 
+## 14. Starting from something already made
+
+Kofi needs a new page for the school's open day, and he has an hour.
+
+**"A page that already looks right."** He presses the **+** beside the page tabs, types "Open day", and clicks the **Open
+day** template. The page arrives with a dated title, a picture beside some words, a sign-up card and a footer, and it already
+has the school's own header, because every page shares it.
+
+**"One more section, and in our colours."** He opens **Add → Sections**, chooses **Designed** and the **Calm** finish, and
+clicks a welcome with three quick links. It lands under the section he was on. He changes its words, swaps its photograph
+and sets the space above it to nothing, because none of it is locked.
+
+**"The banner should say the same everywhere."** The admissions banner is on four pages. He selects it, chooses **Make
+global**, and changes the closing date once: all four pages change, and the banner is marked green so he knows it is shared.
+
+The whole of it, with every control by its name, is in [Ready-made sections, your own sections and page
+templates](./sections.md).
+
 ## What comes next
 
 The reference page ([Layout — reference](layout-reference)) lists every control in the Layout panels by its exact

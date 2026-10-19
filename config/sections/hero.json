@@ -271,7 +271,7 @@
       "tree": { "k": "section", "tone": "soft", "center": true, "set": { "paddingTop": 96, "paddingBottom": 80, "paddingLeft": 24, "paddingRight": 24, "gap": 32 },
         "c": [
           { "r": "title", "t": "Hello, and welcome", "set": { "maxWidth": "36rem" } },
-          { "k": "grid", "cols": 3, "min": "11rem", "set": { "gap": 16, "maxWidth": "60rem" }, "c": [
+          { "k": "grid", "cols": 3, "min": "16rem", "set": { "gap": 16, "maxWidth": "56rem" }, "c": [
             { "k": "card", "tone": "plain", "center": true, "set": { "padding": 24, "gap": 8 }, "c": [ { "r": "icon", "icon": "GraduationCap" }, { "r": "link", "t": "Admissions" } ] },
             { "k": "card", "tone": "plain", "center": true, "set": { "padding": 24, "gap": 8 }, "c": [ { "r": "icon", "icon": "CalendarDays" }, { "r": "link", "t": "Term dates" } ] },
             { "k": "card", "tone": "plain", "center": true, "set": { "padding": 24, "gap": 8 }, "c": [ { "r": "icon", "icon": "Wallet" }, { "r": "link", "t": "Fees" } ] },
@@ -301,7 +301,7 @@
             { "r": "title", "t": "Find what you need" },
             { "r": "body", "t": "Start here for admissions, dates, fees and how to reach us." }
           ] },
-          { "k": "grid", "cols": 2, "min": "9rem", "set": { "gap": 16, "width": "fill", "minWidth": "18rem" }, "c": [
+          { "k": "grid", "cols": 2, "min": "13rem", "set": { "gap": 16, "width": "fill", "minWidth": "18rem" }, "c": [
             { "k": "card", "tone": "soft", "set": { "padding": 24, "gap": 8 }, "c": [ { "r": "icon", "icon": "GraduationCap" }, { "r": "link", "t": "Admissions" } ] },
             { "k": "card", "tone": "soft", "set": { "padding": 24, "gap": 8 }, "c": [ { "r": "icon", "icon": "CalendarDays" }, { "r": "link", "t": "Dates" } ] },
             { "k": "card", "tone": "soft", "set": { "padding": 24, "gap": 8 }, "c": [ { "r": "icon", "icon": "Wallet" }, { "r": "link", "t": "Fees" } ] },
