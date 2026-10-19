@@ -143,7 +143,7 @@ stored under `educo-uat-harness/builders/wix-studio/add/`.
 
 | Batch | Changes |
 |---|---|
-| **LE-15** | (1) the design (this) · (2) the gallery engine, the Sections panel, the finishes, and Headers + Hero + Footers + Blank (64 layouts, the most-used kinds) · (3) PS-5 save · (4) PS-5 global · (5) PS-5 page templates (the 12 arrive as their sections do; the mechanism and "save page as template" now) |
+| **LE-15** | (1) the design (this) · (2) the gallery engine, the Sections panel, the finishes, and Headers + Hero + Footers + Blank (64 layouts, the most-used kinds) · (3) PS-5 save · (4) PS-5 global · (5) PS-5 page templates (the 12 arrive as their sections do; the mechanism and "save page as template" now) · LE15-27 the menu marks the current page |
 | **LE-15b** | About · Text · Features · Spotlight · Stats · CTA (86) |
 | **LE-15c** | Cards · Programmes · Gallery · Slideshow · Team · Testimonials (72) |
 | **LE-15d** | Logos · List · Contact · FAQ · Pricing · News (45) |
@@ -163,4 +163,9 @@ stored under `educo-uat-harness/builders/wix-studio/add/`.
 | D5 | Space inside a ready-made section | **It carries its designed padding and gap**, like a chosen Card or preset carries its radius. This is a design someone picked, so "no space unless you add it" is not broken. The space is drawn on the canvas and adjustable to zero. The alternative is to arrive with none (a section with no padding looks broken). The space rule has changed twice, so this is asked, not assumed |
 | D6 | Pictures for designed sections | **A small CC0 set** in `public/sections/` (≈ 40 photos of schools, people and buildings, WebP, ≤ 40 KB each at 800 px, `srcset` + lazy). The alternative is illustrations / duotone shapes only (lighter, less real) |
 | D7 | The batch split | **LE-15 + LE-15b … e** as in §6 |
-| D8 | Linked page layouts (Framer's content slot) | **Nice**, later; Must covers copies + global sections |
+| D8 | A shared page FRAME with a content slot (Framer's layout templates: e.g. a side menu designed once beside every page's own content) | **Nice**, later; Must covers copies + shared header / footer + global sections. NOT the linking of pages to each other: that is built (pages, "…or jump to a page" links published as `about.html`, the shared header and footer of LE-8) and Must; its one gap is LE15-27 |
+
+**LE15-27 (found 2026-10-19, answering the user's question on linked pages):** the published menu never marks the page the
+visitor is on. `hrefFor` (`lib/box-export.ts:111`) turns `page:<id>` into the page's file, but nothing sets
+`aria-current="page"` or a visible "current" look on the link to the page being rendered. Webflow, Wix and Framer all do this.
+→ BATCH LE-15, Must.
