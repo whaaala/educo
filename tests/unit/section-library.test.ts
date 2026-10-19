@@ -17,7 +17,7 @@ const ROOT = process.cwd();
 type Category = { id: string; label: string; group: string; count: number; batch: string };
 const CATS = SECTIONS.categories as Category[];
 const file = (id: string) => join(ROOT, "config", "sections", `${id}.json`);
-const sectionsOf = (id: string): SectionDef[] => (existsSync(file(id)) ? (JSON.parse(readFileSync(file(id), "utf8")) as { sections: SectionDef[] }).sections : []);
+const sectionsOf = (id: string): SectionDef[] => (existsSync(file(id)) ? (JSON.parse(readFileSync(file(id), "utf8").replace(/\r\n/g, "\n")) as { sections: SectionDef[] }).sections : []);
 const BUILT = CATS.filter((c) => existsSync(file(c.id))); // a category of a later batch has no file yet
 const walk = (n: BoxNode, f: (n: BoxNode) => void) => { f(n); n.children?.forEach((c) => walk(c, f)); };
 const shape = (n: BoxNode): unknown => [n.type, n.tag ?? "", (n.children ?? []).map(shape)];

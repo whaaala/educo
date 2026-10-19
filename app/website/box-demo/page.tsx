@@ -1314,7 +1314,9 @@ export default function BoxDemoPage() {
                 maxWidth: "none",
                 // Laid out at the page's OWN size and scaled visually, so the page keeps the viewport it was
                 // promised. Height follows the chosen screen; Responsive just fills the stage.
-                height: screenH ?? "100%",
+                // LE15-47 · Responsive keeps the WHOLE window's height for the page (a "one screen tall" design stays true) while
+                // the bar shows — the page starts below the bar instead of under it, its last bar's-height a short scroll away
+                height: screenH ?? (barShown ? `calc(100% + ${barH}px)` : "100%"),
                 transform: scale !== 1 ? `scale(${scale})` : undefined,
                 transformOrigin: "top left",
               }}

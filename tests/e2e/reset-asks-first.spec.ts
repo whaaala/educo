@@ -10,6 +10,8 @@ const pages = (page: import("@playwright/test").Page) => page.evaluate(() => JSO
 test("Reset asks before starting the site over, and Undo brings every page back", async ({ page }) => {
   await page.goto("/website/box-demo");
   await pressHeader(page, "Add page"); // in More on a phone (E5a-16)
+  // LE-15 PS-5 (3): Add page asks where the page starts — a person chooses Blank page
+  await page.getByRole("dialog", { name: "Add a page" }).getByRole("button", { name: "Blank page" }).click();
   await expect.poll(() => pages(page)).toBe(2);
 
   await pressHeader(page, "Reset");

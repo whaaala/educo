@@ -43,7 +43,7 @@ import { SECTION_DRAG_TYPE } from "@/lib/section-library";
  * colour alone, WCAG 1.4.1) — Wix marks them green. Editor-only: the attribute is the canvas's, the export never writes it.
  */
 const GLOBAL_MARK_CSS = ".eu-tokens [data-global]{position:relative;outline:0.125rem dashed oklch(52% 0.13 160);outline-offset:-0.125rem}"
-  + ".eu-tokens [data-global]::after{content:attr(data-global);position:absolute;top:0;left:0;z-index:5;pointer-events:none;"
+  + `.eu-tokens [data-global]::after{content:attr(data-global);position:absolute;top:0;left:0;z-index:${CHROME_Z.guides};pointer-events:none;`
   + "font:600 0.6875rem/1.6 system-ui,sans-serif;padding:0 0.375rem;background:oklch(52% 0.13 160);color:oklch(100% 0 0)}";
 
 /** The page being edited, for the links that go to it (LE15-27) — the export's `isCurrent`, on the canvas. */

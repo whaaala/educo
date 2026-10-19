@@ -18,6 +18,7 @@ const { WIDTHS } = require('./screens.js');
 const { sleep, deselect, pvOpen, pvClose, sweep, site } = require('./uat-rx3-headed.js');
 const W = require('../../config/inspector.json');
 const T = W.sections;
+const TP = require('../../config/layout.json').rungs.tabletPortrait.from; // RULE CFG — where the phone ends is data
 const OUT = path.join(__dirname, 'logs', 'le15'); fs.mkdirSync(OUT, { recursive: true });
 const ONLY = (process.argv.find((a) => a.startsWith('--only=')) || '').slice(7).split(',').filter(Boolean);
 const results = [];
@@ -42,7 +43,6 @@ const blockOf = (band) => (band.rowBand && band.children && band.children.length
 async function bandTags(page) { const p = await active(page); return (p.root.children || []).map((b) => `${blockOf(b).tag || 'div'}:${blockOf(b).id.slice(-4)}`); }
 async function addTile(page, cat, name, keep = false) { await sectionsTab(page, keep); await chip(page, new RegExp(`^${cat}`)).click(); await sleep(page, 400); await tile(page, name).click(); await sleep(page, 900); }
 const textOf = (n) => [n.text || '', ...(n.children || []).map(textOf)].join(' ').replace(/\s+/g, ' ').trim();
-async function words(page, id) { const p = await active(page); let n = null; const w = (x) => { if (x.id === id) n = x; (x.children || []).forEach(w); }; w(p.root); return n ? textOf(n) : ''; }
 async function selectedId(page) { return page.evaluate(() => document.querySelector('.outline-indigo-500')?.getAttribute('data-box-id') ?? null); }
 async function named(page, name) { const box = page.getByRole('dialog').filter({ has: page.getByRole('textbox') }).filter({ hasNot: page.getByRole('textbox', { name: 'Search blocks' }) }).last(); await box.getByRole('textbox').fill(name); await box.getByRole('textbox').press('Enter'); await sleep(page, 700); }
 async function insBtn(page, label) { await H.panel(page, false); const ex = page.getByRole('button', { name: 'Expand inspector' }); if (await ex.isVisible().catch(() => false)) await ex.click(); const b = page.locator('aside[aria-label="Inspector"]').getByRole('button', { name: label, exact: true }).first(); await b.scrollIntoViewIfNeeded(); await b.click(); await sleep(page, 500); }
@@ -181,7 +181,7 @@ const JOBS = {
     rec(J, 'U6 with reduced motion every title is there at once', still, still ? 'still, visible' : 'hidden while it waits');
     await pvClose(page, 1366);
     await pvOpen(page);
-    const ans = await sweep(page, (fr, w) => fr.evaluate((w) => {
+    const ans = await sweep(page, (fr, w) => fr.evaluate(([w, tp]) => {
       const over = document.documentElement.scrollWidth > window.innerWidth + 1;
       const ul = document.querySelector('header ul'); const lines = ul ? new Set(Array.from(ul.children).map((li) => Math.round(li.getBoundingClientRect().top))).size : 0;
       const p = Array.from(document.querySelectorAll('p')).find((x) => /day school for ages 3 to 18/.test(x.textContent || ''));
@@ -191,8 +191,8 @@ const JOBS = {
       const gap = apply && visit ? Math.round(visit.getBoundingClientRect().left - apply.getBoundingClientRect().right) : -1;
       const broken = Array.from(document.querySelectorAll('a')).filter((a) => ['Admissions', 'Term dates', 'Lunch menu'].includes(a.textContent.trim()) && a.getBoundingClientRect().height > 1.5 * parseFloat(getComputedStyle(a).lineHeight)).length; // wrapped = more than one LINE (type grows with the screen)
       const imgs = Array.from(document.querySelectorAll('img')); const bad = imgs.filter((i) => i.getBoundingClientRect().top < window.innerHeight && i.complete && !i.naturalWidth).length;
-      return `${over ? 'SIDEWAYS' : 'fits'}·menu ${w < 600 ? (lines === 1 ? 'one line' : lines + ' lines') : 'n/a'}·${centred ? 'centred' : 'OFF-CENTRE'}·buttons ${gap >= 0 && gap < 60 ? 'together' : 'APART ' + gap}·${broken ? broken + ' BROKEN LABELS' : 'labels whole'}·${bad ? bad + ' BROKEN PICTURES' : 'pictures'}`;
-    }, w));
+      return `${over ? 'SIDEWAYS' : 'fits'}·menu ${w < tp ? (lines === 1 ? 'one line' : lines + ' lines') : 'n/a'}·${centred ? 'centred' : 'OFF-CENTRE'}·buttons ${gap >= 0 && gap < 60 ? 'together' : 'APART ' + gap}·${broken ? broken + ' BROKEN LABELS' : 'labels whole'}·${bad ? bad + ' BROKEN PICTURES' : 'pictures'}`;
+    }, [w, TP]));
     const okAll = !/SIDEWAYS|lines|OFF-CENTRE|APART|BROKEN/.test(ans);
     rec(J, `U7 every width of screens.js (${WIDTHS.length}): fits, the phone menu one line, centred words, buttons together, labels and pictures whole`, okAll, ans);
     await shot(page, 'U7-preview-last');

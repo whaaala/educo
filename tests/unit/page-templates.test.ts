@@ -12,7 +12,7 @@ import type { SectionDef } from "@/lib/section-library";
 /** PS-5 (3) · a new page from a template — box-builder-sections.feature (built-in templates; my own, up to 40; a copy with the site's header and footer). */
 
 const ROOT = process.cwd();
-const ALL: SectionDef[] = (SECTIONS.categories as { id: string }[]).flatMap((c) => { try { return (JSON.parse(readFileSync(join(ROOT, "config", "sections", `${c.id}.json`), "utf8")) as { sections: SectionDef[] }).sections; } catch { return []; } });
+const ALL: SectionDef[] = (SECTIONS.categories as { id: string }[]).flatMap((c) => { try { return (JSON.parse(readFileSync(join(ROOT, "config", "sections", `${c.id}.json`), "utf8").replace(/\r\n/g, "\n")) as { sections: SectionDef[] }).sections; } catch { return []; } });
 const lookup: SectionLookup = (id) => ALL.find((s) => s.id === id);
 const words = (n: BoxNode): string[] => [...(n.text ? [n.text] : []), ...(n.children ?? []).flatMap(words)];
 

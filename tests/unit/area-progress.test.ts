@@ -31,7 +31,7 @@ describe("area progress — the percentage left is counted, never guessed", () =
   const esc = (id: string) => id.replace(/[-.]/g, "\\$&");
 
   it("a batch heading that loses its change count is caught", () => {
-    const broken = TREE.replace(new RegExp(`(\\*\\*BATCH ${esc(OPEN.id)} · [^\\n]*?)\\d+ changes`), "$1");
+    const broken = TREE.replace(new RegExp(`(\\*\\*BATCH ${esc(OPEN.id)} · [^\\n]*?)\\d+ changes?`), "$1");
     expect(areaProgress(broken, "Website layout").essentials.find((b) => b.id === OPEN.id)?.counted).toBe(false);
   });
 
