@@ -1202,6 +1202,18 @@ describe("the canvas and the published page share one paragraph measure (#74)", 
     expect(css).toContain(measureCss(".eu-tokens"));
     expect(BASE_CSS).toContain(measureCss(".eu-root"));
   });
+
+  it("LE15-34 · a CENTRED paragraph takes its capped column to the middle, on the canvas and in the published page", async () => {
+    const { measureCss } = await import("@/lib/educo-ui/base");
+    const root = createContainer("column", { id: "root", children: [createElement("text", { id: "t", text: "Words", textAlign: "center" } as Partial<BoxNode>)] } as Partial<BoxNode>);
+    const { container } = render(<BoxCanvas root={root} theme={DEFAULT_THEME} onChange={() => {}} />);
+    const centred = (scope: string) => `${scope} p[style*="text-align: center"], ${scope} p[style*="text-align:center"] { margin-inline: auto; }`;
+    expect(measureCss(".eu-tokens")).toContain(centred(".eu-tokens"));
+    expect(container.querySelector("p")!.matches('.eu-tokens p[style*="text-align: center"], .eu-tokens p[style*="text-align:center"]'), "the canvas's paragraph is matched").toBe(true);
+    const html = renderPageHTML(root, DEFAULT_THEME);
+    const holder = document.createElement("div"); holder.className = "eu-root"; holder.innerHTML = html;
+    expect(holder.querySelector("p")!.matches('.eu-root p[style*="text-align: center"], .eu-root p[style*="text-align:center"]'), "the published paragraph is matched").toBe(true);
+  });
 });
 
 describe("narrow columns and no fill jump (decided with the user 2026-09-27, #75)", () => {

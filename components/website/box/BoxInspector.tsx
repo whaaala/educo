@@ -643,7 +643,7 @@ export function blockLabel(node: BoxNode): string {
 }
 const TRAIL = INSPECTOR.trail;
 
-export default function BoxInspector({ trail = [], onSelectBlock, section = false, sectionPlace, outerDefault, fillHeight, pageSpan, onSetSpan, pageLines, onSetLines, onSetFreeInset, rowStepRem, node, theme, onPatch, onAddChild, onAddAnnouncement, onFloat, onUnfloat, onLayer, onAlignInRow, rowJustify, onSectionWidth, sectionWidth, siteWidth, sectionFollows, rowOfPage = false, canFloat = true, parentFlow, canWrapWords = false, canOverlapUp = false, inGrid = false, inMasonry = false, inFitGrid = false, gridTrack, onSetFraction, onRetrack, onKind, breakpoint = "base", overridden = false, onResetOverride, onResetField, pages, currentPageId, pinBlockedBy = null, fixedBlockedBy = null, pinScope = null }: {
+export default function BoxInspector({ trail = [], onSelectBlock, section = false, sectionPlace, outerDefault, fillHeight, pageSpan, onSetSpan, pageLines, onSetLines, onSetFreeInset, rowStepRem, node, theme, onPatch, onAddChild, onAddAnnouncement, onFloat, onUnfloat, onLayer, onAlignInRow, rowJustify, onSectionWidth, onSaveSection, sectionWidth, siteWidth, sectionFollows, rowOfPage = false, canFloat = true, parentFlow, canWrapWords = false, canOverlapUp = false, inGrid = false, inMasonry = false, inFitGrid = false, gridTrack, onSetFraction, onRetrack, onKind, breakpoint = "base", overridden = false, onResetOverride, onResetField, pages, currentPageId, pinBlockedBy = null, fixedBlockedBy = null, pinScope = null }: {
   /** ED-2 (LE-10): the blocks round this one, outermost first (`selectionChain` without the block itself) — the same
    *  blocks Escape steps out through. Each is a button that selects it (`onSelectBlock`). */
   trail?: BoxNode[];
@@ -666,6 +666,8 @@ export default function BoxInspector({ trail = [], onSelectBlock, section = fals
   // Band or centred column. Present only when this block is a SECTION of the page, because only then is there
   // a band to write to — the setting lives on the parent, which the user can never select.
   onSectionWidth?: (v: "band" | "contained") => void;
+  /** LE-15 PS-5 (1): keep this page section in My sections — shown only for a section of the page. */
+  onSaveSection?: () => void;
   sectionWidth?: "band" | "contained";                        // its current position (parent row's justify-content)
   rowOfPage?: boolean;                                        // LE3-2: on a row of the page — still so once a set width takes it off the lines
   siteWidth?: number;                                         // AC-9: the site's content width (rem), when it has one
@@ -1144,6 +1146,12 @@ export default function BoxInspector({ trail = [], onSelectBlock, section = fals
                   It only appears for a section of the PAGE; a container inside a component has no such choice.
                   Wording is what a teacher would say: "edge to edge" beats "full-bleed", and the hint explains
                   the half that is not obvious — the background still spans. */}
+              {onSaveSection && (
+                <div className="space-y-1">
+                  <Button variant="secondary" size="sm" onClick={onSaveSection}>{INSPECTOR.sections.save}</Button>
+                  <p className="text-[11px] leading-snug text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">{INSPECTOR.sections.saveHint}</p>
+                </div>
+              )}
               {onSectionWidth && (
                 <div className="space-y-1">
                   <span className={label}>Content width</span>

@@ -147,6 +147,11 @@ function container(n: SectionNode, ctx: Ctx): BoxNode {
     default: node = createContainer("column", { ...centre, ...paint });
   }
   node.children = (n.c ?? []).map((ch) => build(ch, inner));
+  // A row of only words, buttons and links that is not spread out keeps them at their own size: in a Side by side a width-less
+  // block grows into the room left (box-model's fill-and-follow), so two buttons took half the line each (measured, the review
+  // sheet 2026-10-19). Placing them at the start — the Inspector's nine squares, Left — is what stops the grow (LE4-1).
+  const leafy = n.k === "row" && (n.c ?? []).every((ch) => !!ch.r && ch.r !== "image");
+  if (leafy && (n.set?.justify ?? "start") === "start") node.children = node.children.map((ch) => ({ ...ch, placeX: "start" as const }));
   return Object.assign(node, n.set ?? {});
 }
 

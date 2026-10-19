@@ -93,6 +93,15 @@ describe("the section library", () => {
     for (const band of left.children!) expect(band.justify, "not centred").toBeUndefined();
   });
 
+  it("a row of buttons that is not spread out hugs them, so they never stretch; a spread row keeps the line (measured on the sheet)", () => {
+    const row = (justify?: "between") => buildSection({ id: "t", name: "t", tree: { k: "section", c: [{ k: "row", ...(justify ? { set: { justify } } : {}), c: [{ r: "button", t: "Apply" }, { r: "button2", t: "Visit" }] }] } }, { finish: "plain", wireframe: false });
+    const kids = (s: BoxNode) => s.children![0].children![0].children!;
+    for (const b of kids(row())) expect(b.placeX, "placed at the start: no grow").toBe("start");
+    for (const b of kids(row("between"))) expect(b.placeX, "spread: Spread places them").toBeUndefined();
+    const withStack = buildSection({ id: "t", name: "t", tree: { k: "section", c: [{ k: "row", c: [{ k: "stack", c: [{ r: "title", t: "Hi" }] }, { r: "image" }] }] } }, { finish: "plain", wireframe: false });
+    for (const b of kids(withStack)) expect(b.placeX, "columns still share the line").toBeUndefined();
+  });
+
   it("D1 (a) · a designed section moves (an entrance), a wireframe does not", () => {
     const def: SectionDef = { id: "t", name: "t", tree: { k: "section", c: [{ r: "title", t: "Hello" }, { r: "button", t: "Go" }] } };
     const reveals = (n: BoxNode) => { let k = 0; walk(n, (x) => { if (x.revealEffect) k++; }); return k; };

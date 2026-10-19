@@ -178,6 +178,18 @@
     "none": "No sections match “{q}”.",
     "replaceTitle": "Replace the {which} on every page?",
     "replaceButton": "Replace",
-    "replaceWarning": "The {which} you choose takes the place of the current one on every page of this site. You can Undo (Ctrl+Z) right after."
+    "replaceWarning": "The {which} you choose takes the place of the current one on every page of this site. You can Undo (Ctrl+Z) right after.",
+    "mine": "My sections",
+    "save": "Save as my section",
+    "saveHint": "Keep a copy to use again, in this site or any other you build (Ctrl+Alt+S).",
+    "saveTitle": "Save as my section",
+    "saveLabel": "Name",
+    "saveConfirm": "Save",
+    "saveLimit": "You have saved {limit} sections, the most there is room for. Delete one you no longer use, then save this one.",
+    "rename": "Rename",
+    "delete": "Delete",
+    "renameTitle": "Rename this section",
+    "deleteTitle": "Delete “{name}” from My sections?",
+    "deleteWarning": "Pages that already use it keep their copy. Only the saved one goes."
   }
 }

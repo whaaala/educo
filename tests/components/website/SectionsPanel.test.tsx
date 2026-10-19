@@ -57,6 +57,29 @@ describe("SectionsPanel", () => {
     expect(first(onInsert.mock.calls[1][0] as BoxNode, "heading")!.fontSize).toBe(FINISHES.bold.roles.title.size);
   });
 
+  it("PS-5 (1) · My sections: shown once one is saved; a tile adds a copy; Rename and Delete ask first", async () => {
+    localStorage.clear();
+    const { createContainer, createElement } = await import("@/lib/box-model");
+    const { saveSection, listSaved } = await import("@/lib/saved-sections");
+    const s = createContainer("column", { tag: "section" }); s.children = [createElement("heading", { text: "Open day is Saturday" })];
+    saveSection(s, "Open day banner");
+    const { onInsert } = await open();
+    fireEvent.click(await screen.findByRole("tab", { name: /^My sections/ }));
+    fireEvent.click(await screen.findByRole("button", { name: "Add Open day banner, My sections" }));
+    expect(texts(onInsert.mock.calls[0][0] as BoxNode)).toContain("Open day is Saturday");
+    fireEvent.click(screen.getByRole("button", { name: "Rename" }));
+    const field = await screen.findByRole("textbox");
+    fireEvent.change(field, { target: { value: "Open day" } });
+    fireEvent.click(screen.getAllByRole("button", { name: "Rename" }).at(-1)!);
+    expect(listSaved()[0].name).toBe("Open day");
+    fireEvent.click(await screen.findByRole("button", { name: "Delete" }));
+    expect(listSaved().length, "not before the person confirms").toBe(1);
+    const confirm = await screen.findAllByRole("button", { name: "Delete" });
+    fireEvent.click(confirm.at(-1)!);
+    expect(listSaved()).toEqual([]);
+    localStorage.clear();
+  });
+
   it("a search finds sections by name or category, across every category", async () => {
     await open("footer");
     expect((await screen.findAllByRole("button", { name: /Footers$/ })).length).toBeGreaterThan(0);

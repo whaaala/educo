@@ -104,6 +104,7 @@ Feature: Box Builder — ready-made sections, my sections, global sections and p
     And with reduced motion turned on, it appears still, all at once
     And every hover effect also shows on keyboard focus, and nothing needs a hover on a touch screen
 
+  # HEADED: scripts/uat/review-le15-sections.js — every section, every finish, at 1280 and 375, on contact sheets for a person to judge
   Scenario: Every section reflows on a tablet and a phone
     When the page holding any section of the gallery is previewed at every width of the screen list
     Then nothing runs off the side and nothing overlaps

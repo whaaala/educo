@@ -28,6 +28,8 @@ import {
 } from "@/lib/box-model";
 import { blockForKind } from "@/lib/box-presets";
 import { insertSection } from "@/lib/section-library";
+import { saveSection } from "@/lib/saved-sections";
+import NameDialog from "@/components/website/box/NameDialog";
 import {
   type BoxSite, freshSite, siteFonts, setSiteFonts, SAVED_SITE_FONTS, coerceSite, normalizeSite, setPageRoot, addPage, deletePage, renamePage, setHomePage, duplicatePage, emptyPageRoot, setSiteTheme, setPageGrid, movePage, hasSharedRegion, setRegionShown,
 } from "@/lib/box-site";
@@ -197,6 +199,19 @@ export default function BoxDemoPage() {
   const [confirmDeletePage, setConfirmDeletePage] = useState(false); // delete-page confirmation modal
   const [confirmReset, setConfirmReset] = useState(false); // start-over confirmation modal (D3-16)
   const [pendingSection, setPendingSection] = useState<BoxNode | null>(null); // LE-15: a ready-made header / footer waiting for "Replace on every page?"
+  const [savingSection, setSavingSection] = useState<BoxNode | null>(null); // LE-15 PS-5 (1): the section being named for My sections
+  const [mySectionError, setMySectionError] = useState<string | undefined>(undefined);
+  const [savedSaid, setSavedSaid] = useState(""); // spoken: "Saved to My sections"
+  const saveTargetRef = useRef<BoxNode | null>(null); // the section Ctrl+Alt+S saves — refreshed every render (rule 2: refs, [] deps)
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.code !== "KeyS" || !(e.ctrlKey || e.metaKey) || !e.altKey || e.repeat || typingIn(document.activeElement)) return;
+      if (!saveTargetRef.current) return;
+      e.preventDefault(); setMySectionError(undefined); setSavingSection(saveTargetRef.current);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
   const [pageCheckOpen, setPageCheckOpen] = useState(false); // the Page check (semantics C1)
   const [inspectorOpen, setInspectorOpen] = useState(true); // right Inspector panel collapsed?
   /**
@@ -966,6 +981,19 @@ export default function BoxDemoPage() {
    * LE-15 · A READY-MADE SECTION goes in as a whole band after the band you are on, or at the end of the page (`insertSection`),
    * in ONE undo step. A header or footer replaces the site's own on every page — so when there is one, it asks first.
    */
+  /** PS-5 (1): the PAGE section holding the selection — a band's one block, or a band of several as one Side by side. */
+  const enclosingSection = (id: string | undefined): BoxNode | null => {
+    const band = id ? (root.children ?? []).find((b) => !!findBox(b, id)) : undefined;
+    if (!band) return null;
+    return band.rowBand && band.children?.length === 1 ? band.children[0] : { ...band, rowBand: undefined };
+  };
+  saveTargetRef.current = enclosingSection(selected?.id);
+  const saveMySection = (name: string) => {
+    if (!savingSection) return;
+    const r = saveSection(savingSection, name);
+    if (!r.ok) { setMySectionError(r.reason === "limit" ? INSPECTOR.sections.saveLimit.replace("{limit}", String(r.limit)) : undefined); return; }
+    setSavingSection(null); setSavedSaid(`Saved “${name}” to ${INSPECTOR.sections.mine}`);
+  };
   const placeSection = (section: BoxNode) => {
     commitWith((cur) => insertSection(cur, selected?.id ?? null, section));
     revealBox(section.id);
@@ -1552,7 +1580,7 @@ export default function BoxDemoPage() {
                   onSetSpan={(n) => commit(setSpan(root, selected.id, n, columnsAt(gridHere, bp), bp), `span:${selected.id}`)}
                   pageLines={(() => { const c = columnsAt(gridHere, bp), l = linesAt(root, selected.id, c, bp); if (!l) return undefined; const w = device === screenDevice ? fitW : DEVICES.find((d) => d.id === device)?.w, band = findParent(root, selected.id)?.parent; return { ...l, cols: c, drawnAcross: w && band ? fitStepAt(band, selected.id, w / 16, bp) ?? undefined : undefined }; })()}
                   onSetLines={(want) => commit(want === "full" ? fullWidthAt(root, selected.id, bp) : setLinesAt(root, selected.id, want, columnsAt(gridHere, bp), bp), `lines:${selected.id}`)}
-                  onSetFreeInset={linesAt(root, selected.id, columnsAt(gridHere, bp), bp) ? (side, v) => commit(side === "both" ? setFreeInset(setFreeInset(root, selected.id, "left", undefined, bp), selected.id, "right", undefined, bp) : setFreeInset(root, selected.id, side, v, bp), `free:${selected.id}`) : undefined}pinBlockedBy={blockedByLabel(pinBlockedBy(root, selected.id, bp))} fixedBlockedBy={blockedByLabel(fixedBlockedBy(root, selected.id, bp))} pinScope={pinScopeWords(root, selected.id, bp)} node={bp === "base" ? selected : resolveResponsive(selected, bp)} theme={renderTheme} onPatch={onPatch} onAddChild={addChildSection} onAddAnnouncement={() => commit(addAnnouncementBar(root, selected.id))} onFloat={floatSelected} onUnfloat={unfloatSelected} onLayer={layerSelected} onAlignInRow={(j) => commit(alignInRow(root, selected.id, j, bp))} rowJustify={alignInRowOf(root, selected.id, bp)} onSectionWidth={pageBandOf(root, selected.id) ? (v) => commit(setSectionWidth(root, selected.id, v)) : undefined} sectionWidth={sectionWidthOf(root, selected.id)} siteWidth={hasSiteMeasure(root) ? root.gridSpace?.measure : undefined} sectionFollows={pageBandOf(root, selected.id)?.sectionWidth === undefined} rowOfPage={!!findParent(root, selected.id)?.parent.pageRow} canFloat={selected.id !== root.id} parentFlow={parentFlowOf(root, selected.id, bp)} canWrapWords={canWrapWords(root, selected.id, bp)} canOverlapUp={canOverlapUp(root, selected.id)} inGrid={gridTrack !== undefined} inMasonry={parentGrid?.rowFlow === "masonry"} inFitGrid={!!parentGrid && !!gridAutoFit(parentGrid)} gridTrack={gridTrack} onSetFraction={setFraction} onRetrack={retrackSelected} onKind={(k) => { const r = changeKind(root, selected.id, k); if (r.root !== root) commit(r.root); return r.dropped; }} breakpoint={bp} overridden={hasOverride(selected, bp)} onResetOverride={resetOverride} onResetField={(k) => commit(resetField(root, selected.id, k, bp))} pages={pageList} currentPageId={activePage.id} />
+                  onSetFreeInset={linesAt(root, selected.id, columnsAt(gridHere, bp), bp) ? (side, v) => commit(side === "both" ? setFreeInset(setFreeInset(root, selected.id, "left", undefined, bp), selected.id, "right", undefined, bp) : setFreeInset(root, selected.id, side, v, bp), `free:${selected.id}`) : undefined}pinBlockedBy={blockedByLabel(pinBlockedBy(root, selected.id, bp))} fixedBlockedBy={blockedByLabel(fixedBlockedBy(root, selected.id, bp))} pinScope={pinScopeWords(root, selected.id, bp)} node={bp === "base" ? selected : resolveResponsive(selected, bp)} theme={renderTheme} onPatch={onPatch} onAddChild={addChildSection} onAddAnnouncement={() => commit(addAnnouncementBar(root, selected.id))} onFloat={floatSelected} onUnfloat={unfloatSelected} onLayer={layerSelected} onAlignInRow={(j) => commit(alignInRow(root, selected.id, j, bp))} rowJustify={alignInRowOf(root, selected.id, bp)} onSaveSection={pageBandOf(root, selected.id) ? () => { setMySectionError(undefined); setSavingSection(enclosingSection(selected.id)); } : undefined} onSectionWidth={pageBandOf(root, selected.id) ? (v) => commit(setSectionWidth(root, selected.id, v)) : undefined} sectionWidth={sectionWidthOf(root, selected.id)} siteWidth={hasSiteMeasure(root) ? root.gridSpace?.measure : undefined} sectionFollows={pageBandOf(root, selected.id)?.sectionWidth === undefined} rowOfPage={!!findParent(root, selected.id)?.parent.pageRow} canFloat={selected.id !== root.id} parentFlow={parentFlowOf(root, selected.id, bp)} canWrapWords={canWrapWords(root, selected.id, bp)} canOverlapUp={canOverlapUp(root, selected.id)} inGrid={gridTrack !== undefined} inMasonry={parentGrid?.rowFlow === "masonry"} inFitGrid={!!parentGrid && !!gridAutoFit(parentGrid)} gridTrack={gridTrack} onSetFraction={setFraction} onRetrack={retrackSelected} onKind={(k) => { const r = changeKind(root, selected.id, k); if (r.root !== root) commit(r.root); return r.dropped; }} breakpoint={bp} overridden={hasOverride(selected, bp)} onResetOverride={resetOverride} onResetField={(k) => commit(resetField(root, selected.id, k, bp))} pages={pageList} currentPageId={activePage.id} />
               ) : (
                 <div className="p-6 text-xs text-gray-400 text-center mt-6">Click a block to edit it — or drag a box on empty canvas to select several at once.</div>
               )}
@@ -1597,6 +1625,9 @@ export default function BoxDemoPage() {
         confirmButtonText={INSPECTOR.sections.replaceButton}
         warningMessage={INSPECTOR.sections.replaceWarning.replace("{which}", pendingSection?.tag ?? "")}
       />
+      <NameDialog open={!!savingSection} title={INSPECTOR.sections.saveTitle} label={INSPECTOR.sections.saveLabel} confirm={INSPECTOR.sections.saveConfirm}
+        start={savingSection?.layerName ?? ""} error={mySectionError} onCancel={() => setSavingSection(null)} onConfirm={saveMySection} />
+      <p role="status" className="sr-only">{savedSaid}</p>
     </div>
   );
 }
