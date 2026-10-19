@@ -77,6 +77,26 @@ stored under `educo-uat-harness/builders/wix-studio/add/`.
 | Interactive | Hover 10 · Click 7 (tabs, accordion, reveal) | Hover 10 · Click 7 |
 | **Total** | **302 layouts in 27 categories**, each in wireframe AND designed: 604 tiles before personalities | 241 |
 
+**The user's conditions on D1 (signed 2026-10-19):**
+- **(a) Motion included.** Every designed section carries its entrance and hover effects from what the builder has now:
+  the Inspector's Entrance and Hover galleries, and the sticky, pinned, scroll-snap and slider behaviour. Reduced motion
+  gives a still version, and every hover has a keyboard focus and touch equivalent. The Interactive categories (Hover 10 ·
+  Click 7) are built on it. As each effects batch (VE-1 … VE-13) lands, the gallery's sections are updated with it in the
+  same change.
+- **(b) The best out there, measured.**
+  - **The reference:** each designed section is made against its kind in the award-site archive (`section-kinds.tsv`:
+    its shapes, look and motion) and the Wix tile.
+  - **The audit:** each is checked by `page-audit.js` on the design rules (type 16–32px, line length, spacing scale,
+    contrast 4.5:1, at most two families) and by RULE P (one personality per finish).
+  - **The look:** each one is checked HEADED at every width of `screens.js`, with canvas == Preview.
+  - **Below the bar:** a section that falls short is a ledger line, not a tile.
+- **(c) Everything editable.**
+  - **Ordinary blocks:** an inserted section is ordinary blocks. Every word, picture, colour, space, radius, border,
+    shadow, effect and per-device setting can be changed with the controls that already exist, and blocks can be added,
+    moved or deleted inside it.
+  - **Guarded:** a guard enumerates every section in `config/sections/` and fails on any node the Inspector cannot
+    select or edit.
+
 **How a person uses it:**
 - **Opening it.** The "Add" panel gains a **Sections** group: categories down the side, a gallery of live tiles (`NodeThumb`, RULE S).
 - **Controls.** Wireframe | Designed, and the Finish (personality) chooser. Search finds sections by name and category.
@@ -152,7 +172,20 @@ stored under `educo-uat-harness/builders/wix-studio/add/`.
 **What this adds to the area:** 4 batches, 23 changes. The layout essentials go from 14 of 67 changes left (21 %) to
 37 of 90 left (41 %).
 
-## 7. Decisions to sign
+## 7. Decisions — SIGNED BY THE USER 2026-10-19
+
+| | Signed |
+|---|---|
+| D1 | 302 layouts in 27 categories, each with its transitions and effects, at award-site quality, everything editable (§4) |
+| D2 | Wireframe + designed; the 7 personality finishes |
+| D3 | In place: one edit updates every page. A global section can be placed several times on one page. Detach edits just that one. Everything inside it (blocks, components) is editable |
+| D4 | My sections in every site of the account, each shown as a live preview before it is used; the site's Preview before publishing |
+| D5 | Designed padding from the spacing tokens, drawn, adjustable to any value including zero |
+| D6 | About 40 free-licence photos, recorded with their licence, developing countries first (RULE AF); no drawn-shape alternative. The Image / Photo component stays with the components work (CP-n) |
+| D7 | LE-15, then LE-15b … LE-15e |
+| D8 | Nice, later: BATCH L-24 |
+
+The recommendations as proposed:
 
 | | Decision | Recommended |
 |---|---|---|
