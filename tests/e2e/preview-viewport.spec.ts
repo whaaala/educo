@@ -388,3 +388,26 @@ test.describe("the preview controls do not run away", () => {
     await barStaysOnScreen(page, "a shortcut that fires while you are typing is a trap");
   });
 });
+
+/**
+ * LE15-47 · THE BAR NEVER COVERS THE PAGE (box-builder-site.feature "The preview's bar never covers the page").
+ * On Responsive the bar floated over the page's top 48px once it stopped hiding itself (E4): a header's name and menu were
+ * cut in half (measured HEADED at 1366 and 5120). On a tablet the bar wraps to two rows, so the room is MEASURED.
+ */
+test.describe("the preview's bar never covers the page", () => {
+  for (const viewport of [{ width: 1440, height: 900 }, { width: 768, height: 1024 }]) {
+    test(`Responsive at ${viewport.width}: the page starts below the bar; hidden, it has the whole window`, async ({ page }) => {
+      await page.setViewportSize(viewport);
+      await openPreview(page);
+      const edges = () => page.evaluate(() => ({
+        bar: Math.round(document.querySelector("[data-preview-bar]")!.getBoundingClientRect().bottom),
+        frame: Math.round(document.querySelector('iframe[title="Site preview"]')!.getBoundingClientRect().top),
+      }));
+      const shown = await edges();
+      expect(shown.frame, `the page starts at ${shown.frame}, the bar ends at ${shown.bar}`).toBeGreaterThanOrEqual(shown.bar);
+      await page.keyboard.press("h");
+      await page.waitForTimeout(500);
+      expect((await edges()).frame, "hidden: the page has the whole window").toBe(0);
+    });
+  }
+});

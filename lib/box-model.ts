@@ -582,6 +582,8 @@ export interface BoxNode {
   landmarkName?: string;
   /** PS-2 (BATCH LE-8): a Page header / Page footer shown "On every page" — edited once, the same on every page (`lib/box-site.ts`). */
   shared?: boolean;
+  globalId?: string;      // LE-15 PS-5 (2): this section is a copy of a GLOBAL section — one edit changes every copy (lib/global-sections.ts)
+  globalName?: string;    // …its name, shown on the canvas and in Layers ("Global · Admissions banner"); never published
   src?: string;           // image / video URL (data URL for uploads)
   // What the image SAYS, for someone who cannot see it — and for search engines. The export hardcoded alt="",
   // which tells a screen reader the picture is decorative and to skip it, so every photo a school added was

@@ -2,7 +2,7 @@ Feature: Box Builder — multi-page site, preview & export
   As a website designer using the Box Builder
   I want multiple pages, a visitor preview, links between pages, and an HTML export
   So that the box engine produces an actual website, not just one isolated canvas
-  Guards: tests/unit/header-spreads.test.ts · tests/unit/box-site.test.ts
+  Guards: tests/unit/header-spreads.test.ts · tests/unit/box-site.test.ts · tests/unit/multipage-export.test.ts · tests/components/website/BoxCanvas.test.tsx
 
   Background:
     Given the Box Builder loads a SITE — an ordered list of pages, each its own box tree, with one home page
@@ -43,6 +43,20 @@ Feature: Box Builder — multi-page site, preview & export
     Given a Button element
     When I choose another page in the "Link to a page" picker (the current page is excluded)
     Then its link becomes "page:<id>"
+
+  # tests/unit/multipage-export.test.ts · tests/components/website/BoxCanvas.test.tsx (LE15-27, BATCH LE-15)
+  Scenario: The menu shows which page the visitor is on
+    Given a header with the Links "Home", "Admissions" and "Term dates", each linked to its page
+    And an "Apply" Button linked to the Admissions page
+    When a visitor opens the Admissions page
+    Then its "Admissions" link and the "Apply" Button tell a screen reader they are the current page
+    And both are underlined with a heavier line, so the current page is never shown by colour alone
+    And the "Home" and "Term dates" links are not marked
+    When I edit the Admissions page on the canvas
+    Then the same link and Button carry the same mark as in the Preview
+    And the line's weight is read from config/layout.json, never typed in code
+    Because the menu linked every page but never said where the visitor was, which Webflow, Wix and
+      Framer all show. Styling that mark yourself is HV-16 (BATCH VE-3)
 
   # ── Preview ──
   Scenario: Visitor preview
@@ -116,6 +130,14 @@ Feature: Box Builder — multi-page site, preview & export
   Scenario: Choosing a screen leaves the next control usable
     When I choose a device from the menu
     Then I can rotate it straight afterwards without hunting for the bar
+
+  # tests/e2e/preview-viewport.spec.ts — "the preview's bar never covers the page" (LE15-47)
+  Scenario: The preview's bar never covers the page
+    Given I am previewing on Responsive, on a computer or a tablet where the bar wraps to two rows
+    Then the page starts just below the bar, so a header's name and menu are whole
+    When I hide the bar with H
+    Then the page has the whole window
+    Because the bar floated over the page's top 48 pixels once it stopped hiding itself, cutting the header in half
 
   Scenario: Hiding the controls, and getting them back
     When I press Hide, or the H key

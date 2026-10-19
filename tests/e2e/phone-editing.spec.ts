@@ -651,3 +651,22 @@ test.describe("the editor on a tablet (E-5c)", () => {
     await expect(note, "…and the Inspector says so").toContainText("on a line of its own");
   });
 });
+
+/**
+ * LE15-50 · On a phone with the Inspector open, More's sheet opened UNDER the Inspector (both on the drawer level, the Inspector
+ * later in the page) — "Add page" and the rest of More could not be reached (found on the phone emulator, BATCH LE-15).
+ */
+test("LE15-50 — on a phone, More opens above the Inspector: its buttons are what a finger reaches", async ({ page }) => {
+  test.skip(!phone(page), "the More sheet is the phone's");
+  await threeBlocks(page);
+  await tapBlock(page, "a");
+  const expand = page.getByRole("button", { name: "Expand inspector" });
+  if (await expand.isVisible().catch(() => false)) await expand.click();
+  await expect(page.locator('aside[aria-label="Inspector"]')).toBeVisible();
+  await page.getByRole("button", { name: "More", exact: true }).click();
+  const add = page.getByRole("dialog", { name: "More" }).getByRole("button", { name: "Add page" });
+  await expect(add).toBeVisible();
+  const box = (await add.boundingBox())!;
+  const reached = await page.evaluate(({ x, y }) => !!document.elementFromPoint(x, y)?.closest('[role="dialog"][aria-label="More"]'), { x: box.x + box.width / 2, y: box.y + box.height / 2 });
+  expect(reached, "a finger on Add page reaches the More sheet, not the Inspector over it").toBe(true);
+});

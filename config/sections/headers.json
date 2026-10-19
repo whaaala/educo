@@ -1,0 +1,75 @@
+{
+  "$comment": "Headers (B1–B6, LAYOUT_BENCHMARK.md). A header REPLACES the site's shared header on every page (box-builder-sections.feature). Trees: lib/section-library.ts SectionNode.",
+  "sections": [
+    { "id": "header-classic", "name": "Logo, menu and a button", "pattern": "B1",
+      "tree": { "k": "header", "set": { "paddingTop": 16, "paddingBottom": 16, "paddingLeft": 24, "paddingRight": 24 },
+        "c": [ { "k": "row", "set": { "justify": "between", "gap": 24 }, "c": [
+          { "r": "logo", "t": "Greenfield Academy" },
+          { "r": "menu", "items": ["Home", "About", "Admissions", "News", "Contact"] },
+          { "r": "button", "t": "Apply now" }
+        ] } ] } },
+    { "id": "header-centred", "name": "Logo above a centred menu", "pattern": "B2",
+      "tree": { "k": "header", "center": true, "set": { "paddingTop": 24, "paddingBottom": 16, "gap": 16, "paddingLeft": 24, "paddingRight": 24 },
+        "c": [
+          { "r": "logo", "t": "Greenfield Academy" },
+          { "r": "menu", "items": ["Home", "About", "Admissions", "News", "Term dates", "Contact"] }
+        ] } },
+    { "id": "header-utility", "name": "A contact bar above the menu", "pattern": "B3",
+      "tree": { "k": "header", "set": { "gap": 0 },
+        "c": [
+          { "k": "row", "tone": "strong", "set": { "justify": "between", "gap": 16, "paddingTop": 8, "paddingBottom": 8, "paddingLeft": 24, "paddingRight": 24 }, "c": [
+            { "r": "small", "t": "+234 801 234 5678 · office@greenfield.sch.ng", "set": { "width": "auto" } },
+            { "r": "link", "t": "Parent portal" }
+          ] },
+          { "k": "row", "set": { "justify": "between", "gap": 24, "paddingTop": 16, "paddingBottom": 16, "paddingLeft": 24, "paddingRight": 24 }, "c": [
+            { "r": "logo", "t": "Greenfield Academy" },
+            { "r": "menu", "items": ["About", "Admissions", "News", "Contact"] },
+            { "r": "button", "t": "Apply now" }
+          ] }
+        ] } },
+    { "id": "header-announcement", "name": "An announcement above the menu", "pattern": "B4",
+      "tree": { "k": "header", "set": { "gap": 0 },
+        "c": [
+          { "k": "row", "tone": "inverse", "center": true, "set": { "justify": "center", "gap": 12, "paddingTop": 10, "paddingBottom": 10, "paddingLeft": 24, "paddingRight": 24 }, "c": [
+            { "r": "small", "t": "Applications for September close on 30 June.", "set": { "width": "auto" } },
+            { "r": "link", "t": "Apply today" }
+          ] },
+          { "k": "row", "set": { "justify": "between", "gap": 24, "paddingTop": 16, "paddingBottom": 16, "paddingLeft": 24, "paddingRight": 24 }, "c": [
+            { "r": "logo", "t": "Greenfield Academy" },
+            { "r": "menu", "items": ["Home", "About", "Admissions", "News", "Contact"] }
+          ] }
+        ] } },
+    { "id": "header-dark", "name": "On a dark band", "pattern": "B1",
+      "tree": { "k": "header", "tone": "inverse", "set": { "paddingTop": 18, "paddingBottom": 18, "paddingLeft": 24, "paddingRight": 24 },
+        "c": [ { "k": "row", "set": { "justify": "between", "gap": 24 }, "c": [
+          { "r": "logo", "t": "Greenfield Academy" },
+          { "r": "menu", "items": ["About", "Admissions", "News", "Contact"] },
+          { "r": "button", "t": "Book a visit" }
+        ] } ] } },
+    { "id": "header-logo-centre", "name": "Menu, logo in the middle, button", "pattern": "B1",
+      "tree": { "k": "header", "set": { "paddingTop": 20, "paddingBottom": 20, "paddingLeft": 24, "paddingRight": 24 },
+        "c": [ { "k": "row", "set": { "justify": "between", "gap": 24 }, "c": [
+          { "r": "menu", "items": ["About", "Admissions", "News"] },
+          { "r": "logo", "t": "Greenfield Academy" },
+          { "r": "button", "t": "Contact us" }
+        ] } ] } },
+    { "id": "header-two-buttons", "name": "Name and motto, menu, two buttons", "pattern": "B1",
+      "tree": { "k": "header", "tone": "soft", "set": { "paddingTop": 16, "paddingBottom": 16, "paddingLeft": 24, "paddingRight": 24 },
+        "c": [ { "k": "row", "set": { "justify": "between", "gap": 24 }, "c": [
+          { "k": "stack", "set": { "gap": 2, "width": "auto" }, "c": [
+            { "r": "logo", "t": "Greenfield Academy" },
+            { "r": "small", "t": "Knowledge · Character · Service", "set": { "width": "auto" } }
+          ] },
+          { "r": "menu", "items": ["About", "Admissions", "Academics", "Contact"] },
+          { "k": "row", "set": { "gap": 12, "width": "auto" }, "c": [ { "r": "button2", "t": "Parent login" }, { "r": "button", "t": "Apply" } ] }
+        ] } ] } },
+    { "id": "header-big-name", "name": "A big name and a full-width menu", "pattern": "B3",
+      "tree": { "k": "header", "center": true, "set": { "paddingTop": 32, "paddingBottom": 0, "gap": 20, "paddingLeft": 24, "paddingRight": 24 },
+        "c": [
+          { "r": "logo", "t": "Greenfield Academy", "set": { "fontSize": 40 } },
+          { "k": "row", "tone": "grey", "set": { "justify": "center", "paddingTop": 12, "paddingBottom": 12 }, "c": [
+            { "r": "menu", "items": ["Home", "About", "Admissions", "Academics", "School life", "News", "Contact"] }
+          ] }
+        ] } }
+  ]
+}

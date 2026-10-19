@@ -37,7 +37,14 @@ export { RUNG_PX as BREAKPOINTS, RUNG_EM as BREAKPOINTS_EM };
  * Guarded in a real browser by tests/e2e/paragraph-measure.spec.ts, which counts the lines font by font.
  */
 export const PARAGRAPH_MEASURE = "min(56ch, 32em)";
-export const measureCss = (scope: string) => `${scope} p { max-width: ${PARAGRAPH_MEASURE}; }`;
+/**
+ * …and a capped paragraph that is CENTRED (or right-aligned) takes its column with it (LE15-34): capped, it stayed at the
+ * left of a wide box, so its centred words sat left of the middle — measured, a 494px column at the left of a 1210px box.
+ * Matched on the inline text-align both renderers write (the canvas "text-align: center", the export "text-align:center").
+ */
+export const measureCss = (scope: string) => `${scope} p { max-width: ${PARAGRAPH_MEASURE}; }`
+  + ` ${scope} p[style*="text-align: center"], ${scope} p[style*="text-align:center"] { margin-inline: auto; }`
+  + ` ${scope} p[style*="text-align: right"], ${scope} p[style*="text-align:right"] { margin-left: auto; }`;
 
 /**
  * A LINK BLOCK'S HOVER (RX4-14): it changed nothing — measured underlined and the same colour before and after.

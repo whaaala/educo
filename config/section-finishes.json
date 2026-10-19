@@ -1,0 +1,165 @@
+{
+  "$comment": "THE FINISHES OF A READY-MADE SECTION (BATCH LE-15, D2): the wireframe and the seven website personalities of the design deck (docs/web-anatomy/design-foundation/03-components-and-layout-patterns.md, pp. 235-255; RULE P). A section's tree names TONES and ROLES; a finish says what they look like. tones: the colours of a band or card, ONLY theme tokens; an accent is a WORD colour, so it is the theme's link colour (tuned to read as text in each theme — the raw brand read 2.77 : 1 on dark, LE15-49), and muted words on the soft band lean toward the text colour (4.31 : 1 in Light otherwise) (so every finish works in light, dark, midnight and purple; rule 17) — bg, text, muted (secondary words), accent (eyebrow, icon), btnBg / btnText (a primary button on that tone), line (a border). A finish's toneMap swaps a tone it does not use (Minimalist has no colour blocks: strong → plain). roles: type per role, in px (the model's unit; published in rem) — size, weight, transform, spacing (letter-spacing px), italic, lineHeight. The TYPEFACE is the site's (Site fonts), never the finish's, so a page of mixed finishes still has at most two families (RULE D). button: radius px (999 = a pill), secondary 'outline' or 'text'. card: radius, shadow (sm | md | lg | ''), border px. image: radius px. reveal / hover: an entrance (lib/interactions.ts REVEAL_EFFECTS) and a hover (HOVER_EFFECTS) — '' none; reduced motion turns them off on the page (D1 a).",
+  "tones": {
+    "plain":   { "bg": "var(--eu-color-bg)", "text": "var(--eu-color-text)", "muted": "var(--eu-color-muted)", "accent": "var(--eu-color-link)", "btnBg": "var(--eu-color-brand)", "btnText": "var(--eu-color-on-brand)", "line": "var(--eu-color-border)" },
+    "soft":    { "bg": "color-mix(in oklch, var(--eu-color-brand) 7%, var(--eu-color-bg))", "text": "var(--eu-color-text)", "muted": "color-mix(in oklch, var(--eu-color-muted) 75%, var(--eu-color-text))", "accent": "var(--eu-color-link)", "btnBg": "var(--eu-color-brand)", "btnText": "var(--eu-color-on-brand)", "line": "var(--eu-color-border)" },
+    "grey":    { "bg": "var(--eu-color-surface)", "text": "var(--eu-color-text)", "muted": "var(--eu-color-muted)", "accent": "var(--eu-color-link)", "btnBg": "var(--eu-color-brand)", "btnText": "var(--eu-color-on-brand)", "line": "var(--eu-color-border)" },
+    "strong":  { "bg": "var(--eu-color-brand)", "text": "var(--eu-color-on-brand)", "muted": "var(--eu-color-on-brand)", "accent": "var(--eu-color-on-brand)", "btnBg": "var(--eu-color-on-brand)", "btnText": "var(--eu-color-brand)", "line": "var(--eu-color-on-brand)" },
+    "inverse": { "bg": "var(--eu-color-text)", "text": "var(--eu-color-bg)", "muted": "var(--eu-color-bg)", "accent": "var(--eu-color-bg)", "btnBg": "var(--eu-color-bg)", "btnText": "var(--eu-color-text)", "line": "var(--eu-color-bg)" },
+    "photo":   { "bg": "var(--eu-color-text)", "text": "oklch(100% 0 0)", "muted": "oklch(100% 0 0)", "accent": "oklch(100% 0 0)", "btnBg": "oklch(100% 0 0)", "btnText": "oklch(20% 0 0)", "line": "oklch(100% 0 0)" }
+  },
+  "$scrim": "The shade over a photo behind words, strongest where the words sit: white words on it read at 4.5 : 1 over a pure white photograph (the arithmetic is in lib/box-presets.ts HERO_SCRIM).",
+  "scrim": "linear-gradient(180deg, oklch(0% 0 0 / 0.5) 0%, oklch(0% 0 0 / 0.58) 50%, oklch(0% 0 0 / 0.66) 100%)",
+  "wireframe": {
+    "label": "Wireframe",
+    "toneMap": { "soft": "grey", "strong": "grey", "inverse": "grey", "photo": "grey" },
+    "roles": {
+      "eyebrow": { "size": 14, "weight": 600, "transform": "uppercase", "spacing": 1 },
+      "title": { "size": 44, "weight": 700, "lineHeight": 1.15 },
+      "heading": { "size": 24, "weight": 700, "lineHeight": 1.25 },
+      "body": { "size": 18, "weight": 400, "lineHeight": 1.6 },
+      "small": { "size": 16, "weight": 400, "lineHeight": 1.5 },
+      "stat": { "size": 44, "weight": 700 },
+      "logo": { "size": 20, "weight": 700 },
+      "link": { "size": 16, "weight": 500 }
+    },
+    "button": { "radius": 4, "secondary": "outline" },
+    "card": { "radius": 0, "shadow": "", "border": 1 },
+    "image": { "radius": 0 },
+    "reveal": "",
+    "hover": ""
+  },
+  "serious": {
+    "label": "Serious",
+    "toneMap": { "strong": "inverse", "soft": "plain" },
+    "roles": {
+      "eyebrow": { "size": 14, "weight": 400, "transform": "uppercase", "spacing": 3 },
+      "title": { "size": 56, "weight": 300, "lineHeight": 1.1 },
+      "heading": { "size": 26, "weight": 300, "lineHeight": 1.25 },
+      "body": { "size": 17, "weight": 300, "lineHeight": 1.7 },
+      "small": { "size": 16, "weight": 300, "lineHeight": 1.6 },
+      "stat": { "size": 52, "weight": 300 },
+      "logo": { "size": 18, "weight": 400, "transform": "uppercase", "spacing": 4 },
+      "link": { "size": 16, "weight": 400, "transform": "uppercase", "spacing": 2 }
+    },
+    "button": { "radius": 0, "secondary": "text" },
+    "card": { "radius": 0, "shadow": "", "border": 1 },
+    "image": { "radius": 0 },
+    "reveal": "fade",
+    "hover": ""
+  },
+  "minimalist": {
+    "label": "Minimalist",
+    "toneMap": { "strong": "plain", "soft": "plain", "grey": "plain" },
+    "roles": {
+      "eyebrow": { "size": 14, "weight": 500 },
+      "title": { "size": 44, "weight": 600, "lineHeight": 1.15, "spacing": -1 },
+      "heading": { "size": 22, "weight": 600, "lineHeight": 1.3 },
+      "body": { "size": 16, "weight": 400, "lineHeight": 1.6 },
+      "small": { "size": 16, "weight": 400, "lineHeight": 1.5 },
+      "stat": { "size": 40, "weight": 600 },
+      "logo": { "size": 18, "weight": 700 },
+      "link": { "size": 16, "weight": 500 }
+    },
+    "button": { "radius": 0, "secondary": "text" },
+    "card": { "radius": 0, "shadow": "", "border": 0 },
+    "image": { "radius": 0 },
+    "reveal": "fade",
+    "hover": ""
+  },
+  "plain": {
+    "label": "Plain",
+    "toneMap": { "strong": "grey", "soft": "grey" },
+    "roles": {
+      "eyebrow": { "size": 14, "weight": 600 },
+      "title": { "size": 36, "weight": 600, "lineHeight": 1.2 },
+      "heading": { "size": 20, "weight": 600, "lineHeight": 1.3 },
+      "body": { "size": 16, "weight": 400, "lineHeight": 1.55 },
+      "small": { "size": 16, "weight": 400, "lineHeight": 1.5 },
+      "stat": { "size": 36, "weight": 600 },
+      "logo": { "size": 18, "weight": 600 },
+      "link": { "size": 16, "weight": 400 }
+    },
+    "button": { "radius": 2, "secondary": "outline" },
+    "card": { "radius": 2, "shadow": "", "border": 1 },
+    "image": { "radius": 0 },
+    "reveal": "fade",
+    "hover": "lift"
+  },
+  "bold": {
+    "label": "Bold",
+    "toneMap": { "soft": "strong" },
+    "roles": {
+      "eyebrow": { "size": 16, "weight": 800, "transform": "uppercase", "spacing": 1 },
+      "title": { "size": 64, "weight": 800, "transform": "uppercase", "lineHeight": 1, "spacing": -1 },
+      "heading": { "size": 28, "weight": 800, "transform": "uppercase", "lineHeight": 1.15 },
+      "body": { "size": 18, "weight": 500, "lineHeight": 1.55 },
+      "small": { "size": 16, "weight": 500, "lineHeight": 1.5 },
+      "stat": { "size": 64, "weight": 800 },
+      "logo": { "size": 22, "weight": 900, "transform": "uppercase" },
+      "link": { "size": 16, "weight": 700, "transform": "uppercase" }
+    },
+    "button": { "radius": 0, "secondary": "outline" },
+    "card": { "radius": 0, "shadow": "", "border": 0 },
+    "image": { "radius": 0 },
+    "reveal": "rise",
+    "hover": "grow"
+  },
+  "calm": {
+    "label": "Calm",
+    "toneMap": { "strong": "soft", "inverse": "soft", "grey": "soft" },
+    "roles": {
+      "eyebrow": { "size": 14, "weight": 500, "spacing": 1 },
+      "title": { "size": 48, "weight": 400, "lineHeight": 1.15 },
+      "heading": { "size": 24, "weight": 400, "lineHeight": 1.3 },
+      "body": { "size": 18, "weight": 400, "lineHeight": 1.7 },
+      "small": { "size": 16, "weight": 400, "lineHeight": 1.6 },
+      "stat": { "size": 44, "weight": 400 },
+      "logo": { "size": 20, "weight": 500 },
+      "link": { "size": 16, "weight": 500 }
+    },
+    "button": { "radius": 999, "secondary": "outline" },
+    "card": { "radius": 16, "shadow": "", "border": 0 },
+    "image": { "radius": 16 },
+    "reveal": "fade",
+    "hover": "lift"
+  },
+  "startup": {
+    "label": "Startup",
+    "toneMap": { "soft": "grey" },
+    "roles": {
+      "eyebrow": { "size": 14, "weight": 600 },
+      "title": { "size": 44, "weight": 700, "lineHeight": 1.15, "spacing": -1 },
+      "heading": { "size": 22, "weight": 600, "lineHeight": 1.3 },
+      "body": { "size": 18, "weight": 400, "lineHeight": 1.6 },
+      "small": { "size": 16, "weight": 400, "lineHeight": 1.55 },
+      "stat": { "size": 44, "weight": 700 },
+      "logo": { "size": 20, "weight": 700 },
+      "link": { "size": 16, "weight": 600 }
+    },
+    "button": { "radius": 8, "secondary": "outline" },
+    "card": { "radius": 12, "shadow": "md", "border": 0 },
+    "image": { "radius": 12 },
+    "reveal": "rise",
+    "hover": "lift"
+  },
+  "playful": {
+    "label": "Playful",
+    "toneMap": { "grey": "soft" },
+    "roles": {
+      "eyebrow": { "size": 16, "weight": 700 },
+      "title": { "size": 52, "weight": 800, "lineHeight": 1.1 },
+      "heading": { "size": 26, "weight": 800, "lineHeight": 1.2 },
+      "body": { "size": 18, "weight": 500, "lineHeight": 1.6 },
+      "small": { "size": 16, "weight": 500, "lineHeight": 1.5 },
+      "stat": { "size": 52, "weight": 800 },
+      "logo": { "size": 22, "weight": 800 },
+      "link": { "size": 16, "weight": 700 }
+    },
+    "button": { "radius": 999, "secondary": "outline" },
+    "card": { "radius": 24, "shadow": "sm", "border": 0 },
+    "image": { "radius": 24 },
+    "reveal": "rise",
+    "hover": "grow"
+  }
+}

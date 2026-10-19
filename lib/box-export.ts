@@ -18,8 +18,8 @@ import { iconSvg } from "@/lib/educo-ui/icon-svg";
 import INSPECTOR from "@/config/inspector.json";
 import { resolvePage, pageFillCss, footerPushCss, type PageSemantics } from "@/lib/semantics";
 import { PAGE_Z_CEILING } from "@/lib/educo-ui/stacking";
-import { MEDIA, RUNG_PX, NARROWEST_PHONE_PX } from "@/lib/educo-ui/layout";
-import type { BoxSite } from "@/lib/box-site";
+import { MEDIA, RUNG_PX, NARROWEST_PHONE_PX, CURRENT_LINK_CSS } from "@/lib/educo-ui/layout";
+import { pageIdFromHref, type BoxSite } from "@/lib/box-site";
 import type { SiteTheme } from "@/lib/site-storage";
 import { colorToCSS } from "@/components/shared/ColorPalettePicker";
 import { BREAKPOINTS_EM, BASE_CSS } from "@/lib/educo-ui/base";
@@ -114,6 +114,12 @@ const hrefFor = (node: BoxNode, pageMap: Map<string, string>): string => {
   return h;
 };
 
+/** The page being rendered, set by `renderPageHTML` for one render (like SEM below): a link to it is the CURRENT page (LE15-27). */
+let CURRENT_PAGE: string | null = null;
+const isCurrent = (node: BoxNode) => CURRENT_PAGE != null && pageIdFromHref(node.href) === CURRENT_PAGE;
+const currentAttr = (node: BoxNode) => (isCurrent(node) ? ' aria-current="page"' : "");
+const currentCss = (node: BoxNode) => (isCurrent(node) ? CURRENT_LINK_CSS : {});
+
 /**
  * THE PAGE'S SEMANTICS for the page being rendered (lib/semantics.ts — the SAME resolver the canvas uses). Set by
  * `renderPageHTML` for the length of one render; null for a fragment rendered on its own, which then keeps plain divs.
@@ -141,11 +147,11 @@ function elementHTML(node: BoxNode, theme: SiteTheme, pageMap: Map<string, strin
     case "heading": { const hl = SEM?.byId.get(node.id)?.level ?? 2; return `<h${hl} style="${styleString({ color: node.color || typoRole.color("text"), fontSize: node.fontSize != null ? textLen(node.fontSize) : typoRole.size(2), textAlign: align, width: "100%", ...typoCss(node, "heading", 600) })}">${esc(node.text ?? "")}</h${hl}>`; }
     case "text": return `<p style="${styleString({ color: node.color || typoRole.color("muted"), fontSize: node.fontSize != null ? textLen(node.fontSize) : typoRole.size(1), textAlign: align, width: "100%", ...typoCss(node, "body", 400) })}">${esc(node.text ?? "")}</p>`;
     // A LINK: a plain <a href>, styled as words in the brand colour — never a button's pill (html-semantics.md).
-    case "link": return `<a href="${esc(hrefFor(node, pageMap))}"${node.newTab ? ' target="_blank" rel="noopener noreferrer"' : ""} style="${styleString({ color: node.color || LINK_COLOR_CSS, fontSize: node.fontSize != null ? textLen(node.fontSize) : typoRole.size(1), textAlign: align, textUnderlineOffset: "0.15em", ...typoCss(node, "body", 500), textDecoration: node.underline ? "underline" : "none" })}">${esc(node.text ?? "")}</a>`; // "off" is WRITTEN — a browser underlines every <a> (#106)
+    case "link": return `<a href="${esc(hrefFor(node, pageMap))}"${currentAttr(node)}${node.newTab ? ' target="_blank" rel="noopener noreferrer"' : ""} style="${styleString({ color: node.color || LINK_COLOR_CSS, fontSize: node.fontSize != null ? textLen(node.fontSize) : typoRole.size(1), textAlign: align, textUnderlineOffset: "0.15em", ...typoCss(node, "body", 500), textDecoration: node.underline ? "underline" : "none", ...currentCss(node) })}">${esc(node.text ?? "")}</a>`; // "off" is WRITTEN — a browser underlines every <a> (#106)
     case "button": { // fills its box + paints its own visual + centres its label (matches the editor) — one shape when resized
       const fp = (v?: string) => (v === "center" ? "center" : v === "end" ? "flex-end" : "flex-start");
       const deco = decorCss(node);
-      return `<a href="${esc(hrefFor(node, pageMap))}"${node.newTab ? ' target="_blank" rel="noopener noreferrer"' : ""} style="${styleString({ display: "flex", width: "100%", height: "100%", boxSizing: "border-box", alignItems: fp(node.contentY ?? "center"), justifyContent: fp(node.contentX ?? "center"), gap: u(8), background: node.background ? colorToCSS(node.background) : colorToCSS(theme.primary), color: node.color || "var(--eu-color-on-brand)", fontSize: node.fontSize != null ? textLen(node.fontSize) : typoRole.size(0.875), padding: `${u(12)} ${u(24)}`, textDecoration: "none", ...deco, borderRadius: deco.borderRadius ?? PILL, ...typoCss(node, "body", 600) })}">${esc(node.text ?? "")}</a>`;
+      return `<a href="${esc(hrefFor(node, pageMap))}"${currentAttr(node)}${node.newTab ? ' target="_blank" rel="noopener noreferrer"' : ""} style="${styleString({ display: "flex", width: "100%", height: "100%", boxSizing: "border-box", alignItems: fp(node.contentY ?? "center"), justifyContent: fp(node.contentX ?? "center"), gap: u(8), background: node.background ? colorToCSS(node.background) : colorToCSS(theme.primary), color: node.color || "var(--eu-color-on-brand)", fontSize: node.fontSize != null ? textLen(node.fontSize) : typoRole.size(0.875), padding: `${u(12)} ${u(24)}`, textDecoration: "none", ...deco, borderRadius: deco.borderRadius ?? PILL, ...typoCss(node, "body", 600), ...currentCss(node) })}">${esc(node.text ?? "")}</a>`;
     }
     // `loading`/`decoding` are set from the block's own settings: a hero must load eagerly or the page opens
     // blank at the top, while a photo further down should wait until it is nearly on screen.
@@ -804,7 +810,7 @@ export function bgVideoScript(): string {
 }
 const hasBgVideo = (n: BoxNode): boolean => !!bgVideoSrc(n) || (n.children ?? []).some(hasBgVideo);
 
-export function renderPageHTML(root: BoxNode, theme: SiteTheme, pageMap: Map<string, string> = new Map(), sheet?: Sheet): string {
+export function renderPageHTML(root: BoxNode, theme: SiteTheme, pageMap: Map<string, string> = new Map(), sheet?: Sheet, pageId?: string): string {
   /**
    * STACKED PINS (Step 2c) ride with the PAGE, not with a block — because the thing being measured is the
    * relationship BETWEEN blocks, and no one of them owns it. `pinStackNeeded` is what keeps zero-JS the
@@ -812,12 +818,13 @@ export function renderPageHTML(root: BoxNode, theme: SiteTheme, pageMap: Map<str
    */
   const stack = (pinStackNeeded(root) ? pinStackScript() : "") + (treeHasArrival(root) ? pinArrivalScript() : "") + (hasHostedVideo(root) ? videoScript() : "") + (hasBgVideo(root) ? bgVideoScript() : "") + (scrollRevealNeeded(root) ? revealOnceScript() : "") + (headerScriptNeeded(root) ? headerScript() : "");
   const prev = SEM; SEM = resolvePage(root);
+  const prevPage = CURRENT_PAGE; CURRENT_PAGE = pageId ?? null;
   try {
     if (sheet) return SKIP_LINK_HTML + renderNode(root, null, theme, pageMap, sheet) + stack; // shared sheet → caller emits the CSS
     const own: Sheet = emptySheet();
     const body = renderNode(root, null, theme, pageMap, own);
     return `<style>${sheetCss(own)}${SKIP_LINK_CSS}</style>${SKIP_LINK_HTML}${body}${stack}`;
-  } finally { SEM = prev; }
+  } finally { SEM = prev; CURRENT_PAGE = prevPage; }
 }
 
 
@@ -895,7 +902,7 @@ export function renderSitePage(site: BoxSite, theme: SiteTheme, pageId: string, 
   const page = site.pages.find((p) => p.id === pageId) ?? orderedPages(site)[0];
   if (!page) return "";
   const sheet: Sheet = emptySheet();
-  const markup = renderPageHTML(page.root, theme, files, sheet);
+  const markup = renderPageHTML(page.root, theme, files, sheet, page.id);
   const components = subsetCss(COMPONENT_CSS, usedEuClasses(markup));
   // Fonts go FIRST, exactly as the downloaded stylesheet has them (see renderSiteFiles). Without them Preview drew
   // every page in the browser's fallback sans-serif while the download used the school's chosen typeface — a
@@ -939,7 +946,7 @@ export function renderSiteFiles(site: BoxSite, theme: SiteTheme, fontCss = ""): 
   for (const page of orderedPages(site)) {
     // Each page gets its own sheet, so a page carries only the rules for the blocks actually on it.
     const sheet: Sheet = emptySheet();
-    const markup = renderPageHTML(page.root, theme, files, sheet);
+    const markup = renderPageHTML(page.root, theme, files, sheet, page.id);
     // Only the component rules this page's markup actually uses — read from the RENDERED HTML, so it
     // cannot disagree with what the page contains.
     const components = subsetCss(COMPONENT_CSS, usedEuClasses(markup));

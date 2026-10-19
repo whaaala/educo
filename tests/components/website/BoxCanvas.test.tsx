@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from "vitest";
 import { useState } from "react";
-import { render, screen, fireEvent } from "@testing-library/react";
+import { render, screen, fireEvent, createEvent } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import BoxCanvas from "@/components/website/box/BoxCanvas";
 import { DEFAULT_THEME } from "@/lib/site-storage";
@@ -1202,6 +1202,18 @@ describe("the canvas and the published page share one paragraph measure (#74)", 
     expect(css).toContain(measureCss(".eu-tokens"));
     expect(BASE_CSS).toContain(measureCss(".eu-root"));
   });
+
+  it("LE15-34 · a CENTRED paragraph takes its capped column to the middle, on the canvas and in the published page", async () => {
+    const { measureCss } = await import("@/lib/educo-ui/base");
+    const root = createContainer("column", { id: "root", children: [createElement("text", { id: "t", text: "Words", textAlign: "center" } as Partial<BoxNode>)] } as Partial<BoxNode>);
+    const { container } = render(<BoxCanvas root={root} theme={DEFAULT_THEME} onChange={() => {}} />);
+    const centred = (scope: string) => `${scope} p[style*="text-align: center"], ${scope} p[style*="text-align:center"] { margin-inline: auto; }`;
+    expect(measureCss(".eu-tokens")).toContain(centred(".eu-tokens"));
+    expect(container.querySelector("p")!.matches('.eu-tokens p[style*="text-align: center"], .eu-tokens p[style*="text-align:center"]'), "the canvas's paragraph is matched").toBe(true);
+    const html = renderPageHTML(root, DEFAULT_THEME);
+    const holder = document.createElement("div"); holder.className = "eu-root"; holder.innerHTML = html;
+    expect(holder.querySelector("p")!.matches('.eu-root p[style*="text-align: center"], .eu-root p[style*="text-align:center"]'), "the published paragraph is matched").toBe(true);
+  });
 });
 
 describe("narrow columns and no fill jump (decided with the user 2026-09-27, #75)", () => {
@@ -1338,5 +1350,48 @@ describe("BoxCanvas — RX4-20 · a Link's hover is on the canvas too", () => {
     expect(sheet).toContain('.eu-tokens a[style*="text-underline-offset"]:hover');
     const link = container.querySelector('[data-box-id="l"] a, a[data-box-id="l"]') ?? container.querySelector("a")!;
     expect(link.matches('.eu-tokens a[style*="text-underline-offset"]')).toBe(true);
+  });
+});
+
+describe("LE-15 · a ready-made section dropped on the page", () => {
+  it("is handed to the page with the band seam it was let go at; a block's drop is not", async () => {
+    const { SECTION_DRAG_TYPE } = await import("@/lib/section-library");
+    const onDropSection = vi.fn();
+    const root = createContainer("column", { id: "root", children: [makeRowBand([createContainer("column", { id: "a" })]), makeRowBand([createContainer("column", { id: "b" })])] } as Partial<BoxNode>);
+    const { container } = render(<BoxCanvas root={root} theme={DEFAULT_THEME} selectedId={null} onChange={() => {}} onDropSection={onDropSection} />);
+    const section = createContainer("column", { tag: "section", id: "dropped" });
+    const data = (type: string, value: string) => ({ types: [type], getData: (t: string) => (t === type ? value : ""), files: [], dropEffect: "", effectAllowed: "" });
+    const surface = container.firstElementChild as HTMLElement;
+    root.children!.forEach((b, i) => container.querySelectorAll<HTMLElement>(`[data-box-id="${b.id}"]`).forEach((el) => stubRect(el, { top: i * 200, left: 0, width: 800, height: 200 })));
+    // jsdom has no DragEvent: a plain Event drops clientY, so it is set on the event itself
+    const drop = (dt: ReturnType<typeof data>) => { const ev = createEvent.drop(surface, { dataTransfer: dt }); Object.defineProperty(ev, "clientY", { value: 250 }); fireEvent(surface, ev); };
+    drop(data(SECTION_DRAG_TYPE, JSON.stringify(section)));
+    expect(onDropSection).toHaveBeenCalledTimes(1);
+    const [node, index] = onDropSection.mock.calls[0] as [BoxNode, number];
+    expect(node.id).toBe("dropped");
+    expect(index, "in the upper half of the second band: before it").toBe(1);
+    drop(data("application/x-box-block", "text"));
+    expect(onDropSection, "a block is not a section").toHaveBeenCalledTimes(1);
+  });
+});
+
+describe("LE15-27 · the canvas marks the current page's links exactly as the published page does", () => {
+  it("a Link and a Button to the page being edited are current; the others are not", () => {
+    const root = createContainer("column", { id: "root", children: [
+      createElement("link", { id: "m1", text: "Home", href: "page:p1" } as Partial<BoxNode>),
+      createElement("link", { id: "m2", text: "Admissions", href: "page:p2" } as Partial<BoxNode>),
+      createElement("button", { id: "b1", text: "Apply", href: "page:p2" } as Partial<BoxNode>),
+    ] } as Partial<BoxNode>);
+    const { container } = render(<BoxCanvas root={root} theme={DEFAULT_THEME} selectedId={null} onChange={() => {}} currentPageId="p2" />);
+    const a = (words: string) => [...container.querySelectorAll("a")].find((el) => el.textContent === words)!;
+    for (const words of ["Admissions", "Apply"]) {
+      expect(a(words).getAttribute("aria-current"), `${words} is current`).toBe("page");
+      expect(a(words).style.textDecoration, `${words} is underlined`).toContain("underline");
+    }
+    expect(a("Home").getAttribute("aria-current"), "Home is not").toBeNull();
+    // canvas == export: the published page marks the same two, with the same line
+    const published = renderPageHTML(root, DEFAULT_THEME, new Map([["p1", "index.html"], ["p2", "admissions.html"]]), undefined, "p2");
+    expect(published.match(/aria-current="page"/g)?.length, "the export marks the same two").toBe(2);
+    expect(published).toContain(`text-decoration-thickness:${a("Apply").style.textDecorationThickness}`);
   });
 });

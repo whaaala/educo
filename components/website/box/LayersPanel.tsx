@@ -10,7 +10,7 @@
  * ponytail: no type-ahead (the pattern's optional key) — a page's blocks are few enough to arrow through.
  */
 import { useMemo, useRef, useState, type DragEvent, type KeyboardEvent } from "react";
-import { ChevronRight, Eye, EyeOff, Lock, LockOpen, MoreVertical, Copy, ArrowUp, ArrowDown, Trash2, Pencil } from "lucide-react";
+import { ChevronRight, Eye, EyeOff, Lock, LockOpen, MoreVertical, Copy, ArrowUp, ArrowDown, Trash2, Pencil, Globe } from "lucide-react";
 import {
   type BoxNode, type Breakpoint, layerRows, moveLayer, updateBox, updateBoxResponsive, resolveResponsive, duplicateBox, deleteBox,
   moveBlock, canMoveBlock, findBox,
@@ -106,7 +106,7 @@ export default function LayersPanel({ root, selectedIds, breakpoint, onSelect, o
           return (
             <div key={n.id} ref={(el) => { if (el) rowEls.current.set(n.id, el); else rowEls.current.delete(n.id); }}
               role="treeitem" aria-level={r.level} aria-selected={sel} aria-expanded={r.kids ? open : undefined}
-              aria-label={`${name}${words ? ` — ${words}` : ""}${hidden ? `, ${L.hiddenHere.replace("{screen}", screen)}` : ""}${n.locked ? `, ${L.locked}` : ""}`}
+              aria-label={`${name}${words ? ` — ${words}` : ""}${n.globalId ? `, ${INSPECTOR.sections.globalMark.replace("{name}", n.globalName ?? "")}` : ""}${hidden ? `, ${L.hiddenHere.replace("{screen}", screen)}` : ""}${n.locked ? `, ${L.locked}` : ""}`}
               tabIndex={current === n.id ? 0 : -1} data-layer-id={n.id}
               draggable={renaming !== n.id}
               onDragStart={(e) => { dragId.current = n.id; e.dataTransfer.effectAllowed = "move"; e.dataTransfer.setData("text/plain", n.id); }}
@@ -138,7 +138,10 @@ export default function LayersPanel({ root, selectedIds, breakpoint, onSelect, o
                   onBlur={(e) => { const v = e.currentTarget.value.trim(); if (v !== (n.layerName ?? "")) onChange(updateBox(root, n.id, { layerName: v || undefined })); setRenaming(null); }}
                   className="flex-1 min-w-0 px-1.5 py-0.5 rounded border border-line bg-surface text-xs text-ink" />
               ) : (
-                <span className="flex-1 min-w-0 truncate">{name}{words && <span className="ml-1 font-normal text-muted">{words}</span>}</span>
+                <span className="flex-1 min-w-0 truncate">{name}{words && <span className="ml-1 font-normal text-muted">{words}</span>}
+                  {/* LE-15 PS-5 (2): a global section's copy — an icon, the word and its name, never colour alone (WCAG 1.4.1) */}
+                  {n.globalId && <span className="ml-1 inline-flex items-center gap-0.5 font-semibold text-emerald-700 dark:text-emerald-300 midnight:text-emerald-300 purple:text-emerald-300"><Globe aria-hidden="true" className="w-3 h-3" />{INSPECTOR.sections.globalMark.replace("{name}", n.globalName ?? "")}</span>}
+                </span>
               )}
               {/* the row's own controls: one tab stop is the tree's, so these are reached by the pointer and named for a screen reader through the row */}
               <span className={`flex items-center gap-0.5 shrink-0 ${hidden || n.locked ? "" : "opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 pointer-coarse:opacity-100"}`}>

@@ -12,7 +12,7 @@ import { measureCss, linkHoverCss } from "@/lib/educo-ui/base";
 import { columnFloorRem, dividerThickness, borderLen, videoSizing, gridLeftoverAt,HAND_FLOOR_REM, REFLOW_FLOOR_REM, isPageRow, rowNarrowsAt, LIST_ITEM_GAP, linesAt, pageRowSlot, restForDrag, setFreeInset, slideFreeAt, tabletPlaces }from "@/lib/box-model";
 import { gapPatch, snapSpace, spacePatch, stepSpace, type SpaceSide } from "@/lib/box-model";
 import { resolvePage, pageFillCss, footerPushCss } from "@/lib/semantics";
-import { Fragment, useCallback, useEffect, useLayoutEffect, useMemo, useReducer, useRef, useState, type CSSProperties, type ReactNode } from "react";
+import { createContext, Fragment, useCallback, useContext, useEffect, useLayoutEffect, useMemo, useReducer, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { Link2, Plus, ChevronUp, ChevronDown, Copy, Scissors, ClipboardPaste, Trash2, Upload, GripVertical, MoreVertical, Rows3, Columns3, Grid3x3, Type, Heading as HeadingIcon, MousePointerClick, Image as ImageIcon, Layers, BringToFront, SendToBack, Video as VideoIcon, Sparkles, Minus as MinusIcon, List as ListIcon, Code2, Star, Lock, LockOpen, Ungroup, ArrowUp, ArrowDown, ArrowLeft, ArrowRight, ArrowUpToLine, ArrowDownToLine, Paintbrush } from "lucide-react";
 import type { SiteTheme } from "@/lib/site-storage";
@@ -34,7 +34,20 @@ import { treeHoverCss, treeRevealCss, scrollRevealNeeded, revealOnceWire, REVEAL
 import { colorToCSS } from "@/components/shared/ColorPalettePicker";
 import { COMPONENT_CSS, bgVideoCss } from "@/lib/educo-ui/components";
 import { CanvasBgVideo } from "@/components/website/box/BackgroundVideo";
-import { EDITOR_DOCK_PX, layoutCss, mediaBelow, RESIZE, RUNG_MEASURE, RUNG_PX } from "@/lib/educo-ui/layout";
+import { CURRENT_LINK_CSS, EDITOR_DOCK_PX, layoutCss, mediaBelow, RESIZE, RUNG_MEASURE, RUNG_PX } from "@/lib/educo-ui/layout";
+import { pageIdFromHref } from "@/lib/box-site";
+import { SECTION_DRAG_TYPE } from "@/lib/section-library";
+
+/**
+ * LE-15 PS-5 (2) · A GLOBAL SECTION'S COPY, marked on the canvas: a dashed outline AND its label "Global · name" (never
+ * colour alone, WCAG 1.4.1) — Wix marks them green. Editor-only: the attribute is the canvas's, the export never writes it.
+ */
+const GLOBAL_MARK_CSS = ".eu-tokens [data-global]{position:relative;outline:0.125rem dashed oklch(52% 0.13 160);outline-offset:-0.125rem}"
+  + `.eu-tokens [data-global]::after{content:attr(data-global);position:absolute;top:0;left:0;z-index:${CHROME_Z.guides};pointer-events:none;`
+  + "font:600 0.6875rem/1.6 system-ui,sans-serif;padding:0 0.375rem;background:oklch(52% 0.13 160);color:oklch(100% 0 0)}";
+
+/** The page being edited, for the links that go to it (LE15-27) — the export's `isCurrent`, on the canvas. */
+const CurrentPage = createContext<string | undefined>(undefined);
 import { CHROME_Z } from "@/lib/educo-ui/stacking";
 import { iconSvg, onIconsLoaded, warmIcons, hasIcon } from "@/lib/educo-ui/icon-svg";
 import { tokensFromTheme, tokensToCss } from "@/lib/educo-ui/tokens";
@@ -985,8 +998,12 @@ function ChromeMirror({ blockId, children }: { blockId: string; children: ReactN
 }
 
 export default function BoxCanvas({
-  root, theme, editable = true, selectedId, onSelectId, selectedIds, onSelectIds, onChange, onResized, minHeight = 600, breakpoint = "base", showHidden = false, marqueeRoom, guides = null, pageGrid, spaceShade = null,
+  root, theme, editable = true, selectedId, onSelectId, selectedIds, onSelectIds, onChange, onResized, minHeight = 600, breakpoint = "base", showHidden = false, marqueeRoom, guides = null, pageGrid, spaceShade = null, currentPageId, onDropSection,
 }: {
+  /** The page being edited: a Link or Button to it is drawn as the current page, as it publishes (LE15-27). */
+  currentPageId?: string;
+  /** LE-15: a ready-made section dropped on the page, at this band index — the page puts it in (it may ask first). */
+  onDropSection?: (section: BoxNode, index: number) => void;
   root: BoxNode;
   theme: SiteTheme;
   editable?: boolean;
@@ -2022,12 +2039,32 @@ export default function BoxCanvas({
   // inserts a fresh node where you release (filling the line's leftover width when dropping beside).
   const PALETTE_TYPE = "application/x-box-block";
   const nodeForKind = (kind: string): BoxNode => blockForKind(kind);
+  /**
+   * LE-15 · A SECTION DROPS BETWEEN BANDS, never inside a block: the band under the pointer, before it when the pointer is in
+   * its upper half, after it below — the line is drawn across the page at that seam.
+   */
+  const sectionDropAt = (host: Element, y: number): { index: number; rect: { left: number; top: number; width: number; height: number; inside: boolean } | null } => {
+    const kids = rootRef.current.children ?? [];
+    let index = kids.length, rect = null as { left: number; top: number; width: number; height: number; inside: boolean } | null;
+    for (let i = 0; i < kids.length; i++) {
+      const r = host.querySelector(`[data-box-id="${kids[i].id}"]`)?.getBoundingClientRect();
+      if (!r) continue;
+      if (y < r.top + r.height / 2) { index = i; rect = { left: r.left, top: r.top - 1, width: r.width, height: 3, inside: false }; break; }
+      rect = { left: r.left, top: r.bottom - 1, width: r.width, height: 3, inside: false };
+    }
+    return { index, rect };
+  };
   const onCanvasDragOver = (e: React.DragEvent) => {
     // FILES COUNT AS SOMETHING DROPPABLE, and this is the half that makes the drop happen at all: a
     // browser only fires `drop` when `dragover` called `preventDefault()`. Left checking for a palette
     // tile alone, the drop handler below could never run for a photograph dragged off the desktop — the
     // page would simply open the picture as a document instead.
     if (!editable) return;
+    if (onDropSection && e.dataTransfer.types.includes(SECTION_DRAG_TYPE)) {
+      e.preventDefault(); e.dataTransfer.dropEffect = "copy";
+      setDropRect(sectionDropAt(e.currentTarget, e.clientY).rect);
+      return;
+    }
     const wanted = e.dataTransfer.types.includes(PALETTE_TYPE) || e.dataTransfer.types.includes("Files");
     if (!wanted) return;
     e.preventDefault(); e.dataTransfer.dropEffect = "copy";
@@ -2079,6 +2116,13 @@ export default function BoxCanvas({
 
   const onCanvasDrop = (e: React.DragEvent) => {
     if (!editable) return;
+    const sectionData = onDropSection ? e.dataTransfer.getData(SECTION_DRAG_TYPE) : "";
+    if (sectionData) {
+      e.preventDefault();
+      setDropRect(null);
+      try { onDropSection!(JSON.parse(sectionData) as BoxNode, sectionDropAt(e.currentTarget, e.clientY).index); } catch { /* not a section this builder wrote: nothing is dropped */ }
+      return;
+    }
     const kind = e.dataTransfer.getData(PALETTE_TYPE);
     // A DROP OF FILES, before the palette check — that check was the early return that made this silent.
     const dropped = Array.from(e.dataTransfer.files ?? []).filter((f) => f.type.startsWith("image/"));
@@ -4010,6 +4054,7 @@ export default function BoxCanvas({
         <Tag
           key={node.id}
           data-box-id={node.id}
+          data-global={node.globalId ? INSPECTOR_WORDS.sections.globalMark.replace("{name}", node.globalName ?? "") : undefined} // LE-15: marked on the canvas (an editor-only attribute; never published)
           {...semProps}
           {...heldAttr}
           // FL-6 · a sideways strip is a named, focusable region — the same attributes the export writes
@@ -4392,6 +4437,7 @@ export default function BoxCanvas({
   }
 
   return (
+    <CurrentPage.Provider value={currentPageId}>
     <div ref={canvasRef} onMouseDown={(e) => { if (editable) { select(null); startMarqueeArm(e); } }} onDragOver={onCanvasDragOver} onDrop={onCanvasDrop} onDragLeave={(e) => { if (!e.currentTarget.contains(e.relatedTarget as Node)) setDropRect(null); }} className="w-full eu-tokens"
       // THE PAGE MEASURE COMES FROM THE DEVICE CHIP, NOT FROM THE EDITOR'S WINDOW.
       //
@@ -4431,7 +4477,7 @@ export default function BoxCanvas({
       {/* The LAYOUT layer, and unlike the component styles it is NOT gated on the tree using Educo UI: a band is
           a structural container, so a page made only of plain sections still needs it. Scoped to both roots for
           the same reason the tokens are — the canvas root carries `.eu-tokens`, never `.eu-root`. */}
-      <style dangerouslySetInnerHTML={{ __html: layoutCss(".eu-root, .eu-tokens") + "[data-sem-list]{list-style:none;margin:0;padding-left:0}li[data-box-id]{list-style:none}" /* LE2-9: an automatic menu's items have no <ul> on the canvas; published, every item is in a .eu-list — no bullet either way */ + measureCss(".eu-tokens") + linkHoverCss(".eu-tokens") /* RX4-20 */ }} />
+      <style dangerouslySetInnerHTML={{ __html: layoutCss(".eu-root, .eu-tokens") + "[data-sem-list]{list-style:none;margin:0;padding-left:0}li[data-box-id]{list-style:none}" /* LE2-9: an automatic menu's items have no <ul> on the canvas; published, every item is in a .eu-list — no bullet either way */ + measureCss(".eu-tokens") + linkHoverCss(".eu-tokens") /* RX4-20 */ + GLOBAL_MARK_CSS }} />
       {/* REDUCED MOTION, FOR THE CANVAS. The published page gets this from `BASE_CSS` via `.eu-root`; the
           builder's canvas carries `.eu-tokens` instead, so the rule is repeated here rather than added to
           that sheet — it ships to every published page, where `.eu-tokens` can never match, and a guard
@@ -4601,6 +4647,7 @@ export default function BoxCanvas({
         document.body,
       )}
     </div>
+    </CurrentPage.Provider>
   );
 }
 
@@ -5123,6 +5170,8 @@ function ElementView({ node, headingLevel, theme, editable, selected, onText, on
   fill?: boolean; // G-3d (2): its block spans rows and holds only it — the picture fills the block's height (`fillsRows`)
 }) {
   const fileRef = useRef<HTMLInputElement>(null);
+  const currentPage = useContext(CurrentPage);
+  const isCurrent = currentPage != null && pageIdFromHref(node.href) === currentPage; // LE15-27, as the export's `isCurrent`
   // Emitted only when this block sets one: a hard-coded "left" is an explicit value, and an explicit value on
   // the child beats the alignment its container was told to have.
   const align = node.textAlign;
@@ -5135,20 +5184,20 @@ function ElementView({ node, headingLevel, theme, editable, selected, onText, on
     }
     // A LINK — words that go somewhere, the same <a> the page publishes. A click in the editor edits it, never follows it.
     case "link":
-      return <a href={node.href || "#"} target={node.newTab ? "_blank" : undefined} rel={node.newTab ? "noopener noreferrer" : undefined} onClick={(e) => editable && e.preventDefault()}
-        style={{ color: node.color || LINK_COLOR_CSS, fontSize: node.fontSize != null ? textLen(node.fontSize) : typoRole.size(1), textAlign: align, textUnderlineOffset: "0.15em", ...typoStyle(node, "body", 500), textDecoration: node.underline ? "underline" : "none" }}>
+      return <a href={node.href || "#"} aria-current={isCurrent ? "page" : undefined} target={node.newTab ? "_blank" : undefined} rel={node.newTab ? "noopener noreferrer" : undefined} onClick={(e) => editable && e.preventDefault()}
+        style={{ color: node.color || LINK_COLOR_CSS, fontSize: node.fontSize != null ? textLen(node.fontSize) : typoRole.size(1), textAlign: align, textUnderlineOffset: "0.15em", ...typoStyle(node, "body", 500), textDecoration: node.underline ? "underline" : "none", ...(isCurrent ? CURRENT_LINK_CSS : {}) }}>
         <EditableText value={node.text} editable={editable} onChange={onText} placeholder="Link" /></a>;
     case "button": {
       // The button FILLS its box and paints its OWN visual (bg + radius + border/shadow), so resizing the box grows
       // the button itself (one shape — no duplicate wrapper behind it) and the label re-positions inside it. Content
       // position (or centre by default) decides where the label sits; a resized button therefore centres its text.
       const deco = decorStyle(node);
-      return <a href={node.href || "#"} target={node.newTab ? "_blank" : undefined} rel={node.newTab ? "noopener noreferrer" : undefined} onClick={(e) => editable && e.preventDefault()}
+      return <a href={node.href || "#"} aria-current={isCurrent ? "page" : undefined} target={node.newTab ? "_blank" : undefined} rel={node.newTab ? "noopener noreferrer" : undefined} onClick={(e) => editable && e.preventDefault()}
         style={{ display: "flex", width: "100%", height: "100%", boxSizing: "border-box", gap: u(8),
           alignItems: flexPos(node.contentY ?? "center"), justifyContent: flexPos(node.contentX ?? "center"),
           background: node.background ? colorToCSS(node.background) : colorToCSS(theme.primary), color: node.color || "var(--eu-color-on-brand)",
           fontSize: node.fontSize != null ? textLen(node.fontSize) : typoRole.size(0.875), padding: `${u(12)} ${u(24)}`, textDecoration: "none",
-          ...deco, borderRadius: deco.borderRadius ?? PILL, ...typoStyle(node, "body", 600) }}>
+          ...deco, borderRadius: deco.borderRadius ?? PILL, ...typoStyle(node, "body", 600), ...(isCurrent ? CURRENT_LINK_CSS : {}) }}>
         <EditableText value={node.text} editable={editable} onChange={onText} placeholder="Button" /></a>;
     }
     case "image": {

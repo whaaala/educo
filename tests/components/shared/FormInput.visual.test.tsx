@@ -82,7 +82,7 @@ describe("FormInput — Visual / CSS", () => {
 
   describe("icon background theming", () => {
     it("icon bg has theme colors", () => {
-      const { container } = render(<FormInput {...defaultProps} />);
+      const { container } = render(<FormInput {...defaultProps} icon={<svg />} />); // LE15-48: the box is drawn only for an icon
       const iconBg = container.querySelector(".opacity-70");
       expect(iconBg).toBeInTheDocument();
     });

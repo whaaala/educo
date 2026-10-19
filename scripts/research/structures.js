@@ -36,6 +36,8 @@ function structure(layout) {
   return layout === '·' ? 'single block' : 'other';
 }
 
+module.exports = { ratio, structure }; // section-kinds.js names a band's shape the same way (LE-15)
+if (require.main === module) {
 const count = new Map(); const eg = new Map(); let total = 0; const sticky = { n: 0 };
 const widths = new Map();
 for (const r of rows) {
@@ -96,3 +98,4 @@ console.log(`rows: ${rowTotal} · ${rowRanked.length} shapes · 80% by ${rat[80]
 console.log(rowRanked.slice(0, 30).map(([k, n]) => `${String(n).padStart(6)}  ${k}`).join('\n'));
 console.log(`${total} sections · ${ranked.length} structures · 80% by ${at[80]} · 95% by ${at[95]} · 99% by ${at[99]}`);
 console.log(ranked.slice(0, 40).map(([k, n]) => `${String(n).padStart(6)}  ${k}`).join('\n'));
+}

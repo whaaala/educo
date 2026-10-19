@@ -96,4 +96,4 @@ async function weigh(editorPage, B = BUDGET) { // B: the budgets (config/budgets
   return { numbers, findings };
 }
 
-module.exports = { weigh, exportFiles, serve, BUDGET };
+module.exports = { weigh, exportFiles, serve, visit, BUDGET };

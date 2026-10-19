@@ -1,0 +1,15 @@
+{
+  "$comment": "A WIREFRAME'S WORDS (BATCH LE-15, D2): what each role reads in the wireframe finish, so the structure shows and nothing pretends to be real. The designed finish keeps each section's own school words (config/sections/<id>.json). Translatable as content (RULE AF).",
+  "eyebrow": "Label",
+  "title": "Title goes here",
+  "heading": "Heading",
+  "body": "Write a sentence or two here about what this section says. Click to edit it.",
+  "small": "Small print",
+  "button": "Button",
+  "button2": "Learn more",
+  "link": "Link",
+  "logo": "Logo",
+  "stat": "100",
+  "quote": "A quote from someone who knows the school well.",
+  "image": "Picture"
+}

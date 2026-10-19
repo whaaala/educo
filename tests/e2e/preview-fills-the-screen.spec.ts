@@ -45,14 +45,21 @@ test.describe("the preview shows the screen the person is actually on", () => {
 
   test("Responsive fills the whole window — width AND height, with nothing around it", async ({ page }) => {
     await openPreview(page);
-    // The bar shows itself first, then steps aside; the page keeps the whole window either way.
+    // The bar STAYS (E4: the controls do not leave on their own). This test used to wait for it to step aside and assert the page
+    // flush to the top — which then kept passing while the bar covered the page's top 48px (LE15-47). Now: the page keeps the
+    // whole window's height and starts below the bar; hidden (H), it is flush to the top.
     await page.waitForTimeout(3000);
+    const barBottom = await page.evaluate(() => Math.round(document.querySelector("[data-preview-bar]")!.getBoundingClientRect().bottom));
     const f = await frameBox(page);
     expect(f.w, `the page is ${f.w}px wide in a 1440px window`).toBeGreaterThanOrEqual(1436);
     expect(f.h, `and ${f.h}px tall in a 900px window`).toBeGreaterThanOrEqual(896);
     expect(f.x, "flush to the left edge").toBeLessThanOrEqual(2);
-    expect(f.y, "and to the top — the bar no longer takes a slice out of it").toBeLessThanOrEqual(2);
+    expect(f.y, "with the bar showing, the page starts below it — never under it").toBeGreaterThanOrEqual(barBottom);
     expect(f.radius, "no card corners: a browser window does not have them").toBe("0px");
+    await page.keyboard.press("h"); await page.waitForTimeout(600);
+    const hidden = await frameBox(page);
+    expect(hidden.y, "the bar hidden: flush to the top").toBeLessThanOrEqual(2);
+    expect(hidden.h, "and the whole window tall").toBeGreaterThanOrEqual(896);
   });
 
   test("the page inside gets that width too — the point of the whole thing", async ({ page }) => {

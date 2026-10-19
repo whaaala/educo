@@ -24,9 +24,14 @@ import {
   resolveResponsive, updateBoxResponsive, clearOverride, hasOverride,
   gridColumns, setColumnFraction, pinBlockedBy, fixedBlockedBy, blockedByLabel, pinScopeWords, isFloating,
   isSectionContentIn, sectionPlaceIn, insertSlot, pageEnd, addAnnouncementBar, defaultWhere, addInsideParent, placeSharing, retrackGridAt, type InsertWhere, isContainer, outerSpaceDefaults, spanAt, setSpan, lineUpWithGrid, linesAt, setLinesAt, fullWidthAt, setFreeInset, fitStepAt, fillsRows, fillHostOf,
-  gridAutoFit, parentFlowOf, canWrapWords, canOverlapUp,
+  gridAutoFit, parentFlowOf, canWrapWords, canOverlapUp, regionSpan,
 } from "@/lib/box-model";
 import { blockForKind } from "@/lib/box-presets";
+import { insertSection } from "@/lib/section-library";
+import { saveSection, myTemplates } from "@/lib/saved-sections";
+import AddPageDialog from "@/components/website/box/AddPageDialog";
+import { makeGlobal, detachGlobal, globalsInSite, changedGlobals, globalSample, removeGlobal } from "@/lib/global-sections";
+import NameDialog from "@/components/website/box/NameDialog";
 import {
   type BoxSite, freshSite, siteFonts, setSiteFonts, SAVED_SITE_FONTS, coerceSite, normalizeSite, setPageRoot, addPage, deletePage, renamePage, setHomePage, duplicatePage, emptyPageRoot, setSiteTheme, setPageGrid, movePage, hasSharedRegion, setRegionShown,
 } from "@/lib/box-site";
@@ -195,6 +200,27 @@ export default function BoxDemoPage() {
   }, [pageMenu]);
   const [confirmDeletePage, setConfirmDeletePage] = useState(false); // delete-page confirmation modal
   const [confirmReset, setConfirmReset] = useState(false); // start-over confirmation modal (D3-16)
+  const [pendingSection, setPendingSection] = useState<BoxNode | null>(null); // LE-15: a ready-made header / footer waiting for "Replace on every page?"
+  const [savingSection, setSavingSection] = useState<BoxNode | null>(null); // LE-15 PS-5 (1): the section being named for My sections
+  const [mySectionError, setMySectionError] = useState<string | undefined>(undefined);
+  const [savedSaid, setSavedSaid] = useState(""); // spoken: "Saved to My sections"
+  const saveTargetRef = useRef<BoxNode | null>(null); // the section Ctrl+Alt+S saves — refreshed every render (rule 2: refs, [] deps)
+  const [makingGlobal, setMakingGlobal] = useState<BoxNode | null>(null); // LE-15 PS-5 (2): the section being named as global
+  const [addingPage, setAddingPage] = useState(false); // LE-15 PS-5 (3): the Add a page dialog
+  const [savingPage, setSavingPage] = useState(false); // …and Save page as template
+  const [templateError, setTemplateError] = useState<string | undefined>(undefined);
+  const globalTargetRef = useRef<BoxNode | null>(null); // the section Ctrl+Alt+G makes global (an ordinary one-block page section)
+  const [globalNotice, setGlobalNotice] = useState(""); // "This change is made on all N pages" — once per global section per visit
+  const warnedGlobals = useRef(new Set<string>());
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (!(e.ctrlKey || e.metaKey) || !e.altKey || e.repeat || typingIn(document.activeElement)) return;
+      if (e.code === "KeyS" && saveTargetRef.current) { e.preventDefault(); setMySectionError(undefined); setSavingSection(saveTargetRef.current); }
+      else if (e.code === "KeyG" && globalTargetRef.current) { e.preventDefault(); setMakingGlobal(globalTargetRef.current); }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
   const [pageCheckOpen, setPageCheckOpen] = useState(false); // the Page check (semantics C1)
   const [inspectorOpen, setInspectorOpen] = useState(true); // right Inspector panel collapsed?
   /**
@@ -579,6 +605,21 @@ export default function BoxDemoPage() {
    */
   const stageRef = useRef<HTMLDivElement>(null);
   const [stage, setStage] = useState({ w: 0, h: 0 });
+  /**
+   * LE15-47 · THE BAR'S OWN HEIGHT, measured (it wraps to two rows on a tablet, E4-3). While the bar shows, the page starts
+   * below it: on Responsive it floated over the page's top 48px — the school's name and menu cut in half, measured at
+   * 1366 and 5120 — once the bar stopped hiding itself (E4). Hidden (H), the page has the whole window again.
+   */
+  const [barH, setBarH] = useState(48);
+  useEffect(() => {
+    const bar = document.querySelector<HTMLElement>("[data-preview-bar]");
+    if (!bar) return;
+    const read = () => setBarH(Math.ceil(bar.getBoundingClientRect().height));
+    read();
+    const ro = new ResizeObserver(read);
+    ro.observe(bar);
+    return () => ro.disconnect();
+  }, [preview]);
   useEffect(() => {
     const el = stageRef.current;
     if (!el) return;
@@ -727,6 +768,19 @@ export default function BoxDemoPage() {
     return () => ro.disconnect();
   }, [frameReady, preview]);
   const scaled = canvasZoom.z !== 1 && frameW != null;
+  // LE-15 PS-5 (2) · "THIS CHANGES N PAGES": the first edit to a global section used on more than one page says so, once per visit.
+  const lastRoot = useRef<{ id: string; root: BoxNode } | null>(null);
+  useEffect(() => {
+    const prev = lastRoot.current;
+    lastRoot.current = activePage && root ? { id: activePage.id, root } : null;
+    if (!prev || !site || !root || prev.id !== activePage?.id) return;
+    for (const gid of changedGlobals(prev.root, root)) {
+      const g = globalsInSite(site).find((x) => x.id === gid);
+      if (!g || g.pages < 2 || warnedGlobals.current.has(gid)) continue;
+      warnedGlobals.current.add(gid);
+      setGlobalNotice(INSPECTOR.sections.changesPages.replace("{name}", g.name).replace("{pages}", String(g.pages)));
+    }
+  }, [root]); // eslint-disable-line react-hooks/exhaustive-deps -- reacts to an edit of this page only; site and page are read as they are now
 
   // NOTE: every hook above runs on EVERY render. React counts hooks by call order, so a `useMemo` or
   // `useCallback` placed AFTER this guard is called only sometimes — which crashes the whole builder with
@@ -756,7 +810,14 @@ export default function BoxDemoPage() {
   };
 
   // ── Page management ──
-  const onAddPage = () => { const { site: s, id } = addPage(site, `Page ${site.pages.length + 1}`, emptyPageRoot()); pushSite(s); setActivePageId(id); setSelectedIds([]); };
+  // LE-15 PS-5 (3): "+" asks where the page starts — Blank, Duplicate, a template — in AddPageDialog
+  const onAddPage = () => setAddingPage(true);
+  const addPageFrom = (name: string, root: BoxNode) => { const { site: s, id } = addPage(site, name, root); pushSite(s); setActivePageId(id); setSelectedIds([]); setAddingPage(false); };
+  const savePageTemplate = (name: string) => {
+    const r = myTemplates.save(activePage.root, name);
+    if (!r.ok) { setTemplateError(r.reason === "limit" ? INSPECTOR.sections.templateLimit.replace("{limit}", String(r.limit)) : undefined); return; }
+    setSavingPage(false); setSavedSaid(`Saved “${name}” to ${INSPECTOR.sections.myTemplates}`);
+  };
   const onDuplicatePage = () => { const { site: s, id } = duplicatePage(site, activePage.id); pushSite(s); setActivePageId(id); setPageMenu(false); };
   const onRenamePage = (name: string) => pushSite(renamePage(site, activePage.id, name));
   const onDeletePage = () => { if (site.pages.length <= 1) return; const s = deletePage(site, activePage.id); pushSite(s); setActivePageId(s.homeId); setSelectedIds([]); setPageMenu(false); setConfirmDeletePage(false); };
@@ -960,6 +1021,39 @@ export default function BoxDemoPage() {
     revealBox(node.id);
   };
 
+  /**
+   * LE-15 · A READY-MADE SECTION goes in as a whole band after the band you are on, or at the end of the page (`insertSection`),
+   * in ONE undo step. A header or footer replaces the site's own on every page — so when there is one, it asks first.
+   */
+  /** PS-5 (1): the PAGE section holding the selection — a band's one block, or a band of several as one Side by side. */
+  const enclosingSection = (id: string | undefined): BoxNode | null => {
+    const band = id ? (root.children ?? []).find((b) => !!findBox(b, id)) : undefined;
+    if (!band) return null;
+    return band.rowBand && band.children?.length === 1 ? band.children[0] : { ...band, rowBand: undefined };
+  };
+  saveTargetRef.current = enclosingSection(selected?.id);
+  // PS-5 (2): a page section of ONE block can be made global (a band of several is several sections)
+  const globalTarget = (() => { const s = enclosingSection(selected?.id); return s && findBox(root, s.id) && !s.globalId ? s : null; })();
+  globalTargetRef.current = globalTarget;
+  const globals = globalsInSite(site);
+  const selectedGlobal = (() => { const s = enclosingSection(selected?.id); const g = s?.globalId ? globals.find((x) => x.id === s.globalId) : undefined; return s && g ? { node: s, info: { name: g.name, pages: g.pages } } : null; })();
+  const saveMySection = (name: string) => {
+    if (!savingSection) return;
+    const r = saveSection(savingSection, name);
+    if (!r.ok) { setMySectionError(r.reason === "limit" ? INSPECTOR.sections.saveLimit.replace("{limit}", String(r.limit)) : undefined); return; }
+    setSavingSection(null); setSavedSaid(`Saved “${name}” to ${INSPECTOR.sections.mine}`);
+  };
+  const placeSection = (section: BoxNode, at?: number) => {
+    commitWith((cur) => insertSection(cur, selected?.id ?? null, section, at));
+    revealBox(section.id);
+  };
+  const addReadySection = (section: BoxNode, at?: number) => {
+    const which = section.tag === "header" || section.tag === "footer" ? section.tag : null;
+    const [s, e] = which ? regionSpan(root, which) : [0, 0];
+    if (which && (e > s || hasSharedRegion(site, which))) setPendingSection(section);
+    else placeSection(section, at);
+  };
+
   // Select a box and scroll it into view AFTER the tree re-renders (so a just-added block is never hidden —
   // e.g. behind a floating sibling on the overlay layer). The reveal id is consumed by the effect below.
   const revealBox = (id: string) => { pendingReveal.current = id; autoSelectedId.current = id; setSelectedIds([id]); };
@@ -1125,7 +1219,8 @@ export default function BoxDemoPage() {
           * `shrink-0` hid it a third way by simply squashing the sizer. It takes a rigid item in a centring
           * flex row to lose the left-hand side — which is exactly the arrangement this replaced.
           */}
-        <div ref={stageRef} data-preview-stage className={`absolute inset-0 overflow-auto ${framed ? "p-6 pt-14" : "p-0"}`}>
+        <div ref={stageRef} data-preview-stage className={`absolute inset-0 overflow-auto ${framed ? "p-6" : "p-0"}`}
+          style={{ paddingTop: barShown ? barH + (framed ? 8 : 0) : framed ? 24 : 0 }}>
           {/**
             * A SIZER THAT RESERVES THE SCALED BOX, with the frame scaled from its TOP-LEFT inside it.
             *
@@ -1219,7 +1314,9 @@ export default function BoxDemoPage() {
                 maxWidth: "none",
                 // Laid out at the page's OWN size and scaled visually, so the page keeps the viewport it was
                 // promised. Height follows the chosen screen; Responsive just fills the stage.
-                height: screenH ?? "100%",
+                // LE15-47 · Responsive keeps the WHOLE window's height for the page (a "one screen tall" design stays true) while
+                // the bar shows — the page starts below the bar instead of under it, its last bar's-height a short scroll away
+                height: screenH ?? (barShown ? `calc(100% + ${barH}px)` : "100%"),
                 transform: scale !== 1 ? `scale(${scale})` : undefined,
                 transformOrigin: "top left",
               }}
@@ -1360,6 +1457,7 @@ export default function BoxDemoPage() {
                 <button onClick={onSetHome} disabled={activePage.id === site.homeId} className="flex items-center justify-center gap-1 text-xs px-2 py-1.5 rounded-lg border border-line text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-100 dark:hover:bg-white/10 disabled:opacity-40"><Home className="w-3.5 h-3.5" /> Home</button>
                 <button onClick={onDuplicatePage} className="flex items-center justify-center gap-1 text-xs px-2 py-1.5 rounded-lg border border-line text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-100 dark:hover:bg-white/10"><Files className="w-3.5 h-3.5" /> Duplicate</button>
               </div>
+              <button onClick={() => { setPageMenu(false); setTemplateError(undefined); setSavingPage(true); }} className="w-full flex items-center justify-center gap-1 text-xs px-2 py-1.5 rounded-lg border border-line text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-100 dark:hover:bg-white/10">{INSPECTOR.sections.savePage}</button>{/* LE-15 PS-5 (3) */}
               <div className="grid grid-cols-2 gap-1.5">{/* LE8-2: the page's place in the order of the tabs */}
                 <button onClick={() => onMovePage(-1)} disabled={site.pages[0]?.id === activePage.id} className="flex items-center justify-center gap-1 text-xs px-2 py-1.5 rounded-lg border border-line text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-100 dark:hover:bg-white/10 disabled:opacity-40"><ChevronLeft className="w-3.5 h-3.5" aria-hidden="true" /> {PAGE_ORDER.earlier}</button>
                 <button onClick={() => onMovePage(1)} disabled={site.pages[site.pages.length - 1]?.id === activePage.id} className="flex items-center justify-center gap-1 text-xs px-2 py-1.5 rounded-lg border border-line text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-100 dark:hover:bg-white/10 disabled:opacity-40">{PAGE_ORDER.later} <ChevronRight className="w-3.5 h-3.5" aria-hidden="true" /></button>
@@ -1394,6 +1492,7 @@ export default function BoxDemoPage() {
                 <button onClick={onSetHome} disabled={activePage.id === site.homeId} className="flex items-center justify-center gap-1 text-xs px-2 py-1.5 rounded-lg border border-line text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-100 dark:hover:bg-white/10 disabled:opacity-40"><Home className="w-3.5 h-3.5" /> Home</button>
                 <button onClick={onDuplicatePage} className="flex items-center justify-center gap-1 text-xs px-2 py-1.5 rounded-lg border border-line text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-100 dark:hover:bg-white/10"><Files className="w-3.5 h-3.5" /> Duplicate</button>
               </div>
+              <button onClick={() => { setPageMenu(false); setTemplateError(undefined); setSavingPage(true); }} className="w-full flex items-center justify-center gap-1 text-xs px-2 py-1.5 rounded-lg border border-line text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-100 dark:hover:bg-white/10">{INSPECTOR.sections.savePage}</button>{/* LE-15 PS-5 (3) */}
               <div className="grid grid-cols-2 gap-1.5">{/* LE8-2: the page's place in the order of the tabs */}
                 <button onClick={() => onMovePage(-1)} disabled={site.pages[0]?.id === activePage.id} className="flex items-center justify-center gap-1 text-xs px-2 py-1.5 rounded-lg border border-line text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-100 dark:hover:bg-white/10 disabled:opacity-40"><ChevronLeft className="w-3.5 h-3.5" aria-hidden="true" /> {PAGE_ORDER.earlier}</button>
                 <button onClick={() => onMovePage(1)} disabled={site.pages[site.pages.length - 1]?.id === activePage.id} className="flex items-center justify-center gap-1 text-xs px-2 py-1.5 rounded-lg border border-line text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-100 dark:hover:bg-white/10 disabled:opacity-40">{PAGE_ORDER.later} <ChevronRight className="w-3.5 h-3.5" aria-hidden="true" /></button>
@@ -1454,8 +1553,10 @@ export default function BoxDemoPage() {
         </>)}
       </header>
       {compactBar && moreOpen && (<>
-        <div aria-hidden="true" onClick={() => setMoreOpen(false)} style={{ zIndex: CHROME_Z.drawer }} className="fixed inset-0 bg-black/20" />
-        <div role="dialog" aria-label="More" style={{ zIndex: CHROME_Z.drawer }} className="fixed inset-x-0 bottom-0 max-h-[70dvh] overflow-y-auto rounded-t-2xl border-t border-line bg-surface shadow-2xl p-4 pt-2 space-y-3 mx-auto max-w-sheet sheet:border-x">
+        {/* LE15-50 · on the MENU level: opened from the editor's own bar, it must clear the Inspector slid over a phone (the drawer
+            level) — on the same level the Inspector, later in the page, covered it and "Add page" could not be reached */}
+        <div aria-hidden="true" onClick={() => setMoreOpen(false)} style={{ zIndex: CHROME_Z.menu }} className="fixed inset-0 bg-black/20" />
+        <div role="dialog" aria-label="More" style={{ zIndex: CHROME_Z.menu }} className="fixed inset-x-0 bottom-0 max-h-[70dvh] overflow-y-auto rounded-t-2xl border-t border-line bg-surface shadow-2xl p-4 pt-2 space-y-3 mx-auto max-w-sheet sheet:border-x">
           <span aria-hidden="true" className="mx-auto block h-1.5 w-10 rounded-full bg-line" />
           <div className="flex items-center justify-between">
             <span className="text-sm font-bold text-ink">More</span>
@@ -1497,7 +1598,7 @@ export default function BoxDemoPage() {
             <div ref={canvasRoomRef} className="relative p-2 sm:p-8 flex min-h-full transition-[padding] duration-200 motion-reduce:transition-none" style={{ paddingLeft: screenDevice ? undefined : `${panelDocked ? PANEL_GUTTER_REM : LAUNCHER_GUTTER_REM}rem` }}> {/* a phone or tablet keeps no launcher gutter: its "+" waits bottom-right (E-5a, E-5c) */}
               <div data-canvas-sizer className={`mx-auto shrink-0 h-fit ${frameW == null ? "w-full max-w-5xl" : ""}`} style={scaled ? { width: frameW * canvasZoom.z, height: frameH * canvasZoom.z } : { width: frameW ?? undefined }}>
                 <div ref={frameRef} data-canvas-scale={scaled ? canvasZoom.z : 1} className="shadow-sm rounded-xl ring-1 ring-black/10 dark:ring-white/10 midnight:ring-white/10 purple:ring-white/10 h-fit transition-[width] duration-300 motion-reduce:transition-none" style={{ width: frameW ?? "100%", transform: scaled ? `scale(${canvasZoom.z})` : undefined, transformOrigin: "0 0", background: renderTheme.background, color: renderTheme.text, fontFamily: renderTheme.bodyFont, containerType: "inline-size" }}>
-                  <BoxCanvas root={root} theme={renderTheme} minHeight={PAGE_MIN_H} selectedIds={selectedIds} onSelectIds={selectByUser} onChange={commit} breakpoint={bp} showHidden={showHidden} marqueeRoom={roomEl}
+                  <BoxCanvas root={root} theme={renderTheme} minHeight={PAGE_MIN_H} selectedIds={selectedIds} onSelectIds={selectByUser} onChange={commit} breakpoint={bp} showHidden={showHidden} marqueeRoom={roomEl} currentPageId={activePage.id} onDropSection={(s, at) => addReadySection(s, at)}
                     pageGrid={gridHere} spaceShade={gridPanel ? spaceShade : null} guides={guides.on ? { cols: columnsAt(gridHere, bp), rowStepRem: gridHere.rowStepRem ?? 1.5, rows: guides.rows } : null} />
                 </div>
               </div>
@@ -1509,7 +1610,8 @@ export default function BoxDemoPage() {
               <MenuItem Icon={Settings2} label="Page grid…" onClick={() => { toggleGuides({ on: true }); setGridPanel(true); setCanvasMenu(null); }} />
             </PortalMenu>
           )}
-          <BlocksPanel theme={renderTheme} onPick={insertBlock} docked={wideScreen} onOpenChange={setBlocksOpen} sheet={screenDevice !== null}
+          <BlocksPanel theme={renderTheme} onPick={insertBlock} onSection={addReadySection}
+            globals={globals.flatMap((g) => { const node = globalSample(site, g.id); return node ? [{ ...g, node }] : []; })} onRemoveGlobal={(gid) => pushSite(removeGlobal(site, gid))} docked={wideScreen} onOpenChange={setBlocksOpen} sheet={screenDevice !== null}
             where={whereOptions.length ? { value: whereFor(selected?.id ?? null), options: whereOptions, onChange: (w) => setWhereChoice({ for: selected?.id ?? null, where: w }) } : undefined}
             layers={<LayersPanel root={root} selectedIds={selectedIds} breakpoint={bp} onChange={commit}
               onSelect={(id, add) => { selectByUser(add ? (selectedIds.includes(id) ? selectedIds.filter((x) => x !== id) : [...selectedIds, id]) : [id]); document.querySelector(`[data-box-id="${id}"]`)?.scrollIntoView({ block: "nearest", inline: "nearest" }); }} />} />
@@ -1535,7 +1637,7 @@ export default function BoxDemoPage() {
                   onSetSpan={(n) => commit(setSpan(root, selected.id, n, columnsAt(gridHere, bp), bp), `span:${selected.id}`)}
                   pageLines={(() => { const c = columnsAt(gridHere, bp), l = linesAt(root, selected.id, c, bp); if (!l) return undefined; const w = device === screenDevice ? fitW : DEVICES.find((d) => d.id === device)?.w, band = findParent(root, selected.id)?.parent; return { ...l, cols: c, drawnAcross: w && band ? fitStepAt(band, selected.id, w / 16, bp) ?? undefined : undefined }; })()}
                   onSetLines={(want) => commit(want === "full" ? fullWidthAt(root, selected.id, bp) : setLinesAt(root, selected.id, want, columnsAt(gridHere, bp), bp), `lines:${selected.id}`)}
-                  onSetFreeInset={linesAt(root, selected.id, columnsAt(gridHere, bp), bp) ? (side, v) => commit(side === "both" ? setFreeInset(setFreeInset(root, selected.id, "left", undefined, bp), selected.id, "right", undefined, bp) : setFreeInset(root, selected.id, side, v, bp), `free:${selected.id}`) : undefined}pinBlockedBy={blockedByLabel(pinBlockedBy(root, selected.id, bp))} fixedBlockedBy={blockedByLabel(fixedBlockedBy(root, selected.id, bp))} pinScope={pinScopeWords(root, selected.id, bp)} node={bp === "base" ? selected : resolveResponsive(selected, bp)} theme={renderTheme} onPatch={onPatch} onAddChild={addChildSection} onAddAnnouncement={() => commit(addAnnouncementBar(root, selected.id))} onFloat={floatSelected} onUnfloat={unfloatSelected} onLayer={layerSelected} onAlignInRow={(j) => commit(alignInRow(root, selected.id, j, bp))} rowJustify={alignInRowOf(root, selected.id, bp)} onSectionWidth={pageBandOf(root, selected.id) ? (v) => commit(setSectionWidth(root, selected.id, v)) : undefined} sectionWidth={sectionWidthOf(root, selected.id)} siteWidth={hasSiteMeasure(root) ? root.gridSpace?.measure : undefined} sectionFollows={pageBandOf(root, selected.id)?.sectionWidth === undefined} rowOfPage={!!findParent(root, selected.id)?.parent.pageRow} canFloat={selected.id !== root.id} parentFlow={parentFlowOf(root, selected.id, bp)} canWrapWords={canWrapWords(root, selected.id, bp)} canOverlapUp={canOverlapUp(root, selected.id)} inGrid={gridTrack !== undefined} inMasonry={parentGrid?.rowFlow === "masonry"} inFitGrid={!!parentGrid && !!gridAutoFit(parentGrid)} gridTrack={gridTrack} onSetFraction={setFraction} onRetrack={retrackSelected} onKind={(k) => { const r = changeKind(root, selected.id, k); if (r.root !== root) commit(r.root); return r.dropped; }} breakpoint={bp} overridden={hasOverride(selected, bp)} onResetOverride={resetOverride} onResetField={(k) => commit(resetField(root, selected.id, k, bp))} pages={pageList} currentPageId={activePage.id} />
+                  onSetFreeInset={linesAt(root, selected.id, columnsAt(gridHere, bp), bp) ? (side, v) => commit(side === "both" ? setFreeInset(setFreeInset(root, selected.id, "left", undefined, bp), selected.id, "right", undefined, bp) : setFreeInset(root, selected.id, side, v, bp), `free:${selected.id}`) : undefined}pinBlockedBy={blockedByLabel(pinBlockedBy(root, selected.id, bp))} fixedBlockedBy={blockedByLabel(fixedBlockedBy(root, selected.id, bp))} pinScope={pinScopeWords(root, selected.id, bp)} node={bp === "base" ? selected : resolveResponsive(selected, bp)} theme={renderTheme} onPatch={onPatch} onAddChild={addChildSection} onAddAnnouncement={() => commit(addAnnouncementBar(root, selected.id))} onFloat={floatSelected} onUnfloat={unfloatSelected} onLayer={layerSelected} onAlignInRow={(j) => commit(alignInRow(root, selected.id, j, bp))} rowJustify={alignInRowOf(root, selected.id, bp)} onSaveSection={pageBandOf(root, selected.id) ? () => { setMySectionError(undefined); setSavingSection(enclosingSection(selected.id)); } : undefined} onMakeGlobal={pageBandOf(root, selected.id) && globalTarget ? () => setMakingGlobal(globalTarget) : undefined} globalInfo={pageBandOf(root, selected.id) ? selectedGlobal?.info : undefined} onDetachGlobal={selectedGlobal ? () => commit(detachGlobal(root, selectedGlobal.node.id)) : undefined} onSectionWidth={pageBandOf(root, selected.id) ? (v) => commit(setSectionWidth(root, selected.id, v)) : undefined} sectionWidth={sectionWidthOf(root, selected.id)} siteWidth={hasSiteMeasure(root) ? root.gridSpace?.measure : undefined} sectionFollows={pageBandOf(root, selected.id)?.sectionWidth === undefined} rowOfPage={!!findParent(root, selected.id)?.parent.pageRow} canFloat={selected.id !== root.id} parentFlow={parentFlowOf(root, selected.id, bp)} canWrapWords={canWrapWords(root, selected.id, bp)} canOverlapUp={canOverlapUp(root, selected.id)} inGrid={gridTrack !== undefined} inMasonry={parentGrid?.rowFlow === "masonry"} inFitGrid={!!parentGrid && !!gridAutoFit(parentGrid)} gridTrack={gridTrack} onSetFraction={setFraction} onRetrack={retrackSelected} onKind={(k) => { const r = changeKind(root, selected.id, k); if (r.root !== root) commit(r.root); return r.dropped; }} breakpoint={bp} overridden={hasOverride(selected, bp)} onResetOverride={resetOverride} onResetField={(k) => commit(resetField(root, selected.id, k, bp))} pages={pageList} currentPageId={activePage.id} />
               ) : (
                 <div className="p-6 text-xs text-gray-400 text-center mt-6">Click a block to edit it — or drag a box on empty canvas to select several at once.</div>
               )}
@@ -1572,6 +1674,24 @@ export default function BoxDemoPage() {
         confirmButtonText="Start over"
         warningMessage="Every page of this site is replaced by one starter page. You can Undo (Ctrl+Z) right after."
       />
+      <DeleteConfirmationModal
+        isOpen={!!pendingSection}
+        onClose={() => setPendingSection(null)}
+        onConfirm={() => { if (pendingSection) placeSection(pendingSection); setPendingSection(null); }}
+        title={INSPECTOR.sections.replaceTitle.replace("{which}", pendingSection?.tag ?? "")}
+        confirmButtonText={INSPECTOR.sections.replaceButton}
+        warningMessage={INSPECTOR.sections.replaceWarning.replace("{which}", pendingSection?.tag ?? "")}
+      />
+      <AddPageDialog open={addingPage} theme={renderTheme} start={`Page ${site.pages.length + 1}`} currentName={activePage.name} onClose={() => setAddingPage(false)}
+        onBlank={(name) => addPageFrom(name, emptyPageRoot())} onDuplicate={() => { setAddingPage(false); onDuplicatePage(); }} onTemplate={addPageFrom} />
+      <NameDialog open={savingPage} title={INSPECTOR.sections.savePageTitle} label={INSPECTOR.sections.saveLabel} confirm={INSPECTOR.sections.saveConfirm}
+        start={activePage.name} error={templateError} onCancel={() => setSavingPage(false)} onConfirm={savePageTemplate} />
+      <NameDialog open={!!makingGlobal} title={INSPECTOR.sections.makeGlobalTitle} label={INSPECTOR.sections.saveLabel} confirm={INSPECTOR.sections.makeGlobal}
+        start={makingGlobal?.layerName ?? ""} onCancel={() => setMakingGlobal(null)} onConfirm={(name) => { if (makingGlobal) commit(makeGlobal(root, makingGlobal.id, name)); setMakingGlobal(null); }} />
+      {globalNotice && <div role="status" className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 rounded-xl bg-emerald-700 dark:bg-emerald-700 midnight:bg-emerald-700 purple:bg-emerald-700 px-4 py-2 text-xs font-semibold text-white shadow-lg">{globalNotice}<button type="button" onClick={() => setGlobalNotice("")} className="rounded px-1.5 py-0.5 hover:bg-white/15">OK</button></div>}
+      <NameDialog open={!!savingSection} title={INSPECTOR.sections.saveTitle} label={INSPECTOR.sections.saveLabel} confirm={INSPECTOR.sections.saveConfirm}
+        start={savingSection?.layerName ?? ""} error={mySectionError} onCancel={() => setSavingSection(null)} onConfirm={saveMySection} />
+      <p role="status" className="sr-only">{savedSaid}</p>
     </div>
   );
 }

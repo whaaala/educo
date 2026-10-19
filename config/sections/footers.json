@@ -1,0 +1,227 @@
+{
+  "$comment": "Footers (B30, LAYOUT_BENCHMARK.md). A footer REPLACES the site's shared footer on every page (box-builder-sections.feature). Trees: lib/section-library.ts SectionNode.",
+  "sections": [
+    { "id": "footer-columns", "name": "Address, links and a bottom line", "pattern": "B30",
+      "tree": { "k": "footer", "tone": "inverse", "set": { "paddingTop": 64, "paddingBottom": 32, "paddingLeft": 24, "paddingRight": 24, "gap": 40 },
+        "c": [
+          { "k": "row", "set": { "gap": 48, "align": "start" }, "c": [
+            { "k": "stack", "set": { "gap": 12, "width": "fill", "minWidth": "14rem" }, "c": [
+              { "r": "logo", "t": "Greenfield Academy" },
+              { "r": "small", "t": "12 Park Road, Ikeja, Lagos" },
+              { "r": "small", "t": "+234 801 234 5678 · office@greenfield.sch.ng" }
+            ] },
+            { "k": "stack", "set": { "gap": 12, "width": "fill", "minWidth": "10rem" }, "c": [
+              { "r": "heading", "t": "School" },
+              { "r": "link", "t": "About us" }, { "r": "link", "t": "Our staff" }, { "r": "link", "t": "Term dates" }
+            ] },
+            { "k": "stack", "set": { "gap": 12, "width": "fill", "minWidth": "10rem" }, "c": [
+              { "r": "heading", "t": "Parents" },
+              { "r": "link", "t": "Admissions" }, { "r": "link", "t": "Fees" }, { "r": "link", "t": "Contact" }
+            ] }
+          ] },
+          { "r": "divider" },
+          { "k": "row", "set": { "justify": "between", "gap": 16 }, "c": [
+            { "r": "small", "t": "© 2026 Greenfield Academy", "set": { "width": "auto" } },
+            { "r": "menu", "items": ["Privacy", "Safeguarding", "Accessibility"] }
+          ] }
+        ] } },
+    { "id": "footer-simple", "name": "One line: name, menu, copyright", "pattern": "B30",
+      "tree": { "k": "footer", "set": { "paddingTop": 32, "paddingBottom": 32, "paddingLeft": 24, "paddingRight": 24 },
+        "c": [ { "k": "row", "set": { "justify": "between", "gap": 24 }, "c": [
+          { "r": "logo", "t": "Greenfield Academy" },
+          { "r": "menu", "items": ["About", "Admissions", "Contact"] },
+          { "r": "small", "t": "© 2026", "set": { "width": "auto" } }
+        ] } ] } },
+    { "id": "footer-centred", "name": "Everything centred", "pattern": "B30",
+      "tree": { "k": "footer", "tone": "soft", "center": true, "set": { "paddingTop": 56, "paddingBottom": 40, "paddingLeft": 24, "paddingRight": 24, "gap": 16 },
+        "c": [
+          { "r": "logo", "t": "Greenfield Academy" },
+          { "r": "small", "t": "A day school for ages 3 to 18 in Ikeja, Lagos." },
+          { "r": "menu", "items": ["About", "Admissions", "News", "Term dates", "Contact"] },
+          { "r": "small", "t": "© 2026 Greenfield Academy. All rights reserved." }
+        ] } },
+    { "id": "footer-four-columns", "name": "Four columns and a bottom bar", "pattern": "B30",
+      "tree": { "k": "footer", "tone": "grey", "set": { "paddingTop": 64, "paddingBottom": 24, "paddingLeft": 24, "paddingRight": 24, "gap": 40 },
+        "c": [
+          { "k": "row", "set": { "gap": 40, "align": "start" }, "c": [
+            { "k": "stack", "set": { "gap": 12, "width": "fill", "minWidth": "16rem" }, "c": [
+              { "r": "logo", "t": "Greenfield Academy" },
+              { "r": "small", "t": "Small classes, caring teachers and a love of learning since 1987." }
+            ] },
+            { "k": "stack", "set": { "gap": 10, "width": "fill", "minWidth": "9rem" }, "c": [ { "r": "heading", "t": "School" }, { "r": "link", "t": "Our story" }, { "r": "link", "t": "Leadership" }, { "r": "link", "t": "Vacancies" } ] },
+            { "k": "stack", "set": { "gap": 10, "width": "fill", "minWidth": "9rem" }, "c": [ { "r": "heading", "t": "Learning" }, { "r": "link", "t": "Nursery" }, { "r": "link", "t": "Primary" }, { "r": "link", "t": "Secondary" } ] },
+            { "k": "stack", "set": { "gap": 10, "width": "fill", "minWidth": "12rem" }, "c": [ { "r": "heading", "t": "Visit" }, { "r": "small", "t": "12 Park Road, Ikeja, Lagos" }, { "r": "small", "t": "Mon to Fri, 7.30 am to 4 pm" } ] }
+          ] },
+          { "r": "divider" },
+          { "k": "row", "set": { "justify": "between", "gap": 16 }, "c": [
+            { "r": "small", "t": "© 2026 Greenfield Academy", "set": { "width": "auto" } },
+            { "r": "menu", "items": ["Privacy", "Cookies"] }
+          ] }
+        ] } },
+    { "id": "footer-newsletter", "name": "Newsletter sign-up and links", "pattern": "B26", "needs": ["form"],
+      "tree": { "k": "footer", "set": { "paddingTop": 56, "paddingBottom": 32, "paddingLeft": 24, "paddingRight": 24, "gap": 32 },
+        "c": [
+          { "k": "row", "set": { "justify": "between", "gap": 32 }, "c": [
+            { "k": "stack", "set": { "gap": 8, "width": "fill", "minWidth": "16rem" }, "c": [
+              { "r": "heading", "t": "News from Greenfield, once a month" },
+              { "r": "small", "t": "Term dates, events and what our pupils have been up to." }
+            ] },
+            { "r": "button", "t": "Join the newsletter" }
+          ] },
+          { "r": "divider" },
+          { "k": "row", "set": { "justify": "between", "gap": 16 }, "c": [
+            { "r": "logo", "t": "Greenfield Academy" },
+            { "r": "menu", "items": ["About", "Admissions", "Contact", "Privacy"] }
+          ] }
+        ] } },
+    { "id": "footer-big-cta", "name": "A big invitation, then the links", "pattern": "B20",
+      "tree": { "k": "footer", "tone": "strong", "set": { "paddingTop": 80, "paddingBottom": 32, "paddingLeft": 24, "paddingRight": 24, "gap": 40 },
+        "c": [
+          { "k": "stack", "center": true, "set": { "gap": 20 }, "c": [
+            { "r": "title", "t": "Come and see us for yourself" },
+            { "r": "button", "t": "Book a visit" }
+          ] },
+          { "r": "divider" },
+          { "k": "row", "set": { "justify": "between", "gap": 16 }, "c": [
+            { "r": "logo", "t": "Greenfield Academy" },
+            { "r": "menu", "items": ["About", "Admissions", "Contact"] },
+            { "r": "small", "t": "© 2026", "set": { "width": "auto" } }
+          ] }
+        ] } },
+    { "id": "footer-contact-map", "name": "Address beside a map", "pattern": "B25", "needs": ["map"],
+      "tree": { "k": "footer", "tone": "soft", "set": { "paddingTop": 56, "paddingBottom": 32, "paddingLeft": 24, "paddingRight": 24, "gap": 32 },
+        "c": [
+          { "k": "row", "set": { "gap": 40, "align": "start" }, "c": [
+            { "k": "stack", "set": { "gap": 12, "width": "fill", "minWidth": "16rem" }, "c": [
+              { "r": "heading", "t": "Find us" },
+              { "r": "small", "t": "12 Park Road, Ikeja, Lagos" },
+              { "r": "small", "t": "+234 801 234 5678" },
+              { "r": "small", "t": "office@greenfield.sch.ng" },
+              { "r": "button2", "t": "Get directions" }
+            ] },
+            { "r": "image", "photo": "map", "alt": "Map showing Greenfield Academy on Park Road", "set": { "width": "fill", "minWidth": "16rem", "ratio": "16 / 9" } }
+          ] },
+          { "r": "small", "t": "© 2026 Greenfield Academy" }
+        ] } },
+    { "id": "footer-social", "name": "Name and where to follow us", "pattern": "B30",
+      "tree": { "k": "footer", "center": true, "set": { "paddingTop": 48, "paddingBottom": 40, "paddingLeft": 24, "paddingRight": 24, "gap": 16 },
+        "c": [
+          { "r": "logo", "t": "Greenfield Academy" },
+          { "r": "menu", "items": ["Facebook", "Instagram", "YouTube", "WhatsApp"] },
+          { "r": "small", "t": "© 2026 Greenfield Academy" }
+        ] } },
+    { "id": "footer-dark-line", "name": "One line on a dark band", "pattern": "B30",
+      "tree": { "k": "footer", "tone": "inverse", "set": { "paddingTop": 24, "paddingBottom": 24, "paddingLeft": 24, "paddingRight": 24 },
+        "c": [ { "k": "row", "set": { "justify": "between", "gap": 16 }, "c": [
+          { "r": "small", "t": "© 2026 Greenfield Academy · 12 Park Road, Ikeja, Lagos", "set": { "width": "auto" } },
+          { "r": "menu", "items": ["Privacy", "Contact"] }
+        ] } ] } },
+    { "id": "footer-big-name", "name": "The school's name, large", "pattern": "B30",
+      "tree": { "k": "footer", "tone": "strong", "set": { "paddingTop": 48, "paddingBottom": 32, "paddingLeft": 24, "paddingRight": 24, "gap": 24 },
+        "c": [
+          { "k": "row", "set": { "justify": "between", "gap": 16 }, "c": [
+            { "r": "menu", "items": ["About", "Admissions", "News", "Contact"] },
+            { "r": "small", "t": "© 2026", "set": { "width": "auto" } }
+          ] },
+          { "r": "logo", "t": "Greenfield Academy", "set": { "fontSize": 72 } }
+        ] } },
+    { "id": "footer-two-rows", "name": "Menu over a quiet bottom line", "pattern": "B30",
+      "tree": { "k": "footer", "tone": "soft", "set": { "paddingTop": 40, "paddingBottom": 32, "paddingLeft": 24, "paddingRight": 24, "gap": 24 },
+        "c": [
+          { "k": "row", "set": { "justify": "between", "gap": 16 }, "c": [
+            { "r": "logo", "t": "Greenfield Academy" },
+            { "r": "menu", "items": ["About", "Admissions", "Academics", "News", "Contact"] }
+          ] },
+          { "r": "divider" },
+          { "k": "row", "set": { "justify": "between", "gap": 16 }, "c": [
+            { "r": "small", "t": "© 2026 Greenfield Academy", "set": { "width": "auto" } },
+            { "r": "small", "t": "Registered with the Lagos State Ministry of Education", "set": { "width": "auto" } }
+          ] }
+        ] } },
+    { "id": "footer-hours", "name": "Contact, opening hours and links", "pattern": "B30",
+      "tree": { "k": "footer", "set": { "paddingTop": 56, "paddingBottom": 32, "paddingLeft": 24, "paddingRight": 24, "gap": 32 },
+        "c": [
+          { "k": "row", "set": { "gap": 40, "align": "start" }, "c": [
+            { "k": "stack", "set": { "gap": 10, "width": "fill", "minWidth": "12rem" }, "c": [ { "r": "heading", "t": "Contact" }, { "r": "small", "t": "+234 801 234 5678" }, { "r": "small", "t": "office@greenfield.sch.ng" } ] },
+            { "k": "stack", "set": { "gap": 10, "width": "fill", "minWidth": "12rem" }, "c": [ { "r": "heading", "t": "Office hours" }, { "r": "small", "t": "Monday to Friday, 7.30 am to 4 pm" }, { "r": "small", "t": "Closed in the holidays" } ] },
+            { "k": "stack", "set": { "gap": 10, "width": "fill", "minWidth": "12rem" }, "c": [ { "r": "heading", "t": "Quick links" }, { "r": "link", "t": "Term dates" }, { "r": "link", "t": "Uniform" }, { "r": "link", "t": "Lunch menu" } ] }
+          ] },
+          { "r": "small", "t": "© 2026 Greenfield Academy" }
+        ] } },
+    { "id": "footer-sitemap", "name": "Every page, in five columns", "pattern": "B30",
+      "tree": { "k": "footer", "tone": "inverse", "set": { "paddingTop": 64, "paddingBottom": 32, "paddingLeft": 24, "paddingRight": 24, "gap": 40 },
+        "c": [
+          { "k": "grid", "cols": 5, "min": "9rem", "set": { "gap": 24 }, "c": [
+            { "k": "stack", "set": { "gap": 10 }, "c": [ { "r": "heading", "t": "About" }, { "r": "link", "t": "Our story" }, { "r": "link", "t": "Values" }, { "r": "link", "t": "Staff" } ] },
+            { "k": "stack", "set": { "gap": 10 }, "c": [ { "r": "heading", "t": "Admissions" }, { "r": "link", "t": "How to apply" }, { "r": "link", "t": "Fees" }, { "r": "link", "t": "Visits" } ] },
+            { "k": "stack", "set": { "gap": 10 }, "c": [ { "r": "heading", "t": "Learning" }, { "r": "link", "t": "Nursery" }, { "r": "link", "t": "Primary" }, { "r": "link", "t": "Secondary" } ] },
+            { "k": "stack", "set": { "gap": 10 }, "c": [ { "r": "heading", "t": "School life" }, { "r": "link", "t": "Clubs" }, { "r": "link", "t": "Sport" }, { "r": "link", "t": "Music" } ] },
+            { "k": "stack", "set": { "gap": 10 }, "c": [ { "r": "heading", "t": "Parents" }, { "r": "link", "t": "Term dates" }, { "r": "link", "t": "News" }, { "r": "link", "t": "Contact" } ] }
+          ] },
+          { "r": "divider" },
+          { "r": "small", "t": "© 2026 Greenfield Academy" }
+        ] } },
+    { "id": "footer-address-menu", "name": "Address left, menu right", "pattern": "B30",
+      "tree": { "k": "footer", "tone": "grey", "set": { "paddingTop": 40, "paddingBottom": 40, "paddingLeft": 24, "paddingRight": 24 },
+        "c": [ { "k": "row", "set": { "justify": "between", "gap": 24, "align": "start" }, "c": [
+          { "k": "stack", "set": { "gap": 6, "width": "auto" }, "c": [
+            { "r": "logo", "t": "Greenfield Academy" },
+            { "r": "small", "t": "12 Park Road, Ikeja, Lagos · +234 801 234 5678", "set": { "width": "auto" } }
+          ] },
+          { "r": "menu", "items": ["About", "Admissions", "News", "Contact"] }
+        ] } ] } },
+    { "id": "footer-accreditation", "name": "Accreditation logos above the links", "pattern": "B13", "needs": ["logo strip"],
+      "tree": { "k": "footer", "set": { "paddingTop": 48, "paddingBottom": 32, "paddingLeft": 24, "paddingRight": 24, "gap": 32 },
+        "c": [
+          { "r": "eyebrow", "t": "Accredited and recognised by" },
+          { "k": "grid", "cols": 5, "min": "8rem", "set": { "gap": 24 }, "c": [
+            { "r": "image", "photo": "logo-1", "alt": "Accreditation body logo", "set": { "ratio": "3 / 1" } },
+            { "r": "image", "photo": "logo-2", "alt": "Examinations council logo", "set": { "ratio": "3 / 1" } },
+            { "r": "image", "photo": "logo-3", "alt": "Schools association logo", "set": { "ratio": "3 / 1" } },
+            { "r": "image", "photo": "logo-4", "alt": "Sports federation logo", "set": { "ratio": "3 / 1" } },
+            { "r": "image", "photo": "logo-5", "alt": "Arts council logo", "set": { "ratio": "3 / 1" } }
+          ] },
+          { "r": "divider" },
+          { "k": "row", "set": { "justify": "between", "gap": 16 }, "c": [
+            { "r": "logo", "t": "Greenfield Academy" },
+            { "r": "menu", "items": ["About", "Admissions", "Contact"] }
+          ] }
+        ] } },
+    { "id": "footer-big-email", "name": "A big email address", "pattern": "B25",
+      "tree": { "k": "footer", "tone": "soft", "set": { "paddingTop": 56, "paddingBottom": 32, "paddingLeft": 24, "paddingRight": 24, "gap": 32 },
+        "c": [
+          { "k": "row", "set": { "gap": 40, "align": "start" }, "c": [
+            { "k": "stack", "set": { "gap": 8, "width": "fill", "minWidth": "10rem" }, "c": [ { "r": "logo", "t": "Greenfield Academy" } ] },
+            { "k": "stack", "set": { "gap": 8, "width": "fill", "minWidth": "10rem" }, "c": [ { "r": "link", "t": "About" }, { "r": "link", "t": "Admissions" }, { "r": "link", "t": "News" } ] },
+            { "k": "stack", "set": { "gap": 8, "width": "fill", "minWidth": "12rem" }, "c": [ { "r": "small", "t": "+234 801 234 5678" }, { "r": "small", "t": "12 Park Road, Ikeja, Lagos" } ] }
+          ] },
+          { "r": "link", "t": "office@greenfield.sch.ng", "to": "mailto:office@greenfield.sch.ng", "set": { "fontSize": 44 } },
+          { "r": "small", "t": "© 2026 Greenfield Academy" }
+        ] } },
+    { "id": "footer-stacked", "name": "Name and copyright, stacked", "pattern": "B30",
+      "tree": { "k": "footer", "set": { "paddingTop": 40, "paddingBottom": 40, "paddingLeft": 24, "paddingRight": 24, "gap": 8 },
+        "c": [
+          { "r": "logo", "t": "Greenfield Academy" },
+          { "r": "small", "t": "© 2026 Greenfield Academy · 12 Park Road, Ikeja, Lagos" }
+        ] } },
+    { "id": "footer-cards", "name": "Three contact cards", "pattern": "B30",
+      "tree": { "k": "footer", "tone": "grey", "set": { "paddingTop": 56, "paddingBottom": 32, "paddingLeft": 24, "paddingRight": 24, "gap": 32 },
+        "c": [
+          { "k": "grid", "cols": 3, "min": "14rem", "set": { "gap": 20 }, "c": [
+            { "k": "card", "set": { "padding": 24, "gap": 8 }, "c": [ { "r": "heading", "t": "Call us" }, { "r": "small", "t": "+234 801 234 5678" } ] },
+            { "k": "card", "set": { "padding": 24, "gap": 8 }, "c": [ { "r": "heading", "t": "Write to us" }, { "r": "small", "t": "office@greenfield.sch.ng" } ] },
+            { "k": "card", "set": { "padding": 24, "gap": 8 }, "c": [ { "r": "heading", "t": "Visit us" }, { "r": "small", "t": "12 Park Road, Ikeja, Lagos" } ] }
+          ] },
+          { "k": "row", "set": { "justify": "between", "gap": 16 }, "c": [
+            { "r": "logo", "t": "Greenfield Academy" },
+            { "r": "small", "t": "© 2026", "set": { "width": "auto" } }
+          ] }
+        ] } },
+    { "id": "footer-back-to-top", "name": "Copyright and back to the top", "pattern": "B31",
+      "tree": { "k": "footer", "set": { "paddingTop": 24, "paddingBottom": 24, "paddingLeft": 24, "paddingRight": 24 },
+        "c": [ { "k": "row", "set": { "justify": "between", "gap": 16 }, "c": [
+          { "r": "small", "t": "© 2026 Greenfield Academy", "set": { "width": "auto" } },
+          { "r": "link", "t": "Back to the top ↑", "to": "#top" }
+        ] } ] } }
+  ]
+}

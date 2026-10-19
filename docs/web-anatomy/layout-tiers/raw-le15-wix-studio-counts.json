@@ -1,0 +1,45 @@
+{
+ "Sections": {
+  "Designed Sections › Welcome": 16,
+  "Designed Sections › About": 16,
+  "Designed Sections › Services": 15,
+  "Designed Sections › Products": 12,
+  "Designed Sections › Team": 10,
+  "Designed Sections › Projects": 7,
+  "Designed Sections › Testimonials": 8,
+  "Designed Sections › Banner": 10,
+  "Designed Sections › Clients": 8,
+  "Designed Sections › Blank": 1,
+  "Interactive Sections › Hover": 10,
+  "Interactive Sections › Click": 7,
+  "Navigation › Headers": 7,
+  "Navigation › Footers": 12
+ },
+ "Design Kits": {
+  "Quick Add › Gradient Tech": 23,
+  "Quick Add › Metallic Digital": 21,
+  "Quick Add › Neon Corporate": 30,
+  "Quick Add › Twilight Finance": 25,
+  "Quick Add › Travel Wide": 20,
+  "Quick Add › Industrial Build": 18,
+  "Quick Add › Violet Assistant": 23,
+  "Quick Add › Structured Learning": 21,
+  "Quick Add › Illustrated Tools": 19,
+  "Quick Add › Rustic Farm": 23,
+  "Quick Add › Playful Youth": 24,
+  "Quick Add › Camp Character": 23,
+  "Quick Add › Vibrant Cuisine": 19
+ },
+ "Wireframes": {
+  "Quick Add › Hero": 20,
+  "Quick Add › Cards": 21,
+  "Quick Add › Spotlight": 17,
+  "Quick Add › Slideshow": 7,
+  "Quick Add › Text": 8,
+  "Quick Add › List": 5,
+  "Quick Add › Collage": 7,
+  "Quick Add › Business Info": 3,
+  "Quick Add › Banner": 7,
+  "Quick Add › Footers": 7
+ }
+}
