@@ -27,7 +27,8 @@ import {
   gridAutoFit, parentFlowOf, canWrapWords, canOverlapUp, regionSpan,
 } from "@/lib/box-model";
 import { blockForKind } from "@/lib/box-presets";
-import { insertSection } from "@/lib/section-library";
+import { insertSection, restyleSection, nextFinish, finishLabel, WIREFRAME } from "@/lib/section-library";
+import { loadAll as loadSections } from "@/components/website/box/SectionsPanel";
 import { saveSection, myTemplates } from "@/lib/saved-sections";
 import AddPageDialog from "@/components/website/box/AddPageDialog";
 import { makeGlobal, detachGlobal, globalsInSite, changedGlobals, globalSample, removeGlobal } from "@/lib/global-sections";
@@ -209,6 +210,7 @@ export default function BoxDemoPage() {
   const [addingPage, setAddingPage] = useState(false); // LE-15 PS-5 (3): the Add a page dialog
   const [savingPage, setSavingPage] = useState(false); // …and Save page as template
   const [templateError, setTemplateError] = useState<string | undefined>(undefined);
+  const finishRef = useRef<((to?: string) => void) | null>(null); // LE-15f: Ctrl+Alt+F gives the selected ready-made section its next finish
   const globalTargetRef = useRef<BoxNode | null>(null); // the section Ctrl+Alt+G makes global (an ordinary one-block page section)
   const [globalNotice, setGlobalNotice] = useState(""); // "This change is made on all N pages" — once per global section per visit
   const warnedGlobals = useRef(new Set<string>());
@@ -217,6 +219,7 @@ export default function BoxDemoPage() {
       if (!(e.ctrlKey || e.metaKey) || !e.altKey || e.repeat || typingIn(document.activeElement)) return;
       if (e.code === "KeyS" && saveTargetRef.current) { e.preventDefault(); setMySectionError(undefined); setSavingSection(saveTargetRef.current); }
       else if (e.code === "KeyG" && globalTargetRef.current) { e.preventDefault(); setMakingGlobal(globalTargetRef.current); }
+      else if (e.code === "KeyF" && finishRef.current) { e.preventDefault(); finishRef.current(); }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
@@ -1035,6 +1038,22 @@ export default function BoxDemoPage() {
   // PS-5 (2): a page section of ONE block can be made global (a band of several is several sections)
   const globalTarget = (() => { const s = enclosingSection(selected?.id); return s && findBox(root, s.id) && !s.globalId ? s : null; })();
   globalTargetRef.current = globalTarget;
+  // LE-15f RF-1: a ready-made section on the page takes another finish — its words, photos and blocks stay (restyleSection).
+  // The layout it came from is read when asked (the Sections tab reads the same files), then ONE commit: one Ctrl+Z.
+  const finishTarget = (() => { const s = enclosingSection(selected?.id); return s?.sectionFrom && findBox(root, s.id) ? s : null; })();
+  const applyFinish = (sec: BoxNode, to: string) => loadSections().then((all) => {
+    const def = all.flatMap((c) => c.sections).find((d) => d.id === sec.sectionFrom);
+    if (!def) return;
+    commitWith((cur) => {
+      const now = findBox(cur, sec.id);
+      if (!now) return cur;
+      const next = restyleSection(now, def, to);
+      const swap = (n: BoxNode): BoxNode => (n.id === sec.id ? next : n.children ? { ...n, children: n.children.map(swap) } : n);
+      return swap(cur);
+    });
+    setSavedSaid(`${INSPECTOR.sections.finish}: ${finishLabel(to)}`);
+  });
+  finishRef.current = finishTarget ? (to = nextFinish(finishTarget.sectionFinish)) => void applyFinish(finishTarget, to) : null;
   const globals = globalsInSite(site);
   const selectedGlobal = (() => { const s = enclosingSection(selected?.id); const g = s?.globalId ? globals.find((x) => x.id === s.globalId) : undefined; return s && g ? { node: s, info: { name: g.name, pages: g.pages } } : null; })();
   const saveMySection = (name: string) => {
@@ -1637,7 +1656,7 @@ export default function BoxDemoPage() {
                   onSetSpan={(n) => commit(setSpan(root, selected.id, n, columnsAt(gridHere, bp), bp), `span:${selected.id}`)}
                   pageLines={(() => { const c = columnsAt(gridHere, bp), l = linesAt(root, selected.id, c, bp); if (!l) return undefined; const w = device === screenDevice ? fitW : DEVICES.find((d) => d.id === device)?.w, band = findParent(root, selected.id)?.parent; return { ...l, cols: c, drawnAcross: w && band ? fitStepAt(band, selected.id, w / 16, bp) ?? undefined : undefined }; })()}
                   onSetLines={(want) => commit(want === "full" ? fullWidthAt(root, selected.id, bp) : setLinesAt(root, selected.id, want, columnsAt(gridHere, bp), bp), `lines:${selected.id}`)}
-                  onSetFreeInset={linesAt(root, selected.id, columnsAt(gridHere, bp), bp) ? (side, v) => commit(side === "both" ? setFreeInset(setFreeInset(root, selected.id, "left", undefined, bp), selected.id, "right", undefined, bp) : setFreeInset(root, selected.id, side, v, bp), `free:${selected.id}`) : undefined}pinBlockedBy={blockedByLabel(pinBlockedBy(root, selected.id, bp))} fixedBlockedBy={blockedByLabel(fixedBlockedBy(root, selected.id, bp))} pinScope={pinScopeWords(root, selected.id, bp)} node={bp === "base" ? selected : resolveResponsive(selected, bp)} theme={renderTheme} onPatch={onPatch} onAddChild={addChildSection} onAddAnnouncement={() => commit(addAnnouncementBar(root, selected.id))} onFloat={floatSelected} onUnfloat={unfloatSelected} onLayer={layerSelected} onAlignInRow={(j) => commit(alignInRow(root, selected.id, j, bp))} rowJustify={alignInRowOf(root, selected.id, bp)} onSaveSection={pageBandOf(root, selected.id) ? () => { setMySectionError(undefined); setSavingSection(enclosingSection(selected.id)); } : undefined} onMakeGlobal={pageBandOf(root, selected.id) && globalTarget ? () => setMakingGlobal(globalTarget) : undefined} globalInfo={pageBandOf(root, selected.id) ? selectedGlobal?.info : undefined} onDetachGlobal={selectedGlobal ? () => commit(detachGlobal(root, selectedGlobal.node.id)) : undefined} onSectionWidth={pageBandOf(root, selected.id) ? (v) => commit(setSectionWidth(root, selected.id, v)) : undefined} sectionWidth={sectionWidthOf(root, selected.id)} siteWidth={hasSiteMeasure(root) ? root.gridSpace?.measure : undefined} sectionFollows={pageBandOf(root, selected.id)?.sectionWidth === undefined} rowOfPage={!!findParent(root, selected.id)?.parent.pageRow} canFloat={selected.id !== root.id} parentFlow={parentFlowOf(root, selected.id, bp)} canWrapWords={canWrapWords(root, selected.id, bp)} canOverlapUp={canOverlapUp(root, selected.id)} inGrid={gridTrack !== undefined} inMasonry={parentGrid?.rowFlow === "masonry"} inFitGrid={!!parentGrid && !!gridAutoFit(parentGrid)} gridTrack={gridTrack} onSetFraction={setFraction} onRetrack={retrackSelected} onKind={(k) => { const r = changeKind(root, selected.id, k); if (r.root !== root) commit(r.root); return r.dropped; }} breakpoint={bp} overridden={hasOverride(selected, bp)} onResetOverride={resetOverride} onResetField={(k) => commit(resetField(root, selected.id, k, bp))} pages={pageList} currentPageId={activePage.id} />
+                  onSetFreeInset={linesAt(root, selected.id, columnsAt(gridHere, bp), bp) ? (side, v) => commit(side === "both" ? setFreeInset(setFreeInset(root, selected.id, "left", undefined, bp), selected.id, "right", undefined, bp) : setFreeInset(root, selected.id, side, v, bp), `free:${selected.id}`) : undefined}pinBlockedBy={blockedByLabel(pinBlockedBy(root, selected.id, bp))} fixedBlockedBy={blockedByLabel(fixedBlockedBy(root, selected.id, bp))} pinScope={pinScopeWords(root, selected.id, bp)} node={bp === "base" ? selected : resolveResponsive(selected, bp)} theme={renderTheme} onPatch={onPatch} onAddChild={addChildSection} onAddAnnouncement={() => commit(addAnnouncementBar(root, selected.id))} onFloat={floatSelected} onUnfloat={unfloatSelected} onLayer={layerSelected} onAlignInRow={(j) => commit(alignInRow(root, selected.id, j, bp))} rowJustify={alignInRowOf(root, selected.id, bp)} onSaveSection={pageBandOf(root, selected.id) ? () => { setMySectionError(undefined); setSavingSection(enclosingSection(selected.id)); } : undefined} sectionFinish={finishTarget ? { value: finishTarget.sectionFinish ?? WIREFRAME, onChange: (id) => finishRef.current?.(id) } : undefined} onMakeGlobal={pageBandOf(root, selected.id) && globalTarget ? () => setMakingGlobal(globalTarget) : undefined} globalInfo={pageBandOf(root, selected.id) ? selectedGlobal?.info : undefined} onDetachGlobal={selectedGlobal ? () => commit(detachGlobal(root, selectedGlobal.node.id)) : undefined} onSectionWidth={pageBandOf(root, selected.id) ? (v) => commit(setSectionWidth(root, selected.id, v)) : undefined} sectionWidth={sectionWidthOf(root, selected.id)} siteWidth={hasSiteMeasure(root) ? root.gridSpace?.measure : undefined} sectionFollows={pageBandOf(root, selected.id)?.sectionWidth === undefined} rowOfPage={!!findParent(root, selected.id)?.parent.pageRow} canFloat={selected.id !== root.id} parentFlow={parentFlowOf(root, selected.id, bp)} canWrapWords={canWrapWords(root, selected.id, bp)} canOverlapUp={canOverlapUp(root, selected.id)} inGrid={gridTrack !== undefined} inMasonry={parentGrid?.rowFlow === "masonry"} inFitGrid={!!parentGrid && !!gridAutoFit(parentGrid)} gridTrack={gridTrack} onSetFraction={setFraction} onRetrack={retrackSelected} onKind={(k) => { const r = changeKind(root, selected.id, k); if (r.root !== root) commit(r.root); return r.dropped; }} breakpoint={bp} overridden={hasOverride(selected, bp)} onResetOverride={resetOverride} onResetField={(k) => commit(resetField(root, selected.id, k, bp))} pages={pageList} currentPageId={activePage.id} />
               ) : (
                 <div className="p-6 text-xs text-gray-400 text-center mt-6">Click a block to edit it — or drag a box on empty canvas to select several at once.</div>
               )}

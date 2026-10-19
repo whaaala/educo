@@ -170,6 +170,8 @@
     "designed": "Designed",
     "look": "Wireframe or designed",
     "finish": "Finish",
+    "finishOnPage": "Finish of this section",
+    "finishHint": "Another look for this section: type, colours, corners and motion change; the words, photos and blocks you changed or added stay (Ctrl+Alt+F for the next).",
     "hint": "Click or press Enter to add it after the section you are on",
     "hintTouch": "Tap a section to add it",
     "add": "Add {name}, {category}",

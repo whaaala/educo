@@ -63,6 +63,25 @@ drawn on the page with its size, and you can set it to anything on the scale, do
 A designed section also moves a little as a visitor scrolls to it, and its buttons answer the pointer and the keyboard. A
 visitor whose phone or computer asks for less motion sees it still, all at once.
 
+## "I wrote my words, and now I want another look"
+
+You added a welcome in **Calm**, typed your own title and put in a photo of your own pupils, and now the page wants to feel
+bolder. Select the section and, in the Inspector, choose another **Finish**: **Bold**, any of the seven, or the
+**Wireframe**. You can also press **Ctrl+Alt+F**, which moves to the next finish each time you press it.
+
+![A welcome given the Bold finish after it was added, with the Finish in the Inspector](./img/guide-sections-refinish.webp)
+
+The look changes, as if you had added the section in that finish: the type, colours, corners, shadows and motion. **What you
+made stays as you left it**: your words, your photos, your links and any block you added. What you never touched follows
+the finish, so a section added as a Wireframe gets the designed words and photos when you give it a finish, and gets the
+placeholders back if you choose the Wireframe again.
+
+- A colour or shadow you added where the finish puts none, such as a background on a plain column, stays too.
+- Over a photo of your own, the words stay white and the photo keeps its shade, even in the Wireframe.
+- **Ctrl+Z** puts the whole section back in its old finish in one step.
+- A global section changes on every page that has it.
+- The Finish appears only for a ready-made section. A section you built from blocks is already your own design.
+
 ## "A new header for every page"
 
 The **Headers** and **Footers** tiles work a little differently, because a site has one header and one footer, shown on
@@ -121,6 +140,7 @@ A page made from a template is a copy. It takes your site's own header and foote
 | Add a section | Click or tap a tile; **Enter** on a focused tile; drag a tile onto the page | **Ctrl+Z** undoes |
 | Plain or finished | **Wireframe \| Designed** at the top of the tab | |
 | The look | **Finish**: Serious · Minimalist · Plain · Bold · Calm · Startup · Playful | |
+| Another look for a section on the page | Select it → Inspector → **Finish**: Wireframe or one of the seven | **Ctrl+Alt+F** next finish · **Ctrl+Z** undoes |
 | Keep a section | Inspector → **Save as my section** | **Ctrl+Alt+S** |
 | Your sections | Sections tab → **My sections**: add, **Rename**, **Delete** | |
 | A section the same everywhere | Inspector → **Make global** | **Ctrl+Alt+G** |

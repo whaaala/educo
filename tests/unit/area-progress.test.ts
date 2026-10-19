@@ -37,7 +37,9 @@ describe("area progress — the percentage left is counted, never guessed", () =
 
   it("closing a batch lowers what is left by its changes", () => {
     const before = areaProgress(TREE, "Website layout");
-    const closed = TREE.replace(`- \`[ ]\` **BATCH ${OPEN.id} · `, `- \`[x]\` **BATCH ${OPEN.id} · `);
+    // the first open batch may be the one in progress, `[>]` (LE15f-1: replacing only `[ ]` closed nothing once a batch was opened)
+    const closed = TREE.replace(new RegExp(`- \`\\[[ >]\\]\` \\*\\*BATCH ${esc(OPEN.id)} · `), `- \`[x]\` **BATCH ${OPEN.id} · `);
+    expect(closed).not.toBe(TREE);
     const after = areaProgress(closed, "Website layout");
     expect(OPEN.changes).toBeGreaterThan(0);
     expect(before.left - after.left).toBe(OPEN.changes);

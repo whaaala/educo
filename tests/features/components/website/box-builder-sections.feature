@@ -4,7 +4,7 @@ Feature: Box Builder — ready-made sections, my sections, global sections and p
     and new pages that start from a template
   So that a good-looking page takes minutes, and a change made once is made everywhere
   Design (signed by the user 2026-10-19, D1 … D8): docs/web-anatomy/layout-tiers/le15-design.md
-  Guards: tests/unit/section-library.test.ts · tests/components/website/SectionsPanel.test.tsx · tests/unit/saved-sections.test.ts · tests/unit/global-sections.test.ts · tests/unit/page-templates.test.ts · tests/unit/section-photos.test.ts · tests/components/website/AddPageDialog.test.tsx
+  Guards: tests/unit/section-library.test.ts · tests/components/website/SectionsPanel.test.tsx · tests/unit/saved-sections.test.ts · tests/unit/global-sections.test.ts · tests/unit/page-templates.test.ts · tests/unit/section-photos.test.ts · tests/components/website/AddPageDialog.test.tsx · tests/components/website/BoxInspector.test.tsx · tests/components/website/BoxCanvas.test.tsx
 
   Background:
     Given the Box Builder is open on a site with the pages "Home", "Admissions" and "Term dates"
@@ -194,6 +194,65 @@ Feature: Box Builder — ready-made sections, my sections, global sections and p
   Scenario: The published page is plain HTML
     When I export the site
     Then each page carries its copy of "Admissions banner" as ordinary HTML, with nothing loaded at run time
+
+  # ── Another finish for a section already on the page (BATCH LE-15f, RF-1) ──────────────────────────────────
+  # Research-check: docs/web-anatomy/layout-tiers/baseline-le15-sections.md § "Re-styling a placed section"
+  # HEADED: scripts/uat/uat-le15f-headed.js (F1–F11, six windows) · scripts/uat/uat-le15f-emulator.js tablet | phone (F12)
+
+  Scenario Outline: Choosing another finish keeps what I wrote
+    Given I added the hero "Words beside a picture" in the "Calm" finish
+    And I changed its title to "Open day, 12 March", replaced its photo, and added a button of my own
+    When I select the section and choose the finish "<finish>" in the Inspector
+    Then its type, colours, corners, shadows and motion are those of "<finish>", as a fresh "<finish>" hero would have them
+    And the title still reads "Open day, 12 March", my photo is still there, and my own button is still there, as I left it
+    And the canvas and the Preview show the same
+    Examples:
+      | finish     |
+      | Wireframe  |
+      | Serious    |
+      | Minimalist |
+      | Plain      |
+      | Bold       |
+      | Startup    |
+      | Playful    |
+
+  Scenario: One undo puts the old finish back
+    Given I chose "Bold" for a section that was "Calm"
+    When I press Ctrl+Z once
+    Then the whole section is "Calm" again
+
+  Scenario: By keyboard
+    Given a ready-made section is selected
+    When I press Ctrl+Alt+F
+    Then it takes the next finish in the list, the Wireframe after the last
+    And the Inspector's Finish names the one it now has
+
+  Scenario: What I styled myself, and the finish never touched, stays
+    Given I gave a section's plain stack a background and a title a shadow
+    When I choose another finish
+    Then the stack keeps its background and the title its shadow
+
+  Scenario: What I never touched follows the finish
+    Given I added the hero "Words beside a picture" as a Wireframe and changed nothing
+    When I choose the finish "Startup"
+    Then it has the designed words and photo a fresh "Startup" hero has, not "Title goes here" and a grey box
+    And choosing the Wireframe again gives back the wireframe exactly
+
+  Scenario: My own photo stays readable in the Wireframe
+    Given I replaced the photo of the hero "Words over a full photo" with my own
+    When I choose the Wireframe for it
+    Then my photo stays, with its shade, and the words over it stay white
+
+  Scenario: The canvas paints a section in the site's colours, as the page does (LE15f-2)
+    Given a page holding only ready-made sections, and no design-system component
+    When I look at it on the canvas, in any theme of the editor
+    Then its words, bands and buttons have the site theme's colours, the same as the Preview
+    And never the editor's own colours (measured: the canvas #111827 against the Preview #0f172a)
+
+  Scenario: Only a ready-made section offers it
+    When I select a section I built myself from blocks
+    Then the Inspector shows no Finish
+    And the finish a section remembers is never written into the published page
 
   # ── A new page from a template (PS-5 (3)) ───────────────────────────────────────────────────────────────────
 

@@ -37,6 +37,7 @@ import CompactSelect from "@/components/shared/CompactSelect";
 import Button from "@/components/shared/Button";
 import { CONTAINER_TAGS, type SemanticTag } from "@/lib/semantics";
 import INSPECTOR from "@/config/inspector.json";
+import { FINISH_CHOICES, finishLabel } from "@/lib/section-library";
 const SHARED_REGION = INSPECTOR.sharedRegion; // PS-2: the "On every page" words (RULE CFG)
 const HEADER = INSPECTOR.header; // LE-11: the held header's words (RULE CFG)
 import CompactTextarea from "@/components/shared/CompactTextarea";
@@ -643,7 +644,7 @@ export function blockLabel(node: BoxNode): string {
 }
 const TRAIL = INSPECTOR.trail;
 
-export default function BoxInspector({ trail = [], onSelectBlock, section = false, sectionPlace, outerDefault, fillHeight, pageSpan, onSetSpan, pageLines, onSetLines, onSetFreeInset, rowStepRem, node, theme, onPatch, onAddChild, onAddAnnouncement, onFloat, onUnfloat, onLayer, onAlignInRow, rowJustify, onSectionWidth, onSaveSection, onMakeGlobal, globalInfo, onDetachGlobal, sectionWidth, siteWidth, sectionFollows, rowOfPage = false, canFloat = true, parentFlow, canWrapWords = false, canOverlapUp = false, inGrid = false, inMasonry = false, inFitGrid = false, gridTrack, onSetFraction, onRetrack, onKind, breakpoint = "base", overridden = false, onResetOverride, onResetField, pages, currentPageId, pinBlockedBy = null, fixedBlockedBy = null, pinScope = null }: {
+export default function BoxInspector({ trail = [], onSelectBlock, section = false, sectionPlace, outerDefault, fillHeight, pageSpan, onSetSpan, pageLines, onSetLines, onSetFreeInset, rowStepRem, node, theme, onPatch, onAddChild, onAddAnnouncement, onFloat, onUnfloat, onLayer, onAlignInRow, rowJustify, onSectionWidth, onSaveSection, sectionFinish, onMakeGlobal, globalInfo, onDetachGlobal, sectionWidth, siteWidth, sectionFollows, rowOfPage = false, canFloat = true, parentFlow, canWrapWords = false, canOverlapUp = false, inGrid = false, inMasonry = false, inFitGrid = false, gridTrack, onSetFraction, onRetrack, onKind, breakpoint = "base", overridden = false, onResetOverride, onResetField, pages, currentPageId, pinBlockedBy = null, fixedBlockedBy = null, pinScope = null }: {
   /** ED-2 (LE-10): the blocks round this one, outermost first (`selectionChain` without the block itself) — the same
    *  blocks Escape steps out through. Each is a button that selects it (`onSelectBlock`). */
   trail?: BoxNode[];
@@ -668,6 +669,8 @@ export default function BoxInspector({ trail = [], onSelectBlock, section = fals
   onSectionWidth?: (v: "band" | "contained") => void;
   /** LE-15 PS-5 (1): keep this page section in My sections — shown only for a section of the page. */
   onSaveSection?: () => void;
+  /** LE-15f RF-1: a ready-made section — the finish it has, and choosing another (its words, photos and blocks stay). */
+  sectionFinish?: { value: string; onChange: (id: string) => void };
   /** LE-15 PS-5 (2): make this page section global; or, for a copy of one, what it is and Detach. */
   onMakeGlobal?: () => void;
   globalInfo?: { name: string; pages: number };
@@ -1154,6 +1157,13 @@ export default function BoxInspector({ trail = [], onSelectBlock, section = fals
                 <div className="space-y-1">
                   <Button variant="secondary" size="sm" onClick={onSaveSection}>{INSPECTOR.sections.save}</Button>
                   <p className="text-[11px] leading-snug text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">{INSPECTOR.sections.saveHint}</p>
+                </div>
+              )}
+              {sectionFinish && (
+                <div className="space-y-1">
+                  <CompactSelect label={INSPECTOR.sections.finish} ariaLabel={INSPECTOR.sections.finishOnPage} value={sectionFinish.value} onChange={sectionFinish.onChange}
+                    options={FINISH_CHOICES.map((id) => ({ value: id, label: finishLabel(id) }))} />
+                  <p className="text-[11px] leading-snug text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">{INSPECTOR.sections.finishHint}</p>
                 </div>
               )}
               {globalInfo && onDetachGlobal ? (

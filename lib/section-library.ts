@@ -68,13 +68,19 @@ export interface Finish {
   hover: string;
 }
 
-const CFG = FINISH_CONFIG as unknown as Record<string, unknown> & { tones: Record<Tone, ToneColours>; scrim: string; wireframe: Finish };
+const CFG = FINISH_CONFIG as unknown as Record<string, unknown> & { tones: Record<Tone, ToneColours>; scrim: string; wireframe: Finish; restyle: { look: string[]; content: string[] } };
+export const WIREFRAME = "wireframe";
 /** The seven personalities, in the deck's order (config order). */
-export const FINISH_IDS: string[] = Object.keys(CFG).filter((k) => !k.startsWith("$") && k !== "tones" && k !== "scrim" && k !== "wireframe");
+export const FINISH_IDS: string[] = Object.keys(CFG).filter((k) => !k.startsWith("$") && k !== "tones" && k !== "scrim" && k !== "restyle" && k !== WIREFRAME);
+/** What a section on the page can be given (RF-1): the Wireframe, then the seven. */
+export const FINISH_CHOICES: string[] = [WIREFRAME, ...FINISH_IDS];
+export const nextFinish = (id?: string): string => FINISH_CHOICES[(FINISH_CHOICES.indexOf(id ?? "") + 1) % FINISH_CHOICES.length];
 export const finishOf = (id: string): Finish => (CFG[id] as Finish | undefined) ?? (CFG[FINISH_IDS[0]] as Finish);
-export const finishLabel = (id: string): string => finishOf(id).label;
+export const finishLabel = (id: string): string => (id === WIREFRAME ? CFG.wireframe.label : finishOf(id).label);
 
-type Ctx = { f: Finish; wire: boolean; tone: Tone; center: boolean };
+/** `keep`: the parts whose photo behind words is the person's own — it stays, shaded, in a wireframe too (RF-1); `onPhoto`:
+ *  inside one, where every block keeps the photo's colours however deep it sits (LE15f-4: a row of buttons turned grey). */
+type Ctx = { f: Finish; wire: boolean; tone: Tone; center: boolean; keep?: Set<string>; onPhoto?: boolean };
 const toneOf = (ctx: Ctx, t?: Tone): Tone => { const want = t ?? ctx.tone; return ctx.f.toneMap[want] ?? want; };
 const colours = (tone: Tone): ToneColours => CFG.tones[tone] ?? CFG.tones.plain;
 const words = (ctx: Ctx, n: SectionNode, role: keyof typeof COPY): string => (ctx.wire ? (COPY[role] as string) : n.t ?? (COPY[role] as string));
@@ -96,7 +102,7 @@ const PHOTOS = (PHOTO_CONFIG as unknown as { photos: Record<string, Photo> }).ph
 const photoOf = (id?: string): Photo | undefined => (id ? PHOTOS[id] : undefined);
 const photoSrc = (id?: string): string | undefined => photoOf(id)?.src;
 
-function element(n: SectionNode, ctx: Ctx): BoxNode {
+function element(n: SectionNode, ctx: Ctx, path: string): BoxNode {
   const c = colours(ctx.tone);
   const f = ctx.f;
   const align = ctx.center ? { textAlign: "center" as const } : {};
@@ -128,8 +134,8 @@ function element(n: SectionNode, ctx: Ctx): BoxNode {
       // A real menu, the way the header research builds one: a Menu (nav) › a List (ul) of Links (html-semantics.md).
       // On a phone the menu is ONE line that scrolls sideways (FL-6), every link reachable — measured, wrapped it took three
       // lines of a 375px header. ponytail: the phone's ☰ menu is the Navigation component's (PS-15 → CP-1).
-      const list = createContainer("row", { tag: "ul", gap: 24, align: "center", wrap: true, width: "auto", responsive: { phone: { wrap: false, scrollX: true } } });
-      list.children = (n.items ?? []).map((w) => createElement("link", { text: ctx.wire ? COPY.link : w, href: "#", underline: false, color: c.text, ...typeOf(f, "link") }));
+      const list = createContainer("row", { tag: "ul", gap: 24, align: "center", wrap: true, width: "auto", responsive: { phone: { wrap: false, scrollX: true } }, sectionPart: `${path}.l` });
+      list.children = (n.items ?? []).map((w, i) => createElement("link", { text: ctx.wire ? COPY.link : w, href: "#", underline: false, color: c.text, ...typeOf(f, "link"), sectionPart: `${path}.l.${i}` }));
       const nav = createContainer("row", { tag: "nav", width: "auto", align: "center" });
       nav.children = [list];
       return nav;
@@ -138,14 +144,15 @@ function element(n: SectionNode, ctx: Ctx): BoxNode {
   }
 }
 
-function container(n: SectionNode, ctx: Ctx): BoxNode {
-  const tone = toneOf(ctx, n.tone);
+function container(n: SectionNode, ctx: Ctx, path: string): BoxNode {
+  const own = !!ctx.keep?.has(path) && n.tone === "photo";
+  const tone = own || (ctx.onPhoto && !n.tone) ? "photo" : toneOf(ctx, n.tone);
   const c = colours(tone);
   const f = ctx.f;
-  const inner: Ctx = { ...ctx, tone, center: n.center ?? ctx.center };
+  const inner: Ctx = { ...ctx, tone, center: n.center ?? ctx.center, onPhoto: tone === "photo" && (own || !!ctx.onPhoto) };
   const centre = n.center ? { align: "center" as const } : {};
   const paint = n.tone ? { background: c.bg } : {};
-  const photo = n.photo && !ctx.wire && tone === "photo" ? { ...(photoSrc(n.photo) ? { bgImage: photoSrc(n.photo), bgSize: "cover", bgPosition: "center" } : {}), bgOverlay: CFG.scrim } : {};
+  const photo = n.photo && (!ctx.wire || own) && tone === "photo" ?{ ...(photoSrc(n.photo) ? { bgImage: photoSrc(n.photo), bgSize: "cover", bgPosition: "center" } : {}), bgOverlay: CFG.scrim } : {};
   let node: BoxNode;
   switch (n.k) {
     case "section": case "header": case "footer":
@@ -160,7 +167,7 @@ function container(n: SectionNode, ctx: Ctx): BoxNode {
     // (measured on the review sheet: both showed their dark shade with no picture)
     default: node = createContainer("column", { ...centre, ...paint, ...photo });
   }
-  node.children = (n.c ?? []).map((ch) => build(ch, inner));
+  node.children = (n.c ?? []).map((ch, i) => build(ch, inner, `${path}.${i}`));
   // A row of only words, buttons and links that is not spread out keeps them at their own size: in a Side by side a width-less
   // block grows into the room left (box-model's fill-and-follow), so two buttons took half the line each (measured, the review
   // sheet 2026-10-19). A block placed on the row (the Inspector's nine squares) is what stops the grow (LE4-1) — placed at the
@@ -171,9 +178,8 @@ function container(n: SectionNode, ctx: Ctx): BoxNode {
   return Object.assign(node, n.set ?? {});
 }
 
-function build(n: SectionNode, ctx: Ctx): BoxNode {
-  if (n.r) return Object.assign(element(n, ctx), n.set ?? {});
-  return container(n, ctx);
+function build(n: SectionNode, ctx: Ctx, path: string): BoxNode {
+  return Object.assign(n.r ? Object.assign(element(n, ctx, path), n.set ?? {}) : container(n, ctx, path), { sectionPart: path });
 }
 
 /**
@@ -188,10 +194,50 @@ function centreBands(n: BoxNode): BoxNode {
 }
 
 /** A section as ordinary blocks — in the builder's own banded form, the tree a person would have built — in the wireframe or a finish. */
-export function buildSection(def: SectionDef, opts: { finish: string; wireframe: boolean }): BoxNode {
+export function buildSection(def: SectionDef, opts: { finish: string; wireframe: boolean }, keep?: Set<string>): BoxNode {
   const f = opts.wireframe ? CFG.wireframe : finishOf(opts.finish);
   const root: SectionNode = { ...def.tree, k: def.tree.k ?? "section", tone: def.tree.tone ?? "plain" };
-  return centreBands(normalizeRowBands(build(root, { f, wire: opts.wireframe, tone: "plain", center: false })));
+  const built = centreBands(normalizeRowBands(build(root, { f, wire: opts.wireframe, tone: "plain", center: false, keep }, "0")));
+  return { ...built, sectionFrom: def.id, sectionFinish: opts.wireframe ? WIREFRAME : opts.finish };
+}
+
+const byPart = (n: BoxNode, m = new Map<string, Record<string, unknown>>()) => {
+  if (n.sectionPart != null) m.set(n.sectionPart, n as unknown as Record<string, unknown>);
+  n.children?.forEach((c) => byPart(c, m));
+  return m;
+};
+const same = (a: unknown, b: unknown) => JSON.stringify(a) === JSON.stringify(b);
+
+/**
+ * ANOTHER FINISH FOR A SECTION ALREADY ON THE PAGE (BATCH LE-15f, RF-1 — box-builder-sections.feature).
+ * The layout is built afresh in the new finish and each block the section made (found by `sectionPart`, wherever the
+ * person moved it) takes that block's LOOK; its CONTENT stays where the person changed it and follows the finish where
+ * they did not. Blocks the person added, and look no finish ever sets on a block, are left as they are. One tree out,
+ * so one commit — one Ctrl+Z.
+ */
+export function restyleSection(section: BoxNode, def: SectionDef, to: string): BoxNode {
+  const made = (id: string, keep?: Set<string>) => byPart(buildSection(def, { finish: id === WIREFRAME ? FINISH_IDS[0] : id, wireframe: id === WIREFRAME }, keep));
+  const was = made(section.sectionFinish ?? to);
+  const keep = new Set<string>();
+  byPart(section).forEach((n, p) => { if (n.bgImage && n.bgImage !== was.get(p)?.bgImage) keep.add(p); });
+  const next = made(to, keep);
+  const every = FINISH_CHOICES.map((id) => made(id));
+  const apply = (n: BoxNode): BoxNode => {
+    const out = { ...n, ...(n.children ? { children: n.children.map(apply) } : {}) } as unknown as Record<string, unknown>;
+    const p = n.sectionPart;
+    const fresh = p != null ? next.get(p) : undefined;
+    if (p == null || !fresh) return out as unknown as BoxNode;
+    for (const k of CFG.restyle.look) {
+      if (fresh[k] !== undefined) out[k] = fresh[k];
+      else if (every.some((m) => m.get(p)?.[k] !== undefined)) delete out[k];
+    }
+    for (const k of CFG.restyle.content) {
+      if (!same(out[k], was.get(p)?.[k])) continue;
+      if (fresh[k] !== undefined) out[k] = fresh[k]; else delete out[k];
+    }
+    return out as unknown as BoxNode;
+  };
+  return { ...apply(section), sectionFinish: to };
 }
 
 /**

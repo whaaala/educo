@@ -1395,3 +1395,14 @@ describe("LE15-27 · the canvas marks the current page's links exactly as the pu
     expect(published).toContain(`text-decoration-thickness:${a("Apply").style.textDecorationThickness}`);
   });
 });
+
+describe("BoxCanvas — the site's colours on a page of plain blocks (LE15f-2, box-builder-sections.feature)", () => {
+  it("writes the site theme's --eu-color-* tokens even when no design-system component is on the page, as the export does", () => {
+    const sec = createContainer("column", { id: "s", tag: "section", background: "var(--eu-color-bg)" });
+    sec.children = [createElement("heading", { id: "h", text: "Welcome", color: "var(--eu-color-text)" })];
+    const drawn = renderToStaticMarkup(<BoxCanvas root={sec} theme={DEFAULT_THEME} editable={false} onChange={() => {}} />);
+    // measured 2026-10-19: without them the canvas fell back to the EDITOR's globals.css (#111827) while the page had #0f172a
+    expect(drawn).toContain(`--eu-color-text:${DEFAULT_THEME.text}`);
+    expect(drawn).toMatch(/--eu-color-bg:[^;]+;/);
+  });
+});
