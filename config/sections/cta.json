@@ -1,0 +1,150 @@
+{
+  "$comment": "CTA / Banner (B20: a centred band · ROW(2: 67/33) · an image split; the 10 Wix Studio Banner tiles + 7 Banner wireframes, read 2026-10-19: a split picture | words 5 · a strip of words, pictures and a button 3 · a one-line strip 2 · a centred offer on a band 2 · a card on a band or a photo 3 · four tiles 1 · big words on a photo 1; the crawl: 900 CTA sections). Words beside a button: on a phone the button goes under the words, full width (responsive.phone.width).",
+  "sections": [
+    { "id": "cta-centred-strong", "name": "Centred words and two buttons on the school colour", "pattern": "B20",
+      "tree": { "k": "section", "tone": "strong", "center": true, "set": { "paddingTop": 96, "paddingBottom": 96, "paddingLeft": 24, "paddingRight": 24, "gap": 24 },
+        "c": [
+          { "r": "title", "t": "Come and see us", "set": { "maxWidth": "40rem" } },
+          { "r": "body", "t": "Tours every school day at 10 am. Bring your child; they will be shown round by a pupil.", "set": { "maxWidth": "36rem" } },
+          { "k": "row", "set": { "justify": "center", "gap": 16 }, "c": [ { "r": "button", "t": "Book a tour" }, { "r": "button2", "t": "Call the office" } ] }
+        ] } },
+    { "id": "cta-centred-soft", "name": "A centred offer on a soft band", "pattern": "B20",
+      "tree": { "k": "section", "tone": "soft", "center": true, "set": { "paddingTop": 80, "paddingBottom": 80, "paddingLeft": 24, "paddingRight": 24, "gap": 20 },
+        "c": [
+          { "r": "eyebrow", "t": "Admissions 2026" },
+          { "r": "title", "t": "Places are open for September", "set": { "maxWidth": "40rem" } },
+          { "r": "button", "t": "Apply now" }
+        ] } },
+    { "id": "cta-words-button", "name": "Words beside a button", "pattern": "B20",
+      "tree": { "k": "section", "tone": "grey", "set": { "paddingTop": 64, "paddingBottom": 64, "paddingLeft": 24, "paddingRight": 24 },
+        "c": [ { "k": "row", "set": { "gap": 32, "justify": "between" }, "c": [
+          { "k": "stack", "set": { "gap": 8, "width": "fill", "minWidth": "18rem" }, "c": [
+            { "r": "heading", "t": "Ready to join us?" },
+            { "r": "small", "t": "The application takes ten minutes, on a phone or a computer." }
+          ] },
+          { "r": "button", "t": "Start the application", "set": { "responsive": { "phone": { "width": "100%" } } } }
+        ] } ] } },
+    { "id": "cta-words-buttons-dark", "name": "Words beside two buttons on a dark band", "pattern": "B20",
+      "tree": { "k": "section", "tone": "inverse", "set": { "paddingTop": 72, "paddingBottom": 72, "paddingLeft": 24, "paddingRight": 24 },
+        "c": [ { "k": "row", "set": { "gap": 32, "justify": "between" }, "c": [
+          { "k": "stack", "set": { "gap": 8, "width": "fill", "minWidth": "18rem" }, "c": [
+            { "r": "title", "t": "Questions about fees?" },
+            { "r": "small", "t": "Our bursar answers every message within one school day." }
+          ] },
+          { "k": "row", "set": { "gap": 16, "width": "auto", "responsive": { "phone": { "width": "100%" } } }, "c": [ { "r": "button", "t": "Message us" }, { "r": "button2", "t": "See the fees" } ] }
+        ] } ] } },
+    { "id": "cta-photo", "name": "Words and a button over a photo", "pattern": "B20",
+      "tree": { "k": "section", "tone": "photo", "photo": "event-open-day", "center": true, "set": { "minHeight": 440, "justify": "center", "paddingTop": 96, "paddingBottom": 96, "paddingLeft": 24, "paddingRight": 24, "gap": 24 },
+        "c": [
+          { "r": "title", "t": "Open day, Saturday 14 March", "set": { "maxWidth": "40rem" } },
+          { "r": "body", "t": "10 am to 2 pm. Meet the teachers, see the classrooms and stay for lunch.", "set": { "maxWidth": "36rem" } },
+          { "r": "button", "t": "Book your place" }
+        ] } },
+    { "id": "cta-photo-big-words", "name": "Big words over a photo", "pattern": "B20",
+      "tree": { "k": "section", "tone": "photo", "photo": "graduation", "center": true, "set": { "minHeight": 440, "justify": "center", "paddingTop": 96, "paddingBottom": 96, "paddingLeft": 24, "paddingRight": 24, "gap": 16 },
+        "c": [
+          { "r": "title", "t": "Your future starts here", "set": { "fontSize": 72, "maxWidth": "56rem" } },
+          { "r": "small", "t": "Sixth form applications close on 31 May." }
+        ] } },
+    { "id": "cta-picture-left", "name": "A picture beside an offer", "pattern": "B20",
+      "tree": { "k": "section", "set": { "paddingTop": 0, "paddingBottom": 0, "paddingLeft": 0, "paddingRight": 0 },
+        "c": [ { "k": "row", "set": { "gap": 0, "align": "stretch" }, "c": [
+          { "r": "image", "photo": "nursery", "alt": "Nursery children at a table", "set": { "width": "fill", "minWidth": "18rem" } },
+          { "k": "stack", "tone": "soft", "center": true, "set": { "gap": 20, "width": "fill", "minWidth": "18rem", "justify": "center", "padding": 48 }, "c": [
+            { "r": "eyebrow", "t": "Nursery" },
+            { "r": "title", "t": "Free taster mornings" },
+            { "r": "button", "t": "Book a morning" }
+          ] }
+        ] } ] } },
+    { "id": "cta-picture-right", "name": "An offer beside a picture", "pattern": "B20",
+      "tree": { "k": "section", "set": { "paddingTop": 0, "paddingBottom": 0, "paddingLeft": 0, "paddingRight": 0 },
+        "c": [ { "k": "row", "set": { "gap": 0, "align": "stretch" }, "c": [
+          { "k": "stack", "tone": "strong", "center": true, "set": { "gap": 16, "width": "fill", "minWidth": "18rem", "justify": "center", "padding": 48 }, "c": [
+            { "r": "eyebrow", "t": "Limited places" },
+            { "r": "title", "t": "Boarding from age 11" },
+            { "r": "small", "t": "Twelve places left for September." },
+            { "r": "button", "t": "Apply for boarding" }
+          ] },
+          { "r": "image", "photo": "boarding", "alt": "A boarding house bedroom", "set": { "width": "fill", "minWidth": "18rem" } }
+        ] } ] } },
+    { "id": "cta-card-on-band", "name": "A card on a colour band", "pattern": "B20",
+      "tree": { "k": "section", "tone": "soft", "set": { "paddingTop": 80, "paddingBottom": 80, "paddingLeft": 24, "paddingRight": 24 },
+        "c": [ { "k": "card", "tone": "plain", "set": { "padding": 48, "gap": 16, "maxWidth": "44rem", "responsive": { "phone": { "padding": 24 } } }, "c": [
+          { "r": "eyebrow", "t": "Scholarships" },
+          { "r": "divider" },
+          { "r": "title", "t": "Twelve scholarships every year" },
+          { "r": "button2", "t": "How to apply" }
+        ] } ] } },
+    { "id": "cta-card-on-photo", "name": "A card on a photo", "pattern": "B20",
+      "tree": { "k": "section", "tone": "photo", "photo": "school-front", "set": { "minHeight": 440, "justify": "center", "paddingTop": 80, "paddingBottom": 80, "paddingLeft": 24, "paddingRight": 24 },
+        "c": [ { "k": "card", "tone": "plain", "set": { "padding": 40, "gap": 16, "maxWidth": "28rem" }, "c": [
+          { "r": "title", "t": "Visit us" },
+          { "r": "small", "t": "12 Palm Avenue, Ikeja. Monday to Friday, 8 am to 4 pm." },
+          { "r": "button", "t": "Get directions" }
+        ] } ] } },
+    { "id": "cta-strip", "name": "A one-line notice", "pattern": "B4",
+      "tree": { "k": "section", "tone": "strong", "center": true, "set": { "paddingTop": 12, "paddingBottom": 12, "paddingLeft": 24, "paddingRight": 24 },
+        "c": [ { "k": "row", "set": { "justify": "center", "gap": 16 }, "c": [
+          { "r": "small", "t": "School reopens on Monday 8 September." },
+          { "r": "link", "t": "Term dates", "to": "#terms" }
+        ] } ] } },
+    { "id": "cta-three-columns", "name": "A title, words and a button in three columns", "pattern": "B20",
+      "tree": { "k": "section", "set": { "paddingTop": 80, "paddingBottom": 80, "paddingLeft": 24, "paddingRight": 24 },
+        "c": [ { "k": "grid", "cols": 3, "min": "10rem", "set": { "gap": 32, "align": "center" }, "c": [
+          { "r": "title", "t": "Fees for 2026" },
+          { "r": "body", "t": "Paid by the term, by transfer, card or Paystack. Brothers and sisters pay less." },
+          { "k": "stack", "c": [ { "r": "button", "t": "See the fees" } ] }
+        ] } ] } },
+    { "id": "cta-offer-pictures", "name": "An offer beside three pictures", "pattern": "B20",
+      "tree": { "k": "section", "set": { "paddingTop": 80, "paddingBottom": 80, "paddingLeft": 24, "paddingRight": 24 },
+        "c": [ { "k": "row", "set": { "gap": 32 }, "c": [
+          { "k": "stack", "set": { "gap": 16, "width": "30%", "responsive": { "phone": { "width": "100%" } }, "minWidth": "16rem" }, "c": [
+            { "r": "title", "t": "Holiday camp" },
+            { "r": "small", "t": "Two weeks in August, for ages 5 to 14." },
+            { "r": "button2", "t": "Book a place" }
+          ] },
+          { "k": "grid", "cols": 3, "min": "5rem", "set": { "gap": 16, "width": "fill", "minWidth": "18rem" }, "c": [
+            { "r": "image", "photo": "gallery-1", "alt": "Children at camp", "set": { "ratio": "3 / 4" } },
+            { "r": "image", "photo": "gallery-2", "alt": "A camp game", "set": { "ratio": "3 / 4" } },
+            { "r": "image", "photo": "gallery-3", "alt": "Camp crafts", "set": { "ratio": "3 / 4" } }
+          ] }
+        ] } ] } },
+    { "id": "cta-four-tiles", "name": "Four ways in, on the school colour", "pattern": "B12",
+      "tree": { "k": "section", "tone": "strong", "set": { "paddingTop": 80, "paddingBottom": 80, "paddingLeft": 24, "paddingRight": 24, "gap": 32 },
+        "c": [
+          { "r": "title", "t": "Which school is for you?" },
+          { "k": "grid", "cols": 4, "min": "12rem", "set": { "gap": 16 }, "c": [
+            { "k": "card", "tone": "soft", "center": true, "set": { "padding": 32, "gap": 8 }, "c": [ { "r": "heading", "t": "Nursery" }, { "r": "link", "t": "Ages 3 to 5", "to": "#nursery" } ] },
+            { "k": "card", "tone": "soft", "center": true, "set": { "padding": 32, "gap": 8 }, "c": [ { "r": "heading", "t": "Primary" }, { "r": "link", "t": "Ages 5 to 11", "to": "#primary" } ] },
+            { "k": "card", "tone": "soft", "center": true, "set": { "padding": 32, "gap": 8 }, "c": [ { "r": "heading", "t": "Secondary" }, { "r": "link", "t": "Ages 11 to 16", "to": "#secondary" } ] },
+            { "k": "card", "tone": "soft", "center": true, "set": { "padding": 32, "gap": 8 }, "c": [ { "r": "heading", "t": "Sixth form" }, { "r": "link", "t": "Ages 16 to 18", "to": "#sixth" } ] }
+          ] }
+        ] } },
+    { "id": "cta-sign-up", "name": "Words and a sign-up box", "pattern": "B26", "needs": ["form"],
+      "tree": { "k": "section", "tone": "grey", "center": true, "set": { "paddingTop": 80, "paddingBottom": 80, "paddingLeft": 24, "paddingRight": 24, "gap": 20 },
+        "c": [
+          { "r": "title", "t": "News from Greenfield", "set": { "maxWidth": "40rem" } },
+          { "r": "body", "t": "One short message a month, by WhatsApp or email.", "set": { "maxWidth": "36rem" } },
+          { "k": "row", "set": { "justify": "center", "gap": 12 }, "c": [
+            { "k": "card", "tone": "plain", "set": { "padding": 12, "width": "fill", "minWidth": "14rem", "maxWidth": "22rem" }, "c": [ { "r": "small", "t": "Your phone number or email" } ] },
+            { "r": "button", "t": "Sign up" }
+          ] }
+        ] } },
+    { "id": "cta-panel", "name": "A colour panel inside the page", "pattern": "B20",
+      "tree": { "k": "section", "set": { "paddingTop": 80, "paddingBottom": 80, "paddingLeft": 24, "paddingRight": 24 },
+        "c": [ { "k": "card", "tone": "strong", "center": true, "set": { "padding": 64, "gap": 20 }, "c": [
+          { "r": "title", "t": "Give a child a chance", "set": { "maxWidth": "36rem" } },
+          { "r": "body", "t": "Our bursary fund pays the fees of one pupil in five. Every gift, however small, helps.", "set": { "maxWidth": "34rem" } },
+          { "r": "button", "t": "Give to the fund" }
+        ] } ] } },
+    { "id": "cta-wide-words", "name": "Wide words beside two buttons", "pattern": "B20",
+      "tree": { "k": "section", "tone": "soft", "set": { "paddingTop": 80, "paddingBottom": 80, "paddingLeft": 24, "paddingRight": 24 },
+        "c": [ { "k": "row", "set": { "gap": 48 }, "c": [
+          { "k": "stack", "set": { "gap": 12, "width": "65%", "responsive": { "phone": { "width": "100%" } }, "minWidth": "18rem" }, "c": [
+            { "r": "title", "t": "Not sure which year to apply for?" },
+            { "r": "body", "t": "Tell us your child's age and last class, and we will tell you where they fit." }
+          ] },
+          { "k": "stack", "set": { "gap": 12, "width": "fill", "minWidth": "14rem" }, "c": [ { "r": "button", "t": "Ask admissions", "set": { "width": "100%" } }, { "r": "button2", "t": "The age chart", "set": { "width": "100%" } } ] }
+        ] } ] } }
+  ]
+}

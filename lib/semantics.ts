@@ -256,7 +256,7 @@ export function resolvePage(root: BoxNode): PageSemantics {
 }
 
 /** Something only the user can fix — plain words, what to do, and whether it stops publishing. */
-export type PageIssue = { id: string; kind: "image-description" | "button-words" | "link-words" | "heading-jump" | "picture-missing" | "words-too-tight" | "words-at-edge" | "font-letters" | "link-page-gone" | "words-over-picture" | "reading-order"; blocks: boolean; message: string; fix?: { level?: number; sideSpace?: number; font?: string } };
+export type PageIssue = { id: string; kind: "image-description" | "button-words" | "link-words" | "heading-jump" | "picture-missing" | "words-too-tight" | "words-at-edge" | "font-letters" | "link-page-gone" | "words-over-picture" | "reading-order" | "title-smaller"; blocks: boolean; message: string; fix?: { level?: number; sideSpace?: number; font?: string; fontSize?: number } };
 
 /** The site's heading + body fonts (CSS stacks) — what a block draws in when nothing above it sets a font. */
 export type SiteFonts = { heading: string; body: string };
@@ -310,6 +310,7 @@ const wordsIn = (n: BoxNode): boolean => hasText(n) || (n.children ?? []).some(w
 /** `pages`: the site's page ids — a link to one not among them was deleted (LE8-3). */
 export function pageCheck(root: BoxNode, sem: PageSemantics = resolvePage(root), fonts?: SiteFonts, pages?: ReadonlySet<string>): PageIssue[] {
   const out: PageIssue[] = [];
+  const sized: { id: string; level: number; size: number }[] = []; // LE15b-11: each heading's level and its own size
   let lastLevel = 0;
   // `font`: the nearest font set above — a block's own font sets its headings and words alike, as the canvas draws it
   const visit = (n: BoxNode, font?: string) => {
@@ -342,6 +343,7 @@ export function pageCheck(root: BoxNode, sem: PageSemantics = resolvePage(root),
         out.push({ id: c.id, kind: "button-words", blocks: true, message: "This button has no words, so nobody knows what it does. Add words to it." });
       const r = sem.byId.get(c.id);
       if (c.type === "heading" && r?.level && !r.omit) {
+        if (c.fontSize != null) sized.push({ id: c.id, level: r.level, size: c.fontSize });
         // Only a level the USER set can jump — automatic levels never do.
         if (typeof c.level === "number" && lastLevel && r.level > lastLevel + 1)
           out.push({ id: c.id, kind: "heading-jump", blocks: false, message: `This heading jumps from level ${lastLevel} to ${r.level}. Make it level ${lastLevel + 1}.`, fix: { level: lastLevel + 1 } });
@@ -351,6 +353,10 @@ export function pageCheck(root: BoxNode, sem: PageSemantics = resolvePage(root),
     }
   };
   visit(root, root.fontFamily);
+  // LE15b-11 (the user, 2026-10-19: warn, with the fix beside it): a small heading put first is the page's main title, so the
+  // page reads from small to big — say so, and offer the biggest heading's size; nothing is changed behind the person's back
+  const title = sized.find((h) => h.level === 1), biggest = Math.max(0, ...sized.filter((h) => h.level > 1).map((h) => h.size));
+  if (title && biggest > title.size) out.push({ id: title.id, kind: "title-smaller", blocks: false, message: PAGE_CHECK.titleSmaller, fix: { fontSize: biggest } });
   const edge = wordsAtEdge(root);
   if (edge) out.push({ id: edge, kind: "words-at-edge", blocks: false, message: "Words on this page touch its left or right edge, which makes them hard to read — on a phone most of all. Add space at the sides; you can change it any time in Layout guides.", fix: { sideSpace: EDGE_SPACE } });
   // G3b-11 (the user 2026-10-04: "your setting wins"): a row of the page set by hand for a screen is drawn as set there, so say when

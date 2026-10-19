@@ -402,6 +402,7 @@ export interface BoxNode {
   maxWidth?: string;        // SZ-3 · the widest ("40rem", "65ch")
   maxHeight?: string;       // SZ-3 · the tallest it is stretched or floored — never shorter than its words (`applyBoxSize`)
   minCard?: string;         // GR-2 · a Grid of "as many as fit", each at least this wide ("16rem"): auto-fit on every screen (`gridAutoFit`)
+  fitMost?: number;         // LE15b-6 · …but never more than this many across (unset: as many as fit, as before); per rung like any style
   colSizes?: (string | null | undefined)[]; // a Grid's own column widths, one per column (AC-30): unset = a share, "fit" = its content, a length = that width (`gridColSizes`)
   colSpan?: number;         // grid child: columns to span
   rowSpan?: number;         // grid child: rows to span
@@ -6175,6 +6176,14 @@ export function limitCss(token: string | null | undefined): string | null {
 const limitRem = (token: string | null | undefined): number => { const c = limitCss(token); return c && /r?em$/.test(c) ? parseFloat(c) : 0; };
 /** GR-2 · the smallest card width of a Grid set to "as many as fit" — null for a Grid of a set number of columns, or a masonry gallery. */
 export const gridAutoFit = (node: BoxNode): string | null => (node.layout === "grid" && node.rowFlow !== "masonry" ? limitCss(node.minCard) : null);
+/**
+ * LE15b-6 · AT MOST N ACROSS: a column is never narrower than a 1/N share of the row (the row less its N − 1 gaps), so at most N
+ * fit; where N do not fit at the card's own width, fewer go across as before. Unset, it is the plain "as many as fit".
+ */
+function autoFitMin(node: BoxNode): string {
+  const min = `min(100%, ${gridAutoFit(node)})`, n = Math.round(node.fitMost ?? 0);
+  return n >= 1 ? `max(${min}, calc((100% - ${n - 1} * ${u(node.gapX ?? node.gap ?? spaceDefaults(node).gapX)}) / ${n}))` : min;
+}
 const noFloor = (v: unknown) => v == null || v === 0 || v === "0" || v === "0px" || v === "auto" || v === "min-content";
 const cssOf = (v: unknown) => (typeof v === "number" ? `${v}px` : String(v));
 /**
@@ -6777,7 +6786,7 @@ function containerStyleOf(node: BoxNode, bp: Breakpoint = "base", section: Secti
     return {
       display: "grid",
       // Per RUNG, so a twelve-column row is twelve columns on a desktop and one on a phone (`gridColumnsAt`).
-      gridTemplateColumns: gridAutoFit(node) ? `repeat(auto-fit, minmax(min(100%, ${gridAutoFit(node)}), 1fr))` // GR-2: as many as fit, every screen
+      gridTemplateColumns: gridAutoFit(node) ? `repeat(auto-fit, minmax(${autoFitMin(node)}, 1fr))` // GR-2: as many as fit, every screen
         : gridColSizes(node, bp) ?? `repeat(${gridColumnsAt(node, bp)}, minmax(0, 1fr))`, // AC-30: each column its own width
       // The down-gap on a masonry grid is spent as EMPTY ROW UNITS by each cell's span, not as `row-gap` —
       // the number the user set still means exactly what it says, but it lands once per cell instead of once

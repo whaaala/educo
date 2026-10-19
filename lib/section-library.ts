@@ -12,6 +12,7 @@
 import FINISH_CONFIG from "@/config/section-finishes.json";
 import COPY from "@/config/section-copy.json";
 import PHOTO_CONFIG from "@/config/section-photos.json";
+import LAYOUT from "@/config/layout.json";
 import { createContainer, createElement, createGrid, makeRowBand, regionSpan, findBox, normalizeRowBands, markPageGrid, type BoxNode } from "@/lib/box-model";
 
 /** A section dragged from the Sections tab carries its built blocks under this type (the canvas places it between bands). */
@@ -159,7 +160,8 @@ function container(n: SectionNode, ctx: Ctx, path: string): BoxNode {
       node = createContainer("column", { tag: n.k, width: "100%", ...centre, ...paint, ...photo });
       break;
     case "row": node = createContainer("row", { wrap: true, align: "center", ...paint, ...photo }); break;
-    case "grid": node = createGrid(n.cols ?? 3, { minCard: n.min ?? "16rem", ...paint, ...photo }); break;
+    // `cols` is the most across (LE15b-6): "as many as fit" alone put six three-up cards 4 + 2 on a desktop
+    case "grid": node = createGrid(n.cols ?? 3, { minCard: n.min ?? "16rem", fitMost: n.cols ?? 3, ...paint, ...photo }); break;
     case "card":
       node = createContainer("column", { background: c.bg, radius: f.card.radius, ...(f.card.shadow ? { shadow: f.card.shadow } : {}), ...(f.card.border ? { borderWidth: f.card.border, borderColor: c.line } : {}), ...centre, ...(!ctx.wire && f.hover ? { hoverEffect: f.hover } : {}), ...(!ctx.wire && f.reveal ? { revealEffect: f.reveal } : {}) });
       break;
@@ -193,13 +195,52 @@ function centreBands(n: BoxNode): BoxNode {
   return { ...n, children: n.children.map((c) => centreBands(centred && c.rowBand && c.justify == null ? { ...c, justify: "center" } : c)) };
 }
 
+/**
+ * LE15b-12 · NO CARD LEFT ALONE ON A LINE. "As many as fit" puts as many across as the screen holds, so three cards went two and
+ * one on a tablet (seen in the HEADED screenshot at 783) and four went three and one. For each screen, wide to narrow, the most
+ * across is the largest count for which EVERY count that screen's widths can give divides the cards (one a line always does);
+ * a screen the layout states itself keeps its word (Stats' two by two). The widths are config/layout.json's rungs; the card's
+ * least width and the gap are the layout's. ponytail: only a grid the full width of its section — one in a column has no width
+ * known until the page is drawn.
+ */
+const RUNG = LAYOUT.rungs;
+const SCROLLBAR = 17; // the classic scrollbar a desktop window gives up — a page on a phone has none, so both ends are taken
+type FitRung = "base" | "wide" | "tabletLandscape" | "tabletPortrait" | "phone";
+/** Each screen: its widths, and the screen whose "most across" it takes when it states none (the five-rung cascade, rule 18). */
+const FIT_RUNGS: [FitRung, number, number, FitRung | null][] = [
+  ["base", RUNG.desktop.from, RUNG.wide.from - 1, null],
+  ["wide", RUNG.wide.from, Infinity, "base"],
+  ["tabletLandscape", RUNG.tabletLandscape.from, RUNG.desktop.from - 1, "base"],
+  ["tabletPortrait", RUNG.tabletPortrait.from, RUNG.tabletLandscape.from - 1, "tabletLandscape"],
+  ["phone", 0, RUNG.tabletPortrait.from - 1, "tabletPortrait"],
+];
+function noLoneCard(grid: BoxNode, pad: number): void {
+  const n = grid.children?.length ?? 0, min = parseFloat(grid.minCard ?? "") * 16, gap = grid.gapX ?? grid.gap ?? 0;
+  if (n < 2 || !(min > 0)) return;
+  const fit = (w: number) => (w === Infinity ? n : Math.max(1, Math.floor((w - pad + gap) / (min + gap))));
+  /** every count across this screen's widths can give, with at most `m`, fills its rows */
+  const whole = (m: number, lo: number, hi: number) => { for (let v = Math.min(m, lo); v <= Math.min(m, hi); v++) if (n % v) return false; return true; };
+  const most: Partial<Record<FitRung, number>> = {};
+  for (const [r, from, to, parent] of FIT_RUNGS) {
+    const own = r === "base" ? grid.fitMost : grid.responsive?.[r]?.fitMost;
+    let m = Math.min(own ?? (parent ? most[parent]! : n), n);
+    while (m > 1 && !whole(m, fit(Math.max(0, from - SCROLLBAR)), fit(to))) m--;
+    most[r] = m;
+    if (r === "base") grid.fitMost = m;
+    else grid.responsive = { ...grid.responsive, [r]: { ...grid.responsive?.[r], fitMost: m } };
+  }
+}
+
 /** A section as ordinary blocks — in the builder's own banded form, the tree a person would have built — in the wireframe or a finish. */
 export function buildSection(def: SectionDef, opts: { finish: string; wireframe: boolean }, keep?: Set<string>): BoxNode {
   const f = opts.wireframe ? CFG.wireframe : finishOf(opts.finish);
   const root: SectionNode = { ...def.tree, k: def.tree.k ?? "section", tone: def.tree.tone ?? "plain" };
   const built = centreBands(normalizeRowBands(build(root, { f, wire: opts.wireframe, tone: "plain", center: false, keep }, "0")));
+  const pad = Number(root.set?.paddingLeft ?? 0) + Number(root.set?.paddingRight ?? 0);
+  (root.c ?? []).forEach((c, i) => { if (c.k === "grid") { const g = byPartNode(built, `0.${i}`); if (g) noLoneCard(g, pad); } });
   return { ...built, sectionFrom: def.id, sectionFinish: opts.wireframe ? WIREFRAME : opts.finish };
 }
+const byPartNode = (n: BoxNode, part: string): BoxNode | undefined => (n.sectionPart === part ? n : n.children?.map((c) => byPartNode(c, part)).find(Boolean));
 
 const byPart = (n: BoxNode, m = new Map<string, Record<string, unknown>>()) => {
   if (n.sectionPart != null) m.set(n.sectionPart, n as unknown as Record<string, unknown>);

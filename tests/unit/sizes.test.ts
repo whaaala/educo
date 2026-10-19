@@ -5,7 +5,7 @@
  */
 import { describe, it, expect } from "vitest";
 import type { CSSProperties } from "react";
-import { createContainer, createElement, makeRowBand, insertBox, normalizeRowBands, markPageGrid, isPageRow, childStyle, containerStyle, rowNarrowsAt, findBox, gridColSizes, gridQueryCss, applyBoxSize, limitCss, ratioCss, imageSizing, type BoxNode } from "@/lib/box-model";
+import { createContainer, createElement, makeRowBand, insertBox, normalizeRowBands, markPageGrid, isPageRow, childStyle, containerStyle, rowNarrowsAt, findBox, gridColSizes, gridQueryCss, applyBoxSize, limitCss, ratioCss, imageSizing, resolveResponsive, type BoxNode } from "@/lib/box-model";
 import { emptyPageRoot, siteFromRoot } from "@/lib/box-site";
 import { renderSitePage } from "@/lib/box-export";
 import { DEFAULT_THEME } from "@/lib/site-storage";
@@ -156,5 +156,23 @@ describe("GR-2 · as many cards across as fit", () => {
     const root = emptyPageRoot();
     const html = published(insertBox(root, root.id, 0, grid));
     expect(html).toMatch(/repeat\(auto-fit,\s*minmax\(min\(100%,\s*16rem\),\s*1fr\)\)/);
+  });
+
+  // LE15b-6: "as many as fit" had no ceiling, so six cards at 16rem were 4 + 2 at 1280 where the design draws 3 × 2
+  it("At most across caps it: a column is never narrower than a 1/N share of the row, so N across at most", () => {
+    const three = { ...grid, fitMost: 3 } as BoxNode;
+    const t = containerStyle(three, "base").gridTemplateColumns as string;
+    expect(t).toMatch(/^repeat\(auto-fit, minmax\(max\(min\(100%, 16rem\), calc\(\(100% - 2 \* .+\) \/ 3\)\), 1fr\)\)$/);
+  });
+  it("At most across follows the screens: set at a rung it is that rung's, and left empty it is as many as fit, as before", () => {
+    const fourUp = { ...grid, fitMost: 4, responsive: { tabletPortrait: { fitMost: 2 } } } as BoxNode;
+    for (const bp of ["phone", "tabletPortrait"] as const) expect(containerStyle(resolveResponsive(fourUp, bp), bp).gridTemplateColumns, bp).toContain("/ 2)");
+    for (const bp of ["tabletLandscape", "base", "wide"] as const) expect(containerStyle(resolveResponsive(fourUp, bp), bp).gridTemplateColumns, bp).toContain("/ 4)");
+    expect(containerStyle(grid, "base").gridTemplateColumns, "unset: every grid saved before it").toBe("repeat(auto-fit, minmax(min(100%, 16rem), 1fr))");
+    const root = emptyPageRoot();
+    // the page is written narrowest first: the base rule is the phone's two, a min-width query from the tablet held sideways the four
+    const html = published(insertBox(root, root.id, 0, fourUp));
+    expect(html, "the narrow screens' cap").toMatch(/\.bx-g\{display:grid;grid-template-columns:[^;]*\/ 2\)/);
+    expect(html, "the wide screens' cap").toMatch(new RegExp(`@media \\(min-width:${LAYOUT.rungs.tabletLandscape.from / 16}em\\)\\{\\.bx-g\\{grid-template-columns:[^}]*\\/ 4\\)`));
   });
 });

@@ -1267,6 +1267,23 @@ describe("BATCH LE-12 · sizes and grids in the Inspector", () => {
     fireEvent.click(screen.getByRole("button", { name: "A set number" }));
     expect(onFit).toHaveBeenLastCalledWith({ minCard: undefined });
   });
+  it("LE15b-6: As many as fit has its ceiling — At most across, 0 for no limit — and only there", () => {
+    const cell = (id: string) => createContainer("column", { id, colSpan: 4 });
+    const grid = (extra: Partial<BoxNode> = {}) => createContainer("row", { id: "g", layout: "grid", columns: 12, children: [cell("a"), cell("b"), cell("c")], ...extra });
+    renderFor(grid());
+    expect(screen.queryByLabelText(INSPECTOR_WORDS.sizes.fitMost), "a set number of columns: not offered").toBeNull();
+    cleanup();
+    const onFit = renderFor(grid({ minCard: "16rem" }));
+    const most = screen.getByLabelText(INSPECTOR_WORDS.sizes.fitMost);
+    fireEvent.change(most, { target: { value: "3" } });
+    expect(onFit).toHaveBeenLastCalledWith({ fitMost: 3 });
+    cleanup();
+    const onThree = renderFor(grid({ minCard: "16rem", fitMost: 3 }));
+    expect(screen.getByText(INSPECTOR_WORDS.sizes.fitMostHint.replace("{n}", "3"))).toBeInTheDocument();
+    fireEvent.change(screen.getByLabelText(INSPECTOR_WORDS.sizes.fitMost), { target: { value: "0" } });
+    expect(onThree, "0 hands it back to as many as fit").toHaveBeenLastCalledWith({ fitMost: undefined });
+  });
+
   it("GR-2: a cell of an As many as fit grid is not offered a span, a start or rows", () => {
     renderFor(createContainer("column", { id: "c" }), { inGrid: true, gridTrack: 12, inFitGrid: true });
     expect(screen.queryByLabelText("Columns wide")).toBeNull();

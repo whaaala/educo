@@ -24,3 +24,8 @@ Feature: How much of an area is left (RULE PROGRESS)
     Given a batch of 6 changes is open
     When its heading is ticked "[x]"
     Then what is left goes down by 6
+
+  Scenario: The area is found whatever case I type it in (LE15b-1)
+    When I run the progress script for "website layout"
+    Then it reports the "Website layout" area, as it does for "Website layout"
+    And an area that is not on the map still says so plainly, without a stack trace

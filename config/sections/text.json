@@ -1,0 +1,115 @@
+{
+  "$comment": "Text (the 8 Wix Studio Text wireframes, read 2026-10-19: centred words · an intro beside a list · two columns · a title over facts · rows · a list of links · an intro beside two items · an icon grid; the crawl: 1,320 text sections, a stack on every screen). Every line of words is held under ~75 characters by its maxWidth (RULE D).",
+  "sections": [
+    { "id": "text-centred-icon", "name": "Centred words under an icon", "pattern": "B7",
+      "tree": { "k": "section", "center": true, "set": { "paddingTop": 96, "paddingBottom": 96, "paddingLeft": 24, "paddingRight": 24, "gap": 20 },
+        "c": [
+          { "r": "icon", "icon": "Feather" },
+          { "r": "title", "t": "Why we write every day", "set": { "maxWidth": "40rem" } },
+          { "r": "body", "t": "From the nursery up, every child keeps a journal. Writing a little each day builds spelling, thinking and the courage to say what you mean.", "set": { "maxWidth": "38rem" } },
+          { "r": "button2", "t": "Our literacy programme" }
+        ] } },
+    { "id": "text-intro-list", "name": "An introduction beside three points", "pattern": "B15",
+      "tree": { "k": "section", "set": { "paddingTop": 96, "paddingBottom": 96, "paddingLeft": 24, "paddingRight": 24 },
+        "c": [ { "k": "row", "set": { "gap": 48, "align": "start" }, "c": [
+          { "k": "stack", "set": { "gap": 20, "width": "fill", "minWidth": "18rem" }, "c": [
+            { "r": "title", "t": "What makes us different" },
+            { "r": "body", "t": "Three promises we make to every family who joins us." },
+            { "r": "button2", "t": "Talk to us" }
+          ] },
+          { "k": "stack", "set": { "gap": 24, "width": "fill", "minWidth": "18rem" }, "c": [
+            { "k": "stack", "set": { "gap": 8 }, "c": [ { "r": "divider" }, { "r": "heading", "t": "Every child is known" }, { "r": "small", "t": "A form tutor who sees your child every morning and calls you every term." } ] },
+            { "k": "stack", "set": { "gap": 8 }, "c": [ { "r": "divider" }, { "r": "heading", "t": "Reports you can read" }, { "r": "small", "t": "Plain words about progress, not only grades, three times a year." } ] },
+            { "k": "stack", "set": { "gap": 8 }, "c": [ { "r": "divider" }, { "r": "heading", "t": "A door that is open" }, { "r": "small", "t": "Teachers answer messages within one school day." } ] }
+          ] }
+        ] } ] } },
+    { "id": "text-two-columns", "name": "A big title beside two paragraphs", "pattern": "B8",
+      "tree": { "k": "section", "set": { "paddingTop": 96, "paddingBottom": 96, "paddingLeft": 24, "paddingRight": 24 },
+        "c": [ { "k": "row", "set": { "gap": 48, "align": "start" }, "c": [
+          { "k": "stack", "set": { "width": "fill", "minWidth": "18rem" }, "c": [ { "r": "title", "t": "Learning beyond the classroom" } ] },
+          { "k": "stack", "set": { "gap": 16, "width": "fill", "minWidth": "18rem" }, "c": [
+            { "r": "body", "t": "Every term, each class leaves the school at least once: to a farm, a museum, a market or a court of law." },
+            { "r": "body", "t": "Children remember what they have seen with their own eyes, and they come back with questions." },
+            { "r": "button2", "t": "Trips and visits" }
+          ] }
+        ] } ] } },
+    { "id": "text-title-facts", "name": "A title over four short facts", "pattern": "B14",
+      "tree": { "k": "section", "set": { "paddingTop": 96, "paddingBottom": 96, "paddingLeft": 24, "paddingRight": 24, "gap": 40 },
+        "c": [
+          { "r": "title", "t": "The school day", "set": { "maxWidth": "40rem" } },
+          { "k": "grid", "cols": 4, "min": "12rem", "set": { "gap": 32 }, "c": [
+            { "k": "stack", "set": { "gap": 8 }, "c": [ { "r": "heading", "t": "7:45" }, { "r": "divider" }, { "r": "small", "t": "Gates open and breakfast club begins." } ] },
+            { "k": "stack", "set": { "gap": 8 }, "c": [ { "r": "heading", "t": "8:15" }, { "r": "divider" }, { "r": "small", "t": "Assembly, then the first lesson." } ] },
+            { "k": "stack", "set": { "gap": 8 }, "c": [ { "r": "heading", "t": "12:30" }, { "r": "divider" }, { "r": "small", "t": "A hot lunch for every pupil." } ] },
+            { "k": "stack", "set": { "gap": 8 }, "c": [ { "r": "heading", "t": "3:30" }, { "r": "divider" }, { "r": "small", "t": "Lessons end; clubs run until five." } ] }
+          ] }
+        ] } },
+    { "id": "text-rows", "name": "A title and three rows of words", "pattern": "B15",
+      "tree": { "k": "section", "set": { "paddingTop": 96, "paddingBottom": 96, "paddingLeft": 24, "paddingRight": 24, "gap": 32 },
+        "c": [
+          { "r": "title", "t": "How to join us" },
+          { "r": "divider" },
+          { "k": "row", "set": { "gap": 48, "align": "start" }, "c": [
+            { "k": "stack", "set": { "width": "30%", "responsive": { "phone": { "width": "100%" } }, "minWidth": "12rem" }, "c": [ { "r": "heading", "t": "Visit" } ] },
+            { "k": "stack", "set": { "gap": 8, "width": "fill", "minWidth": "18rem" }, "c": [ { "r": "body", "t": "Come to an open morning or book a tour on any school day." }, { "r": "link", "t": "Book a visit", "to": "#visit" } ] }
+          ] },
+          { "r": "divider" },
+          { "k": "row", "set": { "gap": 48, "align": "start" }, "c": [
+            { "k": "stack", "set": { "width": "30%", "responsive": { "phone": { "width": "100%" } }, "minWidth": "12rem" }, "c": [ { "r": "heading", "t": "Apply" } ] },
+            { "k": "stack", "set": { "gap": 8, "width": "fill", "minWidth": "18rem" }, "c": [ { "r": "body", "t": "Fill in the form with your child's last school report." }, { "r": "link", "t": "The application form", "to": "#apply" } ] }
+          ] },
+          { "r": "divider" },
+          { "k": "row", "set": { "gap": 48, "align": "start" }, "c": [
+            { "k": "stack", "set": { "width": "30%", "responsive": { "phone": { "width": "100%" } }, "minWidth": "12rem" }, "c": [ { "r": "heading", "t": "Meet us" } ] },
+            { "k": "stack", "set": { "gap": 8, "width": "fill", "minWidth": "18rem" }, "c": [ { "r": "body", "t": "A short, friendly meeting with the head of year and a taster day." }, { "r": "link", "t": "What to expect", "to": "#meet" } ] }
+          ] }
+        ] } },
+    { "id": "text-link-list", "name": "Words beside a list of links", "pattern": "B15",
+      "tree": { "k": "section", "set": { "paddingTop": 96, "paddingBottom": 96, "paddingLeft": 24, "paddingRight": 24 },
+        "c": [ { "k": "row", "set": { "gap": 48, "align": "start" }, "c": [
+          { "k": "stack", "set": { "gap": 20, "width": "fill", "minWidth": "18rem" }, "c": [
+            { "r": "title", "t": "For parents" },
+            { "r": "body", "t": "Everything you need through the year, in one place." }
+          ] },
+          { "k": "stack", "set": { "gap": 16, "width": "fill", "minWidth": "18rem" }, "c": [
+            { "r": "link", "t": "Term dates", "to": "#terms" }, { "r": "divider" },
+            { "r": "link", "t": "School fees and how to pay", "to": "#fees" }, { "r": "divider" },
+            { "r": "link", "t": "Uniform list", "to": "#uniform" }, { "r": "divider" },
+            { "r": "link", "t": "Lunch menu", "to": "#lunch" }, { "r": "divider" },
+            { "r": "link", "t": "Policies", "to": "#policies" }
+          ] }
+        ] } ] } },
+    { "id": "text-intro-two-items", "name": "An introduction beside two items", "pattern": "B15",
+      "tree": { "k": "section", "tone": "soft", "set": { "paddingTop": 96, "paddingBottom": 96, "paddingLeft": 24, "paddingRight": 24 },
+        "c": [ { "k": "row", "set": { "gap": 48, "align": "start" }, "c": [
+          { "k": "stack", "set": { "gap": 20, "width": "fill", "minWidth": "18rem" }, "c": [
+            { "r": "title", "t": "After school" },
+            { "r": "body", "t": "The day does not have to end at half past three." },
+            { "r": "button", "t": "All clubs" }
+          ] },
+          { "k": "stack", "set": { "gap": 32, "width": "fill", "minWidth": "18rem" }, "c": [
+            { "k": "stack", "set": { "gap": 8 }, "c": [ { "r": "heading", "t": "Homework club" }, { "r": "small", "t": "A quiet room and a teacher to help, every weekday until five." }, { "r": "link", "t": "Find out more", "to": "#homework" } ] },
+            { "k": "stack", "set": { "gap": 8 }, "c": [ { "r": "heading", "t": "Sports and arts" }, { "r": "small", "t": "Football, chess, choir, coding and drama, chosen each term." }, { "r": "link", "t": "Find out more", "to": "#clubs" } ] }
+          ] }
+        ] } ] } },
+    { "id": "text-icon-grid", "name": "Centred words over nine short points", "pattern": "B14",
+      "tree": { "k": "section", "set": { "paddingTop": 96, "paddingBottom": 96, "paddingLeft": 24, "paddingRight": 24, "gap": 40 },
+        "c": [
+          { "k": "stack", "center": true, "set": { "gap": 16 }, "c": [
+            { "r": "title", "t": "What every pupil learns", "set": { "maxWidth": "40rem" } },
+            { "r": "body", "t": "Nine subjects at the heart of every timetable, from Primary 1 to SS3.", "set": { "maxWidth": "36rem" } }
+          ] },
+          { "k": "grid", "cols": 3, "min": "10rem", "set": { "gap": 24 }, "c": [
+            { "k": "row", "set": { "gap": 12 }, "c": [ { "r": "icon", "icon": "BookOpen" }, { "r": "heading", "t": "English", "set": { "width": "fill" } } ] },
+            { "k": "row", "set": { "gap": 12 }, "c": [ { "r": "icon", "icon": "Calculator" }, { "r": "heading", "t": "Mathematics", "set": { "width": "fill" } } ] },
+            { "k": "row", "set": { "gap": 12 }, "c": [ { "r": "icon", "icon": "FlaskConical" }, { "r": "heading", "t": "Science", "set": { "width": "fill" } } ] },
+            { "k": "row", "set": { "gap": 12 }, "c": [ { "r": "icon", "icon": "Globe" }, { "r": "heading", "t": "Geography", "set": { "width": "fill" } } ] },
+            { "k": "row", "set": { "gap": 12 }, "c": [ { "r": "icon", "icon": "Landmark" }, { "r": "heading", "t": "History", "set": { "width": "fill" } } ] },
+            { "k": "row", "set": { "gap": 12 }, "c": [ { "r": "icon", "icon": "Languages" }, { "r": "heading", "t": "French", "set": { "width": "fill" } } ] },
+            { "k": "row", "set": { "gap": 12 }, "c": [ { "r": "icon", "icon": "Laptop" }, { "r": "heading", "t": "Computing", "set": { "width": "fill" } } ] },
+            { "k": "row", "set": { "gap": 12 }, "c": [ { "r": "icon", "icon": "Music" }, { "r": "heading", "t": "Music", "set": { "width": "fill" } } ] },
+            { "k": "row", "set": { "gap": 12 }, "c": [ { "r": "icon", "icon": "Palette" }, { "r": "heading", "t": "Art", "set": { "width": "fill" } } ] }
+          ] }
+        ] } }
+  ]
+}

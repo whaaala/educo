@@ -60,6 +60,16 @@ Feature: Sizes and grids — a shape, limits, cards that fit, spacing on the sca
     When I set Columns back to a number
     Then the cards take their spans again
 
+  Scenario: as many as fit, but never more than I say (LE15b-6)
+    Given a Grid of six cards set to "As many as fit", each at least 16rem
+    When I set "At most across" to 3
+    Then on a wide screen the cards are three across, two rows, all equal, filling the row
+    And where three do not fit at 16rem it still puts fewer across, down to one a line on a phone
+    When I set it at the tablet upright and phone screens to 2
+    Then a grid of four is two by two there, and four across from the tablet held sideways up
+    And left empty, it puts as many across as fit, as every grid saved before it did
+    And the canvas and the Preview show the same at every width
+
   Scenario: the spacing sliders step on the scale
     Given a block with no spacing
     When I press the right arrow on its Inner spacing slider three times

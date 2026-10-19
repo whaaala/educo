@@ -148,15 +148,16 @@
           ] },
           { "r": "small", "t": "© 2026 Greenfield Academy" }
         ] } },
-    { "id": "footer-sitemap", "name": "Every page, in five columns", "pattern": "B30",
+    { "id": "footer-sitemap", "name": "Every page, in six columns", "pattern": "B30",
       "tree": { "k": "footer", "tone": "inverse", "set": { "paddingTop": 64, "paddingBottom": 32, "paddingLeft": 24, "paddingRight": 24, "gap": 40 },
         "c": [
-          { "k": "grid", "cols": 5, "min": "9rem", "set": { "gap": 24 }, "c": [
+          { "k": "grid", "cols": 6, "min": "9rem", "set": { "gap": 24 }, "c": [
             { "k": "stack", "set": { "gap": 10 }, "c": [ { "r": "heading", "t": "About" }, { "r": "link", "t": "Our story" }, { "r": "link", "t": "Values" }, { "r": "link", "t": "Staff" } ] },
             { "k": "stack", "set": { "gap": 10 }, "c": [ { "r": "heading", "t": "Admissions" }, { "r": "link", "t": "How to apply" }, { "r": "link", "t": "Fees" }, { "r": "link", "t": "Visits" } ] },
             { "k": "stack", "set": { "gap": 10 }, "c": [ { "r": "heading", "t": "Learning" }, { "r": "link", "t": "Nursery" }, { "r": "link", "t": "Primary" }, { "r": "link", "t": "Secondary" } ] },
             { "k": "stack", "set": { "gap": 10 }, "c": [ { "r": "heading", "t": "School life" }, { "r": "link", "t": "Clubs" }, { "r": "link", "t": "Sport" }, { "r": "link", "t": "Music" } ] },
-            { "k": "stack", "set": { "gap": 10 }, "c": [ { "r": "heading", "t": "Parents" }, { "r": "link", "t": "Term dates" }, { "r": "link", "t": "News" }, { "r": "link", "t": "Contact" } ] }
+            { "k": "stack", "set": { "gap": 10 }, "c": [ { "r": "heading", "t": "Parents" }, { "r": "link", "t": "Term dates" }, { "r": "link", "t": "News" }, { "r": "link", "t": "Contact" } ] },
+            { "k": "stack", "set": { "gap": 10 }, "c": [ { "r": "heading", "t": "Follow us" }, { "r": "link", "t": "WhatsApp" }, { "r": "link", "t": "Facebook" }, { "r": "link", "t": "YouTube" } ] }
           ] },
           { "r": "divider" },
           { "r": "small", "t": "© 2026 Greenfield Academy" }
@@ -174,12 +175,13 @@
       "tree": { "k": "footer", "set": { "paddingTop": 48, "paddingBottom": 32, "paddingLeft": 24, "paddingRight": 24, "gap": 32 },
         "c": [
           { "r": "eyebrow", "t": "Accredited and recognised by" },
-          { "k": "grid", "cols": 5, "min": "8rem", "set": { "gap": 24 }, "c": [
+          { "k": "grid", "cols": 6, "min": "8rem", "set": { "gap": 24 }, "c": [
             { "r": "image", "photo": "logo-1", "alt": "Accreditation body logo", "set": { "ratio": "3 / 1" } },
             { "r": "image", "photo": "logo-2", "alt": "Examinations council logo", "set": { "ratio": "3 / 1" } },
             { "r": "image", "photo": "logo-3", "alt": "Schools association logo", "set": { "ratio": "3 / 1" } },
             { "r": "image", "photo": "logo-4", "alt": "Sports federation logo", "set": { "ratio": "3 / 1" } },
-            { "r": "image", "photo": "logo-5", "alt": "Arts council logo", "set": { "ratio": "3 / 1" } }
+            { "r": "image", "photo": "logo-5", "alt": "Arts council logo", "set": { "ratio": "3 / 1" } },
+            { "r": "image", "photo": "logo-6", "alt": "Science olympiad logo", "set": { "ratio": "3 / 1" } }
           ] },
           { "r": "divider" },
           { "k": "row", "set": { "justify": "between", "gap": 16 }, "c": [
@@ -207,7 +209,7 @@
     { "id": "footer-cards", "name": "Three contact cards", "pattern": "B30",
       "tree": { "k": "footer", "tone": "grey", "set": { "paddingTop": 56, "paddingBottom": 32, "paddingLeft": 24, "paddingRight": 24, "gap": 32 },
         "c": [
-          { "k": "grid", "cols": 3, "min": "14rem", "set": { "gap": 20 }, "c": [
+          { "k": "grid", "cols": 3, "min": "10rem", "set": { "gap": 20 }, "c": [
             { "k": "card", "set": { "padding": 24, "gap": 8 }, "c": [ { "r": "heading", "t": "Call us" }, { "r": "small", "t": "+234 801 234 5678" } ] },
             { "k": "card", "set": { "padding": 24, "gap": 8 }, "c": [ { "r": "heading", "t": "Write to us" }, { "r": "small", "t": "office@greenfield.sch.ng" } ] },
             { "k": "card", "set": { "padding": 24, "gap": 8 }, "c": [ { "r": "heading", "t": "Visit us" }, { "r": "small", "t": "12 Park Road, Ikeja, Lagos" } ] }

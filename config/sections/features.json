@@ -1,0 +1,220 @@
+{
+  "$comment": "Features / Services (B14 feature grid 3×1 | 2×2 | 4×1 | 3×2, tablet 2, phone 1 — 'as many as fit' does it; B15 a feature list beside a picture; the 15 Wix Studio Services tiles, read 2026-10-19: three photo cards 5 · a checkerboard 2 · numbered grids 2 · a split with four items 2 · icon columns on a band 1 · a list of rows 1 · numbered pictures 1 · columns over photos 1; the crawl: 774 feature sections).",
+  "sections": [
+    { "id": "feat-photo-cards", "name": "Three cards with a photo each", "pattern": "B14",
+      "tree": { "k": "section", "set": { "paddingTop": 96, "paddingBottom": 96, "paddingLeft": 24, "paddingRight": 24 },
+        "c": [ { "k": "grid", "cols": 3, "min": "10rem", "set": { "gap": 24 }, "c": [
+          { "k": "card", "tone": "plain", "set": { "gap": 12 }, "c": [ { "r": "image", "photo": "nursery", "alt": "Nursery children painting", "set": { "ratio": "3 / 4" } }, { "r": "heading", "t": "Nursery" }, { "r": "small", "t": "Ages 3 to 5. Play, songs and the first letters." } ] },
+          { "k": "card", "tone": "plain", "set": { "gap": 12 }, "c": [ { "r": "image", "photo": "classroom", "alt": "A primary classroom", "set": { "ratio": "3 / 4" } }, { "r": "heading", "t": "Primary" }, { "r": "small", "t": "Ages 5 to 11. Reading, number and a love of learning." } ] },
+          { "k": "card", "tone": "plain", "set": { "gap": 12 }, "c": [ { "r": "image", "photo": "students-lab", "alt": "Students in the science lab", "set": { "ratio": "3 / 4" } }, { "r": "heading", "t": "Secondary" }, { "r": "small", "t": "Ages 11 to 18. WAEC, NECO and beyond." } ] }
+        ] } ] } },
+    { "id": "feat-photo-cards-title", "name": "A centred title over three photo cards", "pattern": "B14",
+      "tree": { "k": "section", "center": true, "set": { "paddingTop": 96, "paddingBottom": 96, "paddingLeft": 24, "paddingRight": 24, "gap": 40 },
+        "c": [
+          { "r": "title", "t": "Our facilities", "set": { "maxWidth": "40rem" } },
+          { "k": "grid", "cols": 3, "min": "10rem", "set": { "gap": 24 }, "c": [
+            { "k": "card", "tone": "plain", "center": true, "set": { "gap": 12 }, "c": [ { "r": "image", "photo": "library", "alt": "The library" }, { "r": "heading", "t": "The library" }, { "r": "small", "t": "Twelve thousand books and a quiet place to read." } ] },
+            { "k": "card", "tone": "plain", "center": true, "set": { "gap": 12 }, "c": [ { "r": "image", "photo": "students-lab", "alt": "A science lab" }, { "r": "heading", "t": "Science labs" }, { "r": "small", "t": "Three labs for biology, chemistry and physics." } ] },
+            { "k": "card", "tone": "plain", "center": true, "set": { "gap": 12 }, "c": [ { "r": "image", "photo": "sports", "alt": "The sports track" }, { "r": "heading", "t": "Sports grounds" }, { "r": "small", "t": "A track, two pitches and a covered court." } ] }
+          ] }
+        ] } },
+    { "id": "feat-photo-cards-band", "name": "Three photo cards on a colour band", "pattern": "B14",
+      "tree": { "k": "section", "tone": "soft", "set": { "paddingTop": 96, "paddingBottom": 96, "paddingLeft": 24, "paddingRight": 24, "gap": 40 },
+        "c": [
+          { "r": "title", "t": "Clubs and activities" },
+          { "k": "grid", "cols": 3, "min": "10rem", "set": { "gap": 24 }, "c": [
+            { "k": "card", "tone": "plain", "set": { "gap": 12, "padding": 16 }, "c": [ { "r": "image", "photo": "music", "alt": "Pupils playing drums" }, { "r": "heading", "t": "Music" }, { "r": "small", "t": "Drums, choir, piano and the school band." } ] },
+            { "k": "card", "tone": "plain", "set": { "gap": 12, "padding": 16 }, "c": [ { "r": "image", "photo": "art", "alt": "A pupil painting" }, { "r": "heading", "t": "Art" }, { "r": "small", "t": "Painting, pottery and an exhibition every June." } ] },
+            { "k": "card", "tone": "plain", "set": { "gap": 12, "padding": 16 }, "c": [ { "r": "image", "photo": "sports", "alt": "Pupils running" }, { "r": "heading", "t": "Athletics" }, { "r": "small", "t": "Training three afternoons a week, and inter-house sports." } ] }
+          ] }
+        ] } },
+    { "id": "feat-photo-cards-button", "name": "Three photo cards, each with a button", "pattern": "B14",
+      "tree": { "k": "section", "center": true, "set": { "paddingTop": 96, "paddingBottom": 96, "paddingLeft": 24, "paddingRight": 24, "gap": 40 },
+        "c": [
+          { "k": "stack", "center": true, "set": { "gap": 12 }, "c": [ { "r": "eyebrow", "t": "Admissions" }, { "r": "title", "t": "Choose your child's school", "set": { "maxWidth": "40rem" } } ] },
+          { "k": "grid", "cols": 3, "min": "10rem", "set": { "gap": 24 }, "c": [
+            { "k": "card", "tone": "plain", "center": true, "set": { "gap": 12, "padding": 16 }, "c": [ { "r": "image", "photo": "nursery", "alt": "The nursery" }, { "r": "heading", "t": "Nursery" }, { "r": "small", "t": "Places for September." }, { "r": "button2", "t": "Apply" } ] },
+            { "k": "card", "tone": "plain", "center": true, "set": { "gap": 12, "padding": 16 }, "c": [ { "r": "image", "photo": "pupils-reading", "alt": "Primary pupils reading" }, { "r": "heading", "t": "Primary" }, { "r": "small", "t": "Entry at Primary 1 and Primary 4." }, { "r": "button2", "t": "Apply" } ] },
+            { "k": "card", "tone": "plain", "center": true, "set": { "gap": 12, "padding": 16 }, "c": [ { "r": "image", "photo": "graduation", "alt": "Graduating students" }, { "r": "heading", "t": "Secondary" }, { "r": "small", "t": "Entrance test in March." }, { "r": "button2", "t": "Apply" } ] }
+          ] }
+        ] } },
+    { "id": "feat-photo-tiles", "name": "Three photos with words on them", "pattern": "B14",
+      "tree": { "k": "section", "set": { "paddingTop": 96, "paddingBottom": 96, "paddingLeft": 24, "paddingRight": 24 },
+        "c": [ { "k": "grid", "cols": 3, "min": "10rem", "set": { "gap": 24 }, "c": [
+          { "k": "stack", "tone": "photo", "photo": "boarding", "set": { "minHeight": 360, "justify": "end", "padding": 24, "gap": 8 }, "c": [ { "r": "heading", "t": "Boarding" }, { "r": "link", "t": "Find out more", "to": "#boarding" } ] },
+          { "k": "stack", "tone": "photo", "photo": "playground", "set": { "minHeight": 360, "justify": "end", "padding": 24, "gap": 8 }, "c": [ { "r": "heading", "t": "Day school" }, { "r": "link", "t": "Find out more", "to": "#day" } ] },
+          { "k": "stack", "tone": "photo", "photo": "graduation", "set": { "minHeight": 360, "justify": "end", "padding": 24, "gap": 8 }, "c": [ { "r": "heading", "t": "Sixth form" }, { "r": "link", "t": "Find out more", "to": "#sixth" } ] }
+        ] } ] } },
+    { "id": "feat-checkerboard", "name": "Words and photos in a checkerboard", "pattern": "A8",
+      "tree": { "k": "section", "set": { "paddingTop": 96, "paddingBottom": 96, "paddingLeft": 24, "paddingRight": 24 },
+        "c": [ { "k": "grid", "cols": 2, "min": "18rem", "set": { "gap": 0 }, "c": [
+          { "k": "stack", "set": { "gap": 16, "padding": 40, "justify": "center" }, "c": [ { "r": "title", "t": "Healthy lunches" }, { "r": "body", "t": "Cooked fresh in our kitchen every morning, with fruit and clean water at every table." } ] },
+          { "r": "image", "photo": "pupils-outside", "alt": "Pupils eating lunch outside", "set": { "ratio": "1 / 1" } },
+          { "r": "image", "photo": "classroom", "alt": "A quiet classroom", "set": { "ratio": "1 / 1" } },
+          { "k": "stack", "set": { "gap": 16, "padding": 40, "justify": "center" }, "c": [ { "r": "title", "t": "Safe and secure" }, { "r": "body", "t": "Fenced grounds, a guard at every gate and a nurse on site all day." } ] }
+        ] } ] } },
+    { "id": "feat-numbered-checker", "name": "Six numbered points with icons between", "pattern": "B14",
+      "tree": { "k": "section", "set": { "paddingTop": 96, "paddingBottom": 96, "paddingLeft": 24, "paddingRight": 24 },
+        "c": [ { "k": "grid", "cols": 3, "min": "14rem", "set": { "gap": 0 }, "c": [
+          { "k": "stack", "tone": "soft", "center": true, "set": { "padding": 40, "justify": "center" }, "c": [ { "r": "icon", "icon": "Sprout" } ] },
+          { "k": "stack", "set": { "gap": 8, "padding": 40 }, "c": [ { "r": "stat", "t": "01" }, { "r": "small", "t": "We start with the child, not the syllabus." } ] },
+          { "k": "stack", "tone": "soft", "center": true, "set": { "padding": 40, "justify": "center" }, "c": [ { "r": "icon", "icon": "HeartHandshake" } ] },
+          { "k": "stack", "set": { "gap": 8, "padding": 40 }, "c": [ { "r": "stat", "t": "02" }, { "r": "small", "t": "Parents and teachers work as one team." } ] },
+          { "k": "stack", "tone": "soft", "center": true, "set": { "padding": 40, "justify": "center" }, "c": [ { "r": "icon", "icon": "Trophy" } ] },
+          { "k": "stack", "set": { "gap": 8, "padding": 40 }, "c": [ { "r": "stat", "t": "03" }, { "r": "small", "t": "Every success is celebrated, however small." } ] }
+        ] } ] } },
+    { "id": "feat-numbered-grid", "name": "Six numbered points", "pattern": "B14",
+      "tree": { "k": "section", "set": { "paddingTop": 96, "paddingBottom": 96, "paddingLeft": 24, "paddingRight": 24, "gap": 32 },
+        "c": [
+          { "r": "eyebrow", "t": "Our approach" },
+          { "r": "divider" },
+          { "k": "grid", "cols": 3, "min": "14rem", "set": { "gap": 40 }, "c": [
+            { "k": "stack", "set": { "gap": 8 }, "c": [ { "r": "stat", "t": "01" }, { "r": "small", "t": "Lessons that start with a question." } ] },
+            { "k": "stack", "set": { "gap": 8 }, "c": [ { "r": "stat", "t": "02" }, { "r": "small", "t": "Reading every day, in every subject." } ] },
+            { "k": "stack", "set": { "gap": 8 }, "c": [ { "r": "stat", "t": "03" }, { "r": "small", "t": "Homework that is short and useful." } ] },
+            { "k": "stack", "set": { "gap": 8 }, "c": [ { "r": "stat", "t": "04" }, { "r": "small", "t": "Extra help before a child falls behind." } ] },
+            { "k": "stack", "set": { "gap": 8 }, "c": [ { "r": "stat", "t": "05" }, { "r": "small", "t": "Projects that leave the classroom." } ] },
+            { "k": "stack", "set": { "gap": 8 }, "c": [ { "r": "stat", "t": "06" }, { "r": "small", "t": "Clear reports, three times a year." } ] }
+          ] }
+        ] } },
+    { "id": "feat-numbered-columns", "name": "A statement over three numbered columns", "pattern": "B14",
+      "tree": { "k": "section", "tone": "soft", "set": { "paddingTop": 96, "paddingBottom": 96, "paddingLeft": 24, "paddingRight": 24, "gap": 48 },
+        "c": [
+          { "k": "stack", "center": true, "set": { "gap": 16 }, "c": [
+            { "r": "eyebrow", "t": "Pastoral care" },
+            { "r": "heading", "t": "A happy child learns. So we look after the whole child, every day.", "set": { "fontSize": 32, "maxWidth": "40rem" } }
+          ] },
+          { "k": "grid", "cols": 3, "min": "10rem", "set": { "gap": 40 }, "c": [
+            { "k": "stack", "set": { "gap": 8 }, "c": [ { "r": "small", "t": "01" }, { "r": "heading", "t": "Form tutors" }, { "r": "small", "t": "One adult who knows your child well." } ] },
+            { "k": "stack", "set": { "gap": 8 }, "c": [ { "r": "small", "t": "02" }, { "r": "heading", "t": "A school nurse" }, { "r": "small", "t": "On site from the first bell to the last." } ] },
+            { "k": "stack", "set": { "gap": 8 }, "c": [ { "r": "small", "t": "03" }, { "r": "heading", "t": "A counsellor" }, { "r": "small", "t": "Someone to talk to, in confidence." } ] }
+          ] }
+        ] } },
+    { "id": "feat-split-four", "name": "Four points beside a photo", "pattern": "B15",
+      "tree": { "k": "section", "set": { "paddingTop": 96, "paddingBottom": 96, "paddingLeft": 24, "paddingRight": 24 },
+        "c": [ { "k": "row", "set": { "gap": 48 }, "c": [
+          { "k": "stack", "set": { "gap": 24, "width": "fill", "minWidth": "18rem" }, "c": [
+            { "r": "title", "t": "Why families choose us" },
+            { "r": "divider" },
+            { "k": "grid", "cols": 2, "min": "12rem", "set": { "gap": 24 }, "c": [
+              { "k": "stack", "set": { "gap": 8 }, "c": [ { "r": "heading", "t": "Results" }, { "r": "small", "t": "Top ten in the state, five years running." } ] },
+              { "k": "stack", "set": { "gap": 8 }, "c": [ { "r": "heading", "t": "Care" }, { "r": "small", "t": "A tutor for every child." } ] },
+              { "k": "stack", "set": { "gap": 8 }, "c": [ { "r": "heading", "t": "Value" }, { "r": "small", "t": "Fees paid by the term, by transfer." } ] },
+              { "k": "stack", "set": { "gap": 8 }, "c": [ { "r": "heading", "t": "Location" }, { "r": "small", "t": "Ten minutes from the city centre." } ] }
+            ] }
+          ] },
+          { "r": "image", "photo": "pupils-outside", "alt": "Pupils walking to class", "set": { "width": "fill", "minWidth": "18rem", "ratio": "3 / 4" } }
+        ] } ] } },
+    { "id": "feat-split-four-band", "name": "A title beside four numbered points, on a colour band", "pattern": "B15",
+      "tree": { "k": "section", "tone": "soft", "set": { "paddingTop": 96, "paddingBottom": 96, "paddingLeft": 24, "paddingRight": 24 },
+        "c": [ { "k": "row", "set": { "gap": 48, "align": "start" }, "c": [
+          { "k": "stack", "set": { "gap": 16, "width": "35%", "responsive": { "phone": { "width": "100%" } }, "minWidth": "16rem" }, "c": [ { "r": "title", "t": "Ready for what comes next" } ] },
+          { "k": "grid", "cols": 2, "min": "14rem", "set": { "gap": 32, "width": "fill", "minWidth": "18rem" }, "c": [
+            { "k": "stack", "set": { "gap": 8 }, "c": [ { "r": "stat", "t": "01" }, { "r": "small", "t": "Careers talks from Year 9." }, { "r": "link", "t": "Read more", "to": "#careers" } ] },
+            { "k": "stack", "set": { "gap": 8 }, "c": [ { "r": "stat", "t": "02" }, { "r": "small", "t": "University visits in SS2." }, { "r": "link", "t": "Read more", "to": "#visits" } ] },
+            { "k": "stack", "set": { "gap": 8 }, "c": [ { "r": "stat", "t": "03" }, { "r": "small", "t": "Work placements every summer." }, { "r": "link", "t": "Read more", "to": "#work" } ] },
+            { "k": "stack", "set": { "gap": 8 }, "c": [ { "r": "stat", "t": "04" }, { "r": "small", "t": "Help with every application." }, { "r": "link", "t": "Read more", "to": "#apply" } ] }
+          ] }
+        ] } ] } },
+    { "id": "feat-icon-columns-dark", "name": "Four icon columns on a dark band", "pattern": "B14",
+      "tree": { "k": "section", "tone": "inverse", "center": true, "set": { "paddingTop": 96, "paddingBottom": 96, "paddingLeft": 24, "paddingRight": 24, "gap": 48 },
+        "c": [
+          { "r": "title", "t": "Everything in one place", "set": { "maxWidth": "40rem" } },
+          { "k": "grid", "cols": 4, "min": "12rem", "set": { "gap": 32 }, "c": [
+            { "k": "stack", "center": true, "set": { "gap": 12 }, "c": [ { "r": "icon", "icon": "Bus" }, { "r": "heading", "t": "Transport" }, { "r": "small", "t": "School buses on six routes." } ] },
+            { "k": "stack", "center": true, "set": { "gap": 12 }, "c": [ { "r": "icon", "icon": "Utensils" }, { "r": "heading", "t": "Meals" }, { "r": "small", "t": "Breakfast and a hot lunch." } ] },
+            { "k": "stack", "center": true, "set": { "gap": 12 }, "c": [ { "r": "icon", "icon": "Stethoscope" }, { "r": "heading", "t": "Health" }, { "r": "small", "t": "A nurse on site all day." } ] },
+            { "k": "stack", "center": true, "set": { "gap": 12 }, "c": [ { "r": "icon", "icon": "Wifi" }, { "r": "heading", "t": "Learning online" }, { "r": "small", "t": "Homework and reports in the app." } ] }
+          ] }
+        ] } },
+    { "id": "feat-row-list", "name": "A list of four services in rows", "pattern": "B15",
+      "tree": { "k": "section", "set": { "paddingTop": 96, "paddingBottom": 96, "paddingLeft": 24, "paddingRight": 24, "gap": 16 },
+        "c": [
+          { "k": "card", "tone": "plain", "set": { "padding": 24 }, "c": [ { "k": "row", "set": { "gap": 16, "justify": "between" }, "c": [ { "r": "heading", "t": "Holiday camps", "set": { "width": "fill" } }, { "r": "icon", "icon": "ArrowRight" } ] } ] },
+          { "k": "card", "tone": "plain", "set": { "padding": 24 }, "c": [ { "k": "row", "set": { "gap": 16, "justify": "between" }, "c": [ { "r": "heading", "t": "Extra lessons", "set": { "width": "fill" } }, { "r": "icon", "icon": "ArrowRight" } ] } ] },
+          { "k": "card", "tone": "plain", "set": { "padding": 24 }, "c": [ { "k": "row", "set": { "gap": 16, "justify": "between" }, "c": [ { "r": "heading", "t": "Exam preparation", "set": { "width": "fill" } }, { "r": "icon", "icon": "ArrowRight" } ] } ] },
+          { "k": "card", "tone": "plain", "set": { "padding": 24 }, "c": [ { "k": "row", "set": { "gap": 16, "justify": "between" }, "c": [ { "r": "heading", "t": "Hall hire", "set": { "width": "fill" } }, { "r": "icon", "icon": "ArrowRight" } ] } ] }
+        ] } },
+    { "id": "feat-numbered-pictures", "name": "A title, a few words and four numbered photos", "pattern": "B14",
+      "tree": { "k": "section", "tone": "grey", "set": { "paddingTop": 96, "paddingBottom": 96, "paddingLeft": 24, "paddingRight": 24, "gap": 48 },
+        "c": [
+          { "k": "row", "set": { "gap": 48, "align": "start" }, "c": [
+            { "k": "stack", "set": { "width": "fill", "minWidth": "18rem" }, "c": [ { "r": "title", "t": "Four houses" } ] },
+            { "k": "stack", "set": { "gap": 16, "width": "fill", "minWidth": "18rem" }, "c": [ { "r": "body", "t": "Every pupil joins a house on their first day, and competes for it in sport, music and kindness." }, { "r": "link", "t": "The house system", "to": "#houses" } ] }
+          ] },
+          { "k": "grid", "cols": 4, "min": "10rem", "set": { "gap": 24 }, "c": [
+            { "k": "stack", "set": { "gap": 12 }, "c": [ { "r": "image", "photo": "gallery-1", "alt": "Pupils of Niger house", "set": { "ratio": "3 / 4" } }, { "r": "small", "t": "01 · Niger" } ] },
+            { "k": "stack", "set": { "gap": 12 }, "c": [ { "r": "image", "photo": "gallery-2", "alt": "Pupils of Volta house", "set": { "ratio": "3 / 4" } }, { "r": "small", "t": "02 · Volta" } ] },
+            { "k": "stack", "set": { "gap": 12 }, "c": [ { "r": "image", "photo": "gallery-3", "alt": "Pupils of Benue house", "set": { "ratio": "3 / 4" } }, { "r": "small", "t": "03 · Benue" } ] },
+            { "k": "stack", "set": { "gap": 12 }, "c": [ { "r": "image", "photo": "gallery-4", "alt": "Pupils of Congo house", "set": { "ratio": "3 / 4" } }, { "r": "small", "t": "04 · Congo" } ] }
+          ] }
+        ] } },
+    { "id": "feat-photo-columns", "name": "Three columns of words over photos", "pattern": "B14",
+      "tree": { "k": "section", "set": { "paddingTop": 96, "paddingBottom": 96, "paddingLeft": 24, "paddingRight": 24, "gap": 40 },
+        "c": [
+          { "r": "title", "t": "What we offer" },
+          { "k": "grid", "cols": 3, "min": "10rem", "set": { "gap": 32 }, "c": [
+            { "k": "stack", "set": { "gap": 12 }, "c": [ { "r": "heading", "t": "Languages" }, { "r": "small", "t": "English, French and Yoruba from Primary 1." }, { "r": "image", "photo": "pupils-reading", "alt": "Pupils reading aloud" } ] },
+            { "k": "stack", "set": { "gap": 12 }, "c": [ { "r": "heading", "t": "Sciences" }, { "r": "small", "t": "Real experiments, in real labs, every week." }, { "r": "image", "photo": "students-lab", "alt": "An experiment in the lab" } ] },
+            { "k": "stack", "set": { "gap": 12 }, "c": [ { "r": "heading", "t": "The arts" }, { "r": "small", "t": "Music, drama and art for every pupil." }, { "r": "image", "photo": "art", "alt": "A pupil painting" } ] }
+          ] }
+        ] } },
+    { "id": "feat-icon-cards-six", "name": "Six icon cards", "pattern": "B14",
+      "tree": { "k": "section", "tone": "soft", "set": { "paddingTop": 96, "paddingBottom": 96, "paddingLeft": 24, "paddingRight": 24, "gap": 40 },
+        "c": [
+          { "k": "stack", "center": true, "set": { "gap": 16 }, "c": [ { "r": "title", "t": "A school day, well looked after", "set": { "maxWidth": "40rem" } }, { "r": "body", "t": "The things parents ask about most.", "set": { "maxWidth": "36rem" } } ] },
+          { "k": "grid", "cols": 3, "min": "16rem", "set": { "gap": 24 }, "c": [
+            { "k": "card", "tone": "plain", "set": { "padding": 32, "gap": 12 }, "c": [ { "r": "icon", "icon": "Bus" }, { "r": "heading", "t": "Getting here" }, { "r": "small", "t": "Six bus routes, morning and afternoon." } ] },
+            { "k": "card", "tone": "plain", "set": { "padding": 32, "gap": 12 }, "c": [ { "r": "icon", "icon": "Utensils" }, { "r": "heading", "t": "Lunch" }, { "r": "small", "t": "Hot food cooked on site every day." } ] },
+            { "k": "card", "tone": "plain", "set": { "padding": 32, "gap": 12 }, "c": [ { "r": "icon", "icon": "Shirt" }, { "r": "heading", "t": "Uniform" }, { "r": "small", "t": "Sold at the school shop, in every size." } ] },
+            { "k": "card", "tone": "plain", "set": { "padding": 32, "gap": 12 }, "c": [ { "r": "icon", "icon": "ShieldCheck" }, { "r": "heading", "t": "Safety" }, { "r": "small", "t": "Every visitor signed in and out." } ] },
+            { "k": "card", "tone": "plain", "set": { "padding": 32, "gap": 12 }, "c": [ { "r": "icon", "icon": "Smartphone" }, { "r": "heading", "t": "Messages" }, { "r": "small", "t": "News by WhatsApp and SMS." } ] },
+            { "k": "card", "tone": "plain", "set": { "padding": 32, "gap": 12 }, "c": [ { "r": "icon", "icon": "Wallet" }, { "r": "heading", "t": "Paying fees" }, { "r": "small", "t": "By transfer, card or Paystack." } ] }
+          ] }
+        ] } },
+    { "id": "feat-icon-list-picture", "name": "Three icon points beside a photo", "pattern": "B15",
+      "tree": { "k": "section", "set": { "paddingTop": 96, "paddingBottom": 96, "paddingLeft": 24, "paddingRight": 24 },
+        "c": [ { "k": "row", "set": { "gap": 48 }, "c": [
+          { "k": "stack", "set": { "gap": 24, "width": "fill", "minWidth": "18rem" }, "c": [
+            { "r": "eyebrow", "t": "Boarding" },
+            { "r": "title", "t": "A second home" },
+            { "k": "row", "set": { "gap": 16, "align": "start" }, "c": [ { "r": "icon", "icon": "BedDouble", "set": { "placeX": "start" } }, { "k": "stack", "set": { "gap": 4, "width": "fill" }, "c": [ { "r": "heading", "t": "Rooms for four" }, { "r": "small", "t": "Bright, quiet and cleaned every day." } ] } ] },
+            { "k": "row", "set": { "gap": 16, "align": "start" }, "c": [ { "r": "icon", "icon": "Users", "set": { "placeX": "start" } }, { "k": "stack", "set": { "gap": 4, "width": "fill" }, "c": [ { "r": "heading", "t": "House parents" }, { "r": "small", "t": "Living on site, there day and night." } ] } ] },
+            { "k": "row", "set": { "gap": 16, "align": "start" }, "c": [ { "r": "icon", "icon": "Phone", "set": { "placeX": "start" } }, { "k": "stack", "set": { "gap": 4, "width": "fill" }, "c": [ { "r": "heading", "t": "Calls home" }, { "r": "small", "t": "Every evening, and whenever needed." } ] } ] }
+          ] },
+          { "r": "image", "photo": "boarding", "alt": "A boarding house bedroom", "set": { "width": "fill", "minWidth": "18rem", "ratio": "4 / 5" } }
+        ] } ] } },
+    { "id": "feat-four-cards", "name": "Four points in cards", "pattern": "B14",
+      "tree": { "k": "section", "set": { "paddingTop": 96, "paddingBottom": 96, "paddingLeft": 24, "paddingRight": 24, "gap": 40 },
+        "c": [
+          { "r": "title", "t": "Help when you need it" },
+          { "k": "grid", "cols": 2, "min": "16rem", "set": { "gap": 24 }, "c": [
+            { "k": "card", "tone": "grey", "set": { "padding": 32, "gap": 12 }, "c": [ { "r": "icon", "icon": "GraduationCap" }, { "r": "heading", "t": "Learning support" }, { "r": "small", "t": "Small groups for reading and number." }, { "r": "link", "t": "Learn more", "to": "#support" } ] },
+            { "k": "card", "tone": "grey", "set": { "padding": 32, "gap": 12 }, "c": [ { "r": "icon", "icon": "Sparkles" }, { "r": "heading", "t": "Gifted pupils" }, { "r": "small", "t": "Stretch classes and competitions." }, { "r": "link", "t": "Learn more", "to": "#gifted" } ] },
+            { "k": "card", "tone": "grey", "set": { "padding": 32, "gap": 12 }, "c": [ { "r": "icon", "icon": "Languages" }, { "r": "heading", "t": "New to English" }, { "r": "small", "t": "Daily lessons until a child is confident." }, { "r": "link", "t": "Learn more", "to": "#english" } ] },
+            { "k": "card", "tone": "grey", "set": { "padding": 32, "gap": 12 }, "c": [ { "r": "icon", "icon": "HandCoins" }, { "r": "heading", "t": "Bursaries" }, { "r": "small", "t": "Help with fees for one pupil in five." }, { "r": "link", "t": "Learn more", "to": "#bursaries" } ] }
+          ] }
+        ] } },
+    { "id": "feat-four-cards-band", "name": "Four icon cards on the school colour", "pattern": "B14",
+      "tree": { "k": "section", "tone": "strong", "set": { "paddingTop": 96, "paddingBottom": 96, "paddingLeft": 24, "paddingRight": 24, "gap": 40 },
+        "c": [
+          { "r": "title", "t": "Our promise to parents" },
+          { "k": "grid", "cols": 4, "min": "12rem", "set": { "gap": 24 }, "c": [
+            { "k": "card", "tone": "plain", "set": { "padding": 24, "gap": 12 }, "c": [ { "r": "icon", "icon": "MessageCircle" }, { "r": "heading", "t": "We listen" }, { "r": "small", "t": "Every message answered in a day." } ] },
+            { "k": "card", "tone": "plain", "set": { "padding": 24, "gap": 12 }, "c": [ { "r": "icon", "icon": "ClipboardCheck" }, { "r": "heading", "t": "We report" }, { "r": "small", "t": "Clear reports each term." } ] },
+            { "k": "card", "tone": "plain", "set": { "padding": 24, "gap": 12 }, "c": [ { "r": "icon", "icon": "CalendarDays" }, { "r": "heading", "t": "We plan" }, { "r": "small", "t": "Dates set a year ahead." } ] },
+            { "k": "card", "tone": "plain", "set": { "padding": 24, "gap": 12 }, "c": [ { "r": "icon", "icon": "DoorOpen" }, { "r": "heading", "t": "We welcome" }, { "r": "small", "t": "Visit on any school day." } ] }
+          ] }
+        ] } },
+    { "id": "feat-icon-row", "name": "Three centred icon points", "pattern": "B14",
+      "tree": { "k": "section", "center": true, "set": { "paddingTop": 96, "paddingBottom": 96, "paddingLeft": 24, "paddingRight": 24, "gap": 48 },
+        "c": [
+          { "k": "stack", "center": true, "set": { "gap": 16 }, "c": [ { "r": "eyebrow", "t": "Why Greenfield" }, { "r": "title", "t": "Three reasons parents choose us", "set": { "maxWidth": "40rem" } } ] },
+          { "k": "grid", "cols": 3, "min": "10rem", "set": { "gap": 40 }, "c": [
+            { "k": "stack", "center": true, "set": { "gap": 12 }, "c": [ { "r": "icon", "icon": "Users" }, { "r": "heading", "t": "Small classes" }, { "r": "small", "t": "Never more than eighteen pupils." } ] },
+            { "k": "stack", "center": true, "set": { "gap": 12 }, "c": [ { "r": "icon", "icon": "Award" }, { "r": "heading", "t": "Strong results" }, { "r": "small", "t": "Ninety-four per cent pass five credits." } ] },
+            { "k": "stack", "center": true, "set": { "gap": 12 }, "c": [ { "r": "icon", "icon": "Leaf" }, { "r": "heading", "t": "A green campus" }, { "r": "small", "t": "Fields, gardens and fresh air." } ] }
+          ] }
+        ] } }
+  ]
+}

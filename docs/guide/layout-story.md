@@ -523,7 +523,8 @@ paragraph in it: on her phone it is simply taller than 2:1, so no word is lost.
 
 The clubs page has six clubs. Instead of deciding how many go across on each screen, Amaka sets the Grid's **Columns** to
 **As many as fit, each at least 16rem**. The wide monitor shows all six in a row, her laptop four or five, the tablet three
-or two, and her phone one under another, always the same width and filling the row. Her quotation box she gives a **Max
+or two, and her phone one under another, always the same width and filling the row. On the wide monitor she would rather
+have two rows of three than one long row, so she sets **At most across** to 3. Her quotation box she gives a **Max
 width** of `40rem`, so it never runs into a long line; and the news sidebar a **Min width** of `12rem` and a **Max width** of
 `18rem`, so it is never squeezed and never takes over.
 

@@ -1,0 +1,92 @@
+{
+  "$comment": "Stats (B16: ROW(3–4) stats, or ROW(2) [image | GRID(2×2) stat]; on a tablet and a phone 2 × 2 — a grid of four carries responsive.tabletPortrait.fitMost 2 (at most two across), which the phone inherits; the crawl: 476 stats sections, 'row of 2' kept on a phone; a number that counts up waits for the Counter component, RULE C).",
+  "sections": [
+    { "id": "stats-four", "name": "A title over four numbers", "pattern": "B16", "needs": ["counter"],
+      "tree": { "k": "section", "center": true, "set": { "paddingTop": 96, "paddingBottom": 96, "paddingLeft": 24, "paddingRight": 24, "gap": 48 },
+        "c": [
+          { "r": "title", "t": "Greenfield in numbers", "set": { "maxWidth": "40rem" } },
+          { "k": "grid", "cols": 4, "min": "8rem", "set": { "gap": 24, "responsive": { "tabletPortrait": { "fitMost": 2 } } }, "c": [
+            { "k": "stack", "center": true, "set": { "gap": 4 }, "c": [ { "r": "stat", "t": "820" }, { "r": "small", "t": "pupils" } ] },
+            { "k": "stack", "center": true, "set": { "gap": 4 }, "c": [ { "r": "stat", "t": "18" }, { "r": "small", "t": "in a class" } ] },
+            { "k": "stack", "center": true, "set": { "gap": 4 }, "c": [ { "r": "stat", "t": "94%" }, { "r": "small", "t": "five credits" } ] },
+            { "k": "stack", "center": true, "set": { "gap": 4 }, "c": [ { "r": "stat", "t": "39" }, { "r": "small", "t": "years" } ] }
+          ] }
+        ] } },
+    { "id": "stats-three-band", "name": "Three numbers on the school colour", "pattern": "B16",
+      "tree": { "k": "section", "tone": "strong", "center": true, "set": { "paddingTop": 80, "paddingBottom": 80, "paddingLeft": 24, "paddingRight": 24 },
+        "c": [ { "k": "grid", "cols": 3, "min": "10rem", "set": { "gap": 32 }, "c": [
+          { "k": "stack", "center": true, "set": { "gap": 4 }, "c": [ { "r": "stat", "t": "97%" }, { "r": "small", "t": "go on to university" } ] },
+          { "k": "stack", "center": true, "set": { "gap": 4 }, "c": [ { "r": "stat", "t": "40+" }, { "r": "small", "t": "clubs every week" } ] },
+          { "k": "stack", "center": true, "set": { "gap": 4 }, "c": [ { "r": "stat", "t": "1 in 5" }, { "r": "small", "t": "pupils on a bursary" } ] }
+        ] } ] } },
+    { "id": "stats-picture-four", "name": "A picture beside four numbers", "pattern": "B16",
+      "tree": { "k": "section", "set": { "paddingTop": 96, "paddingBottom": 96, "paddingLeft": 24, "paddingRight": 24 },
+        "c": [ { "k": "row", "set": { "gap": 48 }, "c": [
+          { "r": "image", "photo": "graduation", "alt": "Students on graduation day", "set": { "width": "fill", "minWidth": "18rem", "ratio": "1 / 1" } },
+          { "k": "grid", "cols": 2, "min": "8rem", "set": { "gap": 32, "width": "fill", "minWidth": "18rem" }, "c": [
+            { "k": "stack", "set": { "gap": 4 }, "c": [ { "r": "stat", "t": "37" }, { "r": "small", "t": "distinctions in WAEC" } ] },
+            { "k": "stack", "set": { "gap": 4 }, "c": [ { "r": "stat", "t": "12" }, { "r": "small", "t": "university scholarships" } ] },
+            { "k": "stack", "set": { "gap": 4 }, "c": [ { "r": "stat", "t": "3" }, { "r": "small", "t": "national prizes" } ] },
+            { "k": "stack", "set": { "gap": 4 }, "c": [ { "r": "stat", "t": "100%" }, { "r": "small", "t": "passed English" } ] }
+          ] }
+        ] } ] } },
+    { "id": "stats-dark-cards", "name": "Four numbers in cards on a dark band", "pattern": "B16",
+      "tree": { "k": "section", "tone": "inverse", "set": { "paddingTop": 96, "paddingBottom": 96, "paddingLeft": 24, "paddingRight": 24, "gap": 40 },
+        "c": [
+          { "r": "title", "t": "A year at Greenfield" },
+          { "k": "grid", "cols": 4, "min": "8rem", "set": { "gap": 24, "responsive": { "tabletPortrait": { "fitMost": 2 } } }, "c": [
+            { "k": "card", "tone": "plain", "set": { "padding": 24, "gap": 4 }, "c": [ { "r": "stat", "t": "190" }, { "r": "small", "t": "school days" } ] },
+            { "k": "card", "tone": "plain", "set": { "padding": 24, "gap": 4 }, "c": [ { "r": "stat", "t": "36" }, { "r": "small", "t": "trips" } ] },
+            { "k": "card", "tone": "plain", "set": { "padding": 24, "gap": 4 }, "c": [ { "r": "stat", "t": "12" }, { "r": "small", "t": "concerts" } ] },
+            { "k": "card", "tone": "plain", "set": { "padding": 24, "gap": 4 }, "c": [ { "r": "stat", "t": "1" }, { "r": "small", "t": "big sports day" } ] }
+          ] }
+        ] } },
+    { "id": "stats-intro-four", "name": "Words beside four numbers", "pattern": "B16",
+      "tree": { "k": "section", "tone": "soft", "set": { "paddingTop": 96, "paddingBottom": 96, "paddingLeft": 24, "paddingRight": 24 },
+        "c": [ { "k": "row", "set": { "gap": 48 }, "c": [
+          { "k": "stack", "set": { "gap": 16, "width": "fill", "minWidth": "18rem" }, "c": [
+            { "r": "eyebrow", "t": "Results" },
+            { "r": "title", "t": "Proud of every result" },
+            { "r": "body", "t": "Our pupils sit the same exams as everyone else, and do better every year." }
+          ] },
+          { "k": "grid", "cols": 2, "min": "8rem", "set": { "gap": 32, "width": "fill", "minWidth": "18rem" }, "c": [
+            { "k": "stack", "set": { "gap": 4 }, "c": [ { "r": "stat", "t": "94%" }, { "r": "small", "t": "five credits" } ] },
+            { "k": "stack", "set": { "gap": 4 }, "c": [ { "r": "stat", "t": "89%" }, { "r": "small", "t": "credit in Maths" } ] },
+            { "k": "stack", "set": { "gap": 4 }, "c": [ { "r": "stat", "t": "78%" }, { "r": "small", "t": "a Science credit" } ] },
+            { "k": "stack", "set": { "gap": 4 }, "c": [ { "r": "stat", "t": "Top 10" }, { "r": "small", "t": "in the state" } ] }
+          ] }
+        ] } ] } },
+    { "id": "stats-photo-band", "name": "Four numbers over a photo", "pattern": "B16", "needs": ["counter"],
+      "tree": { "k": "section", "tone": "photo", "photo": "school-field", "center": true, "set": { "paddingTop": 112, "paddingBottom": 112, "paddingLeft": 24, "paddingRight": 24, "gap": 40 },
+        "c": [
+          { "r": "title", "t": "Room to grow", "set": { "maxWidth": "40rem" } },
+          { "k": "grid", "cols": 4, "min": "8rem", "set": { "gap": 24, "responsive": { "tabletPortrait": { "fitMost": 2 } } }, "c": [
+            { "k": "stack", "center": true, "set": { "gap": 4 }, "c": [ { "r": "stat", "t": "12" }, { "r": "small", "t": "acres" } ] },
+            { "k": "stack", "center": true, "set": { "gap": 4 }, "c": [ { "r": "stat", "t": "40" }, { "r": "small", "t": "classrooms" } ] },
+            { "k": "stack", "center": true, "set": { "gap": 4 }, "c": [ { "r": "stat", "t": "3" }, { "r": "small", "t": "science labs" } ] },
+            { "k": "stack", "center": true, "set": { "gap": 4 }, "c": [ { "r": "stat", "t": "2" }, { "r": "small", "t": "libraries" } ] }
+          ] }
+        ] } },
+    { "id": "stats-divided", "name": "Four numbers under lines", "pattern": "B16",
+      "tree": { "k": "section", "set": { "paddingTop": 96, "paddingBottom": 96, "paddingLeft": 24, "paddingRight": 24, "gap": 40 },
+        "c": [
+          { "r": "title", "t": "Our staff" },
+          { "k": "grid", "cols": 4, "min": "8rem", "set": { "gap": 32, "responsive": { "tabletPortrait": { "fitMost": 2 } } }, "c": [
+            { "k": "stack", "set": { "gap": 8 }, "c": [ { "r": "divider" }, { "r": "stat", "t": "64" }, { "r": "small", "t": "teachers" } ] },
+            { "k": "stack", "set": { "gap": 8 }, "c": [ { "r": "divider" }, { "r": "stat", "t": "11" }, { "r": "small", "t": "years on average" } ] },
+            { "k": "stack", "set": { "gap": 8 }, "c": [ { "r": "divider" }, { "r": "stat", "t": "100%" }, { "r": "small", "t": "qualified" } ] },
+            { "k": "stack", "set": { "gap": 8 }, "c": [ { "r": "divider" }, { "r": "stat", "t": "1 : 13" }, { "r": "small", "t": "teacher to pupils" } ] }
+          ] }
+        ] } },
+    { "id": "stats-icon-cards", "name": "Three numbers in cards with icons", "pattern": "B16",
+      "tree": { "k": "section", "tone": "soft", "center": true, "set": { "paddingTop": 96, "paddingBottom": 96, "paddingLeft": 24, "paddingRight": 24, "gap": 40 },
+        "c": [
+          { "k": "stack", "center": true, "set": { "gap": 12 }, "c": [ { "r": "eyebrow", "t": "Community" }, { "r": "title", "t": "More than a school", "set": { "maxWidth": "40rem" } } ] },
+          { "k": "grid", "cols": 3, "min": "10rem", "set": { "gap": 24 }, "c": [
+            { "k": "card", "tone": "plain", "center": true, "set": { "padding": 32, "gap": 8 }, "c": [ { "r": "icon", "icon": "HeartHandshake" }, { "r": "stat", "t": "2,400" }, { "r": "small", "t": "meals given each term" } ] },
+            { "k": "card", "tone": "plain", "center": true, "set": { "padding": 32, "gap": 8 }, "c": [ { "r": "icon", "icon": "TreePine" }, { "r": "stat", "t": "600" }, { "r": "small", "t": "trees planted" } ] },
+            { "k": "card", "tone": "plain", "center": true, "set": { "padding": 32, "gap": 8 }, "c": [ { "r": "icon", "icon": "BookOpen" }, { "r": "stat", "t": "5,000" }, { "r": "small", "t": "books given away" } ] }
+          ] }
+        ] } }
+  ]
+}

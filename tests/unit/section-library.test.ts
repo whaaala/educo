@@ -4,11 +4,13 @@ import { describe, it, expect } from "vitest";
 import SECTIONS from "@/config/sections.json";
 import FINISHES from "@/config/section-finishes.json";
 import COPY from "@/config/section-copy.json";
+import LAYOUT from "@/config/layout.json";
 import { buildSection, insertSection, restyleSection, nextFinish, FINISH_IDS, FINISH_CHOICES, WIREFRAME, type SectionDef, type SectionNode } from "@/lib/section-library";
 import { renderSitePage } from "@/lib/box-export";
+import { ICON_SVG_MAP } from "@/lib/educo-ui/icon-svg-map.generated";
 import { emptyPageRoot, type BoxSite } from "@/lib/box-site";
 import { DEFAULT_THEME } from "@/lib/site-storage";
-import { createContainer, createElement, makeRowBand, regionBlock, regionSpan, type BoxNode } from "@/lib/box-model";
+import { createContainer, createElement, makeRowBand, regionBlock, regionSpan, resolveResponsive, childStyle, type BoxNode, type Breakpoint } from "@/lib/box-model";
 
 /**
  * THE SECTION LIBRARY (BATCH LE-15, ED-4+ (2)) — box-builder-sections.feature.
@@ -31,6 +33,102 @@ describe("the section library", () => {
     expect(CATS.length).toBe(27);
     expect(CATS.reduce((s, c) => s + c.count, 0)).toBe(302);
     for (const c of CATS.filter((c) => c.batch === "LE-15")) expect(sectionsOf(c.id).length, `${c.label}`).toBe(c.count);
+  });
+
+  it("LE-15b · About 16 · Text 8 · Features 20 · Spotlight 17 · Stats 8 · CTA 17 — and every category with a file holds all it promises", () => {
+    const want = { about: 16, text: 8, features: 20, spotlight: 17, stats: 8, cta: 17 };
+    for (const [id, n] of Object.entries(want)) expect(sectionsOf(id).length, id).toBe(n);
+    for (const c of BUILT) expect(sectionsOf(c.id).length, `${c.label}`).toBe(c.count);
+  });
+
+  it("LE15b-4 / 7 · every finish keeps the page audit's floors: no words under 16px, no weight under 400 (Web Design Rule #1)", () => {
+    const all = FINISHES as unknown as Record<string, { roles?: Record<string, { size: number; weight: number }> }>;
+    const low: string[] = [];
+    for (const [id, f] of Object.entries(all)) for (const [role, t] of Object.entries(f.roles ?? {})) {
+      if (t.size < 16) low.push(`${id}.${role} ${t.size}px`);
+      if (t.weight < 400) low.push(`${id}.${role} weight ${t.weight}`);
+    }
+    expect(Object.values(all).filter((f) => f.roles).length).toBe(8);
+    expect(low).toEqual([]);
+  });
+
+  it("LE15b-8 · a column given a share of its row (a % width) fills the line on a phone, where the row has wrapped", () => {
+    const short: string[] = [];
+    const find = (n: SectionNode, id: string) => {
+      if (n.k === "row") for (const c of n.c ?? []) { const w = c.set?.width; if (typeof w === "string" && w.endsWith("%") && w !== "100%" && (c.set?.responsive?.phone?.width ?? c.set?.responsive?.tabletPortrait?.width) !== "100%") short.push(`${id}: ${c.r ?? c.k} ${w}`); }
+      n.c?.forEach((c) => find(c, id));
+    };
+    for (const c of BUILT) for (const def of sectionsOf(c.id)) find(def.tree, def.id);
+    expect(short).toEqual([]);
+  });
+
+  it("LE15b-12 · no card is left alone on a line: every grid of a section, at every width of screens.js, fills its rows", () => {
+    // seen at 783 (the HEADED screenshot): three 16rem cards went two across and the third alone, half a row of nothing beside it
+    const { WIDTHS } = require("../../scripts/uat/screens.js") as { WIDTHS: number[] };
+    const R = LAYOUT.rungs;
+    const rungOf = (w: number): Breakpoint => (w >= R.wide.from ? "wide" : w >= R.desktop.from ? "base" : w >= R.tabletLandscape.from ? "tabletLandscape" : w >= R.tabletPortrait.from ? "tabletPortrait" : "phone");
+    const lone: string[] = [];
+    let grids = 0;
+    for (const c of BUILT) for (const def of sectionsOf(c.id)) {
+      const pad = Number(def.tree.set?.paddingLeft ?? 0) + Number(def.tree.set?.paddingRight ?? 0);
+      const built = buildSection(def, { finish: "plain", wireframe: false });
+      (def.tree.c ?? []).forEach((g, i) => {
+        if (g.k !== "grid" || !g.min || (g.c ?? []).length < 2) return;
+        let node: BoxNode | undefined; walk(built, (x) => { if (x.sectionPart === `0.${i}`) node = x; });
+        grids++;
+        const n = node!.children!.length;
+        // the page is the window, or the window less a desktop scrollbar: both are measured
+        for (const w of WIDTHS) for (const page of [w, w - 17]) {
+          const at = resolveResponsive(node!, rungOf(w)), gap = at.gapX ?? at.gap ?? 0, min = parseFloat(at.minCard!) * 16;
+          const across = Math.min(at.fitMost ?? n, n, Math.max(1, Math.floor((page - pad + gap) / (min + gap))));
+          if (across > 1 && n % across !== 0) lone.push(`${def.id} @${w}: ${n} in rows of ${across}`);
+        }
+      });
+    }
+    expect(grids, "grids measured").toBeGreaterThan(30);
+    expect([...new Set(lone.map((l) => l.replace(/ @\d+/, "")))]).toEqual([]);
+  });
+
+  it("LE15b-18 · an icon beside words stays the icon's size and the words stay beside it (seen on the contact sheets at 375)", () => {
+    const bad: string[] = [];
+    for (const c of BUILT) for (const def of sectionsOf(c.id)) walk(buildSection(def, { finish: "plain", wireframe: false }), (row) => {
+      const kids = row.children ?? [];
+      if (row.type !== "container" || row.direction !== "row" || row.layout === "grid" || kids.length < 2 || !kids.some((k) => k.type === "icon")) return;
+      for (const k of kids) {
+        if (k.type === "icon" && childStyle(k, row, "base").flex === "1 1 auto") bad.push(`${def.id}: the icon grows`);
+        if (k.type === "heading" && k.width === "100%") bad.push(`${def.id}: the heading takes the whole line`);
+      }
+    });
+    expect(bad).toEqual([]);
+  });
+
+  it("LE15b-6 · a grid's `cols` is its most across: six cards of three-up are three across and two rows, never 4 + 2", () => {
+    const def: SectionDef = { id: "t", name: "t", tree: { k: "section", c: [{ k: "grid", cols: 3, min: "16rem", c: [{ r: "title" }, { r: "title" }, { r: "title" }] }] } };
+    let g: BoxNode | undefined; walk(buildSection(def, { finish: "plain", wireframe: false }), (n) => { if (n.layout === "grid") g = n; });
+    expect(g?.fitMost).toBe(3);
+    expect(g?.minCard).toBe("16rem");
+  });
+
+  it("every icon a section names is one the page can draw (a name the icon set lacks publishes nothing)", () => {
+    const names: string[] = [];
+    const find = (n: SectionNode) => { if (n.r === "icon") names.push(n.icon ?? "Star"); n.c?.forEach(find); };
+    for (const c of BUILT) for (const def of sectionsOf(c.id)) find(def.tree);
+    expect(names.length).toBeGreaterThan(0);
+    expect(names.filter((n) => !ICON_SVG_MAP[n])).toEqual([]);
+  });
+
+  it("A8 · in every zig-zag row the picture comes first on a phone, whichever side it sits on a desktop", () => {
+    const rows: SectionNode[] = [];
+    const find = (n: SectionNode) => { if (n.k === "row" && n.c?.some((x) => x.r === "image") && n.c.some((x) => x.k === "stack" || x.k === "card")) rows.push(n); n.c?.forEach(find); };
+    for (const def of sectionsOf("spotlight")) find(def.tree);
+    expect(rows.length).toBeGreaterThan(0);
+    for (const row of rows) {
+      const kids = row.c!;
+      const img = kids.findIndex((x) => x.r === "image");
+      // first in the tree already, or put first on a phone (an order below every other block's)
+      const phoneFirst = img === 0 ? !kids.some((x) => (x.set?.responsive?.phone?.order ?? 0) < 0) : (kids[img].set?.responsive?.phone?.order ?? 0) < 0;
+      expect(phoneFirst, JSON.stringify(kids.map((x) => x.r ?? x.k))).toBe(true);
+    }
   });
 
   it("every section id is unique across the library", () => {

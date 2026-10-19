@@ -99,7 +99,7 @@
     { "id": "hero-split-wide-words", "name": "Wide words, narrow picture", "pattern": "B8",
       "tree": { "k": "section", "set": { "paddingTop": 96, "paddingBottom": 96, "paddingLeft": 24, "paddingRight": 24 },
         "c": [ { "k": "row", "set": { "gap": 48 }, "c": [
-          { "k": "stack", "set": { "gap": 20, "width": "60%", "minWidth": "18rem" }, "c": [
+          { "k": "stack", "set": { "gap": 20, "width": "60%", "responsive": { "phone": { "width": "100%" } }, "minWidth": "18rem" }, "c": [
             { "r": "eyebrow", "t": "Secondary school" },
             { "r": "title", "t": "Ready for university and for life" },
             { "r": "body", "t": "A broad curriculum, careers advice from Year 9 and a sixth form where students lead." },
@@ -287,7 +287,7 @@
             { "r": "title", "t": "Everything parents need" },
             { "r": "body", "t": "The things families look for most, right here." }
           ] },
-          { "k": "grid", "cols": 3, "min": "14rem", "set": { "gap": 20 }, "c": [
+          { "k": "grid", "cols": 3, "min": "10rem", "set": { "gap": 20 }, "c": [
             { "k": "card", "tone": "plain", "set": { "padding": 28, "gap": 8 }, "c": [ { "r": "heading", "t": "Term dates" }, { "r": "small", "t": "Holidays and key days for the year." }, { "r": "link", "t": "See dates →" } ] },
             { "k": "card", "tone": "plain", "set": { "padding": 28, "gap": 8 }, "c": [ { "r": "heading", "t": "Letters home" }, { "r": "small", "t": "Every letter we have sent this term." }, { "r": "link", "t": "Read letters →" } ] },
             { "k": "card", "tone": "plain", "set": { "padding": 28, "gap": 8 }, "c": [ { "r": "heading", "t": "Pay fees" }, { "r": "small", "t": "Bank transfer, card or mobile money." }, { "r": "link", "t": "Pay now →" } ] }
@@ -311,7 +311,7 @@
     { "id": "hero-welcome-head", "name": "A welcome from the head", "pattern": "C2",
       "tree": { "k": "section", "set": { "paddingTop": 96, "paddingBottom": 96, "paddingLeft": 24, "paddingRight": 24 },
         "c": [ { "k": "row", "set": { "gap": 48 }, "c": [
-          { "r": "image", "photo": "head-teacher", "alt": "Mrs Okafor, the head teacher, smiling in her office", "set": { "width": "40%", "minWidth": "14rem", "ratio": "4 / 5" } },
+          { "r": "image", "photo": "head-teacher", "alt": "Mrs Okafor, the head teacher, smiling in her office", "set": { "width": "40%", "responsive": { "phone": { "width": "100%" } }, "minWidth": "14rem", "ratio": "4 / 5" } },
           { "k": "stack", "set": { "gap": 20, "width": "fill", "minWidth": "18rem" }, "c": [
             { "r": "eyebrow", "t": "A welcome from our head" },
             { "r": "quote", "t": "“Every child who walks through our gate is known, valued and stretched to be the best version of themselves.”" },
@@ -344,7 +344,7 @@
             { "r": "title", "t": "Life at Greenfield", "set": { "width": "auto", "maxWidth": "32rem" } },
             { "r": "button2", "t": "See the gallery" }
           ] },
-          { "k": "grid", "cols": 3, "min": "12rem", "set": { "gap": 16 }, "c": [
+          { "k": "grid", "cols": 3, "min": "10rem", "set": { "gap": 16 }, "c": [
             { "r": "image", "photo": "classroom", "alt": "Pupils working in a classroom", "set": { "ratio": "4 / 5" } },
             { "r": "image", "photo": "sports", "alt": "Pupils on the sports field", "set": { "ratio": "4 / 5" } },
             { "r": "image", "photo": "art", "alt": "A pupil painting", "set": { "ratio": "4 / 5" } }

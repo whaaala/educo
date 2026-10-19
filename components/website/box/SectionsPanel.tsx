@@ -6,7 +6,7 @@
  * the section's REAL published page, drawn small (RULE S): the same `renderSitePage` the Preview shows, so a tile can
  * never promise a look the page will not have. A category's layouts are read only when the panel opens (config/sections/).
  */
-import { useEffect, useMemo, useRef, useState } from "react";
+import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import SECTIONS from "@/config/sections.json";
 import INSPECTOR from "@/config/inspector.json";
 import { buildSection, FINISH_IDS, finishLabel, SECTION_DRAG_TYPE, type SectionDef } from "@/lib/section-library";
@@ -88,9 +88,11 @@ const GLOBALS = "global";
 /** PS-5 (2): a global section of the site, as the page holds it (`node` draws its tile; adding places a fresh copy). */
 export type GlobalTile = { id: string; name: string; pages: number; node: BoxNode };
 
-export default function SectionsPanel({ theme, q, onInsert, globals = [], onRemoveGlobal }: {
+export default function SectionsPanel({ theme, q, onInsert, globals = [], onRemoveGlobal, onAddPage }: {
   theme: SiteTheme; q: string; onInsert: (section: BoxNode) => void;
   globals?: GlobalTile[]; onRemoveGlobal?: (id: string) => void;
+  /** LE15b-15: a whole page is not a section — the tab points to Add a page (its templates) */
+  onAddPage?: () => void;
 }) {
   const [removing, setRemoving] = useState<GlobalTile | null>(null);
   const [all, setAll] = useState<{ cat: Category; sections: SectionDef[] }[] | null>(null);
@@ -113,8 +115,14 @@ export default function SectionsPanel({ theme, q, onInsert, globals = [], onRemo
 
   if (!all) return <p className="px-4 py-6 text-[0.8125rem] text-muted" role="status">{T.loading}</p>;
   return (
-    <div className="flex min-h-0 flex-1 flex-col">
+    // LE15b-17: the WHOLE tab scrolls as one — fixed, the hint and the grouped chips left the tiles no room at 1366 × 860
+    <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">
       <div className="space-y-2 px-4 pb-3">
+        {/* LE15b-15 (the user, 2026-10-19): "About" read as the About PAGE — a section is a band of the page you are on */}
+        <p className="text-[0.75rem] leading-snug text-muted">
+          {T.wholePage}
+          {onAddPage && <> <button type="button" onClick={onAddPage} className="font-semibold text-brand underline underline-offset-2 hover:no-underline focus-visible:outline-2 focus-visible:outline-brand rounded-sm">{T.wholePageButton}</button></>}
+        </p>
         <Segmented full ariaLabel={T.look} value={look} onChange={setLook}
           options={[{ value: "wireframe" as const, label: T.wireframe }, { value: "designed" as const, label: T.designed }]} />
         {!wire && <CompactSelect label={T.finish} value={finish} onChange={setFinish} options={FINISH_IDS.map((id) => ({ value: id, label: finishLabel(id) }))} />}
@@ -122,16 +130,23 @@ export default function SectionsPanel({ theme, q, onInsert, globals = [], onRemo
       {/* The categories wrap as chips above the tiles, so a tile has the panel's whole width — on a phone's sheet too. */}
       {!needle && (
         <div role="tablist" aria-label={T.categories} className="flex flex-wrap gap-1 px-4 pb-3">
-          {[...(globals.length ? [{ cat: { id: GLOBALS, label: T.global, group: "", count: 0 }, sections: globals }] : []), ...(mine.length ? [{ cat: { id: MINE, label: T.mine, group: "", count: 0 }, sections: mine }] : []), ...all].map(({ cat, sections }) => (
-            <button key={cat.id} type="button" role="tab" aria-selected={cat.id === catId} onClick={() => setCatId(cat.id)}
-              className={`inline-flex items-center gap-1.5 rounded-lg px-2 py-1 pointer-coarse:min-h-11 pointer-coarse:px-3 text-[0.75rem] font-semibold transition-colors ${cat.id === catId ? "bg-brand text-brand-fg" : "text-muted hover:bg-surface-2 hover:text-ink"}`}>
-              {cat.label}<span className="tabular-nums opacity-80">{sections.length}</span>
-            </button>
+          {[...(globals.length ? [{ cat: { id: GLOBALS, label: T.global, group: "", count: 0 }, sections: globals }] : []), ...(mine.length ? [{ cat: { id: MINE, label: T.mine, group: "", count: 0 }, sections: mine }] : []),
+            // under their group (config order), each group's name above its kinds (LE15b-15)
+            ...(SECTIONS.groups as string[]).flatMap((g) => all.filter((a) => a.cat.group === g))].map(({ cat, sections }, i, list) => (
+            <Fragment key={cat.id}>
+              {cat.group && cat.group !== list[i - 1]?.cat.group && (
+                <span aria-hidden="true" className="w-full pt-1 text-[0.625rem] font-semibold uppercase tracking-wide text-muted">{cat.group}</span>
+              )}
+              <button type="button" role="tab" aria-selected={cat.id === catId} onClick={() => setCatId(cat.id)}
+                className={`inline-flex items-center gap-1.5 rounded-lg px-2 py-1 pointer-coarse:min-h-11 pointer-coarse:px-3 text-[0.75rem] font-semibold transition-colors ${cat.id === catId ? "bg-brand text-brand-fg" : "text-muted hover:bg-surface-2 hover:text-ink"}`}>
+                {cat.label}<span className="tabular-nums opacity-80">{sections.length}</span>
+              </button>
+            </Fragment>
           ))}
         </div>
       )}
-      <div className="flex min-h-0 flex-1 px-3 pb-4">
-        <div className="flex min-w-0 flex-1 flex-col gap-2 overflow-y-auto">
+      <div className="flex px-3 pb-4">
+        <div className="flex min-w-0 flex-1 flex-col gap-2">
           {/* Global sections: each copy added stays the same as the others; "Stop being global" asks first and keeps every copy. */}
           {catId === GLOBALS && !needle && globals.map((g) => (
             <div key={g.id} className="shrink-0 space-y-1">

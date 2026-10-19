@@ -1,7 +1,7 @@
 {
   "$comment": "THE INSPECTOR'S PER-SCREEN PROMISE, AS DATA (RULE CFG; BATCH LE-2 V-5). sharedKeys: what a change made while another screen is being edited still writes for EVERY screen — the words, links and pictures, and the effects (the published page carries an effect for every screen: LE2-4), and what a block IS — its meaning, a heading's level, a landmark’s name, “On every page” (the page has one structure on every screen: LE8-1), and a Grid’s Column widths (drawn only where it shows all its columns, so a phone’s own would never show: LE3-6) and its As many as fit (one rule the browser applies on every screen: LE-12), and a picture's traced outline (it is the picture's, like its src: LE-13b), and a background video and its poster (markup, written once for every screen: a phone-only video would never be published — LE5-12; whether it PLAYS on a phone is the reader's motion and data settings). Everything else is that screen's own. banner / deviceTab: what the Inspector says while a screen other than the desktop is being edited; {screen} is that screen's name, {reach} the screens the change shows on (config/layout.json rungs' words, joined), {shared} the line about what stays shared.",
   "perScreen": {
-    "sharedKeys": ["text", "href", "newTab", "anchor", "src", "icon", "html", "listItems", "listStyle", "hoverEffect", "revealEffect", "pinArrival", "pinArrivalAfter", "tag", "level", "landmarkName", "shared", "pinAway", "pinOver", "pinLastRow", "colSizes", "minCard", "wrapOutline", "bgVideo", "bgVideoPoster"],
+    "sharedKeys": ["text", "href", "newTab", "anchor", "src", "icon", "html", "listItems", "listStyle", "hoverEffect", "revealEffect", "pinArrival", "pinArrivalAfter", "tag", "level", "landmarkName", "shared", "pinAway", "pinOver", "pinLastRow", "colSizes", "minCard", "fitMost", "wrapOutline", "bgVideo", "bgVideoPoster"],
     "banner": "Editing {screen} — what you change here (size, spacing, colours, fonts, backgrounds) shows on {reach}. A control that says “every screen” changes them all.",
     "shared": "Words, links, pictures and effects are the same on every screen.",
     "deviceTab": "You're editing {screen}. Sizes, spacing and looks you change now show on {reach}. A control marked “every screen” changes them all.",
@@ -53,6 +53,9 @@
     "modeChoices": { "count": "A set number", "fit": "As many as fit" },
     "minCard": "Each at least",
     "fitHint": "As many blocks across as fit at {min} each, on every screen; one a line on a narrow phone. Blocks keep their order.",
+    "fitMost": "At most across",
+    "fitMostHint": "Never more than {n} across, however wide the screen; fewer where they do not fit. Set it on one screen to change it there only.",
+    "fitMostNone": "0: no limit, as many as fit.",
     "between": "Between",
     "betweenFrom": "{name}: at least",
     "betweenTo": "{name}: at most"
@@ -177,6 +180,8 @@
     "add": "Add {name}, {category}",
     "needs": "placeholder: {needs}",
     "loading": "Loading sections…",
+    "wholePage": "Sections are bands you add to the page you are on. For a whole new page (Home, About us, Contact), add a page and start it from a template.",
+    "wholePageButton": "Add a page",
     "none": "No sections match “{q}”.",
     "replaceTitle": "Replace the {which} on every page?",
     "replaceButton": "Replace",

@@ -1304,6 +1304,10 @@ export default function BoxInspector({ trail = [], onSelectBlock, section = fals
                       <CompactField draft label={INSPECTOR.sizes.minCard} value={node.minCard ?? ""} placeholder={SIZES.autoFitStart}
                         onChange={(v) => { const t = limitCss(typedLength(v.trim())); if (t) onPatch({ minCard: t }); }} />
                       <p className="text-[11px] leading-snug text-gray-500 dark:text-gray-400 midnight:text-gray-400 purple:text-gray-400">{INSPECTOR.sizes.fitHint.replace("{min}", gridAutoFit(node)!)}</p>
+                      {/* LE15b-6: its ceiling — per screen like any style; 0 is no limit, as every grid saved before it */}
+                      <Range field="fitMost" title={INSPECTOR.sizes.fitMost} value={node.fitMost ?? 0} min={0} max={GRID_MAX} fallback={0} unit=""
+                        onChange={(n) => onPatch({ fitMost: n > 0 ? n : undefined })} />
+                      <p className="text-[11px] leading-snug text-gray-500 dark:text-gray-400 midnight:text-gray-400 purple:text-gray-400">{node.fitMost ? INSPECTOR.sizes.fitMostHint.replace("{n}", String(node.fitMost)) : INSPECTOR.sizes.fitMostNone}</p>
                     </div>
                   ) : <>
                   <Segmented full ariaLabel="Columns" value={String(gridColumnsAt(node, breakpoint))} /* LE1-4: the count DRAWN on this screen */

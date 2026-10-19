@@ -13,7 +13,9 @@ suit your school. This page is about starting from something made.
 ## "I want a welcome at the top of the home page"
 
 Mr Boateng opens the **Add** panel (the **+** at the top left, or the **B** key) and chooses the **Sections** tab. The panel
-shows the kinds of section as a row of chips: **Headers 8 · Hero / Welcome 36 · Footers 19 · Blank 1**. He taps
+shows the kinds of section as a row of chips: **Headers 8 · Hero / Welcome 36 · Footers 19 · Blank 1 · Our story 16 · Text 8 ·
+Features / Services 20 · Spotlight / zig-zag 17 · Stats 8 · CTA / Banner 17**, each with how many it holds, under small
+headings (Navigation, Opening, Story, Showing, People and trust, Action). He taps
 **Hero / Welcome**.
 
 ![The Sections tab: the chips, Wireframe or Designed, the Finish, and the welcome sections drawn as they will look](./img/guide-sections-tab.webp)
@@ -51,6 +53,40 @@ Every finish uses your website's theme (Light, Dark, Midnight or Purple), so a s
 The typeface is your site's too: choose it once in **Page settings → Site fonts**.
 
 ![The same welcome sections in the Bold finish](./img/guide-sections-finish.webp)
+
+## "Our story, what we offer, our numbers, and a call to come and see us"
+
+A section is a band of the page you are on, never a page. That is why the kinds are named as sections (**Our story**, not
+"About"): the About *page* is something you make with **Add a page**, from a template. The top of the Sections tab says so,
+and its **Add a page** button opens that dialog.
+
+Under the welcome, most school pages tell the same few things. Mrs Okafor builds her About page from them, one tile at a
+time:
+
+- **Our story** (16): the school's story beside a photo, a word from the head, a big statement on the school colour, a card of
+  words on a full photo, four numbered pictures of the campus.
+- **Text** (8): words with nothing else to say: an introduction beside three points, a title beside two paragraphs, a list
+  of links for parents, nine subjects with an icon each.
+- **Features / Services** (20): what the school offers, as cards with a photo, icon cards, numbered points, a checkerboard
+  of words and photos, or four points beside a photo.
+- **Spotlight / zig-zag** (17): a picture beside words, and rows that swap sides as you read down the page.
+- **Stats** (8): the school in numbers, on a band, over a photo, or beside a picture.
+- **CTA / Banner** (17): the invitation at the end of a page: "Book a tour", "Apply now", a one-line notice, an offer
+  beside a picture.
+
+![The Sections tab: the line that sends a whole page to Add a page, Wireframe or Designed, the Finish, and the kinds of section under their groups](./img/guide-sections-tab-groups.webp)
+
+She does not set anything for phones; each kind already does what good school sites do on a small screen:
+
+- **A zig-zag puts the picture first on a phone**, whichever side it sits on a computer. The words still read in the same
+  order, so a screen reader hears the heading first.
+- **Cards go three across on a computer, two on a tablet, and one under another on a phone.** A row of cards is never
+  more than the design asks for, so six cards are two rows of three on a big screen, not four and two.
+- **Four numbers are two by two** on a phone and a tablet held upright, and one row from a tablet held sideways.
+- **A button beside some words goes under them on a phone**, the full width, easy to tap.
+- **A column that takes part of the row fills the whole line on a phone**, so nothing is left ragged at the right.
+
+![A spotlight on a 375 px phone: the picture first, then its words](./img/guide-sections-spotlight-phone.webp)
 
 ## "Now I want to change it"
 
@@ -140,15 +176,17 @@ A page made from a template is a copy. It takes your site's own header and foote
 | Add a section | Click or tap a tile; **Enter** on a focused tile; drag a tile onto the page | **Ctrl+Z** undoes |
 | Plain or finished | **Wireframe \| Designed** at the top of the tab | |
 | The look | **Finish**: Serious · Minimalist · Plain · Bold · Calm · Startup · Playful | |
+| The kinds of section | Headers · Hero / Welcome · Footers · Blank · Our story · Text · Features / Services · Spotlight / zig-zag · Stats · CTA / Banner | |
+| On a phone | Pictures before their words in a zig-zag · cards one under another · numbers two by two · a button under its words | Nothing to set |
 | Another look for a section on the page | Select it → Inspector → **Finish**: Wireframe or one of the seven | **Ctrl+Alt+F** next finish · **Ctrl+Z** undoes |
 | Keep a section | Inspector → **Save as my section** | **Ctrl+Alt+S** |
 | Your sections | Sections tab → **My sections**: add, **Rename**, **Delete** | |
 | A section the same everywhere | Inspector → **Make global** | **Ctrl+Alt+G** |
 | One copy on its own | Inspector → **Detach this copy** | **Ctrl+Z** re-attaches |
 | No longer global | Sections tab → **Global sections** → **Stop being global** | |
-| A new page | **+** beside the page tabs → **Add a page** | |
+| A new page | **+** beside the page tabs → **Add a page**, or **Add a page** at the top of the Sections tab | |
 | Keep a page as a template | **Page settings** → **Save page as template** | |
 | Which page the visitor is on | The menu marks it with a heavier underline, and tells a screen reader | |
 
 Some sections stand in for a part the builder does not have yet: a form, a map, a strip of logos, a video. Their tiles say
-**placeholder: form** (or map, logo strip, video), and they are built from ordinary blocks until that part arrives.
+**placeholder: form** (or map, logo strip, video, counter), and they are built from ordinary blocks until that part arrives.

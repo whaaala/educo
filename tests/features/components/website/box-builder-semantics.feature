@@ -107,3 +107,13 @@ Feature: Pages publish as correct HTML5, however they were built
     Given the Page check names a block for its order on phones
     When I put its Order back to the default on phones
     Then the reading-order line is gone
+
+  # LE15b-11 (DECIDED BY THE USER 2026-10-19: the Page check warns, with a one-click fix — nothing changes behind the person's back)
+  Scenario: The page's main title is smaller than a heading under it
+    Given I put a section with a small heading at the top of a page, above sections with big titles
+    Then the Page check says the page's main title is smaller than the headings under it, as a warning that does not stop publishing
+    And it offers "Make it the page title size"
+    When I press it
+    Then the title takes the size of the biggest heading under it, and the line is gone
+    And one Ctrl+Z puts its size back
+    And a page whose main title is the biggest heading has no such line

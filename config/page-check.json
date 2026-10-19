@@ -10,6 +10,8 @@
   "pageGone": "This {block} goes to a page that was deleted, so it takes visitors nowhere. Choose where it goes under Link, or delete it.",
   "wordsOverPicture": "The words on this block sit over a {picture} with no tint, so on a bright or busy part of it they may not be readable. Add a Tint over background (Design → Background) — a dark tint gives light words.",
   "pictureWords": { "video": "video", "photo": "photo" },
+  "titleSmaller": "This is the page's main title, but it is smaller than headings further down, so the page reads from small to big. Make it the page title size, or move a section with a bigger title to the top.",
+  "titleSmallerFix": "Make it the page title size",
   "readingOrder": {
     "$comment": "SE-4 (BATCH LE-9, WCAG 1.3.2 / 2.4.3): a block whose Order moves it on a screen away from where it is in the page. {screens} is the screens' words (config/layout.json rungs) joined by 'and', or everyScreen when it is all of them; {block} is the block's name with its first words.",
     "message": "On {screens}, the {block} is shown in a different place from where it is read — screen readers and the Tab key still meet it where it sits in the page. If its place matters, move it there instead, or put its Order back to the default on those screens.",

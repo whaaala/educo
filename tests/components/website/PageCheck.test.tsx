@@ -5,6 +5,7 @@ import { createContainer, makeRowBand, markPageGrid, type BoxNode } from "@/lib/
 import { blockForKind } from "@/lib/box-presets";
 import { emptyPageRoot } from "@/lib/box-site";
 import { EDGE_SPACE } from "@/lib/semantics";
+import PAGE_CHECK_WORDS from "@/config/page-check.json";
 
 /**
  * THE PAGE CHECK OFFERS THE FIX FOR WORDS AT THE PAGE'S EDGE (E-6, the user 2026-10-15). A page made now has no space until it is
@@ -43,5 +44,18 @@ describe("Page check — a screen that shows blocks in a different order from th
     expect(line.textContent).toContain("a suggestion — it won't stop you publishing");
     fireEvent.click(line.closest("li")!.querySelector("button")!);
     expect(onShow).toHaveBeenCalledWith(btn.id);
+  });
+});
+
+describe("LE15b-11 · the page's main title smaller than a heading under it (the user, 2026-10-19: warn, with the fix)", () => {
+  it("says so as a suggestion, and the button gives the title the biggest heading's size", () => {
+    const heading = (text: string, fontSize: number) => blockForKind("heading", { text, fontSize } as Partial<BoxNode>);
+    const small = heading("Ready to join us?", 26);
+    const root = { ...emptyPageRoot(), children: [makeRowBand([createContainer("column", { tag: "section", children: [small] })]), makeRowBand([createContainer("column", { tag: "section", children: [heading("Questions about fees?", 52)] })])] };
+    const onPatch = vi.fn();
+    render(<PageCheck root={root} isOpen onClose={() => {}} onShow={() => {}} onPatch={onPatch} />);
+    expect(screen.getByText(/main title, but it is smaller than headings further down/)).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: PAGE_CHECK_WORDS.titleSmallerFix }));
+    expect(onPatch).toHaveBeenCalledWith(small.id, { fontSize: 52 });
   });
 });

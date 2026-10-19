@@ -1,0 +1,211 @@
+{
+  "$comment": "Spotlight / zig-zag (A8: rows of words and a picture that swap sides; on a phone the picture ALWAYS comes first — a picture on the right carries responsive.phone.order -1, the reading order of the words is unchanged; the 17 Wix Studio Spotlight wireframes, read 2026-10-19: split words | picture 5 · a card beside a picture 2 · a collage 2 · a split with numbers 2 · centred on a band 2 · a wide picture over two columns 1 · a title over a band 1 · a statement over a split 1 · two columns of words 1).",
+  "sections": [
+    { "id": "spot-centred-band", "name": "Centred words on a soft band", "pattern": "B20",
+      "tree": { "k": "section", "tone": "soft", "center": true, "set": { "paddingTop": 112, "paddingBottom": 112, "paddingLeft": 24, "paddingRight": 24, "gap": 24 },
+        "c": [
+          { "r": "title", "t": "Reading is at the heart of everything", "set": { "maxWidth": "42rem" } },
+          { "r": "body", "t": "Every pupil reads for twenty minutes every day, and every class visits the library every week.", "set": { "maxWidth": "38rem" } },
+          { "r": "button2", "t": "Our reading programme" }
+        ] } },
+    { "id": "spot-words-left", "name": "Words beside a picture", "pattern": "A8",
+      "tree": { "k": "section", "set": { "paddingTop": 96, "paddingBottom": 96, "paddingLeft": 24, "paddingRight": 24 },
+        "c": [ { "k": "row", "set": { "gap": 48 }, "c": [
+          { "k": "stack", "set": { "gap": 20, "width": "fill", "minWidth": "18rem" }, "c": [
+            { "r": "title", "t": "Science you can touch" },
+            { "r": "body", "t": "From Primary 4, pupils do a real experiment every week, in one of our three labs." },
+            { "r": "button2", "t": "Science at Greenfield" }
+          ] },
+          { "r": "image", "photo": "students-lab", "alt": "Students doing an experiment", "set": { "width": "fill", "minWidth": "18rem", "ratio": "1 / 1", "responsive": { "phone": { "order": -1 } } } }
+        ] } ] } },
+    { "id": "spot-card-beside-picture", "name": "A card beside a large picture", "pattern": "A8",
+      "tree": { "k": "section", "set": { "paddingTop": 96, "paddingBottom": 96, "paddingLeft": 24, "paddingRight": 24 },
+        "c": [ { "k": "row", "set": { "gap": 24 }, "c": [
+          { "r": "image", "photo": "library", "alt": "The school library", "set": { "width": "fill", "minWidth": "60%" } },
+          { "k": "card", "tone": "grey", "set": { "padding": 40, "gap": 16, "width": "fill", "minWidth": "20rem" }, "c": [
+            { "r": "title", "t": "Twelve thousand books" },
+            { "r": "body", "t": "And a librarian who knows which one your child will love next." },
+            { "r": "button2", "t": "Visit the library" }
+          ] }
+        ] } ] } },
+    { "id": "spot-title-then-picture", "name": "A title beside a picture and words", "pattern": "A8",
+      "tree": { "k": "section", "set": { "paddingTop": 96, "paddingBottom": 96, "paddingLeft": 24, "paddingRight": 24 },
+        "c": [ { "k": "row", "set": { "gap": 48, "align": "start" }, "c": [
+          { "k": "stack", "set": { "gap": 12, "width": "fill", "minWidth": "18rem" }, "c": [
+            { "r": "title", "t": "A day in the nursery" },
+            { "r": "small", "t": "Ages 3 to 5" }
+          ] },
+          { "k": "stack", "set": { "gap": 20, "width": "fill", "minWidth": "18rem" }, "c": [
+            { "r": "image", "photo": "nursery", "alt": "Nursery children painting together", "set": { "ratio": "16 / 9" } },
+            { "r": "body", "t": "Songs at nine, painting at ten, stories after lunch and a nap for those who need one." },
+            { "r": "button2", "t": "The nursery" }
+          ] }
+        ] } ] } },
+    { "id": "spot-two-pictures", "name": "Two pictures beside words", "pattern": "A8",
+      "tree": { "k": "section", "set": { "paddingTop": 96, "paddingBottom": 96, "paddingLeft": 24, "paddingRight": 24 },
+        "c": [ { "k": "row", "set": { "gap": 48 }, "c": [
+          { "k": "grid", "cols": 2, "min": "8rem", "set": { "gap": 16, "width": "fill", "minWidth": "18rem" }, "c": [
+            { "r": "image", "photo": "music", "alt": "Pupils playing drums", "set": { "ratio": "3 / 4" } },
+            { "r": "image", "photo": "art", "alt": "A pupil painting", "set": { "ratio": "3 / 4" } }
+          ] },
+          { "k": "stack", "set": { "gap": 20, "width": "fill", "minWidth": "18rem" }, "c": [
+            { "r": "title", "t": "Music and art for all" },
+            { "r": "body", "t": "Every pupil learns an instrument from Primary 3." },
+            { "r": "body", "t": "Our art rooms are open every lunchtime." },
+            { "r": "button2", "t": "The arts" }
+          ] }
+        ] } ] } },
+    { "id": "spot-small-picture", "name": "A small picture with words, beside a tall picture", "pattern": "A8",
+      "tree": { "k": "section", "set": { "paddingTop": 96, "paddingBottom": 96, "paddingLeft": 24, "paddingRight": 24 },
+        "c": [ { "k": "row", "set": { "gap": 48 }, "c": [
+          { "k": "stack", "center": true, "set": { "gap": 20, "width": "fill", "minWidth": "18rem" }, "c": [
+            { "r": "image", "photo": "uniform", "alt": "A school blazer", "set": { "ratio": "1 / 1", "maxWidth": "8rem" } },
+            { "r": "title", "t": "Our uniform" },
+            { "r": "body", "t": "Simple, smart and sold at fair prices in the school shop." },
+            { "r": "button2", "t": "The uniform list" }
+          ] },
+          { "r": "image", "photo": "pupils-outside", "alt": "Pupils in uniform", "set": { "width": "fill", "minWidth": "18rem", "ratio": "3 / 4", "responsive": { "phone": { "order": -1 } } } }
+        ] } ] } },
+    { "id": "spot-two-columns", "name": "A title beside two paragraphs, on a soft band", "pattern": "A8",
+      "tree": { "k": "section", "tone": "soft", "set": { "paddingTop": 96, "paddingBottom": 96, "paddingLeft": 24, "paddingRight": 24 },
+        "c": [ { "k": "row", "set": { "gap": 48, "align": "start" }, "c": [
+          { "k": "stack", "set": { "width": "fill", "minWidth": "18rem" }, "c": [ { "r": "title", "t": "Leaders of tomorrow" } ] },
+          { "k": "stack", "set": { "gap": 16, "width": "fill", "minWidth": "18rem" }, "c": [
+            { "r": "heading", "t": "Every pupil leads something before they leave." },
+            { "r": "body", "t": "A club, a team, a charity day or the school council: we give pupils real jobs and trust them to do them." }
+          ] }
+        ] } ] } },
+    { "id": "spot-collage", "name": "Words beside three pictures", "pattern": "A8",
+      "tree": { "k": "section", "set": { "paddingTop": 96, "paddingBottom": 96, "paddingLeft": 24, "paddingRight": 24 },
+        "c": [ { "k": "row", "set": { "gap": 48 }, "c": [
+          { "k": "stack", "set": { "gap": 20, "width": "fill", "minWidth": "18rem" }, "c": [
+            { "r": "title", "t": "Cultural day" },
+            { "r": "body", "t": "Once a year the whole school dresses in the clothes of its families, and every class cooks a dish from home." },
+            { "r": "button2", "t": "See the pictures" }
+          ] },
+          { "k": "stack", "set": { "gap": 16, "width": "fill", "minWidth": "18rem", "responsive": { "phone": { "order": -1 } } }, "c": [
+            { "r": "image", "photo": "event-cultural-day", "alt": "Pupils in traditional dress", "set": { "ratio": "16 / 9" } },
+            { "k": "grid", "cols": 2, "min": "6rem", "set": { "gap": 16 }, "c": [
+            { "r": "image", "photo": "gallery-5", "alt": "A class cooking together", "set": { "ratio": "1 / 1" } },
+            { "r": "image", "photo": "gallery-6", "alt": "Pupils dancing", "set": { "ratio": "1 / 1" } }
+            ] }
+          ] }
+        ] } ] } },
+    { "id": "spot-wide-picture", "name": "A wide picture over a title and words", "pattern": "A8",
+      "tree": { "k": "section", "set": { "paddingTop": 96, "paddingBottom": 96, "paddingLeft": 24, "paddingRight": 24, "gap": 40 },
+        "c": [
+          { "r": "image", "photo": "school-field", "alt": "The school field at sunrise", "set": { "ratio": "21 / 9" } },
+          { "k": "row", "set": { "gap": 48, "align": "start" }, "c": [
+            { "k": "stack", "set": { "width": "fill", "minWidth": "18rem" }, "c": [ { "r": "title", "t": "Twelve green acres" } ] },
+            { "k": "stack", "set": { "gap": 16, "width": "fill", "minWidth": "18rem" }, "c": [
+              { "r": "body", "t": "Room to run, to plant, to think and to play, in the middle of the city." },
+              { "r": "button2", "t": "Take the tour" }
+            ] }
+          ] }
+        ] } },
+    { "id": "spot-numbers", "name": "A picture beside words and three numbers", "pattern": "B16",
+      "tree": { "k": "section", "set": { "paddingTop": 96, "paddingBottom": 96, "paddingLeft": 24, "paddingRight": 24 },
+        "c": [ { "k": "row", "set": { "gap": 48 }, "c": [
+          { "r": "image", "photo": "graduation", "alt": "Students on graduation day", "set": { "width": "fill", "minWidth": "18rem", "ratio": "4 / 5" } },
+          { "k": "stack", "set": { "gap": 24, "width": "fill", "minWidth": "18rem" }, "c": [
+            { "r": "title", "t": "Our results, in numbers" },
+            { "r": "body", "t": "Last year's SS3 class, in three figures." },
+            { "k": "grid", "cols": 3, "min": "6rem", "set": { "gap": 24, "responsive": { "tabletPortrait": { "fitMost": 1 } } }, "c": [
+              { "k": "stack", "set": { "gap": 4 }, "c": [ { "r": "stat", "t": "94%" }, { "r": "small", "t": "five credits" } ] },
+              { "k": "stack", "set": { "gap": 4 }, "c": [ { "r": "stat", "t": "37" }, { "r": "small", "t": "distinctions" } ] },
+              { "k": "stack", "set": { "gap": 4 }, "c": [ { "r": "stat", "t": "12" }, { "r": "small", "t": "scholarships" } ] }
+            ] }
+          ] }
+        ] } ] } },
+    { "id": "spot-picture-left", "name": "A picture beside words, picture first", "pattern": "A8",
+      "tree": { "k": "section", "set": { "paddingTop": 96, "paddingBottom": 96, "paddingLeft": 24, "paddingRight": 24 },
+        "c": [ { "k": "row", "set": { "gap": 48 }, "c": [
+          { "r": "image", "photo": "teacher-class", "alt": "A teacher with her class", "set": { "width": "fill", "minWidth": "18rem" } },
+          { "k": "stack", "set": { "gap": 20, "width": "fill", "minWidth": "18rem" }, "c": [
+            { "r": "title", "t": "Teachers who stay" },
+            { "r": "body", "t": "Half of our teachers have been here more than ten years. Children notice, and so do parents." },
+            { "r": "button2", "t": "Meet the staff" }
+          ] }
+        ] } ] } },
+    { "id": "spot-zigzag-three", "name": "Three rows that swap sides", "pattern": "A8",
+      "tree": { "k": "section", "set": { "paddingTop": 96, "paddingBottom": 96, "paddingLeft": 24, "paddingRight": 24, "gap": 80 },
+        "c": [
+          { "k": "row", "set": { "gap": 48 }, "c": [
+            { "k": "stack", "set": { "gap": 16, "width": "fill", "minWidth": "18rem" }, "c": [ { "r": "eyebrow", "t": "Nursery" }, { "r": "heading", "t": "Learning through play" }, { "r": "body", "t": "Sand, paint, songs and stories: the first steps, taken happily." } ] },
+            { "r": "image", "photo": "nursery", "alt": "Nursery children at play", "set": { "width": "fill", "minWidth": "18rem", "responsive": { "phone": { "order": -1 } } } }
+          ] },
+          { "k": "row", "set": { "gap": 48 }, "c": [
+            { "r": "image", "photo": "pupils-reading", "alt": "Primary pupils reading", "set": { "width": "fill", "minWidth": "18rem" } },
+            { "k": "stack", "set": { "gap": 16, "width": "fill", "minWidth": "18rem" }, "c": [ { "r": "eyebrow", "t": "Primary" }, { "r": "heading", "t": "Strong foundations" }, { "r": "body", "t": "Reading, writing and number, taught well and practised every day." } ] }
+          ] },
+          { "k": "row", "set": { "gap": 48 }, "c": [
+            { "k": "stack", "set": { "gap": 16, "width": "fill", "minWidth": "18rem" }, "c": [ { "r": "eyebrow", "t": "Secondary" }, { "r": "heading", "t": "Ready for the world" }, { "r": "body", "t": "Thirteen subjects, careers advice and a sixth form led by its students." } ] },
+            { "r": "image", "photo": "students-lab", "alt": "Secondary students in the lab", "set": { "width": "fill", "minWidth": "18rem", "responsive": { "phone": { "order": -1 } } } }
+          ] }
+        ] } },
+    { "id": "spot-zigzag-two", "name": "Two rows that swap sides, with buttons", "pattern": "A8",
+      "tree": { "k": "section", "tone": "grey", "set": { "paddingTop": 96, "paddingBottom": 96, "paddingLeft": 24, "paddingRight": 24, "gap": 80 },
+        "c": [
+          { "k": "row", "set": { "gap": 48 }, "c": [
+            { "r": "image", "photo": "boarding", "alt": "A boarding house", "set": { "width": "fill", "minWidth": "18rem", "ratio": "1 / 1" } },
+            { "k": "stack", "set": { "gap": 16, "width": "fill", "minWidth": "18rem" }, "c": [ { "r": "title", "t": "Boarding" }, { "r": "body", "t": "Weekly and full boarding from age 11, with house parents on site." }, { "r": "button", "t": "Boarding fees" } ] }
+          ] },
+          { "k": "row", "set": { "gap": 48 }, "c": [
+            { "k": "stack", "set": { "gap": 16, "width": "fill", "minWidth": "18rem" }, "c": [ { "r": "title", "t": "Day pupils" }, { "r": "body", "t": "School buses on six routes, and supervised clubs until five." }, { "r": "button", "t": "Bus routes" } ] },
+            { "r": "image", "photo": "playground", "alt": "Day pupils in the playground", "set": { "width": "fill", "minWidth": "18rem", "ratio": "1 / 1", "responsive": { "phone": { "order": -1 } } } }
+          ] }
+        ] } },
+    { "id": "spot-zigzag-cards", "name": "Cards and pictures that swap sides", "pattern": "A8",
+      "tree": { "k": "section", "tone": "soft", "set": { "paddingTop": 96, "paddingBottom": 96, "paddingLeft": 24, "paddingRight": 24, "gap": 48 },
+        "c": [
+          { "k": "row", "set": { "gap": 24 }, "c": [
+            { "k": "card", "tone": "plain", "set": { "padding": 40, "gap": 12, "width": "fill", "minWidth": "18rem" }, "c": [ { "r": "heading", "t": "Sports day" }, { "r": "small", "t": "Every June: races, a tug of war and the house cup." }, { "r": "link", "t": "This year's results", "to": "#sports" } ] },
+            { "r": "image", "photo": "event-sports-day", "alt": "Pupils racing on sports day", "set": { "width": "fill", "minWidth": "18rem", "responsive": { "phone": { "order": -1 } } } }
+          ] },
+          { "k": "row", "set": { "gap": 24 }, "c": [
+            { "r": "image", "photo": "event-open-day", "alt": "Families at the open day", "set": { "width": "fill", "minWidth": "18rem" } },
+            { "k": "card", "tone": "plain", "set": { "padding": 40, "gap": 12, "width": "fill", "minWidth": "18rem" }, "c": [ { "r": "heading", "t": "Open day" }, { "r": "small", "t": "Every March: tours by pupils, and the head answers questions." }, { "r": "link", "t": "Book a place", "to": "#open" } ] }
+          ] },
+          { "k": "row", "set": { "gap": 24 }, "c": [
+            { "k": "card", "tone": "plain", "set": { "padding": 40, "gap": 12, "width": "fill", "minWidth": "18rem" }, "c": [ { "r": "heading", "t": "Cultural day" }, { "r": "small", "t": "Every November: food, music and the clothes of home." }, { "r": "link", "t": "See the pictures", "to": "#cultural" } ] },
+            { "r": "image", "photo": "event-cultural-day", "alt": "Pupils in traditional dress", "set": { "width": "fill", "minWidth": "18rem", "responsive": { "phone": { "order": -1 } } } }
+          ] }
+        ] } },
+    { "id": "spot-title-over-band", "name": "A title over a colour band of words", "pattern": "B20",
+      "tree": { "k": "section", "center": true, "set": { "paddingTop": 96, "paddingBottom": 96, "paddingLeft": 24, "paddingRight": 24, "gap": 32 },
+        "c": [
+          { "r": "title", "t": "Kindness is a subject too", "set": { "maxWidth": "40rem" } },
+          { "k": "stack", "tone": "soft", "center": true, "set": { "gap": 20, "padding": 48 }, "c": [
+            { "r": "body", "t": "Every week each class does one thing for someone else: a letter, a visit, a clean-up or a collection.", "set": { "maxWidth": "36rem" } },
+            { "r": "button", "t": "Our community work" }
+          ] }
+        ] } },
+    { "id": "spot-statement-split", "name": "A statement over words beside a picture", "pattern": "A8",
+      "tree": { "k": "section", "set": { "paddingTop": 96, "paddingBottom": 96, "paddingLeft": 24, "paddingRight": 24, "gap": 40 },
+        "c": [
+          { "r": "heading", "t": "We teach children to ask good questions, because the answers keep changing.", "set": { "fontSize": 32, "maxWidth": "46rem" } },
+          { "k": "row", "set": { "gap": 0, "align": "stretch" }, "c": [
+            { "k": "stack", "tone": "grey", "set": { "gap": 20, "padding": 40, "width": "fill", "minWidth": "18rem", "justify": "center" }, "c": [
+              { "r": "body", "t": "Debate club, science fair and a project every term that a pupil chooses for themselves." },
+              { "r": "button2", "t": "How we teach" }
+            ] },
+            { "r": "image", "photo": "classroom", "alt": "Pupils discussing in groups", "set": { "width": "fill", "minWidth": "18rem", "responsive": { "phone": { "order": -1 } } } }
+          ] }
+        ] } },
+    { "id": "spot-numbers-four", "name": "Words and four numbers beside a picture", "pattern": "B16",
+      "tree": { "k": "section", "set": { "paddingTop": 96, "paddingBottom": 96, "paddingLeft": 24, "paddingRight": 24 },
+        "c": [ { "k": "row", "set": { "gap": 48 }, "c": [
+          { "k": "stack", "set": { "gap": 24, "width": "fill", "minWidth": "18rem" }, "c": [
+            { "r": "title", "t": "Greenfield today" },
+            { "r": "body", "t": "A family of pupils, teachers and parents that keeps on growing." },
+            { "k": "grid", "cols": 2, "min": "8rem", "set": { "gap": 24 }, "c": [
+              { "k": "stack", "set": { "gap": 4 }, "c": [ { "r": "divider" }, { "r": "stat", "t": "820" }, { "r": "small", "t": "pupils" } ] },
+              { "k": "stack", "set": { "gap": 4 }, "c": [ { "r": "divider" }, { "r": "stat", "t": "64" }, { "r": "small", "t": "teachers" } ] },
+              { "k": "stack", "set": { "gap": 4 }, "c": [ { "r": "divider" }, { "r": "stat", "t": "40+" }, { "r": "small", "t": "clubs" } ] },
+              { "k": "stack", "set": { "gap": 4 }, "c": [ { "r": "divider" }, { "r": "stat", "t": "1987" }, { "r": "small", "t": "founded" } ] }
+            ] }
+          ] },
+          { "r": "image", "photo": "pupils-outside", "alt": "Pupils outside the main building", "set": { "width": "fill", "minWidth": "18rem", "ratio": "4 / 5", "responsive": { "phone": { "order": -1 } } } }
+        ] } ] } }
+  ]
+}

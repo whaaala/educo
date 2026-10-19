@@ -12,7 +12,7 @@ const path = require('path');
 const arg = (k, d) => (process.argv.find((a) => a.startsWith(`--${k}=`)) || '').split('=')[1] || d;
 const BASE = arg('base', 'http://localhost:3100');
 const FINISHES = require('../../config/section-finishes.json');
-const ALL = ['wireframe', ...Object.keys(FINISHES).filter((k) => !k.startsWith('$') && !['tones', 'scrim', 'wireframe'].includes(k))];
+const ALL = ['wireframe', ...Object.keys(FINISHES).filter((k) => k !== 'wireframe' && FINISHES[k] && FINISHES[k].label) /* LE15b-16: a finish is a key with a label — LE-15f's 'restyle' was taken for one */];
 const finishes = arg('finishes', ALL.join(',')).split(',');
 const onlyCats = arg('cats', '') ? arg('cats', '').split(',') : null;
 const OUT = path.join(__dirname, 'rx-le15');
