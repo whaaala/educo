@@ -39,7 +39,8 @@ export interface SectionNode {
   /** Where a button or link goes. */
   to?: string;
   icon?: string;
-  /** A grid: at most this many across; each at least `min` wide (GR-2, "as many as fit"). */
+  /** A grid: at most this many across; each at least `min` wide (GR-2, "as many as fit"). `min: ""` is a FIXED grid of `cols`
+   *  columns whose blocks span (`set.colSpan` / `rowSpan`: a bento A7, a gallery's big picture B28) — the screen ladder narrows it. */
   cols?: number;
   min?: string;
   /** The block's own layout fields (padding, gap, align, width, ratio…), applied last. */
@@ -80,10 +81,10 @@ export interface Finish {
   hover: string;
 }
 
-const CFG = FINISH_CONFIG as unknown as Record<string, unknown> & { tones: Record<Tone, ToneColours>; scrim: string; wireframe: Finish; restyle: { look: string[]; content: string[] } };
+const CFG = FINISH_CONFIG as unknown as Record<string, unknown> & { tones: Record<Tone, ToneColours>; scrim: string; wireframe: Finish; restyle: { look: string[]; content: string[] }; quote: { lineHeight: number } };
 export const WIREFRAME = "wireframe";
-/** The seven personalities, in the deck's order (config order). */
-export const FINISH_IDS: string[] = Object.keys(CFG).filter((k) => !k.startsWith("$") && k !== "tones" && k !== "scrim" && k !== "restyle" && k !== WIREFRAME);
+/** The seven personalities, in the deck's order (config order): a finish is a key with a label (LE15b-16 — anything else in the file is not one). */
+export const FINISH_IDS: string[] = Object.keys(CFG).filter((k) => k !== WIREFRAME && !!(CFG[k] as Partial<Finish> | undefined)?.label);
 /** What a section on the page can be given (RF-1): the Wireframe, then the seven. */
 export const FINISH_CHOICES: string[] = [WIREFRAME, ...FINISH_IDS];
 export const nextFinish = (id?: string): string => FINISH_CHOICES[(FINISH_CHOICES.indexOf(id ?? "") + 1) % FINISH_CHOICES.length];
@@ -123,7 +124,7 @@ function element(n: SectionNode, ctx: Ctx, path: string): BoxNode {
   switch (n.r) {
     case "title": return createElement("heading", { text: words(ctx, n, "title"), width: "100%", color: c.text, ...typeOf(f, "title"), ...align, ...motion(true) });
     case "heading": return createElement("heading", { text: words(ctx, n, "heading"), width: "100%", color: c.text, ...typeOf(f, "heading"), ...align });
-    case "quote": return createElement("text", { text: words(ctx, n, "quote"), width: "100%", color: c.text, ...typeOf(f, "heading"), italic: true, ...align });
+    case "quote": return createElement("text", { text: words(ctx, n, "quote"), width: "100%", color: c.text, ...typeOf(f, "heading"), lineHeight: CFG.quote.lineHeight, italic: true, ...align });
     case "eyebrow": return createElement("text", { text: words(ctx, n, "eyebrow"), width: "100%", color: c.accent, ...typeOf(f, "eyebrow"), ...align });
     case "body": return createElement("text", { text: words(ctx, n, "body"), width: "100%", color: c.muted, ...typeOf(f, "body"), ...align, ...motion(true) });
     case "small": return createElement("text", { text: words(ctx, n, "small"), width: "100%", color: c.muted, ...typeOf(f, "small"), ...align });
@@ -172,7 +173,7 @@ function container(n: SectionNode, ctx: Ctx, path: string): BoxNode {
       break;
     case "row": node = createContainer("row", { wrap: true, align: "center", ...paint, ...photo }); break;
     // `cols` is the most across (LE15b-6): "as many as fit" alone put six three-up cards 4 + 2 on a desktop
-    case "grid": node = createGrid(n.cols ?? 3, { minCard: n.min ?? "16rem", fitMost: n.cols ?? 3, ...paint, ...photo }); break;
+    case "grid": node = createGrid(n.cols ?? 3, { ...(n.min === "" ? {} : { minCard: n.min ?? "16rem", fitMost: n.cols ?? 3 }), ...paint, ...photo }); break;
     case "card":
       node = createContainer("column", { background: c.bg, radius: f.card.radius, ...(f.card.shadow ? { shadow: f.card.shadow } : {}), ...(f.card.border ? { borderWidth: f.card.border, borderColor: c.line } : {}), ...centre, ...(!ctx.wire && f.hover ? { hoverEffect: f.hover } : {}), ...(!ctx.wire && f.reveal ? { revealEffect: f.reveal } : {}) });
       break;

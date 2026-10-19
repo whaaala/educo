@@ -3795,6 +3795,20 @@ export function gridPlacementAt(parent: BoxNode, child: BoxNode, bp: Breakpoint 
  * The same placement for ANY track count — the rung's (`gridPlacementAt`) or one a container query narrows to
  * (`gridQueryCss`). `spanSet` / `startSet`: did the person state the span / start in THIS track's units?
  */
+/**
+ * LE15c-12 · A CELL'S ROWS SHRINK WITH ITS COLUMNS. When the ladder narrows a grid, the column span is re-fitted in proportion
+ * (`placementForTrack`) — and the row span must follow, or a 2 × 2 photo of a four-column bento became one column wide and
+ * still two rows tall on a phone: its square picture filled half the cell, a blank band under it (measured 694px of cell for a
+ * 341px picture, and at 768 the same). A cell whose columns did not shrink (a 1 × 2) keeps its rows; a row span the person
+ * states AT this screen (`rowSet`) is theirs and kept. In a ONE-column grid a row span only made a cell as tall as two of its
+ * neighbours (a word card 353px for 173px of words on a phone), so there it is one row.
+ */
+export function rowSpanFor(child: BoxNode, colSpanNow: number, rowSet = false, track = 2): number {
+  const rows = Math.max(1, Math.round(child.rowSpan ?? 1)), cols = Math.max(1, Math.round(child.colSpan ?? 1));
+  if (rowSet) return rows;
+  if (track === 1) return 1;
+  return colSpanNow < cols ? Math.max(1, Math.round((rows * colSpanNow) / cols)) : rows;
+}
 function placementForTrack(parent: BoxNode, child: BoxNode, track: number, o: { reflow: boolean; spanSet: boolean; startSet: boolean }): { track: number; span: number; start: number | null } {
   const stored = gridColumns(parent);
   /**
@@ -4030,7 +4044,7 @@ export function gridQueryCss(scope: string, node: BoxNode, cellScope: (id: strin
       const p = placementForTrack(node, c, track, { reflow: true, spanSet: false, startSet: false });
       const span = lastRowFills(kids, c, p.span, track, spanOf);
       const col = p.start != null ? `${p.start} / span ${span}` : span > 1 ? `span ${span}` : "auto";
-      const rowSpan = Math.max(1, Math.round(c.rowSpan ?? 1)); // the row's START is given up with the column (see childStyle)
+      const rowSpan = rowSpanFor(c, p.span, false, track); // the row's START is given up with the column (see childStyle); its span shrinks with it (LE15c-12)
       return `${cellScope(c.id)}{grid-column:${col} !important;grid-row:${rowSpan > 1 ? `span ${rowSpan}` : "auto"} !important}`;
     }).join("");
     return `${scope}{grid-template-columns:repeat(${track},minmax(0,1fr)) !important}${cells}${editorOnly(scope)}`;
@@ -6990,7 +7004,7 @@ export function childStyle(child: BoxNode, parent: BoxNode, bp: Breakpoint = "ba
     // Re-fitted to the track the row actually has AT THIS RUNG (see `gridPlacementAt`). A span of 8 left over
     // from a twelve-column desktop would otherwise generate implicit columns on a phone and blow the row's
     // width past the screen — the horizontal-scrollbar bug guarded against in three other places already.
-    const { start } = gridPlacementAt(parent, child, bp);
+    const { start, span: fitted, track } = gridPlacementAt(parent, child, bp);
     // …and the cell that ends a SHORT final row stretches to fill it, so a narrowed grid never leaves half a
     // row of the section's background showing beside the content. See `gridSpanAt`.
     const span = gridSpanAt(parent, child, bp);
@@ -7011,7 +7025,7 @@ export function childStyle(child: BoxNode, parent: BoxNode, bp: Breakpoint = "ba
       // every cell of that row back into one row, and with the columns now auto they either pile up again or
       // generate implicit columns and push the page sideways. Both were measured. Dropping both is what lets
       // the grid do the one thing that works at these widths — flow the cells one after another.
-      const rowSpan = Math.max(1, Math.round(child.rowSpan ?? 1));
+      const rowSpan = rowSpanFor(child, fitted, setAtRung(child, "rowSpan", bp), track); // LE15c-12: shrinks with the columns
       // Same per-cell question as the column: a row stated AT this rung is in this rung's terms and is kept.
       const rowGivenUp = gridReflowsAt(parent, bp) && !setAtRung(child, "rowStart", bp);
       const rowStart = child.rowStart == null || rowGivenUp ? null : Math.max(1, Math.round(child.rowStart));

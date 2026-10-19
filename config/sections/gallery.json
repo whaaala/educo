@@ -1,0 +1,171 @@
+{
+  "$comment": "Gallery / Collage (B28 gallery GRID(4×2) with one big picture a:2×2; A6 masonry GRID(3–4 cols) uneven heights, tablet 2, phone 1–2 — a 12-column grid with rowFlow masonry; A7 bento GRID(4×3) — a FIXED grid (min \"\") whose blocks span, narrowed by the screen ladder). The 14 Wix Studio tiles, read 2026-10-19: Projects 7 (captioned two-up 1 · two big over three 1 · a numbered list in two columns 1 · staggered three 1 · one big picture beside four 1 · words beside a staggered grid 1 · numbered cards 1) and Collage wireframes 7 (bento grids of words and pictures: story in four 1 · title and photo over three cards 1 · two columns 1 · intro over a split 1 · title between two photos 1 · three rows 1 · a tall photo beside a title strip 1).",
+  "sections": [
+    { "id": "gal-two-up-captioned", "name": "Four photos two across, each with a caption", "pattern": "B28",
+      "tree": { "k": "section", "set": { "paddingTop": 96, "paddingBottom": 96, "paddingLeft": 24, "paddingRight": 24, "gap": 40 },
+        "c": [
+          { "k": "row", "set": { "gap": 40 }, "c": [
+            { "k": "stack", "set": { "width": "fill", "minWidth": "16rem" }, "c": [ { "r": "title", "t": "Latest projects" } ] },
+            { "k": "stack", "set": { "width": "fill", "minWidth": "16rem" }, "c": [ { "r": "body", "t": "What our pupils have made this term: science fair entries, art and a garden they planted themselves." } ] }
+          ] },
+          { "k": "grid", "cols": 2, "min": "16rem", "set": { "gap": 24 }, "c": [
+            { "k": "stack", "set": { "gap": 8 }, "c": [ { "r": "image", "photo": "students-lab", "alt": "A student behind the apparatus of his science fair project" }, { "r": "heading", "t": "Science fair" } ] },
+            { "k": "stack", "set": { "gap": 8 }, "c": [ { "r": "image", "photo": "gallery-2", "alt": "Two boys building a project together on a laptop", "set": { "ratio": "4 / 3" } }, { "r": "heading", "t": "Coding club" } ] },
+            { "k": "stack", "set": { "gap": 8 }, "c": [ { "r": "image", "photo": "art", "alt": "Two boys painting at easels for the art show" }, { "r": "heading", "t": "Art show" } ] },
+            { "k": "stack", "set": { "gap": 8 }, "c": [ { "r": "image", "photo": "event-open-day", "alt": "A teacher with pupils in the school garden they planted" }, { "r": "heading", "t": "School garden" } ] }
+          ] }
+        ] } },
+    { "id": "gal-two-over-three", "name": "Two big photos over three smaller ones", "pattern": "B28", "needs": ["lightbox"],
+      "tree": { "k": "section", "center": true, "set": { "paddingTop": 96, "paddingBottom": 96, "paddingLeft": 24, "paddingRight": 24, "gap": 40 },
+        "c": [
+          { "r": "title", "t": "School life in pictures" },
+          { "r": "body", "t": "A look inside Greenfield Academy: lessons, clubs, sport and the days we remember.", "set": { "maxWidth": "40rem" } },
+          { "k": "grid", "cols": 6, "min": "", "set": { "gap": 16 }, "c": [
+            { "r": "image", "photo": "classroom", "alt": "Pupils in blue uniforms smiling in class", "set": { "colSpan": 3, "ratio": "16 / 9" } },
+            { "r": "image", "photo": "event-cultural-day", "alt": "Children in traditional dress dancing on cultural day", "set": { "colSpan": 3, "ratio": "16 / 9" } },
+            { "r": "image", "photo": "library", "alt": "The school library with tall green shelves", "set": { "colSpan": 2 } },
+            { "r": "image", "photo": "music", "alt": "Pupils playing xylophones and drums", "set": { "colSpan": 2 } },
+            { "r": "image", "photo": "sports", "alt": "Runners at the start line on sports day", "set": { "colSpan": 2 } }
+          ] }
+        ] } },
+    { "id": "gal-numbered-list", "name": "A numbered list of projects in two columns", "pattern": "B28",
+      "tree": { "k": "section", "tone": "grey", "set": { "paddingTop": 96, "paddingBottom": 96, "paddingLeft": 24, "paddingRight": 24, "gap": 40 },
+        "c": [
+          { "r": "eyebrow", "t": "Our projects" },
+          { "k": "grid", "cols": 2, "min": "16rem", "set": { "gap": 24 }, "c": [
+            { "k": "stack", "set": { "gap": 12 }, "c": [ { "k": "row", "set": { "gap": 16 }, "c": [ { "r": "small", "t": "01" }, { "r": "heading", "t": "Solar oven" } ] }, { "r": "divider" } ] },
+            { "k": "stack", "set": { "gap": 12 }, "c": [ { "k": "row", "set": { "gap": 16 }, "c": [ { "r": "small", "t": "02" }, { "r": "heading", "t": "Water filter" } ] }, { "r": "divider" } ] },
+            { "k": "stack", "set": { "gap": 12 }, "c": [ { "k": "row", "set": { "gap": 16 }, "c": [ { "r": "small", "t": "03" }, { "r": "heading", "t": "Mural of Lagos" } ] }, { "r": "divider" } ] },
+            { "k": "stack", "set": { "gap": 12 }, "c": [ { "k": "row", "set": { "gap": 16 }, "c": [ { "r": "small", "t": "04" }, { "r": "heading", "t": "Class newspaper" } ] }, { "r": "divider" } ] },
+            { "k": "stack", "set": { "gap": 12 }, "c": [ { "k": "row", "set": { "gap": 16 }, "c": [ { "r": "small", "t": "05" }, { "r": "heading", "t": "School garden" } ] }, { "r": "divider" } ] },
+            { "k": "stack", "set": { "gap": 12 }, "c": [ { "k": "row", "set": { "gap": 16 }, "c": [ { "r": "small", "t": "06" }, { "r": "heading", "t": "Weather station" } ] }, { "r": "divider" } ] },
+            { "k": "stack", "set": { "gap": 12 }, "c": [ { "k": "row", "set": { "gap": 16 }, "c": [ { "r": "small", "t": "07" }, { "r": "heading", "t": "Recycled sculpture" } ] }, { "r": "divider" } ] },
+            { "k": "stack", "set": { "gap": 12 }, "c": [ { "k": "row", "set": { "gap": 16 }, "c": [ { "r": "small", "t": "08" }, { "r": "heading", "t": "Coding robot" } ] }, { "r": "divider" } ] },
+            { "k": "stack", "set": { "gap": 12 }, "c": [ { "k": "row", "set": { "gap": 16 }, "c": [ { "r": "small", "t": "09" }, { "r": "heading", "t": "Drama festival" } ] }, { "r": "divider" } ] },
+            { "k": "stack", "set": { "gap": 12 }, "c": [ { "k": "row", "set": { "gap": 16 }, "c": [ { "r": "small", "t": "10" }, { "r": "heading", "t": "Book week" } ] }, { "r": "divider" } ] }
+          ] }
+        ] } },
+    { "id": "gal-staggered-three", "name": "Three photos at staggered heights with captions", "pattern": "A6",
+      "tree": { "k": "section", "center": true, "set": { "paddingTop": 96, "paddingBottom": 96, "paddingLeft": 24, "paddingRight": 24, "gap": 40 },
+        "c": [
+          { "r": "title", "t": "Highlights of the year" },
+          { "r": "body", "t": "Three moments our pupils chose as the best of the school year.", "set": { "maxWidth": "40rem" } },
+          { "k": "grid", "cols": 12, "min": "", "set": { "gap": 16, "rowFlow": "masonry" }, "c": [
+            { "k": "stack", "set": { "colSpan": 4, "gap": 8 }, "c": [ { "r": "image", "photo": "gallery-4", "alt": "Boys and girls in costume performing a dance", "set": { "ratio": "533 / 800" } }, { "r": "small", "t": "Cultural day dance" } ] },
+            { "k": "stack", "set": { "colSpan": 4, "gap": 8, "paddingTop": 96 }, "c": [ { "r": "image", "photo": "graduation", "alt": "Children in blue graduation gowns and caps", "set": { "ratio": "720 / 480" } }, { "r": "small", "t": "Nursery graduation" } ] },
+            { "k": "stack", "set": { "colSpan": 4, "gap": 8 }, "c": [ { "r": "image", "photo": "uniform", "alt": "Three students in checked skirts sitting together", "set": { "ratio": "533 / 800" } }, { "r": "small", "t": "Prefects' day" } ] }
+          ] }
+        ] } },
+    { "id": "gal-big-beside-four", "name": "One big photo beside four smaller ones", "pattern": "B28", "needs": ["lightbox"],
+      "tree": { "k": "section", "set": { "paddingTop": 96, "paddingBottom": 96, "paddingLeft": 24, "paddingRight": 24, "gap": 40 },
+        "c": [
+          { "r": "title", "t": "Open day 2026" },
+          { "r": "body", "t": "Families visited classrooms, the labs and the garden. Here is how the day looked.", "set": { "maxWidth": "40rem" } },
+          { "k": "grid", "cols": 4, "min": "", "set": { "gap": 16 }, "c": [
+            { "r": "image", "photo": "event-open-day", "alt": "A teacher with smiling pupils in the school garden", "set": { "colSpan": 2, "rowSpan": 2, "ratio": "1 / 1" } },
+            { "r": "image", "photo": "teacher-class", "alt": "A teacher helping a pupil with her work", "set": { "ratio": "1 / 1" } },
+            { "r": "image", "photo": "pupils-reading", "alt": "Children reading on the steps", "set": { "ratio": "1 / 1" } },
+            { "r": "image", "photo": "family", "alt": "Mothers walking with their children", "set": { "colSpan": 2, "ratio": "2 / 1" } }
+          ] }
+        ] } },
+    { "id": "gal-words-beside-staggered", "name": "Words beside a staggered grid of photos", "pattern": "A6",
+      "tree": { "k": "section", "set": { "paddingTop": 96, "paddingBottom": 96, "paddingLeft": 24, "paddingRight": 24, "gap": 40 },
+        "c": [
+          { "k": "row", "set": { "gap": 40, "align": "start" }, "c": [
+            { "k": "stack", "set": { "width": "fill", "minWidth": "16rem", "gap": 16 }, "c": [ { "r": "title", "t": "Our latest projects" }, { "r": "body", "t": "Every term each class shows what it has made. See the projects and read how they were done." } ] },
+            { "k": "grid", "cols": 12, "min": "", "set": { "width": "fill", "minWidth": "16rem", "gap": 16, "rowFlow": "masonry" }, "c": [
+              { "k": "stack", "set": { "colSpan": 6, "gap": 8 }, "c": [ { "r": "image", "photo": "gallery-2", "alt": "Two boys working on a laptop", "set": { "ratio": "533 / 800" } }, { "r": "small", "t": "Coding club app" }, { "r": "link", "t": "See more" } ] },
+              { "k": "stack", "set": { "colSpan": 6, "gap": 8 }, "c": [ { "r": "image", "photo": "art", "alt": "Two boys painting at easels", "set": { "ratio": "1 / 1" } }, { "r": "small", "t": "Art show" }, { "r": "link", "t": "See more" } ] },
+              { "k": "stack", "set": { "colSpan": 6, "gap": 8 }, "c": [ { "r": "image", "photo": "students-lab", "alt": "A student at the science apparatus", "set": { "ratio": "1 / 1" } }, { "r": "small", "t": "Science fair" }, { "r": "link", "t": "See more" } ] },
+              { "k": "stack", "set": { "colSpan": 6, "gap": 8 }, "c": [ { "r": "image", "photo": "music", "alt": "Pupils playing xylophones outdoors", "set": { "ratio": "4 / 3" } }, { "r": "small", "t": "School band" }, { "r": "link", "t": "See more" } ] }
+            ] }
+          ] }
+        ] } },
+    { "id": "gal-numbered-cards", "name": "Four numbered project cards", "pattern": "B28",
+      "tree": { "k": "section", "tone": "soft", "set": { "paddingTop": 96, "paddingBottom": 96, "paddingLeft": 24, "paddingRight": 24, "gap": 40 },
+        "c": [
+          { "r": "eyebrow", "t": "Our projects" },
+          { "k": "grid", "cols": 2, "min": "16rem", "set": { "gap": 24 }, "c": [
+            { "k": "card", "tone": "plain", "set": { "gap": 12, "padding": 24 }, "c": [ { "r": "icon", "icon": "ArrowRight" }, { "r": "heading", "t": "Science fair" }, { "r": "small", "t": "JSS 2 built a solar oven and a water filter from things found at home." }, { "r": "stat", "t": "1" } ] },
+            { "k": "card", "tone": "plain", "set": { "gap": 12, "padding": 24 }, "c": [ { "r": "icon", "icon": "ArrowRight" }, { "r": "heading", "t": "Art show" }, { "r": "small", "t": "Paintings, pottery and a mural of our town, shown to parents in June." }, { "r": "stat", "t": "2" } ] },
+            { "k": "card", "tone": "plain", "set": { "gap": 12, "padding": 24 }, "c": [ { "r": "icon", "icon": "ArrowRight" }, { "r": "heading", "t": "School garden" }, { "r": "small", "t": "Primary 5 grew tomatoes, peppers and maize for the school kitchen." }, { "r": "stat", "t": "3" } ] },
+            { "k": "card", "tone": "plain", "set": { "gap": 12, "padding": 24 }, "c": [ { "r": "icon", "icon": "ArrowRight" }, { "r": "heading", "t": "Class newspaper" }, { "r": "small", "t": "SS 1 wrote, edited and printed four issues of The Greenfield Times." }, { "r": "stat", "t": "4" } ] }
+          ] }
+        ] } },
+    { "id": "gal-collage-story-four", "name": "A collage of two word boxes and three photos", "pattern": "A7",
+      "tree": { "k": "section", "set": { "paddingTop": 96, "paddingBottom": 96, "paddingLeft": 24, "paddingRight": 24, "gap": 40 },
+        "c": [
+          { "k": "grid", "cols": 4, "min": "", "set": { "gap": 16 }, "c": [
+            { "k": "card", "tone": "soft", "set": { "colSpan": 2, "padding": 24, "gap": 12, "justify": "center" }, "c": [ { "r": "title", "t": "Our year at Greenfield" } ] },
+            { "r": "image", "photo": "video-still", "alt": "A crowd of smiling schoolchildren in the schoolyard", "set": { "colSpan": 2, "ratio": "2 / 1" } },
+            { "r": "image", "photo": "nursery", "alt": "Nursery children with books in a colourful classroom", "set": { "ratio": "1 / 1" } },
+            { "k": "card", "tone": "soft", "set": { "padding": 24, "gap": 12 }, "c": [ { "r": "heading", "t": "A year to remember" }, { "r": "small", "t": "From the first day of term to graduation, these are the moments our pupils, parents and teachers shared." } ] },
+            { "r": "image", "photo": "event-sports-day", "alt": "Students playing handball on sports day", "set": { "colSpan": 2, "ratio": "2 / 1" } }
+          ] }
+        ] } },
+    { "id": "gal-collage-title-photo-cards", "name": "A title and a photo over three cards", "pattern": "A7",
+      "tree": { "k": "section", "set": { "paddingTop": 96, "paddingBottom": 96, "paddingLeft": 24, "paddingRight": 24, "gap": 40 },
+        "c": [
+          { "k": "grid", "cols": 6, "min": "", "set": { "gap": 16 }, "c": [
+            { "k": "card", "tone": "soft", "center": true, "set": { "colSpan": 3, "padding": 24, "gap": 16, "justify": "center" }, "c": [ { "r": "title", "t": "Life at Greenfield" }, { "r": "button2", "t": "See the gallery" } ] },
+            { "r": "image", "photo": "pupils-outside", "alt": "Four students reading and talking outside the school", "set": { "colSpan": 3, "ratio": "16 / 9" } },
+            { "k": "card", "tone": "soft", "center": true, "set": { "colSpan": 2, "padding": 24, "gap": 12 }, "c": [ { "r": "icon", "icon": "BookOpen" }, { "r": "heading", "t": "In class" }, { "r": "small", "t": "Lessons, reading corners and the science lab." } ] },
+            { "k": "card", "tone": "soft", "center": true, "set": { "colSpan": 2, "padding": 24, "gap": 12 }, "c": [ { "r": "icon", "icon": "Music" }, { "r": "heading", "t": "Clubs" }, { "r": "small", "t": "Music, art, drama and the coding club." } ] },
+            { "k": "card", "tone": "soft", "center": true, "set": { "colSpan": 2, "padding": 24, "gap": 12 }, "c": [ { "r": "icon", "icon": "Trophy" }, { "r": "heading", "t": "Sport" }, { "r": "small", "t": "Sports day, football and the inter-house games." } ] }
+          ] }
+        ] } },
+    { "id": "gal-collage-two-columns", "name": "A collage in two columns: photos, a title and a story", "pattern": "A7",
+      "tree": { "k": "section", "set": { "paddingTop": 96, "paddingBottom": 96, "paddingLeft": 24, "paddingRight": 24, "gap": 40 },
+        "c": [
+          { "k": "grid", "cols": 2, "min": "", "set": { "gap": 16 }, "c": [
+            { "r": "image", "photo": "school-field", "alt": "Students playing volleyball in the school courtyard", "set": { "ratio": "3 / 1" } },
+            { "k": "card", "tone": "soft", "center": true, "set": { "rowSpan": 2, "padding": 24, "gap": 16, "justify": "center" }, "c": [ { "r": "title", "t": "Our school year" }, { "r": "button2", "t": "See all photos" } ] },
+            { "k": "card", "tone": "soft", "center": true, "set": { "padding": 24, "gap": 12 }, "c": [ { "r": "heading", "t": "Every term, a story" }, { "r": "small", "t": "Our pupils take the photographs: lessons, trips, matches and celebrations, from Lagos to Accra." } ] },
+            { "k": "card", "tone": "soft", "set": { "padding": 16 }, "c": [ { "r": "link", "t": "Read more" } ] },
+            { "r": "image", "photo": "playground", "alt": "Pupils in checked uniforms running and playing", "set": { "ratio": "2 / 1" } }
+          ] }
+        ] } },
+    { "id": "gal-collage-intro-split", "name": "An introduction over a big photo and two word boxes", "pattern": "A7",
+      "tree": { "k": "section", "set": { "paddingTop": 96, "paddingBottom": 96, "paddingLeft": 24, "paddingRight": 24, "gap": 40 },
+        "c": [
+          { "k": "grid", "cols": 2, "min": "", "set": { "gap": 16 }, "c": [
+            { "k": "card", "tone": "soft", "set": { "colSpan": 2, "padding": 24 }, "c": [ { "r": "body", "t": "Greenfield Academy has kept a photo album of every school year since 1998. Here are the pictures of this one." } ] },
+            { "r": "image", "photo": "gallery-1", "alt": "Pupils in uniform eating lunch together outside", "set": { "rowSpan": 2, "ratio": "1 / 1" } },
+            { "k": "card", "tone": "soft", "center": true, "set": { "padding": 24, "justify": "center" }, "c": [ { "r": "title", "t": "The year in pictures" } ] },
+            { "k": "card", "tone": "soft", "set": { "padding": 24, "gap": 12 }, "c": [ { "r": "small", "t": "Our pupils and teachers chose these photos together: the first day, the cultural day, sports day, the art show and the end-of-year party." }, { "r": "small", "t": "Have a photo we should add? Send it to the school office." } ] }
+          ] }
+        ] } },
+    { "id": "gal-collage-title-between", "name": "A title between two photos, words below", "pattern": "A7",
+      "tree": { "k": "section", "set": { "paddingTop": 96, "paddingBottom": 96, "paddingLeft": 24, "paddingRight": 24, "gap": 40 },
+        "c": [
+          { "k": "grid", "cols": 4, "min": "", "set": { "gap": 16 }, "c": [
+            { "r": "image", "photo": "music", "alt": "Children playing xylophones and drums", "set": { "ratio": "1 / 1" } },
+            { "k": "card", "tone": "soft", "center": true, "set": { "colSpan": 2, "padding": 24, "gap": 16, "justify": "center" }, "c": [ { "r": "title", "t": "Cultural day" }, { "r": "button2", "t": "See the photos" } ] },
+            { "r": "image", "photo": "event-cultural-day", "alt": "Children in traditional dress dancing on the field", "set": { "ratio": "1 / 1" } },
+            { "k": "card", "tone": "soft", "set": { "colSpan": 4, "padding": 32 }, "c": [ { "r": "body", "t": "Every March the whole school dresses in the clothes of home. Drummers, dancers and food from every corner of Nigeria and Ghana." } ] }
+          ] }
+        ] } },
+    { "id": "gal-collage-three-rows", "name": "A collage in three rows with a wide photo below", "pattern": "A7",
+      "tree": { "k": "section", "set": { "paddingTop": 96, "paddingBottom": 96, "paddingLeft": 24, "paddingRight": 24, "gap": 40 },
+        "c": [
+          { "k": "grid", "cols": 4, "min": "", "set": { "gap": 16 }, "c": [
+            { "r": "image", "photo": "pupils-reading", "alt": "Children reading on the steps", "set": { "ratio": "4 / 3" } },
+            { "k": "card", "tone": "soft", "center": true, "set": { "colSpan": 3, "padding": 24, "justify": "center" }, "c": [ { "r": "title", "t": "Book week" } ] },
+            { "k": "card", "tone": "soft", "center": true, "set": { "padding": 24, "justify": "center" }, "c": [ { "r": "heading", "t": "Reading together" } ] },
+            { "k": "card", "tone": "soft", "set": { "colSpan": 2, "padding": 24 }, "c": [ { "r": "small", "t": "Five days of stories: pupils dressed as their favourite characters, authors visited and every class read aloud in the library." } ] },
+            { "k": "card", "tone": "soft", "center": true, "set": { "padding": 24, "justify": "center" }, "c": [ { "r": "button2", "t": "See the photos" } ] },
+            { "r": "image", "photo": "library", "alt": "The library with wooden desks and full shelves", "set": { "colSpan": 4, "ratio": "4 / 1" } }
+          ] }
+        ] } },
+    { "id": "gal-collage-tall-photo", "name": "A tall photo beside a title strip and a word box", "pattern": "A7",
+      "tree": { "k": "section", "set": { "paddingTop": 96, "paddingBottom": 96, "paddingLeft": 24, "paddingRight": 24, "gap": 40 },
+        "c": [
+          { "k": "grid", "cols": 6, "min": "", "set": { "gap": 16 }, "c": [
+            { "r": "image", "photo": "gallery-5", "alt": "Two students walking through tall grass in Jos", "set": { "colSpan": 3, "rowSpan": 2, "ratio": "1 / 1" } },
+            { "k": "card", "tone": "soft", "center": true, "set": { "rowSpan": 2, "padding": 16, "justify": "center" }, "c": [ { "r": "heading", "t": "Our field trip" } ] },
+            { "k": "card", "tone": "soft", "set": { "colSpan": 2, "padding": 24, "gap": 16 }, "c": [ { "r": "small", "t": "SS 2 spent three days on the Jos Plateau studying rocks, plants and the weather for their geography project." }, { "r": "button2", "t": "Read the diary" } ] },
+            { "r": "image", "photo": "pupils-outside", "alt": "Students reading and talking outside", "set": { "colSpan": 2, "ratio": "4 / 3" } }
+          ] }
+        ] } }
+  ]
+}

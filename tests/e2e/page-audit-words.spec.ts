@@ -33,3 +33,15 @@ test("a main title smaller than a heading under it is a warning; a heading small
   const b = (await page.evaluate(`(${auditDoc.toString()})({})`)) as { err: string[] };
   expect(b.err.some((e) => /^H26 1 headings smaller than the body text/.test(e)), "still an error").toBe(true);
 });
+
+// LE15c-3 · a carousel's next slides wait to the right INSIDE their sideways strip (the pager): the page does not scroll (L1
+// still guards that), so a picture there is not off the page — measured on every Slideshow and the Testimonials carousel
+test("a picture in a carousel's next slide is not off the page; a picture past the page's edge still is", async ({ page }) => {
+  await page.setViewportSize({ width: 800, height: 600 });
+  const l2 = async () => ((await page.evaluate(`(${auditDoc.toString()})({})`)) as { err: string[] }).err.filter((e) => e.startsWith("L2"));
+  const img = `<img alt="" style="display:block;width:100%;height:100px" src="data:image/gif;base64,R0lGODlhAQABAAAAACw=">`;
+  await page.setContent(`<!doctype html><body style="margin:0"><div class="bx-a"><div data-eu-pager style="display:grid;grid-auto-flow:column;grid-auto-columns:100%;overflow-x:auto"><div class="bx-s1">${img}</div><div class="bx-s2">${img}</div></div></div></body>`);
+  expect(await l2(), "the second slide's picture").toEqual([]);
+  await page.setContent(`<!doctype html><body style="margin:0;overflow-x:hidden"><div class="bx-a" style="position:relative;left:600px;width:400px">${img}</div></body>`);
+  expect((await l2()).join(" ")).toMatch(/runs off the page/);
+});

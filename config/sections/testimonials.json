@@ -1,0 +1,96 @@
+{
+  "$comment": "Testimonials (B17: GRID(3×1) quote cards · a single large quote · a carousel · a wall; the 8 Wix Studio designed Testimonials tiles, read 2026-10-19: one big centred quote with stars on a band 1 · three quote cards over a photo 1 · a title over three portraits with their words 1 · a quote beside a photo (here a carousel of them) 1 · three quotes signed by a round photo and a name 1 · a title over four portraits 1 · a 2×2 wall of quote cards 1 · four round portraits with their words 1). Parents, pupils and alumni of Greenfield Academy speak.",
+  "sections": [
+    { "id": "testi-big-quote", "name": "One parent's words, large and centred", "pattern": "B17",
+      "tree": { "k": "section", "tone": "soft", "center": true, "set": { "paddingTop": 96, "paddingBottom": 96, "paddingLeft": 24, "paddingRight": 24, "gap": 40 },
+        "c": [
+          { "k": "row", "set": { "gap": 8, "justify": "center" }, "c": [ { "r": "icon", "icon": "Star" }, { "r": "icon", "icon": "Star" }, { "r": "icon", "icon": "Star" }, { "r": "icon", "icon": "Star" }, { "r": "icon", "icon": "Star" } ] },
+          { "k": "stack", "center": true, "set": { "gap": 16, "maxWidth": "48rem" }, "c": [
+            { "r": "icon", "icon": "Quote" },
+            { "r": "quote", "t": "Our daughter used to dread Mondays. Two terms at Greenfield and she is the first one dressed, asking if she can go early for the reading club." },
+            { "r": "heading", "t": "Mrs Ngozi Eze" },
+            { "r": "small", "t": "A parent of two, Primary 3 and JSS 1" }
+          ] }
+        ] } },
+    { "id": "testi-cards-photo", "name": "Three parents' words in cards over a photo", "pattern": "B17",
+      "tree": { "k": "section", "tone": "photo", "photo": "school-field", "set": { "paddingTop": 96, "paddingBottom": 96, "paddingLeft": 24, "paddingRight": 24, "gap": 40 },
+        "c": [
+          { "k": "grid", "cols": 3, "min": "14rem", "set": { "gap": 24 }, "c": [
+            { "k": "card", "tone": "plain", "center": true, "set": { "gap": 16, "padding": 24 }, "c": [ { "r": "icon", "icon": "Quote" }, { "r": "quote", "t": "The teachers know every child by name, and they call us before a small worry becomes a big one." }, { "r": "small", "t": "Mr Kwame Mensah, a parent" } ] },
+            { "k": "card", "tone": "plain", "center": true, "set": { "gap": 16, "padding": 24 }, "c": [ { "r": "icon", "icon": "Quote" }, { "r": "quote", "t": "Tobi came home from the science fair talking about circuits for a week. We had never seen him so excited." }, { "r": "small", "t": "Mrs Funmi Adeyemi, a parent" } ] },
+            { "k": "card", "tone": "plain", "center": true, "set": { "gap": 16, "padding": 24 }, "c": [ { "r": "icon", "icon": "Quote" }, { "r": "quote", "t": "The school bus is on time, the fees portal is simple, and the term reports are clear. It all just works." }, { "r": "small", "t": "Mrs Abena Owusu, a parent" } ] }
+          ] }
+        ] } },
+    { "id": "testi-portraits-three", "name": "A title over three families and their words", "pattern": "B17",
+      "tree": { "k": "section", "center": true, "set": { "paddingTop": 96, "paddingBottom": 96, "paddingLeft": 24, "paddingRight": 24, "gap": 40 },
+        "c": [
+          { "k": "stack", "center": true, "set": { "gap": 8 }, "c": [ { "r": "eyebrow", "t": "Happy families" }, { "r": "title", "t": "What our parents say" } ] },
+          { "k": "grid", "cols": 3, "min": "14rem", "set": { "gap": 24 }, "c": [
+            { "k": "card", "tone": "plain", "center": true, "set": { "gap": 16 }, "c": [ { "r": "image", "photo": "staff-1", "alt": "Mrs Amaka Obi, a parent", "set": { "ratio": "1 / 1" } }, { "r": "quote", "t": "Greenfield gave my shy son a voice. He read his own poem at the cultural day." }, { "r": "small", "t": "Mrs Amaka Obi, a parent" } ] },
+            { "k": "card", "tone": "plain", "center": true, "set": { "gap": 16 }, "c": [ { "r": "image", "photo": "staff-2", "alt": "Mr Yaw Boateng, a parent", "set": { "ratio": "1 / 1" } }, { "r": "quote", "t": "Small classes, real homework feedback, and a head teacher who answers her phone." }, { "r": "small", "t": "Mr Yaw Boateng, a parent" } ] },
+            { "k": "card", "tone": "plain", "center": true, "set": { "gap": 16 }, "c": [ { "r": "image", "photo": "staff-3", "alt": "Mrs Hauwa Bello, a grandparent", "set": { "ratio": "1 / 1" } }, { "r": "quote", "t": "I sent my children here, and now my grandchildren. The care has never changed." }, { "r": "small", "t": "Mrs Hauwa Bello, a grandparent" } ] }
+          ] }
+        ] } },
+    { "id": "testi-photo-carousel", "name": "Words beside a photo, one after another", "pattern": "B17",
+      "tree": { "k": "section", "tone": "soft", "set": { "paddingTop": 96, "paddingBottom": 96, "paddingLeft": 24, "paddingRight": 24, "gap": 40 },
+        "c": [
+          { "k": "stack", "set": { "pager": true, "width": "100%", "pagerNav": "arrows" }, "c": [
+            { "k": "row", "set": { "gap": 40 }, "c": [
+              { "r": "image", "photo": "family", "alt": "The Okafor family at the school gate", "set": { "width": "fill", "minWidth": "16rem", "ratio": "4 / 5" } },
+              { "k": "stack", "set": { "width": "fill", "minWidth": "16rem", "gap": 16 }, "c": [ { "r": "icon", "icon": "Quote" }, { "r": "quote", "t": "Moving from Abuja was hard on the children. Within a month they had friends, a house team and a favourite teacher." }, { "r": "small", "t": "Mr Chidi Okafor, a parent of three" } ] }
+            ] },
+            { "k": "row", "set": { "gap": 40 }, "c": [
+              { "r": "image", "photo": "graduation", "alt": "Esi Asante on graduation day", "set": { "width": "fill", "minWidth": "16rem", "ratio": "4 / 5" } },
+              { "k": "stack", "set": { "width": "fill", "minWidth": "16rem", "gap": 16 }, "c": [ { "r": "icon", "icon": "Quote" }, { "r": "quote", "t": "The debate club taught me to stand up and speak. I use that every day at university in Legon." }, { "r": "small", "t": "Esi Asante, Class of 2022" } ] }
+            ] },
+            { "k": "row", "set": { "gap": 40 }, "c": [
+              { "r": "image", "photo": "pupils-reading", "alt": "Pupils reading together", "set": { "width": "fill", "minWidth": "16rem", "ratio": "4 / 5" } },
+              { "k": "stack", "set": { "width": "fill", "minWidth": "16rem", "gap": 16 }, "c": [ { "r": "icon", "icon": "Quote" }, { "r": "quote", "t": "My favourite part of the week is library time. Mrs Danso always finds me a new book about space." }, { "r": "small", "t": "Ada, a pupil in Primary 5" } ] }
+            ] }
+          ] }
+        ] } },
+    { "id": "testi-signed-three", "name": "Three quotes, each signed with a photo and a name", "pattern": "B17",
+      "tree": { "k": "section", "tone": "grey", "set": { "paddingTop": 96, "paddingBottom": 96, "paddingLeft": 24, "paddingRight": 24, "gap": 40 },
+        "c": [
+          { "k": "grid", "cols": 3, "min": "14rem", "set": { "gap": 24 }, "c": [
+            { "k": "stack", "set": { "gap": 16 }, "c": [ { "r": "icon", "icon": "Sprout" }, { "r": "body", "t": "The Saturday catch-up classes before WAEC made all the difference. Our son passed all nine subjects." },
+              { "k": "row", "set": { "gap": 12 }, "c": [ { "r": "image", "photo": "staff-4", "alt": "Mrs Bisi Adebayo", "set": { "ratio": "1 / 1", "radius": 999, "width": "3rem" } }, { "k": "stack", "set": { "gap": 0, "width": "fill" }, "c": [ { "r": "heading", "t": "Mrs Bisi Adebayo" }, { "r": "small", "t": "A parent, SS 3" } ] } ] } ] },
+            { "k": "stack", "set": { "gap": 16 }, "c": [ { "r": "icon", "icon": "Sprout" }, { "r": "body", "t": "I joined in JSS 1 knowing nobody. The boarding house became a second family, and the seniors looked out for us." },
+              { "k": "row", "set": { "gap": 12 }, "c": [ { "r": "image", "photo": "staff-5", "alt": "Kofi Addo", "set": { "ratio": "1 / 1", "radius": 999, "width": "3rem" } }, { "k": "stack", "set": { "gap": 0, "width": "fill" }, "c": [ { "r": "heading", "t": "Kofi Addo" }, { "r": "small", "t": "An alumnus, Class of 2019" } ] } ] } ] },
+            { "k": "stack", "set": { "gap": 16 }, "c": [ { "r": "icon", "icon": "Sprout" }, { "r": "body", "t": "The nursery sends a photo and a note home every Friday. As a working mother, that small thing means everything." },
+              { "k": "row", "set": { "gap": 12 }, "c": [ { "r": "image", "photo": "staff-2", "alt": "Mrs Zainab Musa", "set": { "ratio": "1 / 1", "radius": 999, "width": "3rem" } }, { "k": "stack", "set": { "gap": 0, "width": "fill" }, "c": [ { "r": "heading", "t": "Mrs Zainab Musa" }, { "r": "small", "t": "A parent, Nursery 2" } ] } ] } ] }
+          ] }
+        ] } },
+    { "id": "testi-portraits-four", "name": "A title over four portraits and their words", "pattern": "B17",
+      "tree": { "k": "section", "center": true, "set": { "paddingTop": 96, "paddingBottom": 96, "paddingLeft": 24, "paddingRight": 24, "gap": 40 },
+        "c": [
+          { "r": "title", "t": "Why families choose Greenfield" },
+          { "k": "grid", "cols": 4, "min": "12rem", "set": { "gap": 24 }, "c": [
+            { "k": "stack", "center": true, "set": { "gap": 12 }, "c": [ { "r": "image", "photo": "staff-1", "alt": "Mr Emeka Nwosu", "set": { "ratio": "4 / 5" } }, { "r": "heading", "t": "Mr Emeka Nwosu" }, { "r": "quote", "t": "Strong results, and children who are kind to each other." } ] },
+            { "k": "stack", "center": true, "set": { "gap": 12 }, "c": [ { "r": "image", "photo": "staff-3", "alt": "Mrs Akosua Darko", "set": { "ratio": "4 / 5" } }, { "r": "heading", "t": "Mrs Akosua Darko" }, { "r": "quote", "t": "The sports days are the best in the city. The whole family comes." } ] },
+            { "k": "stack", "center": true, "set": { "gap": 12 }, "c": [ { "r": "image", "photo": "staff-5", "alt": "Tunde Bakare", "set": { "ratio": "4 / 5" } }, { "r": "heading", "t": "Tunde Bakare" }, { "r": "quote", "t": "Greenfield taught me to code in the computer club. Now I build apps." } ] },
+            { "k": "stack", "center": true, "set": { "gap": 12 }, "c": [ { "r": "image", "photo": "staff-4", "alt": "Mrs Efua Quaye", "set": { "ratio": "4 / 5" } }, { "r": "heading", "t": "Mrs Efua Quaye" }, { "r": "quote", "t": "Fair fees, honest reports and teachers who truly care." } ] }
+          ] }
+        ] } },
+    { "id": "testi-wall", "name": "A wall of four quote cards", "pattern": "B17",
+      "tree": { "k": "section", "set": { "paddingTop": 96, "paddingBottom": 96, "paddingLeft": 24, "paddingRight": 24, "gap": 40 },
+        "c": [
+          { "k": "grid", "cols": 2, "min": "16rem", "set": { "gap": 24 }, "c": [
+            { "k": "card", "tone": "soft", "set": { "gap": 16, "padding": 32 }, "c": [ { "r": "small", "t": "Mrs Chioma Uche, a parent" }, { "r": "quote", "t": "Every term report reads like the teacher really knows my daughter. It is never copied and pasted." } ] },
+            { "k": "card", "tone": "soft", "set": { "gap": 16, "padding": 32 }, "c": [ { "r": "small", "t": "Nana Ama Frimpong, Class of 2015" }, { "r": "quote", "t": "Ten years on, my closest friends are still the girls from my Greenfield house." } ] },
+            { "k": "card", "tone": "soft", "set": { "gap": 16, "padding": 32 }, "c": [ { "r": "small", "t": "Mr Ibrahim Sani, a parent" }, { "r": "quote", "t": "When the power goes, lessons go on. The school thought of everything." } ] },
+            { "k": "card", "tone": "soft", "set": { "gap": 16, "padding": 32 }, "c": [ { "r": "small", "t": "Femi, a pupil in JSS 2" }, { "r": "quote", "t": "Our class built a garden behind the lab, and now we cook what we grow on Fridays." } ] }
+          ] }
+        ] } },
+    { "id": "testi-round-four", "name": "Four round portraits and their words", "pattern": "B17",
+      "tree": { "k": "section", "center": true, "set": { "paddingTop": 96, "paddingBottom": 96, "paddingLeft": 24, "paddingRight": 24, "gap": 40 },
+        "c": [
+          { "k": "grid", "cols": 4, "min": "12rem", "set": { "gap": 24 }, "c": [
+            { "k": "stack", "center": true, "set": { "gap": 12 }, "c": [ { "r": "image", "photo": "staff-2", "alt": "Mrs Kemi Afolabi", "set": { "ratio": "1 / 1", "radius": 999, "width": "8rem" } }, { "r": "icon", "icon": "Quote" }, { "r": "heading", "t": "Mrs Kemi Afolabi" }, { "r": "body", "t": "The music department gave my twins the confidence to perform in front of the whole school." } ] },
+            { "k": "stack", "center": true, "set": { "gap": 12 }, "c": [ { "r": "image", "photo": "staff-5", "alt": "Mr Kojo Appiah", "set": { "ratio": "1 / 1", "radius": 999, "width": "8rem" } }, { "r": "icon", "icon": "Quote" }, { "r": "heading", "t": "Mr Kojo Appiah" }, { "r": "body", "t": "We visited six schools. Greenfield was the only one where the pupils showed us round themselves." } ] },
+            { "k": "stack", "center": true, "set": { "gap": 12 }, "c": [ { "r": "image", "photo": "staff-1", "alt": "Dr Segun Olawale", "set": { "ratio": "1 / 1", "radius": 999, "width": "8rem" } }, { "r": "icon", "icon": "Quote" }, { "r": "heading", "t": "Dr Segun Olawale" }, { "r": "body", "t": "I studied medicine because of one chemistry teacher here. I still visit him every Christmas." } ] },
+            { "k": "stack", "center": true, "set": { "gap": 12 }, "c": [ { "r": "image", "photo": "staff-3", "alt": "Mrs Adwoa Mensah", "set": { "ratio": "1 / 1", "radius": 999, "width": "8rem" } }, { "r": "icon", "icon": "Quote" }, { "r": "heading", "t": "Mrs Adwoa Mensah" }, { "r": "body", "t": "Clear communication, safe grounds and happy children. What more could a parent ask?" } ] }
+          ] }
+        ] } }
+  ]
+}

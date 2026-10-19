@@ -1,0 +1,146 @@
+{
+  "$comment": "Programmes / Products (A5 card grid — tablet 2, phone 1, 'as many as fit' does it; B14 feature grid; B15 a feature list beside a picture; the 12 Wix Studio designed Products tiles, read 2026-10-19: three photo cards 2 · a split of words beside a picture 2 · panels / mosaics of photos 3 · a photo band 1 · numbered items beside a photo 1 · columns over a wide photo 1 · words beside four cards 1 · items around a centre photo 1). For a school: programmes, courses, subjects, clubs and the uniform shop, a fee line where the tile shows a price.",
+  "sections": [
+    { "id": "prog-two-photos-panel", "name": "Two photos beside a coloured panel of words", "pattern": "B15",
+      "tree": { "k": "section", "set": { "paddingTop": 96, "paddingBottom": 96, "paddingLeft": 24, "paddingRight": 24, "gap": 40 },
+        "c": [ { "k": "row", "set": { "gap": 0, "align": "stretch" }, "c": [
+          { "r": "image", "photo": "uniform", "alt": "The Greenfield school uniform", "set": { "width": "fill", "minWidth": "14rem", "ratio": "3 / 4" } },
+          { "r": "image", "photo": "art", "alt": "A pupil painting in the art room", "set": { "width": "fill", "minWidth": "14rem", "ratio": "3 / 4" } },
+          { "k": "stack", "tone": "strong", "center": true, "set": { "width": "fill", "minWidth": "24rem", "gap": 16, "padding": 32, "justify": "between" }, "c": [
+            { "r": "title", "t": "Our programmes" },
+            { "r": "body", "t": "From the nursery to SSS 3, every child has a path. See what each stage offers." },
+            { "r": "button2", "t": "See all programmes" }
+          ] }
+        ] } ] } },
+    { "id": "prog-photo-band", "name": "One programme over a full-width photo", "pattern": "B15",
+      "tree": { "k": "section", "tone": "photo", "photo": "students-lab", "set": { "minHeight": 520, "justify": "end", "paddingTop": 96, "paddingBottom": 96, "paddingLeft": 24, "paddingRight": 24, "gap": 24 },
+        "c": [
+          { "r": "title", "t": "Explore our sciences", "set": { "maxWidth": "32rem" } },
+          { "r": "body", "t": "Biology, chemistry and physics in three labs, from JSS 1 to WAEC.", "set": { "maxWidth": "32rem" } },
+          { "r": "button2", "t": "Discover" }
+        ] } },
+    { "id": "prog-three-photo-cards", "name": "Three programmes with a photo and a fee", "pattern": "A5",
+      "tree": { "k": "section", "center": true, "set": { "paddingTop": 96, "paddingBottom": 96, "paddingLeft": 24, "paddingRight": 24, "gap": 40 },
+        "c": [
+          { "k": "grid", "cols": 3, "min": "10rem", "set": { "gap": 24 }, "c": [
+            { "k": "card", "tone": "plain", "center": true, "set": { "gap": 12 }, "c": [ { "r": "image", "photo": "nursery", "alt": "Nursery children at play", "set": { "ratio": "3 / 4" } }, { "r": "heading", "t": "Nursery" }, { "r": "small", "t": "₦180,000 a term" } ] },
+            { "k": "card", "tone": "plain", "center": true, "set": { "gap": 12 }, "c": [ { "r": "image", "photo": "classroom", "alt": "A primary classroom", "set": { "ratio": "3 / 4" } }, { "r": "heading", "t": "Primary" }, { "r": "small", "t": "₦220,000 a term" } ] },
+            { "k": "card", "tone": "plain", "center": true, "set": { "gap": 12 }, "c": [ { "r": "image", "photo": "students-lab", "alt": "Secondary students in the lab", "set": { "ratio": "3 / 4" } }, { "r": "heading", "t": "Secondary" }, { "r": "small", "t": "₦260,000 a term" } ] }
+          ] },
+          { "r": "button2", "t": "See all fees" }
+        ] } },
+    { "id": "prog-words-beside-photo", "name": "A short headline beside one big photo", "pattern": "B15",
+      "tree": { "k": "section", "set": { "paddingTop": 96, "paddingBottom": 96, "paddingLeft": 24, "paddingRight": 24, "gap": 40 },
+        "c": [ { "k": "row", "set": { "gap": 48 }, "c": [
+          { "k": "stack", "set": { "width": "fill", "minWidth": "16rem", "gap": 24 }, "c": [
+            { "r": "title", "t": "Summer school, made for your child" },
+            { "r": "button2", "t": "See the timetable" }
+          ] },
+          { "r": "image", "photo": "pupils-outside", "alt": "Pupils outdoors at summer school", "set": { "width": "fill", "minWidth": "16rem", "ratio": "4 / 3" } }
+        ] } ] } },
+    { "id": "prog-panel-shop-photo", "name": "A panel and a shop item beside a tall photo", "pattern": "B15", "needs": ["cart"],
+      "tree": { "k": "section", "set": { "paddingTop": 96, "paddingBottom": 96, "paddingLeft": 24, "paddingRight": 24, "gap": 40 },
+        "c": [ { "k": "row", "set": { "gap": 16, "align": "stretch" }, "c": [
+          { "k": "stack", "set": { "width": "fill", "minWidth": "16rem", "gap": 16 }, "c": [
+            { "k": "card", "tone": "soft", "center": true, "set": { "gap": 12, "padding": 32 }, "c": [
+              { "r": "eyebrow", "t": "New this term" },
+              { "r": "title", "t": "The uniform shop" },
+              { "r": "body", "t": "Blazers, shirts, sports kit and bags, all in the school colours." },
+              { "r": "button2", "t": "Browse the shop" }
+            ] },
+            { "r": "image", "photo": "uniform", "alt": "A folded school shirt and tie" }
+          ] },
+          { "r": "image", "photo": "pupils-reading", "alt": "A smiling pupil in uniform", "set": { "width": "fill", "minWidth": "16rem", "ratio": "3 / 4" } }
+        ] } ] } },
+    { "id": "prog-columns-over-photo", "name": "A title and three subjects over a wide photo", "pattern": "B14",
+      "tree": { "k": "section", "set": { "paddingTop": 96, "paddingBottom": 96, "paddingLeft": 24, "paddingRight": 24, "gap": 40 },
+        "c": [
+          { "k": "grid", "cols": 4, "min": "12rem", "set": { "gap": 24 }, "c": [
+            { "r": "title", "t": "Subjects that open doors" },
+            { "k": "stack", "set": { "gap": 8 }, "c": [ { "r": "heading", "t": "Sciences" }, { "r": "small", "t": "Biology, chemistry, physics and further maths for WAEC and NECO." } ] },
+            { "k": "stack", "set": { "gap": 8 }, "c": [ { "r": "heading", "t": "Arts" }, { "r": "small", "t": "Literature, government, history and fine art." } ] },
+            { "k": "stack", "set": { "gap": 8 }, "c": [ { "r": "heading", "t": "Commercial" }, { "r": "small", "t": "Accounting, commerce and economics, with a business club." } ] }
+          ] },
+          { "r": "image", "photo": "school-front", "alt": "The front of Greenfield Academy", "set": { "ratio": "21 / 9" } }
+        ] } },
+    { "id": "prog-numbered-beside-photo", "name": "Three numbered courses beside a photo", "pattern": "B15",
+      "tree": { "k": "section", "set": { "paddingTop": 96, "paddingBottom": 96, "paddingLeft": 24, "paddingRight": 24, "gap": 40 },
+        "c": [
+          { "r": "title", "t": "Our courses" },
+          { "k": "row", "set": { "gap": 48 }, "c": [
+            { "r": "image", "photo": "library", "alt": "Students studying in the library", "set": { "width": "fill", "minWidth": "16rem", "ratio": "1 / 1" } },
+            { "k": "stack", "set": { "width": "fill", "minWidth": "16rem", "gap": 24 }, "c": [
+              { "k": "stack", "set": { "gap": 4 }, "c": [ { "r": "stat", "t": "01" }, { "r": "small", "t": "WAEC preparation: past papers, mock exams and weekly marking." } ] },
+              { "k": "stack", "set": { "gap": 4 }, "c": [ { "r": "stat", "t": "02" }, { "r": "small", "t": "JAMB coaching: timed practice on the computer every Saturday." } ] },
+              { "k": "stack", "set": { "gap": 4 }, "c": [ { "r": "stat", "t": "03" }, { "r": "small", "t": "Reading catch-up: small groups for pupils who need a lift." } ] }
+            ] }
+          ] }
+        ] } },
+    { "id": "prog-three-cards-photo-below", "name": "Three clubs with the words above a tall photo", "pattern": "A5",
+      "tree": { "k": "section", "set": { "paddingTop": 96, "paddingBottom": 96, "paddingLeft": 24, "paddingRight": 24, "gap": 40 },
+        "c": [
+          { "r": "title", "t": "After-school clubs" },
+          { "k": "grid", "cols": 3, "min": "10rem", "set": { "gap": 24 }, "c": [
+            { "k": "card", "tone": "plain", "set": { "gap": 12 }, "c": [ { "r": "heading", "t": "Music" }, { "r": "small", "t": "Choir, drums and the school band. Mondays and Thursdays." }, { "r": "image", "photo": "music", "alt": "Pupils playing drums", "set": { "ratio": "3 / 4" } }, { "r": "button", "t": "Learn more" } ] },
+            { "k": "card", "tone": "plain", "set": { "gap": 12 }, "c": [ { "r": "heading", "t": "Art" }, { "r": "small", "t": "Painting, pottery and an exhibition every June." }, { "r": "image", "photo": "art", "alt": "A pupil painting", "set": { "ratio": "3 / 4" } }, { "r": "button", "t": "Learn more" } ] },
+            { "k": "card", "tone": "plain", "set": { "gap": 12 }, "c": [ { "r": "heading", "t": "Sports" }, { "r": "small", "t": "Football, athletics and basketball after lessons." }, { "r": "image", "photo": "sports", "alt": "Pupils running on the track", "set": { "ratio": "3 / 4" } }, { "r": "button", "t": "Learn more" } ] }
+          ] }
+        ] } },
+    { "id": "prog-big-words-tall-photo", "name": "Big words and a fee beside a tall photo", "pattern": "B15",
+      "tree": { "k": "section", "set": { "paddingTop": 96, "paddingBottom": 96, "paddingLeft": 24, "paddingRight": 24, "gap": 40 },
+        "c": [ { "k": "row", "set": { "gap": 48 }, "c": [
+          { "k": "stack", "set": { "width": "fill", "minWidth": "16rem", "gap": 20 }, "c": [
+            { "r": "title", "t": "Boarding, designed around your child" },
+            { "r": "body", "t": "Supervised prep, three meals a day and a house parent on every floor." },
+            { "r": "stat", "t": "₦450,000 a term" },
+            { "r": "button2", "t": "Learn more" }
+          ] },
+          { "r": "image", "photo": "boarding", "alt": "A tidy boarding house dormitory", "set": { "width": "fill", "minWidth": "16rem", "ratio": "3 / 4" } }
+        ] } ] } },
+    { "id": "prog-intro-four-cards", "name": "An introduction beside four programme cards", "pattern": "B14",
+      "tree": { "k": "section", "tone": "soft", "set": { "paddingTop": 96, "paddingBottom": 96, "paddingLeft": 24, "paddingRight": 24, "gap": 40 },
+        "c": [ { "k": "row", "set": { "gap": 48, "align": "start" }, "c": [
+          { "k": "stack", "set": { "width": "fill", "minWidth": "16rem", "gap": 16 }, "c": [
+            { "r": "title", "t": "Our programmes" },
+            { "r": "body", "t": "Four stages, one school: every child is known by name from nursery to SSS 3." },
+            { "r": "button2", "t": "Read more" }
+          ] },
+          { "k": "grid", "cols": 2, "min": "10rem", "set": { "gap": 16, "width": "fill", "minWidth": "18rem" }, "c": [
+            { "k": "card", "tone": "plain", "set": { "gap": 8, "padding": 16 }, "c": [ { "r": "heading", "t": "Nursery" }, { "r": "small", "t": "Ages 3 to 5. Play, songs and first letters." } ] },
+            { "k": "card", "tone": "plain", "set": { "gap": 8, "padding": 16 }, "c": [ { "r": "heading", "t": "Primary" }, { "r": "small", "t": "Primary 1 to 6. Reading, number and science." } ] },
+            { "k": "card", "tone": "plain", "set": { "gap": 8, "padding": 16 }, "c": [ { "r": "heading", "t": "Junior secondary" }, { "r": "small", "t": "JSS 1 to 3, ending in the BECE." } ] },
+            { "k": "card", "tone": "plain", "set": { "gap": 8, "padding": 16 }, "c": [ { "r": "heading", "t": "Senior secondary" }, { "r": "small", "t": "SSS 1 to 3: sciences, arts or commercial." } ] }
+          ] }
+        ] } ] } },
+    { "id": "prog-photo-mosaic", "name": "A mosaic of photos with a headline and one big photo", "pattern": "A5",
+      "tree": { "k": "section", "set": { "paddingTop": 96, "paddingBottom": 96, "paddingLeft": 24, "paddingRight": 24, "gap": 40 },
+        "c": [ { "k": "grid", "cols": 4, "min": "", "set": { "gap": 16 }, "c": [
+          { "r": "image", "photo": "gallery-1", "alt": "Pupils at the art table", "set": { "ratio": "1 / 1" } },
+          { "r": "image", "photo": "gallery-2", "alt": "A science experiment", "set": { "ratio": "1 / 1" } },
+          { "k": "stack", "set": { "colSpan": 2, "gap": 20, "justify": "center" }, "c": [
+            { "r": "title", "t": "Made for the way your child learns" },
+            { "r": "button2", "t": "Explore programmes" }
+          ] },
+          { "r": "image", "photo": "gallery-3", "alt": "Pupils reading together", "set": { "ratio": "1 / 1" } },
+          { "r": "image", "photo": "gallery-4", "alt": "The school choir", "set": { "ratio": "1 / 1" } },
+          { "r": "image", "photo": "teacher-class", "alt": "A teacher with her class", "set": { "colSpan": 2, "ratio": "2 / 1" } }
+        ] } ] } },
+    { "id": "prog-four-around-photo", "name": "Four programmes around a centre photo", "pattern": "B15",
+      "tree": { "k": "section", "center": true, "set": { "paddingTop": 96, "paddingBottom": 96, "paddingLeft": 24, "paddingRight": 24, "gap": 40 },
+        "c": [
+          { "r": "title", "t": "Reach new heights", "set": { "maxWidth": "40rem" } },
+          { "r": "button2", "t": "See all programmes" },
+          { "k": "row", "set": { "gap": 40 }, "c": [
+            { "k": "stack", "center": true, "set": { "width": "fill", "minWidth": "12rem", "gap": 32 }, "c": [
+              { "k": "stack", "center": true, "set": { "gap": 8 }, "c": [ { "r": "heading", "t": "Debate club" }, { "r": "small", "t": "Speak with confidence, every Tuesday." } ] },
+              { "k": "stack", "center": true, "set": { "gap": 8 }, "c": [ { "r": "heading", "t": "Coding club" }, { "r": "small", "t": "Build games and websites in the computer lab." } ] }
+            ] },
+            { "r": "image", "photo": "video-still", "alt": "Pupils at the computers", "set": { "width": "fill", "minWidth": "16rem", "ratio": "16 / 10" } },
+            { "k": "stack", "center": true, "set": { "width": "fill", "minWidth": "12rem", "gap": 32 }, "c": [
+              { "k": "stack", "center": true, "set": { "gap": 8 }, "c": [ { "r": "heading", "t": "French" }, { "r": "small", "t": "A second language from Primary 4." } ] },
+              { "k": "stack", "center": true, "set": { "gap": 8 }, "c": [ { "r": "heading", "t": "Further maths" }, { "r": "small", "t": "For SSS students aiming at engineering." } ] }
+            ] }
+          ] }
+        ] } }
+  ]
+}

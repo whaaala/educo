@@ -16,3 +16,8 @@ Feature: The page check tells a broken word from a word that wraps at its hyphen
     Given a page whose h1 is smaller than an h2 after it
     Then the page check lists it as a warning, not as an error of the builder
     And a heading smaller than the words around it is still an error
+
+  Scenario: A picture in a carousel's next slide is not off the page (LE15c-3)
+    Given a carousel whose second slide holds a picture, waiting to the right inside its own sideways strip
+    Then the page check does not report that picture as running off the page
+    And a picture that really runs past the edge of the page is still reported

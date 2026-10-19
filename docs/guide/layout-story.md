@@ -812,6 +812,10 @@ and sets the space above it to nothing, because none of it is locked.
 **"The banner should say the same everywhere."** The admissions banner is on four pages. He selects it, chooses **Make
 global**, and changes the closing date once: all four pages change, and the banner is marked green so he knows it is shared.
 
+**"Photos of last year's open day, and what parents said."** From **Gallery / Collage** he adds one big photo beside four
+small ones, and from **Testimonials** three parents' words in cards. On his phone the big photo comes first and the cards
+stack; he never set anything for it.
+
 The whole of it, with every control by its name, is in [Ready-made sections, your own sections and page
 templates](./sections.md).
 

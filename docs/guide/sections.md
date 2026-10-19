@@ -14,7 +14,8 @@ suit your school. This page is about starting from something made.
 
 Mr Boateng opens the **Add** panel (the **+** at the top left, or the **B** key) and chooses the **Sections** tab. The panel
 shows the kinds of section as a row of chips: **Headers 8 · Hero / Welcome 36 · Footers 19 · Blank 1 · Our story 16 · Text 8 ·
-Features / Services 20 · Spotlight / zig-zag 17 · Stats 8 · CTA / Banner 17**, each with how many it holds, under small
+Features / Services 20 · Spotlight / zig-zag 17 · Stats 8 · CTA / Banner 17 · Cards 21 · Programmes / Products 12 ·
+Gallery / Collage 14 · Slideshow 7 · Team 10 · Testimonials 8**, each with how many it holds, under small
 headings (Navigation, Opening, Story, Showing, People and trust, Action). He taps
 **Hero / Welcome**.
 
@@ -87,6 +88,39 @@ She does not set anything for phones; each kind already does what good school si
 - **A column that takes part of the row fills the whole line on a phone**, so nothing is left ragged at the right.
 
 ![A spotlight on a 375 px phone: the picture first, then its words](./img/guide-sections-spotlight-phone.webp)
+
+## "Our clubs, our photos, our staff, and what parents say"
+
+Further down a page, a school shows what it is like to be there. Mr Mensah makes the school's Life at Greenfield page
+from these:
+
+- **Cards** (21): three or four cards of a photo and words, people's cards with their name and how to reach them, numbered
+  cards, icon cards on grey, words beside a grid of cards, and one big card beside four small ones.
+- **Programmes / Products** (12): nursery, primary and secondary, clubs, summer school or the uniform shop, as photo cards
+  with a fee, a panel of photos, words beside one big picture, or numbered points beside a photo.
+- **Gallery / Collage** (14): photos of school life two or three across, one big photo beside four small ones, photos of
+  different shapes set like a wall, and collages of photos and words.
+- **Slideshow** (7): photos one after another with words over each, a picture beside its words on every slide, words only,
+  or an introduction that stays put beside slides that change.
+- **Team** (10): the head and the staff as portraits with their name and role, round faces in a list, a big statement over
+  four people, or a list of who to call.
+- **Testimonials** (8): what parents, pupils and old students say, as three cards, one big quote with five stars, portraits
+  with their words, a wall of quotes, or quotes one after another.
+
+Again, nothing to set for phones:
+
+- **A gallery's big photo stays big.** On a computer it covers two columns and two rows of its grid; on a tablet and a phone
+  the grid narrows by itself and the big photo comes first. Select it and change **Columns wide** in the Inspector if you want
+  it smaller.
+- **A slideshow shows one slide at a time.** A visitor swipes it, or uses the arrow keys, the arrows or the dots. Only one of
+  the seven moves by itself, every 8 seconds, and it stops while someone points at it, is using it with the keyboard, or has
+  pressed **Pause**. For a visitor who has asked their phone or computer for less movement, it never moves by itself.
+- **Portraits and cards never leave one alone on a line.** Four people are four across on a computer, two and two on a
+  tablet, and one under another or two by two on a phone.
+- **Every slide, card and photo is ordinary blocks.** Add a fifth slide by duplicating one (**Ctrl+D**), change a person's
+  photo, or delete a card you do not need.
+
+![A gallery on a 375 px phone: the big photo first, then the four small ones](./img/guide-sections-gallery-phone.webp)
 
 ## "Now I want to change it"
 
@@ -213,8 +247,10 @@ A page made from a template is a copy. It takes your site's own header and foote
 | Add a section | Click or tap a tile; **Enter** on a focused tile; drag a tile onto the page | **Ctrl+Z** undoes |
 | Plain or finished | **Wireframe \| Designed** at the top of the tab | |
 | The look | **Finish**: Serious · Minimalist · Plain · Bold · Calm · Startup · Playful | |
-| The kinds of section | Headers · Hero / Welcome · Footers · Blank · Our story · Text · Features / Services · Spotlight / zig-zag · Stats · CTA / Banner | |
-| On a phone | Pictures before their words in a zig-zag · cards one under another · numbers two by two · a button under its words | Nothing to set |
+| The kinds of section | Headers · Hero / Welcome · Footers · Blank · Our story · Text · Features / Services · Spotlight / zig-zag · Stats · CTA / Banner · Cards · Programmes / Products · Gallery / Collage · Slideshow · Team · Testimonials | |
+| On a phone | Pictures before their words in a zig-zag · cards one under another · numbers two by two · a button under its words · a gallery's big photo first · a slideshow one slide at a time | Nothing to set |
+| A big photo or card in a grid | Select it → Inspector → **Columns wide** (and rows tall) | **Ctrl+Z** undoes |
+| A slideshow | Select its slides' box → Inspector → **Show one at a time**: **Moving between them** (Dots · Arrows · Both · None) and **Move on its own every** (0 = only when a visitor moves it); a moving one has a Pause | Visitor: arrow keys, swipe |
 | A welcome's picture on a very wide screen | At most 75 % of the screen's height, cropped; select the picture → Inspector → **Limits** → **Max height** (`75svh`) to change or clear it | **Ctrl+Z** undoes |
 | The space between sections | **Page settings → Page grid…** → **Space above and below sections** (the site, or this page with its own grid); **Back to the designs' own** | **Ctrl+Z** undoes |
 | Same-colour sections share their space | On at the start; switch it off in Page grid | |
@@ -230,4 +266,4 @@ A page made from a template is a copy. It takes your site's own header and foote
 | Which page the visitor is on | The menu marks it with a heavier underline, and tells a screen reader | |
 
 Some sections stand in for a part the builder does not have yet: a form, a map, a strip of logos, a video. Their tiles say
-**placeholder: form** (or map, logo strip, video, counter), and they are built from ordinary blocks until that part arrives.
+**placeholder: form** (or map, logo strip, video, counter, lightbox, cart), and they are built from ordinary blocks until that part arrives.
