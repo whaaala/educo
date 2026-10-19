@@ -1,0 +1,375 @@
+{
+  "$comment": "THE SECTIONS' PHOTOS (BATCH LE-15, D6 signed 2026-10-19): about 40 free-licence photos, African schools first (RULE AF), each verified on its own page — Pexels License or Unsplash License, no credit required — resized to 480 and 800 px WebP, at most 40 KB (public/sections/). Written by scripts/research/section-photos.js; to replace one, put its new file and line in the raw manifest and run it again. Left out on purpose: a real school named in the picture, a named person's own portrait.",
+  "photos": {
+    "pupils-reading": {
+      "alt": "A group of children sit together on steps, each holding an open book.",
+      "author": "Michael Ali",
+      "licence": "Free to use under the Unsplash License",
+      "source": "https://unsplash.com/photos/a-group-of-children-sitting-on-steps-with-books-dPuMBIbvDCg",
+      "width": 800,
+      "height": 534,
+      "src": "/sections/pupils-reading-800.webp",
+      "srcset": "/sections/pupils-reading-480.webp 480w, /sections/pupils-reading-800.webp 800w"
+    },
+    "school-front": {
+      "alt": "A two-storey secondary school building seen from the road, framed by trees and a dirt path.",
+      "author": "Chris wade NTEZICIMPA",
+      "licence": "Pexels License (photo page: \"License: Free\", linking to pexels.com/license)",
+      "source": "https://www.pexels.com/photo/outdoor-view-of-secondary-school-building-in-daylight-30546833/",
+      "width": 540,
+      "height": 720,
+      "src": "/sections/school-front-800.webp",
+      "srcset": "/sections/school-front-480.webp 480w, /sections/school-front-800.webp 800w"
+    },
+    "classroom": {
+      "alt": "Smiling pupils in blue school uniforms sit on wooden benches in a Nigerian classroom.",
+      "author": "Armstrong Opulency",
+      "licence": "Pexels License (photo page: \"License: Free\", linking to pexels.com/license)",
+      "source": "https://www.pexels.com/photo/children-at-school-12448839/",
+      "width": 800,
+      "height": 534,
+      "src": "/sections/classroom-800.webp",
+      "srcset": "/sections/classroom-480.webp 480w, /sections/classroom-800.webp 800w"
+    },
+    "nursery": {
+      "alt": "Young children sit together with books and papers in a colourful nursery classroom.",
+      "author": "Prince Beguin",
+      "licence": "Pexels License (photo page: \"License: Free\", linking to pexels.com/license)",
+      "source": "https://www.pexels.com/photo/children-learning-in-a-vibrant-classroom-setting-31773583/",
+      "width": 800,
+      "height": 603,
+      "src": "/sections/nursery-800.webp",
+      "srcset": "/sections/nursery-480.webp 480w, /sections/nursery-800.webp 800w"
+    },
+    "teacher-class": {
+      "alt": "A teacher leans over a pupil's desk to help with her written work.",
+      "author": "Storyzangu Hub",
+      "licence": "Free to use under the Unsplash License",
+      "source": "https://unsplash.com/photos/a-teacher-assists-a-student-in-a-classroom-Ix-axXotEg0",
+      "width": 800,
+      "height": 534,
+      "src": "/sections/teacher-class-800.webp",
+      "srcset": "/sections/teacher-class-480.webp 480w, /sections/teacher-class-800.webp 800w"
+    },
+    "students-lab": {
+      "alt": "A secondary school student looks out from behind a metal science apparatus in a laboratory.",
+      "author": "cottonbro studio",
+      "licence": "Pexels License (photo page: \"License: Free\", linking to pexels.com/license)",
+      "source": "https://www.pexels.com/photo/a-high-school-student-in-white-top-looking-at-camera-6208713/",
+      "width": 800,
+      "height": 534,
+      "src": "/sections/students-lab-800.webp",
+      "srcset": "/sections/students-lab-480.webp 480w, /sections/students-lab-800.webp 800w"
+    },
+    "sports": {
+      "alt": "Young athletes crouch at the start line of a running track, ready to race.",
+      "author": "Adedire Abiodun",
+      "licence": "Pexels License (photo page: \"License: Free\", linking to pexels.com/license)",
+      "source": "https://www.pexels.com/photo/people-getting-ready-to-run-9714143/",
+      "width": 800,
+      "height": 534,
+      "src": "/sections/sports-800.webp",
+      "srcset": "/sections/sports-480.webp 480w, /sections/sports-800.webp 800w"
+    },
+    "music": {
+      "alt": "A group of children play traditional wooden xylophones and drums outdoors.",
+      "author": "Huand Matsuda",
+      "licence": "Pexels License (photo page: \"License: Free\", linking to pexels.com/license)",
+      "source": "https://www.pexels.com/photo/children-in-traditional-music-band-25451760/",
+      "width": 800,
+      "height": 534,
+      "src": "/sections/music-800.webp",
+      "srcset": "/sections/music-480.webp 480w, /sections/music-800.webp 800w"
+    },
+    "art": {
+      "alt": "Two boys paint at easels in a bright art room.",
+      "author": "Pavel Danilyuk",
+      "licence": "Pexels License (photo page: \"License: Free\", linking to pexels.com/license)",
+      "source": "https://www.pexels.com/photo/students-painting-in-an-art-class-8382386/",
+      "width": 534,
+      "height": 800,
+      "src": "/sections/art-800.webp",
+      "srcset": "/sections/art-480.webp 480w, /sections/art-800.webp 800w"
+    },
+    "boarding": {
+      "alt": "Rows of bunk beds in a student dormitory, with sunlight streaming through tall windows.",
+      "author": "Aditya Karande",
+      "licence": "Free to use under the Unsplash License",
+      "source": "https://unsplash.com/photos/bunk-beds-in-a-dormitory-room-with-sunlight-streaming-in-k-559RP6fdo",
+      "width": 600,
+      "height": 800,
+      "src": "/sections/boarding-800.webp",
+      "srcset": "/sections/boarding-480.webp 480w, /sections/boarding-800.webp 800w"
+    },
+    "playground": {
+      "alt": "Laughing pupils in blue checked uniforms run and play together on the school grounds.",
+      "author": "Armstrong Opulency",
+      "licence": "Pexels License (photo page: \"License: Free\", linking to pexels.com/license)",
+      "source": "https://www.pexels.com/photo/boys-in-blue-uniform-running-11941089/",
+      "width": 533,
+      "height": 800,
+      "src": "/sections/playground-800.webp",
+      "srcset": "/sections/playground-480.webp 480w, /sections/playground-800.webp 800w"
+    },
+    "family": {
+      "alt": "Two mothers in bright wrappers walk along a roadside with their children in Zaria, Nigeria.",
+      "author": "Yama Lamido",
+      "licence": "Pexels License (photo page: \"License: Free\", linking to pexels.com/license)",
+      "source": "https://www.pexels.com/photo/african-mothers-walking-along-road-in-zaria-28901508/",
+      "width": 600,
+      "height": 800,
+      "src": "/sections/family-800.webp",
+      "srcset": "/sections/family-480.webp 480w, /sections/family-800.webp 800w"
+    },
+    "school-field": {
+      "alt": "Students play volleyball in a school courtyard between tall classroom blocks.",
+      "author": "Mitchel Onwuchuruba",
+      "licence": "Pexels License (photo page: \"License: Free\", linking to pexels.com/license)",
+      "source": "https://www.pexels.com/photo/energetic-youth-playing-volleyball-at-school-31220281/",
+      "width": 600,
+      "height": 800,
+      "src": "/sections/school-field-800.webp",
+      "srcset": "/sections/school-field-480.webp 480w, /sections/school-field-800.webp 800w"
+    },
+    "graduation": {
+      "alt": "Young children in blue graduation gowns and caps stand in rows at a ceremony in Winneba, Ghana.",
+      "author": "Uncle Rich Education",
+      "licence": "Pexels License (photo page: \"License: Free\", linking to pexels.com/license)",
+      "source": "https://www.pexels.com/photo/joyful-graduation-ceremony-in-winneba-ghana-30575959/",
+      "width": 720,
+      "height": 480,
+      "src": "/sections/graduation-800.webp",
+      "srcset": "/sections/graduation-480.webp 480w, /sections/graduation-800.webp 800w"
+    },
+    "library": {
+      "alt": "A quiet library room with wooden desks in front of tall green shelves full of books.",
+      "author": "Sami TÜRK",
+      "licence": "Pexels License (photo page: \"License: Free\", linking to pexels.com/license)",
+      "source": "https://www.pexels.com/photo/vintage-classroom-with-wooden-desks-and-bookshelves-34084877/",
+      "width": 800,
+      "height": 534,
+      "src": "/sections/library-800.webp",
+      "srcset": "/sections/library-480.webp 480w, /sections/library-800.webp 800w"
+    },
+    "pupils-outside": {
+      "alt": "Four students in khaki uniforms read and talk together outside their school.",
+      "author": "mickael ange konan",
+      "licence": "Pexels License (photo page: \"License: Free\", linking to pexels.com/license)",
+      "source": "https://www.pexels.com/photo/group-of-students-studying-outdoors-at-school-34526424/",
+      "width": 800,
+      "height": 534,
+      "src": "/sections/pupils-outside-800.webp",
+      "srcset": "/sections/pupils-outside-480.webp 480w, /sections/pupils-outside-800.webp 800w"
+    },
+    "head-teacher": {
+      "alt": "A smiling woman teacher in a grey blazer holds a pile of books in her classroom.",
+      "author": "Katerina Holmes",
+      "licence": "Pexels License (photo page: \"License: Free\", linking to pexels.com/license)",
+      "source": "https://www.pexels.com/photo/smiling-black-female-teacher-with-textbooks-5905898/",
+      "width": 533,
+      "height": 800,
+      "src": "/sections/head-teacher-800.webp",
+      "srcset": "/sections/head-teacher-480.webp 480w, /sections/head-teacher-800.webp 800w"
+    },
+    "video-still": {
+      "alt": "A crowd of smiling schoolchildren gathers close to the camera in a sunny schoolyard in Zambia.",
+      "author": "Ana Kenk",
+      "licence": "Pexels License (photo page: \"License: Free\", linking to pexels.com/license)",
+      "source": "https://www.pexels.com/photo/group-of-children-in-zambian-schoolyard-36467878/",
+      "width": 800,
+      "height": 534,
+      "src": "/sections/video-still-800.webp",
+      "srcset": "/sections/video-still-480.webp 480w, /sections/video-still-800.webp 800w"
+    },
+    "staff-1": {
+      "alt": "A smiling woman teacher with short natural hair stands in front of a whiteboard.",
+      "author": "Pavel Danilyuk",
+      "licence": "Pexels License (photo page: \"License: Free\", linking to pexels.com/license)",
+      "source": "https://www.pexels.com/photo/woman-holding-a-notebook-8423069/",
+      "width": 534,
+      "height": 800,
+      "src": "/sections/staff-1-800.webp",
+      "srcset": "/sections/staff-1-480.webp 480w, /sections/staff-1-800.webp 800w"
+    },
+    "staff-2": {
+      "alt": "A young man teacher in a dark blazer stands in front of a chalkboard covered in geometry.",
+      "author": "Yan Krukau",
+      "licence": "Pexels License (photo page: \"License: Free\", linking to pexels.com/license)",
+      "source": "https://www.pexels.com/photo/man-standing-beside-a-chalkboard-8617942/",
+      "width": 533,
+      "height": 800,
+      "src": "/sections/staff-2-800.webp",
+      "srcset": "/sections/staff-2-480.webp 480w, /sections/staff-2-800.webp 800w"
+    },
+    "staff-3": {
+      "alt": "A woman teacher sits at her desk with books and a laptop in front of a whiteboard.",
+      "author": "Katerina Holmes",
+      "licence": "Pexels License (photo page: \"License: Free\", linking to pexels.com/license)",
+      "source": "https://www.pexels.com/photo/confident-black-woman-sitting-in-classroom-5905956/",
+      "width": 800,
+      "height": 534,
+      "src": "/sections/staff-3-800.webp",
+      "srcset": "/sections/staff-3-480.webp 480w, /sections/staff-3-800.webp 800w"
+    },
+    "staff-4": {
+      "alt": "A man teacher in a blue polo shirt stands with his arms crossed.",
+      "author": "Rewired Digital",
+      "licence": "Free to use under the Unsplash License",
+      "source": "https://unsplash.com/photos/man-in-blue-polo-shirt-with-arms-crossed-xojv9KpkV4A",
+      "width": 450,
+      "height": 800,
+      "src": "/sections/staff-4-800.webp",
+      "srcset": "/sections/staff-4-480.webp 480w, /sections/staff-4-800.webp 800w"
+    },
+    "staff-5": {
+      "alt": "A woman in a dark suit, glasses and a blue head wrap looks at the camera.",
+      "author": "cottonbro studio",
+      "licence": "Pexels License (photo page: \"License: Free\", linking to pexels.com/license)",
+      "source": "https://www.pexels.com/photo/woman-in-black-suit-wearing-blue-turban-7805053/",
+      "width": 533,
+      "height": 800,
+      "src": "/sections/staff-5-800.webp",
+      "srcset": "/sections/staff-5-480.webp 480w, /sections/staff-5-800.webp 800w"
+    },
+    "event-sports-day": {
+      "alt": "Students in green and yellow kits play handball on a school court while classmates watch.",
+      "author": "Alfredo Dacosta",
+      "licence": "Pexels License (photo page: \"License: Free\", linking to pexels.com/license)",
+      "source": "https://www.pexels.com/photo/energetic-outdoor-school-handball-game-action-35017764/",
+      "width": 800,
+      "height": 534,
+      "src": "/sections/event-sports-day-800.webp",
+      "srcset": "/sections/event-sports-day-480.webp 480w, /sections/event-sports-day-800.webp 800w"
+    },
+    "event-cultural-day": {
+      "alt": "Children in traditional dress dance on a field at an outdoor school event in Winneba, Ghana.",
+      "author": "Uncle Rich Education",
+      "licence": "Pexels License (photo page: \"License: Free\", linking to pexels.com/license)",
+      "source": "https://www.pexels.com/photo/vibrant-cultural-dance-performance-in-ghana-30575206/",
+      "width": 800,
+      "height": 533,
+      "src": "/sections/event-cultural-day-800.webp",
+      "srcset": "/sections/event-cultural-day-480.webp 480w, /sections/event-cultural-day-800.webp 800w"
+    },
+    "event-open-day": {
+      "alt": "A teacher stands with smiling students in uniform in the school garden.",
+      "author": "finix photographer",
+      "licence": "Pexels License (photo page: \"License: Free\", linking to pexels.com/license)",
+      "source": "https://www.pexels.com/photo/african-students-with-teacher-outdoors-32037741/",
+      "width": 800,
+      "height": 534,
+      "src": "/sections/event-open-day-800.webp",
+      "srcset": "/sections/event-open-day-480.webp 480w, /sections/event-open-day-800.webp 800w"
+    },
+    "news-1": {
+      "alt": "A visitor in a safety vest talks to pupils seated in a Nigerian classroom.",
+      "author": "QS.Pexel 📸",
+      "licence": "Pexels License (photo page: \"License: Free\", linking to pexels.com/license)",
+      "source": "https://www.pexels.com/photo/interactive-education-session-in-nigerian-classroom-39909710/",
+      "width": 533,
+      "height": 800,
+      "src": "/sections/news-1-800.webp",
+      "srcset": "/sections/news-1-480.webp 480w, /sections/news-1-800.webp 800w"
+    },
+    "news-2": {
+      "alt": "Rows of pupils in colourful uniforms stand and salute in the school yard.",
+      "author": "Erique Erufu Onojoserio",
+      "licence": "Pexels License (photo page: \"License: Free\", linking to pexels.com/license)",
+      "source": "https://www.pexels.com/photo/a-large-group-of-children-standing-in-rows-and-saluting-6572781/",
+      "width": 648,
+      "height": 486,
+      "src": "/sections/news-2-800.webp",
+      "srcset": "/sections/news-2-480.webp 480w, /sections/news-2-800.webp 800w"
+    },
+    "news-3": {
+      "alt": "Students in white uniforms sit close together during an indoor school assembly.",
+      "author": "Tosin Olowoleni",
+      "licence": "Pexels License (photo page: \"License: Free\", linking to pexels.com/license)",
+      "source": "https://www.pexels.com/photo/group-of-students-attending-indoor-assembly-34162719/",
+      "width": 800,
+      "height": 534,
+      "src": "/sections/news-3-800.webp",
+      "srcset": "/sections/news-3-480.webp 480w, /sections/news-3-800.webp 800w"
+    },
+    "news-4": {
+      "alt": "Smiling pupils raise their hands eagerly in a classroom in Kitgum, Uganda.",
+      "author": "illustrate Digital Ug",
+      "licence": "Pexels License (photo page: \"License: Free\", linking to pexels.com/license)",
+      "source": "https://www.pexels.com/photo/smiling-boys-standing-with-arms-raised-in-classroom-19982406/",
+      "width": 800,
+      "height": 534,
+      "src": "/sections/news-4-800.webp",
+      "srcset": "/sections/news-4-480.webp 480w, /sections/news-4-800.webp 800w"
+    },
+    "gallery-1": {
+      "alt": "Pupils in uniform sit on the ground outside and eat their lunch from bowls.",
+      "author": "Speak Media Uganda",
+      "licence": "Pexels License (photo page: \"License: Free\", linking to pexels.com/license)",
+      "source": "https://www.pexels.com/photo/children-eating-outdoors-in-a-rural-setting-35305044/",
+      "width": 800,
+      "height": 577,
+      "src": "/sections/gallery-1-800.webp",
+      "srcset": "/sections/gallery-1-480.webp 480w, /sections/gallery-1-800.webp 800w"
+    },
+    "gallery-2": {
+      "alt": "Two boys in school uniforms work together on a laptop in class.",
+      "author": "ROMAN ODINTSOV",
+      "licence": "Pexels License (photo page: \"License: Free\", linking to pexels.com/license)",
+      "source": "https://www.pexels.com/photo/young-boys-using-laptop-while-studying-11025029/",
+      "width": 533,
+      "height": 800,
+      "src": "/sections/gallery-2-800.webp",
+      "srcset": "/sections/gallery-2-480.webp 480w, /sections/gallery-2-800.webp 800w"
+    },
+    "gallery-3": {
+      "alt": "Teenage students in uniform smile and talk with each other indoors.",
+      "author": "Tosin Olowoleni",
+      "licence": "Pexels License (photo page: \"License: Free\", linking to pexels.com/license)",
+      "source": "https://www.pexels.com/photo/smiling-schoolchildren-in-uniform-share-a-moment-34162710/",
+      "width": 800,
+      "height": 534,
+      "src": "/sections/gallery-3-800.webp",
+      "srcset": "/sections/gallery-3-480.webp 480w, /sections/gallery-3-800.webp 800w"
+    },
+    "gallery-4": {
+      "alt": "Young boys and girls in white and patterned costumes perform a dance outdoors.",
+      "author": "Jules",
+      "licence": "Pexels License (photo page: \"License: Free\", linking to pexels.com/license)",
+      "source": "https://www.pexels.com/photo/young-boys-and-girls-during-a-traditional-ceremony-15234466/",
+      "width": 533,
+      "height": 800,
+      "src": "/sections/gallery-4-800.webp",
+      "srcset": "/sections/gallery-4-480.webp 480w, /sections/gallery-4-800.webp 800w"
+    },
+    "gallery-5": {
+      "alt": "Two students in uniform walk through a field of tall dry grass in Jos, Nigeria.",
+      "author": "Jagaba Denis",
+      "licence": "Pexels License (photo page: \"License: Free\", linking to pexels.com/license)",
+      "source": "https://www.pexels.com/photo/students-walking-in-dry-field-near-school-35704910/",
+      "width": 534,
+      "height": 800,
+      "src": "/sections/gallery-5-800.webp",
+      "srcset": "/sections/gallery-5-480.webp 480w, /sections/gallery-5-800.webp 800w"
+    },
+    "gallery-6": {
+      "alt": "Rows of students in white head scarves sit in a hall during a school assembly.",
+      "author": "Richard Mwakalindile",
+      "licence": "Pexels License (photo page: \"License: Free\", linking to pexels.com/license)",
+      "source": "https://www.pexels.com/photo/african-students-attending-assembly-indoors-36036166/",
+      "width": 800,
+      "height": 493,
+      "src": "/sections/gallery-6-800.webp",
+      "srcset": "/sections/gallery-6-480.webp 480w, /sections/gallery-6-800.webp 800w"
+    },
+    "uniform": {
+      "alt": "Three Nigerian students in matching checked skirts and cream shirts sit together and smile.",
+      "author": "Olayinka Precious",
+      "licence": "Pexels License (photo page: \"License: Free\", linking to pexels.com/license)",
+      "source": "https://www.pexels.com/photo/a-group-of-young-women-and-a-man-posing-for-a-picture-in-elegant-clothes-19374359/",
+      "width": 533,
+      "height": 800,
+      "src": "/sections/uniform-800.webp",
+      "srcset": "/sections/uniform-480.webp 480w, /sections/uniform-800.webp 800w"
+    }
+  }
+}

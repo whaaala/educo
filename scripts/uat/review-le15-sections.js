@@ -66,9 +66,10 @@ async function sheet(shots, file, cols) {
         for (const d of docs) {
           await shot.setContent(d.doc, { waitUntil: 'load' });
           await shot.waitForTimeout(700); // the designed entrances play for ~320 ms (measured: opacity 0 at load, 1 by 500 ms)
-          const h = Math.min(MAX_H, await shot.evaluate(() => document.documentElement.scrollHeight));
+          // framed on the section (a footer sits at the foot of a short page), like the tile
+          const box = await shot.evaluate(() => { const el = document.querySelector('footer, header, section'); const r = el ? el.getBoundingClientRect() : { top: 0, height: document.documentElement.scrollHeight }; return { y: Math.round(r.top + scrollY), h: Math.round(r.height) }; });
           const overflow = await shot.evaluate(() => document.documentElement.scrollWidth > window.innerWidth + 1);
-          shots.push({ name: `${overflow ? 'OVERFLOW · ' : ''}${d.name}`, png: await shot.screenshot({ clip: { x: 0, y: 0, width: w, height: h } }) });
+          shots.push({ name: `${overflow ? 'OVERFLOW · ' : ''}${d.name}`, png: await shot.screenshot({ fullPage: true, clip: { x: 0, y: box.y, width: w, height: Math.max(40, Math.min(MAX_H, box.h)) } }) });
         }
         const file = path.join(OUT, `${finish}-${catId}-${w}.png`);
         await sheet(shots, file, w === 1280 ? 4 : 6);

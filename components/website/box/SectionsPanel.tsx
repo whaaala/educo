@@ -47,6 +47,7 @@ function Tile({ def, cat, node, theme, onAdd }: { def: { name: string; needs?: s
   const box = useRef<HTMLButtonElement>(null);
   const [scale, setScale] = useState(0.2);
   const [h, setH] = useState(400);
+  const [top, setTop] = useState(0);
   const doc = useMemo(() => previewDoc(node, theme), [node, theme]);
   useEffect(() => {
     const el = box.current;
@@ -61,10 +62,16 @@ function Tile({ def, cat, node, theme, onAdd }: { def: { name: string; needs?: s
       className="group relative block w-full shrink-0 overflow-hidden rounded-lg border border-line bg-surface-2 text-left transition hover:ring-2 hover:ring-brand focus-visible:ring-2 focus-visible:ring-brand outline-none"
       style={{ height: `${Math.min(h, 720) * scale}px` }}>
       <iframe srcDoc={doc} title={def.name} aria-hidden="true" tabIndex={-1} loading="lazy"
-        onLoad={(e) => { const d = e.currentTarget.contentDocument; if (d?.body) setH(Math.max(80, d.body.scrollHeight)); }}
+        onLoad={(e) => {
+          // Framed on the SECTION, not the page: a footer sits at the foot of a page shorter than the screen (the page's
+          // own rule), so the whole page showed a tile of white with the footer at its bottom edge.
+          const d = e.currentTarget.contentDocument; const el = d?.querySelector<HTMLElement>(node.tag ?? "section");
+          if (!el) return; const r = el.getBoundingClientRect();
+          setTop(Math.round(r.top + (d?.defaultView?.scrollY ?? 0))); setH(Math.max(80, Math.round(r.height)));
+        }}
         // maxWidth none: globals.css carries an unlayered `iframe { max-width: 100% }`, which clamped the 1280px page to the
         // tile's width before it was scaled — the page was laid out as a thin strip (box-builder-site.feature names the trap)
-        style={{ width: `${TILE_PAGE_PX}px`, maxWidth: "none", height: `${Math.min(h, 720)}px`, transform: `scale(${scale})`, transformOrigin: "top left", pointerEvents: "none", border: 0 }} />
+        style={{ width: `${TILE_PAGE_PX}px`, maxWidth: "none", height: `${top + Math.min(h, 720)}px`, transform: `scale(${scale}) translateY(${-top}px)`, transformOrigin: "top left", pointerEvents: "none", border: 0 }} />
       <span className="absolute inset-x-0 bottom-0 flex items-center justify-between gap-2 bg-surface/90 px-2 py-1 text-[0.6875rem] font-semibold text-ink">
         <span className="truncate">{def.name}</span>
         {def.needs?.length ? <span className="shrink-0 font-medium text-muted">{fill(T.needs, { needs: def.needs.join(", ") })}</span> : null}

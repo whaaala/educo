@@ -112,8 +112,29 @@ export async function videosAsFiles(files: SiteFiles, db?: MediaBackend): Promis
  * and every `<img>` given its `srcset`. A photo that cannot be decoded still ships whole — losing a picture is worse
  * than sending a big one.
  */
+/**
+ * LE-15 D6 · A READY-MADE SECTION'S PHOTOS travel with the site. They are the builder's own files (`/sections/<id>-800.webp`,
+ * config/section-photos.json), which a downloaded site on the school's own host would not have — so each one a page names is
+ * fetched and made a data URI, the form an uploaded photo already has, and goes out as `images/…` with its copies like any
+ * other. A photo that cannot be fetched is left as it was (the download never fails on it).
+ */
+const SECTION_PHOTO = /\/sections\/[a-z0-9-]+\.webp/g;
+export async function inlineSectionPhotos(text: SiteFiles, get: (url: string) => Promise<Blob | null> = (u) => fetch(u).then((r) => (r.ok ? r.blob() : null), () => null)): Promise<SiteFiles> {
+  const urls = new Set(Object.values(text).flatMap((t) => t.match(SECTION_PHOTO) ?? []));
+  if (!urls.size) return text;
+  const uri = new Map<string, string>();
+  for (const u of urls) {
+    const blob = await get(u);
+    if (!blob) continue;
+    const bytes = new Uint8Array(await blobBytes(blob));
+    let bin = ""; for (let i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
+    uri.set(u, `data:image/webp;base64,${btoa(bin)}`);
+  }
+  return Object.fromEntries(Object.entries(text).map(([k, t]) => [k, t.replace(SECTION_PHOTO, (u) => uri.get(u) ?? u)]));
+}
+
 export async function photosAsFiles(text: SiteFiles): Promise<Record<string, string | Uint8Array>> {
-  const { files, photos } = photosToFiles(text);
+  const { files, photos } = photosToFiles(await inlineSectionPhotos(text));
   const bin: Record<string, Uint8Array> = {};
   const copies: Record<string, { w: number; file: string }[]> = {};
   for (const [file, uri] of Object.entries(photos)) {

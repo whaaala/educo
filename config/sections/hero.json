@@ -261,10 +261,10 @@
             { "r": "body", "t": "Everything you need, one click away." }
           ] },
           { "k": "grid", "cols": 4, "min": "12rem", "set": { "gap": 0 }, "c": [
-            { "k": "card", "tone": "strong", "set": { "padding": 24, "gap": 8 }, "c": [ { "r": "icon", "icon": "GraduationCap" }, { "r": "heading", "t": "Admissions" } ] },
-            { "k": "card", "tone": "soft", "set": { "padding": 24, "gap": 8 }, "c": [ { "r": "icon", "icon": "CalendarDays" }, { "r": "heading", "t": "Term dates" } ] },
-            { "k": "card", "tone": "strong", "set": { "padding": 24, "gap": 8 }, "c": [ { "r": "icon", "icon": "Newspaper" }, { "r": "heading", "t": "News" } ] },
-            { "k": "card", "tone": "soft", "set": { "padding": 24, "gap": 8 }, "c": [ { "r": "icon", "icon": "Phone" }, { "r": "heading", "t": "Contact" } ] }
+            { "k": "card", "tone": "strong", "set": { "padding": 24, "gap": 8 }, "c": [ { "r": "icon", "icon": "GraduationCap" }, { "r": "link", "t": "Admissions" } ] },
+            { "k": "card", "tone": "soft", "set": { "padding": 24, "gap": 8 }, "c": [ { "r": "icon", "icon": "CalendarDays" }, { "r": "link", "t": "Term dates" } ] },
+            { "k": "card", "tone": "strong", "set": { "padding": 24, "gap": 8 }, "c": [ { "r": "icon", "icon": "Newspaper" }, { "r": "link", "t": "News" } ] },
+            { "k": "card", "tone": "soft", "set": { "padding": 24, "gap": 8 }, "c": [ { "r": "icon", "icon": "Phone" }, { "r": "link", "t": "Contact" } ] }
           ] }
         ] } },
     { "id": "hero-quick-links-six", "name": "Centred words and six quick links", "pattern": "B12",
@@ -272,12 +272,12 @@
         "c": [
           { "r": "title", "t": "Hello, and welcome", "set": { "maxWidth": "36rem" } },
           { "k": "grid", "cols": 3, "min": "11rem", "set": { "gap": 16, "maxWidth": "60rem" }, "c": [
-            { "k": "card", "tone": "plain", "center": true, "set": { "padding": 24, "gap": 8 }, "c": [ { "r": "icon", "icon": "GraduationCap" }, { "r": "heading", "t": "Admissions" } ] },
-            { "k": "card", "tone": "plain", "center": true, "set": { "padding": 24, "gap": 8 }, "c": [ { "r": "icon", "icon": "CalendarDays" }, { "r": "heading", "t": "Term dates" } ] },
-            { "k": "card", "tone": "plain", "center": true, "set": { "padding": 24, "gap": 8 }, "c": [ { "r": "icon", "icon": "Wallet" }, { "r": "heading", "t": "Fees" } ] },
-            { "k": "card", "tone": "plain", "center": true, "set": { "padding": 24, "gap": 8 }, "c": [ { "r": "icon", "icon": "Utensils" }, { "r": "heading", "t": "Lunch menu" } ] },
-            { "k": "card", "tone": "plain", "center": true, "set": { "padding": 24, "gap": 8 }, "c": [ { "r": "icon", "icon": "Shirt" }, { "r": "heading", "t": "Uniform" } ] },
-            { "k": "card", "tone": "plain", "center": true, "set": { "padding": 24, "gap": 8 }, "c": [ { "r": "icon", "icon": "Phone" }, { "r": "heading", "t": "Contact" } ] }
+            { "k": "card", "tone": "plain", "center": true, "set": { "padding": 24, "gap": 8 }, "c": [ { "r": "icon", "icon": "GraduationCap" }, { "r": "link", "t": "Admissions" } ] },
+            { "k": "card", "tone": "plain", "center": true, "set": { "padding": 24, "gap": 8 }, "c": [ { "r": "icon", "icon": "CalendarDays" }, { "r": "link", "t": "Term dates" } ] },
+            { "k": "card", "tone": "plain", "center": true, "set": { "padding": 24, "gap": 8 }, "c": [ { "r": "icon", "icon": "Wallet" }, { "r": "link", "t": "Fees" } ] },
+            { "k": "card", "tone": "plain", "center": true, "set": { "padding": 24, "gap": 8 }, "c": [ { "r": "icon", "icon": "Utensils" }, { "r": "link", "t": "Lunch menu" } ] },
+            { "k": "card", "tone": "plain", "center": true, "set": { "padding": 24, "gap": 8 }, "c": [ { "r": "icon", "icon": "Shirt" }, { "r": "link", "t": "Uniform" } ] },
+            { "k": "card", "tone": "plain", "center": true, "set": { "padding": 24, "gap": 8 }, "c": [ { "r": "icon", "icon": "Phone" }, { "r": "link", "t": "Contact" } ] }
           ] }
         ] } },
     { "id": "hero-quick-links-strong", "name": "On the school colour, three quick links", "pattern": "B12",
@@ -302,10 +302,10 @@
             { "r": "body", "t": "Start here for admissions, dates, fees and how to reach us." }
           ] },
           { "k": "grid", "cols": 2, "min": "9rem", "set": { "gap": 16, "width": "fill", "minWidth": "18rem" }, "c": [
-            { "k": "card", "tone": "soft", "set": { "padding": 24, "gap": 8 }, "c": [ { "r": "icon", "icon": "GraduationCap" }, { "r": "heading", "t": "Admissions" } ] },
-            { "k": "card", "tone": "soft", "set": { "padding": 24, "gap": 8 }, "c": [ { "r": "icon", "icon": "CalendarDays" }, { "r": "heading", "t": "Dates" } ] },
-            { "k": "card", "tone": "soft", "set": { "padding": 24, "gap": 8 }, "c": [ { "r": "icon", "icon": "Wallet" }, { "r": "heading", "t": "Fees" } ] },
-            { "k": "card", "tone": "soft", "set": { "padding": 24, "gap": 8 }, "c": [ { "r": "icon", "icon": "MapPin" }, { "r": "heading", "t": "Find us" } ] }
+            { "k": "card", "tone": "soft", "set": { "padding": 24, "gap": 8 }, "c": [ { "r": "icon", "icon": "GraduationCap" }, { "r": "link", "t": "Admissions" } ] },
+            { "k": "card", "tone": "soft", "set": { "padding": 24, "gap": 8 }, "c": [ { "r": "icon", "icon": "CalendarDays" }, { "r": "link", "t": "Dates" } ] },
+            { "k": "card", "tone": "soft", "set": { "padding": 24, "gap": 8 }, "c": [ { "r": "icon", "icon": "Wallet" }, { "r": "link", "t": "Fees" } ] },
+            { "k": "card", "tone": "soft", "set": { "padding": 24, "gap": 8 }, "c": [ { "r": "icon", "icon": "MapPin" }, { "r": "link", "t": "Find us" } ] }
           ] }
         ] } ] } },
     { "id": "hero-welcome-head", "name": "A welcome from the head", "pattern": "C2",

@@ -11,6 +11,7 @@
  */
 import FINISH_CONFIG from "@/config/section-finishes.json";
 import COPY from "@/config/section-copy.json";
+import PHOTO_CONFIG from "@/config/section-photos.json";
 import { createContainer, createElement, createGrid, makeRowBand, regionSpan, findBox, normalizeRowBands, markPageGrid, type BoxNode } from "@/lib/box-model";
 
 export type Tone = "plain" | "soft" | "grey" | "strong" | "inverse" | "photo";
@@ -86,8 +87,11 @@ function typeOf(f: Finish, role: keyof Finish["roles"]): Partial<BoxNode> {
   };
 }
 
-/** A photo of the builder's set, by id; none yet → the picture is left for the person to add (D6). */
-const photoSrc = (_id?: string): string | undefined => undefined; // ponytail: the photo set arrives with D6 (config/section-photos.json)
+/** A photo of the builder's set (D6, config/section-photos.json), by id; an id the set lacks leaves the picture for the person to add. */
+type Photo = { alt: string; src: string; width: number; height: number };
+const PHOTOS = (PHOTO_CONFIG as unknown as { photos: Record<string, Photo> }).photos;
+const photoOf = (id?: string): Photo | undefined => (id ? PHOTOS[id] : undefined);
+const photoSrc = (id?: string): string | undefined => photoOf(id)?.src;
 
 function element(n: SectionNode, ctx: Ctx): BoxNode {
   const c = colours(ctx.tone);
@@ -110,13 +114,18 @@ function element(n: SectionNode, ctx: Ctx): BoxNode {
       const outline = f.button.secondary === "outline";
       return createElement("button", { text: words(ctx, n, "button2"), href: n.to ?? "#", background: "transparent", color: c.text, radius: f.button.radius, ...(outline ? { borderWidth: 2, borderColor: c.text } : { underline: true }) });
     }
-    case "image": return createElement("image", { ...(ctx.wire ? {} : { src: photoSrc(n.photo) }), alt: ctx.wire ? "" : n.alt ?? "", width: "100%", ratio: "4 / 3", radius: f.image.radius, ...motion(true) });
+    case "image": {
+      const p = ctx.wire ? undefined : photoOf(n.photo);
+      return createElement("image", { ...(p ? { src: p.src, imgW: p.width, imgH: p.height } : {}), alt: p ? n.alt ?? p.alt : "", width: "100%", ratio: "4 / 3", radius: f.image.radius, ...motion(true) });
+    }
     case "icon": return createElement("icon", { icon: n.icon ?? "Star", color: c.accent });
     case "divider": return createElement("divider", { color: c.line });
     case "list": return createElement("list", { listItems: ctx.wire ? (n.items ?? []).map(() => COPY.link) : n.items ?? [], color: c.muted, ...typeOf(f, "body") });
     case "menu": {
       // A real menu, the way the header research builds one: a Menu (nav) › a List (ul) of Links (html-semantics.md).
-      const list = createContainer("row", { tag: "ul", gap: 24, align: "center", wrap: true, width: "auto" });
+      // On a phone the menu is ONE line that scrolls sideways (FL-6), every link reachable — measured, wrapped it took three
+      // lines of a 375px header. ponytail: the phone's ☰ menu is the Navigation component's (PS-15 → CP-1).
+      const list = createContainer("row", { tag: "ul", gap: 24, align: "center", wrap: true, width: "auto", responsive: { phone: { wrap: false, scrollX: true } } });
       list.children = (n.items ?? []).map((w) => createElement("link", { text: ctx.wire ? COPY.link : w, href: "#", underline: false, color: c.text, ...typeOf(f, "link") }));
       const nav = createContainer("row", { tag: "nav", width: "auto", align: "center" });
       nav.children = [list];
