@@ -65,7 +65,8 @@ async function sheet(shots, file, cols) {
         await shot.setViewportSize({ width: w, height: MAX_H });
         const shots = [];
         for (const d of docs) {
-          await shot.setContent(d.doc, { waitUntil: 'load' });
+          // the builder's address, as the tile and the Preview have it: set into about:blank, "/sections/…" photos resolved nowhere
+          await shot.setContent(d.doc.replace('<head>', `<head><base href="${BASE}/">`), { waitUntil: 'load' });
           await shot.waitForTimeout(700); // the designed entrances play for ~320 ms (measured: opacity 0 at load, 1 by 500 ms)
           // framed on the section (a footer sits at the foot of a short page), like the tile
           const box = await shot.evaluate(() => { const el = document.querySelector('footer, header, section'); const r = el ? el.getBoundingClientRect() : { top: 0, height: document.documentElement.scrollHeight }; return { y: Math.round(r.top + scrollY), h: Math.round(r.height) }; });

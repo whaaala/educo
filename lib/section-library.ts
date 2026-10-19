@@ -148,12 +148,14 @@ function container(n: SectionNode, ctx: Ctx): BoxNode {
     case "section": case "header": case "footer":
       node = createContainer("column", { tag: n.k, width: "100%", ...centre, ...paint, ...photo });
       break;
-    case "row": node = createContainer("row", { wrap: true, align: "center", ...paint }); break;
-    case "grid": node = createGrid(n.cols ?? 3, { minCard: n.min ?? "16rem", ...paint }); break;
+    case "row": node = createContainer("row", { wrap: true, align: "center", ...paint, ...photo }); break;
+    case "grid": node = createGrid(n.cols ?? 3, { minCard: n.min ?? "16rem", ...paint, ...photo }); break;
     case "card":
       node = createContainer("column", { background: c.bg, radius: f.card.radius, ...(f.card.shadow ? { shadow: f.card.shadow } : {}), ...(f.card.border ? { borderWidth: f.card.border, borderColor: c.line } : {}), ...centre, ...(!ctx.wire && f.hover ? { hoverEffect: f.hover } : {}), ...(!ctx.wire && f.reveal ? { revealEffect: f.reveal } : {}) });
       break;
-    default: node = createContainer("column", { ...centre, ...paint });
+    // a photo goes wherever the tree puts it — a stack (a slider's page, the photo above quick links), not only the section
+    // (measured on the review sheet: both showed their dark shade with no picture)
+    default: node = createContainer("column", { ...centre, ...paint, ...photo });
   }
   node.children = (n.c ?? []).map((ch) => build(ch, inner));
   // A row of only words, buttons and links that is not spread out keeps them at their own size: in a Side by side a width-less

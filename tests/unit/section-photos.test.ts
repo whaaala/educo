@@ -44,6 +44,16 @@ describe("the sections' photos", () => {
     expect(img?.src || "", "a wireframe has a grey box").toBe("");
   });
 
+  it("a photo behind words shows wherever the tree puts it — on the section or on a stack inside it (a slider's page)", () => {
+    const id = Object.keys(SET)[0];
+    for (const tree of [{ k: "section" as const, tone: "photo" as const, photo: id, c: [{ r: "title" as const, t: "Hi" }] },
+                        { k: "section" as const, c: [{ k: "stack" as const, tone: "photo" as const, photo: id, c: [{ r: "title" as const, t: "Hi" }] }] }]) {
+      let bg: string | undefined;
+      walk(buildSection({ id: "t", name: "t", tree }, { finish: "calm", wireframe: false }), (n) => { if (n.bgImage) bg = n.bgImage; });
+      expect(bg).toBe(SET[id].src);
+    }
+  });
+
   it("a downloaded site carries the photo as its own file, never a link back to the builder", async () => {
     const page = `<img src="/sections/a-800.webp" alt="x"><div style="background-image:url(&quot;/sections/a-800.webp&quot;)"></div>`;
     const blob = new Blob([new Uint8Array([82, 73, 70, 70])], { type: "image/webp" });
