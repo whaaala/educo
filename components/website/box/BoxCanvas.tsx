@@ -4472,8 +4472,11 @@ export default function BoxCanvas({
           Badge, Rating) are ordinary containers that paint themselves with `var(--eu-color-*)`, and they never
           carry `.eu-root`. Scoped to `.eu-root` alone, a Tinted card measured `rgba(0,0,0,0)` on the canvas
           while the EXPORT rendered it correctly — the export emits its tokens at `:root`. So the canvas root
-          carries `.eu-tokens` and the variables are defined for both. */}
-      {treeUsesEducoUi(root) && <style dangerouslySetInnerHTML={{ __html: tokensToCss(tokensFromTheme(theme), ".eu-root, .eu-tokens") + COMPONENT_CSS }} />}
+          carries `.eu-tokens` and the variables are defined for both.
+          THE TOKENS ARE NEVER GATED (LE15f-2): a ready-made section is plain blocks painted with `var(--eu-color-*)`,
+          and with no component on the page the canvas fell back to the editor's own globals.css (#111827, white in
+          Dark) while the export, which always writes them, had the site's #0f172a. */}
+      <style dangerouslySetInnerHTML={{ __html: tokensToCss(tokensFromTheme(theme), ".eu-root, .eu-tokens") + (treeUsesEducoUi(root) ? COMPONENT_CSS : "") }} />
       {/* The LAYOUT layer, and unlike the component styles it is NOT gated on the tree using Educo UI: a band is
           a structural container, so a page made only of plain sections still needs it. Scoped to both roots for
           the same reason the tokens are — the canvas root carries `.eu-tokens`, never `.eu-root`. */}

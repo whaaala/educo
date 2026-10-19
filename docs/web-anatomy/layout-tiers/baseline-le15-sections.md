@@ -120,3 +120,13 @@ Starter Library categories, exact order [W1]: Navigation, Hero, Team, Logos, Gal
 - Webflow and Framer reach the same result with components (Webflow: "Unlink Instance"). Framer adds layout templates with a content slot.
 - Squarespace saves only snapshots.
 - The one public per-category count anywhere is Webflow's built-in Starter Library: **34 layouts / 9 categories**. Its lack of a CTA, FAQ or contact category is notable.
+
+## Re-styling a placed section (BATCH LE-15f, RF-1 — research-check 2026-10-19)
+
+**Stored first:** nothing above or in `le15-design.md` covered giving a section already on the page another look; this fills that one gap.
+
+- **Squarespace 7.1** — section colour themes are defined once in the Design panel, then applied to ONE section from its on-page style icon (Edit section › Colors). Only colours and their styles change; the content stays in place ([Paige Brunton, the 7.1 style editor](https://www.paigebrunton.com/blog/squarespace-site-styles-editor), [websitebuilderinsider](https://www.websitebuilderinsider.com/how-do-i-change-the-color-of-a-section-in-squarespace/)).
+- **Wix Editor** — no one-click "other design" for a placed section: the content is kept by Quick Edit (texts and images of a section in one panel) and the background by Change Section Background; "Switch layout" re-arranges a page's content into another layout ([Wix: Quick Edit with sections](https://support.wix.com/en/article/wix-editor-using-the-quick-edit-panel-with-sections), [Wix: customizing your sections](https://support.wix.com/en/article/wix-editor-customizing-your-sections), [Wix blog: editor evolution](https://wix.com/blog/wix-editor-evolution)).
+- **Framer** — colour styles with light / dark theme variants; a section follows the variant, nothing re-dresses its type or corners ([Framer: one section, light & dark](https://www.framer.com/@pavelgolichenko/)).
+
+**What RF-1 takes from them:** Squarespace's shape (chosen ON the section, content untouched) — and goes past every one of them: the WHOLE finish changes (type, colours, corners, shadows, motion), not only colours. **The rule we add:** what the person changed stays; what they never touched follows the finish (so a Wireframe given a finish gets the designed words and photos). NOT stored / not checked: Webflow (no section-style swap in its docs read for LE-15; its Libraries swap components, not styles).

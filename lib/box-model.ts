@@ -584,6 +584,9 @@ export interface BoxNode {
   shared?: boolean;
   globalId?: string;      // LE-15 PS-5 (2): this section is a copy of a GLOBAL section — one edit changes every copy (lib/global-sections.ts)
   globalName?: string;    // …its name, shown on the canvas and in Layers ("Global · Admissions banner"); never published
+  sectionFrom?: string;   // LE-15f RF-1: a ready-made section — the layout it was built from (config/sections/), so another finish can be chosen; never published
+  sectionFinish?: string; // …the finish it has now ("wireframe" or one of config/section-finishes.json)
+  sectionPart?: string;   // …on each block it made: its place in that layout, so a new finish finds it after the person moves or adds blocks
   src?: string;           // image / video URL (data URL for uploads)
   // What the image SAYS, for someone who cannot see it — and for search engines. The export hardcoded alt="",
   // which tells a screen reader the picture is decorative and to skip it, so every photo a school added was

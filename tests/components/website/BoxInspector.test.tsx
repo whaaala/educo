@@ -412,6 +412,25 @@ const pickSelect = (name: string, option: string) => {
   fireEvent.click(screen.getByRole("option", { name: option }));
 };
 
+describe("BoxInspector — another finish for a ready-made section (LE-15f, RF-1)", () => {
+  const S = INSPECTOR_WORDS.sections;
+  it("a ready-made section shows its Finish, offers the Wireframe and the seven, and choosing one asks for it", () => {
+    const onChange = vi.fn();
+    renderFor(createContainer("column", { id: "s", tag: "section" } as Partial<BoxNode>), { sectionFinish: { value: "calm", onChange } });
+    expect(screen.getByRole("button", { name: S.finishOnPage })).toHaveTextContent("Calm");
+    expect(screen.getByText(S.finishHint)).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: S.finishOnPage }));
+    for (const name of ["Wireframe", "Serious", "Minimalist", "Plain", "Bold", "Calm", "Startup", "Playful"]) expect(screen.getByRole("option", { name })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("option", { name: "Bold" }));
+    expect(onChange).toHaveBeenCalledWith("bold");
+  });
+
+  it("a section built from blocks shows no Finish", () => {
+    renderFor(createContainer("column", { id: "s", tag: "section" } as Partial<BoxNode>));
+    expect(screen.queryByRole("button", { name: S.finishOnPage })).not.toBeInTheDocument();
+  });
+});
+
 describe("BoxInspector — functionality audit (every remaining control)", () => {
   const heading = () => createElement("heading", { id: "h", text: "Hi" } as Partial<BoxNode>);
 

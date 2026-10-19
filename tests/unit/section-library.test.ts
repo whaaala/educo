@@ -4,7 +4,10 @@ import { describe, it, expect } from "vitest";
 import SECTIONS from "@/config/sections.json";
 import FINISHES from "@/config/section-finishes.json";
 import COPY from "@/config/section-copy.json";
-import { buildSection, insertSection, FINISH_IDS, type SectionDef, type SectionNode } from "@/lib/section-library";
+import { buildSection, insertSection, restyleSection, nextFinish, FINISH_IDS, FINISH_CHOICES, WIREFRAME, type SectionDef, type SectionNode } from "@/lib/section-library";
+import { renderSitePage } from "@/lib/box-export";
+import { emptyPageRoot, type BoxSite } from "@/lib/box-site";
+import { DEFAULT_THEME } from "@/lib/site-storage";
 import { createContainer, createElement, makeRowBand, regionBlock, regionSpan, type BoxNode } from "@/lib/box-model";
 
 /**
@@ -162,5 +165,111 @@ describe("adding a section to a page", () => {
       expect(block.shared, `${which} on every page`).toBe(true);
       expect(out.children!.length).toBe(4);
     }
+  });
+});
+
+describe("another finish for a section already on the page (BATCH LE-15f, RF-1)", () => {
+  const RESTYLE = (FINISHES as unknown as { restyle: { look: string[]; content: string[] } }).restyle;
+  const made = (finish: string) => (def: SectionDef) => buildSection(def, { finish: finish === WIREFRAME ? FINISH_IDS[0] : finish, wireframe: finish === WIREFRAME });
+  const parts = (n: BoxNode) => { const m = new Map<string, BoxNode>(); walk(n, (x) => { if (x.sectionPart != null) m.set(x.sectionPart, x); }); return m; };
+  const ALL = BUILT.flatMap((c) => sectionsOf(c.id));
+  const byId = (id: string) => ALL.find((d) => d.id === id)!;
+  // the same fields and values whatever order they were written in (ids aside)
+  const canon = (n: BoxNode) => JSON.stringify(n, (k, v: unknown) => (k === "id" ? undefined : v && typeof v === "object" && !Array.isArray(v) ? Object.fromEntries(Object.entries(v).sort(([a], [b]) => a.localeCompare(b))) : v));
+  const find = (n: BoxNode, f: (x: BoxNode) => boolean) => { let hit: BoxNode | undefined; walk(n, (x) => { if (!hit && f(x)) hit = x; }); return hit!; };
+
+  it("the choices are the Wireframe then the seven finishes, and Ctrl+Alt+F's next wraps round to the Wireframe", () => {
+    expect(FINISH_CHOICES).toEqual([WIREFRAME, ...FINISH_IDS]);
+    expect(nextFinish(WIREFRAME)).toBe(FINISH_IDS[0]);
+    expect(nextFinish(FINISH_IDS[2])).toBe(FINISH_IDS[3]);
+    expect(nextFinish(FINISH_IDS[FINISH_IDS.length - 1])).toBe(WIREFRAME);
+    expect(nextFinish(undefined)).toBe(WIREFRAME);
+  });
+
+  it("a built section remembers where it came from: its layout and finish on the section, its part on every block it made", () => {
+    for (const def of ALL) for (const f of FINISH_CHOICES) {
+      const s = made(f)(def);
+      expect(s.sectionFrom, def.id).toBe(def.id);
+      expect(s.sectionFinish, def.id).toBe(f);
+      walk(s, (n) => { if (!n.rowBand) expect(n.sectionPart, `${def.id} ${n.type}`).toBeTypeOf("string"); });
+    }
+  });
+
+  it("every field a finish changes is listed as a look or as content in config/section-finishes.json (a new one is caught the day it appears)", () => {
+    const listed = new Set([...RESTYLE.look, ...RESTYLE.content, "id", "children", "sectionFinish"]);
+    for (const def of ALL) {
+      const builds = FINISH_CHOICES.map((f) => parts(made(f)(def)));
+      for (const [part, a] of builds[0]) for (const b of builds.slice(1).map((m) => m.get(part)!)) {
+        for (const k of new Set([...Object.keys(a), ...Object.keys(b)])) {
+          if (JSON.stringify((a as unknown as Record<string, unknown>)[k]) !== JSON.stringify((b as unknown as Record<string, unknown>)[k])) expect(listed.has(k), `${def.id} ${part} "${k}"`).toBe(true);
+        }
+      }
+    }
+  });
+
+  it("untouched, a section re-finished is exactly a fresh one in that finish — every layout, from every finish to every other", () => {
+    for (const def of ALL) for (const from of FINISH_CHOICES) for (const to of FINISH_CHOICES) {
+      expect(canon(restyleSection(made(from)(def), def, to)), `${def.id} ${from} → ${to}`).toBe(canon(made(to)(def)));
+    }
+  });
+
+  it("what the person wrote stays: changed words, a replaced photo and a block of their own — and the look is the new finish's", () => {
+    const def = byId("hero-split");
+    for (const to of FINISH_CHOICES) {
+      const s = made("calm")(def);
+      const title = find(s, (n) => n.type === "heading");
+      title.text = "Open day, 12 March";
+      find(s, (n) => n.type === "image").src = "data:image/png;base64,MINE";
+      const holder = find(s, (n) => n.type === "container" && !n.rowBand && n !== s && !!n.children?.length);
+      holder.children = [...holder.children!, createElement("button", { text: "My own button", background: "red" })];
+      const out = restyleSection(s, def, to);
+      const fresh = made(to)(def);
+      expect(find(out, (n) => n.type === "heading").text, to).toBe("Open day, 12 March");
+      expect(find(out, (n) => n.type === "image").src, to).toBe("data:image/png;base64,MINE");
+      expect(find(out, (n) => n.text === "My own button").background, `${to}: my button untouched`).toBe("red");
+      expect(find(out, (n) => n.type === "heading").fontSize, to).toBe(find(fresh, (n) => n.type === "heading").fontSize);
+      expect(find(out, (n) => n.type === "image").radius, to).toBe(find(fresh, (n) => n.type === "image").radius);
+      expect(out.sectionFinish).toBe(to);
+    }
+  });
+
+  it("what I styled myself that no finish ever sets stays: a background on a plain stack, a shadow on a title", () => {
+    const def = byId("hero-split");
+    const s = made("calm")(def);
+    const stack = find(s, (n) => n.type === "container" && !n.rowBand && n !== s && !n.background);
+    stack.background = "var(--eu-color-surface)";
+    const title = find(s, (n) => n.type === "heading");
+    title.shadow = "lg";
+    const out = restyleSection(s, def, "bold");
+    expect(find(out, (n) => n.id === stack.id).background).toBe("var(--eu-color-surface)");
+    expect(find(out, (n) => n.id === title.id).shadow).toBe("lg");
+  });
+
+  it("my own photo behind words stays in the Wireframe, with its shade, and the words over it stay white", () => {
+    const def = byId("hero-photo");
+    const s = made("startup")(def);
+    const behind = find(s, (n) => !!n.bgImage);
+    behind.bgImage = "data:image/png;base64,MINE";
+    const out = restyleSection(s, def, WIREFRAME);
+    const kept = find(out, (n) => n.id === behind.id);
+    expect(kept.bgImage).toBe("data:image/png;base64,MINE");
+    expect(kept.bgOverlay, "the shade").toBe((FINISHES as unknown as { scrim: string }).scrim);
+    expect(find(kept, (n) => n.type === "heading").color, "white words").toBe((FINISHES as unknown as { tones: { photo: { text: string } } }).tones.photo.text);
+    // LE15f-4: EVERY block over the photo, however deep (the buttons sit in a row), keeps the photo's colours — the HEADED
+    // screenshot showed "Learn more" dark on the photo while the title was white
+    const photoTone = Object.values((FINISHES as unknown as { tones: { photo: Record<string, string> } }).tones.photo);
+    const off: string[] = []; walk(kept, (n) => { if (n !== kept && n.color && !photoTone.includes(n.color)) off.push(`${n.type} ${n.color}`); if (n.type === "button" && n.background && n.background !== "transparent" && !photoTone.includes(n.background)) off.push(`button bg ${n.background}`); });
+    expect(off, "every colour over my photo is the photo's").toEqual([]);
+    // untouched, the wireframe has no photo, as the gallery's wireframe
+    expect(find(restyleSection(made("startup")(def), def, WIREFRAME), (n) => n.id !== "" && !!n.bgImage)).toBeUndefined();
+  });
+
+  it("the section's memory is the editor's: none of it is written into the published page", () => {
+    const def = byId("hero-split");
+    const s = made("calm")(def);
+    const site = { pages: [{ id: "p", name: "P", path: "p", root: emptyPageRoot(s) }], homeId: "p" } as BoxSite;
+    const html = renderSitePage(site, DEFAULT_THEME, "p", { inlineShared: true });
+    expect(html).toContain("<section");
+    for (const word of ["sectionPart", "sectionFrom", "sectionFinish", "hero-split", '"calm"']) expect(html, word).not.toContain(word);
   });
 });
