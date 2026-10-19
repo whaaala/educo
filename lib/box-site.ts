@@ -8,6 +8,7 @@ import { type PageGridSettings, resolvePageGrid, gridSpaceOf } from "@/lib/page-
 import { type BoxNode, findBox, regionBlock, regionSpan, newBoxId, createContainer, makeRowBand, normalizeRowBands, releaseStaleAlignSelf, markPageGrid, withGridSpace } from "@/lib/box-model";
 import { DEFAULT_THEME } from "@/lib/site-storage";
 import type { SiteFonts } from "@/lib/semantics";
+import { syncGlobals } from "@/lib/global-sections";
 
 export interface BoxPage {
   id: string;
@@ -83,7 +84,7 @@ export function setSiteTheme(site: BoxSite, themeId: string): BoxSite {
 export function setPageRoot(site: BoxSite, id: string, root: BoxNode): BoxSite {
   const prev = findPage(site, id)?.root;
   const next = { ...site, pages: site.pages.map((p) => (p.id === id ? { ...p, root } : p)) };
-  return prev ? syncSharedRegions(next, id, prev) : next;
+  return prev ? syncGlobals(syncSharedRegions(next, id, prev), id, prev) : next; // LE-15: …and every global section's copies
 }
 
 // ── ONE HEADER AND ONE FOOTER FOR EVERY PAGE (PS-2, BATCH LE-8) ─────────────────────────────────────────

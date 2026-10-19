@@ -190,6 +190,19 @@
     "delete": "Delete",
     "renameTitle": "Rename this section",
     "deleteTitle": "Delete “{name}” from My sections?",
-    "deleteWarning": "Pages that already use it keep their copy. Only the saved one goes."
+    "deleteWarning": "Pages that already use it keep their copy. Only the saved one goes.",
+    "globalMark": "Global · {name}",
+    "global": "Global sections",
+    "makeGlobal": "Make global",
+    "makeGlobalHint": "Edit it once and every copy changes, on every page (Ctrl+Alt+G).",
+    "makeGlobalTitle": "Make this section global",
+    "isGlobal": "This is a global section: changing it changes every copy, on {pages} {pageWord}.",
+    "detach": "Detach this copy",
+    "detachHint": "This copy becomes an ordinary section; the others stay global. Undo (Ctrl+Z) straight away attaches it again.",
+    "usedOn": "used on {pages} {pageWord}",
+    "changesPages": "“{name}” is global: this change is made on all {pages} pages that use it.",
+    "removeGlobalTitle": "Stop “{name}” being global?",
+    "removeGlobalWarning": "It is used on {pages} {pageWord}. Every copy stays where it is, as an ordinary section you can change on its own.",
+    "removeGlobal": "Stop being global"
   }
 }

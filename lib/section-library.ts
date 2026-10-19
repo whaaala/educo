@@ -158,9 +158,11 @@ function container(n: SectionNode, ctx: Ctx): BoxNode {
   node.children = (n.c ?? []).map((ch) => build(ch, inner));
   // A row of only words, buttons and links that is not spread out keeps them at their own size: in a Side by side a width-less
   // block grows into the room left (box-model's fill-and-follow), so two buttons took half the line each (measured, the review
-  // sheet 2026-10-19). Placing them at the start — the Inspector's nine squares, Left — is what stops the grow (LE4-1).
+  // sheet 2026-10-19). A block placed on the row (the Inspector's nine squares) is what stops the grow (LE4-1) — placed at the
+  // start it takes `margin-right: auto`, which pushes whatever FOLLOWS it to the far end (measured: "Visit" 500px from "Apply",
+  // LE15-43), so only the LAST block is placed: nothing follows it, and the row no longer grows its blocks.
   const leafy = n.k === "row" && (n.c ?? []).every((ch) => !!ch.r && ch.r !== "image");
-  if (leafy && (n.set?.justify ?? "start") === "start") node.children = node.children.map((ch) => ({ ...ch, placeX: "start" as const }));
+  if (leafy && node.children.length && (n.set?.justify ?? "start") === "start") node.children = node.children.map((ch, i, all) => (i === all.length - 1 ? { ...ch, placeX: "start" as const } : ch));
   return Object.assign(node, n.set ?? {});
 }
 

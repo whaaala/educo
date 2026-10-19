@@ -643,7 +643,7 @@ export function blockLabel(node: BoxNode): string {
 }
 const TRAIL = INSPECTOR.trail;
 
-export default function BoxInspector({ trail = [], onSelectBlock, section = false, sectionPlace, outerDefault, fillHeight, pageSpan, onSetSpan, pageLines, onSetLines, onSetFreeInset, rowStepRem, node, theme, onPatch, onAddChild, onAddAnnouncement, onFloat, onUnfloat, onLayer, onAlignInRow, rowJustify, onSectionWidth, onSaveSection, sectionWidth, siteWidth, sectionFollows, rowOfPage = false, canFloat = true, parentFlow, canWrapWords = false, canOverlapUp = false, inGrid = false, inMasonry = false, inFitGrid = false, gridTrack, onSetFraction, onRetrack, onKind, breakpoint = "base", overridden = false, onResetOverride, onResetField, pages, currentPageId, pinBlockedBy = null, fixedBlockedBy = null, pinScope = null }: {
+export default function BoxInspector({ trail = [], onSelectBlock, section = false, sectionPlace, outerDefault, fillHeight, pageSpan, onSetSpan, pageLines, onSetLines, onSetFreeInset, rowStepRem, node, theme, onPatch, onAddChild, onAddAnnouncement, onFloat, onUnfloat, onLayer, onAlignInRow, rowJustify, onSectionWidth, onSaveSection, onMakeGlobal, globalInfo, onDetachGlobal, sectionWidth, siteWidth, sectionFollows, rowOfPage = false, canFloat = true, parentFlow, canWrapWords = false, canOverlapUp = false, inGrid = false, inMasonry = false, inFitGrid = false, gridTrack, onSetFraction, onRetrack, onKind, breakpoint = "base", overridden = false, onResetOverride, onResetField, pages, currentPageId, pinBlockedBy = null, fixedBlockedBy = null, pinScope = null }: {
   /** ED-2 (LE-10): the blocks round this one, outermost first (`selectionChain` without the block itself) — the same
    *  blocks Escape steps out through. Each is a button that selects it (`onSelectBlock`). */
   trail?: BoxNode[];
@@ -668,6 +668,10 @@ export default function BoxInspector({ trail = [], onSelectBlock, section = fals
   onSectionWidth?: (v: "band" | "contained") => void;
   /** LE-15 PS-5 (1): keep this page section in My sections — shown only for a section of the page. */
   onSaveSection?: () => void;
+  /** LE-15 PS-5 (2): make this page section global; or, for a copy of one, what it is and Detach. */
+  onMakeGlobal?: () => void;
+  globalInfo?: { name: string; pages: number };
+  onDetachGlobal?: () => void;
   sectionWidth?: "band" | "contained";                        // its current position (parent row's justify-content)
   rowOfPage?: boolean;                                        // LE3-2: on a row of the page — still so once a set width takes it off the lines
   siteWidth?: number;                                         // AC-9: the site's content width (rem), when it has one
@@ -1150,6 +1154,20 @@ export default function BoxInspector({ trail = [], onSelectBlock, section = fals
                 <div className="space-y-1">
                   <Button variant="secondary" size="sm" onClick={onSaveSection}>{INSPECTOR.sections.save}</Button>
                   <p className="text-[11px] leading-snug text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">{INSPECTOR.sections.saveHint}</p>
+                </div>
+              )}
+              {globalInfo && onDetachGlobal ? (
+                <div className="space-y-1">
+                  <p className="text-[11px] leading-snug font-semibold text-emerald-700 dark:text-emerald-300 midnight:text-emerald-300 purple:text-emerald-300">
+                    {INSPECTOR.sections.globalMark.replace("{name}", globalInfo.name)} — {INSPECTOR.sections.isGlobal.replace("{pages}", String(globalInfo.pages)).replace("{pageWord}", globalInfo.pages === 1 ? "page" : "pages")}
+                  </p>
+                  <Button variant="secondary" size="sm" onClick={onDetachGlobal}>{INSPECTOR.sections.detach}</Button>
+                  <p className="text-[11px] leading-snug text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">{INSPECTOR.sections.detachHint}</p>
+                </div>
+              ) : onMakeGlobal && (
+                <div className="space-y-1">
+                  <Button variant="secondary" size="sm" onClick={onMakeGlobal}>{INSPECTOR.sections.makeGlobal}</Button>
+                  <p className="text-[11px] leading-snug text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">{INSPECTOR.sections.makeGlobalHint}</p>
                 </div>
               )}
               {onSectionWidth && (

@@ -12,7 +12,7 @@ import INSPECTOR from "@/config/inspector.json";
 import { buildSection, FINISH_IDS, finishLabel, type SectionDef } from "@/lib/section-library";
 import { emptyPageRoot, type BoxSite } from "@/lib/box-site";
 import { renderSitePage } from "@/lib/box-export";
-import type { BoxNode } from "@/lib/box-model";
+import { cloneBox, type BoxNode } from "@/lib/box-model";
 import type { SiteTheme } from "@/lib/site-storage";
 import CompactSelect from "@/components/shared/CompactSelect";
 import Button from "@/components/shared/Button";
@@ -82,7 +82,15 @@ function Tile({ def, cat, node, theme, onAdd }: { def: { name: string; needs?: s
 
 const MINE = "mine";
 
-export default function SectionsPanel({ theme, q, onInsert }: { theme: SiteTheme; q: string; onInsert: (section: BoxNode) => void }) {
+const GLOBALS = "global";
+/** PS-5 (2): a global section of the site, as the page holds it (`node` draws its tile; adding places a fresh copy). */
+export type GlobalTile = { id: string; name: string; pages: number; node: BoxNode };
+
+export default function SectionsPanel({ theme, q, onInsert, globals = [], onRemoveGlobal }: {
+  theme: SiteTheme; q: string; onInsert: (section: BoxNode) => void;
+  globals?: GlobalTile[]; onRemoveGlobal?: (id: string) => void;
+}) {
+  const [removing, setRemoving] = useState<GlobalTile | null>(null);
   const [all, setAll] = useState<{ cat: Category; sections: SectionDef[] }[] | null>(null);
   const [catId, setCatId] = useState("hero");
   const [look, setLook] = useState<"wireframe" | "designed">("designed");
@@ -112,7 +120,7 @@ export default function SectionsPanel({ theme, q, onInsert }: { theme: SiteTheme
       {/* The categories wrap as chips above the tiles, so a tile has the panel's whole width — on a phone's sheet too. */}
       {!needle && (
         <div role="tablist" aria-label={T.categories} className="flex flex-wrap gap-1 px-4 pb-3">
-          {[...(mine.length ? [{ cat: { id: MINE, label: T.mine, group: "", count: 0 }, sections: mine }] : []), ...all].map(({ cat, sections }) => (
+          {[...(globals.length ? [{ cat: { id: GLOBALS, label: T.global, group: "", count: 0 }, sections: globals }] : []), ...(mine.length ? [{ cat: { id: MINE, label: T.mine, group: "", count: 0 }, sections: mine }] : []), ...all].map(({ cat, sections }) => (
             <button key={cat.id} type="button" role="tab" aria-selected={cat.id === catId} onClick={() => setCatId(cat.id)}
               className={`inline-flex items-center gap-1.5 rounded-lg px-2 py-1 pointer-coarse:min-h-11 pointer-coarse:px-3 text-[0.75rem] font-semibold transition-colors ${cat.id === catId ? "bg-brand text-brand-fg" : "text-muted hover:bg-surface-2 hover:text-ink"}`}>
               {cat.label}<span className="tabular-nums opacity-80">{sections.length}</span>
@@ -122,6 +130,16 @@ export default function SectionsPanel({ theme, q, onInsert }: { theme: SiteTheme
       )}
       <div className="flex min-h-0 flex-1 px-3 pb-4">
         <div className="flex min-w-0 flex-1 flex-col gap-2 overflow-y-auto">
+          {/* Global sections: each copy added stays the same as the others; "Stop being global" asks first and keeps every copy. */}
+          {catId === GLOBALS && !needle && globals.map((g) => (
+            <div key={g.id} className="shrink-0 space-y-1">
+              <Tile def={{ name: g.name }} cat={{ label: T.global }} node={g.node} theme={theme} onAdd={() => onInsert(cloneBox(g.node))} />
+              <div className="flex items-center justify-between gap-1">
+                <span className="px-1 text-[0.6875rem] text-muted">{fill(T.usedOn, { pages: String(g.pages), pageWord: g.pages === 1 ? "page" : "pages" })}</span>
+                {onRemoveGlobal && <Button variant="ghost" size="sm" onClick={() => setRemoving(g)}>{T.removeGlobal}</Button>}
+              </div>
+            </div>
+          ))}
           {/* My sections: as saved (no finish — they are the person's own design), each with Rename and Delete beside it. */}
           {mineShown.map((s) => (
             <div key={s.id} className="shrink-0 space-y-1">
@@ -132,7 +150,7 @@ export default function SectionsPanel({ theme, q, onInsert }: { theme: SiteTheme
               </div>
             </div>
           ))}
-          {catId !== MINE || needle ? shown.map(({ def, cat }) => <Tile key={def.id} def={def} cat={cat} node={nodes.get(def.id)!} theme={theme} onAdd={() => onInsert(buildSection(def, { finish, wireframe: wire }))} />) : null}
+          {(catId !== MINE && catId !== GLOBALS) || needle ? shown.map(({ def, cat }) => <Tile key={def.id} def={def} cat={cat} node={nodes.get(def.id)!} theme={theme} onAdd={() => onInsert(buildSection(def, { finish, wireframe: wire }))} />) : null}
           {needle && !shown.length && !mineShown.length && <p className="py-6 text-center text-[0.8125rem] text-muted">{fill(T.none, { q })}</p>}
         </div>
       </div>
@@ -140,6 +158,9 @@ export default function SectionsPanel({ theme, q, onInsert }: { theme: SiteTheme
         onCancel={() => setRenaming(null)} onConfirm={(name) => { if (renaming) renameSaved(renaming.id, name); setRenaming(null); }} />
       <DeleteConfirmationModal isOpen={!!deleting} onClose={() => setDeleting(null)} onConfirm={() => { if (deleting) deleteSaved(deleting.id); setDeleting(null); }}
         title={fill(T.deleteTitle, { name: deleting?.name ?? "" })} confirmButtonText={T.delete} warningMessage={T.deleteWarning} />
+      <DeleteConfirmationModal isOpen={!!removing} onClose={() => setRemoving(null)} onConfirm={() => { if (removing) onRemoveGlobal?.(removing.id); setRemoving(null); }}
+        title={fill(T.removeGlobalTitle, { name: removing?.name ?? "" })} confirmButtonText={T.removeGlobal}
+        warningMessage={fill(T.removeGlobalWarning, { pages: String(removing?.pages ?? 0), pageWord: removing?.pages === 1 ? "page" : "pages" })} />
     </div>
   );
 }

@@ -37,6 +37,14 @@ import { CanvasBgVideo } from "@/components/website/box/BackgroundVideo";
 import { CURRENT_LINK_CSS, EDITOR_DOCK_PX, layoutCss, mediaBelow, RESIZE, RUNG_MEASURE, RUNG_PX } from "@/lib/educo-ui/layout";
 import { pageIdFromHref } from "@/lib/box-site";
 
+/**
+ * LE-15 PS-5 (2) · A GLOBAL SECTION'S COPY, marked on the canvas: a dashed outline AND its label "Global · name" (never
+ * colour alone, WCAG 1.4.1) — Wix marks them green. Editor-only: the attribute is the canvas's, the export never writes it.
+ */
+const GLOBAL_MARK_CSS = ".eu-tokens [data-global]{position:relative;outline:0.125rem dashed oklch(52% 0.13 160);outline-offset:-0.125rem}"
+  + ".eu-tokens [data-global]::after{content:attr(data-global);position:absolute;top:0;left:0;z-index:5;pointer-events:none;"
+  + "font:600 0.6875rem/1.6 system-ui,sans-serif;padding:0 0.375rem;background:oklch(52% 0.13 160);color:oklch(100% 0 0)}";
+
 /** The page being edited, for the links that go to it (LE15-27) — the export's `isCurrent`, on the canvas. */
 const CurrentPage = createContext<string | undefined>(undefined);
 import { CHROME_Z } from "@/lib/educo-ui/stacking";
@@ -4016,6 +4024,7 @@ export default function BoxCanvas({
         <Tag
           key={node.id}
           data-box-id={node.id}
+          data-global={node.globalId ? INSPECTOR_WORDS.sections.globalMark.replace("{name}", node.globalName ?? "") : undefined} // LE-15: marked on the canvas (an editor-only attribute; never published)
           {...semProps}
           {...heldAttr}
           // FL-6 · a sideways strip is a named, focusable region — the same attributes the export writes
@@ -4438,7 +4447,7 @@ export default function BoxCanvas({
       {/* The LAYOUT layer, and unlike the component styles it is NOT gated on the tree using Educo UI: a band is
           a structural container, so a page made only of plain sections still needs it. Scoped to both roots for
           the same reason the tokens are — the canvas root carries `.eu-tokens`, never `.eu-root`. */}
-      <style dangerouslySetInnerHTML={{ __html: layoutCss(".eu-root, .eu-tokens") + "[data-sem-list]{list-style:none;margin:0;padding-left:0}li[data-box-id]{list-style:none}" /* LE2-9: an automatic menu's items have no <ul> on the canvas; published, every item is in a .eu-list — no bullet either way */ + measureCss(".eu-tokens") + linkHoverCss(".eu-tokens") /* RX4-20 */ }} />
+      <style dangerouslySetInnerHTML={{ __html: layoutCss(".eu-root, .eu-tokens") + "[data-sem-list]{list-style:none;margin:0;padding-left:0}li[data-box-id]{list-style:none}" /* LE2-9: an automatic menu's items have no <ul> on the canvas; published, every item is in a .eu-list — no bullet either way */ + measureCss(".eu-tokens") + linkHoverCss(".eu-tokens") /* RX4-20 */ + GLOBAL_MARK_CSS }} />
       {/* REDUCED MOTION, FOR THE CANVAS. The published page gets this from `BASE_CSS` via `.eu-root`; the
           builder's canvas carries `.eu-tokens` instead, so the rule is repeated here rather than added to
           that sheet — it ships to every published page, where `.eu-tokens` can never match, and a guard

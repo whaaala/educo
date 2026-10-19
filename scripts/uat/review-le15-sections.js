@@ -50,7 +50,8 @@ async function sheet(shots, file, cols) {
   for (const finish of finishes) {
     await editor.getByRole('button', { name: finish === 'wireframe' ? 'Wireframe' : 'Designed', exact: true }).click();
     if (finish !== 'wireframe') {
-      await editor.locator('button[aria-haspopup="listbox"]').filter({ hasText: /./ }).last().click();
+      // the Finish menu by its label — `.last()` picked another menu on the page (LE15-42: a person reaches all seven)
+      await editor.getByText('Finish', { exact: true }).locator('xpath=..').locator('button[aria-haspopup="listbox"]').click();
       await editor.getByRole('option', { name: FINISHES[finish].label, exact: true }).click();
     }
     for (const [i, label] of cats.entries()) {

@@ -20,7 +20,7 @@ import {
   PanelTopOpen, LayoutGrid, MessageSquareQuote, Hash, BadgeCheck, Star, BellRing,
   Blocks, LayoutTemplate, Type, Images, Component, Search, X, Plus, Sparkles, ChevronDown, PanelsTopLeft, type LucideIcon,
 } from "lucide-react";
-import SectionsPanel from "./SectionsPanel";
+import SectionsPanel, { type GlobalTile } from "./SectionsPanel";
 import type { BoxNode, InsertWhere } from "@/lib/box-model";
 import type { SiteTheme } from "@/lib/site-storage";
 import { getAddChoices, nodeForPhotos, PHOTO_SETUP } from "@/lib/box-presets";
@@ -119,10 +119,13 @@ type Anchor = { top: number; left: number; bottom: number; right: number };
 
 const WHERE_LABEL: Record<InsertWhere, string> = { before: "Before", after: "After", inside: "Inside", start: "Start", end: "End" };
 
-export default function BlocksPanel({ theme, onDragKind, onPick, onSection, defaultOpen = false, docked = false, onOpenChange, sheet = false, where, layers }: {
+export default function BlocksPanel({ theme, onDragKind, onPick, onSection, globals, onRemoveGlobal, defaultOpen = false, docked = false, onOpenChange, sheet = false, where, layers }: {
   theme?: SiteTheme;
   /** LE-15: a ready-made section was chosen in the Sections tab — the page puts it in (`insertSection`). */
   onSection?: (section: BoxNode) => void;
+  /** LE-15 PS-5 (2): the site's global sections, listed in the Sections tab. */
+  globals?: GlobalTile[];
+  onRemoveGlobal?: (id: string) => void;
   onDragKind?: (kind: string | null) => void;
   onPick?: (kind: string, patch?: Partial<BoxNode>) => void; // click-to-add with an optional style variation
   defaultOpen?: boolean;
@@ -341,7 +344,7 @@ export default function BlocksPanel({ theme, onDragKind, onPick, onSection, defa
             })}
           </div>
 
-          {tab === SECTIONS_TAB && theme && onSection ? <SectionsPanel theme={theme} q={q} onInsert={(s) => { onSection(s); if (sheet) setOpen(false); }} /> : <>
+          {tab === SECTIONS_TAB && theme && onSection ? <SectionsPanel theme={theme} q={q} globals={globals} onRemoveGlobal={onRemoveGlobal} onInsert={(s) => { onSection(s); if (sheet) setOpen(false); }} /> : <>
           {/* Tiles */}
           <div className="px-3 pb-4 pt-0.5 overflow-y-auto flex-1 space-y-4">
             {sections.map((group) => (

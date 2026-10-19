@@ -29,6 +29,7 @@ import {
 import { blockForKind } from "@/lib/box-presets";
 import { insertSection } from "@/lib/section-library";
 import { saveSection } from "@/lib/saved-sections";
+import { makeGlobal, detachGlobal, globalsInSite, changedGlobals, globalSample, removeGlobal } from "@/lib/global-sections";
 import NameDialog from "@/components/website/box/NameDialog";
 import {
   type BoxSite, freshSite, siteFonts, setSiteFonts, SAVED_SITE_FONTS, coerceSite, normalizeSite, setPageRoot, addPage, deletePage, renamePage, setHomePage, duplicatePage, emptyPageRoot, setSiteTheme, setPageGrid, movePage, hasSharedRegion, setRegionShown,
@@ -203,11 +204,15 @@ export default function BoxDemoPage() {
   const [mySectionError, setMySectionError] = useState<string | undefined>(undefined);
   const [savedSaid, setSavedSaid] = useState(""); // spoken: "Saved to My sections"
   const saveTargetRef = useRef<BoxNode | null>(null); // the section Ctrl+Alt+S saves — refreshed every render (rule 2: refs, [] deps)
+  const [makingGlobal, setMakingGlobal] = useState<BoxNode | null>(null); // LE-15 PS-5 (2): the section being named as global
+  const globalTargetRef = useRef<BoxNode | null>(null); // the section Ctrl+Alt+G makes global (an ordinary one-block page section)
+  const [globalNotice, setGlobalNotice] = useState(""); // "This change is made on all N pages" — once per global section per visit
+  const warnedGlobals = useRef(new Set<string>());
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.code !== "KeyS" || !(e.ctrlKey || e.metaKey) || !e.altKey || e.repeat || typingIn(document.activeElement)) return;
-      if (!saveTargetRef.current) return;
-      e.preventDefault(); setMySectionError(undefined); setSavingSection(saveTargetRef.current);
+      if (!(e.ctrlKey || e.metaKey) || !e.altKey || e.repeat || typingIn(document.activeElement)) return;
+      if (e.code === "KeyS" && saveTargetRef.current) { e.preventDefault(); setMySectionError(undefined); setSavingSection(saveTargetRef.current); }
+      else if (e.code === "KeyG" && globalTargetRef.current) { e.preventDefault(); setMakingGlobal(globalTargetRef.current); }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
@@ -744,6 +749,19 @@ export default function BoxDemoPage() {
     return () => ro.disconnect();
   }, [frameReady, preview]);
   const scaled = canvasZoom.z !== 1 && frameW != null;
+  // LE-15 PS-5 (2) · "THIS CHANGES N PAGES": the first edit to a global section used on more than one page says so, once per visit.
+  const lastRoot = useRef<{ id: string; root: BoxNode } | null>(null);
+  useEffect(() => {
+    const prev = lastRoot.current;
+    lastRoot.current = activePage && root ? { id: activePage.id, root } : null;
+    if (!prev || !site || !root || prev.id !== activePage?.id) return;
+    for (const gid of changedGlobals(prev.root, root)) {
+      const g = globalsInSite(site).find((x) => x.id === gid);
+      if (!g || g.pages < 2 || warnedGlobals.current.has(gid)) continue;
+      warnedGlobals.current.add(gid);
+      setGlobalNotice(INSPECTOR.sections.changesPages.replace("{name}", g.name).replace("{pages}", String(g.pages)));
+    }
+  }, [root]); // eslint-disable-line react-hooks/exhaustive-deps -- reacts to an edit of this page only; site and page are read as they are now
 
   // NOTE: every hook above runs on EVERY render. React counts hooks by call order, so a `useMemo` or
   // `useCallback` placed AFTER this guard is called only sometimes — which crashes the whole builder with
@@ -988,6 +1006,11 @@ export default function BoxDemoPage() {
     return band.rowBand && band.children?.length === 1 ? band.children[0] : { ...band, rowBand: undefined };
   };
   saveTargetRef.current = enclosingSection(selected?.id);
+  // PS-5 (2): a page section of ONE block can be made global (a band of several is several sections)
+  const globalTarget = (() => { const s = enclosingSection(selected?.id); return s && findBox(root, s.id) && !s.globalId ? s : null; })();
+  globalTargetRef.current = globalTarget;
+  const globals = globalsInSite(site);
+  const selectedGlobal = (() => { const s = enclosingSection(selected?.id); const g = s?.globalId ? globals.find((x) => x.id === s.globalId) : undefined; return s && g ? { node: s, info: { name: g.name, pages: g.pages } } : null; })();
   const saveMySection = (name: string) => {
     if (!savingSection) return;
     const r = saveSection(savingSection, name);
@@ -1554,7 +1577,8 @@ export default function BoxDemoPage() {
               <MenuItem Icon={Settings2} label="Page grid…" onClick={() => { toggleGuides({ on: true }); setGridPanel(true); setCanvasMenu(null); }} />
             </PortalMenu>
           )}
-          <BlocksPanel theme={renderTheme} onPick={insertBlock} onSection={addReadySection} docked={wideScreen} onOpenChange={setBlocksOpen} sheet={screenDevice !== null}
+          <BlocksPanel theme={renderTheme} onPick={insertBlock} onSection={addReadySection}
+            globals={globals.flatMap((g) => { const node = globalSample(site, g.id); return node ? [{ ...g, node }] : []; })} onRemoveGlobal={(gid) => pushSite(removeGlobal(site, gid))} docked={wideScreen} onOpenChange={setBlocksOpen} sheet={screenDevice !== null}
             where={whereOptions.length ? { value: whereFor(selected?.id ?? null), options: whereOptions, onChange: (w) => setWhereChoice({ for: selected?.id ?? null, where: w }) } : undefined}
             layers={<LayersPanel root={root} selectedIds={selectedIds} breakpoint={bp} onChange={commit}
               onSelect={(id, add) => { selectByUser(add ? (selectedIds.includes(id) ? selectedIds.filter((x) => x !== id) : [...selectedIds, id]) : [id]); document.querySelector(`[data-box-id="${id}"]`)?.scrollIntoView({ block: "nearest", inline: "nearest" }); }} />} />
@@ -1580,7 +1604,7 @@ export default function BoxDemoPage() {
                   onSetSpan={(n) => commit(setSpan(root, selected.id, n, columnsAt(gridHere, bp), bp), `span:${selected.id}`)}
                   pageLines={(() => { const c = columnsAt(gridHere, bp), l = linesAt(root, selected.id, c, bp); if (!l) return undefined; const w = device === screenDevice ? fitW : DEVICES.find((d) => d.id === device)?.w, band = findParent(root, selected.id)?.parent; return { ...l, cols: c, drawnAcross: w && band ? fitStepAt(band, selected.id, w / 16, bp) ?? undefined : undefined }; })()}
                   onSetLines={(want) => commit(want === "full" ? fullWidthAt(root, selected.id, bp) : setLinesAt(root, selected.id, want, columnsAt(gridHere, bp), bp), `lines:${selected.id}`)}
-                  onSetFreeInset={linesAt(root, selected.id, columnsAt(gridHere, bp), bp) ? (side, v) => commit(side === "both" ? setFreeInset(setFreeInset(root, selected.id, "left", undefined, bp), selected.id, "right", undefined, bp) : setFreeInset(root, selected.id, side, v, bp), `free:${selected.id}`) : undefined}pinBlockedBy={blockedByLabel(pinBlockedBy(root, selected.id, bp))} fixedBlockedBy={blockedByLabel(fixedBlockedBy(root, selected.id, bp))} pinScope={pinScopeWords(root, selected.id, bp)} node={bp === "base" ? selected : resolveResponsive(selected, bp)} theme={renderTheme} onPatch={onPatch} onAddChild={addChildSection} onAddAnnouncement={() => commit(addAnnouncementBar(root, selected.id))} onFloat={floatSelected} onUnfloat={unfloatSelected} onLayer={layerSelected} onAlignInRow={(j) => commit(alignInRow(root, selected.id, j, bp))} rowJustify={alignInRowOf(root, selected.id, bp)} onSaveSection={pageBandOf(root, selected.id) ? () => { setMySectionError(undefined); setSavingSection(enclosingSection(selected.id)); } : undefined} onSectionWidth={pageBandOf(root, selected.id) ? (v) => commit(setSectionWidth(root, selected.id, v)) : undefined} sectionWidth={sectionWidthOf(root, selected.id)} siteWidth={hasSiteMeasure(root) ? root.gridSpace?.measure : undefined} sectionFollows={pageBandOf(root, selected.id)?.sectionWidth === undefined} rowOfPage={!!findParent(root, selected.id)?.parent.pageRow} canFloat={selected.id !== root.id} parentFlow={parentFlowOf(root, selected.id, bp)} canWrapWords={canWrapWords(root, selected.id, bp)} canOverlapUp={canOverlapUp(root, selected.id)} inGrid={gridTrack !== undefined} inMasonry={parentGrid?.rowFlow === "masonry"} inFitGrid={!!parentGrid && !!gridAutoFit(parentGrid)} gridTrack={gridTrack} onSetFraction={setFraction} onRetrack={retrackSelected} onKind={(k) => { const r = changeKind(root, selected.id, k); if (r.root !== root) commit(r.root); return r.dropped; }} breakpoint={bp} overridden={hasOverride(selected, bp)} onResetOverride={resetOverride} onResetField={(k) => commit(resetField(root, selected.id, k, bp))} pages={pageList} currentPageId={activePage.id} />
+                  onSetFreeInset={linesAt(root, selected.id, columnsAt(gridHere, bp), bp) ? (side, v) => commit(side === "both" ? setFreeInset(setFreeInset(root, selected.id, "left", undefined, bp), selected.id, "right", undefined, bp) : setFreeInset(root, selected.id, side, v, bp), `free:${selected.id}`) : undefined}pinBlockedBy={blockedByLabel(pinBlockedBy(root, selected.id, bp))} fixedBlockedBy={blockedByLabel(fixedBlockedBy(root, selected.id, bp))} pinScope={pinScopeWords(root, selected.id, bp)} node={bp === "base" ? selected : resolveResponsive(selected, bp)} theme={renderTheme} onPatch={onPatch} onAddChild={addChildSection} onAddAnnouncement={() => commit(addAnnouncementBar(root, selected.id))} onFloat={floatSelected} onUnfloat={unfloatSelected} onLayer={layerSelected} onAlignInRow={(j) => commit(alignInRow(root, selected.id, j, bp))} rowJustify={alignInRowOf(root, selected.id, bp)} onSaveSection={pageBandOf(root, selected.id) ? () => { setMySectionError(undefined); setSavingSection(enclosingSection(selected.id)); } : undefined} onMakeGlobal={pageBandOf(root, selected.id) && globalTarget ? () => setMakingGlobal(globalTarget) : undefined} globalInfo={pageBandOf(root, selected.id) ? selectedGlobal?.info : undefined} onDetachGlobal={selectedGlobal ? () => commit(detachGlobal(root, selectedGlobal.node.id)) : undefined} onSectionWidth={pageBandOf(root, selected.id) ? (v) => commit(setSectionWidth(root, selected.id, v)) : undefined} sectionWidth={sectionWidthOf(root, selected.id)} siteWidth={hasSiteMeasure(root) ? root.gridSpace?.measure : undefined} sectionFollows={pageBandOf(root, selected.id)?.sectionWidth === undefined} rowOfPage={!!findParent(root, selected.id)?.parent.pageRow} canFloat={selected.id !== root.id} parentFlow={parentFlowOf(root, selected.id, bp)} canWrapWords={canWrapWords(root, selected.id, bp)} canOverlapUp={canOverlapUp(root, selected.id)} inGrid={gridTrack !== undefined} inMasonry={parentGrid?.rowFlow === "masonry"} inFitGrid={!!parentGrid && !!gridAutoFit(parentGrid)} gridTrack={gridTrack} onSetFraction={setFraction} onRetrack={retrackSelected} onKind={(k) => { const r = changeKind(root, selected.id, k); if (r.root !== root) commit(r.root); return r.dropped; }} breakpoint={bp} overridden={hasOverride(selected, bp)} onResetOverride={resetOverride} onResetField={(k) => commit(resetField(root, selected.id, k, bp))} pages={pageList} currentPageId={activePage.id} />
               ) : (
                 <div className="p-6 text-xs text-gray-400 text-center mt-6">Click a block to edit it — or drag a box on empty canvas to select several at once.</div>
               )}
@@ -1625,6 +1649,9 @@ export default function BoxDemoPage() {
         confirmButtonText={INSPECTOR.sections.replaceButton}
         warningMessage={INSPECTOR.sections.replaceWarning.replace("{which}", pendingSection?.tag ?? "")}
       />
+      <NameDialog open={!!makingGlobal} title={INSPECTOR.sections.makeGlobalTitle} label={INSPECTOR.sections.saveLabel} confirm={INSPECTOR.sections.makeGlobal}
+        start={makingGlobal?.layerName ?? ""} onCancel={() => setMakingGlobal(null)} onConfirm={(name) => { if (makingGlobal) commit(makeGlobal(root, makingGlobal.id, name)); setMakingGlobal(null); }} />
+      {globalNotice && <div role="status" className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 rounded-xl bg-emerald-700 dark:bg-emerald-700 midnight:bg-emerald-700 purple:bg-emerald-700 px-4 py-2 text-xs font-semibold text-white shadow-lg">{globalNotice}<button type="button" onClick={() => setGlobalNotice("")} className="rounded px-1.5 py-0.5 hover:bg-white/15">OK</button></div>}
       <NameDialog open={!!savingSection} title={INSPECTOR.sections.saveTitle} label={INSPECTOR.sections.saveLabel} confirm={INSPECTOR.sections.saveConfirm}
         start={savingSection?.layerName ?? ""} error={mySectionError} onCancel={() => setSavingSection(null)} onConfirm={saveMySection} />
       <p role="status" className="sr-only">{savedSaid}</p>

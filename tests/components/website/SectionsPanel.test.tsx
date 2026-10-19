@@ -80,6 +80,23 @@ describe("SectionsPanel", () => {
     localStorage.clear();
   });
 
+  it("PS-5 (2) · Global sections: listed with the pages that use them; a tile adds another copy (still global); Stop being global asks first", async () => {
+    const { createContainer, createElement } = await import("@/lib/box-model");
+    const node = createContainer("column", { tag: "section", globalId: "g1", globalName: "Admissions banner" }); node.children = [createElement("heading", { text: "Admissions open" })];
+    const onInsert = vi.fn(), onRemoveGlobal = vi.fn();
+    render(<SectionsPanel theme={DEFAULT_THEME} q="" onInsert={onInsert} globals={[{ id: "g1", name: "Admissions banner", pages: 3, node }]} onRemoveGlobal={onRemoveGlobal} />);
+    fireEvent.click(await screen.findByRole("tab", { name: /^Global sections/ }));
+    expect(screen.getByText("used on 3 pages")).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Add Admissions banner, Global sections" }));
+    const added = onInsert.mock.calls[0][0] as BoxNode;
+    expect(added.globalId, "still a copy of the global").toBe("g1");
+    expect(added.id, "its own id").not.toBe(node.id);
+    fireEvent.click(screen.getByRole("button", { name: "Stop being global" }));
+    expect(onRemoveGlobal).not.toHaveBeenCalled();
+    fireEvent.click((await screen.findAllByRole("button", { name: "Stop being global" })).at(-1)!);
+    expect(onRemoveGlobal).toHaveBeenCalledWith("g1");
+  });
+
   it("a search finds sections by name or category, across every category", async () => {
     await open("footer");
     expect((await screen.findAllByRole("button", { name: /Footers$/ })).length).toBeGreaterThan(0);
