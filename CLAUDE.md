@@ -23,6 +23,9 @@ Run through this checklist BEFORE writing any code:
 - [ ] **⛔ RULE BDD — THE `.feature` FIRST, FOR EVERYTHING** (the user, 2026-10-18: "every functionality, everything we do should
   have [a BDD] scenario… it must be followed") — before any code, test or script, its scenarios go in `tests/features/`, and the
   `.feature` names its guards on a `Guards:` line. No exceptions for tools, scripts or "small" fixes.
+- [ ] **⛔ RULE FOUNDATION — LAYERS, EVERY PART CHANGEABLE, EVERY COMBINATION, EVERY SCREEN** (the user, 2026-10-19) — build
+  on the finished layer below (layout → effects → components → templates); nothing ready-made is locked; plan every
+  combination at every width of `scripts/uat/screens.js` and in the app on phone AND tablet.
 - [ ] **Check existing shared components** — search `components/shared/` for `Button`, `FormDropdown`, `CustomDropdown`, `FormInput`, `Modal`, `EditorDialog`, `ColorPickerPopover`, `DataTable`, etc. NEVER duplicate what exists.
 - [ ] **IMPLEMENT for ALL platforms AND screen sizes** — web (desktop 1280px+, tablet 768px, mobile 375px) AND React Native mobile/tablet app (`apps/mobile/`). Every feature MUST be built for BOTH web responsive AND the native mobile/tablet app. Neither is optional.
 - [ ] **Plan for ALL themes** — check `lib/theme-config.ts` for available themes. Every UI element must work in ALL of them.
@@ -746,6 +749,26 @@ Run through this checklist BEFORE telling the user it's done:
     (WebGL backgrounds, custom cursors stay Great).
   - **Checked, not claimed:** the tiers document carries the leader comparison and the counts; the HEADED UAT proves the combinations
     draw and differ (RULE T), canvas == export.
+- **RULE FOUNDATION — BUILT IN LAYERS, EVERY PART CHANGEABLE, EVERY COMBINATION, EVERY SCREEN (MANDATORY — the user,
+  2026-10-19: "I don't want us to come back to the page layout once we're done… any possible combination… every part…
+  responsiveness, mobile, tablet, breakpoints… for everything. Make all of these things a rule").**
+  - **Layers, in order, each made only from the one below:** the layout engine (rows, stacks, the 12-column grid, sidebars,
+    sticky / floating, per screen) → effects (page and section transitions, entrances, states, motion) → components →
+    templates (sections → page templates → site templates). An area closes before the next opens (RULE RK), so a later layer
+    only ever builds on a finished one — like composing React components. Everything inherits from ONE place: the design
+    tokens, the site's fonts / theme / shared header and footer / global sections, and ONE CSS writer for the canvas and the
+    page. The published page stays plain HTML and CSS with tiny scripts — never the editor's React (RULE AF).
+  - **Every part changeable, every combination possible:** nothing ready-made is locked — every section, page layout, template
+    and component arrives as ordinary blocks; any piece goes in any order, any number of times, by click, keyboard, tap or
+    drag; anything can be kept (My sections), shared (global — a band or any block) or started from (page templates, a
+    duplicated page). A capability with no control a person can reach is a gap (RULE UI).
+  - **The page layout is COMPLETE before we move on:** every whole-page layout of the catalogue (A1–A18: single column,
+    sidebars, holy grail, card grid, magazine, dashboard…), every page type in more than one layout, many pages — and the
+    crawl's structures that make 95 % of real pages (`docs/layout-benchmark/STRUCTURES.md`) each made through the UI. A
+    structure that cannot be made is a gap in the ledger.
+  - **Every combination at EVERY screen, for EVERYTHING:** phone, tablet upright and sideways, laptop, desktop, wide, both
+    sides of every breakpoint, every device preset (`scripts/uat/screens.js`), and the app on phone AND tablet — for every
+    section, layout, template, effect and component, now and later. A combination checked at one width is not checked.
 - **STATUS, ALWAYS (the user, 2026-09-28).** Every reply ends with where the work is and what comes next — one line, a
   pointer the user can act on — so the user never has to ask "where are you?".
 - **RULE P — WEBSITE PERSONALITY AND TONE ARE FOLLOWED (MANDATORY — from 2026-09-27).** The Website Personalities
