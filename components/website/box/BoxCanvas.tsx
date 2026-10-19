@@ -12,7 +12,7 @@ import { measureCss, linkHoverCss } from "@/lib/educo-ui/base";
 import { columnFloorRem, dividerThickness, borderLen, videoSizing, gridLeftoverAt,HAND_FLOOR_REM, REFLOW_FLOOR_REM, isPageRow, rowNarrowsAt, LIST_ITEM_GAP, linesAt, pageRowSlot, restForDrag, setFreeInset, slideFreeAt, tabletPlaces }from "@/lib/box-model";
 import { gapPatch, snapSpace, spacePatch, stepSpace, type SpaceSide } from "@/lib/box-model";
 import { resolvePage, pageFillCss, footerPushCss } from "@/lib/semantics";
-import { Fragment, useCallback, useEffect, useLayoutEffect, useMemo, useReducer, useRef, useState, type CSSProperties, type ReactNode } from "react";
+import { createContext, Fragment, useCallback, useContext, useEffect, useLayoutEffect, useMemo, useReducer, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { Link2, Plus, ChevronUp, ChevronDown, Copy, Scissors, ClipboardPaste, Trash2, Upload, GripVertical, MoreVertical, Rows3, Columns3, Grid3x3, Type, Heading as HeadingIcon, MousePointerClick, Image as ImageIcon, Layers, BringToFront, SendToBack, Video as VideoIcon, Sparkles, Minus as MinusIcon, List as ListIcon, Code2, Star, Lock, LockOpen, Ungroup, ArrowUp, ArrowDown, ArrowLeft, ArrowRight, ArrowUpToLine, ArrowDownToLine, Paintbrush } from "lucide-react";
 import type { SiteTheme } from "@/lib/site-storage";
@@ -34,7 +34,11 @@ import { treeHoverCss, treeRevealCss, scrollRevealNeeded, revealOnceWire, REVEAL
 import { colorToCSS } from "@/components/shared/ColorPalettePicker";
 import { COMPONENT_CSS, bgVideoCss } from "@/lib/educo-ui/components";
 import { CanvasBgVideo } from "@/components/website/box/BackgroundVideo";
-import { EDITOR_DOCK_PX, layoutCss, mediaBelow, RESIZE, RUNG_MEASURE, RUNG_PX } from "@/lib/educo-ui/layout";
+import { CURRENT_LINK_CSS, EDITOR_DOCK_PX, layoutCss, mediaBelow, RESIZE, RUNG_MEASURE, RUNG_PX } from "@/lib/educo-ui/layout";
+import { pageIdFromHref } from "@/lib/box-site";
+
+/** The page being edited, for the links that go to it (LE15-27) — the export's `isCurrent`, on the canvas. */
+const CurrentPage = createContext<string | undefined>(undefined);
 import { CHROME_Z } from "@/lib/educo-ui/stacking";
 import { iconSvg, onIconsLoaded, warmIcons, hasIcon } from "@/lib/educo-ui/icon-svg";
 import { tokensFromTheme, tokensToCss } from "@/lib/educo-ui/tokens";
@@ -985,8 +989,10 @@ function ChromeMirror({ blockId, children }: { blockId: string; children: ReactN
 }
 
 export default function BoxCanvas({
-  root, theme, editable = true, selectedId, onSelectId, selectedIds, onSelectIds, onChange, onResized, minHeight = 600, breakpoint = "base", showHidden = false, marqueeRoom, guides = null, pageGrid, spaceShade = null,
+  root, theme, editable = true, selectedId, onSelectId, selectedIds, onSelectIds, onChange, onResized, minHeight = 600, breakpoint = "base", showHidden = false, marqueeRoom, guides = null, pageGrid, spaceShade = null, currentPageId,
 }: {
+  /** The page being edited: a Link or Button to it is drawn as the current page, as it publishes (LE15-27). */
+  currentPageId?: string;
   root: BoxNode;
   theme: SiteTheme;
   editable?: boolean;
@@ -4392,6 +4398,7 @@ export default function BoxCanvas({
   }
 
   return (
+    <CurrentPage.Provider value={currentPageId}>
     <div ref={canvasRef} onMouseDown={(e) => { if (editable) { select(null); startMarqueeArm(e); } }} onDragOver={onCanvasDragOver} onDrop={onCanvasDrop} onDragLeave={(e) => { if (!e.currentTarget.contains(e.relatedTarget as Node)) setDropRect(null); }} className="w-full eu-tokens"
       // THE PAGE MEASURE COMES FROM THE DEVICE CHIP, NOT FROM THE EDITOR'S WINDOW.
       //
@@ -4601,6 +4608,7 @@ export default function BoxCanvas({
         document.body,
       )}
     </div>
+    </CurrentPage.Provider>
   );
 }
 
@@ -5123,6 +5131,8 @@ function ElementView({ node, headingLevel, theme, editable, selected, onText, on
   fill?: boolean; // G-3d (2): its block spans rows and holds only it — the picture fills the block's height (`fillsRows`)
 }) {
   const fileRef = useRef<HTMLInputElement>(null);
+  const currentPage = useContext(CurrentPage);
+  const isCurrent = currentPage != null && pageIdFromHref(node.href) === currentPage; // LE15-27, as the export's `isCurrent`
   // Emitted only when this block sets one: a hard-coded "left" is an explicit value, and an explicit value on
   // the child beats the alignment its container was told to have.
   const align = node.textAlign;
@@ -5135,20 +5145,20 @@ function ElementView({ node, headingLevel, theme, editable, selected, onText, on
     }
     // A LINK — words that go somewhere, the same <a> the page publishes. A click in the editor edits it, never follows it.
     case "link":
-      return <a href={node.href || "#"} target={node.newTab ? "_blank" : undefined} rel={node.newTab ? "noopener noreferrer" : undefined} onClick={(e) => editable && e.preventDefault()}
-        style={{ color: node.color || LINK_COLOR_CSS, fontSize: node.fontSize != null ? textLen(node.fontSize) : typoRole.size(1), textAlign: align, textUnderlineOffset: "0.15em", ...typoStyle(node, "body", 500), textDecoration: node.underline ? "underline" : "none" }}>
+      return <a href={node.href || "#"} aria-current={isCurrent ? "page" : undefined} target={node.newTab ? "_blank" : undefined} rel={node.newTab ? "noopener noreferrer" : undefined} onClick={(e) => editable && e.preventDefault()}
+        style={{ color: node.color || LINK_COLOR_CSS, fontSize: node.fontSize != null ? textLen(node.fontSize) : typoRole.size(1), textAlign: align, textUnderlineOffset: "0.15em", ...typoStyle(node, "body", 500), textDecoration: node.underline ? "underline" : "none", ...(isCurrent ? CURRENT_LINK_CSS : {}) }}>
         <EditableText value={node.text} editable={editable} onChange={onText} placeholder="Link" /></a>;
     case "button": {
       // The button FILLS its box and paints its OWN visual (bg + radius + border/shadow), so resizing the box grows
       // the button itself (one shape — no duplicate wrapper behind it) and the label re-positions inside it. Content
       // position (or centre by default) decides where the label sits; a resized button therefore centres its text.
       const deco = decorStyle(node);
-      return <a href={node.href || "#"} target={node.newTab ? "_blank" : undefined} rel={node.newTab ? "noopener noreferrer" : undefined} onClick={(e) => editable && e.preventDefault()}
+      return <a href={node.href || "#"} aria-current={isCurrent ? "page" : undefined} target={node.newTab ? "_blank" : undefined} rel={node.newTab ? "noopener noreferrer" : undefined} onClick={(e) => editable && e.preventDefault()}
         style={{ display: "flex", width: "100%", height: "100%", boxSizing: "border-box", gap: u(8),
           alignItems: flexPos(node.contentY ?? "center"), justifyContent: flexPos(node.contentX ?? "center"),
           background: node.background ? colorToCSS(node.background) : colorToCSS(theme.primary), color: node.color || "var(--eu-color-on-brand)",
           fontSize: node.fontSize != null ? textLen(node.fontSize) : typoRole.size(0.875), padding: `${u(12)} ${u(24)}`, textDecoration: "none",
-          ...deco, borderRadius: deco.borderRadius ?? PILL, ...typoStyle(node, "body", 600) }}>
+          ...deco, borderRadius: deco.borderRadius ?? PILL, ...typoStyle(node, "body", 600), ...(isCurrent ? CURRENT_LINK_CSS : {}) }}>
         <EditableText value={node.text} editable={editable} onChange={onText} placeholder="Button" /></a>;
     }
     case "image": {

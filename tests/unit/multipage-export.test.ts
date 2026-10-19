@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { renderSiteFiles, renderSitePage, fileNameFor, siteFileMap, SHARED_STYLESHEET } from "@/lib/box-export";
 import { DEFAULT_THEME } from "@/lib/site-storage";
+import { CURRENT_LINK } from "@/lib/educo-ui/layout";
 import type { BoxSite } from "@/lib/box-site";
 import type { BoxNode } from "@/lib/box-model";
 
@@ -84,6 +85,31 @@ describe("multi-page export", () => {
     ];
     const files = renderSiteFiles(s, DEFAULT_THEME);
     expect(files["index.html"], "a page: link becomes the target page's relative filename").toContain('href="admissions.html"');
+  });
+
+  it("LE15-27 · the link to the page being shown is marked as the CURRENT page, by more than colour", () => {
+    // The menu linked every page but never said where the visitor was. The page that is open gets aria-current
+    // and a heavier underline whose weight comes from config/layout.json; the other links get neither.
+    const menu = () => [
+      { id: "m1", type: "link", text: "Home", href: "page:p1" },
+      { id: "m2", type: "link", text: "Admissions", href: "page:p2" },
+      { id: "m3", type: "link", text: "Term dates", href: "page:p3" },
+      { id: "b1", type: "button", text: "Apply", href: "page:p2" },
+    ];
+    const s: BoxSite = { homeId: "p1", pages: [page("p1", "Home", "home", menu()), page("p2", "Admissions", "admissions", menu()), page("p3", "Term Dates", "term-dates", menu())] } as unknown as BoxSite;
+    const tag = (html: string, words: string) => html.match(new RegExp(`<a [^>]*>${words}</a>`))?.[0] ?? "";
+    const weight = `text-decoration-thickness:${CURRENT_LINK.underlineRem}rem`;
+    for (const html of [renderSiteFiles(s, DEFAULT_THEME)["admissions.html"], renderSitePage(s, DEFAULT_THEME, "p2", { inlineShared: true })]) {
+      for (const words of ["Admissions", "Apply"]) {
+        expect(tag(html, words), `${words} is the current page`).toContain('aria-current="page"');
+        expect(tag(html, words), `${words} is underlined, not marked by colour alone`).toMatch(/text-decoration:underline/);
+        expect(tag(html, words), `${words}'s line weight comes from config`).toContain(weight);
+      }
+      for (const words of ["Home", "Term dates"]) expect(tag(html, words), `${words} is not the current page`).not.toContain("aria-current");
+    }
+    const home = renderSiteFiles(s, DEFAULT_THEME)["index.html"];
+    expect(tag(home, "Admissions"), "on the home page, Admissions is not current").not.toContain("aria-current");
+    expect(tag(home, "Home"), "on the home page, Home is").toContain('aria-current="page"');
   });
 
   it("each page carries its OWN title — this is what search engines index", () => {

@@ -1340,3 +1340,24 @@ describe("BoxCanvas — RX4-20 · a Link's hover is on the canvas too", () => {
     expect(link.matches('.eu-tokens a[style*="text-underline-offset"]')).toBe(true);
   });
 });
+
+describe("LE15-27 · the canvas marks the current page's links exactly as the published page does", () => {
+  it("a Link and a Button to the page being edited are current; the others are not", () => {
+    const root = createContainer("column", { id: "root", children: [
+      createElement("link", { id: "m1", text: "Home", href: "page:p1" } as Partial<BoxNode>),
+      createElement("link", { id: "m2", text: "Admissions", href: "page:p2" } as Partial<BoxNode>),
+      createElement("button", { id: "b1", text: "Apply", href: "page:p2" } as Partial<BoxNode>),
+    ] } as Partial<BoxNode>);
+    const { container } = render(<BoxCanvas root={root} theme={DEFAULT_THEME} selectedId={null} onChange={() => {}} currentPageId="p2" />);
+    const a = (words: string) => [...container.querySelectorAll("a")].find((el) => el.textContent === words)!;
+    for (const words of ["Admissions", "Apply"]) {
+      expect(a(words).getAttribute("aria-current"), `${words} is current`).toBe("page");
+      expect(a(words).style.textDecoration, `${words} is underlined`).toContain("underline");
+    }
+    expect(a("Home").getAttribute("aria-current"), "Home is not").toBeNull();
+    // canvas == export: the published page marks the same two, with the same line
+    const published = renderPageHTML(root, DEFAULT_THEME, new Map([["p1", "index.html"], ["p2", "admissions.html"]]), undefined, "p2");
+    expect(published.match(/aria-current="page"/g)?.length, "the export marks the same two").toBe(2);
+    expect(published).toContain(`text-decoration-thickness:${a("Apply").style.textDecorationThickness}`);
+  });
+});

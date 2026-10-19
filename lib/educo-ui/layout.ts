@@ -72,6 +72,10 @@ export const MEDIA: Readonly<{ videoRatio: string; portraitRatio: string; portra
   /** AC-22 · the download's narrower photo copies (px, ascending) and the widest screen it measures a picture at */ photoWidths: readonly number[]; sizesWideTo: number;
   /** MS-5b · an uploaded background video's cap and kinds */ videoMaxMb: number; videoTypes: readonly string[]; /** LE5-6 · where a tint starts */ tintStart: string; /** LE5-10 · the video's disc, rem */ videoDiscRem: number }> = LAYOUT.media;
 if (!(MEDIA.photoWidths.length && MEDIA.photoWidths.every((w, i, a) => w > 0 && (i === 0 || w > a[i - 1])) && MEDIA.sizesWideTo > RUNG_PX.wide && MEDIA.videoMaxMb > 0 && MEDIA.videoTypes.length)) throw new Error("config/layout.json: media needs photoWidths ascending > 0, sizesWideTo past the wide rung, videoMaxMb > 0 and videoTypes");
+/** LE15-27 · the link to the page being shown: one look for the canvas and the export (RULE CFG). */
+export const CURRENT_LINK: Readonly<{ underlineRem: number }> = LAYOUT.currentLink;
+if (!(CURRENT_LINK.underlineRem > 0)) throw new Error("config/layout.json: currentLink.underlineRem must be > 0");
+export const CURRENT_LINK_CSS = { textDecoration: "underline", textDecorationThickness: `${CURRENT_LINK.underlineRem}rem` } as const;
 /** AC-9 · the site's one content width (rem): its slider's bounds, start and step (RULE CFG). */
 export const CONTENT_WIDTH: Readonly<{ minRem: number; maxRem: number; startRem: number; stepRem: number }> = LAYOUT.contentWidth;
 if (!(CONTENT_WIDTH.minRem > 0 && CONTENT_WIDTH.minRem <= CONTENT_WIDTH.startRem && CONTENT_WIDTH.startRem <= CONTENT_WIDTH.maxRem && CONTENT_WIDTH.stepRem > 0)) throw new Error("config/layout.json: contentWidth needs 0 < minRem ≤ startRem ≤ maxRem and stepRem > 0");
