@@ -4,7 +4,7 @@ Feature: Box Builder — ready-made sections, my sections, global sections and p
     and new pages that start from a template
   So that a good-looking page takes minutes, and a change made once is made everywhere
   Design (signed by the user 2026-10-19, D1 … D8): docs/web-anatomy/layout-tiers/le15-design.md
-  Guards: tests/unit/section-library.test.ts · tests/components/website/SectionsPanel.test.tsx · tests/unit/saved-sections.test.ts · tests/unit/global-sections.test.ts · tests/unit/page-templates.test.ts · tests/unit/section-photos.test.ts · tests/components/website/AddPageDialog.test.tsx · tests/components/website/BoxInspector.test.tsx · tests/components/website/BoxCanvas.test.tsx
+  Guards: tests/unit/section-library.test.ts · tests/unit/section-space.test.ts · tests/components/website/PageGridPanel.test.tsx · tests/components/website/SectionsPanel.test.tsx · tests/unit/saved-sections.test.ts · tests/unit/global-sections.test.ts · tests/unit/page-templates.test.ts · tests/unit/section-photos.test.ts · tests/components/website/AddPageDialog.test.tsx · tests/components/website/BoxInspector.test.tsx · tests/components/website/BoxCanvas.test.tsx
 
   Background:
     Given the Box Builder is open on a site with the pages "Home", "Admissions" and "Term dates"
@@ -308,6 +308,38 @@ Feature: Box Builder — ready-made sections, my sections, global sections and p
     When I select its picture
     Then the Inspector shows its Max height, 75svh
     And I can change it or clear it, and the canvas and the Preview follow
+
+  # ── The space between sections (BATCH LE-15i, SG-1 · SG-2; decided by the user 2026-10-19: "One size for all", "Every page, a switch")
+
+  Scenario: One space above and below every section, set once for the site
+    Given a page holding the hero "Words beside a picture", "Three icon points beside a photo" and a Stack band I built
+    When I open Page grid and set "Space above and below sections" to 4rem
+    Then every one of the three has 4rem above and below its content, on the canvas and in the Preview, at every width
+    And the header and the footer keep their own space
+    And "Back to the designs' own" puts each section's designed space back in one step
+    And one Ctrl+Z undoes the change
+
+  Scenario: A page can have its own
+    Given the site's space between sections is 4rem
+    When I choose "This page uses its own grid" on "Admissions" and set it to 2rem
+    Then the sections on "Admissions" have 2rem above and below, and every other page keeps 4rem
+
+  Scenario: One section keeps its own space
+    Given the site's space between sections is 4rem
+    When I select the hero and drag its top space on the canvas to 6rem
+    Then the hero keeps 6rem at the top and its bottom as it was, while every other section follows the site
+    And the Inspector says it keeps its own space, with "Follow the site" to give it back
+
+  Scenario: Two sections of the same colour share their space
+    Given two plain sections one under the other, each with 6rem above and below
+    When I look at the page
+    Then there is 6rem between their words, not 12rem
+    And a section of another colour, a photo or a framed card keeps its own space on both sides
+    And the canvas and the Preview draw the same space at every width
+
+  Scenario: Sharing can be turned off
+    When I turn off "Same-colour sections share their space" in Page grid
+    Then two plain sections one under the other have each one's own space again
 
   Scenario: Only a ready-made section offers it
     When I select a section I built myself from blocks

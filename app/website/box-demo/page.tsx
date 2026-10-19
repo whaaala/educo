@@ -23,7 +23,7 @@ import {
   floatBox, unfloatBox, bringToFront, bringForward, sendBackward, sendToBack,
   resolveResponsive, updateBoxResponsive, clearOverride, hasOverride,
   gridColumns, setColumnFraction, pinBlockedBy, fixedBlockedBy, blockedByLabel, pinScopeWords, isFloating,
-  isSectionContentIn, sectionPlaceIn, insertSlot, pageEnd, addAnnouncementBar, defaultWhere, addInsideParent, placeSharing, retrackGridAt, type InsertWhere, isContainer, outerSpaceDefaults, spanAt, setSpan, lineUpWithGrid, linesAt, setLinesAt, fullWidthAt, setFreeInset, fitStepAt, fillsRows, fillHostOf,
+  isSectionContentIn, sectionSpaceOf, sectionPlaceIn, insertSlot, pageEnd, addAnnouncementBar, defaultWhere, addInsideParent, placeSharing, retrackGridAt, type InsertWhere, isContainer, outerSpaceDefaults, spanAt, setSpan, lineUpWithGrid, linesAt, setLinesAt, fullWidthAt, setFreeInset, fitStepAt, fillsRows, fillHostOf,
   gridAutoFit, parentFlowOf, canWrapWords, canOverlapUp, regionSpan,
 } from "@/lib/box-model";
 import { blockForKind } from "@/lib/box-presets";
@@ -295,6 +295,9 @@ export default function BoxDemoPage() {
   }, []);
   /** The phone bar's More sheet (E5a-16): Back and Escape put it away, and focus goes back to More (E5a-13). */
   const [moreOpen, setMoreOpen] = useState(false);
+  // LE15i-2: on the compact bar (a phone or tablet) the Page grid panel lives in the More sheet — "Page grid…" opens it there too,
+  // or the guides came on and the panel stayed in a closed sheet (measured 2026-10-19 at 393 and 768: no dialog at all)
+  const openGridPanel = () => { toggleGuides({ on: true }); setGridPanel(true); if (compactBar) setMoreOpen(true); };
   const moreBtnRef = useRef<HTMLButtonElement>(null);
   useSheetManners(moreOpen, () => setMoreOpen(false), moreBtnRef, compactBar);
   useEffect(() => {
@@ -1493,7 +1496,7 @@ export default function BoxDemoPage() {
                 title="Move every block of this page to the nearest whole column, on the screen you are editing. Blocks placed free (Alt-drag) stay where they are."
                 className="w-full flex items-center justify-center gap-1 text-xs px-2 py-1.5 rounded-lg border border-line text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-100 dark:hover:bg-white/10"><LayoutGrid className="w-3.5 h-3.5" aria-hidden="true" /> Line up with the grid</button>
               <p role="status" className="text-[0.625rem] text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 min-h-0">{lineUpSaid}</p>
-              <button onClick={() => { setPageMenu(false); toggleGuides({ on: true }); setGridPanel(true); }} className="w-full flex items-center justify-center gap-1 text-xs px-2 py-1.5 rounded-lg border border-line text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-100 dark:hover:bg-white/10"><LayoutGrid className="w-3.5 h-3.5" aria-hidden="true" /> Page grid…</button>
+              <button onClick={() => { setPageMenu(false); openGridPanel(); }} className="w-full flex items-center justify-center gap-1 text-xs px-2 py-1.5 rounded-lg border border-line text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-100 dark:hover:bg-white/10"><LayoutGrid className="w-3.5 h-3.5" aria-hidden="true" /> Page grid…</button>
               <SiteFontsFields fonts={fonts} onChange={(p) => pushSite(setSiteFonts(site, p))} />
               <button onClick={() => { setPageMenu(false); setConfirmDeletePage(true); }} disabled={site.pages.length <= 1} title={site.pages.length <= 1 ? "A site needs at least one page" : "Delete this page"} className="w-full flex items-center justify-center gap-1 text-xs px-2 py-1.5 rounded-lg border border-red-200 dark:border-red-900/50 text-red-600 dark:text-red-400 midnight:text-red-400 purple:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40 disabled:opacity-40"><Trash2 className="w-3.5 h-3.5" /> Delete page</button>
             </div>
@@ -1528,7 +1531,7 @@ export default function BoxDemoPage() {
                 title="Move every block of this page to the nearest whole column, on the screen you are editing. Blocks placed free (Alt-drag) stay where they are."
                 className="w-full flex items-center justify-center gap-1 text-xs px-2 py-1.5 rounded-lg border border-line text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-100 dark:hover:bg-white/10"><LayoutGrid className="w-3.5 h-3.5" aria-hidden="true" /> Line up with the grid</button>
               <p role="status" className="text-[0.625rem] text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 min-h-0">{lineUpSaid}</p>
-              <button onClick={() => { setPageMenu(false); toggleGuides({ on: true }); setGridPanel(true); }} className="w-full flex items-center justify-center gap-1 text-xs px-2 py-1.5 rounded-lg border border-line text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-100 dark:hover:bg-white/10"><LayoutGrid className="w-3.5 h-3.5" aria-hidden="true" /> Page grid…</button>
+              <button onClick={() => { setPageMenu(false); openGridPanel(); }} className="w-full flex items-center justify-center gap-1 text-xs px-2 py-1.5 rounded-lg border border-line text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-100 dark:hover:bg-white/10"><LayoutGrid className="w-3.5 h-3.5" aria-hidden="true" /> Page grid…</button>
               <SiteFontsFields fonts={fonts} onChange={(p) => pushSite(setSiteFonts(site, p))} />
               <button onClick={() => { setPageMenu(false); setConfirmDeletePage(true); }} disabled={site.pages.length <= 1} title={site.pages.length <= 1 ? "A site needs at least one page" : "Delete this page"} className="w-full flex items-center justify-center gap-1 text-xs px-2 py-1.5 rounded-lg border border-red-200 dark:border-red-900/50 text-red-600 dark:text-red-400 midnight:text-red-400 purple:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40 disabled:opacity-40"><Trash2 className="w-3.5 h-3.5" /> Delete page</button>
             </div>
@@ -1626,7 +1629,7 @@ export default function BoxDemoPage() {
           {canvasMenu && (
             <PortalMenu anchor={{ top: canvasMenu.y, left: canvasMenu.x, bottom: canvasMenu.y, right: canvasMenu.x }} onClose={() => setCanvasMenu(null)} ariaLabel="Canvas" width={220}>
               <MenuItem Icon={LayoutGrid} label={guides.on ? "Hide layout guides" : "Show layout guides"} hint="Shift+G" onClick={() => { toggleGuides(); setCanvasMenu(null); }} />
-              <MenuItem Icon={Settings2} label="Page grid…" onClick={() => { toggleGuides({ on: true }); setGridPanel(true); setCanvasMenu(null); }} />
+              <MenuItem Icon={Settings2} label="Page grid…" onClick={() => { openGridPanel(); setCanvasMenu(null); }} />
             </PortalMenu>
           )}
           <BlocksPanel theme={renderTheme} onPick={insertBlock} onSection={addReadySection} onAddPage={onAddPage}
@@ -1649,7 +1652,7 @@ export default function BoxDemoPage() {
               {bulk ? (
                 <BulkInspector sampleSection={isSectionContentIn(root, selectedIds[0])} count={selectedIds.length} theme={renderTheme} sample={(() => { const f = findBox(root, selectedIds[0]); return f ? resolveResponsive(f, bp) : null; })()} onStepWidth={bulkStepWidth} onStepHeight={bulkStepHeight} onPatch={bulkPatch} onDuplicate={bulkDuplicate} onDelete={bulkDelete} onFloatAll={bulkFloat} onGroup={bulkGroup} canGroup={canGroup(root, selectedIds)} mixed={mixedFields(root, selectedIds, bp, BULK_FIELDS)} />
               ) : selected ? (
-                <BoxInspector trail={selectionChain(root, selected.id).slice(0, -1).map((id) => findBox(root, id)).filter((n): n is BoxNode => !!n).map((n) => (bp === "base" ? n : resolveResponsive(n, bp)))} onSelectBlock={(id) => selectByUser([id])} section={isSectionContentIn(root, selected.id)} sectionPlace={sectionPlaceIn(root, selected.id)} outerDefault={outerSpaceDefaults(root, selected.id)}
+                <BoxInspector trail={selectionChain(root, selected.id).slice(0, -1).map((id) => findBox(root, id)).filter((n): n is BoxNode => !!n).map((n) => (bp === "base" ? n : resolveResponsive(n, bp)))} onSelectBlock={(id) => selectByUser([id])} section={isSectionContentIn(root, selected.id)} sectionSpace={sectionSpaceOf(findParent(root, selected.id)?.parent, selected, root, bp)} sectionPlace={sectionPlaceIn(root, selected.id)} outerDefault={outerSpaceDefaults(root, selected.id)}
                   fillHeight={(() => { const p = fillHostOf(parentGrid, parentGrid && findParent(root, parentGrid.id)?.parent); return selected.type === "image" && p && fillsRows(p, bp, true) ? { on: resolveResponsive(selected, bp).fillHeight !== false } : undefined; })()}
                   pageSpan={(() => { const c = columnsAt(gridHere, bp), v = spanAt(root, selected.id, c, bp); return v === null ? undefined : { value: v, cols: c }; })()}
                   rowStepRem={root.pageGrid ? gridHere.rowStepRem ?? 1.5 : undefined}

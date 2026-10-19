@@ -26,6 +26,7 @@ import { Segmented } from "./ui";
  */
 const remRange = fluidRemRange; // the engine's one way a label says a fluid value (G3c-10)
 const CW = INSPECTOR.widths; // the words (RULE CFG)
+const SS = INSPECTOR.sectionSpace; // LE-15i — the words (RULE CFG)
 
 const SCREENS: { value: Breakpoint; label: string }[] = [
   { value: "phone", label: "Phone" }, { value: "tabletPortrait", label: "Tablet" }, { value: "tabletLandscape", label: "Laptop" },
@@ -178,6 +179,18 @@ export default function PageGridPanel({ grid, bare = false, ownPage, breakpoint,
         <Slider label="Side space (padding)" value={side} min={PAGE_GRID_LIMITS.sideSpace[0]} max={PAGE_GRID_LIMITS.sideSpace[1]} steps={SPACE_STEPS.filter((v) => v <= PAGE_GRID_LIMITS.sideSpace[1])}
           onChange={(n) => onChange({ ...grid, sideSpace: n }, "pagegrid:side")} formatValue={(x) => (grid.sideSpace !== undefined ? remRange(x) : bare ? "Default · 0rem" : "Default · 1–1.25rem")} />
         <button type="button" className={link} disabled={grid.sideSpace === undefined} onClick={() => onChange({ ...grid, sideSpace: undefined })}>{grid.sideSpace === undefined ? "At the default" : "Back to default"}</button>
+      </div>
+      {/* LE-15i (SG-1 · SG-2, the user 2026-10-19: "One size for all", "Every page, a switch"): the space above and below every
+          section, on the scale; unset = each design's own. Same-colour neighbours share it unless turned off (`sectionSpacePad`). */}
+      <div className="space-y-1">
+        <Slider label={SS.label} value={grid.sectionSpace ?? 0} min={PAGE_GRID_LIMITS.sectionSpace[0]} max={PAGE_GRID_LIMITS.sectionSpace[1]} steps={SPACE_STEPS.filter((v) => v <= PAGE_GRID_LIMITS.sectionSpace[1])}
+          onChange={(n) => onChange({ ...grid, sectionSpace: n }, "pagegrid:sections")} formatValue={(x) => (grid.sectionSpace !== undefined ? remRange(x) : SS.default)} />
+        <button type="button" className={link} disabled={grid.sectionSpace === undefined} onClick={() => onChange({ ...grid, sectionSpace: undefined }, "pagegrid:sections")}>{grid.sectionSpace === undefined ? SS.atDefault : SS.back}</button>
+        <label className="flex items-center justify-between gap-2 text-xs">
+          <span>{SS.merge}</span>
+          <input type="checkbox" checked={grid.mergeSections !== false} onChange={(e) => onChange({ ...grid, mergeSections: e.target.checked ? undefined : false }, "pagegrid:merge")} className="w-4 h-4 accent-indigo-600" />
+        </label>
+        <p className="text-[0.625rem] text-muted">{SS.mergeHint}</p>
       </div>
       {gaps.map((g) => (
         <div key={g.key} className="space-y-1" onFocus={() => onSpaceFocus?.(g.key)} onBlur={() => onSpaceFocus?.(null)}>

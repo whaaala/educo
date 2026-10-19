@@ -21,7 +21,7 @@ import {
   containerStyle, childStyle, marginCSS, leafPaddingCSS, ownSidePadVars, outerSpaceCSS, pageBandInset, pagePinCover, sectionContent, sizeToCSS, u, baseUnit, floatingReserve, floatStacksOnMobile, createContainer, createElement, createComponent,
   updateBox, deleteBox, insertBox, pageEnd, moveBlock, canMoveBlock, moveAxis, duplicateBox, moveBox, cloneBox, findParent, isAncestor, isContainer, containerLabel, widthPct, stackWithBlock, fitBand, PILL, blockTypography,
   isFloating, floatBox, unfloatBox, groupBoxes, ungroupBoxes, groupAround, moveBlocks, copyStyle, pasteStyle, bringToFront, sendToBack, bringForward, sendBackward, packRowLines, allocateLine, type LineFollower,
-  shouldTakeMirrorBox, mirrorFlushSides, edgeSwipeSides, hostSizedFor, type MirrorBox, type MirrorChase, fadedPaint, boxOpacity, backgroundCss, treePaintLayerCss, treeBgVideoCss, radiusCSS, isClipped, SHADOW_CSS, videoEmbedSrc, sanitizeCssDeclarations, expandScopedCss, ACCORDION_CSS_PARTS, itemOverrideCss, itemHasOverride, itemNumberVars, richBody, componentTextCss, componentBoxCss, bgShowThroughCss, resizeTopEdge, blockContainmentCss, alertToastCss, treeHasToast, treeHasFixedHold, accordionClasses, bandClasses, hasSiteMeasure, advancedCssStyle, applyBoxSize, alertActionsHTML, hugsContent, itemFloatContextCss, COMPONENT_ITEM_SEL, clampContentScale, MIN_CONTENT_SCALE, isMultiItemComponent, comfortableWidth, remLen, rootFontPx, isDefiniteLen, addItemAfter, duplicateItem, duplicateChildItem, removeItem, removeChildItem, moveItem, moveChildItem, updateItem, updateChildItem, ALERT_SEVERITY_ICON, alertPartInline, alertIconInline, collectAlertItemStyles,
+  shouldTakeMirrorBox, mirrorFlushSides, edgeSwipeSides, hostSizedFor, type MirrorBox, type MirrorChase, fadedPaint, boxOpacity, backgroundCss, treePaintLayerCss, treeBgVideoCss, radiusCSS, isClipped, SHADOW_CSS, videoEmbedSrc, sanitizeCssDeclarations, expandScopedCss, ACCORDION_CSS_PARTS, itemOverrideCss, itemHasOverride, itemNumberVars, richBody, componentTextCss, componentBoxCss, bgShowThroughCss, resizeTopEdge, blockContainmentCss, alertToastCss, treeHasToast, treeHasFixedHold, accordionClasses, bandClasses, hasSiteMeasure, advancedCssStyle, applyBoxSize, sectionSpacePad, sectionSpaceOf, alertActionsHTML, hugsContent, itemFloatContextCss, COMPONENT_ITEM_SEL, clampContentScale, MIN_CONTENT_SCALE, isMultiItemComponent, comfortableWidth, remLen, rootFontPx, isDefiniteLen, addItemAfter, duplicateItem, duplicateChildItem, removeItem, removeChildItem, moveItem, moveChildItem, updateItem, updateChildItem, ALERT_SEVERITY_ICON, alertPartInline, alertIconInline, collectAlertItemStyles,
   type Breakpoint, resolveResponsive, updateBoxResponsive, treePinArrivalCss, floatHoldCSS, canvasFixedStyle, capturesFixed, imageSizing, fillsRowsAnywhere, fillHostOf, importPhoto, traceOutline, followsOutline, treeItemEffectsCss, itemNeedsClass, floatZIndex, gridPlacementAt, masonryMeasureAttr, masonryMeasurePass, mirrorMeasuresNow, baseUnitParts, pinStackMarker, pinStackGroupMarker, pinStackPass, pinArrivalMarker, pinArrivalPass, headerMarkers, headerPass, underOverHeaderPad, isPager, pagerStripCss, pagerNavHTML, selectionChain, textLen, typoRole, typoRootVars, typoCascadeCss, bandEdgeCSS, LINK_COLOR_CSS, treeGridQueryCss, TYPE_UNIT_PROPERTY_CSS, stripsAnywhere,
 } from "@/lib/box-model";
 import { ICON_SET } from "./icons";
@@ -543,7 +543,8 @@ const SIDE_WORD: Record<SpaceSide, string> = { Top: "top", Right: "right", Botto
  * Each handle is a keyboard slider (arrows step, Shift bigger, Home → 0); the Inspector is the path without dragging.
  * ponytail: a handle whose side is too short to hold it beside the resize handles (a one-line text's top) is left to the Inspector.
  */
-function SpaceBands({ blockId, node, baseFont, colors, gapColor, pad, margin, gap, spaceFrom }: {
+function SpaceBands({ blockId, node, baseFont, colors, gapColor, pad, margin, gap, spaceFrom, sectionSpace = {} }: {
+  sectionSpace?: { top?: number; bottom?: number }; // LE15i-5 / 8: a page section's space set by the site or shared (`sectionSpaceOf`) — none on any other block
   blockId: string; node: BoxNode; baseFont: number; colors: { padding: string; margin: string }; gapColor: string;
   pad: boolean; margin: boolean; gap: boolean; spaceFrom: () => (patch: Partial<BoxNode>, mergeKey?: string) => void;
 }) {
@@ -619,7 +620,10 @@ function SpaceBands({ blockId, node, baseFont, colors, gapColor, pad, margin, ga
   }
 
   const patchFor = (hd: SpaceHandle, v: number, alt: boolean, shift: boolean): Partial<BoxNode> =>
-    hd.kind === "gap" ? gapPatch(node, hd.axis!, v, both) : spacePatch(hd.kind, hd.side!, v, { alt: alt && !shift, all: alt && shift });
+    hd.kind === "gap" ? gapPatch(node, hd.axis!, v, both) : startsOwn(spacePatch(hd.kind, hd.side!, v, { alt: alt && !shift, all: alt && shift }));
+  // LE15i-5: a section starting its own space keeps the side not dragged where it is DRAWN (the site's 4rem, a shared 0); LE15i-8: only the
+  // sides the site or sharing set — any other block writes the side dragged and nothing else
+  const startsOwn = (p: Partial<BoxNode>): Partial<BoxNode> => (p.ownSpace && !node.ownSpace ? { ...(sectionSpace.top !== undefined ? { paddingTop: sectionSpace.top } : {}), ...(sectionSpace.bottom !== undefined ? { paddingBottom: sectionSpace.bottom } : {}), ...p } : p);
   const stored = (hd: SpaceHandle) => (hd.css / m.unit) * 10;
   const start = (e: React.MouseEvent | React.PointerEvent, hd: SpaceHandle) => {
     // E6-19: an inner handle lies over the block's first words (c-21's problem) — a press that never moves is the words' click
@@ -3984,7 +3988,7 @@ export default function BoxCanvas({
       <SpaceBands blockId={node.id} node={node} baseFont={root.baseFont ?? 10} colors={spaceHues} gapColor={guideHue}
         // E6-20: an EMPTY box has nothing inside to space yet, and its centre is its + — on a phone a finger's handle covered it
         pad={!selfPaint && !(isContainer(node) && !(node.children ?? []).length)} margin={!floating} gap={isContainer(node)}
-        spaceFrom={() => { const base = rootRef.current; return (p, k) => onChange(writeBox(base, node.id, p), k); }} />
+        spaceFrom={() => { const base = rootRef.current; return (p, k) => onChange(writeBox(base, node.id, p), k); }} sectionSpace={sectionSpaceOf(parent, rawNode, grand, breakpoint)} />
     ) : null;
 
     // Select on mousedown (fires before the inline editor's click-guard) and stop propagation so the
@@ -4087,7 +4091,8 @@ export default function BoxCanvas({
             ...(editable && kids.length === 0 ? { position: "relative" as const } : {}),
             ...canvasStyle,
             ...pagePinCover(node, parent?.id === root.id), // F1-b — after the band's own style, as the export does
-            ...(isContainer(node) ? underOverHeaderPad(parent, rawNode, { ...containerStyle(node, breakpoint, section), ...canvasStyle }.paddingTop, grand) : {}), // LE11-4 — the export writes the same
+            ...(isContainer(node) ? sectionSpacePad(parent, rawNode, grand, breakpoint) : {}), // LE-15i — the space between sections; the export writes the same
+            ...(isContainer(node) ? underOverHeaderPad(parent, rawNode, { ...containerStyle(node, breakpoint, section), ...canvasStyle, ...sectionSpacePad(parent, rawNode, grand, breakpoint) }.paddingTop, grand) : {}), // LE11-4 — the export writes the same
             // NOT the page root and NOT a row band. Both are invisible scaffolding rather than boxes anyone
             // added: the root carries the PAGE's own minimum height (roughly a viewport) and an 8rem courtesy
             // band would overrule it, collapsing an empty page to a strip.

@@ -328,6 +328,13 @@ function ProportionControl({ node, onPatch }: { node: BoxNode; onPatch: (p: Part
   );
 }
 
+/** LE-15i SG-1 · a section's own space above or below (its top, its bottom, or all sides) makes it keep its own. */
+const ownSpacePatch = (onPatch: (p: Partial<BoxNode>) => void, shown: BoxNode) => (p: Partial<BoxNode>) => {
+  if (!("paddingTop" in p || "paddingBottom" in p || "padding" in p)) return onPatch(p);
+  // LE15i-5: from the space as it is DRAWN, so the side not touched stays where it is (it was the site's 4rem, not the design's 96)
+  const keep = shown.ownSpace ? {} : { ...(shown.paddingTop !== undefined ? { paddingTop: shown.paddingTop } : {}), ...(shown.paddingBottom !== undefined ? { paddingBottom: shown.paddingBottom } : {}) };
+  onPatch({ ...keep, ...p, ownSpace: true });
+};
 /** SZ-3 · A BLOCK'S LIMITS — Min / Max width and height (`applyBoxSize`); a field takes a length (px made rem), empty clears it. */
 function LimitsControl({ node, onPatch }: { node: BoxNode; onPatch: (p: Partial<BoxNode>) => void }) {
   const put = (k: "minWidth" | "maxWidth" | "maxHeight", v: string) => { const t = typedLength(v.trim()); if (!t) onPatch({ [k]: undefined }); else if (limitCss(t)) onPatch({ [k]: limitCss(t)! }); };
@@ -644,11 +651,12 @@ export function blockLabel(node: BoxNode): string {
 }
 const TRAIL = INSPECTOR.trail;
 
-export default function BoxInspector({ trail = [], onSelectBlock, section = false, sectionPlace, outerDefault, fillHeight, pageSpan, onSetSpan, pageLines, onSetLines, onSetFreeInset, rowStepRem, node, theme, onPatch, onAddChild, onAddAnnouncement, onFloat, onUnfloat, onLayer, onAlignInRow, rowJustify, onSectionWidth, onSaveSection, sectionFinish, onMakeGlobal, globalInfo, onDetachGlobal, sectionWidth, siteWidth, sectionFollows, rowOfPage = false, canFloat = true, parentFlow, canWrapWords = false, canOverlapUp = false, inGrid = false, inMasonry = false, inFitGrid = false, gridTrack, onSetFraction, onRetrack, onKind, breakpoint = "base", overridden = false, onResetOverride, onResetField, pages, currentPageId, pinBlockedBy = null, fixedBlockedBy = null, pinScope = null }: {
+export default function BoxInspector({ trail = [], onSelectBlock, section = false, sectionSpace, sectionPlace, outerDefault, fillHeight, pageSpan, onSetSpan, pageLines, onSetLines, onSetFreeInset, rowStepRem, node, theme, onPatch, onAddChild, onAddAnnouncement, onFloat, onUnfloat, onLayer, onAlignInRow, rowJustify, onSectionWidth, onSaveSection, sectionFinish, onMakeGlobal, globalInfo, onDetachGlobal, sectionWidth, siteWidth, sectionFollows, rowOfPage = false, canFloat = true, parentFlow, canWrapWords = false, canOverlapUp = false, inGrid = false, inMasonry = false, inFitGrid = false, gridTrack, onSetFraction, onRetrack, onKind, breakpoint = "base", overridden = false, onResetOverride, onResetField, pages, currentPageId, pinBlockedBy = null, fixedBlockedBy = null, pinScope = null }: {
   /** ED-2 (LE-10): the blocks round this one, outermost first (`selectionChain` without the block itself) — the same
    *  blocks Escape steps out through. Each is a button that selects it (`onSelectBlock`). */
   trail?: BoxNode[];
   onSelectBlock?: (id: string) => void;
+  sectionSpace?: { top?: number; bottom?: number }; // LE15i-6: the space above and below it in effect (`sectionSpaceOf`) — shown, and kept when it starts its own
   section?: SectionFlag; // the block is the content of a page section, so its default inner spacing is the gutter and the section space
   outerDefault?: [number, number, number, number]; // the outer space it really has by default (`outerSpaceDefaults`, G-3 (1)); else `outerDefaults`
   fillHeight?: { on: boolean }; // G-3d (2): a picture alone in a block spanning rows — "Fill the block's height"; absent where it does nothing
@@ -727,6 +735,8 @@ export default function BoxInspector({ trail = [], onSelectBlock, section = fals
   pinScope?: PinScopeWords | null;
 }) {
   const [tab, setTab] = useState<"design" | "content" | "device">("design");
+  // LE15i-6: a section following the site's space between sections shows the space in effect, not its stored design value
+  const spaced: BoxNode = section && sectionSpace && !node.ownSpace ? { ...node, ...(sectionSpace.top !== undefined ? { paddingTop: sectionSpace.top } : {}), ...(sectionSpace.bottom !== undefined ? { paddingBottom: sectionSpace.bottom } : {}) } : node;
   const [accSel, setAccSel] = useState<string[]>([]); // accordion items ticked for grouping
   const fileRef = useRef<HTMLInputElement>(null);
   const presets = getPresets(presetKindFor(node), theme);
@@ -1632,7 +1642,14 @@ export default function BoxInspector({ trail = [], onSelectBlock, section = fals
 
           <Accordion title="Spacing" icon={Ruler}>
             {/* EVERY block has inner spacing (c-23; rule 3) — a Heading, Link or Image as much as a Stack. */}
-            {node.type !== "button" && <SideSpacing title="Inner spacing" node={node} base="padding" sides={["paddingTop", "paddingRight", "paddingBottom", "paddingLeft"]} onPatch={onPatch} defaults={spaceDefaults(node, section).pad} />}
+            {node.type !== "button" && <SideSpacing title="Inner spacing" node={spaced} base="padding" sides={["paddingTop", "paddingRight", "paddingBottom", "paddingLeft"]} onPatch={section ? ownSpacePatch(onPatch, spaced) : onPatch} defaults={spaceDefaults(node, section).pad} />}
+            {/* LE-15i SG-1: a section given its own space above or below keeps it; the site's space between sections passes it by */}
+            {section && node.ownSpace && (
+              <div className="flex items-center justify-between gap-2 text-[0.6875rem] text-muted">
+                <span>{INSPECTOR.sectionSpace.own}</span>
+                <button type="button" className="underline-offset-2 hover:underline text-ink" onClick={() => onPatch({ ownSpace: undefined })}>{INSPECTOR.sectionSpace.follow}</button>
+              </div>
+            )}
             <SideSpacing title="Outer spacing" node={node} base="margin" sides={["marginTop", "marginRight", "marginBottom", "marginLeft"]} onPatch={onPatch} defaults={outerDefault ?? outerDefaults(node, sectionPlace)} />
           </Accordion>
 

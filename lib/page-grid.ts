@@ -10,6 +10,9 @@
 import type { Breakpoint, GridSpace } from "@/lib/box-model";
 import { oklchToHex, nearestAccessibleColor, contrastRatio } from "@/lib/educo-ui/color";
 import { CONTENT_WIDTH } from "@/lib/educo-ui/layout";
+import LAYOUT from "@/config/layout.json";
+// LE-15i: a stored config value is a trust boundary — the section space limit is a whole number of the scale's unit, 1 or more
+if (!(Number.isInteger(LAYOUT.sectionSpace.max) && LAYOUT.sectionSpace.max > 0)) throw new Error("config/layout.json: sectionSpace.max must be a whole number above 0");
 
 /** A site's page grid, or a page's own (the user's choice, 2026-10-04: one grid per site, a page may opt out). */
 export interface PageGridSettings {
@@ -22,11 +25,13 @@ export interface PageGridSettings {
   columnGap?: number;                                // "Space between columns" — across only (G-3b (5), the user 2026-10-04); over blockGap
   rowGap?: number;                                   // "Space between rows" — down only; over blockGap
   contentWidth?: number;                             // AC-9: the one content width every section sits on, rem (unset = Full width)
+  sectionSpace?: number;                             // LE-15i SG-1: the space above and below every section, the same unit (unset = each design's own)
+  mergeSections?: boolean;                           // LE-15i SG-2: false = same-colour neighbours keep each one's own space (unset = they share it)
 }
 
 export const PAGE_GRID_DEFAULT = { columns: 12, rowStepRem: 1.5 } as const;
 /** What the panel allows (plan, 2026-10-04). */
-export const PAGE_GRID_LIMITS = { columns: [4, 24], phoneColumns: [2, 12], rowStepRem: [0.5, 3], sideSpace: [0, 96], blockGap: [0, 64], columnGap: [0, 64], rowGap: [0, 64] } as const;
+export const PAGE_GRID_LIMITS = { columns: [4, 24], phoneColumns: [2, 12], rowStepRem: [0.5, 3], sideSpace: [0, 96], blockGap: [0, 64], columnGap: [0, 64], rowGap: [0, 64], sectionSpace: [0, LAYOUT.sectionSpace.max] } as const;
 
 const RUNGS: Breakpoint[] = ["phone", "tabletPortrait", "tabletLandscape", "base", "wide"];
 const clamp = (n: number, [lo, hi]: readonly [number, number]) => Math.min(hi, Math.max(lo, Math.round(n)));
@@ -77,6 +82,9 @@ export function gridSpaceOf(grid: PageGridSettings): GridSpace | undefined {
   const x = grid.columnGap ?? grid.blockGap, y = grid.rowGap ?? grid.blockGap;
   if (x !== undefined && x === y) out.gap = clamp(x, PAGE_GRID_LIMITS.blockGap);
   else { if (x !== undefined) out.gapX = clamp(x, PAGE_GRID_LIMITS.columnGap); if (y !== undefined) out.gapY = clamp(y, PAGE_GRID_LIMITS.rowGap); }
+  // LE-15i: the space above and below every section (SG-1), and same-colour neighbours sharing it unless turned off (SG-2)
+  if (grid.sectionSpace !== undefined) out.sectionY = clamp(grid.sectionSpace, PAGE_GRID_LIMITS.sectionSpace);
+  if (grid.mergeSections === false) out.noMerge = true;
   // AC-9: the site's content width, held to config/layout.json's bounds (a stored value is a trust boundary)
   if (grid.contentWidth !== undefined && Number.isFinite(grid.contentWidth)) out.measure = Math.min(CONTENT_WIDTH.maxRem, Math.max(CONTENT_WIDTH.minRem, grid.contentWidth));
   // the rows of the page are drawn on these columns (G-3b), so the page carries them — only when they are not the default

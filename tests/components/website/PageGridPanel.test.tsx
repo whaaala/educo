@@ -14,6 +14,7 @@ import { guideColor, guideInk } from "@/lib/page-grid";
 import { contrastRatio } from "@/lib/educo-ui/color";
 import { resolveSiteTheme } from "@/lib/site-storage";
 import LAYOUT from "@/config/layout.json";
+import INSPECTOR_WORDS from "@/config/inspector.json";
 
 /** G-2 · the page-grid panel and the layout guides. Scenarios: tests/features/components/website/page-grid.feature. */
 const panel = (over: Partial<Parameters<typeof PageGridPanel>[0]> = {}) => {
@@ -261,5 +262,30 @@ describe("G3c-11 · Escape closes the panel even when focus has fallen out of it
       fireEvent.keyDown(other, { key: "Escape" });
       expect(p.onClose).not.toHaveBeenCalled();
     } finally { other.remove(); }
+  });
+});
+
+describe("LE-15i · the space between sections in Page grid (box-builder-sections.feature)", () => {
+  const W = INSPECTOR_WORDS.sectionSpace;
+  it("SG-1: a slider on the scale, up to config/layout.json's limit; Back to the designs' own clears it", () => {
+    const p = panel();
+    const s = screen.getByLabelText(W.label);
+    expect(Number((s as HTMLInputElement).max)).toBe(SPACE_STEPS.filter((v) => v <= LAYOUT.sectionSpace.max).length - 1);
+    expect(screen.getByRole("button", { name: W.atDefault })).toBeDisabled();
+    fireEvent.change(s, { target: { value: String(SPACE_STEPS.indexOf(64)) } });
+    expect(p.onChange).toHaveBeenLastCalledWith({ sectionSpace: 64 }, "pagegrid:sections");
+    const q = panel({ grid: { sectionSpace: 64 } });
+    fireEvent.click(screen.getByRole("button", { name: W.back }));
+    expect(q.onChange).toHaveBeenLastCalledWith({ sectionSpace: undefined }, "pagegrid:sections");
+  });
+  it("SG-2: same-colour sections share their space — on unless turned off", () => {
+    const p = panel();
+    const box = screen.getByRole("checkbox", { name: W.merge });
+    expect(box).toBeChecked();
+    fireEvent.click(box);
+    expect(p.onChange).toHaveBeenLastCalledWith({ mergeSections: false }, "pagegrid:merge");
+    const q = panel({ grid: { mergeSections: false } });
+    fireEvent.click(screen.getAllByRole("checkbox", { name: W.merge }).at(-1)!);
+    expect(q.onChange).toHaveBeenLastCalledWith({ mergeSections: undefined }, "pagegrid:merge");
   });
 });
