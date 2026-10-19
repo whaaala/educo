@@ -181,6 +181,16 @@ describe("the controls read over any photograph", () => {
     expect(html).not.toMatch(/[:\s]#[0-9a-f]{3,8}\b|rgba?\(/i); // a colour value, not an `&#8249;` entity
   });
 
+  it("LE15c-8 · the arrows' white mark reads 4.5 : 1 on their disc over a WHITE page, not only over a dark photo (measured 2.12 : 1)", () => {
+    // the disc is black at an alpha (OKLCH, config); over white it composites to that grey, over black to black
+    const alpha = Number(/\/\s*([\d.]+)\s*\)/.exec(LAYOUT.media.pagerArrowFill)?.[1]);
+    const lum = (v: number) => { const c = v / 255; return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4; };
+    const onWhite = Math.round(255 * (1 - alpha));
+    const ratio = (1 + 0.05) / (lum(onWhite) + 0.05);
+    expect(alpha, "a black disc at an alpha").toBeGreaterThan(0);
+    expect(ratio).toBeGreaterThanOrEqual(4.5);
+  });
+
   it("sits clear of the bottom edge, so a full-screen page does not hide it under the fold", () => {
     // Measured on a real published page: flush against the bottom, a 100svh page under a 57px site nav
     // put the only control 65px past the fold and entirely out of sight.

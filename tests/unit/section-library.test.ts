@@ -10,7 +10,7 @@ import { renderSitePage } from "@/lib/box-export";
 import { ICON_SVG_MAP } from "@/lib/educo-ui/icon-svg-map.generated";
 import { emptyPageRoot, type BoxSite } from "@/lib/box-site";
 import { DEFAULT_THEME } from "@/lib/site-storage";
-import { createContainer, createElement, makeRowBand, regionBlock, regionSpan, resolveResponsive, childStyle, type BoxNode, type Breakpoint } from "@/lib/box-model";
+import { createContainer, createElement, makeRowBand, regionBlock, regionSpan, resolveResponsive, childStyle, gridColumnsAt, gridNarrowsAt, isPager, type BoxNode, type Breakpoint } from "@/lib/box-model";
 
 /**
  * THE SECTION LIBRARY (BATCH LE-15, ED-4+ (2)) — box-builder-sections.feature.
@@ -39,6 +39,80 @@ describe("the section library", () => {
     const want = { about: 16, text: 8, features: 20, spotlight: 17, stats: 8, cta: 17 };
     for (const [id, n] of Object.entries(want)) expect(sectionsOf(id).length, id).toBe(n);
     for (const c of BUILT) expect(sectionsOf(c.id).length, `${c.label}`).toBe(c.count);
+  });
+
+  it("LE-15c · Cards 21 · Programmes 12 · Gallery 14 · Slideshow 7 · Team 10 · Testimonials 8 — one layout per stored Wix tile", () => {
+    const want = { cards: 21, programmes: 12, gallery: 14, slideshow: 7, team: 10, testimonials: 8 };
+    for (const [id, n] of Object.entries(want)) expect(sectionsOf(id).length, id).toBe(n);
+  });
+
+  it("LE-15c · a FIXED grid (`min: \"\"`) keeps the spans it was given, and narrows by itself on a tablet and a phone (A7, B28)", () => {
+    const def: SectionDef = { id: "t", name: "t", tree: { k: "section", c: [{ k: "grid", cols: 4, min: "", c: [{ r: "image", set: { colSpan: 2, rowSpan: 2 } }, { r: "image" }, { r: "image" }, { r: "image" }, { r: "image" }] }] } };
+    let g: BoxNode | undefined; walk(buildSection(def, { finish: "plain", wireframe: false }), (n) => { if (n.layout === "grid") g = n; });
+    expect(g?.minCard, "not 'as many as fit', which never honours a span").toBeUndefined();
+    expect(g?.fitMost).toBeUndefined();
+    expect(gridColumnsAt(g!, "base")).toBe(4);
+    expect(gridColumnsAt(g!, "phone"), "the ladder narrows it on a phone").toBeLessThan(4);
+    expect(g!.children!.map((c) => [c.colSpan ?? 1, c.rowSpan ?? 1])[0]).toEqual([2, 2]);
+    // every fixed grid of the library is used for what it is for: something in it spans
+    const fixed: string[] = [];
+    const spans = (c: SectionNode) => (c.set?.colSpan ?? 1) > 1 || (c.set?.rowSpan ?? 1) > 1;
+    const find = (n: SectionNode, id: string) => { if (n.k === "grid" && n.min === "" && n.set?.rowFlow !== "masonry" && !(n.c ?? []).some(spans)) fixed.push(id); n.c?.forEach((c) => find(c, id)); };
+    for (const c of BUILT) for (const d of sectionsOf(c.id)) find(d.tree, d.id);
+    expect(fixed, "a fixed grid with nothing spanning (use 'as many as fit')").toEqual([]);
+  });
+
+  it("LE15c-4 · a FIXED grid keeps all its columns on a desktop: its words fit their cells, so c-8 never steps it down (seen at 1280: a bento of four drawn as two)", () => {
+    const desk = LAYOUT.rungs.desktop.from - 17; // the narrowest desktop page, a scrollbar taken
+    const short: string[] = [];
+    let fixed = 0;
+    for (const c of BUILT) for (const def of sectionsOf(c.id)) {
+      const pad = Number(def.tree.set?.paddingLeft ?? 0) + Number(def.tree.set?.paddingRight ?? 0);
+      const built = buildSection(def, { finish: "plain", wireframe: false });
+      // a grid the full width of its section: under the section through stacks only (a row shares its line, width unknown)
+      const find = (n: SectionNode, path: string, padIn: number) => {
+        const inner = padIn + (n.k === "stack" || n.k === "card" ? Number(n.set?.paddingLeft ?? n.set?.padding ?? 0) + Number(n.set?.paddingRight ?? n.set?.padding ?? 0) : 0);
+        if (n.k === "grid" && n.min === "") {
+          let node: BoxNode | undefined; walk(built, (x) => { if (x.sectionPart === path) node = x; });
+          fixed++;
+          const nw = gridNarrowsAt(node!);
+          const below = nw ? Math.max(nw.one, nw.two ?? 0, ...(nw.more ?? []).map((s) => s.below)) : 0;
+          if (below * 16 > desk - inner) short.push(`${def.id}: steps down below ${Math.round(below * 16)}px`);
+        }
+        if (n.k === "row" || n.k === "grid") return;
+        (n.c ?? []).forEach((c, i) => find(c, `${path}.${i}`, inner));
+      };
+      find(def.tree, "0", pad);
+    }
+    expect(fixed, "fixed grids measured").toBeGreaterThan(5);
+    expect(short).toEqual([]);
+  });
+
+  it("LE15c-9 · a quotation is read as running text: its line height is a paragraph's (1.5–2, Web Design Rule #1), in every finish", () => {
+    const def: SectionDef = { id: "t", name: "t", tree: { k: "section", c: [{ r: "quote", t: "Our daughter loves it here." }] } };
+    for (const finish of FINISH_IDS) {
+      let q: BoxNode | undefined; walk(buildSection(def, { finish, wireframe: false }), (n) => { if (n.italic) q = n; });
+      expect(q?.lineHeight, finish).toBeGreaterThanOrEqual(1.5);
+      expect(q?.lineHeight, finish).toBeLessThanOrEqual(2);
+    }
+  });
+
+  it("LE15c-1 · a social network is a LINK with its name, never a bare icon that looks like one and goes nowhere (as the footers do)", () => {
+    const fake: string[] = [];
+    const find = (n: SectionNode, id: string) => { if (n.r === "icon" && /instagram|facebook|twitter|linkedin|youtube|whatsapp/i.test(n.icon ?? "")) fake.push(`${id}: ${n.icon}`); n.c?.forEach((c) => find(c, id)); };
+    for (const c of BUILT) for (const d of sectionsOf(c.id)) find(d.tree, d.id);
+    expect(fake).toEqual([]);
+  });
+
+  it("LE-15c · every Slideshow is a pager of three or more slides; one that moves by itself waits at least 5 seconds (WCAG 2.2.2)", () => {
+    const slides = sectionsOf("slideshow");
+    expect(slides.length).toBeGreaterThan(0);
+    for (const def of slides) {
+      let pager: BoxNode | undefined; walk(buildSection(def, { finish: "plain", wireframe: false }), (n) => { if (!pager && isPager(n)) pager = n; });
+      expect(pager, `${def.id} is a pager`).toBeDefined();
+      expect(pager!.children!.length, `${def.id} slides`).toBeGreaterThanOrEqual(3);
+      if (pager!.pagerAuto) expect(pager!.pagerAuto, `${def.id} waits`).toBeGreaterThanOrEqual(5);
+    }
   });
 
   it("LE15b-4 / 7 · every finish keeps the page audit's floors: no words under 16px, no weight under 400 (Web Design Rule #1)", () => {

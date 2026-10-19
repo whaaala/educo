@@ -622,6 +622,18 @@ Feature: The twelve-column grid in the Box Builder
   Scenario: Which page you are on is announced, not only coloured
     Then the current dot is marked for a screen reader as well as shaded
 
+  Scenario: A big cell keeps its shape when the grid narrows (LE15c-12)
+    Given a grid of four columns with a photo two columns wide and two rows tall
+    When the grid narrows by itself to two columns on a tablet, or one on a phone
+    Then the photo takes rows in the same proportion as its columns: one column, one row — no blank band under it
+    And a cell one column wide and two rows tall keeps its two rows while there are two columns or more
+    And on a phone, where there is one column, every cell is one row
+    And a row span I state for that screen myself is kept as I set it
+
+  Scenario: The arrows and the pause read on a plain band as well as on a photo (LE15c-8)
+    Given a box showing one at a time whose pages have no photograph behind them
+    Then its arrows' white mark reads at least 4.5 : 1 against the disc on a white page, and on the darkest photo
+
   Scenario: One page is not a pager
     Given a box set to "Show one at a time" with only one block in it
     Then no dots or arrows are shown, because there is nothing to move between

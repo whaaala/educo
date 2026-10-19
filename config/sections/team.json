@@ -1,0 +1,169 @@
+{
+  "$comment": "Team (B21 team GRID(4×n) portrait cards — tablet 3–2, phone 2 → 1; C12 staff directory). The 10 Wix Studio designed Team tiles, read 2026-10-19: four portrait cards with a bio 1 · words beside three portraits 1 · a title band over three big portraits 1 · arched portraits in cards 1 · name-only cards 1 · a statement over four portraits with contacts 1 · staggered portraits on a colour band 1 · centred title over four portraits 1 · round faces in a two-by-two list 1 · a colour panel beside a list of staff rows 1. Six portraits in the set (staff-1..5, head-teacher), so every layout shows 3 or 4 people, never more. Trees: lib/section-library.ts SectionNode.",
+  "sections": [
+    { "id": "team-four-bio-cards", "name": "Four staff cards with a photo and a short bio", "pattern": "B21",
+      "tree": { "k": "section", "set": { "paddingTop": 96, "paddingBottom": 96, "paddingLeft": 24, "paddingRight": 24, "gap": 40 },
+        "c": [
+          { "r": "title", "t": "Meet our teachers" },
+          { "k": "grid", "cols": 4, "min": "12rem", "set": { "gap": 24 }, "c": [
+            { "k": "card", "tone": "plain", "center": true, "set": { "gap": 8, "padding": 16 }, "c": [
+              { "r": "image", "photo": "staff-1", "alt": "Ms Efua Asante, Head of English", "set": { "ratio": "3 / 4" } },
+              { "r": "heading", "t": "Ms Efua Asante" }, { "r": "small", "t": "Head of English" },
+              { "r": "body", "t": "Fifteen years of teaching, and she still reads aloud to every class on a Friday." },
+              { "r": "link", "t": "Email Ms Asante", "to": "mailto:e.asante@greenfield.sch.ng" } ] },
+            { "k": "card", "tone": "plain", "center": true, "set": { "gap": 8, "padding": 16 }, "c": [
+              { "r": "image", "photo": "staff-2", "alt": "Mr Kwame Mensah, Head of Mathematics", "set": { "ratio": "3 / 4" } },
+              { "r": "heading", "t": "Mr Kwame Mensah" }, { "r": "small", "t": "Head of Mathematics" },
+              { "r": "body", "t": "Runs the maths club and coached our team to the state olympiad final." },
+              { "r": "link", "t": "Email Mr Mensah", "to": "mailto:k.mensah@greenfield.sch.ng" } ] },
+            { "k": "card", "tone": "plain", "center": true, "set": { "gap": 8, "padding": 16 }, "c": [
+              { "r": "image", "photo": "staff-5", "alt": "Mrs Ngozi Eze, Bursar", "set": { "ratio": "3 / 4" } },
+              { "r": "heading", "t": "Mrs Ngozi Eze" }, { "r": "small", "t": "Bursar" },
+              { "r": "body", "t": "Your first call for fees, payment plans and bursaries." },
+              { "r": "link", "t": "Email Mrs Eze", "to": "mailto:n.eze@greenfield.sch.ng" } ] },
+            { "k": "card", "tone": "plain", "center": true, "set": { "gap": 8, "padding": 16 }, "c": [
+              { "r": "image", "photo": "staff-4", "alt": "Mr Ibrahim Musa, Head of Sport", "set": { "ratio": "3 / 4" } },
+              { "r": "heading", "t": "Mr Ibrahim Musa" }, { "r": "small", "t": "Head of Sport" },
+              { "r": "body", "t": "Football, athletics and the inter-house sports day every March." },
+              { "r": "link", "t": "Email Mr Musa", "to": "mailto:i.musa@greenfield.sch.ng" } ] }
+          ] }
+        ] } },
+    { "id": "team-leaders-beside-words", "name": "Our leaders: words beside three portraits", "pattern": "B21",
+      "tree": { "k": "section", "set": { "paddingTop": 96, "paddingBottom": 96, "paddingLeft": 24, "paddingRight": 24, "gap": 40 },
+        "c": [ { "k": "row", "set": { "gap": 40, "align": "start" }, "c": [
+          { "k": "stack", "set": { "width": "fill", "minWidth": "16rem", "gap": 16 }, "c": [
+            { "r": "title", "t": "The people who lead Greenfield" },
+            { "r": "body", "t": "Our senior team has more than sixty years in the classroom between them. Their doors are open to every parent and every pupil." },
+            { "r": "button", "t": "Meet the whole staff", "to": "#staff" } ] },
+          { "k": "grid", "cols": 3, "min": "8rem", "set": { "gap": 24, "width": "fill", "minWidth": "27rem", "responsive": { "phone": { "fitMost": 1, "minWidth": "100%" } } }, "c": [
+            { "k": "stack", "set": { "gap": 8 }, "c": [
+              { "r": "small", "t": "Head Teacher" }, { "r": "heading", "t": "Mrs Adaeze Okafor" },
+              { "r": "image", "photo": "head-teacher", "alt": "Mrs Adaeze Okafor, Head Teacher", "set": { "ratio": "3 / 4" } },
+              { "r": "body", "t": "Has led the school since 2012 and still teaches Year 6 history every week." } ] },
+            { "k": "stack", "set": { "gap": 8 }, "c": [
+              { "r": "small", "t": "Deputy Head" }, { "r": "heading", "t": "Mr Kwame Mensah" },
+              { "r": "image", "photo": "staff-2", "alt": "Mr Kwame Mensah, Deputy Head", "set": { "ratio": "3 / 4" } },
+              { "r": "body", "t": "Looks after the timetable, exams and the day-to-day running of the school." } ] },
+            { "k": "stack", "set": { "gap": 8 }, "c": [
+              { "r": "small", "t": "Chair of Governors" }, { "r": "heading", "t": "Mrs Ngozi Eze" },
+              { "r": "image", "photo": "staff-5", "alt": "Mrs Ngozi Eze, Chair of Governors", "set": { "ratio": "3 / 4" } },
+              { "r": "body", "t": "A parent of two former pupils, she chairs the board of governors." } ] }
+          ] }
+        ] } ] } },
+    { "id": "team-band-big-portraits", "name": "A title band over three big portraits", "pattern": "B21",
+      "tree": { "k": "section", "set": { "paddingTop": 96, "paddingBottom": 96, "paddingLeft": 24, "paddingRight": 24, "gap": 40 },
+        "c": [
+          { "k": "row", "tone": "soft", "set": { "gap": 40, "padding": 32, "align": "start" }, "c": [
+            { "k": "stack", "set": { "width": "fill", "minWidth": "16rem", "gap": 16 }, "c": [ { "r": "title", "t": "Our senior leadership team" } ] },
+            { "k": "stack", "set": { "width": "fill", "minWidth": "16rem", "gap": 16 }, "c": [
+              { "r": "body", "t": "Three people answer for everything that happens at Greenfield: teaching, care and money. Each of them is in school every day." },
+              { "r": "button2", "t": "How the school is run", "to": "#governance" } ] } ] },
+          { "k": "grid", "cols": 3, "min": "10rem", "set": { "gap": 0 }, "c": [
+            { "r": "image", "photo": "head-teacher", "alt": "Mrs Adaeze Okafor, Head Teacher", "set": { "ratio": "3 / 4" } },
+            { "r": "image", "photo": "staff-5", "alt": "Mrs Ngozi Eze, Bursar", "set": { "ratio": "3 / 4" } },
+            { "r": "image", "photo": "staff-4", "alt": "Mr Ibrahim Musa, Head of Pastoral Care", "set": { "ratio": "3 / 4" } }
+          ] }
+        ] } },
+    { "id": "team-arched-cards", "name": "Four arched portraits in cards", "pattern": "B21",
+      "tree": { "k": "section", "tone": "soft", "center": true, "set": { "paddingTop": 96, "paddingBottom": 96, "paddingLeft": 24, "paddingRight": 24, "gap": 40 },
+        "c": [
+          { "r": "eyebrow", "t": "Our class teachers" },
+          { "k": "grid", "cols": 4, "min": "12rem", "set": { "gap": 24 }, "c": [
+            { "k": "card", "tone": "plain", "set": { "gap": 8, "padding": 16 }, "c": [
+              { "r": "image", "photo": "staff-1", "alt": "Ms Efua Asante, Year 1 teacher", "set": { "ratio": "3 / 4", "radiusTopLeft": 999, "radiusTopRight": 999 } },
+              { "r": "heading", "t": "Ms Efua Asante" }, { "r": "small", "t": "Year 1" },
+              { "r": "body", "t": "Phonics, songs and a class garden that grows tomatoes every term." } ] },
+            { "k": "card", "tone": "plain", "set": { "gap": 8, "padding": 16 }, "c": [
+              { "r": "image", "photo": "staff-2", "alt": "Mr Kwame Mensah, Year 3 teacher", "set": { "ratio": "3 / 4", "radiusTopLeft": 999, "radiusTopRight": 999 } },
+              { "r": "heading", "t": "Mr Kwame Mensah" }, { "r": "small", "t": "Year 3" },
+              { "r": "body", "t": "Times tables by heart and a chess club on Wednesdays." } ] },
+            { "k": "card", "tone": "plain", "set": { "gap": 8, "padding": 16 }, "c": [
+              { "r": "image", "photo": "staff-3", "alt": "Dr Funke Adeyemi, Year 5 teacher, at her desk", "set": { "ratio": "3 / 4", "radiusTopLeft": 999, "radiusTopRight": 999 } },
+              { "r": "heading", "t": "Dr Funke Adeyemi" }, { "r": "small", "t": "Year 5" },
+              { "r": "body", "t": "Science experiments every week, and a trip to the museum each term." } ] },
+            { "k": "card", "tone": "plain", "set": { "gap": 8, "padding": 16 }, "c": [
+              { "r": "image", "photo": "staff-4", "alt": "Mr Ibrahim Musa, Year 6 teacher", "set": { "ratio": "3 / 4", "radiusTopLeft": 999, "radiusTopRight": 999 } },
+              { "r": "heading", "t": "Mr Ibrahim Musa" }, { "r": "small", "t": "Year 6" },
+              { "r": "body", "t": "Gets every child ready for secondary school, calmly and on time." } ] }
+          ] }
+        ] } },
+    { "id": "team-name-cards", "name": "Four name cards on a colour band", "pattern": "C12",
+      "tree": { "k": "section", "tone": "soft", "set": { "paddingTop": 96, "paddingBottom": 96, "paddingLeft": 24, "paddingRight": 24, "gap": 40 },
+        "c": [
+          { "r": "title", "t": "Who to contact" },
+          { "k": "grid", "cols": 4, "min": "12rem", "set": { "gap": 24 }, "c": [
+            { "k": "card", "tone": "plain", "set": { "gap": 8, "padding": 16 }, "c": [ { "r": "heading", "t": "Mrs Adaeze Okafor" }, { "r": "small", "t": "Head Teacher" }, { "r": "link", "t": "Email", "to": "mailto:head@greenfield.sch.ng" } ] },
+            { "k": "card", "tone": "plain", "set": { "gap": 8, "padding": 16 }, "c": [ { "r": "heading", "t": "Mrs Ngozi Eze" }, { "r": "small", "t": "Bursar" }, { "r": "link", "t": "Email", "to": "mailto:bursar@greenfield.sch.ng" } ] },
+            { "k": "card", "tone": "plain", "set": { "gap": 8, "padding": 16 }, "c": [ { "r": "heading", "t": "Ms Efua Asante" }, { "r": "small", "t": "Admissions" }, { "r": "link", "t": "Email", "to": "mailto:admissions@greenfield.sch.ng" } ] },
+            { "k": "card", "tone": "plain", "set": { "gap": 8, "padding": 16 }, "c": [ { "r": "heading", "t": "Mr Ibrahim Musa" }, { "r": "small", "t": "Pupil welfare" }, { "r": "link", "t": "Email", "to": "mailto:welfare@greenfield.sch.ng" } ] }
+          ] }
+        ] } },
+    { "id": "team-statement-contacts", "name": "A statement over four portraits with phone and email", "pattern": "C12",
+      "tree": { "k": "section", "set": { "paddingTop": 96, "paddingBottom": 96, "paddingLeft": 24, "paddingRight": 24, "gap": 40 },
+        "c": [
+          { "k": "stack", "set": { "gap": 16 }, "c": [
+            { "r": "eyebrow", "t": "Our staff" },
+            { "r": "heading", "t": "Every teacher here knows your child by name. If you have a question, call or write to the person who can answer it.", "set": { "fontSize": 32, "maxWidth": "48rem" } } ] },
+          { "k": "grid", "cols": 4, "min": "10rem", "set": { "gap": 24 }, "c": [
+            { "k": "stack", "set": { "gap": 8 }, "c": [ { "r": "image", "photo": "staff-2", "alt": "Mr Kwame Mensah, Head of Mathematics", "set": { "ratio": "3 / 4" } }, { "r": "heading", "t": "Mr Kwame Mensah" }, { "r": "small", "t": "0803 456 7801" }, { "r": "link", "t": "Email", "to": "mailto:k.mensah@greenfield.sch.ng" } ] },
+            { "k": "stack", "set": { "gap": 8 }, "c": [ { "r": "image", "photo": "staff-1", "alt": "Ms Efua Asante, Head of English", "set": { "ratio": "3 / 4" } }, { "r": "heading", "t": "Ms Efua Asante" }, { "r": "small", "t": "0803 456 7802" }, { "r": "link", "t": "Email", "to": "mailto:e.asante@greenfield.sch.ng" } ] },
+            { "k": "stack", "set": { "gap": 8 }, "c": [ { "r": "image", "photo": "staff-4", "alt": "Mr Ibrahim Musa, Head of Sport", "set": { "ratio": "3 / 4" } }, { "r": "heading", "t": "Mr Ibrahim Musa" }, { "r": "small", "t": "0803 456 7803" }, { "r": "link", "t": "Email", "to": "mailto:i.musa@greenfield.sch.ng" } ] },
+            { "k": "stack", "set": { "gap": 8 }, "c": [ { "r": "image", "photo": "staff-5", "alt": "Mrs Ngozi Eze, Bursar", "set": { "ratio": "3 / 4" } }, { "r": "heading", "t": "Mrs Ngozi Eze" }, { "r": "small", "t": "0803 456 7804" }, { "r": "link", "t": "Email", "to": "mailto:n.eze@greenfield.sch.ng" } ] }
+          ] }
+        ] } },
+    { "id": "team-staggered-portraits", "name": "Four portraits of different heights on a colour band", "pattern": "B21",
+      "tree": { "k": "section", "tone": "strong", "set": { "paddingTop": 96, "paddingBottom": 96, "paddingLeft": 24, "paddingRight": 24, "gap": 40 },
+        "c": [
+          { "r": "title", "t": "Our heads of house" },
+          { "k": "grid", "cols": 4, "min": "10rem", "set": { "gap": 24, "align": "end" }, "c": [
+            { "k": "stack", "set": { "gap": 8 }, "c": [ { "r": "image", "photo": "staff-1", "alt": "Ms Efua Asante, Head of Blue House", "set": { "ratio": "4 / 5" } }, { "r": "heading", "t": "Ms Efua Asante" }, { "r": "small", "t": "Blue House" } ] },
+            { "k": "stack", "set": { "gap": 8 }, "c": [ { "r": "image", "photo": "staff-5", "alt": "Mrs Ngozi Eze, Head of Green House", "set": { "ratio": "1 / 1" } }, { "r": "heading", "t": "Mrs Ngozi Eze" }, { "r": "small", "t": "Green House" } ] },
+            { "k": "stack", "set": { "gap": 8 }, "c": [ { "r": "image", "photo": "staff-4", "alt": "Mr Ibrahim Musa, Head of Red House", "set": { "ratio": "2 / 3" } }, { "r": "heading", "t": "Mr Ibrahim Musa" }, { "r": "small", "t": "Red House" } ] },
+            { "k": "stack", "set": { "gap": 8 }, "c": [ { "r": "image", "photo": "staff-2", "alt": "Mr Kwame Mensah, Head of Yellow House", "set": { "ratio": "1 / 1" } }, { "r": "heading", "t": "Mr Kwame Mensah" }, { "r": "small", "t": "Yellow House" } ] }
+          ] }
+        ] } },
+    { "id": "team-centred-four", "name": "A centred title over four portraits with name and role", "pattern": "B21",
+      "tree": { "k": "section", "tone": "soft", "center": true, "set": { "paddingTop": 96, "paddingBottom": 96, "paddingLeft": 24, "paddingRight": 24, "gap": 40 },
+        "c": [
+          { "r": "title", "t": "Our board of governors" },
+          { "k": "grid", "cols": 4, "min": "10rem", "set": { "gap": 24 }, "c": [
+            { "k": "stack", "set": { "gap": 8 }, "c": [ { "r": "image", "photo": "staff-5", "alt": "Mrs Ngozi Eze, Chair of Governors", "set": { "ratio": "4 / 5" } }, { "r": "heading", "t": "Mrs Ngozi Eze" }, { "r": "small", "t": "Chair" } ] },
+            { "k": "stack", "set": { "gap": 8 }, "c": [ { "r": "image", "photo": "staff-4", "alt": "Mr Ibrahim Musa, Vice-Chair of Governors", "set": { "ratio": "4 / 5" } }, { "r": "heading", "t": "Mr Ibrahim Musa" }, { "r": "small", "t": "Vice-Chair" } ] },
+            { "k": "stack", "set": { "gap": 8 }, "c": [ { "r": "image", "photo": "staff-3", "alt": "Dr Funke Adeyemi, Parent Governor, at her desk", "set": { "ratio": "4 / 5" } }, { "r": "heading", "t": "Dr Funke Adeyemi" }, { "r": "small", "t": "Parent Governor" } ] },
+            { "k": "stack", "set": { "gap": 8 }, "c": [ { "r": "image", "photo": "staff-2", "alt": "Mr Kwame Mensah, Staff Governor", "set": { "ratio": "4 / 5" } }, { "r": "heading", "t": "Mr Kwame Mensah" }, { "r": "small", "t": "Staff Governor" } ] }
+          ] }
+        ] } },
+    { "id": "team-round-faces-list", "name": "Round faces beside names, two by two", "pattern": "C12",
+      "tree": { "k": "section", "center": true, "set": { "paddingTop": 96, "paddingBottom": 96, "paddingLeft": 24, "paddingRight": 24, "gap": 40 },
+        "c": [
+          { "r": "title", "t": "The school office" },
+          { "k": "grid", "cols": 2, "min": "16rem", "set": { "gap": 24, "maxWidth": "48rem" }, "c": [
+            { "k": "card", "tone": "grey", "center": false, "set": { "gap": 8, "padding": 16 }, "c": [ { "k": "row", "set": { "gap": 16 }, "c": [ { "r": "image", "photo": "staff-1", "alt": "Ms Efua Asante, Admissions", "set": { "width": "4rem", "ratio": "1 / 1", "radius": 999 } }, { "k": "stack", "set": { "width": "fill", "minWidth": "8rem", "gap": 4 }, "c": [ { "r": "heading", "t": "Ms Efua Asante" }, { "r": "small", "t": "Admissions" } ] } ] } ] },
+            { "k": "card", "tone": "grey", "center": false, "set": { "gap": 8, "padding": 16 }, "c": [ { "k": "row", "set": { "gap": 16 }, "c": [ { "r": "image", "photo": "staff-5", "alt": "Mrs Ngozi Eze, Bursar", "set": { "width": "4rem", "ratio": "1 / 1", "radius": 999 } }, { "k": "stack", "set": { "width": "fill", "minWidth": "8rem", "gap": 4 }, "c": [ { "r": "heading", "t": "Mrs Ngozi Eze" }, { "r": "small", "t": "Bursar" } ] } ] } ] },
+            { "k": "card", "tone": "grey", "center": false, "set": { "gap": 8, "padding": 16 }, "c": [ { "k": "row", "set": { "gap": 16 }, "c": [ { "r": "image", "photo": "head-teacher", "alt": "Mrs Adaeze Okafor, Head Teacher", "set": { "width": "4rem", "ratio": "1 / 1", "radius": 999 } }, { "k": "stack", "set": { "width": "fill", "minWidth": "8rem", "gap": 4 }, "c": [ { "r": "heading", "t": "Mrs Adaeze Okafor" }, { "r": "small", "t": "Head Teacher" } ] } ] } ] },
+            { "k": "card", "tone": "grey", "center": false, "set": { "gap": 8, "padding": 16 }, "c": [ { "k": "row", "set": { "gap": 16 }, "c": [ { "r": "image", "photo": "staff-4", "alt": "Mr Ibrahim Musa, School Secretary", "set": { "width": "4rem", "ratio": "1 / 1", "radius": 999 } }, { "k": "stack", "set": { "width": "fill", "minWidth": "8rem", "gap": 4 }, "c": [ { "r": "heading", "t": "Mr Ibrahim Musa" }, { "r": "small", "t": "School Secretary" } ] } ] } ] }
+          ] }
+        ] } },
+    { "id": "team-panel-staff-rows", "name": "A colour panel beside a list of staff with contacts", "pattern": "C12",
+      "tree": { "k": "section", "set": { "paddingTop": 96, "paddingBottom": 96, "paddingLeft": 24, "paddingRight": 24, "gap": 40 },
+        "c": [ { "k": "row", "set": { "gap": 40, "align": "stretch" }, "c": [
+          { "k": "card", "tone": "strong", "set": { "width": "fill", "minWidth": "20rem", "gap": 16, "padding": 32, "justify": "center" }, "c": [
+            { "r": "title", "t": "Heads of department" },
+            { "r": "body", "t": "Questions about a subject, homework or exams go straight to the teacher who leads it." } ] },
+          { "k": "stack", "set": { "width": "fill", "minWidth": "20rem", "gap": 16 }, "c": [
+            { "k": "card", "tone": "plain", "set": { "gap": 8, "padding": 16 }, "c": [ { "k": "row", "set": { "gap": 16, "align": "start" }, "c": [
+              { "k": "stack", "set": { "width": "fill", "minWidth": "10rem", "gap": 4 }, "c": [ { "r": "heading", "t": "Dr Funke Adeyemi" }, { "r": "small", "t": "Head of Science" } ] },
+              { "k": "stack", "set": { "width": "fill", "minWidth": "10rem", "gap": 4 }, "c": [ { "r": "link", "t": "Email", "to": "mailto:f.adeyemi@greenfield.sch.ng" }, { "r": "small", "t": "0803 456 7805" } ] } ] } ] },
+            { "k": "card", "tone": "plain", "set": { "gap": 8, "padding": 16 }, "c": [ { "k": "row", "set": { "gap": 16, "align": "start" }, "c": [
+              { "k": "stack", "set": { "width": "fill", "minWidth": "10rem", "gap": 4 }, "c": [ { "r": "heading", "t": "Mr Kwame Mensah" }, { "r": "small", "t": "Head of Mathematics" } ] },
+              { "k": "stack", "set": { "width": "fill", "minWidth": "10rem", "gap": 4 }, "c": [ { "r": "link", "t": "Email", "to": "mailto:k.mensah@greenfield.sch.ng" }, { "r": "small", "t": "0803 456 7801" } ] } ] } ] },
+            { "k": "card", "tone": "plain", "set": { "gap": 8, "padding": 16 }, "c": [ { "k": "row", "set": { "gap": 16, "align": "start" }, "c": [
+              { "k": "stack", "set": { "width": "fill", "minWidth": "10rem", "gap": 4 }, "c": [ { "r": "heading", "t": "Ms Efua Asante" }, { "r": "small", "t": "Head of English" } ] },
+              { "k": "stack", "set": { "width": "fill", "minWidth": "10rem", "gap": 4 }, "c": [ { "r": "link", "t": "Email", "to": "mailto:e.asante@greenfield.sch.ng" }, { "r": "small", "t": "0803 456 7802" } ] } ] } ] },
+            { "k": "card", "tone": "plain", "set": { "gap": 8, "padding": 16 }, "c": [ { "k": "row", "set": { "gap": 16, "align": "start" }, "c": [
+              { "k": "stack", "set": { "width": "fill", "minWidth": "10rem", "gap": 4 }, "c": [ { "r": "heading", "t": "Mr Ibrahim Musa" }, { "r": "small", "t": "Head of Sport" } ] },
+              { "k": "stack", "set": { "width": "fill", "minWidth": "10rem", "gap": 4 }, "c": [ { "r": "link", "t": "Email", "to": "mailto:i.musa@greenfield.sch.ng" }, { "r": "small", "t": "0803 456 7803" } ] } ] } ] }
+          ] }
+        ] } ] } }
+  ]
+}

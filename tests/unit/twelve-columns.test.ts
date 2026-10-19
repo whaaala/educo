@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import {
   GRID_MAX, COLUMN_FRACTIONS, columnFractionOf, canSetColumnFraction, gridColumns, gridColumnsAt,
   BP_ORDER, gridPlacementAt, gridReflowsAt, retrackGrid, setColumnFraction, containerStyle, childStyle, createGrid, createContainer, createElement,
-  findBox, makeRowBand, normalizeRowBands, insertBox, type BoxNode, type Breakpoint,
+  findBox, makeRowBand, normalizeRowBands, insertBox, gridQueryCss, resolveResponsive, type BoxNode, type Breakpoint,
 } from "@/lib/box-model";
 import { GRID_LAYOUTS, getAddChoices, getPresets, blockForKind, presetKindFor } from "@/lib/box-presets";
 import { renderPageHTML } from "@/lib/box-export";
@@ -511,5 +511,39 @@ describe("the export writes the same layout the canvas shows", () => {
     expect(atRung(css, BREAKPOINTS_EM.tabletPortrait), "the user's span applies from the rung the cascade gives it").toContain("grid-column:span 6");
     expect(atRung(css, BREAKPOINTS_EM.tabletLandscape), "and is not repeated where nothing changed").not.toContain("grid-column:span 6");
     expect(atRung(css, BREAKPOINTS_EM.desktop)).toContain("grid-column:span 12");
+  });
+});
+
+/**
+ * LE15c-12 · A ROW SPAN SHRINKS WITH ITS COLUMN SPAN (box-builder-columns.feature). A 2 × 2 photo of a four-column bento,
+ * narrowed by the ladder to one column on a phone (or two on a tablet), kept "span 2" rows: a cell one column wide and two
+ * rows tall, its square picture filling half and a blank band under it — measured 694px of cell for a 341px picture.
+ */
+describe("LE15c-12 · a cell's rows shrink in proportion when the grid narrows its columns", () => {
+  const bento = () => {
+    const g = createGrid(4, { gap: 16 });
+    g.children = [createElement("image", { colSpan: 2, rowSpan: 2 }), createElement("image", { rowSpan: 2 }), createElement("image"), createElement("image")];
+    return g;
+  };
+  it("on a phone the 2 × 2 cell is one column and one row; a 1 × 2 keeps its rows where there is more than one column", () => {
+    const g = bento();
+    expect(childStyle(g.children![0], g, "base").gridRow).toBe("span 2");
+    expect(childStyle(g.children![0], g, "phone").gridRow, "2 × 2 → 1 × 1").toBeUndefined();
+    expect(childStyle(g.children![1], g, "phone").gridRow, "one column: a 1 × 2 is one row too").toBeUndefined();
+    // two columns (an upright tablet narrowed by the ladder): the 1 × 2 kept its column, so it keeps its rows
+    const two = { ...g, responsive: { tabletPortrait: { columns: 2 } } } as BoxNode;
+    expect(childStyle(two.children![1], resolveResponsive(two, "tabletPortrait"), "tabletPortrait").gridRow, "1 × 2 stays at two columns").toBe("span 2");
+  });
+  it("a row span the person states AT that screen is theirs, and kept", () => {
+    const g = bento(); g.children![0] = { ...g.children![0], responsive: { phone: { rowSpan: 3 } } };
+    expect(childStyle(resolveResponsive(g.children![0], "phone"), g, "phone").gridRow).toBe("span 3");
+  });
+  it("the container-query rules (a grid narrowed by its own width) shrink it the same way", () => {
+    const g = bento();
+    const css = gridQueryCss(".g", g, (id) => `.c-${id}`, (x) => x);
+    const big = g.children![0].id;
+    const rules = [...css.matchAll(new RegExp(`\.c-${big}\{([^}]*)\}`, "g"))].map((m) => m[1]);
+    expect(rules.length, "the grid narrows by its width").toBeGreaterThan(0);
+    for (const r of rules) if (/grid-column:auto|grid-column:span 1/.test(r)) expect(r, "one column wide → one row").toContain("grid-row:auto");
   });
 });

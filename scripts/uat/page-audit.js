@@ -34,7 +34,10 @@ function auditDoc(opts) {
     // column lends 0.0625rem at its end — 1px, 1.5px at 150% text — so a picture filling that column ends that far past the
     // row, plus the half pixel a share rounds to. Measured on the 12 pages that reported it: 1–2px, every one, and the
     // page does not scroll sideways on any of them (L1). Anything further is still an error.
-    if (r.right > W + parseFloat(getComputedStyle(document.documentElement).fontSize) / 16 + 0.5) err.push(`L2 ${m.tagName.toLowerCase()} runs off the page — ${Math.round(r.width)}px wide at x=${Math.round(r.left)} in ${bid} (block ${Math.round(inBlock ? inBlock.getBoundingClientRect().width : 0)}px)`);
+    // LE15c-3 · inside a carousel's SIDEWAYS STRIP (the pager) a picture waits to the right by design; the strip's
+    // own edge is what must stay on the page (the page not scrolling is L1's)
+    const strip = m.closest('[data-eu-pager]');
+    if ((strip ? strip.getBoundingClientRect() : r).right > W + parseFloat(getComputedStyle(document.documentElement).fontSize) / 16 + 0.5) err.push(`L2 ${m.tagName.toLowerCase()} runs off the page — ${Math.round(r.width)}px wide at x=${Math.round(r.left)} in ${bid} (block ${Math.round(inBlock ? inBlock.getBoundingClientRect().width : 0)}px)`);
   }
   // overlaps between blocks that are neither nested nor floating
   // …and nothing INSIDE a pinned block either: a sticky header's band carries the pin (`bandCarriesPin`), so the header

@@ -8,6 +8,7 @@
     "inverse": { "bg": "var(--eu-color-text)", "text": "var(--eu-color-bg)", "muted": "var(--eu-color-bg)", "accent": "var(--eu-color-bg)", "btnBg": "var(--eu-color-bg)", "btnText": "var(--eu-color-text)", "line": "var(--eu-color-bg)" },
     "photo":   { "bg": "var(--eu-color-text)", "text": "oklch(100% 0 0)", "muted": "oklch(100% 0 0)", "accent": "oklch(100% 0 0)", "btnBg": "oklch(100% 0 0)", "btnText": "oklch(20% 0 0)", "line": "oklch(100% 0 0)" }
   },
+  "quote": { "$comment": "LE15c-9 · a quotation (a testimonial's words) takes the heading's size but is read as running text, so a paragraph's line height (Web Design Rule #1: 1.5-2), in every finish.", "lineHeight": 1.5 },
   "restyle": {
     "$comment": "BATCH LE-15f RF-1: choosing another finish for a section already on the page. LOOK fields are the finish's: each takes the new finish's value (or is cleared, when another finish sets it and this one does not); one no finish ever sets on that block stays the person's own. CONTENT fields are the person's: a value they changed stays; one still as the old finish made it follows the new one (a wireframe's 'Title goes here' becomes the designed words). Guarded by tests/unit/section-library.test.ts: any field a finish changes must be listed here.",
     "look": ["color", "background", "fontSize", "fontWeight", "textTransform", "letterSpacing", "italic", "lineHeight", "radius", "borderWidth", "borderColor", "underline", "shadow", "hoverEffect", "revealEffect", "bgOverlay"],

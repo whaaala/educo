@@ -222,6 +222,23 @@ Feature: Box Builder — images that describe themselves and hold their own shap
     Then it does not fill on a tablet in portrait or on a phone, and still fills on the wider screens
     And on a page saved before the page grid the picture never fills
 
+  # ── LE15c-13 · G-3d widened (the user, 2026-10-19): a picture that IS a cell of a grid covers its cell ──
+  Scenario: A picture in a grid covers its cell, on every screen
+    Given a grid holding pictures of different shapes beside a box of words — a bento gallery
+    When the grid narrows to two columns on a tablet and one on a phone
+    Then every picture fills its cell, cropped from its centre, never stretched, and no blank band is left under it
+    And the grid is exactly as tall as it was
+    And the canvas and the Preview show the same
+
+  Scenario: The cover in a grid can be switched off
+    Given a picture that is a cell of a grid
+    When I turn off "Fill the block's height" in its settings
+    Then it keeps its own shape in its cell, and one Undo turns the cover back on
+
+  Scenario: A gallery that follows its pictures, or one at a time, is not covered
+    Given a grid whose Row heights are "Follow the picture", or a box showing one at a time
+    Then its pictures keep their own shapes and the switch is not offered
+
   # BATCH LE-2 · rule 16 · RULE AF — on 3G a page that jumps as each photo lands loses the reader's line
   Scenario: Every picture on every block keeps its shape while it loads
     Given every tile of the blocks panel, in every one of its styles, holding sample photographs wherever it can hold one

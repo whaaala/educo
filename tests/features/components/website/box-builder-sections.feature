@@ -176,6 +176,48 @@ Feature: Box Builder — ready-made sections, my sections, global sections and p
     Then its tile says which component it waits for ("placeholder: counter", "placeholder: form")
     And it is made of existing blocks until that component is built (RULE C)
 
+  # ── The third batch: Cards · Programmes / Products · Gallery / Collage · Slideshow · Team · Testimonials (BATCH LE-15c) ──
+  # HEADED: scripts/uat/uat-le15c-headed.js — every layout of the six, wireframe and designed, every width of screens.js
+
+  Scenario: The showing, people and trust sections are in the gallery
+    When I open the Sections group
+    Then it also holds Cards 21 · Programmes / Products 12 · Gallery / Collage 14 · Slideshow 7 · Team 10 · Testimonials 8
+    And each of them is in the wireframe and designed, and in each of the seven finishes, visibly different (RULE T)
+    And each one, once added, is ordinary blocks I can change completely
+
+  Scenario Outline: Each of these kinds reflows the way real sites do it
+    Given I added a designed "<category>" section with "<shape>"
+    When the page is previewed on a tablet and on a phone
+    Then on the tablet <tablet>
+    And on the phone <phone>
+    And nothing runs off the side, nothing overlaps and no card is left alone on a line, at every width of the screen list
+    Examples:
+      | category              | shape                      | tablet                                   | phone                                    |
+      | Cards                 | three cards across         | they stay across or go two and two rows  | they stack, one under another            |
+      | Cards                 | one big card beside small  | the big card keeps its span              | the big card comes first, then the rest  |
+      | Programmes / Products | four programmes with a fee | two go across                            | they stack, or two go across             |
+      | Gallery / Collage     | one big photo and four     | the big photo keeps its span             | the big photo comes first                |
+      | Team                  | four portraits             | two go across                            | two go across, or one under another      |
+      | Testimonials          | three quotes in cards      | they stay across or stack                | they stack, one under another            |
+
+  Scenario: A gallery's big picture spans its grid, and a phone shows it first
+    Given I added the Gallery "One big photo beside four small ones"
+    Then on a desktop the big photo covers two columns and two rows of the grid
+    And on a tablet and a phone the grid narrows by itself and the big photo comes first
+    And I can change its span in the Inspector like any grid block's
+
+  Scenario: A slideshow shows one slide at a time, and moves only when I ask it to
+    Given I added a Slideshow section
+    Then it shows one slide at a time, and I can swipe, use the arrow keys, the arrows or the dots to move between them
+    And every slide is ordinary blocks I can change, add to or delete
+    And a slideshow that advances by itself pauses on hover and on focus, and has a Pause (WCAG 2.2.2)
+    And with reduced motion it does not advance by itself
+
+  Scenario: A section names the component it waits for
+    Given a gallery whose pictures would open big on a click, or a carousel showing several slides at once
+    Then its tile says which component it waits for ("placeholder: lightbox")
+    And it is made of existing blocks until that component is built (RULE C)
+
   # ── Save a section to reuse (PS-5 (1)) ──────────────────────────────────────────────────────────────────────
 
   Scenario: Saving a section of my own
