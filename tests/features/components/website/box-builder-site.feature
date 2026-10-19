@@ -131,6 +131,14 @@ Feature: Box Builder — multi-page site, preview & export
     When I choose a device from the menu
     Then I can rotate it straight afterwards without hunting for the bar
 
+  # tests/e2e/preview-viewport.spec.ts — "the preview's bar never covers the page" (LE15-47)
+  Scenario: The preview's bar never covers the page
+    Given I am previewing on Responsive, on a computer or a tablet where the bar wraps to two rows
+    Then the page starts just below the bar, so a header's name and menu are whole
+    When I hide the bar with H
+    Then the page has the whole window
+    Because the bar floated over the page's top 48 pixels once it stopped hiding itself, cutting the header in half
+
   Scenario: Hiding the controls, and getting them back
     When I press Hide, or the H key
     Then the bar steps aside and the page has the whole window

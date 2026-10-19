@@ -605,6 +605,21 @@ export default function BoxDemoPage() {
    */
   const stageRef = useRef<HTMLDivElement>(null);
   const [stage, setStage] = useState({ w: 0, h: 0 });
+  /**
+   * LE15-47 · THE BAR'S OWN HEIGHT, measured (it wraps to two rows on a tablet, E4-3). While the bar shows, the page starts
+   * below it: on Responsive it floated over the page's top 48px — the school's name and menu cut in half, measured at
+   * 1366 and 5120 — once the bar stopped hiding itself (E4). Hidden (H), the page has the whole window again.
+   */
+  const [barH, setBarH] = useState(48);
+  useEffect(() => {
+    const bar = document.querySelector<HTMLElement>("[data-preview-bar]");
+    if (!bar) return;
+    const read = () => setBarH(Math.ceil(bar.getBoundingClientRect().height));
+    read();
+    const ro = new ResizeObserver(read);
+    ro.observe(bar);
+    return () => ro.disconnect();
+  }, [preview]);
   useEffect(() => {
     const el = stageRef.current;
     if (!el) return;
@@ -1204,7 +1219,8 @@ export default function BoxDemoPage() {
           * `shrink-0` hid it a third way by simply squashing the sizer. It takes a rigid item in a centring
           * flex row to lose the left-hand side — which is exactly the arrangement this replaced.
           */}
-        <div ref={stageRef} data-preview-stage className={`absolute inset-0 overflow-auto ${framed ? "p-6 pt-14" : "p-0"}`}>
+        <div ref={stageRef} data-preview-stage className={`absolute inset-0 overflow-auto ${framed ? "p-6" : "p-0"}`}
+          style={{ paddingTop: barShown ? barH + (framed ? 8 : 0) : framed ? 24 : 0 }}>
           {/**
             * A SIZER THAT RESERVES THE SCALED BOX, with the frame scaled from its TOP-LEFT inside it.
             *
@@ -1535,8 +1551,10 @@ export default function BoxDemoPage() {
         </>)}
       </header>
       {compactBar && moreOpen && (<>
-        <div aria-hidden="true" onClick={() => setMoreOpen(false)} style={{ zIndex: CHROME_Z.drawer }} className="fixed inset-0 bg-black/20" />
-        <div role="dialog" aria-label="More" style={{ zIndex: CHROME_Z.drawer }} className="fixed inset-x-0 bottom-0 max-h-[70dvh] overflow-y-auto rounded-t-2xl border-t border-line bg-surface shadow-2xl p-4 pt-2 space-y-3 mx-auto max-w-sheet sheet:border-x">
+        {/* LE15-50 · on the MENU level: opened from the editor's own bar, it must clear the Inspector slid over a phone (the drawer
+            level) — on the same level the Inspector, later in the page, covered it and "Add page" could not be reached */}
+        <div aria-hidden="true" onClick={() => setMoreOpen(false)} style={{ zIndex: CHROME_Z.menu }} className="fixed inset-0 bg-black/20" />
+        <div role="dialog" aria-label="More" style={{ zIndex: CHROME_Z.menu }} className="fixed inset-x-0 bottom-0 max-h-[70dvh] overflow-y-auto rounded-t-2xl border-t border-line bg-surface shadow-2xl p-4 pt-2 space-y-3 mx-auto max-w-sheet sheet:border-x">
           <span aria-hidden="true" className="mx-auto block h-1.5 w-10 rounded-full bg-line" />
           <div className="flex items-center justify-between">
             <span className="text-sm font-bold text-ink">More</span>

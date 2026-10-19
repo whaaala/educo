@@ -210,6 +210,8 @@ Feature: Box Builder — ready-made sections, my sections, global sections and p
 
   # ── Every surface ──────────────────────────────────────────────────────────────────────────────────────────
 
+  # HEADED on the emulators: scripts/uat/uat-le15-emulator.js tablet | phone (real touches, the WebView read over CDP)
+  # HEADED in the browser: scripts/uat/uat-le15-headed.js (U1–U11) · scripts/uat/contrast-le15.js (every theme × finish)
   Scenario Outline: The same on the Educo app
     Given the website builder is open in the Educo app on a <device>
     Then I can open the Sections group, tap a tile to add it, save a section, make it global and add a page from a template

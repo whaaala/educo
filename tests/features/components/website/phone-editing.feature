@@ -10,6 +10,13 @@ Feature: Building a page on a phone (BATCH E-5a)
     And I can still choose Desktop to look at the desktop page
     But from a laptop's width (1024px) up the canvas opens exactly as before
 
+  # tests/e2e/phone-editing.spec.ts — "LE15-50"
+  Scenario: More opens above the Inspector on a phone
+    Given I am editing on a phone with the Inspector open
+    When I tap More
+    Then its sheet is on top, and Add page and everything in it can be reached
+    Because it opened underneath the Inspector, on the same layer, and nothing in it could be tapped
+
   Scenario: The blocks panel is a sheet from the bottom on a phone
     Given I am on a phone
     When I tap the "+" in the bottom-right corner

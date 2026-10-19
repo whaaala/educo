@@ -4,6 +4,13 @@ import userEvent from "@testing-library/user-event";
 import FormInput from "@/components/shared/FormInput";
 
 describe("FormInput", () => {
+  it("LE15-48 · a field with no icon draws no empty icon box; with one, the box holds it", () => {
+    const { container, rerender } = render(<FormInput label="Page name" value="" onChange={vi.fn()} />);
+    expect(container.querySelector("label .w-4.h-4"), "no icon: no box").toBeNull();
+    rerender(<FormInput label="Page name" value="" onChange={vi.fn()} icon={<svg data-testid="ic" />} />);
+    expect(container.querySelector("label .w-4.h-4 [data-testid=ic]"), "an icon: in its box").not.toBeNull();
+  });
+
   it("renders with label", () => {
     render(
       <FormInput label="Full Name" value="" onChange={vi.fn()} />

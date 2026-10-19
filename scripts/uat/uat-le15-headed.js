@@ -152,6 +152,19 @@ const JOBS = {
     const f = await pvOpen(page); const shown = await f.evaluate(() => document.body.innerText.includes('Open day on Saturday'));
     rec(J, 'U5 its words changed on the canvas and seen in the Preview', shown, shown ? 'in the Preview' : 'missing');
     await pvClose(page, 1366);
+    // U5 · the PHOTO swapped as a person does: select the picture, the Inspector's own upload, another photo of the set
+    const img = (function f(n) { return n.type === 'image' ? n : (n.children || []).map(f).find(Boolean); })(hero);
+    const before = img.src;
+    await H.select(page, img.id); await H.panel(page, false);
+    const ex = page.getByRole('button', { name: 'Expand inspector' }); if (await ex.isVisible().catch(() => false)) await ex.click();
+    await page.locator('input[aria-label="Upload image"]').last().setInputFiles(path.join(__dirname, '..', '..', 'public', 'sections', 'sports-800.webp')); await sleep(page, 2500);
+    const after = (await (async () => { const p = await active(page); let n = null; const w = (x) => { if (x.id === img.id) n = x; (x.children || []).forEach(w); }; w(p.root); return n; })()).src || '';
+    rec(J, 'U5 its photo replaced through the Inspector (a new picture, stored in the site)', after && after !== before && after.startsWith('data:'), `${(before || '').slice(0, 30)} → ${after.slice(0, 22)}…`);
+    const f2 = await pvOpen(page);
+    const seen = await f2.evaluate((s) => Array.from(document.querySelectorAll('img')).some((i) => (i.getAttribute('src') || '').slice(0, 60) === s.slice(0, 60) && i.naturalWidth > 0), after);
+    rec(J, 'U5 the new photo is what the Preview shows', seen, seen ? 'shown, loaded' : 'not shown');
+    await shot(page, 'U5-photo-swapped');
+    await pvClose(page, 1366);
   },
 
   async preview(page, J) {
@@ -273,19 +286,29 @@ const JOBS = {
   },
 
   async current(page, J) {
+    // as a person sets it up: a ready-made header (shared on every page) whose "About" menu link goes to the About page
     await addPageBlank(page, 'About');
     await toPage(page, 'Home');
-    await deselect(page); await H.panel(page, true); await H.clickTile(page, 'Link'); await sleep(page, 700);
-    const id = await selectedId(page); await H.panel(page, false);
+    await addTile(page, 'Headers', 'Logo, menu and a button');
+    const header = (await active(page)).root.children.map(blockOf).find((b) => b.tag === 'header');
+    const link = (function f(n) { return n.type === 'link' && n.text === 'About' ? n : (n.children || []).map(f).find(Boolean); })(header);
+    await H.select(page, link.id); await H.panel(page, false);
     const ex = page.getByRole('button', { name: 'Expand inspector' }); if (await ex.isVisible().catch(() => false)) await ex.click();
     await page.locator('aside[aria-label="Inspector"]').getByRole('tab', { name: 'Content' }).click().catch(() => {}); await sleep(page, 400);
-    const choose = page.getByRole('button', { name: 'Link to page' }).first(); await choose.scrollIntoViewIfNeeded(); await choose.click(); await page.getByRole('option', { name: 'About' }).click(); await sleep(page, 700);
-    const f0 = await pvOpen(page);
-    await page.getByRole('button', { name: 'About', exact: true }).last().click().catch(() => {}); await sleep(page, 1200);
-    const ans = await sweep(page, (fr) => fr.evaluate(() => { const a = Array.from(document.querySelectorAll('a')).find((x) => /about\.html|#about/.test(x.getAttribute('href') || '')); return a ? `${a.getAttribute('aria-current') || 'none'}` : 'no link'; }));
-    rec(J, 'U11 on its own page the link is aria-current at every width (LE15-27)', /page/.test(ans) || /no link/.test(ans), ans);
-    void f0; void id;
+    const choose = page.getByRole('button', { name: 'Link to page' }).first(); await choose.scrollIntoViewIfNeeded(); await choose.click(); await page.getByRole('option', { name: 'About' }).click(); await sleep(page, 900);
+    const mark = (fr) => fr.evaluate(() => { const a = Array.from(document.querySelectorAll('header a')).find((x) => x.textContent.trim() === 'About'); if (!a) return 'NO LINK'; const c = getComputedStyle(a); return `${a.getAttribute('aria-current') || 'none'}/${c.textDecorationLine}`; });
+    await pvOpen(page);
+    const onHome = await sweep(page, mark);
+    rec(J, 'U11 on Home the About link is NOT marked (LE15-27)', !/NO LINK|^page/.test(onHome) && /none/.test(onHome), onHome);
+    await page.getByRole('button', { name: 'About', exact: true }).last().click(); await sleep(page, 1500);
+    const onAbout = await sweep(page, mark);
+    rec(J, 'U11 on About its own link is the current page, underlined, at every width (LE15-27)', !/NO LINK|none/.test(onAbout) && /page\/underline/.test(onAbout), onAbout);
+    await shot(page, 'U11-current-about');
     await pvClose(page, 1366);
+    // the canvas the same: on the About page the header's About link is current
+    await toPage(page, 'About');
+    const onCanvas = await page.evaluate(() => { const a = Array.from(document.querySelectorAll('header a')).find((x) => x.textContent.trim() === 'About'); return a ? a.getAttribute('aria-current') || 'none' : 'NO LINK'; });
+    rec(J, 'U11 the canvas marks it the same on the About page', onCanvas === 'page', onCanvas);
   },
 };
 
