@@ -1,0 +1,8 @@
+{
+  "$comment": "PAGE TEMPLATES (BATCH LE-15, PS-5 (3)): a new page starts from one of these — the sections it is made of, in order (ids from config/sections/<category>.json), drawn in the finish the person chose. A page made from one is a COPY, and takes the site's shared header and footer when the site has them. LE-15 has the ones its sections can make; the twelve of the design (C1 landing · C2 school home · C3 about · C4 news · C5 article · C6 fees · C7 contact · C8 gallery · C9 events · C11 admissions · C12 staff · FAQ) are complete in LE-15e, as their categories arrive.",
+  "templates": [
+    { "id": "school-home", "name": "School home", "pattern": "C2", "sections": ["header-utility", "hero-photo", "hero-quick-links-six", "hero-welcome-head", "hero-centred-stats", "hero-mosaic", "footer-columns"] },
+    { "id": "landing", "name": "Landing page", "pattern": "C1", "sections": ["header-classic", "hero-split", "hero-centred-stats", "hero-split-points", "hero-split-quote", "footer-big-cta"] },
+    { "id": "open-day", "name": "Open day", "pattern": "C1", "sections": ["header-announcement", "hero-announcement", "hero-split-image-left", "hero-form-centred", "footer-simple"] }
+  ]
+}

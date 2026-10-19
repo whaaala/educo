@@ -28,7 +28,8 @@ import {
 } from "@/lib/box-model";
 import { blockForKind } from "@/lib/box-presets";
 import { insertSection } from "@/lib/section-library";
-import { saveSection } from "@/lib/saved-sections";
+import { saveSection, myTemplates } from "@/lib/saved-sections";
+import AddPageDialog from "@/components/website/box/AddPageDialog";
 import { makeGlobal, detachGlobal, globalsInSite, changedGlobals, globalSample, removeGlobal } from "@/lib/global-sections";
 import NameDialog from "@/components/website/box/NameDialog";
 import {
@@ -205,6 +206,9 @@ export default function BoxDemoPage() {
   const [savedSaid, setSavedSaid] = useState(""); // spoken: "Saved to My sections"
   const saveTargetRef = useRef<BoxNode | null>(null); // the section Ctrl+Alt+S saves — refreshed every render (rule 2: refs, [] deps)
   const [makingGlobal, setMakingGlobal] = useState<BoxNode | null>(null); // LE-15 PS-5 (2): the section being named as global
+  const [addingPage, setAddingPage] = useState(false); // LE-15 PS-5 (3): the Add a page dialog
+  const [savingPage, setSavingPage] = useState(false); // …and Save page as template
+  const [templateError, setTemplateError] = useState<string | undefined>(undefined);
   const globalTargetRef = useRef<BoxNode | null>(null); // the section Ctrl+Alt+G makes global (an ordinary one-block page section)
   const [globalNotice, setGlobalNotice] = useState(""); // "This change is made on all N pages" — once per global section per visit
   const warnedGlobals = useRef(new Set<string>());
@@ -791,7 +795,14 @@ export default function BoxDemoPage() {
   };
 
   // ── Page management ──
-  const onAddPage = () => { const { site: s, id } = addPage(site, `Page ${site.pages.length + 1}`, emptyPageRoot()); pushSite(s); setActivePageId(id); setSelectedIds([]); };
+  // LE-15 PS-5 (3): "+" asks where the page starts — Blank, Duplicate, a template — in AddPageDialog
+  const onAddPage = () => setAddingPage(true);
+  const addPageFrom = (name: string, root: BoxNode) => { const { site: s, id } = addPage(site, name, root); pushSite(s); setActivePageId(id); setSelectedIds([]); setAddingPage(false); };
+  const savePageTemplate = (name: string) => {
+    const r = myTemplates.save(activePage.root, name);
+    if (!r.ok) { setTemplateError(r.reason === "limit" ? INSPECTOR.sections.templateLimit.replace("{limit}", String(r.limit)) : undefined); return; }
+    setSavingPage(false); setSavedSaid(`Saved “${name}” to ${INSPECTOR.sections.myTemplates}`);
+  };
   const onDuplicatePage = () => { const { site: s, id } = duplicatePage(site, activePage.id); pushSite(s); setActivePageId(id); setPageMenu(false); };
   const onRenamePage = (name: string) => pushSite(renamePage(site, activePage.id, name));
   const onDeletePage = () => { if (site.pages.length <= 1) return; const s = deletePage(site, activePage.id); pushSite(s); setActivePageId(s.homeId); setSelectedIds([]); setPageMenu(false); setConfirmDeletePage(false); };
@@ -1428,6 +1439,7 @@ export default function BoxDemoPage() {
                 <button onClick={onSetHome} disabled={activePage.id === site.homeId} className="flex items-center justify-center gap-1 text-xs px-2 py-1.5 rounded-lg border border-line text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-100 dark:hover:bg-white/10 disabled:opacity-40"><Home className="w-3.5 h-3.5" /> Home</button>
                 <button onClick={onDuplicatePage} className="flex items-center justify-center gap-1 text-xs px-2 py-1.5 rounded-lg border border-line text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-100 dark:hover:bg-white/10"><Files className="w-3.5 h-3.5" /> Duplicate</button>
               </div>
+              <button onClick={() => { setPageMenu(false); setTemplateError(undefined); setSavingPage(true); }} className="w-full flex items-center justify-center gap-1 text-xs px-2 py-1.5 rounded-lg border border-line text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-100 dark:hover:bg-white/10">{INSPECTOR.sections.savePage}</button>{/* LE-15 PS-5 (3) */}
               <div className="grid grid-cols-2 gap-1.5">{/* LE8-2: the page's place in the order of the tabs */}
                 <button onClick={() => onMovePage(-1)} disabled={site.pages[0]?.id === activePage.id} className="flex items-center justify-center gap-1 text-xs px-2 py-1.5 rounded-lg border border-line text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-100 dark:hover:bg-white/10 disabled:opacity-40"><ChevronLeft className="w-3.5 h-3.5" aria-hidden="true" /> {PAGE_ORDER.earlier}</button>
                 <button onClick={() => onMovePage(1)} disabled={site.pages[site.pages.length - 1]?.id === activePage.id} className="flex items-center justify-center gap-1 text-xs px-2 py-1.5 rounded-lg border border-line text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-100 dark:hover:bg-white/10 disabled:opacity-40">{PAGE_ORDER.later} <ChevronRight className="w-3.5 h-3.5" aria-hidden="true" /></button>
@@ -1462,6 +1474,7 @@ export default function BoxDemoPage() {
                 <button onClick={onSetHome} disabled={activePage.id === site.homeId} className="flex items-center justify-center gap-1 text-xs px-2 py-1.5 rounded-lg border border-line text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-100 dark:hover:bg-white/10 disabled:opacity-40"><Home className="w-3.5 h-3.5" /> Home</button>
                 <button onClick={onDuplicatePage} className="flex items-center justify-center gap-1 text-xs px-2 py-1.5 rounded-lg border border-line text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-100 dark:hover:bg-white/10"><Files className="w-3.5 h-3.5" /> Duplicate</button>
               </div>
+              <button onClick={() => { setPageMenu(false); setTemplateError(undefined); setSavingPage(true); }} className="w-full flex items-center justify-center gap-1 text-xs px-2 py-1.5 rounded-lg border border-line text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-100 dark:hover:bg-white/10">{INSPECTOR.sections.savePage}</button>{/* LE-15 PS-5 (3) */}
               <div className="grid grid-cols-2 gap-1.5">{/* LE8-2: the page's place in the order of the tabs */}
                 <button onClick={() => onMovePage(-1)} disabled={site.pages[0]?.id === activePage.id} className="flex items-center justify-center gap-1 text-xs px-2 py-1.5 rounded-lg border border-line text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-100 dark:hover:bg-white/10 disabled:opacity-40"><ChevronLeft className="w-3.5 h-3.5" aria-hidden="true" /> {PAGE_ORDER.earlier}</button>
                 <button onClick={() => onMovePage(1)} disabled={site.pages[site.pages.length - 1]?.id === activePage.id} className="flex items-center justify-center gap-1 text-xs px-2 py-1.5 rounded-lg border border-line text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-100 dark:hover:bg-white/10 disabled:opacity-40">{PAGE_ORDER.later} <ChevronRight className="w-3.5 h-3.5" aria-hidden="true" /></button>
@@ -1649,6 +1662,10 @@ export default function BoxDemoPage() {
         confirmButtonText={INSPECTOR.sections.replaceButton}
         warningMessage={INSPECTOR.sections.replaceWarning.replace("{which}", pendingSection?.tag ?? "")}
       />
+      <AddPageDialog open={addingPage} theme={renderTheme} start={`Page ${site.pages.length + 1}`} currentName={activePage.name} onClose={() => setAddingPage(false)}
+        onBlank={(name) => addPageFrom(name, emptyPageRoot())} onDuplicate={() => { setAddingPage(false); onDuplicatePage(); }} onTemplate={addPageFrom} />
+      <NameDialog open={savingPage} title={INSPECTOR.sections.savePageTitle} label={INSPECTOR.sections.saveLabel} confirm={INSPECTOR.sections.saveConfirm}
+        start={activePage.name} error={templateError} onCancel={() => setSavingPage(false)} onConfirm={savePageTemplate} />
       <NameDialog open={!!makingGlobal} title={INSPECTOR.sections.makeGlobalTitle} label={INSPECTOR.sections.saveLabel} confirm={INSPECTOR.sections.makeGlobal}
         start={makingGlobal?.layerName ?? ""} onCancel={() => setMakingGlobal(null)} onConfirm={(name) => { if (makingGlobal) commit(makeGlobal(root, makingGlobal.id, name)); setMakingGlobal(null); }} />
       {globalNotice && <div role="status" className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 rounded-xl bg-emerald-700 dark:bg-emerald-700 midnight:bg-emerald-700 purple:bg-emerald-700 px-4 py-2 text-xs font-semibold text-white shadow-lg">{globalNotice}<button type="button" onClick={() => setGlobalNotice("")} className="rounded px-1.5 py-0.5 hover:bg-white/15">OK</button></div>}

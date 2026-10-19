@@ -4,7 +4,7 @@ Feature: Box Builder — ready-made sections, my sections, global sections and p
     and new pages that start from a template
   So that a good-looking page takes minutes, and a change made once is made everywhere
   Design (signed by the user 2026-10-19, D1 … D8): docs/web-anatomy/layout-tiers/le15-design.md
-  Guards: tests/unit/section-library.test.ts · tests/components/website/SectionsPanel.test.tsx · tests/unit/saved-sections.test.ts · tests/unit/global-sections.test.ts · tests/unit/page-templates.test.ts · tests/unit/section-photos.test.ts
+  Guards: tests/unit/section-library.test.ts · tests/components/website/SectionsPanel.test.tsx · tests/unit/saved-sections.test.ts · tests/unit/global-sections.test.ts · tests/unit/page-templates.test.ts · tests/unit/section-photos.test.ts · tests/components/website/AddPageDialog.test.tsx
 
   Background:
     Given the Box Builder is open on a site with the pages "Home", "Admissions" and "Term dates"

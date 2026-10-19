@@ -203,6 +203,20 @@
     "changesPages": "“{name}” is global: this change is made on all {pages} pages that use it.",
     "removeGlobalTitle": "Stop “{name}” being global?",
     "removeGlobalWarning": "It is used on {pages} {pageWord}. Every copy stays where it is, as an ordinary section you can change on its own.",
-    "removeGlobal": "Stop being global"
+    "removeGlobal": "Stop being global",
+    "addPageTitle": "Add a page",
+    "pageName": "Page name",
+    "startFrom": "Start from",
+    "blank": "Blank page",
+    "duplicate": "Duplicate “{name}”",
+    "templates": "Page templates",
+    "myTemplates": "My templates",
+    "templateHint": "A new page is a copy of the template, with this site's header and footer.",
+    "savePage": "Save page as template",
+    "savePageTitle": "Save this page as a template",
+    "templateLimit": "You have saved {limit} page templates, the most there is room for. Delete one you no longer use, then save this one.",
+    "renameTemplateTitle": "Rename this template",
+    "deleteTemplateTitle": "Delete the template “{name}”?",
+    "deleteTemplateWarning": "Pages already made from it keep everything on them. Only the template goes."
   }
 }

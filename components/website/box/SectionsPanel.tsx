@@ -29,7 +29,7 @@ const TILE_PAGE_PX = 1280;
 
 /** Every category that has its layouts written, with them — read once, the first time the group opens. */
 let loaded: Promise<{ cat: Category; sections: SectionDef[] }[]> | null = null;
-function loadAll() {
+export function loadAll() {
   loaded ??= Promise.allSettled((SECTIONS.categories as Category[]).map(async (cat) => {
     const mod = (await import(`@/config/sections/${cat.id}.json`)) as { default?: { sections: SectionDef[] }; sections?: SectionDef[] };
     return { cat, sections: (mod.default ?? mod).sections ?? [] };
@@ -37,18 +37,19 @@ function loadAll() {
   return loaded;
 }
 
-/** The section on a page of its own, as the Preview draws it. */
-function previewDoc(section: BoxNode, theme: SiteTheme): string {
-  const site = { pages: [{ id: "p", name: "Preview", path: "p", root: emptyPageRoot(section) }], homeId: "p" } as BoxSite;
+/** The section on a page of its own — or, `whole`, a whole page (a template) — as the Preview draws it. */
+function previewDoc(section: BoxNode, theme: SiteTheme, whole = false): string {
+  const site = { pages: [{ id: "p", name: "Preview", path: "p", root: whole ? section : emptyPageRoot(section) }], homeId: "p" } as BoxSite;
   return renderSitePage(site, theme, "p", { inlineShared: true });
 }
 
-function Tile({ def, cat, node, theme, onAdd }: { def: { name: string; needs?: string[] }; cat: { label: string }; node: BoxNode; theme: SiteTheme; onAdd: () => void }) {
+/** A live tile: the real published page, drawn small. `whole`: `node` is a whole PAGE (a template) — framed at its top. */
+export function Tile({ def, cat, node, theme, onAdd, whole = false }: { def: { name: string; needs?: string[] }; cat: { label: string }; node: BoxNode; theme: SiteTheme; onAdd: () => void; whole?: boolean }) {
   const box = useRef<HTMLButtonElement>(null);
   const [scale, setScale] = useState(0.2);
   const [h, setH] = useState(400);
   const [top, setTop] = useState(0);
-  const doc = useMemo(() => previewDoc(node, theme), [node, theme]);
+  const doc = useMemo(() => previewDoc(node, theme, whole), [node, theme, whole]);
   useEffect(() => {
     const el = box.current;
     if (!el) return;
@@ -65,7 +66,7 @@ function Tile({ def, cat, node, theme, onAdd }: { def: { name: string; needs?: s
         onLoad={(e) => {
           // Framed on the SECTION, not the page: a footer sits at the foot of a page shorter than the screen (the page's
           // own rule), so the whole page showed a tile of white with the footer at its bottom edge.
-          const d = e.currentTarget.contentDocument; const el = d?.querySelector<HTMLElement>(node.tag ?? "section");
+          const d = e.currentTarget.contentDocument; const el = whole ? d?.body : d?.querySelector<HTMLElement>(node.tag ?? "section");
           if (!el) return; const r = el.getBoundingClientRect();
           setTop(Math.round(r.top + (d?.defaultView?.scrollY ?? 0))); setH(Math.max(80, Math.round(r.height)));
         }}
