@@ -161,5 +161,23 @@
     "delete": "Delete",
     "everyScreen": "every screen",
     "several": "Select several — each tap adds a block"
+  },
+  "sections": {
+    "$comment": "BATCH LE-15 ED-4+ (2): the Sections group of the Add panel (box-builder-sections.feature). {name} a section's name, {category} its category, {count} how many, {which} header or footer.",
+    "tab": "Sections",
+    "categories": "Section categories",
+    "wireframe": "Wireframe",
+    "designed": "Designed",
+    "look": "Wireframe or designed",
+    "finish": "Finish",
+    "hint": "Click or press Enter to add it after the section you are on",
+    "hintTouch": "Tap a section to add it",
+    "add": "Add {name}, {category}",
+    "needs": "placeholder: {needs}",
+    "loading": "Loading sections…",
+    "none": "No sections match “{q}”.",
+    "replaceTitle": "Replace the {which} on every page?",
+    "replaceButton": "Replace",
+    "replaceWarning": "The {which} you choose takes the place of the current one on every page of this site. You can Undo (Ctrl+Z) right after."
   }
 }

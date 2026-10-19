@@ -1,0 +1,363 @@
+{
+  "$comment": "Hero / Welcome (B7–B12, LAYOUT_BENCHMARK.md; C2 the school homepage's welcome). Trees: lib/section-library.ts SectionNode. Icons are lucide names.",
+  "sections": [
+    { "id": "hero-centred", "name": "Centred words and two buttons", "pattern": "B7",
+      "tree": { "k": "section", "tone": "soft", "center": true, "set": { "paddingTop": 120, "paddingBottom": 120, "paddingLeft": 24, "paddingRight": 24, "gap": 24 },
+        "c": [
+          { "r": "eyebrow", "t": "Admissions open for September" },
+          { "r": "title", "t": "A school where every child is known", "set": { "maxWidth": "48rem" } },
+          { "r": "body", "t": "Greenfield Academy is a day school for ages 3 to 18 in the heart of the city, with small classes and teachers who know each pupil by name.", "set": { "maxWidth": "40rem" } },
+          { "k": "row", "set": { "justify": "center", "gap": 16 }, "c": [ { "r": "button", "t": "Book a visit" }, { "r": "button2", "t": "Read our story" } ] }
+        ] } },
+    { "id": "hero-split", "name": "Words beside a picture", "pattern": "B8",
+      "tree": { "k": "section", "set": { "paddingTop": 96, "paddingBottom": 96, "paddingLeft": 24, "paddingRight": 24 },
+        "c": [ { "k": "row", "set": { "gap": 48, "wrap": true }, "c": [
+          { "k": "stack", "set": { "gap": 20, "width": "fill", "minWidth": "18rem" }, "c": [
+            { "r": "eyebrow", "t": "Welcome" },
+            { "r": "title", "t": "Learning that lasts a lifetime" },
+            { "r": "body", "t": "From the nursery to the sixth form, our pupils grow in confidence, curiosity and kindness." },
+            { "k": "row", "set": { "gap": 16 }, "c": [ { "r": "button", "t": "Apply now" }, { "r": "button2", "t": "Visit us" } ] }
+          ] },
+          { "r": "image", "photo": "pupils-reading", "alt": "Pupils reading together in the library", "set": { "width": "fill", "minWidth": "18rem" } }
+        ] } ] } },
+    { "id": "hero-photo", "name": "Words over a full photo", "pattern": "B10",
+      "tree": { "k": "section", "tone": "photo", "photo": "school-front", "center": true, "set": { "minHeight": 560, "justify": "center", "paddingTop": 96, "paddingBottom": 96, "paddingLeft": 24, "paddingRight": 24, "gap": 24 },
+        "c": [
+          { "r": "title", "t": "Welcome to Greenfield Academy", "set": { "maxWidth": "48rem" } },
+          { "r": "body", "t": "Open day on Saturday 14 March, 10 am to 2 pm. Come and meet us.", "set": { "maxWidth": "36rem" } },
+          { "k": "row", "set": { "justify": "center", "gap": 16 }, "c": [ { "r": "button", "t": "Book your place" }, { "r": "button2", "t": "See the school" } ] }
+        ] } },
+    { "id": "hero-centred-plain", "name": "Centred words, one button", "pattern": "B7",
+      "tree": { "k": "section", "center": true, "set": { "paddingTop": 104, "paddingBottom": 104, "paddingLeft": 24, "paddingRight": 24, "gap": 20 },
+        "c": [
+          { "r": "title", "t": "Where curious minds grow", "set": { "maxWidth": "44rem" } },
+          { "r": "body", "t": "Nursery, primary and secondary on one green campus, with a library, labs and sports fields.", "set": { "maxWidth": "38rem" } },
+          { "r": "button", "t": "Explore the school" }
+        ] } },
+    { "id": "hero-centred-strong", "name": "Centred on the school colour", "pattern": "B7",
+      "tree": { "k": "section", "tone": "strong", "center": true, "set": { "paddingTop": 112, "paddingBottom": 112, "paddingLeft": 24, "paddingRight": 24, "gap": 24 },
+        "c": [
+          { "r": "eyebrow", "t": "Since 1987" },
+          { "r": "title", "t": "Proud of every pupil, every day", "set": { "maxWidth": "46rem" } },
+          { "r": "body", "t": "Thirty-nine years of teaching children to think for themselves and care for others.", "set": { "maxWidth": "38rem" } },
+          { "k": "row", "set": { "justify": "center", "gap": 16 }, "c": [ { "r": "button", "t": "Our story" }, { "r": "button2", "t": "Meet the staff" } ] }
+        ] } },
+    { "id": "hero-centred-dark", "name": "Centred on a dark band", "pattern": "B7",
+      "tree": { "k": "section", "tone": "inverse", "center": true, "set": { "paddingTop": 120, "paddingBottom": 120, "paddingLeft": 24, "paddingRight": 24, "gap": 24 },
+        "c": [
+          { "r": "eyebrow", "t": "Results day" },
+          { "r": "title", "t": "Our best exam results yet", "set": { "maxWidth": "44rem" } },
+          { "r": "body", "t": "Ninety-four per cent of our students earned five credits or more, including English and Mathematics.", "set": { "maxWidth": "38rem" } },
+          { "r": "button", "t": "See the results" }
+        ] } },
+    { "id": "hero-centred-image", "name": "Centred words over a wide picture", "pattern": "B7",
+      "tree": { "k": "section", "center": true, "set": { "paddingTop": 96, "paddingBottom": 0, "paddingLeft": 24, "paddingRight": 24, "gap": 24 },
+        "c": [
+          { "r": "title", "t": "A day at Greenfield", "set": { "maxWidth": "40rem" } },
+          { "r": "body", "t": "Lessons, lunch, clubs and friends. Here is what a school day looks like.", "set": { "maxWidth": "36rem" } },
+          { "r": "button", "t": "Take the tour" },
+          { "r": "image", "photo": "classroom", "alt": "A bright classroom with pupils working in groups", "set": { "ratio": "21 / 9" } }
+        ] } },
+    { "id": "hero-centred-stats", "name": "Centred words and three numbers", "pattern": "B16",
+      "tree": { "k": "section", "tone": "soft", "center": true, "set": { "paddingTop": 104, "paddingBottom": 96, "paddingLeft": 24, "paddingRight": 24, "gap": 32 },
+        "c": [
+          { "r": "title", "t": "Small classes, big ambitions", "set": { "maxWidth": "42rem" } },
+          { "r": "body", "t": "Every child gets the attention they need to do their best.", "set": { "maxWidth": "36rem" } },
+          { "k": "grid", "cols": 3, "min": "10rem", "set": { "gap": 24, "maxWidth": "48rem" }, "c": [
+            { "k": "stack", "center": true, "set": { "gap": 4 }, "c": [ { "r": "stat", "t": "18" }, { "r": "small", "t": "pupils in a class" } ] },
+            { "k": "stack", "center": true, "set": { "gap": 4 }, "c": [ { "r": "stat", "t": "40+" }, { "r": "small", "t": "clubs every week" } ] },
+            { "k": "stack", "center": true, "set": { "gap": 4 }, "c": [ { "r": "stat", "t": "97%" }, { "r": "small", "t": "go on to university" } ] }
+          ] }
+        ] } },
+    { "id": "hero-big-title", "name": "One big line", "pattern": "B7",
+      "tree": { "k": "section", "center": true, "set": { "paddingTop": 128, "paddingBottom": 128, "paddingLeft": 24, "paddingRight": 24, "gap": 28 },
+        "c": [
+          { "r": "title", "t": "Be curious. Be kind. Be you.", "set": { "fontSize": 72, "maxWidth": "56rem" } },
+          { "r": "button", "t": "Discover Greenfield" }
+        ] } },
+    { "id": "hero-split-image-left", "name": "Picture beside words, picture first", "pattern": "B8",
+      "tree": { "k": "section", "set": { "paddingTop": 96, "paddingBottom": 96, "paddingLeft": 24, "paddingRight": 24 },
+        "c": [ { "k": "row", "set": { "gap": 48 }, "c": [
+          { "r": "image", "photo": "teacher-class", "alt": "A teacher helping a pupil at her desk", "set": { "width": "fill", "minWidth": "18rem" } },
+          { "k": "stack", "set": { "gap": 20, "width": "fill", "minWidth": "18rem" }, "c": [
+            { "r": "eyebrow", "t": "Our teachers" },
+            { "r": "title", "t": "Taught by people who love teaching" },
+            { "r": "body", "t": "Our teachers are qualified, experienced and here because they want to be." },
+            { "r": "button", "t": "Meet the staff" }
+          ] }
+        ] } ] } },
+    { "id": "hero-split-soft", "name": "Words beside a picture, on a soft colour", "pattern": "B8",
+      "tree": { "k": "section", "tone": "soft", "set": { "paddingTop": 88, "paddingBottom": 88, "paddingLeft": 24, "paddingRight": 24 },
+        "c": [ { "k": "row", "set": { "gap": 48 }, "c": [
+          { "k": "stack", "set": { "gap": 20, "width": "fill", "minWidth": "18rem" }, "c": [
+            { "r": "title", "t": "A happy start in the nursery" },
+            { "r": "body", "t": "Play, songs, stories and friends, in a safe and loving place for children from age 3." },
+            { "k": "row", "set": { "gap": 16 }, "c": [ { "r": "button", "t": "Book a nursery visit" }, { "r": "button2", "t": "Fees" } ] }
+          ] },
+          { "r": "image", "photo": "nursery", "alt": "Nursery children painting at a table", "set": { "width": "fill", "minWidth": "18rem", "ratio": "1 / 1" } }
+        ] } ] } },
+    { "id": "hero-split-wide-words", "name": "Wide words, narrow picture", "pattern": "B8",
+      "tree": { "k": "section", "set": { "paddingTop": 96, "paddingBottom": 96, "paddingLeft": 24, "paddingRight": 24 },
+        "c": [ { "k": "row", "set": { "gap": 48 }, "c": [
+          { "k": "stack", "set": { "gap": 20, "width": "60%", "minWidth": "18rem" }, "c": [
+            { "r": "eyebrow", "t": "Secondary school" },
+            { "r": "title", "t": "Ready for university and for life" },
+            { "r": "body", "t": "A broad curriculum, careers advice from Year 9 and a sixth form where students lead." },
+            { "r": "button", "t": "Secondary admissions" }
+          ] },
+          { "r": "image", "photo": "students-lab", "alt": "Students doing an experiment in the science lab", "set": { "width": "fill", "minWidth": "14rem", "ratio": "3 / 4" } }
+        ] } ] } },
+    { "id": "hero-split-dark", "name": "Words beside a picture, on a dark band", "pattern": "B8",
+      "tree": { "k": "section", "tone": "inverse", "set": { "paddingTop": 96, "paddingBottom": 96, "paddingLeft": 24, "paddingRight": 24 },
+        "c": [ { "k": "row", "set": { "gap": 48 }, "c": [
+          { "k": "stack", "set": { "gap": 20, "width": "fill", "minWidth": "18rem" }, "c": [
+            { "r": "eyebrow", "t": "Sport" },
+            { "r": "title", "t": "Champions on and off the field" },
+            { "r": "body", "t": "Football, athletics, basketball and swimming, with coaches who bring out the best in every player." },
+            { "r": "button", "t": "Sport at Greenfield" }
+          ] },
+          { "r": "image", "photo": "sports", "alt": "Pupils running on the school track", "set": { "width": "fill", "minWidth": "18rem" } }
+        ] } ] } },
+    { "id": "hero-split-two-pictures", "name": "Words beside two pictures", "pattern": "B8",
+      "tree": { "k": "section", "set": { "paddingTop": 96, "paddingBottom": 96, "paddingLeft": 24, "paddingRight": 24 },
+        "c": [ { "k": "row", "set": { "gap": 48 }, "c": [
+          { "k": "stack", "set": { "gap": 20, "width": "fill", "minWidth": "18rem" }, "c": [
+            { "r": "title", "t": "Music, art and drama for everyone" },
+            { "r": "body", "t": "Every pupil learns an instrument, and every year group puts on a show." },
+            { "r": "button", "t": "The arts" }
+          ] },
+          { "k": "grid", "cols": 2, "min": "8rem", "set": { "gap": 16, "width": "fill", "minWidth": "18rem" }, "c": [
+            { "r": "image", "photo": "music", "alt": "Pupils playing drums in the music room", "set": { "ratio": "3 / 4" } },
+            { "r": "image", "photo": "art", "alt": "A pupil painting at an easel", "set": { "ratio": "3 / 4" } }
+          ] }
+        ] } ] } },
+    { "id": "hero-split-card", "name": "Words on a card beside a picture", "pattern": "B8",
+      "tree": { "k": "section", "tone": "soft", "set": { "paddingTop": 80, "paddingBottom": 80, "paddingLeft": 24, "paddingRight": 24 },
+        "c": [ { "k": "row", "set": { "gap": 32 }, "c": [
+          { "k": "card", "tone": "plain", "set": { "padding": 40, "gap": 20, "width": "fill", "minWidth": "18rem" }, "c": [
+            { "r": "eyebrow", "t": "Boarding" },
+            { "r": "title", "t": "A home from home" },
+            { "r": "body", "t": "Weekly and full boarding from age 11, with house parents who care for every child." },
+            { "r": "button", "t": "About boarding" }
+          ] },
+          { "r": "image", "photo": "boarding", "alt": "A bright boarding house common room", "set": { "width": "fill", "minWidth": "18rem" } }
+        ] } ] } },
+    { "id": "hero-split-points", "name": "Words, three points and a picture", "pattern": "B15",
+      "tree": { "k": "section", "set": { "paddingTop": 96, "paddingBottom": 96, "paddingLeft": 24, "paddingRight": 24 },
+        "c": [ { "k": "row", "set": { "gap": 48 }, "c": [
+          { "k": "stack", "set": { "gap": 20, "width": "fill", "minWidth": "18rem" }, "c": [
+            { "r": "title", "t": "Why families choose Greenfield" },
+            { "r": "list", "items": ["Classes of no more than 18", "Clubs every afternoon", "A safe, green campus"] },
+            { "r": "button", "t": "Book a visit" }
+          ] },
+          { "r": "image", "photo": "playground", "alt": "Children playing together in the school playground", "set": { "width": "fill", "minWidth": "18rem" } }
+        ] } ] } },
+    { "id": "hero-split-quote", "name": "Words, a parent's quote and a picture", "pattern": "B8",
+      "tree": { "k": "section", "set": { "paddingTop": 96, "paddingBottom": 96, "paddingLeft": 24, "paddingRight": 24 },
+        "c": [ { "k": "row", "set": { "gap": 48 }, "c": [
+          { "k": "stack", "set": { "gap": 20, "width": "fill", "minWidth": "18rem" }, "c": [
+            { "r": "title", "t": "Where children love to learn" },
+            { "r": "body", "t": "Ask any parent: our pupils run in through the gate in the morning." },
+            { "r": "quote", "t": "“Our daughter has blossomed. The teachers know her and push her gently.”" },
+            { "r": "small", "t": "Mrs Adeyemi, parent of a Year 5 pupil" },
+            { "r": "button", "t": "Hear from parents" }
+          ] },
+          { "r": "image", "photo": "family", "alt": "A parent and child arriving at the school gate", "set": { "width": "fill", "minWidth": "18rem" } }
+        ] } ] } },
+    { "id": "hero-form", "name": "Words beside an enquiry form", "pattern": "B9", "needs": ["form"],
+      "tree": { "k": "section", "tone": "soft", "set": { "paddingTop": 88, "paddingBottom": 88, "paddingLeft": 24, "paddingRight": 24 },
+        "c": [ { "k": "row", "set": { "gap": 48, "align": "start" }, "c": [
+          { "k": "stack", "set": { "gap": 20, "width": "fill", "minWidth": "18rem" }, "c": [
+            { "r": "eyebrow", "t": "Admissions" },
+            { "r": "title", "t": "Come and see us" },
+            { "r": "body", "t": "Tell us a little about your child and we will call you to arrange a visit." }
+          ] },
+          { "k": "card", "tone": "plain", "set": { "padding": 32, "gap": 14, "width": "fill", "minWidth": "18rem" }, "c": [
+            { "r": "heading", "t": "Book a visit" },
+            { "r": "small", "t": "Your name" }, { "r": "small", "t": "Phone number" }, { "r": "small", "t": "Child's age" },
+            { "r": "button", "t": "Send" }
+          ] }
+        ] } ] } },
+    { "id": "hero-form-dark", "name": "An enquiry form on a dark band", "pattern": "B9", "needs": ["form"],
+      "tree": { "k": "section", "tone": "inverse", "set": { "paddingTop": 88, "paddingBottom": 88, "paddingLeft": 24, "paddingRight": 24 },
+        "c": [ { "k": "row", "set": { "gap": 48, "align": "center" }, "c": [
+          { "k": "stack", "set": { "gap": 20, "width": "fill", "minWidth": "18rem" }, "c": [
+            { "r": "title", "t": "Places for September are filling fast" },
+            { "r": "body", "t": "Leave your details and our admissions team will be in touch within a day." }
+          ] },
+          { "k": "card", "tone": "plain", "set": { "padding": 32, "gap": 14, "width": "fill", "minWidth": "18rem" }, "c": [
+            { "r": "small", "t": "Your name" }, { "r": "small", "t": "Email" }, { "r": "small", "t": "Year group" },
+            { "r": "button", "t": "Request a call" }
+          ] }
+        ] } ] } },
+    { "id": "hero-form-centred", "name": "Centred words above a form", "pattern": "B9", "needs": ["form"],
+      "tree": { "k": "section", "center": true, "set": { "paddingTop": 96, "paddingBottom": 96, "paddingLeft": 24, "paddingRight": 24, "gap": 24 },
+        "c": [
+          { "r": "title", "t": "Join our open evening", "set": { "maxWidth": "40rem" } },
+          { "r": "body", "t": "Thursday 5 March, 5 pm to 7 pm. Tours, talks and a chance to meet the teachers.", "set": { "maxWidth": "36rem" } },
+          { "k": "card", "tone": "soft", "set": { "padding": 28, "gap": 12, "maxWidth": "28rem" }, "c": [
+            { "r": "small", "t": "Your name" }, { "r": "small", "t": "Email" },
+            { "r": "button", "t": "Save my place" }
+          ] }
+        ] } },
+    { "id": "hero-photo-left", "name": "Words at the left of a full photo", "pattern": "B10",
+      "tree": { "k": "section", "tone": "photo", "photo": "school-front", "set": { "minHeight": 560, "justify": "center", "paddingTop": 96, "paddingBottom": 96, "paddingLeft": 48, "paddingRight": 24, "gap": 20 },
+        "c": [
+          { "r": "eyebrow", "t": "Welcome" },
+          { "r": "title", "t": "Greenfield Academy", "set": { "maxWidth": "36rem" } },
+          { "r": "body", "t": "A day and boarding school for girls and boys aged 3 to 18.", "set": { "maxWidth": "32rem" } },
+          { "k": "row", "set": { "gap": 16 }, "c": [ { "r": "button", "t": "Apply" }, { "r": "button2", "t": "Visit" } ] }
+        ] } },
+    { "id": "hero-photo-bottom", "name": "Words at the foot of a full photo", "pattern": "B10",
+      "tree": { "k": "section", "tone": "photo", "photo": "graduation", "set": { "minHeight": 600, "justify": "end", "paddingTop": 96, "paddingBottom": 64, "paddingLeft": 48, "paddingRight": 24, "gap": 16 },
+        "c": [
+          { "r": "title", "t": "Congratulations, class of 2026", "set": { "maxWidth": "40rem" } },
+          { "r": "body", "t": "We are so proud of you. Wherever you go next, Greenfield goes with you.", "set": { "maxWidth": "34rem" } }
+        ] } },
+    { "id": "hero-photo-half", "name": "A shorter photo with a title", "pattern": "B10",
+      "tree": { "k": "section", "tone": "photo", "photo": "library", "center": true, "set": { "minHeight": 400, "justify": "center", "paddingTop": 80, "paddingBottom": 80, "paddingLeft": 24, "paddingRight": 24, "gap": 12 },
+        "c": [
+          { "r": "eyebrow", "t": "About us" },
+          { "r": "title", "t": "Our story", "set": { "maxWidth": "36rem" } }
+        ] } },
+    { "id": "hero-photo-card", "name": "A card of words on a photo", "pattern": "B10",
+      "tree": { "k": "section", "tone": "photo", "photo": "school-field", "set": { "minHeight": 560, "justify": "center", "paddingTop": 80, "paddingBottom": 80, "paddingLeft": 48, "paddingRight": 24 },
+        "c": [
+          { "k": "card", "tone": "plain", "set": { "padding": 40, "gap": 16, "maxWidth": "30rem" }, "c": [
+            { "r": "eyebrow", "t": "Open day" },
+            { "r": "title", "t": "See Greenfield for yourself" },
+            { "r": "body", "t": "Saturday 14 March, 10 am to 2 pm." },
+            { "r": "button", "t": "Book your place" }
+          ] }
+        ] } },
+    { "id": "hero-photo-two-lines", "name": "Photo with a title and two links", "pattern": "B10",
+      "tree": { "k": "section", "tone": "photo", "photo": "pupils-outside", "set": { "minHeight": 520, "justify": "center", "paddingTop": 96, "paddingBottom": 96, "paddingLeft": 48, "paddingRight": 24, "gap": 24 },
+        "c": [
+          { "r": "title", "t": "Learning beyond the classroom", "set": { "maxWidth": "38rem" } },
+          { "k": "row", "set": { "gap": 24 }, "c": [ { "r": "link", "t": "School trips →" }, { "r": "link", "t": "Clubs →" } ] }
+        ] } },
+    { "id": "hero-slider", "name": "Photos one after another", "pattern": "B11",
+      "tree": { "k": "section", "set": { "gap": 0 },
+        "c": [ { "k": "stack", "set": { "pager": true, "minHeight": 520, "width": "100%" }, "c": [
+          { "k": "stack", "tone": "photo", "photo": "school-front", "center": true, "set": { "justify": "center", "minHeight": 520, "padding": 48, "gap": 16 }, "c": [ { "r": "title", "t": "Welcome to Greenfield" }, { "r": "button", "t": "Discover more" } ] },
+          { "k": "stack", "tone": "photo", "photo": "sports", "center": true, "set": { "justify": "center", "minHeight": 520, "padding": 48, "gap": 16 }, "c": [ { "r": "title", "t": "Sport for every child" }, { "r": "button", "t": "Sport" } ] },
+          { "k": "stack", "tone": "photo", "photo": "music", "center": true, "set": { "justify": "center", "minHeight": 520, "padding": 48, "gap": 16 }, "c": [ { "r": "title", "t": "A school full of music" }, { "r": "button", "t": "The arts" } ] }
+        ] } ] } },
+    { "id": "hero-slider-split", "name": "Words and pictures, one after another", "pattern": "B11",
+      "tree": { "k": "section", "tone": "soft", "set": { "paddingTop": 64, "paddingBottom": 64, "paddingLeft": 24, "paddingRight": 24 },
+        "c": [ { "k": "stack", "set": { "pager": true, "width": "100%" }, "c": [
+          { "k": "row", "set": { "gap": 40 }, "c": [
+            { "k": "stack", "set": { "gap": 16, "width": "fill", "minWidth": "16rem" }, "c": [ { "r": "title", "t": "News: our new science block" }, { "r": "body", "t": "Four new laboratories open in September." }, { "r": "button2", "t": "Read more" } ] },
+            { "r": "image", "photo": "students-lab", "alt": "The new science laboratory", "set": { "width": "fill", "minWidth": "16rem" } } ] },
+          { "k": "row", "set": { "gap": 40 }, "c": [
+            { "k": "stack", "set": { "gap": 16, "width": "fill", "minWidth": "16rem" }, "c": [ { "r": "title", "t": "Choir wins the state festival" }, { "r": "body", "t": "Forty voices, one gold medal." }, { "r": "button2", "t": "Read more" } ] },
+            { "r": "image", "photo": "music", "alt": "The school choir on stage", "set": { "width": "fill", "minWidth": "16rem" } } ] }
+        ] } ] } },
+    { "id": "hero-quick-links", "name": "A photo with four quick links", "pattern": "B12",
+      "tree": { "k": "section", "set": { "gap": 0 },
+        "c": [
+          { "k": "stack", "tone": "photo", "photo": "school-front", "center": true, "set": { "minHeight": 440, "justify": "center", "padding": 48, "gap": 16 }, "c": [
+            { "r": "title", "t": "Welcome to Greenfield Academy" },
+            { "r": "body", "t": "Everything you need, one click away." }
+          ] },
+          { "k": "grid", "cols": 4, "min": "12rem", "set": { "gap": 0 }, "c": [
+            { "k": "card", "tone": "strong", "set": { "padding": 24, "gap": 8 }, "c": [ { "r": "icon", "icon": "GraduationCap" }, { "r": "heading", "t": "Admissions" } ] },
+            { "k": "card", "tone": "soft", "set": { "padding": 24, "gap": 8 }, "c": [ { "r": "icon", "icon": "CalendarDays" }, { "r": "heading", "t": "Term dates" } ] },
+            { "k": "card", "tone": "strong", "set": { "padding": 24, "gap": 8 }, "c": [ { "r": "icon", "icon": "Newspaper" }, { "r": "heading", "t": "News" } ] },
+            { "k": "card", "tone": "soft", "set": { "padding": 24, "gap": 8 }, "c": [ { "r": "icon", "icon": "Phone" }, { "r": "heading", "t": "Contact" } ] }
+          ] }
+        ] } },
+    { "id": "hero-quick-links-six", "name": "Centred words and six quick links", "pattern": "B12",
+      "tree": { "k": "section", "tone": "soft", "center": true, "set": { "paddingTop": 96, "paddingBottom": 80, "paddingLeft": 24, "paddingRight": 24, "gap": 32 },
+        "c": [
+          { "r": "title", "t": "Hello, and welcome", "set": { "maxWidth": "36rem" } },
+          { "k": "grid", "cols": 3, "min": "11rem", "set": { "gap": 16, "maxWidth": "60rem" }, "c": [
+            { "k": "card", "tone": "plain", "center": true, "set": { "padding": 24, "gap": 8 }, "c": [ { "r": "icon", "icon": "GraduationCap" }, { "r": "heading", "t": "Admissions" } ] },
+            { "k": "card", "tone": "plain", "center": true, "set": { "padding": 24, "gap": 8 }, "c": [ { "r": "icon", "icon": "CalendarDays" }, { "r": "heading", "t": "Term dates" } ] },
+            { "k": "card", "tone": "plain", "center": true, "set": { "padding": 24, "gap": 8 }, "c": [ { "r": "icon", "icon": "Wallet" }, { "r": "heading", "t": "Fees" } ] },
+            { "k": "card", "tone": "plain", "center": true, "set": { "padding": 24, "gap": 8 }, "c": [ { "r": "icon", "icon": "Utensils" }, { "r": "heading", "t": "Lunch menu" } ] },
+            { "k": "card", "tone": "plain", "center": true, "set": { "padding": 24, "gap": 8 }, "c": [ { "r": "icon", "icon": "Shirt" }, { "r": "heading", "t": "Uniform" } ] },
+            { "k": "card", "tone": "plain", "center": true, "set": { "padding": 24, "gap": 8 }, "c": [ { "r": "icon", "icon": "Phone" }, { "r": "heading", "t": "Contact" } ] }
+          ] }
+        ] } },
+    { "id": "hero-quick-links-strong", "name": "On the school colour, three quick links", "pattern": "B12",
+      "tree": { "k": "section", "tone": "strong", "set": { "paddingTop": 96, "paddingBottom": 80, "paddingLeft": 24, "paddingRight": 24, "gap": 40 },
+        "c": [
+          { "k": "stack", "set": { "gap": 16, "maxWidth": "40rem" }, "c": [
+            { "r": "title", "t": "Everything parents need" },
+            { "r": "body", "t": "The things families look for most, right here." }
+          ] },
+          { "k": "grid", "cols": 3, "min": "14rem", "set": { "gap": 20 }, "c": [
+            { "k": "card", "tone": "plain", "set": { "padding": 28, "gap": 8 }, "c": [ { "r": "heading", "t": "Term dates" }, { "r": "small", "t": "Holidays and key days for the year." }, { "r": "link", "t": "See dates →" } ] },
+            { "k": "card", "tone": "plain", "set": { "padding": 28, "gap": 8 }, "c": [ { "r": "heading", "t": "Letters home" }, { "r": "small", "t": "Every letter we have sent this term." }, { "r": "link", "t": "Read letters →" } ] },
+            { "k": "card", "tone": "plain", "set": { "padding": 28, "gap": 8 }, "c": [ { "r": "heading", "t": "Pay fees" }, { "r": "small", "t": "Bank transfer, card or mobile money." }, { "r": "link", "t": "Pay now →" } ] }
+          ] }
+        ] } },
+    { "id": "hero-quick-links-side", "name": "Words beside four quick links", "pattern": "B12",
+      "tree": { "k": "section", "set": { "paddingTop": 96, "paddingBottom": 96, "paddingLeft": 24, "paddingRight": 24 },
+        "c": [ { "k": "row", "set": { "gap": 48 }, "c": [
+          { "k": "stack", "set": { "gap": 20, "width": "fill", "minWidth": "18rem" }, "c": [
+            { "r": "eyebrow", "t": "Welcome" },
+            { "r": "title", "t": "Find what you need" },
+            { "r": "body", "t": "Start here for admissions, dates, fees and how to reach us." }
+          ] },
+          { "k": "grid", "cols": 2, "min": "9rem", "set": { "gap": 16, "width": "fill", "minWidth": "18rem" }, "c": [
+            { "k": "card", "tone": "soft", "set": { "padding": 24, "gap": 8 }, "c": [ { "r": "icon", "icon": "GraduationCap" }, { "r": "heading", "t": "Admissions" } ] },
+            { "k": "card", "tone": "soft", "set": { "padding": 24, "gap": 8 }, "c": [ { "r": "icon", "icon": "CalendarDays" }, { "r": "heading", "t": "Dates" } ] },
+            { "k": "card", "tone": "soft", "set": { "padding": 24, "gap": 8 }, "c": [ { "r": "icon", "icon": "Wallet" }, { "r": "heading", "t": "Fees" } ] },
+            { "k": "card", "tone": "soft", "set": { "padding": 24, "gap": 8 }, "c": [ { "r": "icon", "icon": "MapPin" }, { "r": "heading", "t": "Find us" } ] }
+          ] }
+        ] } ] } },
+    { "id": "hero-welcome-head", "name": "A welcome from the head", "pattern": "C2",
+      "tree": { "k": "section", "set": { "paddingTop": 96, "paddingBottom": 96, "paddingLeft": 24, "paddingRight": 24 },
+        "c": [ { "k": "row", "set": { "gap": 48 }, "c": [
+          { "r": "image", "photo": "head-teacher", "alt": "Mrs Okafor, the head teacher, smiling in her office", "set": { "width": "40%", "minWidth": "14rem", "ratio": "4 / 5" } },
+          { "k": "stack", "set": { "gap": 20, "width": "fill", "minWidth": "18rem" }, "c": [
+            { "r": "eyebrow", "t": "A welcome from our head" },
+            { "r": "quote", "t": "“Every child who walks through our gate is known, valued and stretched to be the best version of themselves.”" },
+            { "r": "small", "t": "Mrs Ngozi Okafor, Head Teacher" },
+            { "r": "button2", "t": "Read the full welcome" }
+          ] }
+        ] } ] } },
+    { "id": "hero-announcement", "name": "An event, dated", "pattern": "B7",
+      "tree": { "k": "section", "tone": "soft", "set": { "paddingTop": 88, "paddingBottom": 88, "paddingLeft": 24, "paddingRight": 24, "gap": 16 },
+        "c": [
+          { "r": "eyebrow", "t": "Saturday 14 March · 10 am to 2 pm" },
+          { "r": "title", "t": "Open day", "set": { "fontSize": 80 } },
+          { "r": "body", "t": "Tour the school, meet our teachers and see the pupils at work.", "set": { "maxWidth": "36rem" } },
+          { "k": "row", "set": { "gap": 16 }, "c": [ { "r": "button", "t": "Book your place" }, { "r": "button2", "t": "Add to calendar" } ] }
+        ] } },
+    { "id": "hero-video", "name": "Words beside a video", "pattern": "B8", "needs": ["video"],
+      "tree": { "k": "section", "tone": "inverse", "set": { "paddingTop": 96, "paddingBottom": 96, "paddingLeft": 24, "paddingRight": 24 },
+        "c": [ { "k": "row", "set": { "gap": 48 }, "c": [
+          { "k": "stack", "set": { "gap": 20, "width": "fill", "minWidth": "18rem" }, "c": [
+            { "r": "title", "t": "Two minutes at Greenfield" },
+            { "r": "body", "t": "Our pupils show you round, in their own words." },
+            { "r": "button", "t": "Watch the film" }
+          ] },
+          { "r": "image", "photo": "video-still", "alt": "A still from the school film: pupils waving", "set": { "width": "fill", "minWidth": "18rem", "ratio": "16 / 9" } }
+        ] } ] } },
+    { "id": "hero-mosaic", "name": "Words above three pictures", "pattern": "A7",
+      "tree": { "k": "section", "set": { "paddingTop": 96, "paddingBottom": 96, "paddingLeft": 24, "paddingRight": 24, "gap": 40 },
+        "c": [
+          { "k": "row", "set": { "justify": "between", "gap": 24, "align": "end" }, "c": [
+            { "r": "title", "t": "Life at Greenfield", "set": { "width": "auto", "maxWidth": "32rem" } },
+            { "r": "button2", "t": "See the gallery" }
+          ] },
+          { "k": "grid", "cols": 3, "min": "12rem", "set": { "gap": 16 }, "c": [
+            { "r": "image", "photo": "classroom", "alt": "Pupils working in a classroom", "set": { "ratio": "4 / 5" } },
+            { "r": "image", "photo": "sports", "alt": "Pupils on the sports field", "set": { "ratio": "4 / 5" } },
+            { "r": "image", "photo": "art", "alt": "A pupil painting", "set": { "ratio": "4 / 5" } }
+          ] }
+        ] } },
+    { "id": "hero-title-beside-words", "name": "A huge title beside a few words", "pattern": "B8",
+      "tree": { "k": "section", "tone": "strong", "set": { "paddingTop": 120, "paddingBottom": 96, "paddingLeft": 24, "paddingRight": 24 },
+        "c": [ { "k": "row", "set": { "gap": 48, "align": "end" }, "c": [
+          { "r": "title", "t": "Hello.", "set": { "fontSize": 120, "width": "auto" } },
+          { "k": "stack", "set": { "gap": 16, "width": "fill", "minWidth": "16rem", "maxWidth": "28rem" }, "c": [
+            { "r": "body", "t": "We are Greenfield Academy: a friendly school for curious children in Ikeja, Lagos." },
+            { "r": "button", "t": "Say hello" }
+          ] }
+        ] } ] } }
+  ]
+}

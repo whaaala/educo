@@ -1,0 +1,6 @@
+{
+  "$comment": "Blank: an empty section to build in, with room to drop blocks into. Trees: lib/section-library.ts SectionNode.",
+  "sections": [
+    { "id": "blank", "name": "Empty section", "tree": { "k": "section", "set": { "paddingTop": 64, "paddingBottom": 64, "paddingLeft": 24, "paddingRight": 24 }, "c": [] } }
+  ]
+}

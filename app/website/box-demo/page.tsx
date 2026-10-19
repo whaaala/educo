@@ -24,9 +24,10 @@ import {
   resolveResponsive, updateBoxResponsive, clearOverride, hasOverride,
   gridColumns, setColumnFraction, pinBlockedBy, fixedBlockedBy, blockedByLabel, pinScopeWords, isFloating,
   isSectionContentIn, sectionPlaceIn, insertSlot, pageEnd, addAnnouncementBar, defaultWhere, addInsideParent, placeSharing, retrackGridAt, type InsertWhere, isContainer, outerSpaceDefaults, spanAt, setSpan, lineUpWithGrid, linesAt, setLinesAt, fullWidthAt, setFreeInset, fitStepAt, fillsRows, fillHostOf,
-  gridAutoFit, parentFlowOf, canWrapWords, canOverlapUp,
+  gridAutoFit, parentFlowOf, canWrapWords, canOverlapUp, regionSpan,
 } from "@/lib/box-model";
 import { blockForKind } from "@/lib/box-presets";
+import { insertSection } from "@/lib/section-library";
 import {
   type BoxSite, freshSite, siteFonts, setSiteFonts, SAVED_SITE_FONTS, coerceSite, normalizeSite, setPageRoot, addPage, deletePage, renamePage, setHomePage, duplicatePage, emptyPageRoot, setSiteTheme, setPageGrid, movePage, hasSharedRegion, setRegionShown,
 } from "@/lib/box-site";
@@ -195,6 +196,7 @@ export default function BoxDemoPage() {
   }, [pageMenu]);
   const [confirmDeletePage, setConfirmDeletePage] = useState(false); // delete-page confirmation modal
   const [confirmReset, setConfirmReset] = useState(false); // start-over confirmation modal (D3-16)
+  const [pendingSection, setPendingSection] = useState<BoxNode | null>(null); // LE-15: a ready-made header / footer waiting for "Replace on every page?"
   const [pageCheckOpen, setPageCheckOpen] = useState(false); // the Page check (semantics C1)
   const [inspectorOpen, setInspectorOpen] = useState(true); // right Inspector panel collapsed?
   /**
@@ -960,6 +962,21 @@ export default function BoxDemoPage() {
     revealBox(node.id);
   };
 
+  /**
+   * LE-15 · A READY-MADE SECTION goes in as a whole band after the band you are on, or at the end of the page (`insertSection`),
+   * in ONE undo step. A header or footer replaces the site's own on every page — so when there is one, it asks first.
+   */
+  const placeSection = (section: BoxNode) => {
+    commitWith((cur) => insertSection(cur, selected?.id ?? null, section));
+    revealBox(section.id);
+  };
+  const addReadySection = (section: BoxNode) => {
+    const which = section.tag === "header" || section.tag === "footer" ? section.tag : null;
+    const [s, e] = which ? regionSpan(root, which) : [0, 0];
+    if (which && (e > s || hasSharedRegion(site, which))) setPendingSection(section);
+    else placeSection(section);
+  };
+
   // Select a box and scroll it into view AFTER the tree re-renders (so a just-added block is never hidden —
   // e.g. behind a floating sibling on the overlay layer). The reveal id is consumed by the effect below.
   const revealBox = (id: string) => { pendingReveal.current = id; autoSelectedId.current = id; setSelectedIds([id]); };
@@ -1509,7 +1526,7 @@ export default function BoxDemoPage() {
               <MenuItem Icon={Settings2} label="Page grid…" onClick={() => { toggleGuides({ on: true }); setGridPanel(true); setCanvasMenu(null); }} />
             </PortalMenu>
           )}
-          <BlocksPanel theme={renderTheme} onPick={insertBlock} docked={wideScreen} onOpenChange={setBlocksOpen} sheet={screenDevice !== null}
+          <BlocksPanel theme={renderTheme} onPick={insertBlock} onSection={addReadySection} docked={wideScreen} onOpenChange={setBlocksOpen} sheet={screenDevice !== null}
             where={whereOptions.length ? { value: whereFor(selected?.id ?? null), options: whereOptions, onChange: (w) => setWhereChoice({ for: selected?.id ?? null, where: w }) } : undefined}
             layers={<LayersPanel root={root} selectedIds={selectedIds} breakpoint={bp} onChange={commit}
               onSelect={(id, add) => { selectByUser(add ? (selectedIds.includes(id) ? selectedIds.filter((x) => x !== id) : [...selectedIds, id]) : [id]); document.querySelector(`[data-box-id="${id}"]`)?.scrollIntoView({ block: "nearest", inline: "nearest" }); }} />} />
@@ -1571,6 +1588,14 @@ export default function BoxDemoPage() {
         title="Start the whole site over?"
         confirmButtonText="Start over"
         warningMessage="Every page of this site is replaced by one starter page. You can Undo (Ctrl+Z) right after."
+      />
+      <DeleteConfirmationModal
+        isOpen={!!pendingSection}
+        onClose={() => setPendingSection(null)}
+        onConfirm={() => { if (pendingSection) placeSection(pendingSection); setPendingSection(null); }}
+        title={INSPECTOR.sections.replaceTitle.replace("{which}", pendingSection?.tag ?? "")}
+        confirmButtonText={INSPECTOR.sections.replaceButton}
+        warningMessage={INSPECTOR.sections.replaceWarning.replace("{which}", pendingSection?.tag ?? "")}
       />
     </div>
   );
