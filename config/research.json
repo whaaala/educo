@@ -1,0 +1,874 @@
+{
+  "_comment": "The techniques the CodePen research recognises in a pen's code (scripts/research/cp-how.js names them, cp-tag.js judges saturation on them). [name, pattern, flags]. One list, RULE CFG — LE15-2.",
+  "techniques": [
+    [
+      "position: sticky",
+      "position:\\s*sticky"
+    ],
+    [
+      "position: fixed",
+      "position:\\s*fixed"
+    ],
+    [
+      "scroll-driven animation (animation-timeline)",
+      "animation-timeline"
+    ],
+    [
+      "view() timeline",
+      "view\\(\\s*[^)]*\\)|view-timeline"
+    ],
+    [
+      "scroll() timeline",
+      "scroll\\(\\s*[^)]*\\)|scroll-timeline"
+    ],
+    [
+      "animation-range",
+      "animation-range"
+    ],
+    [
+      "scroll-state()",
+      "scroll-state"
+    ],
+    [
+      "scroll-snap",
+      "scroll-snap"
+    ],
+    [
+      "view transitions",
+      "view-transition|startViewTransition"
+    ],
+    [
+      "@starting-style",
+      "@starting-style"
+    ],
+    [
+      "transition-behavior: allow-discrete",
+      "allow-discrete"
+    ],
+    [
+      "@keyframes",
+      "@keyframes"
+    ],
+    [
+      "transition",
+      "transition\\s*:"
+    ],
+    [
+      "linear() easing",
+      "linear\\("
+    ],
+    [
+      ":hover",
+      ":hover"
+    ],
+    [
+      ":focus-visible",
+      ":focus-visible"
+    ],
+    [
+      ":has()",
+      ":has\\("
+    ],
+    [
+      "(hover: hover) gate",
+      "hover:\\s*hover"
+    ],
+    [
+      "prefers-reduced-motion",
+      "prefers-reduced-motion"
+    ],
+    [
+      "clip-path",
+      "clip-path"
+    ],
+    [
+      "shape()",
+      "shape\\("
+    ],
+    [
+      "mask",
+      "mask(-image)?\\s*:"
+    ],
+    [
+      "backdrop-filter",
+      "backdrop-filter"
+    ],
+    [
+      "mix-blend-mode",
+      "mix-blend-mode"
+    ],
+    [
+      "CSS trigonometry",
+      "\\b(sin|cos|tan)\\("
+    ],
+    [
+      "3D (perspective / preserve-3d)",
+      "perspective|preserve-3d"
+    ],
+    [
+      "custom properties driven by JS",
+      "setProperty\\(\\s*['\"]--"
+    ],
+    [
+      "container queries",
+      "@container"
+    ],
+    [
+      "anchor positioning",
+      "anchor-name|position-anchor"
+    ],
+    [
+      "popover",
+      "popover"
+    ],
+    [
+      "<dialog>",
+      "<dialog|showModal\\("
+    ],
+    [
+      "<details>",
+      "<details"
+    ],
+    [
+      "inline SVG",
+      "<svg"
+    ],
+    [
+      "GSAP",
+      "gsap|TweenMax|TimelineMax"
+    ],
+    [
+      "ScrollTrigger",
+      "ScrollTrigger"
+    ],
+    [
+      "Lenis / smooth scroll",
+      "Lenis|locomotive",
+      "i"
+    ],
+    [
+      "three.js / WebGL",
+      "THREE\\.|WebGLRenderer|getContext\\(\\s*['\"]webgl"
+    ],
+    [
+      "canvas 2D",
+      "getContext\\(\\s*['\"]2d"
+    ],
+    [
+      "IntersectionObserver",
+      "IntersectionObserver"
+    ],
+    [
+      "scroll listener",
+      "addEventListener\\(\\s*['\"]scroll"
+    ],
+    [
+      "pointer / mouse tracking",
+      "addEventListener\\(\\s*['\"](mousemove|pointermove)"
+    ],
+    [
+      "requestAnimationFrame",
+      "requestAnimationFrame"
+    ],
+    [
+      "Web Animations API (.animate)",
+      "\\.animate\\(\\s*[\\[{]"
+    ],
+    [
+      "anime.js",
+      "anime\\("
+    ],
+    [
+      "Motion / Framer",
+      "framer-motion|motion\\.dev|from ['\"]motion"
+    ],
+    [
+      "CSS grid",
+      "display:\\s*(inline-)?grid"
+    ],
+    [
+      "auto-fit / auto-fill grid",
+      "repeat\\(\\s*auto-(fit|fill)"
+    ],
+    [
+      "grid spans (bento)",
+      "grid-(column|row|area)\\s*:[^;]*span"
+    ],
+    [
+      "named grid areas",
+      "grid-template-areas"
+    ],
+    [
+      "CSS masonry (grid-lanes / masonry)",
+      "masonry|grid-lanes"
+    ],
+    [
+      "multi-column masonry (columns)",
+      "column-count|(^|[\\s;{])columns\\s*:"
+    ],
+    [
+      "flex-wrap",
+      "flex-wrap:\\s*wrap|flex-flow:[^;]*wrap"
+    ],
+    [
+      "aspect-ratio",
+      "aspect-ratio"
+    ],
+    [
+      "object-fit",
+      "object-fit"
+    ],
+    [
+      "srcset / sizes",
+      "srcset"
+    ],
+    [
+      "lazy loading",
+      "loading=[\"']?lazy"
+    ],
+    [
+      "<figure> / <figcaption>",
+      "<figcaption"
+    ],
+    [
+      "CSS-only state (:checked / :target)",
+      ":checked|:target"
+    ],
+    [
+      "lightbox library",
+      "lightbox|fancybox|photoswipe|glightbox|lightgallery",
+      "i"
+    ],
+    [
+      "filter / sort library",
+      "isotope|mixitup|shuffle\\.js|data-filter|data-category",
+      "i"
+    ],
+    [
+      "carousel library",
+      "swiper|slick|splide|flickity|glide\\.js|embla",
+      "i"
+    ],
+    [
+      "fullscreen API",
+      "requestFullscreen"
+    ],
+    [
+      "arrow-key navigation",
+      "ArrowLeft|ArrowRight"
+    ],
+    [
+      "touch / swipe",
+      "touchstart|touchmove"
+    ]
+  ],
+  "sectionKinds": {
+    "_comment": "LE-15: the words that name a band's KIND, read in its class / id and its headings (scripts/research/section-kind.js). Lower case; a word matches at a word or class-name boundary. en · fr · es · de · pt. The thresholds below are the counts the structural rules use. utilityPrefixes: class names that are CSS utilities or a tool's own (Tailwind, Framer's framer-…, styled-components' sc-…), never a section's name (LE15-9).",
+    "words": {
+      "header": [
+        "header",
+        "navbar",
+        "nav-bar",
+        "topbar",
+        "top-bar",
+        "masthead",
+        "site-header",
+        "menu-bar",
+        "en-tete",
+        "cabecera",
+        "kopfzeile"
+      ],
+      "hero": [
+        "hero",
+        "banner",
+        "masthead-hero",
+        "jumbotron",
+        "intro",
+        "splash",
+        "landing",
+        "accueil",
+        "portada",
+        "bienvenue",
+        "bienvenido",
+        "willkommen"
+      ],
+      "features": [
+        "features",
+        "feature",
+        "services",
+        "benefits",
+        "why-us",
+        "what-we-do",
+        "capabilities",
+        "offerings",
+        "avantages",
+        "fonctionnalites",
+        "servicios",
+        "caracteristicas",
+        "ventajas",
+        "leistungen",
+        "vorteile",
+        "funcionalidades",
+        "beneficios"
+      ],
+      "media": [
+        "split",
+        "media",
+        "image-text",
+        "text-image",
+        "about",
+        "story",
+        "mission",
+        "a-propos",
+        "sobre",
+        "nosotros",
+        "uber-uns",
+        "quem-somos",
+        "who-we-are",
+        "our-story",
+        "qui-sommes-nous",
+        "quienes-somos"
+      ],
+      "gallery": [
+        "gallery",
+        "portfolio",
+        "work",
+        "projects",
+        "showcase",
+        "lookbook",
+        "galerie",
+        "galeria",
+        "projets",
+        "proyectos",
+        "trabajos",
+        "projekte"
+      ],
+      "logos": [
+        "logos",
+        "logo-strip",
+        "clients",
+        "partners",
+        "brands",
+        "trusted",
+        "sponsors",
+        "partenaires",
+        "clientes",
+        "socios",
+        "marcas",
+        "kunden",
+        "parceiros"
+      ],
+      "stats": [
+        "stats",
+        "statistics",
+        "numbers",
+        "counters",
+        "metrics",
+        "facts",
+        "chiffres",
+        "cifras",
+        "numeros",
+        "estadisticas",
+        "zahlen"
+      ],
+      "testimonials": [
+        "testimonials",
+        "testimonial",
+        "reviews",
+        "review",
+        "quotes",
+        "what-people-say",
+        "temoignages",
+        "avis",
+        "testimonios",
+        "opiniones",
+        "resenas",
+        "bewertungen",
+        "depoimentos"
+      ],
+      "pricing": [
+        "pricing",
+        "prices",
+        "plans",
+        "packages",
+        "tarifs",
+        "prix",
+        "precios",
+        "planes",
+        "tarifas",
+        "preise",
+        "precos"
+      ],
+      "faq": [
+        "faq",
+        "faqs",
+        "questions",
+        "frequently-asked",
+        "accordion",
+        "questions-frequentes",
+        "preguntas",
+        "preguntas-frecuentes",
+        "fragen",
+        "perguntas"
+      ],
+      "team": [
+        "team",
+        "staff",
+        "people",
+        "our-team",
+        "faculty",
+        "leadership",
+        "equipe",
+        "equipo",
+        "personal",
+        "mannschaft",
+        "equipa",
+        "coaches",
+        "instructors",
+        "teachers",
+        "trainers",
+        "our-people",
+        "meet-the",
+        "profesores",
+        "entrenadores",
+        "enseignants",
+        "lehrer"
+      ],
+      "blog": [
+        "blog",
+        "news",
+        "articles",
+        "posts",
+        "journal",
+        "insights",
+        "stories",
+        "actualites",
+        "noticias",
+        "articulos",
+        "neuigkeiten",
+        "noticias-recentes"
+      ],
+      "events": [
+        "events",
+        "event",
+        "calendar",
+        "agenda",
+        "schedule",
+        "evenements",
+        "eventos",
+        "calendario",
+        "veranstaltungen",
+        "termine"
+      ],
+      "cta": [
+        "cta",
+        "call-to-action",
+        "get-started",
+        "signup",
+        "sign-up",
+        "join",
+        "apply",
+        "book",
+        "inscription",
+        "rejoindre",
+        "reservez",
+        "empezar",
+        "unete",
+        "reserva",
+        "jetzt"
+      ],
+      "contact": [
+        "contact",
+        "contact-us",
+        "get-in-touch",
+        "enquiry",
+        "inquiry",
+        "location",
+        "map",
+        "contactez",
+        "contacto",
+        "contactanos",
+        "kontakt",
+        "contato",
+        "find-us",
+        "visit-us",
+        "locations",
+        "where-to-find",
+        "nous-trouver",
+        "encuentranos",
+        "donde-estamos"
+      ],
+      "newsletter": [
+        "newsletter",
+        "subscribe",
+        "mailing-list",
+        "stay-updated",
+        "abonnez",
+        "suscribete",
+        "suscribirse",
+        "abonnieren",
+        "inscreva"
+      ],
+      "footer": [
+        "footer",
+        "site-footer",
+        "colophon",
+        "bottom-bar",
+        "pied-de-page",
+        "pie",
+        "pie-de-pagina",
+        "fusszeile",
+        "rodape"
+      ]
+    },
+    "thresholds": {
+      "headerMaxPx": 200,
+      "footerMinLinks": 8,
+      "pricesMin": 2,
+      "detailsMin": 2,
+      "logosMinSmallImages": 4,
+      "logosMaxWords": 60,
+      "statsMinNumbers": 3,
+      "statsMaxWords": 120,
+      "galleryMinImages": 6,
+      "galleryMaxWords": 80,
+      "ctaMaxPx": 500,
+      "ctaMaxWords": 50,
+      "featuresMinSmallHeadings": 3,
+      "mediaMinWords": 20,
+      "textMinWords": 40,
+      "contactMinFields": 3,
+      "newsletterMaxFields": 2,
+      "sectionMinPx": 150
+    },
+    "utilityPrefixes": [
+      "pointer-events",
+      "text",
+      "bg",
+      "border",
+      "flex",
+      "grid",
+      "gap",
+      "p",
+      "px",
+      "py",
+      "pt",
+      "pb",
+      "pl",
+      "pr",
+      "m",
+      "mx",
+      "my",
+      "mt",
+      "mb",
+      "ml",
+      "mr",
+      "w",
+      "h",
+      "min",
+      "max",
+      "z",
+      "top",
+      "left",
+      "right",
+      "bottom",
+      "inset",
+      "opacity",
+      "shadow",
+      "rounded",
+      "font",
+      "leading",
+      "tracking",
+      "items",
+      "justify",
+      "self",
+      "place",
+      "content",
+      "overflow",
+      "object",
+      "aspect",
+      "col",
+      "row",
+      "order",
+      "space",
+      "divide",
+      "ring",
+      "blur",
+      "backdrop",
+      "translate",
+      "scale",
+      "rotate",
+      "duration",
+      "ease",
+      "delay",
+      "cursor",
+      "select",
+      "sr",
+      "transition",
+      "animate",
+      "fill",
+      "stroke",
+      "outline",
+      "decoration",
+      "list",
+      "whitespace",
+      "break",
+      "align",
+      "from",
+      "via",
+      "to",
+      "drop",
+      "line",
+      "size",
+      "basis",
+      "grow",
+      "shrink",
+      "container",
+      "isolate",
+      "mix",
+      "filter",
+      "will",
+      "snap",
+      "scroll",
+      "touch",
+      "appearance",
+      "resize",
+      "table",
+      "float",
+      "clear",
+      "box",
+      "hidden",
+      "block",
+      "inline",
+      "absolute",
+      "relative",
+      "fixed",
+      "sticky",
+      "static",
+      "visible",
+      "invisible",
+      "truncate",
+      "uppercase",
+      "lowercase",
+      "capitalize",
+      "italic",
+      "underline",
+      "antialiased",
+      "framer",
+      "css",
+      "sc",
+      "jsx",
+      "svelte",
+      "astro",
+      "w-node",
+      "wf",
+      "is",
+      "has",
+      "js"
+    ]
+  },
+  "capture": {
+    "_comment": "The archive pass (section-kinds.js, the user 2026-10-19: store everything once). Resource types stored; a media file over mediaMaxMB is listed, not stored. jobs = sites read at once, headless.",
+    "types": [
+      "stylesheet",
+      "script",
+      "font",
+      "image",
+      "media",
+      "fetch",
+      "xhr",
+      "other"
+    ],
+    "mediaMaxMB": 15,
+    "jobs": 16,
+    "waitDesktopMs": 1200,
+    "waitPhoneMs": 900,
+    "loadTimeoutMs": 25000,
+    "loadWaitMs": 8000
+  },
+  "components": {
+    "_comment": "Each component kind the archive indexes on every page, and the CSS selector that finds it (CP-n starts from this index). Up to perPage instances of each are kept, their HTML capped at htmlMaxChars.",
+    "perPage": 6,
+    "htmlMaxChars": 30000,
+    "selectors": {
+      "navigation": "nav, [role=navigation]",
+      "menu-button": "button[aria-expanded][aria-controls], [class*=hamburger i], [class*=burger i], [class*=menu-toggle i]",
+      "mega-menu": "[class*=mega i][class*=menu i], [class*=dropdown i]",
+      "accordion": "details, [class*=accordion i], [class*=faq i] [aria-expanded]",
+      "tabs": "[role=tablist], [class*=tabs i]",
+      "carousel": "[aria-roledescription=carousel], .swiper, .slick-slider, .splide, .flickity-enabled, .embla, [class*=carousel i], [class*=slider i]",
+      "marquee": "marquee, [class*=marquee i], [class*=ticker i]",
+      "dialog": "dialog, [role=dialog], [aria-modal=true], [class*=modal i]",
+      "form": "form",
+      "search": "[role=search], input[type=search], form[action*=search i]",
+      "newsletter": "form input[type=email]",
+      "button": "button, a[class*=btn i], a[class*=button i], [role=button]",
+      "card": "[class*=card i], article",
+      "pricing": "[class*=pricing i], [class*=price i][class*=table i], [class*=plan i]",
+      "testimonial": "blockquote, [class*=testimonial i], [class*=review i]",
+      "stats": "[class*=stat i], [class*=counter i], [class*=metric i]",
+      "logo-strip": "[class*=logos i], [class*=clients i], [class*=partners i], [class*=brands i]",
+      "team": "[class*=team i], [class*=staff i], [class*=member i]",
+      "gallery": "[class*=gallery i], [class*=masonry i], [class*=lightbox i]",
+      "table": "table",
+      "video": "video, iframe[src*=youtube], iframe[src*=vimeo]",
+      "map": "iframe[src*=map], [class*=map i] canvas, .leaflet-container, .mapboxgl-map",
+      "breadcrumb": "[aria-label*=breadcrumb i], [class*=breadcrumb i]",
+      "pagination": "[aria-label*=pagination i], [class*=pagination i], [class*=pager i]",
+      "badge": "[class*=badge i], [class*=tag i], [class*=chip i], [class*=pill i]",
+      "alert-bar": "[role=alert], [class*=announcement i], [class*=banner i][class*=top i], [class*=notice i]",
+      "cookie-banner": "[class*=cookie i], [id*=cookie i], [class*=consent i]",
+      "back-to-top": "[class*=back-to-top i], [class*=scroll-top i], a[href='#top']",
+      "footer": "footer, [role=contentinfo]",
+      "social-links": "a[href*='instagram.com'], a[href*='twitter.com'], a[href*='x.com/'], a[href*='facebook.com'], a[href*='linkedin.com'], a[href*='youtube.com']",
+      "calendar": "[class*=calendar i], [class*=event i][class*=list i]",
+      "timeline": "[class*=timeline i], [class*=steps i], ol[class*=step i]",
+      "tooltip": "[role=tooltip], [class*=tooltip i]",
+      "progress": "progress, [role=progressbar], [class*=progress i]",
+      "switch": "[role=switch], input[type=checkbox][class*=toggle i]",
+      "cursor": "[class*=cursor i]",
+      "preloader": "[class*=preloader i], [class*=loader i], [class*=loading i]",
+      "sticky-cta": "[class*=sticky i][class*=cta i], [class*=floating i][class*=button i]"
+    }
+  },
+  "states": {
+    "_comment": "What every page DOES (scripts/research/page-states.js, LE-15 store once): the interactive things tried (one of each look-alike, at most maxTargets a page), the properties compared, the waits, the scroll steps.",
+    "maxTargets": 10,
+    "hoverWaitMs": 650,
+    "focusWaitMs": 150,
+    "clickWaitMs": 650,
+    "scrollSteps": 5,
+    "scrollWaitMs": 500,
+    "childrenCompared": 24,
+    "props": [
+      "color",
+      "background-color",
+      "background-image",
+      "border-color",
+      "border-radius",
+      "box-shadow",
+      "outline",
+      "outline-offset",
+      "text-decoration-line",
+      "transform",
+      "translate",
+      "scale",
+      "rotate",
+      "opacity",
+      "filter",
+      "backdrop-filter",
+      "clip-path",
+      "width",
+      "height",
+      "letter-spacing",
+      "font-weight",
+      "visibility",
+      "cursor"
+    ],
+    "hoverKinds": {
+      "button": "button, a[class*=btn i], a[class*=button i], [role=button]",
+      "card": "[class*=card i], article",
+      "nav-link": "nav a[href], header a[href]",
+      "menu-button": "button[aria-expanded], [class*=hamburger i], [class*=burger i], [class*=menu-toggle i]",
+      "tab": "[role=tab]",
+      "accordion": "summary, [class*=accordion i] button, [class*=faq i] button, [aria-expanded][aria-controls]",
+      "slider-arrow": "[class*=swiper-button i], [class*=slick-arrow i], [class*=carousel i] button, [class*=slider i] button, [aria-label*=next i], [aria-label*=previous i]",
+      "image-link": "a[href] img",
+      "footer-link": "footer a[href]",
+      "form-field": "input:not([type=hidden]), textarea, select",
+      "link": "a[href]"
+    },
+    "clickKinds": [
+      "menu-button",
+      "tab",
+      "accordion"
+    ],
+    "censusAttrs": [
+      "loading",
+      "srcset",
+      "sizes",
+      "decoding",
+      "fetchpriority",
+      "alt",
+      "aria-label",
+      "aria-current",
+      "aria-expanded",
+      "aria-controls",
+      "aria-hidden",
+      "aria-live",
+      "aria-modal",
+      "role",
+      "tabindex",
+      "popover",
+      "inert",
+      "data-aos",
+      "data-scroll",
+      "data-speed",
+      "data-w-id",
+      "data-framer-name"
+    ]
+  },
+  "transitions": {
+    "_comment": "Recorded live once per site from its home page (page-states.js transition): frames after the click, at these times.",
+    "frameTimesMs": [
+      0,
+      150,
+      300,
+      600,
+      1000,
+      1600
+    ],
+    "settleMs": 2500
+  },
+  "canvas": {
+    "_comment": "Each page's canvases (page-states.js canvases): the largest maxCanvases, frames frames frameGapMs apart; up to maxShaders shader sources, each capped.",
+    "maxCanvases": 3,
+    "frames": 3,
+    "frameGapMs": 300,
+    "maxShaders": 20,
+    "shaderMaxChars": 20000
+  },
+  "video": {
+    "_comment": "A short video per site (its home page): the intro, a scroll to the bottom, a page transition.",
+    "width": 800,
+    "height": 500,
+    "introWaitMs": 3000,
+    "scrollSteps": 8,
+    "scrollWaitMs": 400,
+    "afterClickMs": 2500
+  },
+  "libraries": [
+    "gsap",
+    "ScrollTrigger",
+    "Lenis",
+    "lenis",
+    "LocomotiveScroll",
+    "THREE",
+    "PIXI",
+    "BABYLON",
+    "p5",
+    "Matter",
+    "anime",
+    "barba",
+    "swup",
+    "Flip",
+    "Splitting",
+    "SplitType",
+    "lottie",
+    "bodymovin",
+    "Swiper",
+    "Splide",
+    "Flickity",
+    "Webflow",
+    "Framer",
+    "Rive",
+    "Spline",
+    "Alpine",
+    "htmx"
+  ],
+  "codepen": {
+    "_comment": "cp-tag.js listing (LE15-20): an empty page is a throttled load — rest gapRestMs × the gaps in a row before the next; only maxGaps in a row end a tag (CodePen's own \"No Pens for the tag\" ends it at once).",
+    "maxGaps": 5,
+    "gapRestMs": 20000
+  }
+}

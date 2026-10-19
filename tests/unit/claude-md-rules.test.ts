@@ -166,6 +166,8 @@ const RULES: [name: string, mustSay: RegExp][] = [
   ["The web design rules and framework (RULE D)", /RULE D — THE WEB DESIGN RULES AND FRAMEWORK ARE FOLLOWED/],
   ["…checked by measuring, never assumed", /Checked by measuring, never assumed/],
   ["The research is the reference (RULE R)", /RULE R — THE RESEARCH IS THE REFERENCE/],
+  ["…balance: research what the area needs, archive what later areas will (the user, 2026-10-19)", /BALANCE — RESEARCH WHAT THE AREA NEEDS, ARCHIVE WHAT LATER AREAS WILL[\s\S]*research-archive\.md/],
+  ["…stored first: every research starts from what is already stored (the user, 2026-10-19)", /STORED FIRST — EVERY RESEARCH STARTS FROM WHAT IS ALREADY STORED[\s\S]*research-stored-first\.test\.ts/],
   ["…the builder is general-purpose, schools first", /builder is GENERAL-PURPOSE/],
   ["…read the research before building any builder feature", /Before building any builder feature, read what the research says/],
   ["…captured once, extended forever", /Captured once, extended forever/],

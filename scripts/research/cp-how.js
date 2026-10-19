@@ -4,25 +4,10 @@
 //   node scripts/research/cp-how.js <rawDir>   → adds `how` to every pen already read, and writes <rawDir>/../<tag>.md
 const fs = require('fs'); const path = require('path');
 
-// The rules that DO something visible: what a technique is made of, verbatim (selector + the declarations that matter).
+// The rules that DO something visible or lay the pictures out (LE15-1): what a technique is made of, verbatim (selector + the declarations that matter).
 const MOTION = /\b(transition|animation[\w-]*|transform|translate|rotate|scale|opacity|clip-path|filter|backdrop-filter|mix-blend-mode|position|top|bottom|inset|offset[\w-]*|scroll-snap[\w-]*|scroll-timeline[\w-]*|view-timeline[\w-]*|view-transition-name|will-change|perspective|box-shadow|mask[\w-]*)\s*:/;
-const TECH = [
-  ['position: sticky', /position:\s*sticky/], ['position: fixed', /position:\s*fixed/],
-  ['scroll-driven animation (animation-timeline)', /animation-timeline/], ['view() timeline', /view\(\s*[^)]*\)|view-timeline/],
-  ['scroll() timeline', /scroll\(\s*[^)]*\)|scroll-timeline/], ['animation-range', /animation-range/],
-  ['scroll-snap', /scroll-snap/], ['view transitions', /view-transition|startViewTransition/],
-  ['@starting-style', /@starting-style/], ['@keyframes', /@keyframes/], ['transition', /transition\s*:/],
-  [':hover', /:hover/], [':focus-visible', /:focus-visible/], [':has()', /:has\(/],
-  ['(hover: hover) gate', /hover:\s*hover/], ['prefers-reduced-motion', /prefers-reduced-motion/],
-  ['clip-path', /clip-path/], ['mask', /mask(-image)?\s*:/], ['backdrop-filter', /backdrop-filter/], ['mix-blend-mode', /mix-blend-mode/],
-  ['3D (perspective / preserve-3d)', /perspective|preserve-3d/], ['custom properties driven by JS', /setProperty\(\s*['"]--/],
-  ['container queries', /@container/], ['popover', /popover/], ['<dialog>', /<dialog|showModal\(/],
-  ['GSAP', /gsap|TweenMax|TimelineMax/], ['ScrollTrigger', /ScrollTrigger/], ['Lenis / smooth scroll', /Lenis|locomotive/i],
-  ['three.js / WebGL', /THREE\.|WebGLRenderer|getContext\(\s*['"]webgl/], ['canvas 2D', /getContext\(\s*['"]2d/],
-  ['IntersectionObserver', /IntersectionObserver/], ['scroll listener', /addEventListener\(\s*['"]scroll/],
-  ['pointer / mouse tracking', /addEventListener\(\s*['"](mousemove|pointermove)/], ['requestAnimationFrame', /requestAnimationFrame/],
-  ['Web Animations API (.animate)', /\.animate\(\s*[\[{]/], ['anime.js', /anime\(/], ['Motion / Framer', /framer-motion|motion\.dev|from ['"]motion/],
-];
+// The techniques, ONE list for the whole research (RULE CFG, LE15-2): config/research.json → [name, pattern, flags].
+const TECH = require('../../config/research.json').techniques.map(([n, re, fl]) => [n, new RegExp(re, fl)]);
 const JS_CALLS = /(gsap\.(?:to|from|fromTo|timeline|registerPlugin)\([^;\n]{0,120}|ScrollTrigger\.create\([^;\n]{0,120}|scrollTrigger\s*:\s*\{[^}]{0,160}\}|new IntersectionObserver\([^;\n]{0,80}|addEventListener\(\s*['"](?:scroll|mousemove|pointermove|mouseenter|mouseleave|wheel)['"][^;\n]{0,60}|\.animate\(\s*[\[{][^;\n]{0,120}|startViewTransition\([^;\n]{0,60}|style\.setProperty\(\s*['"]--[^;\n]{0,80}|requestAnimationFrame\([^;\n]{0,40})/g;
 
 function cssRules(css) {

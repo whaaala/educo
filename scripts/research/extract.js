@@ -16,7 +16,7 @@ function measure() {
   const comp = (e) => {
     const t = e.tagName;
     if (/^H[1-3]$/.test(t)) return 'heading'; if (t === 'P') return 'text'; if (t === 'IMG' || t === 'PICTURE') return 'image'; if (t === 'VIDEO' || t === 'IFRAME') return 'video';
-    if (t === 'FORM') return 'form'; if (t === 'NAV') return 'nav'; if (t === 'BUTTON' || (t === 'A' && /btn|button|cta/i.test(e.className))) return 'button'; if (t === 'CANVAS') return 'canvas';
+    if (t === 'FORM') return 'form'; if (t === 'NAV') return 'nav'; if (t === 'BUTTON' || (t === 'A' && /btn|button|cta/i.test(e.getAttribute('class') || ''))) return 'button'; if (t === 'CANVAS') return 'canvas';
     return null;
   };
   const pos = (e) => { const p = getComputedStyle(e).position; return p === 'sticky' || p === 'fixed' ? `[${p}]` : p === 'absolute' ? '[float]' : ''; };
@@ -58,11 +58,46 @@ function measure() {
   const fx = {
     pinned: [...new Set(pinned)].slice(0, 8), scrollSnap: snap, horizontalScrollers: hScroll, animatedOrTransitioned: anim,
     canvas: document.querySelectorAll('canvas').length, video: document.querySelectorAll('video').length,
-    marquee: all.filter((e) => /marquee|ticker/i.test(e.className?.toString?.() || '')).length > 0,
+    marquee: all.filter((e) => /marquee|ticker/i.test(e.getAttribute('class') || '')).length > 0,
     smoothScroll: document.documentElement.classList.contains('lenis') || !!document.querySelector('[data-scroll-container]'),
     libs,
   };
-  return { fx, title: document.title, h: document.documentElement.scrollHeight, bands: flat.slice(0, 40).map((b, i) => `B${i + 1} ${Math.round(b.getBoundingClientRect().height)}px: ${node(b, 0)}`) };
+  // ── PER BAND: what it holds, how it looks and moves, and what it weighs — read by section-kind.js (LE-15) ──
+  const feat = (b) => {
+    const q = (s) => b.querySelectorAll(s); const el = [b, ...q('*')].slice(0, 1500); const text = (b.innerText || '').trim();
+    const css = el.map((e) => getComputedStyle(e)); const any = (fn) => css.filter(fn).length;
+    const imgs = [...q('img')].filter(vis); const r = b.getBoundingClientRect();
+    return {
+      tag: b.tagName.toLowerCase(), h: Math.round(r.height), top: Math.round(r.top + window.scrollY),
+      cls: [b, ...q('[class],[id]')].slice(0, 30).map((e) => `${e.id || ''} ${e.getAttribute('class') || ''}`).join(' ').slice(0, 600),
+      heads: [...q('h1,h2,h3')].slice(0, 3).map((e) => (e.innerText || '').trim().slice(0, 60)),
+      words: text ? text.split(/\s+/).length : 0, links: q('a[href]').length, nav: q('nav').length, h1: q('h1').length,
+      smallHeads: q('h3,h4,h5').length, img: imgs.length, smallImg: imgs.filter((i) => i.width < 220 && i.height < 120).length,
+      fields: q('input:not([type=hidden]):not([type=submit]):not([type=button]),select,textarea').length,
+      email: q('input[type=email],input[name*=mail i]').length, textarea: q('textarea').length,
+      // An accordion's items: <details>, or a disclosure button OUTSIDE the navigation (LE15-6: a menu's buttons made a page "faq").
+      details: q('details').length + [...q('[aria-expanded]')].filter((e) => !e.closest('nav, header, [role=navigation]') && !/menu|nav|burger/i.test(`${e.getAttribute('class') || ''} ${e.getAttribute('aria-label') || ''}`)).length,
+      quote: q('blockquote,q').length,
+      prices: (text.match(/[$€£₦¥₹]\s?\d|\d\s?[$€£₦]|\/\s?(mo|month|mois|mes|yr|year|an|año)\b/gi) || []).length,
+      numbers: [...q('*')].filter((e) => !e.children.length && /^[+~]?\d[\d.,\s]*\s?(%|\+|k|m|x|×)?\+?$/i.test((e.innerText || '').trim())).length,
+      buttons: q('button,a[class*=btn i],a[class*=button i]').length,
+      look: {
+        bgImage: any((c) => c.backgroundImage.includes('url(')), gradient: any((c) => c.backgroundImage.includes('gradient')),
+        overlay: any((c) => c.position === 'absolute' && c.pointerEvents === 'none' && +c.opacity < 1) + any((c) => c.mixBlendMode !== 'normal'),
+        blur: any((c) => c.backdropFilter && c.backdropFilter !== 'none'), shadow: any((c) => c.boxShadow !== 'none'),
+        clip: any((c) => c.clipPath && c.clipPath !== 'none'), radius: any((c) => parseFloat(c.borderRadius) > 0),
+      },
+      motion: {
+        animated: any((c) => c.animationName !== 'none' || (c.transitionDuration && c.transitionDuration !== '0s')),
+        held: any((c) => c.position === 'sticky' || c.position === 'fixed'), snap: any((c) => c.scrollSnapType !== 'none'),
+        sideways: el.filter((e) => e.scrollWidth > e.clientWidth + 20 && e.clientWidth > 200 && /auto|scroll/.test(getComputedStyle(e).overflowX)).length,
+        video: q('video').length, canvas: q('canvas').length, marquee: q('[class*=marquee i],[class*=ticker i]').length,
+      },
+    };
+  };
+  return { fx, title: document.title, h: document.documentElement.scrollHeight, bands: flat.slice(0, 40).map((b, i) => `B${i + 1} ${Math.round(b.getBoundingClientRect().height)}px: ${node(b, 0)}`),
+    // The page's real SECTIONS (LE15-8), when section-kinds.js has put `deepen` (section-kind.js) on the page.
+    sections: window.__deepen ? window.__deepen(flat, { kids: (b) => kidsOf(unwrap(b)), height: (b) => b.getBoundingClientRect().height, stacked: (k) => lines(k).out.length > 1, vh: window.innerHeight, minPx: window.__sectionMinPx || 0 }).slice(0, 60).map((b) => ({ band: node(b, 0), feat: feat(b) })) : undefined };
 }
 
 async function one(browser, url) {

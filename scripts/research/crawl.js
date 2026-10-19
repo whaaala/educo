@@ -61,6 +61,15 @@ async function visit(page, url) {
   return r ? r.status() : 0;
 }
 
+/** A site's own host: where its home ended up, without www (LE15-18: a home that redirects to another host). */
+const siteHost = (finalUrl) => new URL(finalUrl).host.replace(/^www\./, '');
+/** A link whose first path segment is a language: followed when it is the site's; a home with none adopts the first (LE15-18). */
+function langStep(first, homeLang) {
+  if (!/^[a-z]{2}(-[a-z]{2})?$/i.test(first)) return { follow: true, lang: homeLang };
+  if (!homeLang) return { follow: true, lang: first.toLowerCase() };
+  return { follow: first.toLowerCase() === homeLang.toLowerCase(), lang: homeLang };
+}
+
 async function crawlSite(browser, site) {
   const home = new URL(site.url); const host = home.host.replace(/^www\./, '');
   const dir = path.join(STORE, host); fs.mkdirSync(dir, { recursive: true });
@@ -69,7 +78,8 @@ async function crawlSite(browser, site) {
   const win = await ctx.newPage();
   try {
   const queue = [home.href.split('#')[0]]; const done = new Set(); const perTemplate = {}; const perType = {}; const index = [];
-  const homeLang = (home.pathname.split('/').filter(Boolean)[0] || '').match(/^[a-z]{2}(-[a-z]{2})?$/i)?.[0] || '';
+  let homeLang = (home.pathname.split('/').filter(Boolean)[0] || '').match(/^[a-z]{2}(-[a-z]{2})?$/i)?.[0] || '';
+  let origin = host; // where the home ENDS UP after redirects is the site's own host (LE15-18)
   let docLang = null; // the home page's <html lang>; a page in another language is a translation, not a new page
   while (queue.length && index.length < MAX) {
     const url = queue.shift(); if (done.has(norm(url))) continue; done.add(norm(url));
@@ -84,6 +94,9 @@ async function crawlSite(browser, site) {
       try {
         await p.setViewportSize({ width: v.w, height: v.h });
         const status = await visit(p, url);
+        if (!index.length && v.n === 'D') { // the home: its links are judged against where it ENDED UP (LE15-18)
+          origin = siteHost(p.url()); const fl = langStep(new URL(p.url()).pathname.split('/').filter(Boolean)[0] || '', homeLang); homeLang = fl.lang;
+        }
         if (status >= 400) { out.push(`## ${v.n} — HTTP ${status}`); break; }
         if (v.n === 'D') {
           const lang = ((await p.evaluate(() => document.documentElement.lang || '')) || '').slice(0, 2).toLowerCase();
@@ -107,7 +120,7 @@ async function crawlSite(browser, site) {
             const pri = Array.from(document.querySelectorAll('header a[href], nav a[href], footer a[href], [role="navigation"] a[href]')).map((a) => clean(a.href));
             const rest = Array.from(document.querySelectorAll('a[href]')).map((a) => clean(a.href));
             return [...new Set([...pri, ...rest])].filter((h) => h && same(h));
-          }, { origin: host });
+          }, { origin });
         }
       } catch (e) { out.push(`## ${v.n} — FAILED ${e.message.split('\n')[0]}`); }
     }
@@ -122,7 +135,7 @@ async function crawlSite(browser, site) {
     for (const l of links) {
       if (done.has(norm(l)) || queue.some((q) => norm(q) === norm(l)) || SKIP.test(l) || /^(mailto|tel):/.test(l)) continue;
       const first = new URL(l).pathname.split('/').filter(Boolean)[0] || '';
-      if (/^[a-z]{2}(-[a-z]{2})?$/i.test(first) && first.toLowerCase() !== homeLang.toLowerCase()) continue; // other languages repeat the same pages
+      const ls = langStep(first, homeLang); homeLang = ls.lang; if (!ls.follow) continue; // other languages repeat the same pages
       queue.push(l);
     }
     await pause(1200); // a visitor's pace, not a burst
@@ -133,7 +146,8 @@ async function crawlSite(browser, site) {
   } finally { await ctx.close().catch(() => {}); } // the window closes however the site ends
 }
 
-(async () => {
+module.exports = { siteHost, langStep };
+if (require.main === module) (async () => {
   const rows = fs.readFileSync(path.join(__dirname, arg('harvest', 'harvest.tsv')), 'utf8').trim().split('\n').map((l) => { const [cat, sp, url, award] = l.split('\t'); return { cat, sp, url, award }; });
   // A SAMPLE, not everything: PER_CAT sites from each category, award winners first.
   const PER_CAT = +arg('percat', 3);
@@ -145,7 +159,9 @@ async function crawlSite(browser, site) {
     .filter((r) => process.argv.includes('--fresh') || !fs.existsSync(path.join(STORE, new URL(r.url).host.replace(/^www\./, ''), 'index.json'))) // resumable
     .slice(0, LIMIT);
   console.log(`${sites.length} sites to crawl, ${JOBS} at a time, up to ${MAX} pages each`);
-  const browser = await chromium.launch({ headless: !process.argv.includes('--headed') });
+  // Real Chrome, headless or not: the bundled headless shell is turned away by many sites (LE15-16: 47 % of sites gave only
+  // their home page headless, 25 % headed).
+  const browser = await chromium.launch({ headless: !process.argv.includes('--headed'), channel: 'chrome' });
   let i = 0;
   await Promise.all(Array.from({ length: Math.min(JOBS, sites.length) }, async () => {
     while (i < sites.length) { const s = sites[i++]; try { console.log(await crawlSite(browser, s)); } catch (e) { console.log(`${s.url}: ERR ${e.message.split('\n')[0]}`); } }

@@ -410,6 +410,25 @@ Run through this checklist BEFORE telling the user it's done:
   - **Captured once, extended forever.** A link the user shares is studied properly, expanded online, and STORED
     there; stored research is never redone, only extended. A crawl stores raw HTML so a later question is answered
     from the archive, not a re-crawl.
+  - **STORED FIRST — EVERY RESEARCH STARTS FROM WHAT IS ALREADY STORED (the user, 2026-10-19: "check all of the research
+    that we've done previously… before doing the research, and then we add research to that").** Before any new crawl,
+    search, agent or link is started, the session reads the index `docs/web-anatomy/README.md` and everything stored on the
+    subject — `docs/web-anatomy/`, `docs/LAYOUT_BENCHMARK.md` + the crawl `docs/layout-benchmark/` (4,250 pages), the raw
+    archive, `docs/web-anatomy/research-runs/`, the CodePen reads — and writes on the research-check line what it found
+    (`stored:` the files) and what is missing (`NOT stored:`). New research only fills the gap, and is stored beside it.
+    Measured, 2026-10-19: LE-15's research started a web search and a CodePen crawl before reading the Awwwards crawl.
+    **Guarded:** `tests/unit/research-stored-first.test.ts` fails on a started research-check that names no stored file.
+  - **BALANCE — RESEARCH WHAT THE AREA NEEDS, ARCHIVE WHAT LATER AREAS WILL (the user, 2026-10-19: "we shouldn't overkill
+    everything… we should get started… but I don't want us to do the research again… if there's other things we see that we
+    will need, put that together in an archive").** Research PROCESSES only what the current area needs and stops on measured
+    saturation; when it goes past that (studying for a later area, chasing a source that adds almost nothing new) the session
+    says so and recommends stopping. But while a source is open, anything a later area will need that is cheap to keep — raw
+    HTML, assets, code, screenshots, counts — is ARCHIVED as it is, not analysed, and listed in
+    `docs/web-anatomy/research-archive.md` (what · where · which area it serves · what is NOT yet captured), so that area
+    starts from the archive (STORED FIRST), never a new crawl. Measured, 2026-10-19: LE-15 ran a CodePen tag on to 329 pens with
+    4 new techniques in the last 120, and captured Wix groups only the component work needs, before the user asked "is this
+    overkill?". **Guarded:** `tests/unit/research-stored-first.test.ts` fails when the archive index is missing or lists an
+    entry with no area it serves.
   - **NOTHING IN A LINK IS LEFT OUT (the user, 2026-10-02).** A link the user gives is read COMPLETELY: every page of a
     listing (never "the first N"), every example on it, every link inside it and the links inside those that stay on the
     topic — each live site visited and measured, not just its thumbnail. Before a link is marked done, a completeness
