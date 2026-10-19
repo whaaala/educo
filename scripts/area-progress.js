@@ -29,7 +29,8 @@ function expand(from, to) {
 }
 
 function areaProgress(tree, area) {
-  const line = tree.split("\n").find((l) => l.startsWith(area + " — ") || l.startsWith(area + ": ") || l.startsWith(area + " ("));
+  const want = area.toLowerCase(); // LE15b-1: typed "website layout", the map says "Website layout"
+  const line = tree.split("\n").find((l) => [" — ", ": ", " ("].some((end) => l.toLowerCase().startsWith(want + end)));
   if (!line) throw new Error(`no AREA MAP line for "${area}"`);
   const essentials = [];
   const segs = line.split(" → ");
@@ -56,7 +57,8 @@ module.exports = { areaProgress, batchInfo };
 
 if (require.main === module) {
   const tree = readFileSync(join(__dirname, "..", "docs", "TASK_TREE.md"), "utf8").replace(/\r\n/g, "\n");
-  const p = areaProgress(tree, process.argv[2] ?? "Website layout");
+  let p;
+  try { p = areaProgress(tree, process.argv[2] ?? "Website layout"); } catch (e) { console.error(e.message); process.exit(1); }
   const open = p.essentials.filter((b) => !b.done);
   console.log(`${p.area} — essentials (Must + essential Should): ${p.left} of ${p.total} changes left = ${p.pctLeft}% left`);
   console.log(`  open: ${open.map((b) => `${b.id} (${b.changes})`).join(" · ") || "none"}`);

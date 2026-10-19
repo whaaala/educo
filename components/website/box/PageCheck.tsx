@@ -17,6 +17,7 @@ import type { RungName } from "@/lib/educo-ui/layout";
 import InPageSpinner from "@/components/shared/InPageSpinner";
 import { resolvePage, pageCheck, corrections, type SiteFonts } from "@/lib/semantics";
 import { familyOf } from "@/lib/educo-ui/fonts";
+import PAGE_CHECK_WORDS from "@/config/page-check.json";
 
 /** How many things need the user — for the toolbar badge. */
 export function pageCheckCount(root: BoxNode, fonts?: SiteFonts, pageIds?: ReadonlySet<string>): number {
@@ -139,6 +140,9 @@ export default function PageCheck({ root, fonts, pageIds, html, isOpen, onClose,
                 )}
                 {i.kind === "words-at-edge" && i.fix?.sideSpace !== undefined && onSideSpace && (
                   <Button size="sm" onClick={() => onSideSpace(i.fix!.sideSpace!)}>Add space at the sides</Button>
+                )}
+                {i.kind === "title-smaller" && i.fix?.fontSize && (
+                  <Button size="sm" onClick={() => onPatch(i.id, { fontSize: i.fix!.fontSize })}>{PAGE_CHECK_WORDS.titleSmallerFix}</Button>
                 )}
                 {i.kind === "font-letters" && i.fix?.font && (
                   <Button size="sm" onClick={() => onPatch(i.id, { fontFamily: i.fix!.font })}>Use {familyOf(i.fix.font)} for this block</Button>

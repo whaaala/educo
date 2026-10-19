@@ -86,7 +86,8 @@ function auditDoc(opts) {
   let broken = 0; const brEx = [];
   for (const e of Array.from(document.querySelectorAll('p, h1, h2, h3, h4, h5, h6, li, a, span')).filter(visible)) {
     for (const n of e.childNodes) {
-      if (n.nodeType !== 3) continue; const t = n.textContent; const re = /\S{4,}/g; let m;
+      // LE15b-10: a hyphen is a place a word may wrap ("inter-|house"), so each part between hyphens is a word of its own
+      if (n.nodeType !== 3) continue; const t = n.textContent; const re = /[^\s-‐]{4,}/g; let m;
       while ((m = re.exec(t))) { const r = document.createRange(); r.setStart(n, m.index); r.setEnd(n, m.index + m[0].length); const tops = new Set(Array.from(r.getClientRects()).map((q) => Math.round(q.top))); if (tops.size > 1) { broken++; if (brEx.length < 3) brEx.push(`"${m[0]}" in ${idOf(e.closest('[class*="bx-"]') || e).slice(-4)} ${Math.round(e.getBoundingClientRect().width)}px`); } }
     }
   }
@@ -117,7 +118,8 @@ function auditDoc(opts) {
   // "smaller than the body text" the moment one lead paragraph existed.
   const bodyPx = (() => { if (!body.length) return 16; const n = {}; for (const e of body) { const s = Math.round(px(getComputedStyle(e).fontSize)); n[s] = (n[s] || 0) + 1; } return +Object.entries(n).sort((a, b) => b[1] - a[1] || a[0] - b[0])[0][0]; })();
   const lvl = (h) => +h.tagName[1];
-  for (let i = 0; i < hs.length; i++) for (let j = 0; j < hs.length; j++) if (lvl(hs[i]) < lvl(hs[j]) && px(getComputedStyle(hs[i]).fontSize) + 0.5 < px(getComputedStyle(hs[j]).fontSize)) { err.push(`H26 an h${lvl(hs[i])} (${Math.round(px(getComputedStyle(hs[i]).fontSize))}px) is smaller than an h${lvl(hs[j])} (${Math.round(px(getComputedStyle(hs[j]).fontSize))}px)`); i = hs.length; break; }
+  // LE15b-11 (the user, 2026-10-19): a page's ORDER of headings is the person's, and the Page check offers the fix ("Make it the page title size") — a warning, not a fault of the builder
+  for (let i = 0; i < hs.length; i++) for (let j = 0; j < hs.length; j++) if (lvl(hs[i]) < lvl(hs[j]) && px(getComputedStyle(hs[i]).fontSize) + 0.5 < px(getComputedStyle(hs[j]).fontSize)) { warn.push(`H26 an h${lvl(hs[i])} (${Math.round(px(getComputedStyle(hs[i]).fontSize))}px) is smaller than an h${lvl(hs[j])} (${Math.round(px(getComputedStyle(hs[j]).fontSize))}px)`); i = hs.length; break; }
   // A heading is held against the body text AROUND it — the paragraphs of the nearest block that holds any — not against a
   // paragraph elsewhere on the page: a card's title (19px) beside its own 16px description is right, even when a lead
   // paragraph in a wide band reads 22px. Only a heading with no paragraphs anywhere near it falls back to the page's size.

@@ -119,10 +119,12 @@ type Anchor = { top: number; left: number; bottom: number; right: number };
 
 const WHERE_LABEL: Record<InsertWhere, string> = { before: "Before", after: "After", inside: "Inside", start: "Start", end: "End" };
 
-export default function BlocksPanel({ theme, onDragKind, onPick, onSection, globals, onRemoveGlobal, defaultOpen = false, docked = false, onOpenChange, sheet = false, where, layers }: {
+export default function BlocksPanel({ theme, onDragKind, onPick, onSection, onAddPage, globals, onRemoveGlobal, defaultOpen = false, docked = false, onOpenChange, sheet = false, where, layers }: {
   theme?: SiteTheme;
   /** LE-15: a ready-made section was chosen in the Sections tab — the page puts it in (`insertSection`). */
   onSection?: (section: BoxNode) => void;
+  /** LE15b-15: the Sections tab points a whole page to Add a page (its templates). */
+  onAddPage?: () => void;
   /** LE-15 PS-5 (2): the site's global sections, listed in the Sections tab. */
   globals?: GlobalTile[];
   onRemoveGlobal?: (id: string) => void;
@@ -344,7 +346,7 @@ export default function BlocksPanel({ theme, onDragKind, onPick, onSection, glob
             })}
           </div>
 
-          {tab === SECTIONS_TAB && theme && onSection ? <SectionsPanel theme={theme} q={q} globals={globals} onRemoveGlobal={onRemoveGlobal} onInsert={(s) => { onSection(s); if (sheet) setOpen(false); }} /> : <>
+          {tab === SECTIONS_TAB && theme && onSection ? <SectionsPanel theme={theme} q={q} globals={globals} onRemoveGlobal={onRemoveGlobal} onAddPage={onAddPage ? () => { onAddPage(); if (sheet) setOpen(false); } : undefined} onInsert={(s) => { onSection(s); if (sheet) setOpen(false); }} /> : <>
           {/* Tiles */}
           <div className="px-3 pb-4 pt-0.5 overflow-y-auto flex-1 space-y-4">
             {sections.map((group) => (

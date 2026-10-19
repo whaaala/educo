@@ -4,6 +4,8 @@ import SectionsPanel from "@/components/website/box/SectionsPanel";
 import { DEFAULT_THEME } from "@/lib/site-storage";
 import COPY from "@/config/section-copy.json";
 import FINISHES from "@/config/section-finishes.json";
+import SECTIONS from "@/config/sections.json";
+import INSPECTOR from "@/config/inspector.json";
 import type { BoxNode } from "@/lib/box-model";
 
 /** The Sections group (BATCH LE-15) — box-builder-sections.feature: categories, adding, wireframe / designed, finish, search. */
@@ -27,6 +29,20 @@ describe("SectionsPanel", () => {
     const names = tabs.map((t) => t.textContent);
     for (const label of ["Headers", "Hero / Welcome", "Footers", "Blank"]) expect(names.some((n) => n?.startsWith(label)), label).toBe(true);
     expect(tabs.find((t) => t.getAttribute("aria-selected") === "true")?.textContent).toMatch(/^Hero/);
+  });
+
+  // LE15b-15 (the user, 2026-10-19: "about us… could be a page on their own… should it not be known as a section")
+  it("a section is never mistaken for a page: the tab says so, offers Add a page, names its kinds as sections, under their groups", async () => {
+    const onAddPage = vi.fn();
+    render(<SectionsPanel theme={DEFAULT_THEME} q="" onInsert={vi.fn()} onAddPage={onAddPage} />);
+    const tabs = within(await screen.findByRole("tablist", { name: "Section categories" }, { timeout: 4000 })).getAllByRole("tab").map((t) => t.textContent ?? "");
+    expect(screen.getByText(INSPECTOR.sections.wholePage)).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: INSPECTOR.sections.wholePageButton }));
+    expect(onAddPage).toHaveBeenCalledTimes(1);
+    for (const c of SECTIONS.categories.filter((c) => tabs.some((t) => t.startsWith(c.label)) || c.batch === "LE-15b")) expect(tabs.some((t) => t.startsWith(c.label)), c.label).toBe(true);
+    // no kind is named as a page a site would have
+    for (const page of ["About", "Contact", "News", "Events", "Pricing / Fees", "Admissions steps", "FAQ"]) expect(SECTIONS.categories.map((c) => c.label), page).not.toContain(page);
+    for (const g of SECTIONS.groups.filter((g) => SECTIONS.categories.some((c) => c.group === g && tabs.some((t) => t.startsWith(c.label))))) expect(screen.getByText(g), g).toBeInTheDocument();
   });
 
   it("a tile says what it adds, and a click adds that section as a landmark", async () => {

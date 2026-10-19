@@ -8,7 +8,7 @@ const { chromium } = require('playwright');
 const { WIDTHS } = require('./screens.js'); void WIDTHS; // ponytail: colour does not change with width — one desktop page per tile
 const BASE = process.env.BASE || 'http://localhost:3100';
 const FINISHES = require('../../config/section-finishes.json');
-const IDS = Object.keys(FINISHES).filter((k) => !k.startsWith('$') && !['tones', 'scrim', 'wireframe'].includes(k));
+const IDS = Object.keys(FINISHES).filter((k) => k !== 'wireframe' && FINISHES[k] && FINISHES[k].label) /* LE15b-16: a finish is a key with a label — LE-15f's 'restyle' was taken for one */;
 const THEMES = ['Light', 'Dark', 'Midnight', 'Purple'];
 
 async function run(theme, slot) {

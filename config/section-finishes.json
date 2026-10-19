@@ -19,7 +19,7 @@
     "label": "Wireframe",
     "toneMap": { "soft": "grey", "strong": "grey", "inverse": "grey", "photo": "grey" },
     "roles": {
-      "eyebrow": { "size": 14, "weight": 600, "transform": "uppercase", "spacing": 1 },
+      "eyebrow": { "size": 16, "weight": 600, "transform": "uppercase", "spacing": 1 },
       "title": { "size": 44, "weight": 700, "lineHeight": 1.15 },
       "heading": { "size": 24, "weight": 700, "lineHeight": 1.25 },
       "body": { "size": 18, "weight": 400, "lineHeight": 1.6 },
@@ -38,12 +38,12 @@
     "label": "Serious",
     "toneMap": { "strong": "inverse", "soft": "plain" },
     "roles": {
-      "eyebrow": { "size": 14, "weight": 400, "transform": "uppercase", "spacing": 3 },
-      "title": { "size": 56, "weight": 300, "lineHeight": 1.1 },
-      "heading": { "size": 26, "weight": 300, "lineHeight": 1.25 },
-      "body": { "size": 17, "weight": 300, "lineHeight": 1.7 },
-      "small": { "size": 16, "weight": 300, "lineHeight": 1.6 },
-      "stat": { "size": 52, "weight": 300 },
+      "eyebrow": { "size": 16, "weight": 400, "transform": "uppercase", "spacing": 3 },
+      "title": { "size": 56, "weight": 400, "lineHeight": 1.1 },
+      "heading": { "size": 26, "weight": 400, "lineHeight": 1.25 },
+      "body": { "size": 17, "weight": 400, "lineHeight": 1.7 },
+      "small": { "size": 16, "weight": 400, "lineHeight": 1.6 },
+      "stat": { "size": 52, "weight": 400 },
       "logo": { "size": 18, "weight": 400, "transform": "uppercase", "spacing": 4 },
       "link": { "size": 16, "weight": 400, "transform": "uppercase", "spacing": 2 }
     },
@@ -57,7 +57,7 @@
     "label": "Minimalist",
     "toneMap": { "strong": "plain", "soft": "plain", "grey": "plain" },
     "roles": {
-      "eyebrow": { "size": 14, "weight": 500 },
+      "eyebrow": { "size": 16, "weight": 500 },
       "title": { "size": 44, "weight": 600, "lineHeight": 1.15, "spacing": -1 },
       "heading": { "size": 22, "weight": 600, "lineHeight": 1.3 },
       "body": { "size": 16, "weight": 400, "lineHeight": 1.6 },
@@ -76,7 +76,7 @@
     "label": "Plain",
     "toneMap": { "strong": "grey", "soft": "grey" },
     "roles": {
-      "eyebrow": { "size": 14, "weight": 600 },
+      "eyebrow": { "size": 16, "weight": 600 },
       "title": { "size": 36, "weight": 600, "lineHeight": 1.2 },
       "heading": { "size": 20, "weight": 600, "lineHeight": 1.3 },
       "body": { "size": 16, "weight": 400, "lineHeight": 1.55 },
@@ -96,7 +96,7 @@
     "toneMap": { "soft": "strong" },
     "roles": {
       "eyebrow": { "size": 16, "weight": 800, "transform": "uppercase", "spacing": 1 },
-      "title": { "size": 64, "weight": 800, "transform": "uppercase", "lineHeight": 1, "spacing": -1 },
+      "title": { "size": 56, "weight": 800, "transform": "uppercase", "lineHeight": 1, "spacing": -1 },
       "heading": { "size": 28, "weight": 800, "transform": "uppercase", "lineHeight": 1.15 },
       "body": { "size": 18, "weight": 500, "lineHeight": 1.55 },
       "small": { "size": 16, "weight": 500, "lineHeight": 1.5 },
@@ -114,7 +114,7 @@
     "label": "Calm",
     "toneMap": { "strong": "soft", "inverse": "soft", "grey": "soft" },
     "roles": {
-      "eyebrow": { "size": 14, "weight": 500, "spacing": 1 },
+      "eyebrow": { "size": 16, "weight": 500, "spacing": 1 },
       "title": { "size": 48, "weight": 400, "lineHeight": 1.15 },
       "heading": { "size": 24, "weight": 400, "lineHeight": 1.3 },
       "body": { "size": 18, "weight": 400, "lineHeight": 1.7 },
@@ -133,7 +133,7 @@
     "label": "Startup",
     "toneMap": { "soft": "grey" },
     "roles": {
-      "eyebrow": { "size": 14, "weight": 600 },
+      "eyebrow": { "size": 16, "weight": 600 },
       "title": { "size": 44, "weight": 700, "lineHeight": 1.15, "spacing": -1 },
       "heading": { "size": 22, "weight": 600, "lineHeight": 1.3 },
       "body": { "size": 18, "weight": 400, "lineHeight": 1.6 },

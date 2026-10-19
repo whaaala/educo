@@ -1,0 +1,174 @@
+{
+  "$comment": "About (C3 the about page; B8 split, A7 a row of pictures; the 16 Wix Studio About tiles, read 2026-10-19: split words | photo 6 · big-type columns 3 · words over a row of photos 2 · a card on a photo 2 · words then a wide photo 2 · numbered pictures 1). Trees: lib/section-library.ts SectionNode.",
+  "sections": [
+    { "id": "about-founders", "name": "A photo beside our story", "pattern": "B8",
+      "tree": { "k": "section", "set": { "paddingTop": 96, "paddingBottom": 96, "paddingLeft": 24, "paddingRight": 24 },
+        "c": [ { "k": "row", "set": { "gap": 48 }, "c": [
+          { "r": "image", "photo": "head-teacher", "alt": "Our head teacher in the school garden", "set": { "width": "fill", "minWidth": "18rem", "ratio": "4 / 5" } },
+          { "k": "stack", "set": { "gap": 20, "width": "fill", "minWidth": "18rem" }, "c": [
+            { "r": "title", "t": "How Greenfield began" },
+            { "r": "body", "t": "In 1987 two teachers opened a classroom for twelve children in a borrowed hall. Today we teach eight hundred pupils, and we still know every one of them by name." },
+            { "r": "divider" },
+            { "r": "link", "t": "Read our history", "to": "#history" }
+          ] }
+        ] } ] } },
+    { "id": "about-label-statement", "name": "A label beside one big statement", "pattern": "C3",
+      "tree": { "k": "section", "set": { "paddingTop": 112, "paddingBottom": 112, "paddingLeft": 24, "paddingRight": 24 },
+        "c": [ { "k": "row", "set": { "gap": 48, "align": "start" }, "c": [
+          { "k": "stack", "set": { "gap": 8, "width": "25%", "responsive": { "phone": { "width": "100%" } }, "minWidth": "12rem" }, "c": [
+            { "r": "eyebrow", "t": "Who we are" },
+            { "r": "small", "t": "Greenfield Academy" }
+          ] },
+          { "k": "stack", "set": { "width": "fill", "minWidth": "18rem" }, "c": [
+            { "r": "heading", "t": "We believe every child can do remarkable things when someone believes in them first, and we have built a school around that belief.", "set": { "fontSize": 32, "maxWidth": "44rem" } }
+          ] }
+        ] } ] } },
+    { "id": "about-centred-photos", "name": "Centred words over three photos", "pattern": "A7",
+      "tree": { "k": "section", "center": true, "set": { "paddingTop": 96, "paddingBottom": 96, "paddingLeft": 24, "paddingRight": 24, "gap": 40 },
+        "c": [
+          { "k": "stack", "center": true, "set": { "gap": 20 }, "c": [
+            { "r": "title", "t": "A place to learn, play and belong", "set": { "maxWidth": "40rem" } },
+            { "r": "body", "t": "Bright classrooms, a library full of books and a field big enough for every game.", "set": { "maxWidth": "36rem" } },
+            { "r": "button", "t": "Visit the school" }
+          ] },
+          { "k": "grid", "cols": 3, "min": "10rem", "set": { "gap": 24 }, "c": [
+            { "r": "image", "photo": "classroom", "alt": "A bright classroom", "set": { "ratio": "3 / 4" } },
+            { "r": "image", "photo": "library", "alt": "Pupils choosing books in the library", "set": { "ratio": "3 / 4" } },
+            { "r": "image", "photo": "playground", "alt": "Children playing in the playground", "set": { "ratio": "3 / 4" } }
+          ] }
+        ] } },
+    { "id": "about-words-left", "name": "Our story beside a photo", "pattern": "B8",
+      "tree": { "k": "section", "set": { "paddingTop": 96, "paddingBottom": 96, "paddingLeft": 24, "paddingRight": 24 },
+        "c": [ { "k": "row", "set": { "gap": 48 }, "c": [
+          { "k": "stack", "set": { "gap": 20, "width": "fill", "minWidth": "18rem" }, "c": [
+            { "r": "eyebrow", "t": "About us" },
+            { "r": "title", "t": "Small classes, big hearts" },
+            { "r": "body", "t": "With no more than eighteen pupils in a class, our teachers have time for every question, every worry and every success." },
+            { "r": "button2", "t": "Meet our teachers" }
+          ] },
+          { "r": "image", "photo": "teacher-class", "alt": "A teacher helping a pupil with her work", "set": { "width": "fill", "minWidth": "18rem" } }
+        ] } ] } },
+    { "id": "about-card-on-photo", "name": "A card of words on a full photo", "pattern": "B10",
+      "tree": { "k": "section", "tone": "photo", "photo": "school-front", "center": true, "set": { "minHeight": 520, "justify": "center", "paddingTop": 96, "paddingBottom": 96, "paddingLeft": 24, "paddingRight": 24 },
+        "c": [ { "k": "card", "tone": "plain", "center": true, "set": { "padding": 40, "gap": 16, "maxWidth": "36rem" }, "c": [
+          { "r": "title", "t": "Our mission" },
+          { "r": "body", "t": "To give every child the knowledge, the confidence and the kindness to make the world a better place." }
+        ] } ] } },
+    { "id": "about-band-photos", "name": "Words on a colour band, photos below", "pattern": "A7",
+      "tree": { "k": "section", "tone": "soft", "center": true, "set": { "paddingTop": 96, "paddingBottom": 96, "paddingLeft": 24, "paddingRight": 24, "gap": 40 },
+        "c": [
+          { "r": "title", "t": "Thirty-nine years of growing together", "set": { "maxWidth": "40rem" } },
+          { "r": "body", "t": "Generations of families have trusted us with their children. Many of our teachers were once our pupils.", "set": { "maxWidth": "36rem" } },
+          { "r": "button2", "t": "Our story" },
+          { "k": "grid", "cols": 3, "min": "10rem", "set": { "gap": 24 }, "c": [
+            { "r": "image", "photo": "graduation", "alt": "Students in gowns on graduation day", "set": { "ratio": "4 / 5" } },
+            { "r": "image", "photo": "pupils-outside", "alt": "Pupils walking across the school field", "set": { "ratio": "1 / 1" } },
+            { "r": "image", "photo": "family", "alt": "A family at the school gate", "set": { "ratio": "4 / 5" } }
+          ] }
+        ] } },
+    { "id": "about-story-band", "name": "Our story, in big words on the school colour", "pattern": "C3",
+      "tree": { "k": "section", "tone": "strong", "set": { "paddingTop": 112, "paddingBottom": 112, "paddingLeft": 24, "paddingRight": 24, "gap": 24 },
+        "c": [
+          { "r": "eyebrow", "t": "Our story" },
+          { "r": "heading", "t": "What started as one classroom is now a family of three schools, a nursery and a sixth form, and it is still the children who make it what it is.", "set": { "fontSize": 32, "maxWidth": "46rem" } }
+        ] } },
+    { "id": "about-numbered-pictures", "name": "A title, a few words and four numbered pictures", "pattern": "A7",
+      "tree": { "k": "section", "set": { "paddingTop": 96, "paddingBottom": 96, "paddingLeft": 24, "paddingRight": 24, "gap": 48 },
+        "c": [
+          { "k": "row", "set": { "gap": 48, "align": "start" }, "c": [
+            { "k": "stack", "set": { "width": "fill", "minWidth": "18rem" }, "c": [ { "r": "title", "t": "Our campus" } ] },
+            { "k": "stack", "set": { "gap": 16, "width": "fill", "minWidth": "18rem" }, "c": [
+              { "r": "body", "t": "Four buildings on twelve green acres, each built for the way children learn at that age." },
+              { "r": "link", "t": "Take the tour", "to": "#tour" }
+            ] }
+          ] },
+          { "k": "grid", "cols": 4, "min": "10rem", "set": { "gap": 24 }, "c": [
+            { "k": "stack", "set": { "gap": 12 }, "c": [ { "r": "image", "photo": "nursery", "alt": "The nursery", "set": { "ratio": "3 / 4" } }, { "r": "small", "t": "01 · The nursery" } ] },
+            { "k": "stack", "set": { "gap": 12 }, "c": [ { "r": "image", "photo": "classroom", "alt": "A primary classroom", "set": { "ratio": "3 / 4" } }, { "r": "small", "t": "02 · Primary" } ] },
+            { "k": "stack", "set": { "gap": 12 }, "c": [ { "r": "image", "photo": "students-lab", "alt": "The science labs", "set": { "ratio": "3 / 4" } }, { "r": "small", "t": "03 · The labs" } ] },
+            { "k": "stack", "set": { "gap": 12 }, "c": [ { "r": "image", "photo": "sports", "alt": "The sports track", "set": { "ratio": "3 / 4" } }, { "r": "small", "t": "04 · Sport" } ] }
+          ] }
+        ] } },
+    { "id": "about-statement-wide-photo", "name": "A statement, then a wide photo", "pattern": "C3",
+      "tree": { "k": "section", "tone": "grey", "set": { "paddingTop": 96, "paddingBottom": 96, "paddingLeft": 24, "paddingRight": 24, "gap": 40 },
+        "c": [
+          { "r": "eyebrow", "t": "Our values" },
+          { "r": "heading", "t": "Curiosity, kindness and courage: we ask our pupils for all three, and we try to show them every day.", "set": { "fontSize": 32, "maxWidth": "46rem" } },
+          { "r": "image", "photo": "pupils-reading", "alt": "Pupils reading together", "set": { "ratio": "21 / 9" } }
+        ] } },
+    { "id": "about-head-teacher", "name": "Meet the head", "pattern": "B8",
+      "tree": { "k": "section", "set": { "paddingTop": 96, "paddingBottom": 96, "paddingLeft": 24, "paddingRight": 24 },
+        "c": [ { "k": "row", "set": { "gap": 48 }, "c": [
+          { "r": "image", "photo": "head-teacher", "alt": "Mrs Adeyemi, our head teacher", "set": { "width": "fill", "minWidth": "18rem", "ratio": "1 / 1" } },
+          { "k": "stack", "set": { "gap": 20, "width": "fill", "minWidth": "18rem" }, "c": [
+            { "r": "title", "t": "A word from Mrs Adeyemi" },
+            { "r": "body", "t": "I have taught for twenty-five years, and I still love the moment a child understands something new. Come and see that moment happen here." },
+            { "r": "button2", "t": "Read her welcome" }
+          ] }
+        ] } ] } },
+    { "id": "about-small-photo-column", "name": "A small photo with words, beside a tall photo", "pattern": "B8",
+      "tree": { "k": "section", "set": { "paddingTop": 96, "paddingBottom": 96, "paddingLeft": 24, "paddingRight": 24 },
+        "c": [ { "k": "row", "set": { "gap": 48 }, "c": [
+          { "k": "stack", "center": true, "set": { "gap": 20, "width": "fill", "minWidth": "18rem" }, "c": [
+            { "r": "image", "photo": "uniform", "alt": "The school badge on a blazer", "set": { "ratio": "1 / 1", "maxWidth": "8rem" } },
+            { "r": "eyebrow", "t": "About us" },
+            { "r": "title", "t": "Proud of who we are" },
+            { "r": "body", "t": "Our badge carries an open book and a rising sun: learning, and a new day for every child." }
+          ] },
+          { "r": "image", "photo": "pupils-outside", "alt": "Pupils in uniform outside the main building", "set": { "width": "fill", "minWidth": "18rem", "ratio": "3 / 4" } }
+        ] } ] } },
+    { "id": "about-photo-card-left", "name": "A card at the left of a full photo", "pattern": "B10",
+      "tree": { "k": "section", "tone": "photo", "photo": "school-field", "set": { "minHeight": 520, "justify": "center", "paddingTop": 96, "paddingBottom": 96, "paddingLeft": 24, "paddingRight": 24 },
+        "c": [ { "k": "card", "tone": "plain", "set": { "padding": 40, "gap": 16, "maxWidth": "28rem" }, "c": [
+          { "r": "title", "t": "Room to grow" },
+          { "r": "body", "t": "Twelve acres of fields, gardens and trees, right in the middle of the city." },
+          { "r": "link", "t": "See the grounds", "to": "#grounds" }
+        ] } ] } },
+    { "id": "about-two-columns", "name": "A photo beside words in two columns", "pattern": "B8",
+      "tree": { "k": "section", "set": { "paddingTop": 96, "paddingBottom": 96, "paddingLeft": 24, "paddingRight": 24 },
+        "c": [ { "k": "row", "set": { "gap": 48 }, "c": [
+          { "r": "image", "photo": "library", "alt": "The school library", "set": { "width": "fill", "minWidth": "18rem" } },
+          { "k": "stack", "set": { "gap": 24, "width": "fill", "minWidth": "18rem" }, "c": [
+            { "r": "title", "t": "Teaching that looks ahead" },
+            { "k": "grid", "cols": 2, "min": "12rem", "set": { "gap": 24 }, "c": [
+              { "r": "body", "t": "We follow the national curriculum and add coding, a second language and music for every pupil." },
+              { "r": "body", "t": "Our sixth form prepares students for WAEC and for universities at home and abroad." }
+            ] },
+            { "r": "divider" },
+            { "r": "button", "t": "The curriculum" }
+          ] }
+        ] } ] } },
+    { "id": "about-split-strong", "name": "A photo beside words on the school colour", "pattern": "B8",
+      "tree": { "k": "section", "set": { "paddingTop": 0, "paddingBottom": 0, "paddingLeft": 0, "paddingRight": 0 },
+        "c": [ { "k": "row", "set": { "gap": 0, "align": "stretch" }, "c": [
+          { "r": "image", "photo": "music", "alt": "Pupils playing drums in the music room", "set": { "width": "fill", "minWidth": "18rem" } },
+          { "k": "stack", "tone": "strong", "set": { "gap": 20, "width": "fill", "minWidth": "18rem", "justify": "end", "paddingTop": 64, "paddingBottom": 64, "paddingLeft": 48, "paddingRight": 48 }, "c": [
+            { "r": "title", "t": "Every child has a talent" },
+            { "r": "body", "t": "Music, art, drama, sport or science: we help each pupil find theirs, and then we help them grow it." },
+            { "r": "button", "t": "Life at Greenfield" }
+          ] }
+        ] } ] } },
+    { "id": "about-three-columns", "name": "A big title and two columns of words", "pattern": "C3",
+      "tree": { "k": "section", "set": { "paddingTop": 96, "paddingBottom": 96, "paddingLeft": 24, "paddingRight": 24 },
+        "c": [ { "k": "grid", "cols": 3, "min": "10rem", "set": { "gap": 48 }, "c": [
+          { "r": "title", "t": "About us" },
+          { "k": "stack", "set": { "gap": 16 }, "c": [
+            { "r": "heading", "t": "A day school for ages 3 to 18" },
+            { "r": "body", "t": "Nursery, primary and secondary on one campus, so a child can grow up with the same friends and teachers." }
+          ] },
+          { "r": "body", "t": "We are an independent, non-religious school, open to every family, with bursaries for one pupil in five." }
+        ] } ] } },
+    { "id": "about-photo-then-words", "name": "A wide photo, then a title beside words", "pattern": "C3",
+      "tree": { "k": "section", "set": { "paddingTop": 96, "paddingBottom": 96, "paddingLeft": 24, "paddingRight": 24, "gap": 48 },
+        "c": [
+          { "r": "image", "photo": "school-front", "alt": "The front of the school", "set": { "ratio": "21 / 9" } },
+          { "k": "row", "set": { "gap": 48, "align": "start" }, "c": [
+            { "k": "stack", "set": { "width": "fill", "minWidth": "18rem" }, "c": [ { "r": "title", "t": "Built for learning" } ] },
+            { "k": "stack", "set": { "gap": 16, "width": "fill", "minWidth": "18rem" }, "c": [
+              { "r": "body", "t": "Our new building opened in 2024: forty classrooms full of daylight, two libraries and solar power for the whole campus." },
+              { "r": "body", "t": "Every room has fans, clean water nearby and space for children to work together." }
+            ] }
+          ] }
+        ] } }
+  ]
+}

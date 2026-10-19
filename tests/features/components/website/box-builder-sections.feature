@@ -19,6 +19,14 @@ Feature: Box Builder — ready-made sections, my sections, global sections and p
     And the first batch holds Headers 8 · Hero / Welcome 36 · Footers 19 · Blank 1
     And every tile is a live drawing of the real blocks, never a picture of them (RULE S)
 
+  # LE15b-15 (DECIDED BY THE USER 2026-10-19: "about us… could be a page on their own… should it not be known as a section")
+  Scenario: A section is never mistaken for a page
+    When I open the Sections tab
+    Then it says that sections are bands I add to the page I am on, and that a whole new page starts from Add a page
+    And its "Add a page" button opens the Add a page dialog, with its page templates
+    And the kinds that sound like pages are named as sections: Our story, Contact details, Latest news, Upcoming events, Fees table, How to apply, Questions & answers
+    And the kinds are grouped under their headings: Navigation, Opening, Story, Showing, People and trust, Action, School, Interactive
+
   Scenario: Wireframe or designed
     Given the Sections group is open on "Hero / Welcome"
     When I switch from "Wireframe" to "Designed"
@@ -131,6 +139,42 @@ Feature: Box Builder — ready-made sections, my sections, global sections and p
     Then every section is a block tree in config/sections/<category>.json
     And the finishes are in config/section-finishes.json and the words in config/section-copy.json
     And adding a section means adding it there, with no change to any code
+
+  # ── The second batch: About · Text · Features / Services · Spotlight / zig-zag · Stats · CTA / Banner (BATCH LE-15b) ──
+  # HEADED: scripts/uat/uat-le15b-headed.js — every layout of the six, wireframe and designed, every width of screens.js
+
+  Scenario: The story, trust and action sections are in the gallery
+    When I open the Sections group
+    Then it also holds About 16 · Text 8 · Features / Services 20 · Spotlight / zig-zag 17 · Stats 8 · CTA / Banner 17
+    And each of them is in the wireframe and designed, and in each of the seven finishes, visibly different (RULE T)
+    And each one, once added, is ordinary blocks I can change completely
+
+  Scenario Outline: Each kind reflows the way real sites do it
+    Given I added a designed "<category>" section with "<shape>"
+    When the page is previewed on a tablet and on a phone
+    Then on the tablet <tablet>
+    And on the phone <phone>
+    And nothing runs off the side and nothing overlaps, at every width of the screen list
+    Examples:
+      | category            | shape                        | tablet                                     | phone                                       |
+      | About               | words beside a picture       | the words and the picture share the line   | the words come first, then the picture      |
+      | Text                | one column of words          | the lines stay under 75 characters         | the lines stay under 75 characters          |
+      | Features / Services | three features across        | two go across                              | they stack, one under another               |
+      | Spotlight / zig-zag | rows that swap sides         | the rows keep their sides                  | every picture comes before its words        |
+      | Stats               | four numbers across          | two go across                              | two go across, two rows                     |
+      | CTA / Banner        | words beside a button        | the button stays beside the words          | the button goes under the words, full width |
+
+  Scenario: A zig-zag puts the picture first on a phone, whichever side it sits on a desktop
+    Given I added the Spotlight "Three rows that swap sides"
+    When the page is previewed on a phone
+    Then each row shows its picture, then its words
+    And on a desktop the pictures still alternate right, left, right
+    And the reading order of the words is the same on every screen (a screen reader hears the heading first)
+
+  Scenario: A section names the component it stands in for
+    Given a Stats section whose numbers would count up, or a CTA banner with a sign-up form
+    Then its tile says which component it waits for ("placeholder: counter", "placeholder: form")
+    And it is made of existing blocks until that component is built (RULE C)
 
   # ── Save a section to reuse (PS-5 (1)) ──────────────────────────────────────────────────────────────────────
 

@@ -2,6 +2,7 @@ import { describe, it, expect } from "vitest";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { createRequire } from "node:module";
+import { spawnSync } from "node:child_process";
 
 /**
  * RULE PROGRESS (the user, 2026-10-18): every reply that closes a piece of work says how much of its AREA is left, as a
@@ -43,5 +44,13 @@ describe("area progress — the percentage left is counted, never guessed", () =
     const after = areaProgress(closed, "Website layout");
     expect(OPEN.changes).toBeGreaterThan(0);
     expect(before.left - after.left).toBe(OPEN.changes);
+  });
+  // LE15b-1: "website layout" crashed with a stack trace — the name a person types is matched whatever its case
+  it("the area is found whatever case it is typed in, and an unknown one says so plainly", () => {
+    expect(areaProgress(TREE, "website layout").total).toBe(areaProgress(TREE, "Website layout").total);
+    const out = spawnSync(process.execPath, [resolve(process.cwd(), "scripts/area-progress.js"), "no such area"], { encoding: "utf8" });
+    expect(out.status).toBe(1);
+    expect(out.stderr).toContain('no AREA MAP line for "no such area"');
+    expect(out.stderr, "no stack trace").not.toContain("    at ");
   });
 });

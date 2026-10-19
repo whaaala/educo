@@ -164,6 +164,14 @@ describe("C1 — fixed for you, asked only for your words", () => {
     expect(issues).toEqual([expect.objectContaining({ id: "j", kind: "heading-jump", blocks: false, fix: { level: 2 } })]);
     expect(pageCheck(page(box({}, [heading("A"), heading("B"), box({ tag: "section" }, [heading("C"), box({ tag: "article" }, [heading("D")])])])))).toEqual([]);
   });
+  // LE15b-11 (the user, 2026-10-19: a warning with a one-click fix): a small heading put first becomes the page's h1
+  it("a main title smaller than a heading under it is a warning, with the biggest heading's size as its fix", () => {
+    const sized = (t: string, fontSize: number, id?: string) => heading(t, { fontSize, ...(id ? { id } : {}) });
+    const issues = pageCheck(page(box({}, [box({ tag: "section" }, [sized("Ready to join us?", 26, "h1")]), box({ tag: "section" }, [sized("Questions about fees?", 52)]), box({ tag: "section" }, [sized("Open day", 44)])])));
+    expect(issues).toEqual([expect.objectContaining({ id: "h1", kind: "title-smaller", blocks: false, fix: { fontSize: 52 } })]);
+    expect(issues[0].message).toBe((PC as unknown as { titleSmaller: string }).titleSmaller);
+    expect(pageCheck(page(box({}, [box({ tag: "section" }, [sized("Welcome", 56)]), box({ tag: "section" }, [sized("News", 44)])])))).toEqual([]);
+  });
 });
 
 import { renderPageHTML } from "@/lib/box-export";

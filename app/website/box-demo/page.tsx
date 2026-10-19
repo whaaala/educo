@@ -1629,7 +1629,7 @@ export default function BoxDemoPage() {
               <MenuItem Icon={Settings2} label="Page grid…" onClick={() => { toggleGuides({ on: true }); setGridPanel(true); setCanvasMenu(null); }} />
             </PortalMenu>
           )}
-          <BlocksPanel theme={renderTheme} onPick={insertBlock} onSection={addReadySection}
+          <BlocksPanel theme={renderTheme} onPick={insertBlock} onSection={addReadySection} onAddPage={onAddPage}
             globals={globals.flatMap((g) => { const node = globalSample(site, g.id); return node ? [{ ...g, node }] : []; })} onRemoveGlobal={(gid) => pushSite(removeGlobal(site, gid))} docked={wideScreen} onOpenChange={setBlocksOpen} sheet={screenDevice !== null}
             where={whereOptions.length ? { value: whereFor(selected?.id ?? null), options: whereOptions, onChange: (w) => setWhereChoice({ for: selected?.id ?? null, where: w }) } : undefined}
             layers={<LayersPanel root={root} selectedIds={selectedIds} breakpoint={bp} onChange={commit}
