@@ -5045,6 +5045,17 @@ export function fillsRows(block: BoxNode, bp: Breakpoint = "base", evenIfOff = f
   let pic = sole(r); if (pic?.rowBand) pic = sole(pic);
   return !!r.onPageGrid && (r.rowSpan ?? 1) >= 2 && pic?.type === "image" && (evenIfOff || resolveResponsive(pic, bp).fillHeight !== false);
 }
+/**
+ * LE15c-13 · G-3D WIDENED (the user, 2026-10-19: "Widen G-3d"). A picture that IS a cell of a grid covers its cell, cropped from the
+ * centre, never stretched, on every screen: a fixed grid keeps its rows even, so where a bento narrowed a wide photo shared a row
+ * with a square one and ended short of its cell (171 of 341px at 375). Not where a grid follows its pictures (masonry) or shows one
+ * at a time (a pager); "Fill the block's height" off keeps its own shape. `evenIfOff`: is the switch worth showing at all.
+ */
+export function coversCell(pic: BoxNode, parent?: BoxNode | null, bp: Breakpoint = "base", evenIfOff = false): boolean {
+  if (pic.type !== "image" || !parent || parent.layout !== "grid" || isPager(parent)) return false;
+  return resolveResponsive(parent, bp).rowFlow !== "masonry" && (evenIfOff || resolveResponsive(pic, bp).fillHeight !== false);
+}
+export const coversCellAnywhere = (pic: BoxNode, parent?: BoxNode | null) => BP_ORDER.some((bp) => coversCell(pic, parent, bp));
 /** Does the picture in `block` fill it on any screen — whether its height reads `--bx-fill` at all (saved pages keep their bytes). */
 export const fillsRowsAnywhere = (block: BoxNode | null | undefined) => !!block && BP_ORDER.some((bp) => fillsRows(block, bp));
 /** The block a picture would fill: the one around its row band, or its parent when it sits in it directly. */
@@ -7073,6 +7084,8 @@ export function childStyle(child: BoxNode, parent: BoxNode, bp: Breakpoint = "ba
      * Both are rules someone asked for, so the choice is not mine to make quietly. Left as it was until it
      * is decided; the collapse is recorded in the ledger rather than papered over.
      */
+    // LE15c-13 (the user: "Widen G-3d") — a picture that IS this cell covers it: the cell carries the fill its picture reads
+    if (coversCell(child, parent, bp)) (s as Record<string, string>)["--bx-fill"] = "100%";
     return s;
   }
   const isRow = (parent.direction ?? "column") === "row";

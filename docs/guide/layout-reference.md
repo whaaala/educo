@@ -268,7 +268,7 @@ words under it — so a handle lying over a block's first letters never stops yo
 | **Describe this image** | The alt text for an Image block. Read aloud to users who cannot see it. |
 | **Load straight away** | Turns off lazy loading for an Image — use only for images at the very top of the page. |
 | **Show the whole picture (don't crop it)** | Ticked: the block takes the photograph's own proportions. Unticked: crops to the Height you set. |
-| **Fill the block's height** | Shown only for an Image that is the only thing in a block spanning 2 or more rows. On (the default): the picture fills the block's whole height, cropped from its centre, never stretched and never shorter than its own height. Off: it keeps its own height. Per screen, like **Rows tall**. |
+| **Fill the block's height** | Shown for an Image that is the only thing in a block spanning 2 or more rows, and for an Image that is itself a cell of a Grid (not one whose Row heights follow the picture, nor one shown one at a time). On (the default): the picture fills the block's whole height, cropped from its centre, never stretched and never shorter than its own height. Off: it keeps its own height. Per screen, like **Rows tall**. |
 | **Bookmark** | An anchor name — the block can be linked to directly using `#bookmark`. |
 
 ---

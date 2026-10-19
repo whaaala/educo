@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
 import {
   createContainer, createElement, makeRowBand, imageSizing, hasIntrinsicSize, measureImage,
-  MEASURE_TIMEOUT_MS, type BoxNode, type Breakpoint, fillsRows, childStyle, normalizeRowBands, markPageGrid, BP_ORDER, rowQueryCss,
+  MEASURE_TIMEOUT_MS, type BoxNode, type Breakpoint, fillsRows, coversCell, createGrid, childStyle, normalizeRowBands, markPageGrid, BP_ORDER, rowQueryCss,
 } from "@/lib/box-model";
 import type { CSSProperties } from "react";
 import { renderPageHTML, renderSitePage } from "@/lib/box-export";
@@ -263,5 +263,37 @@ describe("G-3d (2) · a picture fills a block that spans rows (fillsRows)", () =
   });
   it("imageSizing without the fill is exactly what it was", () => {
     for (const p of [{ imgW: 1600, imgH: 900 }, { height: "15rem" }, {}]) expect(imageSizing(imageNode(p), false)).toEqual(imageSizing(imageNode(p)));
+  });
+});
+
+/**
+ * LE15c-13 · G-3D WIDENED (the user, 2026-10-19: "Widen G-3d"). A FIXED grid keeps its rows even, so where a bento narrows a wide
+ * photo shares a row with a square one and ends short of its cell — 171 of 341px at 375, 59–363px at 768 (HEADED pass 4). A
+ * picture that IS a cell of a grid covers it, by the same `--bx-fill` as G-3d; measured on the published page: 0 bands, every
+ * grid's height unchanged. Not in a grid that follows its pictures (masonry) or shows one at a time (a pager).
+ */
+describe("LE15c-13 · a picture that is a cell of a grid covers its cell", () => {
+  const grid = (o: Partial<BoxNode> = {}) => { const g = createGrid(4, o); g.children = [createElement("image", { colSpan: 2, ratio: "2 / 1" }), createElement("image", { ratio: "1 / 1" })]; return g; };
+  it("covers it on every screen: --bx-fill on the cell, the picture's height reads it", () => {
+    const g = grid();
+    for (const bp of BP_ORDER) {
+      expect(coversCell(g.children![0], g, bp), bp).toBe(true);
+      expect((childStyle(g.children![0], g, bp) as Record<string, string>)["--bx-fill"], bp).toBe("100%");
+    }
+    expect(imageSizing(g.children![0], true).height).toBe("var(--bx-fill, auto)");
+  });
+  it("\"Fill the block's height\" off keeps its own shape; masonry and a pager never cover", () => {
+    const g = grid(); g.children![0] = { ...g.children![0], fillHeight: false };
+    expect(coversCell(g.children![0], g)).toBe(false);
+    expect((childStyle(g.children![0], g, "base") as Record<string, string>)["--bx-fill"]).toBeUndefined();
+    expect(coversCell(g.children![1], grid({ rowFlow: "masonry" }))).toBe(false);
+    expect(coversCell(g.children![1], grid({ pager: true }))).toBe(false);
+    const stack = createContainer("column"); expect(coversCell(g.children![1], stack), "not in a grid").toBe(false);
+  });
+  it("the published picture reads the fill: no blank band can be left under it", () => {
+    const g = grid(); g.children![0] = { ...g.children![0], src: "/x.webp", imgW: 800, imgH: 400 };
+    const html = renderPageHTML(emptyPageRoot(g), DEFAULT_THEME);
+    expect(html).toMatch(/--bx-fill:\s*100%/);
+    expect(html).toContain("var(--bx-fill");
   });
 });

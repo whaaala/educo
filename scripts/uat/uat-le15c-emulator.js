@@ -74,7 +74,9 @@ const walk = (n, f) => { f(n); (n.children || []).forEach((c) => walk(c, f)); };
     let lone = 0;
     for (const g of plan.grids) { const rs = g.map(r).filter(Boolean); if (rs.length < 2) continue; const top = Math.round(rs[0].top); const across = rs.filter((x) => Math.abs(Math.round(x.top) - top) <= 1).length; if (across > 1 && rs.length % across) lone++; }
     let big = null;
-    if (plan.span) { const rs = plan.span.map(r).filter(Boolean); big = { first: rs.every((x) => x.top >= rs[0].top - 1), wider: rs[0].width > rs[1].width * 1.6 }; }
+    if (plan.span) { const rs = plan.span.map(r).filter(Boolean); big = { first: rs.every((x) => x.top >= rs[0].top - 1), wider: rs[0].width > rs[1].width * 1.6 };
+      // LE15c-13: every picture covers its cell — the most blank under any one of them, in px
+      big.band = Math.max(0, ...plan.span.map((id) => { const c = document.querySelector(`.bx-${id}`); const i = c && (c.tagName === 'IMG' ? c : c.querySelector('img')); return i ? Math.round(c.getBoundingClientRect().bottom - i.getBoundingClientRect().bottom) : 0; })); }
     const strip = plan.pager && document.querySelector(`.bx-${plan.pager} [data-eu-pager]`);
     const slides = strip ? Array.from(strip.children).filter((c) => c.getBoundingClientRect().width > 0) : [];
     return { mw, over, lone, grids: plan.grids.length, big, pager: strip ? { scrolls: strip.scrollWidth > strip.clientWidth + 1, wide: slides.every((c) => Math.abs(c.getBoundingClientRect().width - strip.clientWidth) <= 2) } : null };
@@ -82,6 +84,7 @@ const walk = (n, f) => { f(n); (n.children || []).forEach((c) => walk(c, f)); };
   ok('the Preview does not scroll sideways', m.over <= 1, `${m.over}px at ${m.mw}`);
   ok('no card alone on a line', m.lone === 0, `${m.lone} of ${m.grids} grids at ${m.mw}`);
   ok(m.mw < TP ? 'the gallery\'s big picture comes first on the phone' : 'the gallery\'s big picture comes first and spans', !!m.big && m.big.first && (m.mw < TP || m.big.wider), JSON.stringify(m.big));
+  ok('every picture of the gallery covers its cell — no blank band (LE15c-13)', !!m.big && m.big.band <= 1, `${m.big && m.big.band}px`);
   ok('the slideshow shows one slide at a time', !!m.pager && m.pager.scrolls && m.pager.wide, JSON.stringify(m.pager));
   // a real swipe on the slideshow moves it one slide
   if (plan.pager) {

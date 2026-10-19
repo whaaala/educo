@@ -23,7 +23,7 @@ import {
   floatBox, unfloatBox, bringToFront, bringForward, sendBackward, sendToBack,
   resolveResponsive, updateBoxResponsive, clearOverride, hasOverride,
   gridColumns, setColumnFraction, pinBlockedBy, fixedBlockedBy, blockedByLabel, pinScopeWords, isFloating,
-  isSectionContentIn, sectionSpaceOf, sectionPlaceIn, insertSlot, pageEnd, addAnnouncementBar, defaultWhere, addInsideParent, placeSharing, retrackGridAt, type InsertWhere, isContainer, outerSpaceDefaults, spanAt, setSpan, lineUpWithGrid, linesAt, setLinesAt, fullWidthAt, setFreeInset, fitStepAt, fillsRows, fillHostOf,
+  isSectionContentIn, sectionSpaceOf, sectionPlaceIn, insertSlot, pageEnd, addAnnouncementBar, defaultWhere, addInsideParent, placeSharing, retrackGridAt, type InsertWhere, isContainer, outerSpaceDefaults, spanAt, setSpan, lineUpWithGrid, linesAt, setLinesAt, fullWidthAt, setFreeInset, fitStepAt, fillsRows, coversCell, fillHostOf,
   gridAutoFit, parentFlowOf, canWrapWords, canOverlapUp, regionSpan,
 } from "@/lib/box-model";
 import { blockForKind } from "@/lib/box-presets";
@@ -1653,7 +1653,7 @@ export default function BoxDemoPage() {
                 <BulkInspector sampleSection={isSectionContentIn(root, selectedIds[0])} count={selectedIds.length} theme={renderTheme} sample={(() => { const f = findBox(root, selectedIds[0]); return f ? resolveResponsive(f, bp) : null; })()} onStepWidth={bulkStepWidth} onStepHeight={bulkStepHeight} onPatch={bulkPatch} onDuplicate={bulkDuplicate} onDelete={bulkDelete} onFloatAll={bulkFloat} onGroup={bulkGroup} canGroup={canGroup(root, selectedIds)} mixed={mixedFields(root, selectedIds, bp, BULK_FIELDS)} />
               ) : selected ? (
                 <BoxInspector trail={selectionChain(root, selected.id).slice(0, -1).map((id) => findBox(root, id)).filter((n): n is BoxNode => !!n).map((n) => (bp === "base" ? n : resolveResponsive(n, bp)))} onSelectBlock={(id) => selectByUser([id])} section={isSectionContentIn(root, selected.id)} sectionSpace={sectionSpaceOf(findParent(root, selected.id)?.parent, selected, root, bp)} sectionPlace={sectionPlaceIn(root, selected.id)} outerDefault={outerSpaceDefaults(root, selected.id)}
-                  fillHeight={(() => { const p = fillHostOf(parentGrid, parentGrid && findParent(root, parentGrid.id)?.parent); return selected.type === "image" && p && fillsRows(p, bp, true) ? { on: resolveResponsive(selected, bp).fillHeight !== false } : undefined; })()}
+                  fillHeight={(() => { const p = fillHostOf(parentGrid, parentGrid && findParent(root, parentGrid.id)?.parent); return selected.type === "image" && ((p && fillsRows(p, bp, true)) || coversCell(selected, parentGrid, bp, true)) ? { on: resolveResponsive(selected, bp).fillHeight !== false } : undefined; /* LE15c-13: a grid's picture too */ })()}
                   pageSpan={(() => { const c = columnsAt(gridHere, bp), v = spanAt(root, selected.id, c, bp); return v === null ? undefined : { value: v, cols: c }; })()}
                   rowStepRem={root.pageGrid ? gridHere.rowStepRem ?? 1.5 : undefined}
                   onSetSpan={(n) => commit(setSpan(root, selected.id, n, columnsAt(gridHere, bp), bp), `span:${selected.id}`)}

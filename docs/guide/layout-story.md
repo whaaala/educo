@@ -365,6 +365,9 @@ height. She can turn that off: select the picture → **Content** → **Fill the
 its own height and the rest of the block is empty space. The switch only appears where it does something: a block
 that spans one row, or a picture with words beside it in the same block, keeps the picture's own height.
 
+The same is true of a picture that is itself a tile of a grid, the way a ready-made gallery is built: each photo fills
+its tile, so when the grid narrows on a tablet or a phone a wide photo beside a square one never leaves a gap under it.
+
 **On a screen where the fit rule stacks the row** (words too tight to fit side by side), the span is automatically
 dropped — the photo and the paragraphs each take their own line, the same as without the span, and the photo is its
 own height again.

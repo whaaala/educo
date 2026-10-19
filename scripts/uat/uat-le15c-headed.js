@@ -90,12 +90,13 @@ function job(cat) {
     rec(J, `C3 every layout added through the UI (click · ${entered} · ${dragged})`, ids.size === defs.length, `${ids.size} / ${defs.length} on the page, finish ${[...new Set(placed.map((b) => b.sectionFinish))].join(',')}`);
     await H.panel(page, false); await shot(page, `${cat.id}-canvas`);
     // what each kind must do across the widths, from the stored tree (the ids publish as bx-<id> classes)
-    const plan = { stackPhone: [], span: [], pager: [] };
+    const plan = { stackPhone: [], span: [], pager: [], pic: null };
     for (const sec of placed) walk(sec, (n) => {
       if (n.layout === 'grid' && n.minCard && (n.children || []).length >= 2) plan.stackPhone.push({ grid: n.id, kids: n.children.map((c) => c.id) });
       if (n.layout === 'grid' && !n.minCard && n.rowFlow !== 'masonry') {
         const big = (n.children || []).find((c) => (c.colSpan || 1) > 1); const small = (n.children || []).find((c) => (c.colSpan || 1) === 1);
         if (big && small) plan.span.push({ big: big.id, span: big.colSpan, small: small.id, kids: n.children.map((c) => c.id), firstIsBig: n.children[0] === big });
+        const pic = (n.children || []).find((c) => c.type === 'image'); if (pic && !plan.pic) plan.pic = pic.id; // LE15c-13: a grid's own picture
       }
       if (n.pager) plan.pager.push({ strip: n.id, n: n.children.length, auto: n.pagerAuto || 0 });
     });
@@ -171,6 +172,19 @@ function job(cat) {
       await page.keyboard.press('Escape'); await deselect(page); await page.keyboard.press('Control+z'); await sleep(page, 600);
       const s2 = await site(page); let back = null; walk({ children: s2.pages.map((p) => p.root) }, (n) => { if (n.id === plan.span[0].big) back = n.colSpan; });
       rec(J, 'C10 the big block\'s span is in the Inspector ("Columns wide"), mine to change; Ctrl+Z puts it back', was === String(plan.span[0].span) && after === 1 && back === plan.span[0].span, `shown ${was} · set 1 → ${after} · undo → ${back}`);
+    }
+    if (plan.pic) {
+      // LE15c-13 (the user: "Widen G-3d"): a grid's picture covers its cell — the switch is offered, off keeps its own shape, Ctrl+Z covers again
+      const pic = page.locator(`[data-box-id="${plan.pic}"] img`).first();
+      const gap = () => pic.evaluate((i) => { const c = i.closest('[data-box-id]').getBoundingClientRect(), r = i.getBoundingClientRect(); return Math.round(c.bottom - r.bottom); }).catch(() => -1);
+      await H.select(page, plan.pic); await I.tab(page, 'Content');
+      const sw = page.getByRole('checkbox', { name: /Fill the block's height/ });
+      const shown = (await sw.count()) === 1 && await sw.isChecked(); const g0 = await gap();
+      if (shown) { await sw.uncheck(); await sleep(page, 500); }
+      const s3 = await site(page); let off = null; walk({ children: s3.pages.map((p) => p.root) }, (n) => { if (n.id === plan.pic) off = n.fillHeight; });
+      await page.keyboard.press('Escape'); await deselect(page); await page.keyboard.press('Control+z'); await sleep(page, 600);
+      const s4 = await site(page); let back = 'x'; walk({ children: s4.pages.map((p) => p.root) }, (n) => { if (n.id === plan.pic) back = n.fillHeight; });
+      rec(J, 'C16 a grid\'s picture covers its cell on the canvas; "Fill the block\'s height" is offered, off keeps its own shape, Ctrl+Z covers again (LE15c-13)', shown && g0 >= 0 && g0 <= 1 && off === false && back === undefined, `switch ${shown} · band on the canvas ${g0}px · off → ${off} · undo → ${back}`);
     }
     await page.emulateMedia({ reducedMotion: 'reduce' }); const f2 = await pvOpen(page); await sleep(page, 600);
     const still = await f2.evaluate(() => Array.from(document.querySelectorAll('h2,h3,p')).every((h) => +getComputedStyle(h).opacity === 1));
