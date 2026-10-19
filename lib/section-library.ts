@@ -14,6 +14,9 @@ import COPY from "@/config/section-copy.json";
 import PHOTO_CONFIG from "@/config/section-photos.json";
 import { createContainer, createElement, createGrid, makeRowBand, regionSpan, findBox, normalizeRowBands, markPageGrid, type BoxNode } from "@/lib/box-model";
 
+/** A section dragged from the Sections tab carries its built blocks under this type (the canvas places it between bands). */
+export const SECTION_DRAG_TYPE = "application/x-box-section";
+
 export type Tone = "plain" | "soft" | "grey" | "strong" | "inverse" | "photo";
 export type Role = "eyebrow" | "title" | "heading" | "body" | "small" | "stat" | "logo" | "link" | "button" | "button2" | "image" | "icon" | "menu" | "divider" | "list" | "quote";
 
@@ -196,7 +199,7 @@ export function buildSection(def: SectionDef, opts: { finish: string; wireframe:
  * A whole band straight after the band holding the selection — never inside it — or, with nothing selected, at the end
  * of the page above the footer. A header or footer REPLACES the page's own, shown on every page (PS-2 carries it).
  */
-export function insertSection(root: BoxNode, selectedId: string | null, section: BoxNode): BoxNode {
+export function insertSection(root: BoxNode, selectedId: string | null, section: BoxNode, at?: number): BoxNode {
   const kids = [...(root.children ?? [])];
   const which = section.tag === "header" || section.tag === "footer" ? section.tag : null;
   let out: BoxNode;
@@ -205,10 +208,11 @@ export function insertSection(root: BoxNode, selectedId: string | null, section:
     kids.splice(s, e - s, makeRowBand([{ ...section, shared: true }]));
     out = { ...root, children: kids };
   } else {
-    const at = selectedId ? kids.findIndex((k) => !!findBox(k, selectedId)) : -1;
+    const sel = selectedId ? kids.findIndex((k) => !!findBox(k, selectedId)) : -1;
     const [footerStart] = regionSpan(root, "footer");
     const [, headerEnd] = regionSpan(root, "header");
-    const index = at >= 0 ? Math.max(at + 1, headerEnd) : footerStart;
+    // dropped (`at`): where it was let go, but never inside the header or below the footer
+    const index = at != null ? Math.max(at, headerEnd) : sel >= 0 ? Math.max(sel + 1, headerEnd) : footerStart;
     kids.splice(Math.min(index, footerStart), 0, makeRowBand([section]));
     out = { ...root, children: kids };
   }

@@ -36,6 +36,7 @@ import { COMPONENT_CSS, bgVideoCss } from "@/lib/educo-ui/components";
 import { CanvasBgVideo } from "@/components/website/box/BackgroundVideo";
 import { CURRENT_LINK_CSS, EDITOR_DOCK_PX, layoutCss, mediaBelow, RESIZE, RUNG_MEASURE, RUNG_PX } from "@/lib/educo-ui/layout";
 import { pageIdFromHref } from "@/lib/box-site";
+import { SECTION_DRAG_TYPE } from "@/lib/section-library";
 
 /**
  * LE-15 PS-5 (2) · A GLOBAL SECTION'S COPY, marked on the canvas: a dashed outline AND its label "Global · name" (never
@@ -997,10 +998,12 @@ function ChromeMirror({ blockId, children }: { blockId: string; children: ReactN
 }
 
 export default function BoxCanvas({
-  root, theme, editable = true, selectedId, onSelectId, selectedIds, onSelectIds, onChange, onResized, minHeight = 600, breakpoint = "base", showHidden = false, marqueeRoom, guides = null, pageGrid, spaceShade = null, currentPageId,
+  root, theme, editable = true, selectedId, onSelectId, selectedIds, onSelectIds, onChange, onResized, minHeight = 600, breakpoint = "base", showHidden = false, marqueeRoom, guides = null, pageGrid, spaceShade = null, currentPageId, onDropSection,
 }: {
   /** The page being edited: a Link or Button to it is drawn as the current page, as it publishes (LE15-27). */
   currentPageId?: string;
+  /** LE-15: a ready-made section dropped on the page, at this band index — the page puts it in (it may ask first). */
+  onDropSection?: (section: BoxNode, index: number) => void;
   root: BoxNode;
   theme: SiteTheme;
   editable?: boolean;
@@ -2036,12 +2039,32 @@ export default function BoxCanvas({
   // inserts a fresh node where you release (filling the line's leftover width when dropping beside).
   const PALETTE_TYPE = "application/x-box-block";
   const nodeForKind = (kind: string): BoxNode => blockForKind(kind);
+  /**
+   * LE-15 · A SECTION DROPS BETWEEN BANDS, never inside a block: the band under the pointer, before it when the pointer is in
+   * its upper half, after it below — the line is drawn across the page at that seam.
+   */
+  const sectionDropAt = (host: Element, y: number): { index: number; rect: { left: number; top: number; width: number; height: number; inside: boolean } | null } => {
+    const kids = rootRef.current.children ?? [];
+    let index = kids.length, rect = null as { left: number; top: number; width: number; height: number; inside: boolean } | null;
+    for (let i = 0; i < kids.length; i++) {
+      const r = host.querySelector(`[data-box-id="${kids[i].id}"]`)?.getBoundingClientRect();
+      if (!r) continue;
+      if (y < r.top + r.height / 2) { index = i; rect = { left: r.left, top: r.top - 1, width: r.width, height: 3, inside: false }; break; }
+      rect = { left: r.left, top: r.bottom - 1, width: r.width, height: 3, inside: false };
+    }
+    return { index, rect };
+  };
   const onCanvasDragOver = (e: React.DragEvent) => {
     // FILES COUNT AS SOMETHING DROPPABLE, and this is the half that makes the drop happen at all: a
     // browser only fires `drop` when `dragover` called `preventDefault()`. Left checking for a palette
     // tile alone, the drop handler below could never run for a photograph dragged off the desktop — the
     // page would simply open the picture as a document instead.
     if (!editable) return;
+    if (onDropSection && e.dataTransfer.types.includes(SECTION_DRAG_TYPE)) {
+      e.preventDefault(); e.dataTransfer.dropEffect = "copy";
+      setDropRect(sectionDropAt(e.currentTarget, e.clientY).rect);
+      return;
+    }
     const wanted = e.dataTransfer.types.includes(PALETTE_TYPE) || e.dataTransfer.types.includes("Files");
     if (!wanted) return;
     e.preventDefault(); e.dataTransfer.dropEffect = "copy";
@@ -2093,6 +2116,13 @@ export default function BoxCanvas({
 
   const onCanvasDrop = (e: React.DragEvent) => {
     if (!editable) return;
+    const sectionData = onDropSection ? e.dataTransfer.getData(SECTION_DRAG_TYPE) : "";
+    if (sectionData) {
+      e.preventDefault();
+      setDropRect(null);
+      try { onDropSection!(JSON.parse(sectionData) as BoxNode, sectionDropAt(e.currentTarget, e.clientY).index); } catch { /* not a section this builder wrote: nothing is dropped */ }
+      return;
+    }
     const kind = e.dataTransfer.getData(PALETTE_TYPE);
     // A DROP OF FILES, before the palette check — that check was the early return that made this silent.
     const dropped = Array.from(e.dataTransfer.files ?? []).filter((f) => f.type.startsWith("image/"));

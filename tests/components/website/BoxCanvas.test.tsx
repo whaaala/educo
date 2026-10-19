@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from "vitest";
 import { useState } from "react";
-import { render, screen, fireEvent } from "@testing-library/react";
+import { render, screen, fireEvent, createEvent } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import BoxCanvas from "@/components/website/box/BoxCanvas";
 import { DEFAULT_THEME } from "@/lib/site-storage";
@@ -1350,6 +1350,28 @@ describe("BoxCanvas — RX4-20 · a Link's hover is on the canvas too", () => {
     expect(sheet).toContain('.eu-tokens a[style*="text-underline-offset"]:hover');
     const link = container.querySelector('[data-box-id="l"] a, a[data-box-id="l"]') ?? container.querySelector("a")!;
     expect(link.matches('.eu-tokens a[style*="text-underline-offset"]')).toBe(true);
+  });
+});
+
+describe("LE-15 · a ready-made section dropped on the page", () => {
+  it("is handed to the page with the band seam it was let go at; a block's drop is not", async () => {
+    const { SECTION_DRAG_TYPE } = await import("@/lib/section-library");
+    const onDropSection = vi.fn();
+    const root = createContainer("column", { id: "root", children: [makeRowBand([createContainer("column", { id: "a" })]), makeRowBand([createContainer("column", { id: "b" })])] } as Partial<BoxNode>);
+    const { container } = render(<BoxCanvas root={root} theme={DEFAULT_THEME} selectedId={null} onChange={() => {}} onDropSection={onDropSection} />);
+    const section = createContainer("column", { tag: "section", id: "dropped" });
+    const data = (type: string, value: string) => ({ types: [type], getData: (t: string) => (t === type ? value : ""), files: [], dropEffect: "", effectAllowed: "" });
+    const surface = container.firstElementChild as HTMLElement;
+    root.children!.forEach((b, i) => container.querySelectorAll<HTMLElement>(`[data-box-id="${b.id}"]`).forEach((el) => stubRect(el, { top: i * 200, left: 0, width: 800, height: 200 })));
+    // jsdom has no DragEvent: a plain Event drops clientY, so it is set on the event itself
+    const drop = (dt: ReturnType<typeof data>) => { const ev = createEvent.drop(surface, { dataTransfer: dt }); Object.defineProperty(ev, "clientY", { value: 250 }); fireEvent(surface, ev); };
+    drop(data(SECTION_DRAG_TYPE, JSON.stringify(section)));
+    expect(onDropSection).toHaveBeenCalledTimes(1);
+    const [node, index] = onDropSection.mock.calls[0] as [BoxNode, number];
+    expect(node.id).toBe("dropped");
+    expect(index, "in the upper half of the second band: before it").toBe(1);
+    drop(data("application/x-box-block", "text"));
+    expect(onDropSection, "a block is not a section").toHaveBeenCalledTimes(1);
   });
 });
 

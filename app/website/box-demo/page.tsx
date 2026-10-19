@@ -1028,15 +1028,15 @@ export default function BoxDemoPage() {
     if (!r.ok) { setMySectionError(r.reason === "limit" ? INSPECTOR.sections.saveLimit.replace("{limit}", String(r.limit)) : undefined); return; }
     setSavingSection(null); setSavedSaid(`Saved “${name}” to ${INSPECTOR.sections.mine}`);
   };
-  const placeSection = (section: BoxNode) => {
-    commitWith((cur) => insertSection(cur, selected?.id ?? null, section));
+  const placeSection = (section: BoxNode, at?: number) => {
+    commitWith((cur) => insertSection(cur, selected?.id ?? null, section, at));
     revealBox(section.id);
   };
-  const addReadySection = (section: BoxNode) => {
+  const addReadySection = (section: BoxNode, at?: number) => {
     const which = section.tag === "header" || section.tag === "footer" ? section.tag : null;
     const [s, e] = which ? regionSpan(root, which) : [0, 0];
     if (which && (e > s || hasSharedRegion(site, which))) setPendingSection(section);
-    else placeSection(section);
+    else placeSection(section, at);
   };
 
   // Select a box and scroll it into view AFTER the tree re-renders (so a just-added block is never hidden —
@@ -1578,7 +1578,7 @@ export default function BoxDemoPage() {
             <div ref={canvasRoomRef} className="relative p-2 sm:p-8 flex min-h-full transition-[padding] duration-200 motion-reduce:transition-none" style={{ paddingLeft: screenDevice ? undefined : `${panelDocked ? PANEL_GUTTER_REM : LAUNCHER_GUTTER_REM}rem` }}> {/* a phone or tablet keeps no launcher gutter: its "+" waits bottom-right (E-5a, E-5c) */}
               <div data-canvas-sizer className={`mx-auto shrink-0 h-fit ${frameW == null ? "w-full max-w-5xl" : ""}`} style={scaled ? { width: frameW * canvasZoom.z, height: frameH * canvasZoom.z } : { width: frameW ?? undefined }}>
                 <div ref={frameRef} data-canvas-scale={scaled ? canvasZoom.z : 1} className="shadow-sm rounded-xl ring-1 ring-black/10 dark:ring-white/10 midnight:ring-white/10 purple:ring-white/10 h-fit transition-[width] duration-300 motion-reduce:transition-none" style={{ width: frameW ?? "100%", transform: scaled ? `scale(${canvasZoom.z})` : undefined, transformOrigin: "0 0", background: renderTheme.background, color: renderTheme.text, fontFamily: renderTheme.bodyFont, containerType: "inline-size" }}>
-                  <BoxCanvas root={root} theme={renderTheme} minHeight={PAGE_MIN_H} selectedIds={selectedIds} onSelectIds={selectByUser} onChange={commit} breakpoint={bp} showHidden={showHidden} marqueeRoom={roomEl} currentPageId={activePage.id}
+                  <BoxCanvas root={root} theme={renderTheme} minHeight={PAGE_MIN_H} selectedIds={selectedIds} onSelectIds={selectByUser} onChange={commit} breakpoint={bp} showHidden={showHidden} marqueeRoom={roomEl} currentPageId={activePage.id} onDropSection={(s, at) => addReadySection(s, at)}
                     pageGrid={gridHere} spaceShade={gridPanel ? spaceShade : null} guides={guides.on ? { cols: columnsAt(gridHere, bp), rowStepRem: gridHere.rowStepRem ?? 1.5, rows: guides.rows } : null} />
                 </div>
               </div>

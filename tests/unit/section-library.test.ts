@@ -140,6 +140,16 @@ describe("adding a section to a page", () => {
     expect(regionBlock(out.children![4])?.tag).toBe("footer");
   });
 
+  it("dropped: it lands where it was let go between bands — never inside the header, never below the footer", () => {
+    const sec = () => buildSection(def("section"), { finish: "plain", wireframe: false });
+    const { root } = page();
+    const dropped = sec(); const out = insertSection(root, null, dropped, 2);
+    expect(out.children![2].children![0].id, "at the place").toBe(dropped.id);
+    const top = sec(); expect(insertSection(root, null, top, 0).children![1].children![0].id, "not above the header").toBe(top.id);
+    const end = sec(); const last = insertSection(root, null, end, 99);
+    expect(regionBlock(last.children!.at(-1)!)?.tag, "the footer stays last").toBe("footer");
+  });
+
   it("a ready-made header REPLACES the page's header, shown on every page; a footer its footer", () => {
     for (const which of ["header", "footer"] as const) {
       const { root } = page();

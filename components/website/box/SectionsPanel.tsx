@@ -9,7 +9,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import SECTIONS from "@/config/sections.json";
 import INSPECTOR from "@/config/inspector.json";
-import { buildSection, FINISH_IDS, finishLabel, type SectionDef } from "@/lib/section-library";
+import { buildSection, FINISH_IDS, finishLabel, SECTION_DRAG_TYPE, type SectionDef } from "@/lib/section-library";
 import { emptyPageRoot, type BoxSite } from "@/lib/box-site";
 import { renderSitePage } from "@/lib/box-export";
 import { cloneBox, type BoxNode } from "@/lib/box-model";
@@ -44,7 +44,7 @@ function previewDoc(section: BoxNode, theme: SiteTheme, whole = false): string {
 }
 
 /** A live tile: the real published page, drawn small. `whole`: `node` is a whole PAGE (a template) — framed at its top. */
-export function Tile({ def, cat, node, theme, onAdd, whole = false }: { def: { name: string; needs?: string[] }; cat: { label: string }; node: BoxNode; theme: SiteTheme; onAdd: () => void; whole?: boolean }) {
+export function Tile({ def, cat, node, theme, onAdd, whole = false, onDrag }: { def: { name: string; needs?: string[] }; cat: { label: string }; node: BoxNode; theme: SiteTheme; onAdd: () => void; whole?: boolean; onDrag?: () => BoxNode }) {
   const box = useRef<HTMLButtonElement>(null);
   const [scale, setScale] = useState(0.2);
   const [h, setH] = useState(400);
@@ -60,6 +60,7 @@ export function Tile({ def, cat, node, theme, onAdd, whole = false }: { def: { n
   const name = fill(T.add, { name: def.name, category: cat.label });
   return (
     <button ref={box} type="button" onClick={onAdd} aria-label={name} title={name}
+      draggable={!!onDrag} onDragStart={onDrag ? (e) => { e.dataTransfer.setData(SECTION_DRAG_TYPE, JSON.stringify(onDrag())); e.dataTransfer.effectAllowed = "copy"; } : undefined}
       className="group relative block w-full shrink-0 overflow-hidden rounded-lg border border-line bg-surface-2 text-left transition hover:ring-2 hover:ring-brand focus-visible:ring-2 focus-visible:ring-brand outline-none"
       style={{ height: `${Math.min(h, 720) * scale}px` }}>
       <iframe srcDoc={doc} title={def.name} aria-hidden="true" tabIndex={-1} loading="lazy"
@@ -134,7 +135,7 @@ export default function SectionsPanel({ theme, q, onInsert, globals = [], onRemo
           {/* Global sections: each copy added stays the same as the others; "Stop being global" asks first and keeps every copy. */}
           {catId === GLOBALS && !needle && globals.map((g) => (
             <div key={g.id} className="shrink-0 space-y-1">
-              <Tile def={{ name: g.name }} cat={{ label: T.global }} node={g.node} theme={theme} onAdd={() => onInsert(cloneBox(g.node))} />
+              <Tile def={{ name: g.name }} cat={{ label: T.global }} node={g.node} theme={theme} onAdd={() => onInsert(cloneBox(g.node))} onDrag={() => cloneBox(g.node)} />
               <div className="flex items-center justify-between gap-1">
                 <span className="px-1 text-[0.6875rem] text-muted">{fill(T.usedOn, { pages: String(g.pages), pageWord: g.pages === 1 ? "page" : "pages" })}</span>
                 {onRemoveGlobal && <Button variant="ghost" size="sm" onClick={() => setRemoving(g)}>{T.removeGlobal}</Button>}
@@ -144,14 +145,14 @@ export default function SectionsPanel({ theme, q, onInsert, globals = [], onRemo
           {/* My sections: as saved (no finish — they are the person's own design), each with Rename and Delete beside it. */}
           {mineShown.map((s) => (
             <div key={s.id} className="shrink-0 space-y-1">
-              <Tile def={{ name: s.name }} cat={{ label: T.mine }} node={s.node} theme={theme} onAdd={() => { const n = savedAsNode(s.id); if (n) onInsert(n); }} />
+              <Tile def={{ name: s.name }} cat={{ label: T.mine }} node={s.node} theme={theme} onAdd={() => { const n = savedAsNode(s.id); if (n) onInsert(n); }} onDrag={() => savedAsNode(s.id) ?? s.node} />
               <div className="flex justify-end gap-1">
                 <Button variant="ghost" size="sm" onClick={() => setRenaming(s)}>{T.rename}</Button>
                 <Button variant="ghost" size="sm" onClick={() => setDeleting(s)}>{T.delete}</Button>
               </div>
             </div>
           ))}
-          {(catId !== MINE && catId !== GLOBALS) || needle ? shown.map(({ def, cat }) => <Tile key={def.id} def={def} cat={cat} node={nodes.get(def.id)!} theme={theme} onAdd={() => onInsert(buildSection(def, { finish, wireframe: wire }))} />) : null}
+          {(catId !== MINE && catId !== GLOBALS) || needle ? shown.map(({ def, cat }) => <Tile key={def.id} def={def} cat={cat} node={nodes.get(def.id)!} theme={theme} onAdd={() => onInsert(buildSection(def, { finish, wireframe: wire }))} onDrag={() => buildSection(def, { finish, wireframe: wire })} />) : null}
           {needle && !shown.length && !mineShown.length && <p className="py-6 text-center text-[0.8125rem] text-muted">{fill(T.none, { q })}</p>}
         </div>
       </div>
