@@ -26,6 +26,9 @@ Run through this checklist BEFORE writing any code:
 - [ ] **⛔ RULE FOUNDATION — LAYERS, EVERY PART CHANGEABLE, EVERY COMBINATION, EVERY SCREEN** (the user, 2026-10-19) — build
   on the finished layer below (layout → effects → components → templates); nothing ready-made is locked; plan every
   combination at every width of `scripts/uat/screens.js` and in the app on phone AND tablet.
+- [ ] **⛔ RULE BEST-PATH — SCOPE HELD** (the user, 2026-10-19) — the area's signed list is frozen: a new idea is PARKED in
+  the tree (later batch / Nice / Great), not built; only a bug, a gap the signed plan needs, or the user's "add it now"
+  enters, with its % before → after. Every area close weighs a page against Wix and Webflow.
 - [ ] **Check existing shared components** — search `components/shared/` for `Button`, `FormDropdown`, `CustomDropdown`, `FormInput`, `Modal`, `EditorDialog`, `ColorPickerPopover`, `DataTable`, etc. NEVER duplicate what exists.
 - [ ] **IMPLEMENT for ALL platforms AND screen sizes** — web (desktop 1280px+, tablet 768px, mobile 375px) AND React Native mobile/tablet app (`apps/mobile/`). Every feature MUST be built for BOTH web responsive AND the native mobile/tablet app. Neither is optional.
 - [ ] **Plan for ALL themes** — check `lib/theme-config.ts` for available themes. Every UI element must work in ALL of them.
@@ -769,6 +772,23 @@ Run through this checklist BEFORE telling the user it's done:
   - **Every combination at EVERY screen, for EVERYTHING:** phone, tablet upright and sideways, laptop, desktop, wide, both
     sides of every breakpoint, every device preset (`scripts/uat/screens.js`), and the app on phone AND tablet — for every
     section, layout, template, effect and component, now and later. A combination checked at one width is not checked.
+- **RULE BEST-PATH — FOUNDATION FIRST, LIGHTER THAN THE LEADERS, THE AI COMPOSER IS THE LEAP, SCOPE HELD (MANDATORY — the
+  user, 2026-10-19: "I want to build all the foundation first… keep the weight lead and measure it against Wix and Webflow,
+  let's always do that… treat the AI composer as the leap… hold the line on scope… let's keep that as a rule").**
+  - **Foundation first:** layout → effects → components → templates, each finished before the next (RULE FOUNDATION).
+    Teachers using it (the pilot of RULE RK) comes after the foundation — the user's decision, 2026-10-19.
+  - **LIGHTER THAN THE LEADERS, MEASURED EVERY TIME:** every area's close weighs a representative page it built (HTML + CSS
+    + JS + first-view images at a 360px phone, and first view on Slow 3G) against the same kind of page on Wix and on
+    Webflow (the archived Webflow pages of the crawl; Wix measured live), and reports the three numbers side by side. Ours
+    heavier is a finding in the ledger, fixed like any bug.
+  - **THE AI COMPOSER IS THE LEAP:** everything built stays usable by it as DATA — sections, page layouts, templates and
+    components as proven, validated pieces it can assemble ("describe your school, get a whole site"), never raw HTML.
+    Built as its own area (LLM-1) after the foundation; nothing before it may make it harder.
+  - **SCOPE HELD — FREEZE, PARK, DECIDE:** when an area's tiers are signed, its list of changes is FROZEN. A new idea
+    mid-area is PARKED at once — written into the tree under a later batch or the area's Nice / Great, with its tier asked
+    — and not built now. Only three things enter a frozen area: a BUG (always fixed; RULE V), a gap without which the area
+    cannot do what its signed plan promises (said so, with the reason), or the user's explicit "add it now". Every entry
+    shows its cost the moment it is made: the area's % left before → after (RULE PROGRESS).
 - **STATUS, ALWAYS (the user, 2026-09-28).** Every reply ends with where the work is and what comes next — one line, a
   pointer the user can act on — so the user never has to ask "where are you?".
 - **RULE P — WEBSITE PERSONALITY AND TONE ARE FOLLOWED (MANDATORY — from 2026-09-27).** The Website Personalities
