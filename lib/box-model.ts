@@ -441,6 +441,7 @@ export interface BoxNode {
   clip?: boolean;           // allow sizing SMALLER than content (min:0) and hide overflow; default off = hug content
   baseFont?: number;        // page root only: the global base unit in px (default 10); rendered as rem so it scales with the browser font size (WCAG)
   spaced?: boolean;         // made under SPACE BY DEFAULT (2026-09-30): unset spacing reads `spaceDefaults`; saved pages lack it and keep theirs
+  ownSpace?: boolean;       // LE-15i SG-1: a section that keeps its own space above and below — the site's space between sections and sharing pass it by (`sectionSpacePad`); never published
   bare?: boolean;           // made under NO SPACE UNLESS ADDED (the user, 2026-10-15): every unset space is 0 (`SPACE_NONE`); saved blocks lack it and keep theirs
   pageGrid?: boolean;       // page root only: laid out on the PAGE GRID (AC-37b, 2026-10-04) — every page made from now; saved pages lack it
   onPageGrid?: boolean;     // a block of a page-grid page (`markPageGrid`): its unset spacing reads `SPACE_GRID`
@@ -4998,10 +4999,13 @@ export function hasIntrinsicSize(node: BoxNode): boolean {
  * The fixed height still wins whenever one is set — cropping to a deliberate shape is a design choice, and
  * `object-fit: cover` is what makes it look right.
  */
-export function imageSizing(node: BoxNode, fill = false): { height: string; aspectRatio?: string } {
+export function imageSizing(node: BoxNode, fill = false): { height: string; aspectRatio?: string; maxHeight?: string } {
   const own = ownImageSizing(node);
+  // LE15h-1: its Max height (SZ-3) holds the PICTURE, cropped by `object-fit: cover` — on its wrapper alone the photo kept its height
+  const maxHeight = limitCss(node.maxHeight);
+  const sized = maxHeight ? { ...own, maxHeight } : own;
   // G-3d (2): where its block fills (`fillsRows`), `--bx-fill` is 100% on the picture's box; everywhere else its own height
-  return fill ? { ...own, height: `var(--bx-fill, ${own.height})` } : own;
+  return fill ? { ...sized, height: `var(--bx-fill, ${own.height})` } : sized;
 }
 function ownImageSizing(node: BoxNode): { height: string; aspectRatio?: string } {
   const explicit = sizeToCSS(node.height);
@@ -5814,7 +5818,7 @@ const unitRemAt = (w: number) => { const { loRem, hiRem, remHalf, cqwHalf } = ba
 export const frameRemAt = (node: BoxNode, w: number): number => (node.gridSpace?.gutter !== undefined ? (node.gridSpace.gutter / 10) * unitRemAt(w) : isBare(node) ? 0 : Math.min(1.25, Math.max(1, 1.6 * unitRemAt(w))));
 
 /** A page grid's own side space (`gutter`) and gap between blocks (`gap`), set in its panel (G-2) — stored fluid units. */
-export interface GridSpace { gutter?: number; gap?: number; gapX?: number; gapY?: number; cols?: Partial<Record<Breakpoint, number>>; measure?: number } // `gapX` / `gapY`: across / down when they differ (G-3b (5)); `cols`: columns per screen, when not the default (G-3b); `measure`: the site's content width, rem (AC-9)
+export interface GridSpace { gutter?: number; gap?: number; gapX?: number; gapY?: number; cols?: Partial<Record<Breakpoint, number>>; measure?: number; sectionY?: number; noMerge?: true } // `gapX` / `gapY`: across / down when they differ (G-3b (5)); `cols`: columns per screen, when not the default (G-3b); `measure`: the site's content width, rem (AC-9)
 
 /**
  * NO SPACE UNLESS YOU ADD IT (the user, 2026-10-15 — reverses SPACE BY DEFAULT): a block made from now on (`bare`) has no
@@ -5840,7 +5844,7 @@ const spaceFor = (node: BoxNode): Record<keyof typeof SPACE_DEFAULT, number> => 
 /** The side space a page's sections keep by default — what the layout guides draw as padding (G-2). Stored fluid units. */
 export const pageSideSpace = (root: BoxNode): number => spaceFor({ onPageGrid: !!root.pageGrid, gridSpace: root.gridSpace } as BoxNode).gutter;
 
-const sameSpace = (a?: GridSpace, b?: GridSpace) => a?.gutter === b?.gutter && a?.gap === b?.gap && a?.gapX === b?.gapX && a?.gapY === b?.gapY && a?.measure === b?.measure && JSON.stringify(a?.cols) === JSON.stringify(b?.cols);
+const sameSpace = (a?: GridSpace, b?: GridSpace) => a?.gutter === b?.gutter && a?.gap === b?.gap && a?.gapX === b?.gapX && a?.gapY === b?.gapY && a?.measure === b?.measure && a?.sectionY === b?.sectionY && a?.noMerge === b?.noMerge && JSON.stringify(a?.cols) === JSON.stringify(b?.cols);
 
 /** A page-grid page with the side space and gap `space` (`undefined` = the defaults) — the root keeps it for the blocks
  *  dropped later, and every block takes it now. Returns the SAME tree when nothing changes. */
@@ -6044,7 +6048,9 @@ const OPPOSITE: Record<SpaceSide, SpaceSide> = { Top: "Bottom", Bottom: "Top", L
 /** What a spacing handle writes: its side; with Alt the opposite side too; with Alt + Shift all four (Figma · Webflow). */
 export function spacePatch(kind: "padding" | "margin", side: SpaceSide, v: number, { alt = false, all = false } = {}): Partial<BoxNode> {
   const sides: SpaceSide[] = all ? ["Top", "Right", "Bottom", "Left"] : alt ? [side, OPPOSITE[side]] : [side];
-  return Object.fromEntries(sides.map((s) => [`${kind}${s}`, v])) as Partial<BoxNode>;
+  // LE-15i SG-1: a section's own space above or below, dragged, is kept over the site's space between sections (`sectionSpacePad`)
+  const own = kind === "padding" && sides.some((s) => s === "Top" || s === "Bottom") ? { ownSpace: true } : {};
+  return { ...Object.fromEntries(sides.map((s) => [`${kind}${s}`, v])), ...own } as Partial<BoxNode>;
 }
 /** What a gap handle writes: the one shared `gap` while the box spaces one way only and has no per-axis value, else that axis. */
 export function gapPatch(node: BoxNode, axis: "x" | "y", v: number, bothAxes: boolean): Partial<BoxNode> {
@@ -7980,6 +7986,44 @@ export function addAnnouncementBar(root: BoxNode, headerId: string): BoxNode {
   const row = createContainer(h.direction ?? "row", { layout: h.layout, wrap: h.wrap, gap: h.gap, gapX: h.gapX, gapY: h.gapY, align: h.align, justify: h.justify, columns: h.columns, rowFlow: h.rowFlow, width: "fill", children: h.children ?? [] });
   return updateBox(root, headerId, { layout: "flex", direction: "column", wrap: false, gap: 0, gapX: undefined, gapY: undefined, align: "stretch", justify: "start", columns: undefined, rowFlow: undefined, children: [bar, row] });
 }
+/**
+ * THE SPACE BETWEEN SECTIONS (BATCH LE-15i — box-builder-sections.feature; the user 2026-10-19: "One size for all", "Every page, a
+ * switch"). A SECTION is a container alone in a band of the page, never the header or the footer. The canvas and the export both call
+ * this beside `underOverHeaderPad`, so the two cannot disagree.
+ *  • SG-1: the page grid's `sectionY` is its space above and below, unless the section keeps its own (`ownSpace` — a drag of its space).
+ *  • SG-2: under a section of the SAME paint (both plain colour, no photo, video, border, corners or shadow), its top gives up what
+ *    the upper one's bottom already gives — 96 + 96 is 96 — unless the page grid turned sharing off (`noMerge`), or either keeps its own.
+ * ponytail: a section's outer margins and its band's own paint are not part of the sharing.
+ */
+export function sectionSpacePad(parent: BoxNode | null | undefined, node: BoxNode, grand: BoxNode | null | undefined, bp: Breakpoint = "base"): CSSProperties {
+  const { top, bottom } = sectionSpaceOf(parent, node, grand, bp);
+  return { ...(top !== undefined ? { paddingTop: u(top) } : {}), ...(bottom !== undefined ? { paddingBottom: u(bottom) } : {}) };
+}
+/** …the same, as the stored numbers (LE15i-5 / 6): what the Inspector shows, and what a section keeping its own starts from. */
+export function sectionSpaceOf(parent: BoxNode | null | undefined, node: BoxNode, grand: BoxNode | null | undefined, bp: Breakpoint = "base"): { top?: number; bottom?: number } {
+  if (!isPageSection(parent, node, grand)) return {};
+  const g = grand!.gridSpace, y = g?.sectionY, n = resolveResponsive(node, bp), out: { top?: number; bottom?: number } = {};
+  if (y !== undefined && !n.ownSpace) { out.top = y; out.bottom = y; }
+  const kids = grand!.children ?? [], above = kids[kids.findIndex((k) => k.id === parent!.id) - 1];
+  const upper = above && isPageSection(above, above.children?.[0], grand) ? resolveResponsive(above.children![0], bp) : undefined;
+  if (!g?.noMerge && upper && !n.ownSpace && !upper.ownSpace && plainPaint(n) && plainPaint(upper) && paintKey(n, grand!) === paintKey(upper, grand!))
+    out.top = Math.max(0, sectionEdge(n, "Top", y, parent!) - sectionEdge(upper, "Bottom", y, above!));
+  return out;
+}
+function isPageSection(band: BoxNode | null | undefined, n: BoxNode | null | undefined, root: BoxNode | null | undefined): boolean {
+  return !!root?.pageGrid && !!band?.rowBand && !!n && band.children?.length === 1 && band.children[0].id === n.id && (root.children ?? []).some((k) => k.id === band.id)
+    && isContainer(n) && n.tag !== "header" && n.tag !== "footer" && n.position !== "absolute" && !n.pin;
+}
+const plainPaint = (n: BoxNode) => !n.bgImage && !n.bgVideo && !n.borderWidth && !n.shadow && !radiusCSS(n);
+/** LE15i-1: a block with no background shows the page's (its root's, else the site's colour), so it reads as that colour. */
+const paintKey = (n: BoxNode, root: BoxNode) => { const p = { ...n, background: n.background ?? root.background ?? PAGE_BG }; return JSON.stringify(backgroundCss(p, fadedPaint(p))); };
+const PAGE_BG = "var(--eu-color-bg)";
+/** A section's space on one edge as it is drawn without sharing: the site's, or its own, or its default. */
+function sectionEdge(n: BoxNode, side: "Top" | "Bottom", y: number | undefined, band: BoxNode): number {
+  if (y !== undefined && !n.ownSpace) return y;
+  return n[`padding${side}`] ?? n.padding ?? spaceDefaults(n, sectionContent(n, false, true, band)).pad[side === "Top" ? 0 : 2];
+}
+
 /**
  * LE11-4 · THE SECTION UNDER A HEADER THAT LIES OVER IT KEEPS ITS WORDS CLEAR: its background runs up under the header (PS-7), and its own
  * top inner space grows by the header's measured height (`--eu-over-h`, set by `headerPass` on their shared parent) — the canvas and the

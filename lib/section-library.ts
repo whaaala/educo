@@ -54,6 +54,17 @@ export interface SectionDef {
   /** Components it stands in for until they are built (RULE C), shown on its tile: "form", "map"… */
   needs?: string[];
   tree: SectionNode;
+  /** HH-1 · the tallest its pictures are drawn ("75svh"): its category file's `photoMaxHeight`, given by `categorySections`. */
+  photoMaxHeight?: string;
+}
+
+/**
+ * A CATEGORY FILE's layouts (config/sections/<id>.json), each carrying the file's own `photoMaxHeight` (BATCH LE-15h, HH-1): on
+ * a very wide screen a hero's picture beside its words grew to 2,147px and took the words below an 820px window. The cap is
+ * an ordinary Max height (SZ-3) on each picture, so the person sees it in the Inspector and can change or clear it.
+ */
+export function categorySections(file: { sections?: SectionDef[]; photoMaxHeight?: string }): SectionDef[] {
+  return (file.sections ?? []).map((d) => (file.photoMaxHeight ? { ...d, photoMaxHeight: file.photoMaxHeight } : d));
 }
 
 type ToneColours = { bg: string; text: string; muted: string; accent: string; btnBg: string; btnText: string; line: string };
@@ -81,7 +92,7 @@ export const finishLabel = (id: string): string => (id === WIREFRAME ? CFG.wiref
 
 /** `keep`: the parts whose photo behind words is the person's own — it stays, shaded, in a wireframe too (RF-1); `onPhoto`:
  *  inside one, where every block keeps the photo's colours however deep it sits (LE15f-4: a row of buttons turned grey). */
-type Ctx = { f: Finish; wire: boolean; tone: Tone; center: boolean; keep?: Set<string>; onPhoto?: boolean };
+type Ctx = { f: Finish; wire: boolean; tone: Tone; center: boolean; keep?: Set<string>; onPhoto?: boolean; cap?: string };
 const toneOf = (ctx: Ctx, t?: Tone): Tone => { const want = t ?? ctx.tone; return ctx.f.toneMap[want] ?? want; };
 const colours = (tone: Tone): ToneColours => CFG.tones[tone] ?? CFG.tones.plain;
 const words = (ctx: Ctx, n: SectionNode, role: keyof typeof COPY): string => (ctx.wire ? (COPY[role] as string) : n.t ?? (COPY[role] as string));
@@ -126,7 +137,7 @@ function element(n: SectionNode, ctx: Ctx, path: string): BoxNode {
     }
     case "image": {
       const p = ctx.wire ? undefined : photoOf(n.photo);
-      return createElement("image", { ...(p ? { src: p.src, imgW: p.width, imgH: p.height } : {}), alt: p ? n.alt ?? p.alt : "", width: "100%", ratio: "4 / 3", radius: f.image.radius, ...motion(true) });
+      return createElement("image", { ...(p ? { src: p.src, imgW: p.width, imgH: p.height } : {}), alt: p ? n.alt ?? p.alt : "", width: "100%", ratio: "4 / 3", ...(ctx.cap ? { maxHeight: ctx.cap } : {}), radius: f.image.radius, ...motion(true) });
     }
     case "icon": return createElement("icon", { icon: n.icon ?? "Star", color: c.accent });
     case "divider": return createElement("divider", { color: c.line });
@@ -235,7 +246,7 @@ function noLoneCard(grid: BoxNode, pad: number): void {
 export function buildSection(def: SectionDef, opts: { finish: string; wireframe: boolean }, keep?: Set<string>): BoxNode {
   const f = opts.wireframe ? CFG.wireframe : finishOf(opts.finish);
   const root: SectionNode = { ...def.tree, k: def.tree.k ?? "section", tone: def.tree.tone ?? "plain" };
-  const built = centreBands(normalizeRowBands(build(root, { f, wire: opts.wireframe, tone: "plain", center: false, keep }, "0")));
+  const built = centreBands(normalizeRowBands(build(root, { f, wire: opts.wireframe, tone: "plain", center: false, keep, cap: def.photoMaxHeight }, "0")));
   const pad = Number(root.set?.paddingLeft ?? 0) + Number(root.set?.paddingRight ?? 0);
   (root.c ?? []).forEach((c, i) => { if (c.k === "grid") { const g = byPartNode(built, `0.${i}`); if (g) noLoneCard(g, pad); } });
   return { ...built, sectionFrom: def.id, sectionFinish: opts.wireframe ? WIREFRAME : opts.finish };

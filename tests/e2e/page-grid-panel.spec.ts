@@ -92,3 +92,17 @@ test("the lines a person SEES follow the columns, the row height and the rows at
   // four rows: three lines between them (a fourth may sit ON the page's bottom edge, where the last row ends)
   await expect.poll(async () => [3, 4].includes((await drawn()).h), { timeout: 2000 }).toBe(true);
 });
+
+for (const [w, h] of [[393, 851], [768, 1024]] as const) {
+  test(`LE15i-2 · at ${w}: Page settings → Page grid… opens the panel where the bar keeps it (the More sheet)`, async ({ page }) => {
+    await page.setViewportSize({ width: w, height: h });
+    await page.goto("/website/box-demo");
+    await page.getByRole("button", { name: "Open blocks panel" }).waitFor();
+    await page.waitForTimeout(800);
+    const ps = page.getByRole("button", { name: "Page settings" }).first();
+    if (!(await ps.isVisible().catch(() => false))) await page.getByRole("button", { name: "More", exact: true }).first().click();
+    await page.getByRole("button", { name: "Page settings" }).first().click();
+    await page.getByRole("button", { name: /Page grid…/ }).first().click();
+    await expect(page.locator('[role=dialog][aria-label="Page grid"]')).toBeVisible();
+  });
+}

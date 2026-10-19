@@ -1406,3 +1406,14 @@ describe("BoxCanvas — the site's colours on a page of plain blocks (LE15f-2, b
     expect(drawn).toMatch(/--eu-color-bg:[^;]+;/);
   });
 });
+
+describe("BoxCanvas — a picture's Max height (LE15h-1, box-builder-sizes.feature)", () => {
+  it("the picture box itself is held to it, a screen unit read as a share of the canvas view", () => {
+    const col = createContainer("column", { id: "c" });
+    col.children = [createElement("image", { id: "i", src: "x.jpg", imgW: 800, imgH: 600, maxHeight: "75svh" })];
+    const drawn = renderToStaticMarkup(<BoxCanvas root={col} theme={DEFAULT_THEME} editable={false} onChange={() => {}} />);
+    // the box that holds the photo (aspect-ratio 800 / 600) carries the cap — `--canvas-h` is the canvas view (LE2-3)
+    expect(drawn).toMatch(/aspect-ratio:800 \/ 600;max-height:calc\(var\(--canvas-h, 100svh\) \* 0\.75\)/);
+    // LE15h-2: the fallback is the whole screen, times the share — never the share times itself (75svh × 0.75 = 56 %)
+  });
+});

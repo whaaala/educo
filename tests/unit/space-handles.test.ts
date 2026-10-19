@@ -44,17 +44,17 @@ describe("the spacing scale a handle snaps to", () => {
 
 describe("what a handle writes", () => {
   it("its own side only", () => {
-    expect(spacePatch("padding", "Top", 16)).toEqual({ paddingTop: 16 });
+    expect(spacePatch("padding", "Top", 16)).toEqual({ paddingTop: 16, ownSpace: true }); // LE-15i: a dragged top keeps its own
     expect(spacePatch("margin", "Left", 8)).toEqual({ marginLeft: 8 });
   });
 
   it("with Alt, the opposite side too", () => {
-    expect(spacePatch("padding", "Top", 16, { alt: true })).toEqual({ paddingTop: 16, paddingBottom: 16 });
+    expect(spacePatch("padding", "Top", 16, { alt: true })).toEqual({ paddingTop: 16, paddingBottom: 16, ownSpace: true });
     expect(spacePatch("margin", "Right", 4, { alt: true })).toEqual({ marginRight: 4, marginLeft: 4 });
   });
 
   it("with Alt + Shift, all four sides", () => {
-    expect(spacePatch("padding", "Left", 24, { alt: true, all: true })).toEqual({ paddingTop: 24, paddingRight: 24, paddingBottom: 24, paddingLeft: 24 });
+    expect(spacePatch("padding", "Left", 24, { alt: true, all: true })).toEqual({ paddingTop: 24, paddingRight: 24, paddingBottom: 24, paddingLeft: 24, ownSpace: true });
   });
 
   it("a gap: the one shared gap while the box spaces one way only, else that axis", () => {

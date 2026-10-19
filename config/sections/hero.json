@@ -1,5 +1,7 @@
 {
   "$comment": "Hero / Welcome (B7–B12, LAYOUT_BENCHMARK.md; C2 the school homepage's welcome). Trees: lib/section-library.ts SectionNode. Icons are lucide names.",
+  "photoMaxHeight": "75svh",
+  "$photoMaxHeight": "HH-1 (BATCH LE-15h): every hero picture is at most this tall — 75% of the screen, so a split hero's words stay in an 820px window on a 5,000px-wide screen; it never bites from 1280 × 720 to 2560 × 1440. A Max height on each picture (the Inspector), the person's to change.",
   "sections": [
     { "id": "hero-centred", "name": "Centred words and two buttons", "pattern": "B7",
       "tree": { "k": "section", "tone": "soft", "center": true, "set": { "paddingTop": 120, "paddingBottom": 120, "paddingLeft": 24, "paddingRight": 24, "gap": 24 },

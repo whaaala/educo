@@ -9,7 +9,7 @@
  */
 
 import type { CSSProperties } from "react";
-import { PILL, applyBoxSize, bgVideoSrc, bgVideoShade, bgVideoBoxCss, dividerThickness, borderLen, videoSizing, blockTypography,pinArrivalCss, pinArrivalKeyframes, floatHoldCSS,
+import { PILL, applyBoxSize, sectionSpacePad, bgVideoSrc, bgVideoShade, bgVideoBoxCss, dividerThickness, borderLen, videoSizing, blockTypography,pinArrivalCss, pinArrivalKeyframes, floatHoldCSS,
   type BoxNode, type Breakpoint, type SectionFlag, BP_ORDER, containerStyle, childStyle, hostSizedFor, marginCSS, leafPaddingCSS, ownSidePadVars, outerSpaceCSS, pageBandInset, pagePinCover, sectionContent, sizeToCSS, radiusCSS, SHADOW_CSS, u, LIST_ITEM_GAP, textLen, baseUnit, fadedPaint, boxOpacity, backgroundCss, paintLayerCss,
   resolveResponsive, floatStacksOnMobile, floatingReserve, alertToastCss, accordionClasses, bandClasses, hasSiteMeasure, videoEmbedSrc, isContainer, sanitizeCssDeclarations, expandScopedCss, COMPONENT_PARTS, itemFloatContextCss, itemOverrideCss, itemNumberVars, richBody, plainBody, componentTextCss, componentBoxCss, renderAlertHTML, alertDismissScript, masonryMeasureAttr, masonryMeasureScript, pinStackMarker, pinStackGroupMarker, pinStackNeeded, pinStackScript, headerMarkers, headerScript, headerScriptNeeded, underOverHeaderPad, pinArrivalMarker, pinArrivalScript, treeHasArrival, isPager, pagerNavHTML, pagerScript, pagerStripCss, pagerSlideId, bgShowThroughCss, blockContainmentCss, COMPONENT_ITEM_SEL, remLen, imageSizing, fillsRowsAnywhere, fillHostOf, hasIntrinsicSize, itemNeedsClass, itemScope, floatZIndex, typoRole, typoRootVars, typoCascadeCss, bandEdgeCSS, LINK_COLOR_CSS, gridQueryCss, TYPE_UNIT_PROPERTY_CSS, stripsAnywhere,
 } from "@/lib/box-model";
@@ -159,7 +159,7 @@ function elementHTML(node: BoxNode, theme: SiteTheme, pageMap: Map<string, strin
     // byte of the photo has arrived — without them the page reflows as each picture lands and the reader's
     // line of text jumps out from under them (Cumulative Layout Shift).
     case "image": {
-      const { height, aspectRatio } = imageSizing(node, fill);
+      const { height, aspectRatio, maxHeight } = imageSizing(node, fill);
       /**
        * A PICTURE NOT UPLOADED YET KEEPS ITS PLACE (G3b-12, found by the user 2026-10-04: "are you sure the item added in the canvas is
        * actually showing?"). It published nothing, so its block was 0px tall in the Preview while the canvas drew it 368 × 159, and
@@ -168,10 +168,10 @@ function elementHTML(node: BoxNode, theme: SiteTheme, pageMap: Map<string, strin
        */
       if (!node.src) {
         const muted = typoRole.color("muted");
-        return `<div role="img" aria-label="Picture to come" style="${styleString({ width: "100%", height, aspectRatio, display: "flex", alignItems: "center", justifyContent: "center", color: muted, background: `color-mix(in oklch, ${muted} 14%, transparent)`, fontSize: "2rem" })}">${iconSvg("Image")}</div>`;
+        return `<div role="img" aria-label="Picture to come" style="${styleString({ width: "100%", height, aspectRatio, maxHeight, display: "flex", alignItems: "center", justifyContent: "center", color: muted, background: `color-mix(in oklch, ${muted} 14%, transparent)`, fontSize: "2rem" })}">${iconSvg("Image")}</div>`;
       }
       const dims = hasIntrinsicSize(node) ? ` width="${node.imgW}" height="${node.imgH}"` : "";
-      return `<img src="${esc(node.src)}" alt="${esc(node.alt ?? "")}"${dims} loading="${node.eager ? "eager" : "lazy"}" decoding="async" style="${styleString({ width: "100%", height, aspectRatio, objectFit: "cover", display: "block" })}" />`;
+      return `<img src="${esc(node.src)}" alt="${esc(node.alt ?? "")}"${dims} loading="${node.eager ? "eager" : "lazy"}" decoding="async" style="${styleString({ width: "100%", height, aspectRatio, maxHeight, objectFit: "cover", display: "block" })}" />`;
     }
     case "video": { const embed = videoEmbedSrc(node.src); const box = videoSizing(node); if (embed) return videoLink(node.src!, embed, box); return node.src ? `<video src="${esc(node.src)}" controls style="${styleString({ width: "100%", ...box })}"></video>` : ""; }
     case "divider": return `<hr style="${styleString({ border: "0", margin: "0", height: "0", width: "100%", borderTopWidth: dividerThickness(node),borderTopStyle: node.borderStyle ?? "solid", borderTopColor: node.color ? colorToCSS(node.color) : node.borderColor ? colorToCSS(node.borderColor) : typoRole.color("muted") })}">`;
@@ -485,6 +485,7 @@ function styleAt(node: BoxNode, rawParent: BoxNode | null, bp: Breakpoint, theme
   if (r.hidden) wrap.display = "none"; // hidden-on-this-device → removed at that breakpoint
   if (isContainer(r)) {
     const cs: CSSProperties = { ...containerStyle(r, bp, section), ...pageBandInset(r, onPage, hasSiteMeasure(rawParent)), ...wrap, ...pagePinCover(r, onPage) };
+    Object.assign(cs, sectionSpacePad(rawParent, node, grand, bp)); // LE-15i — the space between sections; the canvas writes the same
     Object.assign(cs, underOverHeaderPad(rawParent, node, cs.paddingTop, grand)); // LE11-4 — the canvas writes the same
     // An EMPTY container that paints a background would collapse to 0px in the exported/preview site (the editor's
     // "Drag a block here" placeholder gives it height, but that's editor-only). Give it a visible band so the

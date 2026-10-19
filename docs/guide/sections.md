@@ -99,6 +99,43 @@ drawn on the page with its size, and you can set it to anything on the scale, do
 A designed section also moves a little as a visitor scrolls to it, and its buttons answer the pointer and the keyboard. A
 visitor whose phone or computer asks for less motion sees it still, all at once.
 
+## "On a very wide screen, the welcome is taller than the window"
+
+A welcome with a picture beside its words grows with the screen. On a very wide one — a monitor five thousand pixels
+across — a picture half the page wide would be two thousand pixels tall, and the words beside it would sit below the
+window. So every picture in a ready-made welcome is at most **three quarters of the screen's height** (`75svh`). On a
+laptop or an ordinary desktop the picture is shorter than that anyway and keeps its own shape; the limit only does
+something on a screen that is very wide for its height, or a phone held sideways. The picture is then cropped from the
+centre, never squashed.
+
+![A welcome on a 5,143-pixel-wide screen: the words and the cropped picture both inside an 820-pixel window](./img/guide-sections-wide-hero.webp)
+
+It is an ordinary **Max height** on the picture, so it is yours: select the picture and you will find `75svh` in the
+Inspector under **Limits**. Type `50svh` for a shorter picture, a length such as `30rem`, or clear it to let the picture
+keep its own shape however big the screen. **Ctrl+Z** undoes it. A Max height you type on any picture of your own works
+the same way.
+
+## "My sections look stacked on top of each other"
+
+Every ready-made section brings its own room above and below, so two of them one under the other used to add up to a
+very big gap. Two things now look after it.
+
+**Sections of the same colour share their space.** Two plain sections, one under the other, have one space between
+them, not two. Where the colour changes, the photo starts or a framed card begins, each keeps its own, because the
+change of colour already shows where one ends. If you would rather each kept its own, turn off **Same-colour sections
+share their space** in Page grid.
+
+**One size for all of them.** Open **Page settings → Page grid…** (or right-click the empty page) and move **Space
+above and below sections**. Every section of the site follows at once, on every screen; the header and the footer
+keep theirs. **Back to the designs' own** puts each section's own design back in one step, and **Ctrl+Z** undoes
+either. Tick **This page uses its own grid** first to give one page a different size.
+
+![Page grid: Space above and below sections, Back to the designs' own, and Same-colour sections share their space](./img/guide-sections-space.webp)
+
+One section can still be different. Drag its top or bottom space on the page, or change it in the Inspector, and it
+keeps its own; the side you did not touch stays where it was. The Inspector then says **Keeps its own space above and
+below**, with **Follow the site** to bring it back in line.
+
 ## "I wrote my words, and now I want another look"
 
 You added a welcome in **Calm**, typed your own title and put in a photo of your own pupils, and now the page wants to feel
@@ -178,6 +215,10 @@ A page made from a template is a copy. It takes your site's own header and foote
 | The look | **Finish**: Serious · Minimalist · Plain · Bold · Calm · Startup · Playful | |
 | The kinds of section | Headers · Hero / Welcome · Footers · Blank · Our story · Text · Features / Services · Spotlight / zig-zag · Stats · CTA / Banner | |
 | On a phone | Pictures before their words in a zig-zag · cards one under another · numbers two by two · a button under its words | Nothing to set |
+| A welcome's picture on a very wide screen | At most 75 % of the screen's height, cropped; select the picture → Inspector → **Limits** → **Max height** (`75svh`) to change or clear it | **Ctrl+Z** undoes |
+| The space between sections | **Page settings → Page grid…** → **Space above and below sections** (the site, or this page with its own grid); **Back to the designs' own** | **Ctrl+Z** undoes |
+| Same-colour sections share their space | On at the start; switch it off in Page grid | |
+| One section keeps its own space | Drag its top or bottom space on the page, or change it in the Inspector; **Follow the site** gives it back | **Ctrl+Z** undoes |
 | Another look for a section on the page | Select it → Inspector → **Finish**: Wireframe or one of the seven | **Ctrl+Alt+F** next finish · **Ctrl+Z** undoes |
 | Keep a section | Inspector → **Save as my section** | **Ctrl+Alt+S** |
 | Your sections | Sections tab → **My sections**: add, **Rename**, **Delete** | |

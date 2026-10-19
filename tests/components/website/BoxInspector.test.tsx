@@ -1589,3 +1589,26 @@ describe("BoxInspector — ED-7 · Set here / From a wider screen (LE-14)", () =
     expect(screen.getByText(M.none.replace("{screen}", SCREEN.phone))).toBeInTheDocument();
   });
 });
+
+describe("LE-15i · a section keeps its own space (box-builder-sections.feature)", () => {
+  const W = INSPECTOR_WORDS.sectionSpace;
+  it("changing a section's top or bottom inner space makes it keep its own; other sides and other blocks do not", () => {
+    const onPatch = renderFor(createContainer("column", { id: "s" } as Partial<BoxNode>), { section: true });
+    fireEvent.change(screen.getByLabelText("Inner spacing top"), { target: { value: "1.5" } });
+    expect(onPatch).toHaveBeenLastCalledWith({ paddingTop: 24, ownSpace: true });
+    fireEvent.change(screen.getByLabelText("Inner spacing left"), { target: { value: "1" } });
+    expect(onPatch).toHaveBeenLastCalledWith({ paddingLeft: 16 });
+  });
+  it("LE15i-6: a section following the site shows the space in effect; LE15i-5: changing its top keeps its bottom as it is drawn", () => {
+    const onPatch = renderFor(createContainer("column", { id: "s", paddingTop: 96, paddingBottom: 96 } as Partial<BoxNode>), { section: true, sectionSpace: { top: 64, bottom: 64 } });
+    expect(screen.getByLabelText("Inner spacing top")).toHaveValue(4);
+    fireEvent.change(screen.getByLabelText("Inner spacing top"), { target: { value: "1.5" } });
+    expect(onPatch).toHaveBeenLastCalledWith({ paddingTop: 24, paddingBottom: 64, ownSpace: true });
+  });
+  it("a section keeping its own says so, and Follow the site gives it back", () => {
+    const onPatch = renderFor(createContainer("column", { id: "s", ownSpace: true } as Partial<BoxNode>), { section: true });
+    expect(screen.getByText(W.own)).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: W.follow }));
+    expect(onPatch).toHaveBeenLastCalledWith({ ownSpace: undefined });
+  });
+});

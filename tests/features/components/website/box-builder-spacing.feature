@@ -2,7 +2,7 @@ Feature: Spacing — none unless I add it (since 2026-10-15); a saved page keeps
   As a teacher building a page
   I want every section, block and coloured box to arrive with sensible space around it
   So that my words never sit against an edge, and I only touch spacing when I want something different
-  Guards: tests/unit/space-by-default.test.ts · tests/unit/space-handles.test.ts · tests/unit/space-check.test.ts · tests/components/website/PageCheck.test.tsx
+  Guards: tests/unit/space-by-default.test.ts · tests/unit/space-handles.test.ts · tests/unit/space-check.test.ts · tests/components/website/PageCheck.test.tsx · tests/e2e/page-grid-panel.spec.ts
 
   # BUILT 2026-09-30 (batch S-1, docs/TASK_TREE.md). The user's values: side gutter 2rem (≈22px on a 360px phone, fluid) ·
   # section space 1rem above and below · header/footer bar 1rem · stack gap 1rem · column and grid gap 1rem · inner
@@ -534,3 +534,8 @@ Feature: Spacing — none unless I add it (since 2026-10-15); a saved page keeps
     When I open the Page check
     Then it says that column is too narrow for its words on phones, and names it
     And when the blocks have room, nothing is listed
+
+  Scenario: Page grid opens from Page settings on a phone and a tablet (LE15i-2)
+    Given the builder on a 393 phone or a 768 tablet, where the bar keeps its tools in More
+    When I choose Page settings and then "Page grid…"
+    Then the Page grid panel opens, in the More sheet, with the guides on

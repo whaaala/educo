@@ -5,7 +5,7 @@ import SECTIONS from "@/config/sections.json";
 import FINISHES from "@/config/section-finishes.json";
 import COPY from "@/config/section-copy.json";
 import LAYOUT from "@/config/layout.json";
-import { buildSection, insertSection, restyleSection, nextFinish, FINISH_IDS, FINISH_CHOICES, WIREFRAME, type SectionDef, type SectionNode } from "@/lib/section-library";
+import { buildSection, categorySections, insertSection, restyleSection, nextFinish, FINISH_IDS, FINISH_CHOICES, WIREFRAME, type SectionDef, type SectionNode } from "@/lib/section-library";
 import { renderSitePage } from "@/lib/box-export";
 import { ICON_SVG_MAP } from "@/lib/educo-ui/icon-svg-map.generated";
 import { emptyPageRoot, type BoxSite } from "@/lib/box-site";
@@ -369,5 +369,28 @@ describe("another finish for a section already on the page (BATCH LE-15f, RF-1)"
     const html = renderSitePage(site, DEFAULT_THEME, "p", { inlineShared: true });
     expect(html).toContain("<section");
     for (const word of ["sectionPart", "sectionFrom", "sectionFinish", "hero-split", '"calm"']) expect(html, word).not.toContain(word);
+  });
+});
+
+describe("HH-1 · a hero's picture on a very wide screen (BATCH LE-15h, box-builder-sections.feature)", () => {
+  const raw = (id: string) => JSON.parse(readFileSync(file(id), "utf8").replace(/\r\n/g, "\n")) as { sections: SectionDef[]; photoMaxHeight?: string };
+  const HERO = raw("hero");
+  const pictures = (n: BoxNode) => { const out: BoxNode[] = []; walk(n, (b) => { if (b.type === "image") out.push(b); }); return out; };
+  it("every hero picture carries the ONE cap of config/sections/hero.json, in every finish and the Wireframe — a Max height the person can change", () => {
+    expect(HERO.photoMaxHeight).toMatch(/^\d+svh$/);
+    const defs = categorySections(HERO);
+    let seen = 0;
+    for (const def of defs) for (const [finish, wireframe] of [...FINISH_IDS.map((f) => [f, false] as const), [FINISH_IDS[0], true] as const]) {
+      for (const pic of pictures(buildSection(def, { finish, wireframe }))) { seen++; expect(pic.maxHeight, def.id).toBe(HERO.photoMaxHeight); }
+    }
+    expect(seen).toBeGreaterThan(0);
+  });
+  it("a re-finished hero keeps it; a category with no cap gives its pictures none", () => {
+    const def = categorySections(HERO).find((d) => d.id === "hero-split")!;
+    const placed = buildSection(def, { finish: "calm", wireframe: false });
+    expect(pictures(restyleSection(placed, def, "bold")).map((p) => p.maxHeight)).toEqual([HERO.photoMaxHeight]);
+    const other = BUILT.find((c) => c.id !== "hero" && sectionsOf(c.id).some((d) => JSON.stringify(d.tree).includes('"r":"image"')))!;
+    const own = raw(other.id);
+    for (const d of categorySections(own)) for (const p of pictures(buildSection(d, { finish: "plain", wireframe: false }))) expect(p.maxHeight, d.id).toBe(own.photoMaxHeight);
   });
 });

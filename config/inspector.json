@@ -18,6 +18,7 @@
     "lastRowHint": "The rows above it (a top bar, an announcement) scroll away; the last row stays held.",
     "announce": "Add an announcement bar"
   },
+  "sectionSpace": { "$comment": "BATCH LE-15i (SG-1 · SG-2): Page grid's space between sections, and a section keeping its own (the Inspector).", "label": "Space above and below sections", "default": "Each section's own", "back": "Back to the designs' own", "atDefault": "At the designs' own", "merge": "Same-colour sections share their space", "mergeHint": "Two sections of the same colour, one under the other, have one space between them, not two.", "own": "Keeps its own space above and below", "follow": "Follow the site" },
   "widths": {
     "$comment": "BATCH LE-3: AC-9 the site's one content width (Page grid panel; a section's Content width) and AC-30 a set width (a block's Custom width on a row of the page; a Grid's Column widths). {width} is the content width in rem.",
     "contentWidth": "Content width",
