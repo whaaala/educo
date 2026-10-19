@@ -52,6 +52,13 @@ describe("SZ-4 · a proportion for any block", () => {
     expect(sized(createElement("image", { ratio: "4 / 3" }), stack, {}).aspectRatio).toBeUndefined(); // the picture's box, not its wrapper
     const out: CSSProperties = {}; applyBoxSize(out, col("a", { ratio: "1 / 1" }), null); expect(out).toEqual({});
   });
+  it("LE15h-1 · a picture's Max height reaches the picture itself — held to it, cropped; a bad value is refused", () => {
+    expect(imageSizing(createElement("image", { imgW: 800, imgH: 600, maxHeight: "20rem" }))).toEqual({ height: "auto", aspectRatio: "800 / 600", maxHeight: "20rem" });
+    expect(imageSizing(createElement("image", { ratio: "4 / 3", maxHeight: "75svh" }), true).maxHeight).toBe("75svh");
+    expect(imageSizing(createElement("image", { maxHeight: "wide" })).maxHeight).toBeUndefined();
+    const html = published(pageWith(createElement("image", { src: "x.jpg", imgW: 800, imgH: 600, maxHeight: "20rem" })));
+    expect(html).toMatch(/<img [^>]*style="[^"]*aspect-ratio:800 \/ 600;[^"]*max-height:20rem/);
+  });
   it("canvas == export: the published page carries the shape, per screen", () => {
     const root = pageWith(col("a", { ratio: "16 / 9", responsive: { phone: { ratio: "1 / 1" } } }));
     const html = published(root);

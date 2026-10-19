@@ -293,6 +293,22 @@ Feature: Box Builder — ready-made sections, my sections, global sections and p
     Then its words, bands and buttons have the site theme's colours, the same as the Preview
     And never the editor's own colours (measured: the canvas #111827 against the Preview #0f172a)
 
+  # ── A hero on a very wide screen (BATCH LE-15h, HH-1) ─────────────────────────────────────────────────────────
+
+  Scenario: A hero's picture stays within the screen on a very wide screen
+    Given I added the hero "Words beside a picture"
+    When I open the Preview on a screen 5,120 wide and 1,440 high
+    Then its picture is no taller than the cap in config/sections/hero.json (75svh), cropped and never stretched
+    And its words are wholly in the window
+    And on a 1280 × 720 to 2560 × 1440 screen the picture keeps its own shape (the cap does not bite)
+    And every hero layout with a picture carries the same cap, in every finish and in the Wireframe
+
+  Scenario: The cap is mine to change
+    Given I added a hero with a picture
+    When I select its picture
+    Then the Inspector shows its Max height, 75svh
+    And I can change it or clear it, and the canvas and the Preview follow
+
   Scenario: Only a ready-made section offers it
     When I select a section I built myself from blocks
     Then the Inspector shows no Finish

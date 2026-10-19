@@ -46,6 +46,13 @@ Feature: Sizes and grids — a shape, limits, cards that fit, spacing on the sca
     Then on a tall screen it is 40rem tall
     And on a phone with more words than fit it grows to hold them
 
+  Scenario: a picture is held to its largest height, cropped (LE15h-1)
+    Given a picture of a 4:3 photo across a wide row
+    When I set its Max height to 20rem
+    Then on the canvas and in the Preview it is 20rem tall, as wide as before, the photo cropped and never stretched
+    And a Max height in screen units (75svh) is that share of the screen in the Preview, and of the canvas view on the canvas
+    And where its own shape is shorter than the Max height, it keeps its own shape
+
   Scenario: a Grid column between two widths
     Given a Grid block of three columns
     When I set Column widths: column 1 "Between" 12rem and 18rem

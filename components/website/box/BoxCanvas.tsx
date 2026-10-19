@@ -131,7 +131,7 @@ export { zoomOf };
 
 /** How close a dragged edge must land to a block's own one-line width to give the block back to its words (L4-f). */
 /** LE2-3: a screen height on the canvas is a share of the canvas VIEW (`--canvas-h`), as `100svh` is of a visitor's screen. */
-const canvasScreen = (css: CSSProperties["minHeight"]) => (typeof css === "string" ? css.replace(/(\d+(?:\.\d+)?)svh/g, (_, n) => `calc(var(--canvas-h, ${n}svh) * ${+n / 100})`) : css);
+const canvasScreen = (css: CSSProperties["minHeight"]) => (typeof css === "string" ? css.replace(/(\d+(?:\.\d+)?)svh/g, (_, n) => `calc(var(--canvas-h, 100svh) * ${+n / 100})`) : css);
 const HUG_SNAP_PX = RESIZE.hugSnapPx; // config/layout.json (RULE CFG, L5-3)
 
 function measureBoxU(el: HTMLElement, baseFont: number): number {
@@ -3944,7 +3944,7 @@ export default function BoxCanvas({
      * not happen.
      */
     // SZ-4 · SZ-3: the block's shape and limits, from the export's own emitter; Advanced CSS still has the last word
-    if (!isRoot) { applyBoxSize(wrapStyle, node, parent); Object.assign(wrapStyle, advancedCssStyle(node)); }
+    if (!isRoot) { applyBoxSize(wrapStyle, node, parent); if (wrapStyle.maxHeight) wrapStyle.maxHeight = canvasScreen(wrapStyle.maxHeight); Object.assign(wrapStyle, advancedCssStyle(node)); }
     const canvasStyle = capturedAbove ? wrapStyle : canvasFixedStyle(wrapStyle);
     // Marked so the measuring pass below can find every held block and tell it where its holder sits.
     const heldAttr = {
@@ -5208,7 +5208,7 @@ function ElementView({ node, headingLevel, theme, editable, selected, onText, on
       // and a height set by hand crops it in both places.
       const sizing = imageSizing(node, fill);
       return (
-        <div className="relative w-full" style={{ height: sizing.height, aspectRatio: sizing.aspectRatio }}>
+        <div className="relative w-full" style={{ height: sizing.height, aspectRatio: sizing.aspectRatio, maxHeight: canvasScreen(sizing.maxHeight) }}>
           {/* alt is passed here too, so what a screen reader gets while editing matches the published page.
               So are the intrinsic dimensions, which is what holds the box open before the photo arrives. */}
           {/* `rounded={false}`, and it is not a style choice — it is the corner-radius rule.

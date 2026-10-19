@@ -4998,10 +4998,13 @@ export function hasIntrinsicSize(node: BoxNode): boolean {
  * The fixed height still wins whenever one is set — cropping to a deliberate shape is a design choice, and
  * `object-fit: cover` is what makes it look right.
  */
-export function imageSizing(node: BoxNode, fill = false): { height: string; aspectRatio?: string } {
+export function imageSizing(node: BoxNode, fill = false): { height: string; aspectRatio?: string; maxHeight?: string } {
   const own = ownImageSizing(node);
+  // LE15h-1: its Max height (SZ-3) holds the PICTURE, cropped by `object-fit: cover` — on its wrapper alone the photo kept its height
+  const maxHeight = limitCss(node.maxHeight);
+  const sized = maxHeight ? { ...own, maxHeight } : own;
   // G-3d (2): where its block fills (`fillsRows`), `--bx-fill` is 100% on the picture's box; everywhere else its own height
-  return fill ? { ...own, height: `var(--bx-fill, ${own.height})` } : own;
+  return fill ? { ...sized, height: `var(--bx-fill, ${own.height})` } : sized;
 }
 function ownImageSizing(node: BoxNode): { height: string; aspectRatio?: string } {
   const explicit = sizeToCSS(node.height);

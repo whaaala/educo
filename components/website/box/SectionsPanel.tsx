@@ -9,7 +9,7 @@
 import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import SECTIONS from "@/config/sections.json";
 import INSPECTOR from "@/config/inspector.json";
-import { buildSection, FINISH_IDS, finishLabel, SECTION_DRAG_TYPE, type SectionDef } from "@/lib/section-library";
+import { buildSection, categorySections, FINISH_IDS, finishLabel, SECTION_DRAG_TYPE, type SectionDef } from "@/lib/section-library";
 import { emptyPageRoot, type BoxSite } from "@/lib/box-site";
 import { renderSitePage } from "@/lib/box-export";
 import { cloneBox, type BoxNode } from "@/lib/box-model";
@@ -31,8 +31,8 @@ const TILE_PAGE_PX = 1280;
 let loaded: Promise<{ cat: Category; sections: SectionDef[] }[]> | null = null;
 export function loadAll() {
   loaded ??= Promise.allSettled((SECTIONS.categories as Category[]).map(async (cat) => {
-    const mod = (await import(`@/config/sections/${cat.id}.json`)) as { default?: { sections: SectionDef[] }; sections?: SectionDef[] };
-    return { cat, sections: (mod.default ?? mod).sections ?? [] };
+    const mod = (await import(`@/config/sections/${cat.id}.json`)) as { default?: { sections: SectionDef[]; photoMaxHeight?: string }; sections?: SectionDef[]; photoMaxHeight?: string };
+    return { cat, sections: categorySections(mod.default ?? mod) };
   })).then((all) => all.flatMap((r) => (r.status === "fulfilled" && r.value.sections.length ? [r.value] : [])));
   return loaded;
 }

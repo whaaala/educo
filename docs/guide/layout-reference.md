@@ -158,7 +158,7 @@ inside.
 | **Height** | A minimum height for the block, in rem or px. Not available on all block types. | Per screen |
 | **At least rows tall** (bands) | For a page-grid page's outer band — the band is at least this many row-heights tall. | Per screen |
 | **Proportion**: Free · 1:1 · 4:3 · 3:2 · 16:9 · 2:1 · 21:9 · 3:4 · 2:3 · 4:5 · 9:16 · Custom (w : h) | The block keeps this shape: as tall as its width says. Words that need more room make it taller, never cut; a picture is cropped to it. Picking one clears the Height; typing a Height clears it. Free turns it off. | Per screen |
-| **Limits**: Min width · Max width · Min height · Max height | A length (`40rem`, `65ch`, `80%`; px is made rem). Never wider than the screen; a Max height caps a stretched or full-screen block but never cuts words. On a row of the page, a Min / Max width makes a sidebar between two widths. Empty clears it. | Per screen |
+| **Limits**: Min width · Max width · Min height · Max height | A length (`40rem`, `65ch`, `80%`; px is made rem). Never wider than the screen; a Max height caps a stretched or full-screen block but never cuts words. On a picture it caps the picture itself, cropped (`75svh`: three quarters of the screen's height). On a row of the page, a Min / Max width makes a sidebar between two widths. Empty clears it. | Per screen |
 
 **Dragging an edge or a corner back.** Every edge and corner can be dragged back, in the same drag or a later one: the
 block — and every neighbour the drag moved — returns to the width and height it had and stores nothing new (no fixed
