@@ -775,6 +775,14 @@ Run through this checklist BEFORE telling the user it's done:
   - **Every combination at EVERY screen, for EVERYTHING:** phone, tablet upright and sideways, laptop, desktop, wide, both
     sides of every breakpoint, every device preset (`scripts/uat/screens.js`), and the app on phone AND tablet — for every
     section, layout, template, effect and component, now and later. A combination checked at one width is not checked.
+  - **A TEMPLATE IS ONLY A START — PROVEN, NOT CLAIMED (the user, 2026-10-20: "if I select a template… can I really edit
+    everything… move items around… put another section inside the hero… for all of the components, all of the pages,
+    everything we have now and… going forward").** On a page made from any template, every block — a section, a stack, a
+    picture, a card, a component and a part inside it — can be moved left, right, up, down, into and out of any block, put
+    beside any block, nested, shifted, placed on the page grid and given another meaning (what it publishes as), by drag
+    AND without one. Proven by a probe that is **ENUMERATED** from the page templates, the sections library and the
+    component catalogue — never a hand-picked list — so every component, every page and every template, the ones we have
+    and every one added later, is driven the day it appears (BATCH LE-15l). A gesture it cannot make is a bug in the ledger.
 - **RULE BEST-PATH — FOUNDATION FIRST, LIGHTER THAN THE LEADERS, THE AI COMPOSER IS THE LEAP, SCOPE HELD (MANDATORY — the
   user, 2026-10-19: "I want to build all the foundation first… keep the weight lead and measure it against Wix and Webflow,
   let's always do that… treat the AI composer as the leap… hold the line on scope… let's keep that as a rule").**

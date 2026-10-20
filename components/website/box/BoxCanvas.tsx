@@ -19,15 +19,16 @@ import type { SiteTheme } from "@/lib/site-storage";
 import {
   type BoxNode, type BoxType, frameCss, spanAt, setSpan,
   containerStyle, childStyle, marginCSS, leafPaddingCSS, ownSidePadVars, outerSpaceCSS, pageBandInset, pagePinCover, sectionContent, sizeToCSS, u, baseUnit, floatingReserve, floatStacksOnMobile, createContainer, createElement, createComponent,
-  updateBox, deleteBox, insertBox, pageEnd, moveBlock, canMoveBlock, moveAxis, duplicateBox, moveBox, cloneBox, findParent, isAncestor, isContainer, containerLabel, widthPct, stackWithBlock, fitBand, PILL, blockTypography,
+  updateBox, deleteBox, insertBox, pageEnd, moveBlock, canMoveBlock, moveAxis, duplicateBox, moveBox, cloneBox, findParent, isAncestor, isContainer, containerLabel, widthPct, stackWithBlock, rowWithBlock, fitBand, PILL, blockTypography,
   isFloating, floatBox, unfloatBox, groupBoxes, ungroupBoxes, groupAround, moveBlocks, copyStyle, pasteStyle, bringToFront, sendToBack, bringForward, sendBackward, packRowLines, allocateLine, type LineFollower,
   shouldTakeMirrorBox, mirrorFlushSides, edgeSwipeSides, hostSizedFor, type MirrorBox, type MirrorChase, fadedPaint, boxOpacity, backgroundCss, treePaintLayerCss, treeBgVideoCss, radiusCSS, isClipped, SHADOW_CSS, videoEmbedSrc, sanitizeCssDeclarations, expandScopedCss, ACCORDION_CSS_PARTS, itemOverrideCss, itemHasOverride, itemNumberVars, richBody, componentTextCss, componentBoxCss, bgShowThroughCss, resizeTopEdge, blockContainmentCss, alertToastCss, treeHasToast, treeHasFixedHold, accordionClasses, bandClasses, hasSiteMeasure, advancedCssStyle, applyBoxSize, sectionSpacePad, sectionSpaceOf, alertActionsHTML, hugsContent, itemFloatContextCss, COMPONENT_ITEM_SEL, clampContentScale, MIN_CONTENT_SCALE, isMultiItemComponent, comfortableWidth, remLen, rootFontPx, isDefiniteLen, addItemAfter, duplicateItem, duplicateChildItem, removeItem, removeChildItem, moveItem, moveChildItem, updateItem, updateChildItem, ALERT_SEVERITY_ICON, alertPartInline, alertIconInline, collectAlertItemStyles,
-  type Breakpoint, resolveResponsive, updateBoxResponsive, treePinArrivalCss, floatHoldCSS, canvasFixedStyle, capturesFixed, imageSizing, fillsRowsAnywhere, coversCellAnywhere, fillHostOf, importPhoto, traceOutline, followsOutline, pictureTarget, tintFor, treeItemEffectsCss, itemNeedsClass, floatZIndex, gridPlacementAt, masonryMeasureAttr, masonryMeasurePass, mirrorMeasuresNow, baseUnitParts, pinStackMarker, pinStackGroupMarker, pinStackPass, pinArrivalMarker, pinArrivalPass, headerMarkers, headerPass, underOverHeaderPad, isPager, pagerStripCss, pagerNavHTML, selectionChain, textLen, typoRole, typoRootVars, typoCascadeCss, bandEdgeCSS, LINK_COLOR_CSS, treeGridQueryCss, TYPE_UNIT_PROPERTY_CSS, stripsAnywhere,
+  type Breakpoint, resolveResponsive, updateBoxResponsive, treePinArrivalCss, floatHoldCSS, canvasFixedStyle, capturesFixed, imageSizing, fillsRowsAnywhere, coversCellAnywhere, fillHostOf, importPhoto, traceOutline, followsOutline, pictureTarget, tintFor, figcaptionStyle, BUTTON_RESET, treeItemEffectsCss, itemNeedsClass, floatZIndex, gridPlacementAt, masonryMeasureAttr, masonryMeasurePass, mirrorMeasuresNow, baseUnitParts, pinStackMarker, pinStackGroupMarker, pinStackPass, pinArrivalMarker, pinArrivalPass, headerMarkers, headerPass, underOverHeaderPad, isPager, pagerStripCss, pagerNavHTML, selectionChain, textLen, typoRole, typoRootVars, typoCascadeCss, bandEdgeCSS, LINK_COLOR_CSS, treeGridQueryCss, TYPE_UNIT_PROPERTY_CSS, stripsAnywhere,
 } from "@/lib/box-model";
 import { ICON_SET } from "./icons";
 import INSPECTOR_WORDS from "@/config/inspector.json";
 /** LE15k-p / o: the selection's words (RULE CFG). */
 const SEL = INSPECTOR_WORDS.selection;
+const MEANING = INSPECTOR_WORDS.meaning; // LE15l-6
 import { PortalMenu, MenuItem, MenuHeader, MenuSep, modalOpen, NON_TEXT_INPUTS } from "./ui";
 import GridLayoutMenu, { type MenuAnchor } from "./GridLayoutMenu";
 import GallerySetupMenu from "./GallerySetupMenu";
@@ -1268,6 +1269,7 @@ export default function BoxCanvas({
   const [toolbarBelow, setToolbarBelow] = useState(false);
   const [toolbarRight, setToolbarRight] = useState(false);
   const [toolbarDocked, setToolbarDocked] = useState(false);
+  const [toolbarPin, setToolbarPin] = useState<number | null>(null); // LE15l-p: px from the block's top, when the bar is pinned
   useEffect(() => {
     if (!soloId) return;
     const measure = () => {
@@ -1278,7 +1280,14 @@ export default function BoxCanvas({
       // drops BELOW the box rather than sitting over the app header. Only written when it actually changes, so a stable page settles.
       // A FINGER'S BAR IS TALLER (E5a-11): 44px buttons make it 52, so it needs 68 above, not the mouse bar's 32 + 16.
       const need = window.matchMedia?.("(pointer: coarse)").matches ? 68 : 48;
-      setToolbarBelow((prev) => { const next = box.getBoundingClientRect().top < canvasTop + need; return next === prev ? prev : next; });
+      // LE15l-p: against what the canvas SHOWS, not the page's top — the page's top scrolls away, so a tall section scrolled to the
+      // top of the canvas kept its bar above it, under the app's own top bar. Above if there is room; below if its bottom is on
+      // screen; else PINNED at the top of what is shown, inside the block (Webflow, Figma).
+      const b = box.getBoundingClientRect(); const shown = document.querySelector("[data-canvas-scroller]")?.getBoundingClientRect();
+      const visTop = Math.max(canvasTop, shown?.top ?? 0), visBottom = Math.min(shown?.bottom ?? window.innerHeight, window.innerHeight);
+      const above = b.top >= visTop + need, under = !above && b.bottom + need <= visBottom;
+      setToolbarBelow((prev) => (under === prev ? prev : under));
+      setToolbarPin((prev) => { const next = above || under ? null : Math.round(visTop - b.top + 8); return next === prev ? prev : next; });
       // A block in the right half hangs its bar from its RIGHT edge (E5a-4): anchored left, the bar — a finger's size since
       // E-5a — ran 17px off a 393 phone and scrolled the page sideways.
       const r = box.getBoundingClientRect();
@@ -1737,14 +1746,14 @@ export default function BoxCanvas({
     return t ? `Text: ${t.slice(0, 18)}` : "Text";
   };
   const directKids = (el: HTMLElement) => Array.from(el.querySelectorAll<HTMLElement>(":scope > [data-box-id]"));
-  type Drop = { target: { parentId: string; index: number }; rect: { left: number; top: number; width: number; height: number; inside: boolean }; moveWidth?: string; wrapUnder?: { id: string; before: boolean } };
+  type Drop = { target: { parentId: string; index: number }; rect: { left: number; top: number; width: number; height: number; inside: boolean }; moveWidth?: string; wrapUnder?: { id: string; before: boolean }; wrapBeside?: { id: string; before: boolean } };
 
   // Pick the drop SLOT among a container's children from the ACTUAL laid-out geometry — not the nominal
   // flex-direction. This is what makes drops land where the line shows even when a "row" wraps: full-width
   // sections stack (we compare vertically, draw a horizontal line); side-by-side blocks share a row (we
   // compare horizontally, draw a vertical line). We find the child nearest the cursor, detect whether it
   // sits BESIDE a sibling (same row) or is stacked, then decide before/after on that local axis.
-  const slotFromKids = (parentEl: HTMLElement, kidEls: HTMLElement[], x: number, y: number): { index: number; rect: Drop["rect"]; moveWidth?: string; rowFlow?: boolean; wrapUnder?: Drop["wrapUnder"] } => {
+  const slotFromKids = (parentEl: HTMLElement, kidEls: HTMLElement[], x: number, y: number): { index: number; rect: Drop["rect"]; moveWidth?: string; rowFlow?: boolean; wrapUnder?: Drop["wrapUnder"]; wrapBeside?: Drop["wrapBeside"] } => {
     const pr = parentEl.getBoundingClientRect();
     const T = 3;
     if (!kidEls.length) return { index: 0, rect: { left: pr.left, top: pr.top, width: pr.width, height: pr.height, inside: true } };
@@ -1843,10 +1852,24 @@ export default function BoxCanvas({
     // space so it fits next to them; if the line is essentially full (or it's a stacked drop) → 100% on its own line.
     let moveWidth = "100%";
     if (rowFlow) {
+      // LE15l-h: a FILL block on the line takes whatever room is left, so the DRAWN widths always read "full" — the newcomer got
+      // 100 %, was shared out against the fixed blocks alone and the line wrapped (a Stack beside the head's picture went under
+      // it). On such a line the newcomer shares the flexible room instead.
+      // LE15l-q (tier 2, 36 sections; repro 8): the same beside a block that HUGS (a centred name, width auto) — a measured share
+      // rounded UP overshot by a pixel (282 + 809 = 1091 of 1090) and the band wrapped it under while the line said "beside". Any
+      // block on the line that is not a fixed share makes the newcomer FILL; an all-% line's leftover is rounded DOWN.
+      const fills = kidEls.some((el, i) => sameRow(rects[i], kr) && !/%\s*$/.test(String(findByIdLocal(rootRef.current, el.getAttribute("data-box-id") ?? "")?.width ?? "")));
       const lineSumPct = rects.filter((r) => sameRow(r, kr)).reduce((s, r) => s + (r.width / Math.max(1, pr.width)) * 100, 0);
-      const remaining = Math.round((100 - lineSumPct) * 10) / 10;
-      moveWidth = remaining >= 8 ? `${remaining}%` : "100%"; // no real room left → give it its own line instead of overflowing
+      const remaining = Math.floor((100 - lineSumPct) * 10) / 10;
+      moveWidth = fills ? "fill" : remaining >= 8 ? `${remaining}%` : "100%"; // no real room left → give it its own line instead of overflowing
     }
+    // LE15l-v: BESIDE a block whose parent lays blocks one under the other with no row bands (a card: icon over words) — the line
+    // drawn beside it is only true if the block's slot becomes a Side by side holding both (`rowWithBlock`); inserted as a sibling
+    // it landed UNDER the icon. A band or a grid already holds blocks side by side, and keeps the plain index.
+    const nearId = kidEls[k].getAttribute("data-box-id") ?? "";
+    const pcs = getComputedStyle(parentEl);
+    if (rowFlow && pcs.display.includes("flex") && pcs.flexDirection.startsWith("column") && !findByIdLocal(rootRef.current, nearId)?.rowBand && !rects.some((r, i) => i !== k && sameRow(r, kr)))
+      return { index, rect, moveWidth: "fill", rowFlow, wrapBeside: { id: nearId, before } };
     return { index, rect, moveWidth, rowFlow };
   };
 
@@ -1865,9 +1888,9 @@ export default function BoxCanvas({
    * child of one in a band of its own, so the block arrives full width on its own line — which is exactly
    * what the indicator drew, and exactly what "add it underneath" has to mean.
    */
-  const bandRedirect = (parentId: string, slot: { index: number; rect: Drop["rect"]; moveWidth?: string; rowFlow?: boolean; wrapUnder?: Drop["wrapUnder"] }): Drop | null => {
+  const bandRedirect = (parentId: string, slot: { index: number; rect: Drop["rect"]; moveWidth?: string; rowFlow?: boolean; wrapUnder?: Drop["wrapUnder"]; wrapBeside?: Drop["wrapBeside"] }): Drop | null => {
     const band = findByIdLocal(rootRef.current, parentId);
-    if (slot.wrapUnder) return null;                       // "under THIS column" is a different answer entirely
+    if (slot.wrapUnder || slot.wrapBeside) return null;   // "under THIS column" / "beside THIS block" (LE15l-v) are different answers entirely
     if (!band?.rowBand || slot.rowFlow) return null;       // not a band, or the pointer meant "beside" after all
     const up = findParent(rootRef.current, parentId);
     if (!up) return null;                                   // the page root has no parent to put a band in
@@ -1929,11 +1952,11 @@ export default function BoxCanvas({
       const pEl = document.querySelector<HTMLElement>(`[data-box-id="${info.parent.id}"]`);
       if (pEl) {
         const s = slotFromKids(pEl, directKids(pEl), x, y);
-        return bandRedirect(info.parent.id, s) ?? { target: { parentId: info.parent.id, index: s.index }, rect: s.rect, moveWidth: s.moveWidth, wrapUnder: s.wrapUnder };
+        return bandRedirect(info.parent.id, s) ?? { target: { parentId: info.parent.id, index: s.index }, rect: s.rect, moveWidth: s.moveWidth, wrapUnder: s.wrapUnder, wrapBeside: s.wrapBeside };
       }
     }
     const s = slotFromKids(hitEl, directKids(hitEl), x, y); // drop INSIDE this container
-    return bandRedirect(node.id, s) ?? { target: { parentId: node.id, index: s.index }, rect: s.rect, moveWidth: s.moveWidth, wrapUnder: s.wrapUnder };
+    return bandRedirect(node.id, s) ?? { target: { parentId: node.id, index: s.index }, rect: s.rect, moveWidth: s.moveWidth, wrapUnder: s.wrapUnder, wrapBeside: s.wrapBeside };
   };
 
   const onDragMove = (ev: { clientX: number; clientY: number }) => {
@@ -2073,13 +2096,15 @@ export default function BoxCanvas({
     const el = document.querySelector<HTMLElement>(`[data-box-id="${node.id}"]`);
     const r = el?.getBoundingClientRect();
     dragArm.current = { id: node.id, startX: e.clientX, startY: e.clientY, w: r?.width ?? 160, h: r?.height ?? 40, label: dragLabel(node), finger: isFinger(e) };
-    if (isFinger(e)) autoScrollRaf.current = requestAnimationFrame(scrollNearEdges);
+    autoScrollRaf.current = requestAnimationFrame(scrollNearEdges); // LE15l-i: a mouse's drag too — it never reached a block off screen
     // The browser taking a finger back (`pointercancel`) puts the block down where it was: nothing moves (E-5b).
     followGesture(e, onDragMove, onDragUp, { onCancel: () => { dragIdRef.current = null; onDragUp(); } });
   };
 
   /**
-   * A FINGER'S DRAG SCROLLS THE EDITOR NEAR ITS TOP AND BOTTOM (E-5b, D4 — WordPress's phone editor). A phone shows a few blocks
+   * EVERY DRAG SCROLLS THE EDITOR NEAR ITS TOP AND BOTTOM — a finger's (E-5b, D4 — WordPress's phone editor) and, since LE15l-i,
+   * a mouse's: held at the window's edge it scrolled nothing, so a section could not be dragged past one taller than the window
+   * (Wix, Webflow and Figma all scroll there). A phone shows a few blocks
    * at a time, so a block lifted at the top could never reach the bottom of the page. Within 4rem of the edge of the area that
    * scrolls, it scrolls — faster the nearer the edge — every frame, so a finger held still keeps it going; the drop is worked out
    * again at each step, because the page moved under a finger that did not.
@@ -2205,13 +2230,14 @@ export default function BoxCanvas({
   const [pendingGallery, setPendingGallery] = useState<{ anchor: MenuAnchor; kind: string; parentId: string; index: number; moveWidth: string | null } | null>(null);
 
   /** Put a freshly built block at a recorded slot — the tail of every palette insertion. */
-  const insertAt = (node: BoxNode, parentId: string, index: number, moveWidth: string | null, wrapUnder?: { id: string; before: boolean }) => {
+  const insertAt = (node: BoxNode, parentId: string, index: number, moveWidth: string | null, wrapUnder?: { id: string; before: boolean }, wrapBeside?: { id: string; before: boolean }) => {
     // A new hugging block (Fit / width auto) stays hugging where it lands; only definite-width blocks fill the line.
     const hugs = !node.width || node.width === "auto";
     if (moveWidth && !hugs) node.width = moveWidth;
     // UNDER ONE COLUMN of a side-by-side band: that column becomes a Stack holding both, and the block beside
     // it is untouched. See `stackWithBlock`, which owns the tree surgery so the rule is unit-testable.
     if (wrapUnder) { onChange(stackWithBlock(rootRef.current, wrapUnder.id, node, wrapUnder.before)); return; }
+    if (wrapBeside) { onChange(rowWithBlock(rootRef.current, wrapBeside.id, node, wrapBeside.before)); return; } // LE15l-v
     // A block landing on a line that is already full has to come from somewhere, so the line is shared out
     // (`fitBand`). This runs on the ADD and nowhere else: a width the user dragged is theirs, and is left
     // free to push a neighbour onto the next line. Doing it on every commit is what made wrapping impossible.
@@ -2278,7 +2304,7 @@ export default function BoxCanvas({
       setPendingGrid({ anchor: { top: e.clientY, bottom: e.clientY, left: e.clientX, right: e.clientX }, parentId, index, moveWidth });
       return;
     }
-    insertAt(nodeForKind(kind), parentId, index, moveWidth, hit?.wrapUnder);
+    insertAt(nodeForKind(kind), parentId, index, moveWidth, hit?.wrapUnder, hit?.wrapBeside);
   };
 
   // ── Drag-to-resize ───────────────────────────────────────────────────────────────────────────
@@ -4652,7 +4678,7 @@ export default function BoxCanvas({
     // the left + the Inspector rail's 3rem + 1rem + the "+"'s 2.75rem + 0.5rem clear = 8.25rem — the rail was left out, and on a
     // 360 phone the bar's end ran under the "+".
     const bar = (
-      <div role="toolbar" aria-label="Block toolbar" style={{ zIndex: CHROME_Z.toolbar, pointerEvents: "auto" }} className={`${toolbarDocked ? "fixed bottom-4 left-4 max-w-[calc(100vw-8.25rem)] overflow-x-auto gap-0 px-0.5" : `absolute ${toolbarRight ? "right-0" : "left-0"} w-max max-w-none ${below ? "top-full mt-4" : "bottom-full mb-4"} gap-0.5 px-1`} flex items-center rounded-xl bg-gray-900/95 dark:bg-gray-800/95 backdrop-blur-sm py-1 shadow-lg ring-1 ring-white/10`} onClick={(e) => e.stopPropagation()} onMouseDown={(e) => e.stopPropagation()} onPointerDown={(e) => e.stopPropagation()}>
+      <div role="toolbar" aria-label="Block toolbar" style={{ zIndex: CHROME_Z.toolbar, pointerEvents: "auto", ...(toolbarPin != null && !toolbarDocked ? { top: toolbarPin } : {}) }} className={`${toolbarDocked ? "fixed bottom-4 left-4 max-w-[calc(100vw-8.25rem)] overflow-x-auto gap-0 px-0.5" : `absolute ${toolbarRight ? "right-0" : "left-0"} w-max max-w-none ${toolbarPin != null ? "" : below ? "top-full mt-4" : "bottom-full mb-4"} gap-0.5 px-1`} flex items-center rounded-xl bg-gray-900/95 dark:bg-gray-800/95 backdrop-blur-sm py-1 shadow-lg ring-1 ring-white/10`} onClick={(e) => e.stopPropagation()} onMouseDown={(e) => e.stopPropagation()} onPointerDown={(e) => e.stopPropagation()}>
         {/* NOT IN THE DOCKED BAR (E5b-8): on a phone a long press is the drag (WordPress's phone editor) and the arrows are the
             route without one — and with the grip the bar ran under the blocks "+" on a 360 phone, hiding ⋮. A FLOATING block keeps it
             (E5c-6): a long press moves a block in the flow only, so on a tablet's docked bar a float could not be moved by a finger
@@ -5187,6 +5213,9 @@ function useItemCrud(
       if (!t) return;
       if (hostRef.current?.contains(t)) return;                       // still inside this component
       if (t.closest('[role="toolbar"][aria-label="Edit this item"]')) return; // the item toolbar itself
+      // LE15l-s: nor the BLOCK's bar or its menu — clearing here re-rendered the canvas between the press and the release, the bar
+      // was drawn afresh and the click was lost: "Move up" on a selected Accordion did nothing, while the ↑ key moved it
+      if (t.closest('[role="toolbar"][aria-label="Block toolbar"], [role="menu"]')) return;
       setSelected(null);
     };
     document.addEventListener("mousedown", onDown, true);
@@ -5564,19 +5593,23 @@ function ElementView({ node, headingLevel, theme, editable, selected, onText, on
       // the button itself (one shape — no duplicate wrapper behind it) and the label re-positions inside it. Content
       // position (or centre by default) decides where the label sits; a resized button therefore centres its text.
       const deco = decorStyle(node);
-      return <a href={node.href || "#"} aria-current={isCurrent ? "page" : undefined} target={node.newTab ? "_blank" : undefined} rel={node.newTab ? "noopener noreferrer" : undefined} onClick={(e) => editable && e.preventDefault()}
-        style={{ display: "flex", width: "100%", height: "100%", boxSizing: "border-box", gap: u(8),
+      const bst: React.CSSProperties = { ...(node.asButton ? BUTTON_RESET : {}), display: "flex", width: "100%", height: "100%", boxSizing: "border-box", gap: u(8),
           alignItems: flexPos(node.contentY ?? "center"), justifyContent: flexPos(node.contentX ?? "center"),
           background: node.background ? colorToCSS(node.background) : colorToCSS(theme.primary), color: node.color || "var(--eu-color-on-brand)",
           fontSize: node.fontSize != null ? textLen(node.fontSize) : typoRole.size(0.875), padding: `${u(12)} ${u(24)}`, textDecoration: "none",
-          ...deco, borderRadius: deco.borderRadius ?? PILL, ...typoStyle(node, "body", 600), ...(isCurrent ? CURRENT_LINK_CSS : {}) }}>
+          ...deco, borderRadius: deco.borderRadius ?? PILL, ...typoStyle(node, "body", 600), ...(isCurrent ? CURRENT_LINK_CSS : {}) };
+      // LE15l-6: a Button that does something on this page is a <button>, as the export writes it
+      if (node.asButton) return <button type="button" style={bst}><EditableText value={node.text} editable={editable} onChange={onText} placeholder="Button" /></button>;
+      return <a href={node.href || "#"} aria-current={isCurrent ? "page" : undefined} target={node.newTab ? "_blank" : undefined} rel={node.newTab ? "noopener noreferrer" : undefined} onClick={(e) => editable && e.preventDefault()}
+        style={bst}>
         <EditableText value={node.text} editable={editable} onChange={onText} placeholder="Button" /></a>;
     }
     case "image": {
       // Identical sizing to the export — same helper, so "auto" takes the photo's own shape in both places
       // and a height set by hand crops it in both places.
       const sizing = imageSizing(node, fill);
-      return (
+      // LE15l-6: a FIGURE draws its caption under the picture, typed in place; the page publishes it as a figure once it has words
+      const pictureBox = (
         <div className="relative w-full" style={{ height: sizing.height, aspectRatio: sizing.aspectRatio, maxHeight: canvasScreen(sizing.maxHeight) }}>
           {/* alt is passed here too, so what a screen reader gets while editing matches the published page.
               So are the intrinsic dimensions, which is what holds the box open before the photo arrives. */}
@@ -5618,6 +5651,14 @@ function ElementView({ node, headingLevel, theme, editable, selected, onText, on
               }} />
           </>)}
         </div>
+      );
+      if (!node.figure) return pictureBox;
+      return (
+        <figure style={{ margin: 0, width: "100%" }}>
+          {pictureBox}
+          {/* empty and not selected → nothing, as the page publishes it (canvas = export) */}
+          {(node.caption?.trim() || selected) && <EditableText as="figcaption" style={figcaptionStyle()} value={node.caption} editable={editable} onChange={(v) => onPatchNode?.({ caption: v })} placeholder={MEANING.captionPlaceholder} />}
+        </figure>
       );
     }
     case "video": {
@@ -5670,6 +5711,11 @@ function ElementView({ node, headingLevel, theme, editable, selected, onText, on
     default:
       // LE13-4 · THE <p> ITSELF is the words, as the export writes it — an inline-block span inside it was one box placed beside a
       // floated picture, so its lines never ran back under it: measured HEADED, the canvas's first line at +0, the Preview's at +528
-      return <EditableText as="p" style={{ color: node.color || typoRole.color("muted"), fontSize: node.fontSize != null ? textLen(node.fontSize) : typoRole.size(1), textAlign: align, width: "100%", ...typoStyle(node, "body", 400), ...ownMeasure(node) }} value={node.text} editable={editable} onChange={onText} placeholder="Add text" />;
+    {
+      // LE15l-6: a paragraph, quoted words or fine print — the element the export writes (lib/box-export.ts "text")
+      const st: React.CSSProperties = { color: node.color || typoRole.color("muted"), fontSize: node.fontSize != null ? textLen(node.fontSize) : typoRole.size(1), textAlign: align, width: "100%", ...typoStyle(node, "body", 400), ...ownMeasure(node), ...(node.textTag === "blockquote" ? { margin: 0 } : {}) };
+      if (node.textTag === "small") return <p style={st}><EditableText as="small" value={node.text} editable={editable} onChange={onText} placeholder="Add text" /></p>;
+      return <EditableText as={node.textTag === "blockquote" ? "blockquote" : "p"} style={st} value={node.text} editable={editable} onChange={onText} placeholder="Add text" />;
+    }
   }
 }

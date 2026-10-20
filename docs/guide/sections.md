@@ -184,6 +184,26 @@ that makes the words readable. One **Ctrl+Z** puts the old photo back.
 A block with no photo, such as a title, a card or a plain white section, has no **Replace picture**. Give it one under
 **Background** in the Inspector.
 
+## "I picked a template — can I change everything on it?"
+
+Yes. A page made from a template is ordinary blocks, and every one of them is yours: the sections, what is inside them, the
+pictures, the cards, the components and the parts inside those.
+
+**Move anything.** Select a block and drag it by the grip (⠿) on its toolbar, or press the arrows on the toolbar, or the arrow
+keys. It can go up, down, left and right, into another section or out of its own. Drag it to the top or bottom of the window and
+the page scrolls under it, so you can take it anywhere on the page. A section taller than the window keeps its toolbar on screen.
+
+**Build on it.** Drop a Stack, a picture or anything else beside a block and the two share the line — beside a picture, beside the
+words of a welcome, beside the icon of a card. Drop it inside a block, or a whole section inside the welcome at the top.
+
+**Shift it.** Drag a block's edge past what is inside it and the block itself moves that way; the words say how far ("Space on the
+left · 2rem"). Ctrl+Z puts it back.
+
+**Line it up.** Select the page or a grid and the page grid's columns are drawn across the page, so you can see where things sit.
+
+**Say what it is.** Under **Meaning**, a text can be a quote or small print, a picture a figure with a caption, a list bulleted
+or numbered, and a button a real button for something on this page instead of a link. Search engines and screen readers read it.
+
 ## "On a very wide screen, the welcome is taller than the window"
 
 A welcome with a picture beside its words grows with the screen. On a very wide one — a monitor five thousand pixels

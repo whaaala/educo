@@ -9,7 +9,7 @@
  */
 
 import type { CSSProperties } from "react";
-import { PILL, applyBoxSize, sectionSpacePad, bgVideoSrc, bgVideoShade, bgVideoBoxCss, dividerThickness, borderLen, videoSizing, blockTypography,pinArrivalCss, pinArrivalKeyframes, floatHoldCSS,
+import { PILL, figcaptionStyle, BUTTON_RESET, applyBoxSize, sectionSpacePad, bgVideoSrc, bgVideoShade, bgVideoBoxCss, dividerThickness, borderLen, videoSizing, blockTypography,pinArrivalCss, pinArrivalKeyframes, floatHoldCSS,
   type BoxNode, type Breakpoint, type SectionFlag, BP_ORDER, containerStyle, childStyle, hostSizedFor, marginCSS, leafPaddingCSS, ownSidePadVars, outerSpaceCSS, pageBandInset, pagePinCover, sectionContent, sizeToCSS, radiusCSS, SHADOW_CSS, u, LIST_ITEM_GAP, textLen, baseUnit, fadedPaint, boxOpacity, backgroundCss, paintLayerCss,
   resolveResponsive, floatStacksOnMobile, floatingReserve, alertToastCss, accordionClasses, bandClasses, hasSiteMeasure, videoEmbedSrc, isContainer, sanitizeCssDeclarations, expandScopedCss, COMPONENT_PARTS, itemFloatContextCss, itemOverrideCss, itemNumberVars, richBody, plainBody, componentTextCss, componentBoxCss, renderAlertHTML, alertDismissScript, masonryMeasureAttr, masonryMeasureScript, pinStackMarker, pinStackGroupMarker, pinStackNeeded, pinStackScript, headerMarkers, headerScript, headerScriptNeeded, underOverHeaderPad, pinArrivalMarker, pinArrivalScript, treeHasArrival, isPager, pagerNavHTML, pagerScript, pagerStripCss, pagerSlideId, bgShowThroughCss, blockContainmentCss, COMPONENT_ITEM_SEL, remLen, imageSizing, fillsRowsAnywhere, coversCellAnywhere, fillHostOf, hasIntrinsicSize, itemNeedsClass, itemScope, floatZIndex, typoRole, typoRootVars, typoCascadeCss, bandEdgeCSS, LINK_COLOR_CSS, gridQueryCss, TYPE_UNIT_PROPERTY_CSS, stripsAnywhere,
   ownMeasure,
@@ -146,13 +146,20 @@ function elementHTML(node: BoxNode, theme: SiteTheme, pageMap: Map<string, strin
   const align = node.textAlign;
   switch (node.type) {
     case "heading": { const hl = SEM?.byId.get(node.id)?.level ?? 2; return `<h${hl} style="${styleString({ color: node.color || typoRole.color("text"), fontSize: node.fontSize != null ? textLen(node.fontSize) : typoRole.size(2), textAlign: align, width: "100%", ...typoCss(node, "heading", 600) })}">${esc(node.text ?? "")}</h${hl}>`; }
-    case "text": return `<p style="${styleString({ color: node.color || typoRole.color("muted"), fontSize: node.fontSize != null ? textLen(node.fontSize) : typoRole.size(1), textAlign: align, width: "100%", ...typoCss(node, "body", 400), ...ownMeasure(node) })}">${esc(node.text ?? "")}</p>`;
+    case "text": { // LE15l-6: a paragraph, quoted words (no browser margin: no space unless you add it) or fine print
+      const st = styleString({ color: node.color || typoRole.color("muted"), fontSize: node.fontSize != null ? textLen(node.fontSize) : typoRole.size(1), textAlign: align, width: "100%", ...typoCss(node, "body", 400), ...ownMeasure(node), ...(node.textTag === "blockquote" ? { margin: "0" } : {}) });
+      const words = esc(node.text ?? "");
+      return node.textTag === "blockquote" ? `<blockquote style="${st}">${words}</blockquote>` : `<p style="${st}">${node.textTag === "small" ? `<small>${words}</small>` : words}</p>`;
+    }
     // A LINK: a plain <a href>, styled as words in the brand colour — never a button's pill (html-semantics.md).
     case "link": return `<a href="${esc(hrefFor(node, pageMap))}"${currentAttr(node)}${node.newTab ? ' target="_blank" rel="noopener noreferrer"' : ""} style="${styleString({ color: node.color || LINK_COLOR_CSS, fontSize: node.fontSize != null ? textLen(node.fontSize) : typoRole.size(1), textAlign: align, textUnderlineOffset: "0.15em", ...typoCss(node, "body", 500), textDecoration: node.underline ? "underline" : "none", ...currentCss(node) })}">${esc(node.text ?? "")}</a>`; // "off" is WRITTEN — a browser underlines every <a> (#106)
     case "button": { // fills its box + paints its own visual + centres its label (matches the editor) — one shape when resized
       const fp = (v?: string) => (v === "center" ? "center" : v === "end" ? "flex-end" : "flex-start");
       const deco = decorCss(node);
-      return `<a href="${esc(hrefFor(node, pageMap))}"${currentAttr(node)}${node.newTab ? ' target="_blank" rel="noopener noreferrer"' : ""} style="${styleString({ display: "flex", width: "100%", height: "100%", boxSizing: "border-box", alignItems: fp(node.contentY ?? "center"), justifyContent: fp(node.contentX ?? "center"), gap: u(8), background: node.background ? colorToCSS(node.background) : colorToCSS(theme.primary), color: node.color || "var(--eu-color-on-brand)", fontSize: node.fontSize != null ? textLen(node.fontSize) : typoRole.size(0.875), padding: `${u(12)} ${u(24)}`, textDecoration: "none", ...deco, borderRadius: deco.borderRadius ?? PILL, ...typoCss(node, "body", 600), ...currentCss(node) })}">${esc(node.text ?? "")}</a>`;
+      const st = styleString({ ...(node.asButton ? BUTTON_RESET : {}), display: "flex", width: "100%", height: "100%", boxSizing: "border-box", alignItems: fp(node.contentY ?? "center"), justifyContent: fp(node.contentX ?? "center"), gap: u(8), background: node.background ? colorToCSS(node.background) : colorToCSS(theme.primary), color: node.color || "var(--eu-color-on-brand)", fontSize: node.fontSize != null ? textLen(node.fontSize) : typoRole.size(0.875), padding: `${u(12)} ${u(24)}`, textDecoration: "none", ...deco, borderRadius: deco.borderRadius ?? PILL, ...typoCss(node, "body", 600), ...currentCss(node) });
+      // LE15l-6: a Button that does something on this page is a <button> (html-semantics.md), never a link to nowhere
+      if (node.asButton) return `<button type="button" style="${st}">${esc(node.text ?? "")}</button>`;
+      return `<a href="${esc(hrefFor(node, pageMap))}"${currentAttr(node)}${node.newTab ? ' target="_blank" rel="noopener noreferrer"' : ""} style="${st}">${esc(node.text ?? "")}</a>`;
     }
     // `loading`/`decoding` are set from the block's own settings: a hero must load eagerly or the page opens
     // blank at the top, while a photo further down should wait until it is nearly on screen.
@@ -172,7 +179,9 @@ function elementHTML(node: BoxNode, theme: SiteTheme, pageMap: Map<string, strin
         return `<div role="img" aria-label="Picture to come" style="${styleString({ width: "100%", height, aspectRatio, maxHeight, display: "flex", alignItems: "center", justifyContent: "center", color: muted, background: `color-mix(in oklch, ${muted} 14%, transparent)`, fontSize: "2rem" })}">${iconSvg("Image")}</div>`;
       }
       const dims = hasIntrinsicSize(node) ? ` width="${node.imgW}" height="${node.imgH}"` : "";
-      return `<img src="${esc(node.src)}" alt="${esc(node.alt ?? "")}"${dims} loading="${node.eager ? "eager" : "lazy"}" decoding="async" style="${styleString({ width: "100%", height, aspectRatio, maxHeight, objectFit: "cover", display: "block" })}" />`;
+      const img = `<img src="${esc(node.src)}" alt="${esc(node.alt ?? "")}"${dims} loading="${node.eager ? "eager" : "lazy"}" decoding="async" style="${styleString({ width: "100%", height, aspectRatio, maxHeight, objectFit: "cover", display: "block" })}" />`;
+      // LE15l-6: a FIGURE only with its caption (html-semantics.md: figure is a figure WITH its figcaption, otherwise generic)
+      return node.figure && node.caption?.trim() ? `<figure style="${styleString({ margin: "0", width: "100%" })}">${img}<figcaption style="${styleString(figcaptionStyle())}">${esc(node.caption)}</figcaption></figure>` : img;
     }
     case "video": { const embed = videoEmbedSrc(node.src); const box = videoSizing(node); if (embed) return videoLink(node.src!, embed, box); return node.src ? `<video src="${esc(node.src)}" controls style="${styleString({ width: "100%", ...box })}"></video>` : ""; }
     case "divider": return `<hr style="${styleString({ border: "0", margin: "0", height: "0", width: "100%", borderTopWidth: dividerThickness(node),borderTopStyle: node.borderStyle ?? "solid", borderTopColor: node.color ? colorToCSS(node.color) : node.borderColor ? colorToCSS(node.borderColor) : typoRole.color("muted") })}">`;

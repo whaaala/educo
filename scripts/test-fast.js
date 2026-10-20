@@ -107,6 +107,7 @@ const INVARIANT_SPECS = [
 "tests/e2e/space-handles.spec.ts",
 "tests/e2e/handles-apart.spec.ts",
 "tests/e2e/words-pictures.spec.ts",
+"tests/e2e/template-editable.spec.ts",
   "tests/e2e/photo-gallery.spec.ts",
   "tests/e2e/pager-hero.spec.ts",
   "tests/e2e/add-without-asking.spec.ts",

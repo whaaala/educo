@@ -204,6 +204,12 @@ Each applies to the screen you are editing.
 | **Sidebar** | Wraps the block in `<aside>`. |
 | **Page footer** | Wraps the block in `<footer>`. |
 | **Heading level** | For Heading blocks — the h1 / h2 / h3 / h4 level in the published HTML. |
+| **What is this block?** on a Text | **Paragraph** (`<p>`), **Quote** (`<blockquote>`, quoted words) or **Small print** (`<small>`, fine print). |
+| **What is this block?** on a Picture | **Picture** (`<img>`) or **Figure with a caption** (`<figure>` with `<figcaption>`). The caption is typed under the picture on the page, or in **Caption** here; the page publishes it as a figure once the caption has words. |
+| **What is this block?** on a List | **Bulleted** (`<ul>`) or **Numbered** (`<ol>`). |
+| **What is this block?** on a Button | **Link — goes to a page** (`<a href>`) or **Button — does something here** (`<button>`). |
+
+An Icon, a Divider and a Link mean one thing each, so they have no Meaning to choose.
 
 ### Spacing
 
@@ -310,6 +316,9 @@ words under it — so a handle lying over a block's first letters never stops yo
 ## Page grid panel
 
 Opened by the **Layout guides** button in the top bar (the grid icon), or right-click the canvas → **Page grid…**.
+
+The page grid's columns are also drawn, without the switch, while the **page** or a **grid** is selected — select something else
+and they go again. **Layout guides** (Shift+G) keeps them on whatever is selected.
 
 [![The Page grid panel: screen tabs, Columns on Desktop 12, Row lines in the guides, Rows on this page, Row height, Side space, Space between columns, Space between rows, This page uses its own grid, Reset to default](img/ref-page-grid-panel.webp)](img/ref-page-grid-panel.webp)
 

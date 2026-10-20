@@ -610,6 +610,11 @@ export interface BoxNode {
   html?: string;          // raw HTML/iframe (embed element)
   listItems?: string[];   // list element items
   listStyle?: "bullet" | "number"; // list element marker
+  // LE15l-6 · what a Text, a Picture and a Button can be (the user 2026-10-20: "the useful few"; config/inspector.json meaning)
+  textTag?: "blockquote" | "small"; // a Text as quoted words or fine print (unset = a paragraph)
+  figure?: boolean;                 // a Picture as a figure — published as <figure> only once its caption has words
+  caption?: string;                 // the figure's caption (<figcaption>)
+  asButton?: boolean;               // a Button that does something on this page (<button type="button">) rather than a link
   color?: string;
   fontSize?: number;
   bold?: boolean;
@@ -2608,6 +2613,18 @@ export function moveBlock(root: BoxNode, id: string, step: MoveStep): BoxNode {
  * The inner block goes to `width: 100%` because it now measures against the Stack rather than the band; the
  * Stack carries the width it used to have, so the line is unchanged.
  */
+/**
+ * LE15l-v · Put `node` BESIDE the block `id` when its parent lays blocks one under the other with no row bands of its own (a card:
+ * an icon over its words). The drop line stood beside the icon and the block landed under it — a column cannot hold two side by
+ * side — so the block's slot becomes a Side by side holding both, the mirror of `stackWithBlock`. It adds no space of its own.
+ */
+export function rowWithBlock(root: BoxNode, id: string, node: BoxNode, before = false): BoxNode {
+  const target = findBox(root, id);
+  const info = findParent(root, id);
+  if (!target || !info) return root;
+  const row: BoxNode = { ...createContainer("row", { width: "100%", padding: 0, gap: 0 }), children: before ? [node, target] : [target, node] };
+  return updateBox(root, info.parent.id, { children: (info.parent.children ?? []).map((k) => (k.id === id ? row : k)) });
+}
 export function stackWithBlock(root: BoxNode, id: string, node: BoxNode, before = false): BoxNode {
   const target = findBox(root, id);
   const info = findParent(root, id);
@@ -3503,6 +3520,11 @@ export const TYPO_VAR = {
 } as const;
 
 /** A role's inherited default, as a `var()` a block can put straight in its own style. */
+/** LE15l-6 · a figure's caption under its picture: the muted small words, a step of space above (the design of a captioned
+ *  figure, never added to a plain picture). One style for the canvas and the export. */
+export const figcaptionStyle = (): Record<string, string> => ({ display: "block", color: typoRole.color("muted"), fontSize: typoRole.size(0.875), paddingTop: "var(--eu-space-3)" });
+/** LE15l-6 · a Button published as <button>: the browser's own font, border and cursor taken off, so it draws as the link button does. */
+export const BUTTON_RESET: Record<string, string> = { fontFamily: "inherit", border: "0", cursor: "pointer", margin: "0" };
 export const typoRole = {
   color: (role: "text" | "muted") => `var(${role === "muted" ? TYPO_VAR.muted : TYPO_VAR.text})`,
   font: (role: "heading" | "body") => `var(${role === "heading" ? TYPO_VAR.headingFont : TYPO_VAR.bodyFont})`,
