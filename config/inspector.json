@@ -232,6 +232,12 @@
     "tipHeight": "Drag to change the height", "tipWidth": "Drag to change the width", "tipSize": "Drag to change the size",
     "spaceInside": "Space inside", "spaceOutside": "Space outside", "spaceColumns": "Space between columns", "spaceRows": "Space between rows", "spaceAbove": "Space above", "spaceLeft": "Space on the left",
     "showSpacing": "Show spacing", "hideSpacing": "Hide spacing", "spacingKey": "Alt+P",
-    "allCards": "All {n} cards resized", "justThisOne": "Just this one instead", "ok": "OK"
+    "allCards": "All {n} cards resized", "justThisOne": "Just this one instead", "ok": "OK",
+    "editText": "Edit text",
+    "editTextTip": "Put the caret in the words to change them (Enter)",
+    "replacePicture": "Replace picture",
+    "addPicture": "Add a picture",
+    "replacePictureTip": "Choose a photo from this device to put in its place",
+    "typeHere": "Click to type"
   }
 }

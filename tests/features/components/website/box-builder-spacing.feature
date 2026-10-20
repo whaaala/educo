@@ -2,7 +2,7 @@ Feature: Spacing — none unless I add it (since 2026-10-15); a saved page keeps
   As a teacher building a page
   I want every section, block and coloured box to arrive with sensible space around it
   So that my words never sit against an edge, and I only touch spacing when I want something different
-  Guards: tests/unit/space-by-default.test.ts · tests/unit/space-handles.test.ts · tests/unit/space-check.test.ts · tests/components/website/PageCheck.test.tsx · tests/e2e/page-grid-panel.spec.ts · tests/e2e/handles-apart.spec.ts · tests/unit/container-naming.test.ts · tests/unit/hand-width-measure.test.ts · tests/unit/fit-grid-rows.test.ts · scripts/uat/uat-le15k-headed.js · scripts/uat/uat-le15k-emulator.js
+  Guards: tests/unit/space-by-default.test.ts · tests/unit/space-handles.test.ts · tests/unit/space-check.test.ts · tests/components/website/PageCheck.test.tsx · tests/e2e/page-grid-panel.spec.ts · tests/e2e/handles-apart.spec.ts · tests/unit/container-naming.test.ts · tests/unit/hand-width-measure.test.ts · tests/unit/fit-grid-rows.test.ts · tests/unit/replace-picture.test.ts · tests/e2e/words-pictures.spec.ts · scripts/uat/uat-le15k-headed.js · scripts/uat/uat-le15k-emulator.js
 
   # BUILT 2026-09-30 (batch S-1, docs/TASK_TREE.md). The user's values: side gutter 2rem (≈22px on a 360px phone, fluid) ·
   # section space 1rem above and below · header/footer bar 1rem · stack gap 1rem · column and grid gap 1rem · inner
@@ -186,6 +186,53 @@ Feature: Spacing — none unless I add it (since 2026-10-15); a saved page keeps
     Examples:
       | tag     | name    |
       | section | Section |
+
+  # ── Changing the words and the pictures of a ready-made section is obvious (BATCH LE-15k LE15k-4; spacing-overlay.md axis 12) ──
+  # Guards: tests/unit/replace-picture.test.ts · tests/e2e/words-pictures.spec.ts · scripts/uat/uat-le15k-headed.js · scripts/uat/uat-le15k-emulator.js
+
+  Scenario: Words say they can be typed into
+    Given a page made from the "School home" template
+    When the pointer rests on the hero's title, or on any words of any section
+    Then it says "Click to type" and the pointer is a text cursor
+    When I click the words once
+    Then the caret is in them and what I type replaces nothing else, and one Ctrl+Z takes the typing back
+
+  Scenario Outline: A selected <block> offers "Edit text" by name
+    Given a page made from the "School home" template
+    When I select <block>
+    Then its toolbar has a button that says "Edit text"
+    When I press it, or press Enter
+    Then the caret is at the end of its words and what I type changes them, on the canvas and in the Preview
+    Examples:
+      | block              |
+      | the hero's title   |
+      | the hero's button  |
+
+  Scenario Outline: A selected <block> offers "Replace picture" by name
+    Given a page made from the "School home" template
+    When I select <block>
+    Then its toolbar has a button that says "Replace picture"
+    When I press it and choose a photo
+    Then <what> shows the new photo, in one Ctrl+Z step, on the canvas and in the Preview
+    Examples:
+      | block                                   | what                          |
+      | the hero section, whose photo is behind | the hero's background         |
+      | a picture in "Life at Greenfield"       | the picture                   |
+
+  Scenario: A block with no photo offers no "Replace picture"
+    When I select a block whose background is a colour, a gradient or a pattern, or that has none
+    Then its toolbar has no "Replace picture", and the Inspector's Background still adds one
+
+  Scenario Outline: The two buttons on <screen>
+    Given a page made from the "School home" template on <screen>
+    When I select the hero, then its title
+    Then "Replace picture" and "Edit text" are on the toolbar, reachable by a finger, and do the same as on a desktop
+    Examples:
+      | screen                 |
+      | a phone (375)          |
+      | a tablet (768)         |
+      | the app on a phone     |
+      | the app on a tablet    |
 
   Scenario Outline: The bands and handles at <screen>, in every theme
     Given a selected Stack with space on every side

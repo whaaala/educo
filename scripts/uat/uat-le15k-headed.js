@@ -1,5 +1,5 @@
 // HEADED UAT — BATCH LE-15k · editing a section: the handles apart and named, only the dragged edge moves, cards one or all
-// (docs/TASK_TREE.md BATCH LE-15k CHECKLIST K1–K9, K12; box-builder-spacing.feature "On every side, the size, inner-space and outer-space
+// (docs/TASK_TREE.md BATCH LE-15k CHECKLIST K1–K9, K12–K18; box-builder-spacing.feature "On every side, the size, inner-space and outer-space
 // handles are in three different places", "A selected block shows its size first…", "Show spacing…", "A card in a grid of cards…").
 // Six windows side by side, one slice of the checklist each. Every state BUILT THROUGH THE UI (RULE Y): Add page → the School home
 // template, blocks selected by clicking them, edges dragged by the pointer; localStorage only READ.
@@ -13,11 +13,21 @@ const LAYOUT = require('../../config/layout.json');
 const WORDS = require('../../config/inspector.json');
 const T = WORDS.sections, SEL = WORDS.selection;
 const RUNGS = { tp: LAYOUT.rungs.tabletPortrait.from, tl: LAYOUT.rungs.tabletLandscape.from }; // RULE CFG
+const PHOTO = path.join(__dirname, '..', '..', 'public', 'sections', 'classroom-800.webp'); // LE15k-4: the photo a person chooses
 const OUT = path.join(__dirname, 'logs', 'le15k'); fs.mkdirSync(OUT, { recursive: true });
 const ONLY = (process.argv.find((a) => a.startsWith('--only=')) || '').slice(7).split(',').filter(Boolean);
 const results = [];
 const rec = (job, id, ok, ev) => { results.push({ job, id, ok, ev }); console.log(`[${job}] ${id} ${ok ? 'PASS' : 'FAIL'} · ${ev}`); };
 const shot = (page, name) => page.screenshot({ path: path.join(OUT, name + '.png') }).catch(() => {});
+/** The contrast of `sel`'s words on what is behind them (every colour read through a 1px canvas, so an oklch() colour measures as drawn). */
+const contrast = (page, sel) => page.locator(sel).first().evaluate((e) => {
+    const cv = document.createElement('canvas'); cv.width = cv.height = 1; const x = cv.getContext('2d');
+    const rgb = (c) => { x.clearRect(0, 0, 1, 1); x.fillStyle = '#000'; x.fillStyle = c; x.fillRect(0, 0, 1, 1); return Array.from(x.getImageData(0, 0, 1, 1).data).slice(0, 3); };
+    const L = (v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; }, lum = (c) => 0.2126 * L(c[0]) + 0.7152 * L(c[1]) + 0.0722 * L(c[2]);
+    let bgEl = e; while (bgEl && getComputedStyle(bgEl).backgroundColor === 'rgba(0, 0, 0, 0)') bgEl = bgEl.parentElement;
+    const a = lum(rgb(getComputedStyle(e).color)), b = lum(rgb(bgEl ? getComputedStyle(bgEl).backgroundColor : '#fff'));
+    return (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05);
+  }).catch(() => 0);
 
 /** The School home page, made the way a person makes it: Add page (in More under 1024) → the template. */
 async function home(page) {
@@ -33,7 +43,7 @@ const BLOCKS = {
   title: [(p) => p.getByText(/Welcome to/).first(), (el) => /^H[1-6]$/.test(el.tagName) || (!!el.querySelector('h1,h2') && !el.querySelector('p'))],
   button: [(p) => p.getByText('Book your place').first(), (el) => (el.textContent || '').trim() === 'Book your place' && !!el.querySelector('a,button')],
   card: [(p) => p.getByText('Term dates').first(), (el) => !!el.querySelector('svg') && (el.textContent || '').trim() === 'Term dates'],
-  picture: [(p) => p.locator('[data-box-id] img').nth(1), (el) => !!el.querySelector('img') && !(el.textContent || '').trim()],
+  picture: [(p) => p.locator('[data-box-id] img').nth(1), (el) => el.querySelectorAll('img').length === 1 && !el.querySelector('h1,h2,h3,h4,p,a')], // LE15k-ax: a selected picture shows its pill's words
 };
 /** Click it as many times as a person must (the section first, then inside), centred in the window first. */
 async function pick(page, name) {
@@ -142,14 +152,7 @@ const JOBS = {
     rec(J, 'K3 Tab reaches a space handle, and a focused one shows', focus === 'true 1', focus);
     // K9 · the words in four themes: the edge's words, a space's words, and the bar (every colour read through a 1px canvas, so an
     // oklch() colour measures as it is drawn)
-    const ratio = (sel) => page.locator(sel).first().evaluate((e) => {
-      const cv = document.createElement('canvas'); cv.width = cv.height = 1; const x = cv.getContext('2d');
-      const rgb = (c) => { x.clearRect(0, 0, 1, 1); x.fillStyle = '#000'; x.fillStyle = c; x.fillRect(0, 0, 1, 1); return Array.from(x.getImageData(0, 0, 1, 1).data).slice(0, 3); };
-      const L = (v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; }, lum = (c) => 0.2126 * L(c[0]) + 0.7152 * L(c[1]) + 0.0722 * L(c[2]);
-      let bgEl = e; while (bgEl && getComputedStyle(bgEl).backgroundColor === 'rgba(0, 0, 0, 0)') bgEl = bgEl.parentElement;
-      const a = lum(rgb(getComputedStyle(e).color)), b = lum(rgb(bgEl ? getComputedStyle(bgEl).backgroundColor : '#fff'));
-      return (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05);
-    }).catch(() => 0);
+    const ratio = (sel) => contrast(page, sel);
     const out = [];
     for (const th of ['Light', 'Dark', 'Midnight', 'Purple']) {
       // the EDITOR's theme (its chrome, the bar) — "Change theme"; the "Light ▾" beside it is the website's (LE15k-aq)
@@ -274,6 +277,92 @@ const JOBS = {
     const pvLines = await f.evaluate(() => { const p = Array.from(document.querySelectorAll('p')).find((e) => /Open day on Saturday/.test(e.textContent)); return p ? Math.round(p.getBoundingClientRect().height / parseFloat(getComputedStyle(p).lineHeight)) : 0; });
     await pvClose(page, 1280);
     rec(J, 'K14 "Open day…" widened by hand: one line on the canvas and in the Preview (1280)', l0 >= 2 && l1 === 1 && pvLines === 1, `canvas ${l0} → ${l1} lines · Preview ${pvLines}`);
+  },
+  // K15 · K16 (LE15k-4) · the words say they can be typed into; "Edit text" on the toolbar and by Enter, seen in the Preview
+  async typing(page, J) {
+    await home(page);
+    const under = async (loc) => {
+      await loc.evaluate((e) => e.scrollIntoView({ block: 'center' })); await sleep(page, 200);
+      const b = await loc.boundingBox(); const x = b.x + b.width / 2, y = b.y + b.height / 2; await page.mouse.move(x, y); await sleep(page, 200);
+      return page.evaluate(([x, y]) => { const t = document.elementFromPoint(x, y); const ce = t && t.closest('[contenteditable="true"]'); return ce ? `${ce.getAttribute('title')} · ${getComputedStyle(ce).cursor}` : `${t && t.tagName} (not the words)`; }, [x, y]);
+    };
+    const seen = [];
+    for (const [what, loc] of [['hero title', page.getByText(/Welcome to/).first()], ['card title', page.getByText('Term dates').first()], ['footer line', page.getByText(/12 Park Road/).first()]]) seen.push(`${what}: ${await under(loc)}`);
+    await shot(page, 'K15-hover-words');
+    rec(J, 'K15 the pointer on words says "Click to type", a text cursor', seen.every((x) => x.includes(`${SEL.typeHere} · text`)), seen.join(' | '));
+    const now = () => page.getByText(/Greenfield Academy now/).count();
+    const title = page.getByText(/Welcome to/).first(); await title.click(); await sleep(page, 300);
+    const caret = await page.evaluate(() => !!document.activeElement && document.activeElement.isContentEditable);
+    await page.keyboard.press('Control+End'); await page.keyboard.type(' now'); await page.keyboard.press('Escape'); await sleep(page, 700);
+    const typed = await now();
+    await page.keyboard.press('Control+z'); await sleep(page, 600);
+    const after = await now();
+    rec(J, 'K15 one click types; one Ctrl+Z takes the typing back', caret && typed > 0 && after === 0, `caret ${caret} · typed ${typed > 0} · after Ctrl+Z ${after}`);
+    const bar = () => page.getByRole('toolbar', { name: 'Block toolbar' });
+    await pick(page, 'title'); const has = await bar().getByRole('button', { name: SEL.editText }).count();
+    await bar().getByRole('button', { name: SEL.editText }).click(); await page.keyboard.type(' today'); await page.keyboard.press('Escape'); await sleep(page, 700);
+    await pick(page, 'button'); await page.keyboard.press('Enter'); await sleep(page, 200); await page.keyboard.type(' now'); await page.keyboard.press('Escape'); await sleep(page, 700);
+    await shot(page, 'K16-edit-text');
+    const f = await pvOpen(page); await sleep(page, 900);
+    const pv = await f.evaluate(() => [/Welcome to Greenfield Academy today/.test(document.body.innerText), /Book your place now/.test(document.body.innerText)]);
+    await pvClose(page, 1280);
+    rec(J, 'K16 "Edit text" on the title\'s toolbar, Enter on the button: the words change, on the canvas and in the Preview', has === 1 && pv.every(Boolean), `button ${has} · Preview title ${pv[0]} · button ${pv[1]}`);
+  },
+  // K17 (LE15k-4) · "Replace picture": the hero's background and a picture; one Ctrl+Z; the Preview; none where there is no photo
+  async photos(page, J) {
+    await home(page);
+    const bar = () => page.getByRole('toolbar', { name: 'Block toolbar' });
+    const heroBg = () => page.evaluate(() => { const h = Array.from(document.querySelectorAll('h1,h2')).find((e) => /Welcome to/.test(e.textContent)); const b = getComputedStyle(h.closest('section')).backgroundImage; return (b.match(/url\("?([^")]{0,40})/) || [])[1] || b.slice(0, 40); });
+    const choose = async () => { const [c] = await Promise.all([page.waitForEvent('filechooser', { timeout: 10000 }), bar().getByRole('button', { name: SEL.replacePicture }).click({ timeout: 10000 })]); await c.setFiles(PHOTO); await sleep(page, 2500); };
+    await pick(page, 'section'); const b0 = await heroBg(); await choose(); const b1 = await heroBg();
+    await shot(page, 'K17-hero-replaced');
+    await page.keyboard.press('Control+z'); await sleep(page, 600); const b2 = await heroBg();
+    rec(J, 'K17 the hero: Replace picture puts the new photo behind it; one Ctrl+Z takes it back', b1.startsWith('data:image') && b2 === b0, `${b0.slice(0, 30)} → ${b1.slice(0, 30)} → ${b2.slice(0, 30)}`);
+    await page.keyboard.press('Escape'); await page.keyboard.press('Escape');
+    await pick(page, 'picture');
+    const src = () => page.evaluate(() => { const id = document.querySelector('[data-chrome-mirror]').getAttribute('data-chrome-mirror'); return document.querySelector(`[data-box-id="${CSS.escape(id)}"] img`).getAttribute('src').slice(0, 30); });
+    const s0 = await src(); await choose(); const s1 = await src();
+    await shot(page, 'K17-picture-replaced');
+    rec(J, 'K17 a picture: Replace picture on its toolbar shows the new photo', s1 !== s0 && s1.startsWith('data:image'), `${s0} → ${s1}`);
+    await page.keyboard.press('Escape'); await page.keyboard.press('Escape'); await page.keyboard.press('Escape');
+    await pick(page, 'section'); await choose();
+    const f = await pvOpen(page); await sleep(page, 900);
+    const pv = await f.evaluate(() => { const h = Array.from(document.querySelectorAll('h1,h2')).find((e) => /Welcome to/.test(e.textContent)); return [getComputedStyle(h.closest('section')).backgroundImage.includes('data:image'), Array.from(document.querySelectorAll('img')).some((i) => i.src.startsWith('data:image'))]; });
+    await pvClose(page, 1280);
+    rec(J, 'K17 the Preview shows both new photos', pv.every(Boolean), `hero ${pv[0]} · picture ${pv[1]}`);
+    const none = [];
+    for (const n of ['title', 'card']) { await pick(page, n); none.push(`${n} ${await bar().getByRole('button', { name: SEL.replacePicture }).count()}`); }
+    await page.keyboard.press('Escape'); await page.keyboard.press('Escape');
+    const plain = page.getByText(/Hello, and/).first(); await plain.evaluate((e) => e.scrollIntoView({ block: 'center' })); await plain.click(); await sleep(page, 400);
+    none.push(`the welcome section ${await bar().getByRole('button', { name: SEL.replacePicture }).count()}`);
+    rec(J, 'K17 no "Replace picture" where there is no photo', none.every((x) => x.endsWith(' 0')), none.join(' · '));
+  },
+  // K18 (LE15k-4) · both buttons at a phone and a tablet width, and their words in four editor themes
+  async reach(page, J) {
+    await home(page);
+    const bar = () => page.getByRole('toolbar', { name: 'Block toolbar' });
+    for (const [w, h] of [[375, 812], [768, 1024]]) {
+      await page.setViewportSize({ width: w, height: h }); await sleep(page, 900);
+      await pick(page, 'section'); const rp = await bar().getByRole('button', { name: SEL.replacePicture }).boundingBox();
+      await shot(page, `K18-${w}-hero`);
+      await pick(page, 'title'); const et = await bar().getByRole('button', { name: SEL.editText }).boundingBox();
+      const inView = (b) => !!b && b.x >= 0 && b.y >= 0 && b.x + b.width <= w && b.y + b.height <= h;
+      await bar().getByRole('button', { name: SEL.editText }).click(); await sleep(page, 200);
+      const caret = await page.evaluate(() => !!document.activeElement && document.activeElement.isContentEditable);
+      await shot(page, `K18-${w}-title`); await page.keyboard.press('Escape');
+      rec(J, `K18 at ${w}: Replace picture and Edit text on the bar, in view, Edit text puts the caret in`, inView(rp) && inView(et) && caret, `replace ${rp && `${Math.round(rp.width)}×${Math.round(rp.height)}`} · edit ${et && `${Math.round(et.width)}×${Math.round(et.height)}`} · caret ${caret}`);
+    }
+    await page.setViewportSize({ width: 1280, height: 900 }); await sleep(page, 900);
+    const out = [];
+    for (const th of ['Light', 'Dark', 'Midnight', 'Purple']) {
+      await page.getByRole('button', { name: 'Change theme', exact: true }).first().click(); await sleep(page, 200);
+      await page.getByRole('menuitemradio', { name: new RegExp(`^${th}`) }).first().click(); await sleep(page, 500);
+      await pick(page, 'section'); const r = await contrast(page, `[aria-label="Block toolbar"] button[aria-label="${SEL.replacePicture}"]`);
+      await pick(page, 'title'); const e = await contrast(page, `[aria-label="Block toolbar"] button[aria-label="${SEL.editText}"]`);
+      if (th === 'Purple') await shot(page, 'K18-purple-bar');
+      out.push(`${th} replace ${r.toFixed(2)} · edit ${e.toFixed(2)}`);
+    }
+    rec(J, 'K18 the two buttons\' words readable in four themes (≥ 4.5 : 1)', out.every((x) => [...x.matchAll(/(\d+\.\d+)/g)].every((m) => parseFloat(m[1]) >= 4.5)), out.join(' | '));
   },
   // K8 · the Preview after the drags, at every width
   async preview(page, J) {

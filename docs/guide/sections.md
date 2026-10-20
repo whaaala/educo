@@ -166,6 +166,24 @@ drawn on the page with its size, and you can set it to anything on the scale, do
 A designed section also moves a little as a visitor scrolls to it, and its buttons answer the pointer and the keyboard. A
 visitor whose phone or computer asks for less motion sees it still, all at once.
 
+## "I want my own words and my own photo in it"
+
+Point at any words in a section and they say **Click to type**. Click once and type: the caret is already there. **Enter**
+or **Esc** finishes, and one **Ctrl+Z** takes the typing back.
+
+If you have selected a title or a button, its toolbar says **Edit text**. Press it, or press **Enter**, and the caret
+waits at the end of its words.
+
+For a photo, select it and press **Replace picture** on its toolbar, then choose a photo from your phone or computer.
+The welcome at the top of the home page has its photo *behind* the words, so select the whole welcome and the same
+**Replace picture** is on its toolbar. The new photo is made smaller for the web on the way in and keeps the dark tint
+that makes the words readable. One **Ctrl+Z** puts the old photo back.
+
+![The welcome selected: its toolbar says Replace picture, and the new photo is behind the words](./img/guide-replace-picture.webp)
+
+A block with no photo, such as a title, a card or a plain white section, has no **Replace picture**. Give it one under
+**Background** in the Inspector.
+
 ## "On a very wide screen, the welcome is taller than the window"
 
 A welcome with a picture beside its words grows with the screen. On a very wide one — a monitor five thousand pixels

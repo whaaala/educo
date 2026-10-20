@@ -206,6 +206,20 @@ on top of each other, so a person grabs the wrong one.
 whole EDGE line, not a small pill. Even Figma, which does this, gets complaints, so the two must also never share a
 spot. Keyboard and the Inspector stay the path without dragging (axis 9).
 
+## Axis 12 — Changing the words and the picture inside a section (added 2026-10-20, BATCH LE-15k, LE15k-4)
+
+The user's report (2026-10-20): "change the text… the images" of a ready-made section. Stored first: `phone-editing.md`
+(the Wix app asks in plain words — "What does it say?" · "What's in the image?"). Not stored, read now:
+
+| Tool | Words | Picture | Source |
+|---|---|---|---|
+| Wix (Editor / Studio) | Select the text → a named **Edit Text** button (a pencil) in its toolbar; double-click also enters typing | Select → **Change Image** in the toolbar | [X7], [X8] |
+| Webflow | **Double-click** the text to type in place; a click away saves | Select → Settings → **Replace Image…**; a picture that is a BACKGROUND is changed elsewhere (Style panel) — a known trap | [W6], [W7] |
+
+**Takeaway:** the leaders NAME the two actions on the selected thing ("Edit Text", "Replace Image") instead of
+expecting a person to know that a click places a caret; a background picture is the case they make hard, so ours puts
+the same named "Replace picture" on a section whose picture is its background.
+
 ---
 
 ## Sources
@@ -254,3 +268,7 @@ spot. Keyboard and the Inspector stay the path without dragging (axis 9).
 - [A1] W3C, Understanding SC 2.5.7 Dragging Movements — https://www.w3.org/WAI/WCAG22/Understanding/dragging-movements.html
 - [E1] Educo, `docs/web-anatomy/phone-editing.md` (finger floor ≥ 24px AA / 44px AAA)
 - [E2] Educo, `docs/web-anatomy/tablet-and-app-editing.md`
+- [X7] Wix Help, Wix Editor: adding and editing text — https://support.wix.com/en/article/wix-editor-adding-and-editing-text
+- [X8] Wix Developers, UX guidelines for the editor experience ("Edit Text" as an element's main action) — https://dev.wix.com/docs/build-apps/develop-your-app/develop-an-app-with-blocks/editor-experience-configuration/ux-guidelines-for-editor-experience-in-blocks
+- [W6] Webflow University, Edit content in Webflow — https://university.webflow.com/videos/edit-content-in-webflow
+- [W7] Guideflow, How to replace an image in Webflow (third-party) — https://www.guideflow.com/tutorial/how-to-replace-an-image-in-webflow

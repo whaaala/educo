@@ -1,5 +1,5 @@
 /**
- * BATCH LE-15k · THE APP half of the HEADED pass (checklist K10): the site editor's WebView on the tablet and the phone, REAL
+ * BATCH LE-15k · THE APP half of the HEADED pass (checklist K10, and K18 for LE15k-4: Replace picture and Edit text by a finger): the site editor's WebView on the tablet and the phone, REAL
  * touches (adb input), read over CDP. The School home page added by taps; a section selected by a tap and named a Section;
  * ⋮ → Show spacing shows every space (a finger has no hover); a quick-link card's bottom edge dragged by a REAL finger: every card
  * grows, the bar offers "Just this one instead", a tap on it leaves only that card taller. Made from uat-le15d-emulator.js.
@@ -89,6 +89,32 @@ const shot = (tag) => u.shot(d, path.join(OUT, `emu-${which}-${tag}.png`));
     ok('a tap on it: the card stays selected and only it keeps the height', !!one && one[mi].h - a[mi].h > 20 && others.every((c) => Math.abs(c.h - a[c.i].h) < 2), one ? `this +${Math.round(one[mi].h - a[mi].h)} · others ${others.map((c) => Math.round(c.h - a[c.i].h)).join(',')}` : 'selection lost');
     shot('just-this-one');
   }
+  // K18 (LE15k-4) · the two named buttons by a REAL finger: "Replace picture" on the hero opens the phone's own photo chooser;
+  // "Edit text" on the title puts the caret in its words and the keyboard comes up
+  const selected = () => page.evaluate(() => { const id = document.querySelector('[data-chrome-mirror]')?.getAttribute('data-chrome-mirror'); const e = id && document.querySelector(`[data-box-id="${CSS.escape(id)}"]`); return e ? e.tagName + (e.querySelector('p') ? ':p' : '') : ''; });
+  const bar2 = () => page.getByRole('toolbar', { name: 'Block toolbar' });
+  await page.keyboard.press('Escape').catch(() => {}); await page.keyboard.press('Escape').catch(() => {}); await u.sleep(500);
+  for (let i = 0; i < 4 && (await selected()) !== 'SECTION:p'; i++) await tap(page.getByText(/Open day on Saturday/).first());
+  u.shell(d, 'input keyevent 111'); await u.sleep(600); // a tap on the words opens the keyboard; put it away as a person does
+  const rp = bar2().getByRole('button', { name: SEL.replacePicture });
+  const rpSeen = await rp.isVisible().catch(() => false);
+  if (rpSeen) await tap(rp);
+  await u.sleep(2500);
+  const focus = String(u.shell(d, 'dumpsys window | grep -E "mCurrentFocus|mFocusedApp"')).trim();
+  shot('replace-picture-chooser');
+  const chooser = /documentsui|photopicker|mediaprovider|gallery|PickActivity/i.test(focus);
+  ok('a tap on "Replace picture" on the hero opens the phone\'s photo chooser', rpSeen && chooser, `button ${rpSeen} · ${focus.split('\n')[0].slice(0, 120)}`);
+  if (chooser) { u.shell(d, 'input keyevent 4'); await u.sleep(1500); } // Back: nothing chosen, nothing changed
+  for (let i = 0; i < 5 && !/^H[1-6]/.test(await selected()); i++) { await tap(page.getByText(/Welcome to/).first()); u.shell(d, 'input keyevent 111'); await u.sleep(500); }
+  const et = bar2().getByRole('button', { name: SEL.editText });
+  const etSeen = await et.isVisible().catch(() => false);
+  if (etSeen) await tap(et);
+  await u.sleep(1200);
+  const caret = await page.evaluate(() => !!document.activeElement && document.activeElement.isContentEditable && /Welcome/.test(document.activeElement.textContent));
+  const kb = /mInputShown=true/.test(String(u.shell(d, 'dumpsys input_method | grep mInputShown')));
+  shot('edit-text');
+  ok('a tap on "Edit text" on the title: the caret in its words, the keyboard up', etSeen && caret && kb, `button ${etSeen} · caret ${caret} · keyboard ${kb}`);
+  u.shell(d, 'input keyevent 111'); await u.sleep(500);
   ok('no console errors in the editor', !errors.length, errors.join(' | ') || 'none');
   await browser.close().catch(() => {});
   fs.writeFileSync(path.join(OUT, `emu-${which}.json`), JSON.stringify(results, null, 1));

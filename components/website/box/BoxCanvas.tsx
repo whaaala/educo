@@ -22,7 +22,7 @@ import {
   updateBox, deleteBox, insertBox, pageEnd, moveBlock, canMoveBlock, moveAxis, duplicateBox, moveBox, cloneBox, findParent, isAncestor, isContainer, containerLabel, widthPct, stackWithBlock, fitBand, PILL, blockTypography,
   isFloating, floatBox, unfloatBox, groupBoxes, ungroupBoxes, groupAround, moveBlocks, copyStyle, pasteStyle, bringToFront, sendToBack, bringForward, sendBackward, packRowLines, allocateLine, type LineFollower,
   shouldTakeMirrorBox, mirrorFlushSides, edgeSwipeSides, hostSizedFor, type MirrorBox, type MirrorChase, fadedPaint, boxOpacity, backgroundCss, treePaintLayerCss, treeBgVideoCss, radiusCSS, isClipped, SHADOW_CSS, videoEmbedSrc, sanitizeCssDeclarations, expandScopedCss, ACCORDION_CSS_PARTS, itemOverrideCss, itemHasOverride, itemNumberVars, richBody, componentTextCss, componentBoxCss, bgShowThroughCss, resizeTopEdge, blockContainmentCss, alertToastCss, treeHasToast, treeHasFixedHold, accordionClasses, bandClasses, hasSiteMeasure, advancedCssStyle, applyBoxSize, sectionSpacePad, sectionSpaceOf, alertActionsHTML, hugsContent, itemFloatContextCss, COMPONENT_ITEM_SEL, clampContentScale, MIN_CONTENT_SCALE, isMultiItemComponent, comfortableWidth, remLen, rootFontPx, isDefiniteLen, addItemAfter, duplicateItem, duplicateChildItem, removeItem, removeChildItem, moveItem, moveChildItem, updateItem, updateChildItem, ALERT_SEVERITY_ICON, alertPartInline, alertIconInline, collectAlertItemStyles,
-  type Breakpoint, resolveResponsive, updateBoxResponsive, treePinArrivalCss, floatHoldCSS, canvasFixedStyle, capturesFixed, imageSizing, fillsRowsAnywhere, coversCellAnywhere, fillHostOf, importPhoto, traceOutline, followsOutline, treeItemEffectsCss, itemNeedsClass, floatZIndex, gridPlacementAt, masonryMeasureAttr, masonryMeasurePass, mirrorMeasuresNow, baseUnitParts, pinStackMarker, pinStackGroupMarker, pinStackPass, pinArrivalMarker, pinArrivalPass, headerMarkers, headerPass, underOverHeaderPad, isPager, pagerStripCss, pagerNavHTML, selectionChain, textLen, typoRole, typoRootVars, typoCascadeCss, bandEdgeCSS, LINK_COLOR_CSS, treeGridQueryCss, TYPE_UNIT_PROPERTY_CSS, stripsAnywhere,
+  type Breakpoint, resolveResponsive, updateBoxResponsive, treePinArrivalCss, floatHoldCSS, canvasFixedStyle, capturesFixed, imageSizing, fillsRowsAnywhere, coversCellAnywhere, fillHostOf, importPhoto, traceOutline, followsOutline, pictureTarget, tintFor, treeItemEffectsCss, itemNeedsClass, floatZIndex, gridPlacementAt, masonryMeasureAttr, masonryMeasurePass, mirrorMeasuresNow, baseUnitParts, pinStackMarker, pinStackGroupMarker, pinStackPass, pinArrivalMarker, pinArrivalPass, headerMarkers, headerPass, underOverHeaderPad, isPager, pagerStripCss, pagerNavHTML, selectionChain, textLen, typoRole, typoRootVars, typoCascadeCss, bandEdgeCSS, LINK_COLOR_CSS, treeGridQueryCss, TYPE_UNIT_PROPERTY_CSS, stripsAnywhere,
 } from "@/lib/box-model";
 import { ICON_SET } from "./icons";
 import INSPECTOR_WORDS from "@/config/inspector.json";
@@ -318,6 +318,9 @@ function placeCaretAt(host: HTMLElement, x: number, y: number) {
  * The block's OWN text, never a descendant block's — so Enter on a Stack does not silently reach inside it and
  * start editing the first heading it happens to contain.
  */
+/** The blocks whose words are their own (LE15k-4: "Edit text" on the toolbar; Enter and F2 do the same). */
+const WORD_BLOCKS = new Set(["text", "heading", "button", "link"]);
+
 function ownEditable(id: string): HTMLElement | undefined {
   const blockEl = document.querySelector<HTMLElement>(`[data-box-id="${id}"]`);
   if (!blockEl) return undefined;
@@ -1227,6 +1230,21 @@ export default function BoxCanvas({
     onSelectIds?.(ids); onSelectId?.(ids[0] ?? null);
   };
   const select = (id: string | null) => emitSelection(id ? [id] : []);
+  /** LE15k-4 · the toolbar's "Replace picture": a picture block's photo, or a block's background photo — the same patches the picture's
+   *  own Replace and the Inspector's Background upload write (downscaled on the way in, one Undo step). The chooser is the platform's. */
+  const replacePicture = (node: BoxNode) => {
+    const target = pictureTarget(node); if (!target) return;
+    const pick = document.createElement("input"); pick.type = "file"; pick.accept = "image/*";
+    pick.onchange = async () => {
+      const f = pick.files?.[0]; if (!f) return;
+      const { src, imgW, imgH } = await importPhoto(f); if (!src) return;
+      const patch: Partial<BoxNode> = target === "src"
+        ? { src, imgW, imgH, wrapOutline: followsOutline(node) ? await traceOutline(src) : undefined }
+        : { bgImage: src, bgTile: undefined, ...tintFor(node) };
+      onChange(updateBox(rootRef.current, node.id, patch));
+    };
+    pick.click();
+  };
 
   /**
    * Does the selected block's toolbar sit ABOVE its box, or flip BELOW it?
@@ -4686,6 +4704,19 @@ export default function BoxCanvas({
             title={`${showSpacing ? SEL.hideSpacing : SEL.showSpacing} (${SEL.spacingKey})`} className={TOOL_BTN}
           ><Ruler className={TOOL_ICON} /></button>
         )}
+        {/* LE15k-4 (the user, 2026-10-20: "change the text… the images"; RULE ZERO-TO-HERO): the two commonest acts are NAMED on the
+            block, the way Wix ("Edit Text") and Webflow ("Replace Image") name them — spacing-overlay.md axis 12. A section whose photo
+            is its BACKGROUND (the School home's hero) had no route on the canvas at all, only Background → upload in the Inspector. */}
+        {!node.locked && WORD_BLOCKS.has(node.type) && (
+          <button onClick={() => { const host = ownEditable(node.id); if (host) { host.focus(); caretToEnd(host); } }}
+            aria-label={SEL.editText} title={SEL.editTextTip} className={`${TOOL_BTN} gap-1 px-1.5 text-xs font-medium whitespace-nowrap`}
+          ><Type className={TOOL_ICON} aria-hidden="true" />{SEL.editText}</button>
+        )}
+        {!node.locked && pictureTarget(node) && (
+          <button onClick={() => replacePicture(node)} aria-label={node.type === "image" && !node.src ? SEL.addPicture : SEL.replacePicture}
+            title={SEL.replacePictureTip} className={`${TOOL_BTN} gap-1 px-1.5 text-xs font-medium whitespace-nowrap`}
+          ><ImageIcon className={TOOL_ICON} aria-hidden="true" />{node.type === "image" && !node.src ? SEL.addPicture : SEL.replacePicture}</button>
+        )}
         {/* THE ARROWS (E-5a, D4 — the user's decision): ↑ ↓ where the block moves up and down, ← → along a line — the
             route that needs no drag, so a finger, a keyboard and a screen reader can all move a block (WCAG 2.5.7). */}
         {!isRoot && !node.locked && !isFloating(node) && (() => {
@@ -5566,7 +5597,7 @@ function ElementView({ node, headingLevel, theme, editable, selected, onText, on
                 handles already behave this way; this did not.
                 The input itself stays mounted either way — it is what "Replace" opens. */}
             {(selected || !node.src) && (
-            <button onClick={() => fileRef.current?.click()} className="absolute bottom-2 right-2 inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium bg-gray-900/80 text-white shadow-lg hover:bg-gray-900"><Upload className="w-3.5 h-3.5" /> {node.src ? "Replace" : "Upload"}</button>
+            <button onClick={() => fileRef.current?.click()} className="absolute bottom-2 right-2 inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium bg-gray-900/80 text-white shadow-lg hover:bg-gray-900"><Upload className="w-3.5 h-3.5" aria-hidden="true" /> {node.src ? SEL.replacePicture : SEL.addPicture}</button>
             )}
             {/* The natural size is measured BEFORE the patch, so the picture and its shape land in one undo
                 step — and so replacing a photo can never leave the previous one's dimensions behind. */}

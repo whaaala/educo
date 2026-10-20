@@ -4995,6 +4995,10 @@ export function tintOverWorstFrame(tint: string): string | null {
 }
 /** LE5-14 (the user 2026-10-18) · the tint that ARRIVES with a picture added to a block that has none — config media.tintStart. */
 export const tintFor = (node: BoxNode): Partial<BoxNode> => (node.bgOverlay ? {} : { bgOverlay: MEDIA.tintStart });
+/** LE15k-4 · what "Replace picture" changes: a picture block's photo, a block's background PHOTO (not a colour, gradient or
+ *  pattern), or nothing — the toolbar names it only where there is a photo to replace. */
+export const pictureTarget = (node: BoxNode): "src" | "bgImage" | null =>
+  node.type === "image" ? "src" : node.bgImage && !node.bgTile && !isCssBg(node.bgImage) && !/^url\(/i.test(node.bgImage.trim()) ? "bgImage" : null;
 /** The box that holds a background video: relative only at ZERO specificity (a pinned or free block keeps its own, LE5-4), isolated. */
 export const bgVideoBoxCss = (selector: string, node: BoxNode): string =>
   bgVideoSrc(node) ? `:where(${selector}){position:relative;min-block-size:calc(${MEDIA.videoDiscRem}rem + 2 * var(--eu-space-3))}${selector}{isolation:isolate}` : ""; // LE5-10: room for the disc

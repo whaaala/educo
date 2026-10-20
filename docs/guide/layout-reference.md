@@ -93,6 +93,8 @@ Appears just above (or below) the selected block.
 | **+ Add a block inside** | Nests a new block inside this one. | — |
 | **🔒 Lock position and size** | Freezes the block's place and size; click again to unlock. | — |
 | **📏 Show spacing** | Draws every space of the block at once, each with its words and size; click again to hide them. With a mouse it is on the toolbar; on a phone or tablet it is in **⋮** (a finger has no hover). | Alt + P |
+| **✏️ Edit text** | On a title, a text, a button or a link: puts the caret at the end of its words so you can type. Words also say **Click to type** under the pointer, and one click types. | Enter or F2 |
+| **🖼 Replace picture** | On a picture, and on any block whose background is a photo (the welcome at the top of the home page): choose a photo from this device to put in its place. One Ctrl+Z puts the old one back. An empty picture says **Add a picture**. | — |
 | **⋮ Block actions** | The menu below. | — |
 
 The **⋮ Block actions** menu:
