@@ -45,3 +45,14 @@ test("a picture in a carousel's next slide is not off the page; a picture past t
   await page.setContent(`<!doctype html><body style="margin:0;overflow-x:hidden"><div class="bx-a" style="position:relative;left:600px;width:400px">${img}</div></body>`);
   expect((await l2()).join(" ")).toMatch(/runs off the page/);
 });
+
+test("LE15d-3 · a date or a time beside its item on a phone is a label, not a squeezed column; a narrow cell of words still is", async ({ page }) => {
+  await page.setViewportSize({ width: 375, height: 700 });
+  const l5 = async (cell: string) => {
+    await page.setContent(`<!doctype html><meta name="viewport" content="width=device-width"><body style="margin:0;font:16px/1.5 Arial"><div class="bx-a"><div class="bx-r" style="display:flex;flex-direction:row;gap:16px"><div class="bx-c" style="width:64px;flex:none">${cell}</div><div class="bx-d" style="flex:1"><p class="bx-w">Resumption: the first day of the term for every class</p></div></div></div></body>`);
+    return ((await page.evaluate(`(${auditDoc.toString()})({ rungs: { tp: 600, tl: 840 } })`)) as { err: string[] }).err.filter((e) => e.startsWith("L5"));
+  };
+  expect(await l5(`<p class="bx-x">Sep</p><p class="bx-y">08</p>`), "a date badge").toEqual([]);
+  expect(await l5(`<p class="bx-x">07:45</p><p class="bx-y">Mon–Fri</p>`), "a time and its days").toEqual([]);
+  expect((await l5(`<p class="bx-x">Resumption day</p>`)).length, "words still squeezed").toBe(1);
+});

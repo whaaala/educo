@@ -218,6 +218,49 @@ Feature: Box Builder — ready-made sections, my sections, global sections and p
     Then its tile says which component it waits for ("placeholder: lightbox")
     And it is made of existing blocks until that component is built (RULE C)
 
+  # ── BATCH LE-15d: Logos · List · Contact · FAQ · Pricing / Fees · News (45) ──────────────────────────────────
+  Scenario: The trust, contact and school sections are in the gallery
+    When I open the Sections group
+    Then it also holds Logos / Clients 8 · List 5 · Contact details 8 · Questions & answers 8 · Fees table 8 · Latest news 8
+    And each of them is in the wireframe and designed, and in each of the seven finishes, visibly different (RULE T)
+    And each one, once added, is ordinary blocks I can change completely
+
+  Scenario Outline: Each of the school kinds reflows the way real sites do it
+    Given I added a designed "<category>" section with "<shape>"
+    When the page is previewed on a tablet and on a phone
+    Then on the tablet <tablet>
+    And on the phone <phone>
+    And nothing runs off the side, nothing overlaps and no card is left alone on a line, at every width of the screen list
+    Examples:
+      | category             | shape                        | tablet                                  | phone                                   |
+      | Logos / Clients      | a row of eight partner names | they go four and four                   | they go two by two                      |
+      | List                 | a timetable of four times    | each time stays beside its item         | each time stays beside its item         |
+      | Contact details      | the address beside a map     | the map goes under the address          | the map goes under the address          |
+      | Questions & answers  | a title beside the questions | the title goes above the questions      | the title goes above the questions      |
+      | Fees table           | three fee cards              | they stay across or stack               | they stack, one under another           |
+      | Latest news          | three stories in cards       | they stay across or stack               | they stack, one under another           |
+
+  Scenario: A question opens to its answer, by mouse, keyboard or touch
+    Given I added a "Questions & answers" section
+    Then every question is a real disclosure (a details and its summary): Enter or Space opens it, a tap opens it
+    And its answers are written into the page, so a search engine and a screen reader read them
+    And every question and answer is mine to change, add to or delete in the Inspector
+
+  Scenario: A partner's name is a word, never a picture of one I cannot read
+    Given I added a "Logos / Clients" section
+    Then each partner is shown by its name until I put its logo in, and a logo I add asks for its words (alt)
+    And a strip of more partners than fit goes onto more lines, never off the side
+
+  Scenario: A fee is read with its term and what it covers
+    Given I added a "Fees table" section
+    Then every fee says what it is for and how often ("per term"), in the site's currency
+    And one fee can stand out, and it is said in words ("Most chosen"), never by colour alone
+
+  Scenario: A section names the form, map or table it waits for
+    Given a contact section with a form or a map, or a fees section laid out as a table
+    Then its tile says which component it waits for ("placeholder: form", "placeholder: map", "placeholder: table")
+    And it is made of existing blocks until that component is built (RULE C)
+
   # ── Save a section to reuse (PS-5 (1)) ──────────────────────────────────────────────────────────────────────
 
   Scenario: Saving a section of my own

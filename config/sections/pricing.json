@@ -1,0 +1,146 @@
+{
+  "$comment": "Fees table (B18 pricing — a row of 2 | 3 | 4 cards, the middle featured, an optional comparison table: tablet 2+1 or scroll, phone 1; C6 product / pricing, C11 admissions: fees table). Wix has no pricing category, so every layout comes from the crawl of 284 award-site pricing sections (mostly a stack; a row of 2 equal; 20/80; blur, shadow, gradient, radius; motion held). For a school: Greenfield Academy's fees in Naira (one in Ghana cedi). Every price says how often it is paid; a featured card says so in words (an eyebrow), never by colour alone.",
+  "sections": [
+    { "id": "pricing-three-stages", "name": "Three fee cards, the middle one most chosen", "pattern": "B18",
+      "tree": { "k": "section", "center": true, "set": { "paddingTop": 96, "paddingBottom": 96, "paddingLeft": 24, "paddingRight": 24, "gap": 40 },
+        "c": [
+          { "k": "stack", "center": true, "set": { "gap": 16, "maxWidth": "40rem" }, "c": [
+            { "r": "eyebrow", "t": "Fees 2026/27" },
+            { "r": "title", "t": "School fees, clearly set out" },
+            { "r": "body", "t": "One fee a term covers lessons, books and assessment. No hidden charges." }
+          ] },
+          { "k": "grid", "cols": 3, "min": "15rem", "set": { "gap": 24, "align": "stretch" }, "c": [
+            { "k": "card", "tone": "plain", "set": { "gap": 12, "padding": 24 }, "c": [
+              { "r": "heading", "t": "Nursery" }, { "r": "stat", "t": "₦280,000" }, { "r": "small", "t": "per term" },
+              { "r": "list", "items": ["Ages 3 to 5", "Play-based learning", "Snack and nap time"] },
+              { "r": "button2", "t": "Apply now", "to": "#" }
+            ] },
+            { "k": "card", "tone": "strong", "set": { "gap": 12, "padding": 24 }, "c": [
+              { "r": "eyebrow", "t": "Most chosen" },
+              { "r": "heading", "t": "Primary" }, { "r": "stat", "t": "₦350,000" }, { "r": "small", "t": "per term" },
+              { "r": "list", "items": ["Primary 1 to 6", "French and coding", "Common Entrance coaching"] },
+              { "r": "button", "t": "Apply now", "to": "#" }
+            ] },
+            { "k": "card", "tone": "plain", "set": { "gap": 12, "padding": 24 }, "c": [
+              { "r": "heading", "t": "Secondary" }, { "r": "stat", "t": "₦420,000" }, { "r": "small", "t": "per term" },
+              { "r": "list", "items": ["JSS 1 to SSS 3", "Three science labs", "WAEC and JAMB preparation"] },
+              { "r": "button2", "t": "Apply now", "to": "#" }
+            ] }
+          ] }
+        ] } },
+    { "id": "pricing-day-boarding", "name": "Day or boarding, side by side", "pattern": "B18",
+      "tree": { "k": "section", "tone": "soft", "center": true, "set": { "paddingTop": 96, "paddingBottom": 96, "paddingLeft": 24, "paddingRight": 24, "gap": 40 },
+        "c": [
+          { "r": "title", "t": "Day or boarding?", "set": { "maxWidth": "40rem" } },
+          { "k": "grid", "cols": 2, "min": "20rem", "set": { "gap": 24, "align": "stretch", "maxWidth": "68rem" }, "c": [
+            { "k": "card", "tone": "plain", "set": { "gap": 12, "padding": 24 }, "c": [
+              { "r": "icon", "icon": "Sun" },
+              { "r": "heading", "t": "Day pupil" }, { "r": "stat", "t": "₦380,000" }, { "r": "small", "t": "per term, lunch included" },
+              { "r": "list", "items": ["Lessons 7:45 to 3:30", "After-school clubs", "School bus on request"] },
+              { "r": "button", "t": "Apply now", "to": "#" }
+            ] },
+            { "k": "card", "tone": "plain", "set": { "gap": 12, "padding": 24 }, "c": [
+              { "r": "icon", "icon": "Moon" },
+              { "r": "heading", "t": "Boarder" }, { "r": "stat", "t": "₦1,200,000" }, { "r": "small", "t": "per term, all meals included" },
+              { "r": "list", "items": ["Supervised evening prep", "A house parent on every floor", "Weekend outings"] },
+              { "r": "button", "t": "Book a visit", "to": "#" }
+            ] }
+          ] }
+        ] } },
+    { "id": "pricing-four-stages", "name": "Four fee cards from crèche to secondary, two by two", "pattern": "B18",
+      "tree": { "k": "section", "set": { "paddingTop": 80, "paddingBottom": 80, "paddingLeft": 24, "paddingRight": 24, "gap": 40 },
+        "c": [
+          { "k": "stack", "set": { "gap": 12, "maxWidth": "40rem" }, "c": [
+            { "r": "title", "t": "Fees for every stage" },
+            { "r": "body", "t": "Pay each term, or the whole year at once and save five per cent." }
+          ] },
+          { "k": "grid", "cols": 2, "min": "16rem", "set": { "gap": 16, "align": "stretch", "maxWidth": "60rem" }, "c": [
+            { "k": "card", "tone": "grey", "set": { "gap": 8, "padding": 24 }, "c": [ { "r": "heading", "t": "Crèche" }, { "r": "small", "t": "6 months to 2 years" }, { "r": "stat", "t": "₦220,000" }, { "r": "small", "t": "per term" } ] },
+            { "k": "card", "tone": "grey", "set": { "gap": 8, "padding": 24 }, "c": [ { "r": "heading", "t": "Nursery" }, { "r": "small", "t": "Ages 3 to 5" }, { "r": "stat", "t": "₦280,000" }, { "r": "small", "t": "per term" } ] },
+            { "k": "card", "tone": "grey", "set": { "gap": 8, "padding": 24 }, "c": [ { "r": "heading", "t": "Primary" }, { "r": "small", "t": "Primary 1 to 6" }, { "r": "stat", "t": "₦350,000" }, { "r": "small", "t": "per term" } ] },
+            { "k": "card", "tone": "grey", "set": { "gap": 8, "padding": 24 }, "c": [ { "r": "heading", "t": "Secondary" }, { "r": "small", "t": "JSS 1 to SSS 3" }, { "r": "stat", "t": "₦420,000" }, { "r": "small", "t": "per term" } ] }
+          ] },
+          { "r": "button", "t": "Apply now", "to": "#" }
+        ] } },
+    { "id": "pricing-fees-table", "name": "Fees by class in a table", "pattern": "C11", "needs": ["table"],
+      "tree": { "k": "section", "set": { "paddingTop": 80, "paddingBottom": 80, "paddingLeft": 24, "paddingRight": 24, "gap": 32 },
+        "c": [
+          { "r": "title", "t": "Fees by class" },
+          { "k": "grid", "cols": 3, "min": "", "set": { "gap": 12, "maxWidth": "48rem" }, "c": [
+            { "r": "small", "t": "Fees for 2026/27, in Naira", "set": { "colSpan": 3 } },
+            { "r": "heading", "t": "Class" }, { "r": "heading", "t": "Per term" }, { "r": "heading", "t": "A year" },
+            { "r": "body", "t": "Nursery" }, { "r": "body", "t": "₦280,000" }, { "r": "body", "t": "₦840,000" },
+            { "r": "body", "t": "Pry 1–3" }, { "r": "body", "t": "₦330,000" }, { "r": "body", "t": "₦990,000" },
+            { "r": "body", "t": "Pry 4–6" }, { "r": "body", "t": "₦370,000" }, { "r": "body", "t": "₦1,110,000" },
+            { "r": "body", "t": "JSS" }, { "r": "body", "t": "₦400,000" }, { "r": "body", "t": "₦1,200,000" },
+            { "r": "body", "t": "SSS" }, { "r": "body", "t": "₦440,000" }, { "r": "body", "t": "₦1,320,000" }
+          ] },
+          { "r": "button2", "t": "Pay fees", "to": "#" }
+        ] } },
+    { "id": "pricing-words-one-card", "name": "How to pay beside one fee card", "pattern": "B18",
+      "tree": { "k": "section", "set": { "paddingTop": 96, "paddingBottom": 96, "paddingLeft": 24, "paddingRight": 24, "gap": 40 },
+        "c": [ { "k": "row", "set": { "gap": 48 }, "c": [
+          { "k": "stack", "set": { "width": "fill", "minWidth": "16rem", "gap": 16 }, "c": [
+            { "r": "eyebrow", "t": "Paying fees" },
+            { "r": "title", "t": "One fee, three easy ways to pay" },
+            { "r": "body", "t": "Pay by Paystack, bank transfer or in three instalments across the term. A receipt comes by WhatsApp and SMS." }
+          ] },
+          { "k": "card", "tone": "soft", "set": { "width": "fill", "minWidth": "16rem", "gap": 12, "padding": 24 }, "c": [
+            { "r": "heading", "t": "Primary school" },
+            { "r": "stat", "t": "₦350,000" },
+            { "r": "small", "t": "per term, or ₦120,000 in each of three instalments" },
+            { "r": "divider" },
+            { "r": "list", "items": ["Lessons, books and assessment", "Two school trips a year", "Termly report and parents' evening"] },
+            { "r": "button", "t": "Pay fees", "to": "#" }
+          ] }
+        ] } ] } },
+    { "id": "pricing-other-charges", "name": "Other charges, one line each", "pattern": "B18",
+      "tree": { "k": "section", "set": { "paddingTop": 80, "paddingBottom": 80, "paddingLeft": 24, "paddingRight": 24, "gap": 32 },
+        "c": [
+          { "k": "stack", "set": { "gap": 12, "maxWidth": "40rem" }, "c": [
+            { "r": "title", "t": "Other charges" },
+            { "r": "body", "t": "Everything outside the school fee, so nothing comes as a surprise." }
+          ] },
+          { "k": "stack", "set": { "gap": 12, "maxWidth": "44rem" }, "c": [
+            { "k": "row", "set": { "gap": 16, "justify": "between" }, "c": [ { "r": "body", "t": "Uniform, full set", "set": { "width": "fill", "minWidth": "10rem" } }, { "r": "heading", "t": "₦45,000 once", "set": { "width": "auto" } } ] },
+            { "r": "divider" },
+            { "k": "row", "set": { "gap": 16, "justify": "between" }, "c": [ { "r": "body", "t": "Books and stationery", "set": { "width": "fill", "minWidth": "10rem" } }, { "r": "heading", "t": "₦60,000 a year", "set": { "width": "auto" } } ] },
+            { "r": "divider" },
+            { "k": "row", "set": { "gap": 16, "justify": "between" }, "c": [ { "r": "body", "t": "School bus", "set": { "width": "fill", "minWidth": "10rem" } }, { "r": "heading", "t": "₦80,000 per term", "set": { "width": "auto" } } ] },
+            { "r": "divider" },
+            { "k": "row", "set": { "gap": 16, "justify": "between" }, "c": [ { "r": "body", "t": "Lunch", "set": { "width": "fill", "minWidth": "10rem" } }, { "r": "heading", "t": "₦55,000 per term", "set": { "width": "auto" } } ] },
+            { "r": "divider" },
+            { "k": "row", "set": { "gap": 16, "justify": "between" }, "c": [ { "r": "body", "t": "Exam fees (WAEC, SSS 3)", "set": { "width": "fill", "minWidth": "10rem" } }, { "r": "heading", "t": "₦30,000 once", "set": { "width": "auto" } } ] }
+          ] }
+        ] } },
+    { "id": "pricing-extras-band", "name": "Clubs, extra lessons and camp on a coloured band", "pattern": "B18",
+      "tree": { "k": "section", "tone": "strong", "center": true, "set": { "paddingTop": 96, "paddingBottom": 96, "paddingLeft": 24, "paddingRight": 24, "gap": 40 },
+        "c": [
+          { "k": "stack", "center": true, "set": { "gap": 12, "maxWidth": "40rem" }, "c": [
+            { "r": "title", "t": "Beyond the school day" },
+            { "r": "body", "t": "Optional extras, paid only by the families who choose them." }
+          ] },
+          { "k": "grid", "cols": 3, "min": "15rem", "set": { "gap": 24, "align": "stretch" }, "c": [
+            { "k": "card", "tone": "plain", "set": { "gap": 12, "padding": 24 }, "c": [ { "r": "icon", "icon": "Music" }, { "r": "heading", "t": "Clubs" }, { "r": "small", "t": "Music, coding, debate or football, after lessons." }, { "r": "stat", "t": "₦25,000" }, { "r": "small", "t": "each term" } ] },
+            { "k": "card", "tone": "plain", "set": { "gap": 12, "padding": 24 }, "c": [ { "r": "icon", "icon": "BookOpen" }, { "r": "heading", "t": "Extra lessons" }, { "r": "small", "t": "Small groups for maths and English, twice a week." }, { "r": "stat", "t": "₦40,000" }, { "r": "small", "t": "each term" } ] },
+            { "k": "card", "tone": "plain", "set": { "gap": 12, "padding": 24 }, "c": [ { "r": "icon", "icon": "Sun" }, { "r": "heading", "t": "Holiday camp" }, { "r": "small", "t": "Two weeks of sport, art and trips in August." }, { "r": "stat", "t": "₦65,000" }, { "r": "small", "t": "once, for the camp" } ] }
+          ] },
+          { "r": "button2", "t": "Book a visit", "to": "#" }
+        ] } },
+    { "id": "pricing-cards-over-questions", "name": "Fee cards over questions about paying", "pattern": "B18",
+      "tree": { "k": "section", "set": { "paddingTop": 96, "paddingBottom": 96, "paddingLeft": 24, "paddingRight": 24, "gap": 40 },
+        "c": [
+          { "r": "title", "t": "Fees at our Accra campus" },
+          { "k": "grid", "cols": 2, "min": "16rem", "set": { "gap": 24, "align": "stretch" }, "c": [
+            { "k": "card", "tone": "soft", "set": { "gap": 12, "padding": 24 }, "c": [ { "r": "heading", "t": "Basic school" }, { "r": "stat", "t": "GH₵ 6,500" }, { "r": "small", "t": "per term" }, { "r": "button", "t": "Apply now", "to": "#" } ] },
+            { "k": "card", "tone": "soft", "set": { "gap": 12, "padding": 24 }, "c": [ { "r": "heading", "t": "Junior high" }, { "r": "stat", "t": "GH₵ 8,200" }, { "r": "small", "t": "per term" }, { "r": "button", "t": "Apply now", "to": "#" } ] }
+          ] },
+          { "r": "heading", "t": "Questions about paying" },
+          { "r": "faq", "qa": [
+            ["Can I pay in instalments?", "Yes. Pay half before term starts and the rest by mid-term, by mobile money, card or bank transfer."],
+            ["Is there a discount for brothers and sisters?", "The second child pays ten per cent less, and the third and every child after pay fifteen per cent less."],
+            ["What if my child leaves during a term?", "Give a term's notice in writing. Fees paid for a term not yet started are refunded in full."]
+          ] }
+        ] } }
+  ]
+}

@@ -1,0 +1,156 @@
+{
+  "$comment": "Questions & answers (B19: a centred accordion · ROW(2: 33/67) [title + words + a button | accordion] · GRID(2×n); Wix Studio has no FAQ category, so all 8 come from the pattern and the crawl of 172 award-site FAQ sections: 116 a stack (centred accordion), a row of 2 equal 16, a row 30/70 7, 20/80 4; look: shadow, a photo behind, radius; motion mostly held). Every `faq` is the builder's real Accordion (details / summary, answers in the page, FAQ schema, first item open). Parents ask Greenfield Academy.",
+  "sections": [
+    { "id": "faq-centred", "name": "Questions under a centred title", "pattern": "B19",
+      "tree": { "k": "section", "center": true, "set": { "paddingTop": 96, "paddingBottom": 96, "paddingLeft": 24, "paddingRight": 24, "gap": 40 },
+        "c": [
+          { "r": "title", "t": "Questions parents ask" },
+          { "k": "stack", "set": { "gap": 16, "maxWidth": "48rem", "width": "100%" }, "c": [
+            { "r": "faq", "qa": [
+              ["At what age can my child start?", "Our nursery takes children from 2 years old. Primary 1 starts at 6, and JSS 1 usually at 11 or 12."],
+              ["Is there an entrance assessment?", "Yes, a short and friendly one in English and Mathematics. It helps us place your child in the right class; it is not a pass or fail test."],
+              ["What are the school hours?", "Lessons run from 7:45 am to 2:30 pm, Monday to Friday. After-school clubs end at 4 pm."],
+              ["Which exams do pupils sit?", "Senior pupils sit WAEC and NECO, and pupils who choose it can also take Cambridge IGCSE."],
+              ["How can we visit the school?", "Call the school office to book a tour on any weekday morning. We also hold an open day every term."]
+            ] }
+          ] }
+        ] } },
+    { "id": "faq-call-beside", "name": "Questions beside a call button", "pattern": "B19",
+      "tree": { "k": "section", "set": { "paddingTop": 96, "paddingBottom": 96, "paddingLeft": 24, "paddingRight": 24, "gap": 40 },
+        "c": [
+          { "k": "row", "set": { "gap": 48, "align": "start" }, "c": [
+            { "k": "stack", "set": { "width": "fill", "minWidth": "16rem", "gap": 16 }, "c": [
+              { "r": "title", "t": "Good to know" },
+              { "r": "body", "t": "The answers families ask for most. Anything else, our office is happy to help." },
+              { "r": "button", "t": "WhatsApp us", "to": "https://wa.me/2348012345678" }
+            ] },
+            { "k": "stack", "set": { "width": "fill", "minWidth": "20rem", "gap": 16 }, "c": [
+              { "r": "faq", "qa": [
+                ["Can we pay fees in instalments?", "Yes. School fees can be paid in two or three instalments each term, by bank transfer or online with Paystack."],
+                ["Does the school run a bus?", "Our buses cover four routes across the city each morning and afternoon. The office will tell you the stop nearest your home."],
+                ["Is lunch provided?", "A hot lunch is served every day and is included in the fees. Tell us about any allergy and the kitchen will plan around it."],
+                ["Where do we buy the uniform?", "The uniform and sportswear are sold at the school shop, open on weekdays from 8 am to 3 pm."]
+              ] }
+            ] }
+          ] }
+        ] } },
+    { "id": "faq-two-topics", "name": "Two sets of questions side by side", "pattern": "B19",
+      "tree": { "k": "section", "set": { "paddingTop": 96, "paddingBottom": 96, "paddingLeft": 24, "paddingRight": 24, "gap": 40 },
+        "c": [
+          { "k": "stack", "center": true, "set": { "gap": 8 }, "c": [ { "r": "eyebrow", "t": "Before you apply" }, { "r": "title", "t": "Your questions, answered" } ] },
+          { "k": "grid", "cols": 2, "min": "20rem", "set": { "gap": 40 }, "c": [
+            { "k": "stack", "set": { "gap": 16 }, "c": [
+              { "r": "heading", "t": "Admissions" },
+              { "r": "faq", "qa": [
+                ["When can my child join?", "We admit pupils at the start of each term, and mid-term when a place is free."],
+                ["What does the assessment cover?", "English, Mathematics and a short chat with a teacher. It takes about an hour."],
+                ["Which documents do we need?", "A birth certificate, the last school report and two passport photographs."]
+              ] }
+            ] },
+            { "k": "stack", "set": { "gap": 16 }, "c": [
+              { "r": "heading", "t": "Fees & uniforms" },
+              { "r": "faq", "qa": [
+                ["How do we pay the fees?", "By bank transfer, or online with a card or bank account through Paystack."],
+                ["Can fees be split?", "Yes, into up to three instalments a term. Speak to the bursar to set up a plan."],
+                ["What does the uniform cost?", "A full set is sold at the school shop. The price list is sent with every offer letter."]
+              ] }
+            ] }
+          ] }
+        ] } },
+    { "id": "faq-soft-card", "name": "Questions in a card on a soft band", "pattern": "B19",
+      "tree": { "k": "section", "tone": "soft", "center": true, "set": { "paddingTop": 96, "paddingBottom": 96, "paddingLeft": 24, "paddingRight": 24, "gap": 40 },
+        "c": [
+          { "k": "stack", "center": true, "set": { "gap": 8 }, "c": [ { "r": "eyebrow", "t": "Help for families" }, { "r": "title", "t": "Frequently asked questions" } ] },
+          { "k": "card", "tone": "plain", "set": { "gap": 16, "padding": 24, "maxWidth": "48rem", "width": "100%" }, "c": [
+            { "r": "faq", "qa": [
+              ["What if my child is sick?", "Please keep them at home and call the school office before 8 am. Our school nurse cares for any child who falls ill during the day and calls you at once."],
+              ["Which clubs run after school?", "Football, music, coding, debate, art and the reading club, from 2:30 pm to 4 pm."],
+              ["Do clubs cost extra?", "Most clubs are free. A few, like swimming, have a small fee each term."],
+              ["How will the school keep in touch?", "Through the parents' app, a WhatsApp message for anything urgent, and a report at the end of every term."]
+            ] }
+          ] }
+        ] } },
+    { "id": "faq-photo-beside", "name": "Questions beside a photo", "pattern": "B19",
+      "tree": { "k": "section", "set": { "paddingTop": 96, "paddingBottom": 96, "paddingLeft": 24, "paddingRight": 24, "gap": 40 },
+        "c": [
+          { "k": "row", "set": { "gap": 48, "align": "center" }, "c": [
+            { "k": "stack", "set": { "width": "fill", "minWidth": "20rem", "gap": 16 }, "c": [
+              { "r": "title", "t": "Life at boarding house" },
+              { "r": "faq", "qa": [
+                ["From what age can pupils board?", "Boarding is open from JSS 1, when most pupils are 11 or 12."],
+                ["Can parents visit boarders?", "Yes, on the first Saturday of every month, and on the open days each term."],
+                ["Who looks after the boarders?", "Each house has a housemother or housemaster who lives on site, with a nurse on call day and night."],
+                ["How do we pay boarding fees?", "Boarding fees are paid each term with the school fees, by bank transfer or Paystack."]
+              ] }
+            ] },
+            { "r": "image", "photo": "boarding", "alt": "Pupils in the Greenfield boarding house", "set": { "width": "fill", "minWidth": "16rem", "ratio": "4 / 5", "responsive": { "phone": { "order": -1 } } } }
+          ] }
+        ] } },
+    { "id": "faq-grouped", "name": "Questions grouped under three headings", "pattern": "B19",
+      "tree": { "k": "section", "tone": "grey", "center": true, "set": { "paddingTop": 96, "paddingBottom": 96, "paddingLeft": 24, "paddingRight": 24, "gap": 40 },
+        "c": [
+          { "r": "title", "t": "Everything you need to know" },
+          { "k": "stack", "set": { "gap": 40, "maxWidth": "48rem", "width": "100%" }, "c": [
+            { "k": "stack", "set": { "gap": 16 }, "c": [
+              { "r": "heading", "t": "Admissions" },
+              { "r": "faq", "qa": [
+                ["How old must my child be for Primary 1?", "Six years old by September of the year they start."],
+                ["How do we apply?", "Collect a form at the school office or apply online, then book the entrance assessment."]
+              ] }
+            ] },
+            { "k": "stack", "set": { "gap": 16 }, "c": [
+              { "r": "heading", "t": "Fees" },
+              { "r": "faq", "qa": [
+                ["When are fees due?", "Before the first day of each term, or in instalments agreed with the bursar."],
+                ["Is there a discount for siblings?", "Yes, 10% off the fees for a second child and 15% for a third."]
+              ] }
+            ] },
+            { "k": "stack", "set": { "gap": 16 }, "c": [
+              { "r": "heading", "t": "The school day" },
+              { "r": "faq", "qa": [
+                ["When does school start?", "The gates open at 7:15 am and lessons begin at 7:45 am."],
+                ["Can my child stay late?", "Yes, after-school clubs and supervised homework run until 4 pm."]
+              ] }
+            ] }
+          ] }
+        ] } },
+    { "id": "faq-dark-ask", "name": "Questions on a dark band with a line to ask more", "pattern": "B19",
+      "tree": { "k": "section", "tone": "inverse", "center": true, "set": { "paddingTop": 96, "paddingBottom": 96, "paddingLeft": 24, "paddingRight": 24, "gap": 40 },
+        "c": [
+          { "k": "stack", "center": true, "set": { "gap": 8 }, "c": [ { "r": "eyebrow", "t": "Exams" }, { "r": "title", "t": "Questions about results" } ] },
+          { "k": "stack", "set": { "gap": 16, "maxWidth": "48rem", "width": "100%" }, "c": [
+            { "r": "faq", "qa": [
+              ["Do pupils sit WAEC and NECO?", "Yes. Every SS 3 pupil sits WAEC, and most also sit NECO in the same year."],
+              ["Do you offer Cambridge exams?", "Pupils can take Cambridge IGCSE in up to eight subjects, with extra classes on Saturdays."],
+              ["How does the school prepare pupils?", "Mock exams each term, Saturday revision classes and a study plan agreed with every pupil."]
+            ] }
+          ] },
+          { "k": "stack", "center": true, "set": { "gap": 16 }, "c": [
+            { "r": "heading", "t": "Still have a question?" },
+            { "r": "button", "t": "Call the school office", "to": "tel:+2348012345678" }
+          ] }
+        ] } },
+    { "id": "faq-contact-card", "name": "Questions beside a card to reach us", "pattern": "B19",
+      "tree": { "k": "section", "set": { "paddingTop": 96, "paddingBottom": 96, "paddingLeft": 24, "paddingRight": 24, "gap": 40 },
+        "c": [
+          { "k": "row", "set": { "gap": 40, "align": "start" }, "c": [
+            { "k": "stack", "set": { "width": "fill", "minWidth": "20rem", "gap": 16 }, "c": [
+              { "r": "title", "t": "Common questions" },
+              { "r": "faq", "qa": [
+                ["Which areas does the bus cover?", "Our four routes run through the city centre and the main estates nearby. Ask the office for the route sheet."],
+                ["How much is the bus each term?", "The bus is paid each term with the school fees, and the price depends on your route."],
+                ["What does lunch include?", "A hot meal with rice, beans, yam or pasta, fruit and clean drinking water every day."],
+                ["Is the school open in the holidays?", "The office opens on weekday mornings, and a holiday camp runs for two weeks in August."]
+              ] }
+            ] },
+            { "k": "card", "tone": "soft", "set": { "width": "fill", "minWidth": "16rem", "gap": 16, "padding": 24 }, "c": [
+              { "r": "icon", "icon": "MessageCircle" },
+              { "r": "heading", "t": "Still have questions?" },
+              { "r": "body", "t": "Our office answers from 7 am to 4 pm, Monday to Friday." },
+              { "r": "link", "t": "Call +234 801 234 5678", "to": "tel:+2348012345678" },
+              { "r": "link", "t": "Message us on WhatsApp", "to": "https://wa.me/2348012345678" }
+            ] }
+          ] }
+        ] } }
+  ]
+}

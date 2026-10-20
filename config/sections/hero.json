@@ -213,7 +213,7 @@
     { "id": "hero-photo-bottom", "name": "Words at the foot of a full photo", "pattern": "B10",
       "tree": { "k": "section", "tone": "photo", "photo": "graduation", "set": { "minHeight": 600, "justify": "end", "paddingTop": 96, "paddingBottom": 64, "paddingLeft": 48, "paddingRight": 24, "gap": 16 },
         "c": [
-          { "r": "title", "t": "Congratulations, class of 2026", "set": { "maxWidth": "40rem" } },
+          { "r": "title", "t": "Well done, class of 2026", "set": { "maxWidth": "40rem" } },
           { "r": "body", "t": "We are so proud of you. Wherever you go next, Greenfield goes with you.", "set": { "maxWidth": "34rem" } }
         ] } },
     { "id": "hero-photo-half", "name": "A shorter photo with a title", "pattern": "B10",
@@ -225,7 +225,7 @@
     { "id": "hero-photo-card", "name": "A card of words on a photo", "pattern": "B10",
       "tree": { "k": "section", "tone": "photo", "photo": "school-field", "set": { "minHeight": 560, "justify": "center", "paddingTop": 80, "paddingBottom": 80, "paddingLeft": 48, "paddingRight": 24 },
         "c": [
-          { "k": "card", "tone": "plain", "set": { "padding": 40, "gap": 16, "maxWidth": "30rem" }, "c": [
+          { "k": "card", "tone": "plain", "set": { "padding": 40, "gap": 16, "maxWidth": "36rem" }, "c": [
             { "r": "eyebrow", "t": "Open day" },
             { "r": "title", "t": "See Greenfield for yourself" },
             { "r": "body", "t": "Saturday 14 March, 10 am to 2 pm." },
@@ -355,7 +355,7 @@
     { "id": "hero-title-beside-words", "name": "A huge title beside a few words", "pattern": "B8",
       "tree": { "k": "section", "tone": "strong", "set": { "paddingTop": 120, "paddingBottom": 96, "paddingLeft": 24, "paddingRight": 24 },
         "c": [ { "k": "row", "set": { "gap": 48, "align": "end" }, "c": [
-          { "r": "title", "t": "Hello.", "set": { "fontSize": 120, "width": "auto" } },
+          { "r": "title", "t": "Hello.", "set": { "fontSize": 120, "width": "auto", "responsive": { "phone": { "fontSize": 64 } } } },
           { "k": "stack", "set": { "gap": 16, "width": "fill", "minWidth": "16rem", "maxWidth": "28rem" }, "c": [
             { "r": "body", "t": "We are Greenfield Academy: a friendly school for curious children in Ikeja, Lagos." },
             { "r": "button", "t": "Say hello" }

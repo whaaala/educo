@@ -819,6 +819,12 @@ global**, and changes the closing date once: all four pages change, and the bann
 small ones, and from **Testimonials** three parents' words in cards. On his phone the big photo comes first and the cards
 stack; he never set anything for it.
 
+**"The questions parents always ask, the fees, and how to reach us."** From **Questions & answers** he adds the questions
+beside a call button, from **Fees table** three fee cards with one marked "Most chosen", and from **Contact details** the
+address and hours beside a map. A parent on a phone taps a question and its answer opens; the times and dates of the school
+day stay beside what they are for; a fee always says "per term". The map is marked as a placeholder until the map part
+arrives, so Kofi knows to add the picture of the map himself for now.
+
 The whole of it, with every control by its name, is in [Ready-made sections, your own sections and page
 templates](./sections.md).
 
