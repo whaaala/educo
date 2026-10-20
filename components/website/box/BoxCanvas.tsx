@@ -10,11 +10,11 @@
 
 import { measureCss, linkHoverCss } from "@/lib/educo-ui/base";
 import { columnFloorRem, dividerThickness, borderLen, videoSizing, gridLeftoverAt,HAND_FLOOR_REM, REFLOW_FLOOR_REM, isPageRow, rowNarrowsAt, LIST_ITEM_GAP, linesAt, pageRowSlot, restForDrag, setFreeInset, slideFreeAt, tabletPlaces }from "@/lib/box-model";
-import { gapPatch, snapSpace, spacePatch, stepSpace, type SpaceSide } from "@/lib/box-model";
+import { gapPatch, snapSpace, spacePatch, stepSpace, isEmptyBox, ownMeasure, type SpaceSide } from "@/lib/box-model";
 import { resolvePage, pageFillCss, footerPushCss } from "@/lib/semantics";
 import { createContext, Fragment, useCallback, useContext, useEffect, useLayoutEffect, useMemo, useReducer, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import { createPortal } from "react-dom";
-import { Link2, Plus, ChevronUp, ChevronDown, Copy, Scissors, ClipboardPaste, Trash2, Upload, GripVertical, MoreVertical, Rows3, Columns3, Grid3x3, Type, Heading as HeadingIcon, MousePointerClick, Image as ImageIcon, Layers, BringToFront, SendToBack, Video as VideoIcon, Sparkles, Minus as MinusIcon, List as ListIcon, Code2, Star, Lock, LockOpen, Ungroup, ArrowUp, ArrowDown, ArrowLeft, ArrowRight, ArrowUpToLine, ArrowDownToLine, Paintbrush } from "lucide-react";
+import { Link2, Plus, ChevronUp, ChevronDown, Copy, Scissors, ClipboardPaste, Trash2, Upload, GripVertical, MoreVertical, Rows3, Columns3, Grid3x3, Type, Heading as HeadingIcon, MousePointerClick, Image as ImageIcon, Layers, BringToFront, SendToBack, Video as VideoIcon, Sparkles, Minus as MinusIcon, List as ListIcon, Code2, Star, Lock, LockOpen, Ruler, Ungroup, ArrowUp, ArrowDown, ArrowLeft, ArrowRight, ArrowUpToLine, ArrowDownToLine, Paintbrush } from "lucide-react";
 import type { SiteTheme } from "@/lib/site-storage";
 import {
   type BoxNode, type BoxType, frameCss, spanAt, setSpan,
@@ -26,12 +26,15 @@ import {
 } from "@/lib/box-model";
 import { ICON_SET } from "./icons";
 import INSPECTOR_WORDS from "@/config/inspector.json";
+/** LE15k-p / o: the selection's words (RULE CFG). */
+const SEL = INSPECTOR_WORDS.selection;
 import { PortalMenu, MenuItem, MenuHeader, MenuSep, modalOpen, NON_TEXT_INPUTS } from "./ui";
 import GridLayoutMenu, { type MenuAnchor } from "./GridLayoutMenu";
 import GallerySetupMenu from "./GallerySetupMenu";
 import { blockForKind, nodeForPhotos, photoGallery, PHOTO_SETUP, type GalleryPhoto } from "@/lib/box-presets";
 import { treeHoverCss, treeRevealCss, scrollRevealNeeded, revealOnceWire, REVEAL_WAIT } from "@/lib/interactions";
 import { colorToCSS } from "@/components/shared/ColorPalettePicker";
+import Button from "@/components/shared/Button";
 import { COMPONENT_CSS, bgVideoCss } from "@/lib/educo-ui/components";
 import { CanvasBgVideo } from "@/components/website/box/BackgroundVideo";
 import { CURRENT_LINK_CSS, EDITOR_DOCK_PX, layoutCss, mediaBelow, RESIZE, RUNG_MEASURE, RUNG_PX } from "@/lib/educo-ui/layout";
@@ -248,11 +251,16 @@ type Edge = "n" | "s" | "e" | "w" | "ne" | "nw" | "se" | "sw";
  * letter. A side the canvas edge leaves no room on (`data-flush`, from `mirrorFlushSides`) keeps its handle just inside,
  * because the mirror is clipped to the canvas and an outside handle there would be cut off and unreachable.
  */
-const HANDLES: { edge: Edge; pos: string; cursor: string; label: string; title: string }[] = [
-  { edge: "n", pos: "left-1/2 -top-3 -translate-x-1/2 h-2.5 w-9 rounded-full group-data-[flush~=n]/mirror:top-0", cursor: "cursor-ns-resize", label: "top edge", title: "Drag the top edge (bottom stays put)" },
-  { edge: "s", pos: "left-1/2 -bottom-3 -translate-x-1/2 h-2.5 w-9 rounded-full group-data-[flush~=s]/mirror:bottom-0", cursor: "cursor-ns-resize", label: "bottom edge", title: "Drag the bottom edge (top stays put)" },
-  { edge: "e", pos: "top-1/2 -right-3 -translate-y-1/2 w-2.5 h-9 rounded-full group-data-[flush~=e]/mirror:right-0 group-data-[swipe~=e]/mirror:hidden", cursor: "cursor-ew-resize", label: "right edge", title: "Drag the right edge (left stays put)" },
-  { edge: "w", pos: "top-1/2 -left-3 -translate-y-1/2 w-2.5 h-9 rounded-full group-data-[flush~=w]/mirror:left-0 group-data-[swipe~=w]/mirror:hidden", cursor: "cursor-ew-resize", label: "left edge", title: "Drag the left edge (right stays put)" },
+// c-21 (the user, decided B): the edge handles are drawn OUTSIDE the block, 2px clear, so they never cover its last letter. LE15k-b
+// (the user, 2026-10-20: a 36 x 10 pill was a small target): each edge is GRABBED over 26px from the block's edge OUTWARD (`grab`, an
+// invisible ::before, placed from inside the pill's 2px border — a measured box does not include it, so c-21's measures still read the
+// pill); inside the edge is the inner space's
+// (measured: its band wins there, as in Figma and Wix). The space handles keep a quarter and three quarters along (`SpaceBands`).
+const HANDLES: { edge: Edge; pos: string; grab?: string; cursor: string; label: string; title: string }[] = [
+  { edge: "n", grab: "before:-inset-x-2 before:-top-4 before:-bottom-1", pos: "left-1/2 -top-3 -translate-x-1/2 h-2.5 w-9 rounded-full group-data-[flush~=n]/mirror:top-0", cursor: "cursor-ns-resize", label: "top edge", title: "Drag the top edge (bottom stays put)" },
+  { edge: "s", grab: "before:-inset-x-2 before:-top-1 before:-bottom-4", pos: "left-1/2 -bottom-3 -translate-x-1/2 h-2.5 w-9 rounded-full group-data-[flush~=s]/mirror:bottom-0", cursor: "cursor-ns-resize", label: "bottom edge", title: "Drag the bottom edge (top stays put)" },
+  { edge: "e", grab: "before:-inset-y-2 before:-left-1 before:-right-4", pos: "top-1/2 -right-3 -translate-y-1/2 w-2.5 h-9 rounded-full group-data-[flush~=e]/mirror:right-0 group-data-[swipe~=e]/mirror:hidden", cursor: "cursor-ew-resize", label: "right edge", title: "Drag the right edge (left stays put)" },
+  { edge: "w", grab: "before:-inset-y-2 before:-left-4 before:-right-1", pos: "top-1/2 -left-3 -translate-y-1/2 w-2.5 h-9 rounded-full group-data-[flush~=w]/mirror:left-0 group-data-[swipe~=w]/mirror:hidden", cursor: "cursor-ew-resize", label: "left edge", title: "Drag the left edge (right stays put)" },
   { edge: "ne", pos: "-top-3.5 -right-3.5 w-3 h-3 rounded-full group-data-[flush~=n]/mirror:top-0 group-data-[flush~=e]/mirror:right-0 group-data-[swipe~=e]/mirror:hidden", cursor: "cursor-nesw-resize", label: "top-right corner", title: "Drag the top-right corner" },
   { edge: "nw", pos: "-top-3.5 -left-3.5 w-3 h-3 rounded-full group-data-[flush~=n]/mirror:top-0 group-data-[flush~=w]/mirror:left-0 group-data-[swipe~=w]/mirror:hidden", cursor: "cursor-nwse-resize", label: "top-left corner", title: "Drag the top-left corner" },
   { edge: "se", pos: "-bottom-3.5 -right-3.5 w-3 h-3 rounded-full group-data-[flush~=s]/mirror:bottom-0 group-data-[flush~=e]/mirror:right-0 group-data-[swipe~=e]/mirror:hidden", cursor: "cursor-nwse-resize", label: "bottom-right corner", title: "Drag the bottom-right corner" },
@@ -408,9 +416,21 @@ function followGesture(
   // never moves focus — so after a drag Ctrl+Z went to the words' own empty undo and the drag could not be undone from the keyboard.
   const typing = document.activeElement as HTMLElement | null; if (typing?.isContentEditable) typing.blur();
   const [mv, up] = finger ? ["pointermove", "pointerup"] : ["mousemove", "mouseup"];
-  const move = (ev: Event) => onMove(ev as MouseEvent);
-  const release = (ev: Event) => { stop(); onUp(ev as MouseEvent); };
-  const cancel = (ev: Event) => { stop(); onCancel(ev as MouseEvent); };
+  /**
+   * LE15k-ag · THE SAME FINGER, WHEREVER THE PAGE'S VISIBLE PART HAS GONE. On a phone the soft keyboard shifts the visible page; ending the
+   * typing above closes it, and mid-drag every position the finger sends jumped by that shift (measured on the phone: 407 → 230 as the
+   * visible page went 182 → 0) — read as the finger going back up, so the drag undid itself. Each position is put back by how far the
+   * visible page has moved since the press.
+   */
+  const vv = typeof window !== "undefined" ? window.visualViewport : null, at0 = { x: vv?.offsetLeft ?? 0, y: vv?.offsetTop ?? 0 };
+  const steady = (ev: Event) => {
+    const dx = at0.x - (vv?.offsetLeft ?? 0), dy = at0.y - (vv?.offsetTop ?? 0);
+    if (!dx && !dy) return ev as MouseEvent;
+    return new Proxy(ev, { get: (t, p) => (p === "clientX" ? (t as MouseEvent).clientX + dx : p === "clientY" ? (t as MouseEvent).clientY + dy : ((v) => (typeof v === "function" ? v.bind(t) : v))(Reflect.get(t, p))) }) as MouseEvent;
+  };
+  const move = (ev: Event) => onMove(steady(ev));
+  const release = (ev: Event) => { stop(); onUp(steady(ev)); };
+  const cancel = (ev: Event) => { stop(); onCancel(steady(ev)); };
   const stop = () => {
     document.removeEventListener(mv, move, capture); document.removeEventListener(up, release, capture);
     if (finger) document.removeEventListener("pointercancel", cancel, capture);
@@ -530,6 +550,10 @@ function gapsIn(host: HTMLElement): { axis: "x" | "y"; l: number; t: number; r: 
   return out;
 }
 
+type Rect = { x: number; y: number; w: number; h: number };
+/** How far apart two handles must be to read as two things (LE15k-a, the user's report 2026-10-20). */
+const HANDLE_APART = 8;
+const apart = (a: Rect, b: Rect, by = HANDLE_APART) => a.x + a.w + by <= b.x || b.x + b.w + by <= a.x || a.y + a.h + by <= b.y || b.y + b.h + by <= a.y;
 type SpaceHandle = { key: string; kind: "padding" | "margin" | "gap"; side?: SpaceSide; axis?: "x" | "y"; css: number; dir: [number, number]; label: string; name: string;
   band: { x: number; y: number; w: number; h: number }[]; hit: { x: number; y: number; w: number; h: number }; across: boolean };
 const SIDE_WORD: Record<SpaceSide, string> = { Top: "top", Right: "right", Bottom: "bottom", Left: "left" };
@@ -543,15 +567,19 @@ const SIDE_WORD: Record<SpaceSide, string> = { Top: "top", Right: "right", Botto
  * Each handle is a keyboard slider (arrows step, Shift bigger, Home → 0); the Inspector is the path without dragging.
  * ponytail: a handle whose side is too short to hold it beside the resize handles (a one-line text's top) is left to the Inspector.
  */
-function SpaceBands({ blockId, node, baseFont, colors, gapColor, pad, margin, gap, spaceFrom, sectionSpace = {} }: {
+function SpaceBands({ showAll = false, blockId, node, baseFont, colors, gapColor, pad, margin, gap, spaceFrom, sectionSpace = {} }: {
+  showAll?: boolean; // LE15k-p: every space at once (the toolbar's "Show spacing", Alt+P) — otherwise only the one the pointer is in
   sectionSpace?: { top?: number; bottom?: number }; // LE15i-5 / 8: a page section's space set by the site or shared (`sectionSpaceOf`) — none on any other block
   blockId: string; node: BoxNode; baseFont: number; colors: { padding: string; margin: string }; gapColor: string;
   pad: boolean; margin: boolean; gap: boolean; spaceFrom: () => (patch: Partial<BoxNode>, mergeKey?: string) => void;
 }) {
   type M = { w: number; h: number; zoom: number; rem: number; unit: number; coarse: boolean; pad: number[]; mar: number[]; gapCss: { x: number; y: number };
-    gaps: { axis: "x" | "y"; l: number; t: number; r: number; b: number }[]; tb: { l: number; t: number; r: number; b: number } | null };
+    gaps: { axis: "x" | "y"; l: number; t: number; r: number; b: number }[]; tb: { l: number; t: number; r: number; b: number } | null; sizes: Rect[] };
   const [m, setM] = useState<M | null>(null);
   const [live, setLive] = useState<string | null>(null); // the handle held or focused: its size is shown beside it
+  // LE15k-p (the user's Q4, 2026-10-20: "Size first, space on hover"): the space the pointer is in — only it is drawn, with its words
+  const [zone, setZone] = useState<string | null>(null);
+  const zonesRef = useRef<{ key: string; rects: Rect[] }[]>([]);
   const measure = useCallback(() => {
     const el = document.querySelector<HTMLElement>(`[data-box-id="${CSS.escape(blockId)}"]`);
     if (!el) { setM(null); return; }
@@ -563,7 +591,11 @@ function SpaceBands({ blockId, node, baseFont, colors, gapColor, pad, margin, ga
       gapCss: { x: px(cs.columnGap), y: px(cs.rowGap) },
       gaps: gap ? gapsIn(el).map((g) => ({ ...g, l: g.l - r.left, r: g.r - r.left, t: g.t - r.top, b: g.b - r.top })) : [],
       // where the block's toolbar sits (left or right, above or below): an outer handle must not lie under it (E6-18)
-      tb: ((t) => (t ? { l: t.left - r.left, r: t.right - r.left, t: t.top - r.top, b: t.bottom - r.top } : null))(document.querySelector(`[data-chrome-mirror="${CSS.escape(blockId)}"] [role="toolbar"]`)?.getBoundingClientRect()) };
+      tb: ((t) => (t ? { l: t.left - r.left, r: t.right - r.left, t: t.top - r.top, b: t.bottom - r.top } : null))(document.querySelector(`[data-chrome-mirror="${CSS.escape(blockId)}"] [role="toolbar"]`)?.getBoundingClientRect()),
+      // LE15k-a: where the SIZE handles really are (and a finger's hit areas) — measured, so a space handle is never put on one
+      sizes: Array.from(document.querySelectorAll(`[data-chrome-mirror="${CSS.escape(blockId)}"] [aria-label^="Resize "], [data-chrome-mirror="${CSS.escape(blockId)}"] [data-handle-hit]`))
+        // …with the edge's grab area round it (`HANDLES`' `grab`, 0.5rem: invisible, so measured as the pill)
+        .map((e) => e.getBoundingClientRect()).filter((q) => q.width > 0 && q.height > 0).map((q) => ({ x: q.left - r.left - 8, y: q.top - r.top - 8, w: q.width + 16, h: q.height + 16 })) };
     setM((prev) => (JSON.stringify(prev) === JSON.stringify(next) ? prev : next));
   }, [blockId, baseFont, gap]);
   // re-measured after EVERY render on purpose: any change to the page moves the bands; `setM` bails out when nothing moved
@@ -575,12 +607,42 @@ function SpaceBands({ blockId, node, baseFont, colors, gapColor, pad, margin, ga
     window.addEventListener("pointermove", onMove, true); window.addEventListener("pointerup", soon, true); window.addEventListener("transitionend", soon, true);
     return () => { cancelAnimationFrame(raf); window.removeEventListener("pointermove", onMove, true); window.removeEventListener("pointerup", soon, true); window.removeEventListener("transitionend", soon, true); };
   }, [measure]);
+  useEffect(() => {
+    // LE15k-p: which space the pointer is in, as it moves (not while a button is down — a drag keeps the space it started on)
+    const onHover = (e: PointerEvent) => {
+      if (e.buttons) return;
+      const r = document.querySelector(`[data-box-id="${CSS.escape(blockId)}"]`)?.getBoundingClientRect();
+      const x = r ? e.clientX - r.left : NaN, y = r ? e.clientY - r.top : NaN;
+      const hit = zonesRef.current.find((z) => z.rects.some((q) => x >= q.x && x <= q.x + q.w && y >= q.y && y <= q.y + q.h));
+      setZone(hit?.key ?? null);
+    };
+    window.addEventListener("pointermove", onHover, { passive: true });
+    return () => window.removeEventListener("pointermove", onHover);
+  }, [blockId]);
   if (!m) return null;
 
   const { w, h, zoom } = m, along = m.coarse ? 44 : 24, across = m.coarse ? 22 : 12;
   const rem = (css: number) => `${+(css / m.rem).toFixed(2)}rem`;
   const handles: SpaceHandle[] = [];
   const sides: SpaceSide[] = ["Top", "Right", "Bottom", "Left"];
+  // LE15k-a (the user, 2026-10-20: the size and space handles on one spot): along each side the SIZE handle is at the middle, the INNER
+  // one a quarter along and the OUTER one three quarters — each at the first place of its list that is clear of every handle already
+  // there (measured: the size handles and a finger's hit areas, then those placed before). Nowhere clear → not drawn; the Inspector
+  // and the other handles' keys still set it.
+  const taken: Rect[] = [...m.sizes];
+  // an INNER handle lies inside the edge, where the size handle's grab area (outward only) never reaches: it keeps clear of the pill
+  const pills: Rect[] = m.sizes.map((q) => ({ x: q.x + 8, y: q.y + 8, w: q.w - 16, h: q.h - 16 }));
+  const place = (at: number[], hitAt: (f: number) => Rect, ok: (r: Rect) => boolean = () => true, inner = false): Rect | null => {
+    const hit = at.map((f) => hitAt(f)).find((r) => ok(r) && (inner ? [...pills, ...taken.slice(m.sizes.length)] : taken).every((t) => apart(r, t)));
+    if (hit) taken.push(hit);
+    return hit ?? null;
+  };
+  /** LE15k-am · around a quarter along, nearest first — a short side has room for the inner handle somewhere between the corner and the middle. */
+  const NEAR_QUARTER = [0.25, 0.225, 0.275, 0.2, 0.3, 0.175, 0.325, 0.15, 0.35, 0.125, 0.375, 0.1];
+  // the inner handles, worked out for all four sides together (LE15k-an: one by one, the first took a small block's corner and left the next
+  // nowhere — measured on a 198 × 85 card)
+  type Inner = { s: SpaceSide; css: number; vert: boolean; band: Rect; at: (f: number) => Rect; inset: (r: Rect) => Rect };
+  const inners: Inner[] = [];
   if (pad) sides.forEach((s, i) => {
     const css = m.pad[i], t = m.pad[0] * zoom, rt = m.pad[1] * zoom, b = m.pad[2] * zoom, l = m.pad[3] * zoom, v = css * zoom;
     const vert = s === "Top" || s === "Bottom";
@@ -589,35 +651,73 @@ function SpaceBands({ blockId, node, baseFont, colors, gapColor, pad, margin, ga
     const deep = Math.min(across, Math.floor((vert ? h : w) / 2) - 1), long = Math.min(along, (vert ? w : h) - 2);
     if (deep < 6 || long < 12) return;
     const band = s === "Top" ? { x: 0, y: 0, w, h: t } : s === "Bottom" ? { x: 0, y: h - b, w, h: b } : s === "Left" ? { x: 0, y: t, w: l, h: h - t - b } : { x: w - rt, y: t, w: rt, h: h - t - b };
-    const hit = s === "Top" ? { x: w / 2 - long / 2, y: v, w: long, h: deep } : s === "Bottom" ? { x: w / 2 - long / 2, y: h - v - deep, w: long, h: deep }
-      : s === "Left" ? { x: v, y: h / 2 - long / 2, w: deep, h: long } : { x: w - v - deep, y: h / 2 - long / 2, w: deep, h: long };
-    handles.push({ key: `padding${s}`, kind: "padding", side: s, css, dir: s === "Top" ? [0, 1] : s === "Bottom" ? [0, -1] : s === "Left" ? [1, 0] : [-1, 0],
-      label: rem(css), name: `Inner space, ${SIDE_WORD[s]}`, band: [band], hit, across: vert });
+    const at = (f: number) => (s === "Top" ? { x: w * f - long / 2, y: v, w: long, h: deep } : s === "Bottom" ? { x: w * f - long / 2, y: h - v - deep, w: long, h: deep }
+      : s === "Left" ? { x: v, y: h * f - long / 2, w: deep, h: long } : { x: w - v - deep, y: h * f - long / 2, w: deep, h: long });
+    // stepped INWARD by the rest of the 8px: the size handle is outside the edge (c-21), so this keeps the two 8px apart on any side
+    const inset = (r: Rect): Rect => ({ ...r, ...(s === "Top" ? { y: r.y + 6 } : s === "Bottom" ? { y: r.y - 6 } : s === "Left" ? { x: r.x + 6 } : { x: r.x - 6 }) });
+    inners.push({ s, css, vert, band, at, inset });
   });
+  /** All four in one way, or none of them: `null` and nothing kept when one side has no clear place that way. */
+  const together = (pick: (e: Inner) => Rect | null): Rect[] | null => {
+    const kept = taken.length, out: Rect[] = [];
+    for (const e of inners) { const r = pick(e); if (!r) { taken.length = kept; return null; } out.push(r); }
+    return out;
+  };
+  // a quarter along where every side has room; else staggered; else the middle of each side, stepped in (a small block); else one by one, and — E-6:
+  // every side keeps its inner handle, at 0 too (LE15k-al) — the quarter stepped in where nothing is clear
+  const innerHits = together((e) => place(NEAR_QUARTER, e.at, undefined, true))
+    // …staggered — top and left a quarter along, bottom and right three quarters — so a short block's top and bottom never meet (a 70px card)
+    ?? together((e) => place(e.s === "Top" || e.s === "Left" ? NEAR_QUARTER : NEAR_QUARTER.map((f) => 1 - f), e.at, undefined, true))
+    ?? together((e) => place([0.5], (f) => e.inset(e.at(f)), undefined, true))
+    // …the last resort is never ON another space handle: where a finger's 44px handles cannot all fit (a small card on a tablet, LE15k-ap)
+    // that side gives way to the Inspector, as a one-line block's does (E6-14)
+    ?? inners.map((e) => place(NEAR_QUARTER, e.at, undefined, true) ?? place([0.5, ...NEAR_QUARTER], (f) => e.inset(e.at(f)), undefined, true)
+      ?? ((r) => (taken.slice(m.sizes.length).every((t) => apart(r, t, 0)) ? (taken.push(r), r) : null))(e.inset(e.at(0.25))));
+  inners.forEach((e, k) => innerHits[k] && handles.push({ key: `padding${e.s}`, kind: "padding", side: e.s, css: e.css, dir: e.s === "Top" ? [0, 1] : e.s === "Bottom" ? [0, -1] : e.s === "Left" ? [1, 0] : [-1, 0],
+    label: rem(e.css), name: `Inner space, ${SIDE_WORD[e.s]}`, band: [e.band], hit: innerHits[k]!, across: e.vert }));
   if (margin) sides.forEach((s, i) => {
     const css = m.mar[i], v = css * zoom, vert = s === "Top" || s === "Bottom";
-    if ((vert ? w : h) < 72) return; // ¾ along (E6-18: ¼ lay under the block toolbar, at the left) must clear the corner and middle resize handles
     const band = s === "Top" ? { x: 0, y: -v, w, h: v } : s === "Bottom" ? { x: 0, y: h, w, h: v } : s === "Left" ? { x: -v, y: 0, w: v, h } : { x: w, y: 0, w: v, h };
-    // ¾ along; ¼ where the toolbar (left or right, above or below) lies over ¾; the middle where it covers both (a narrow block — and
-    // then the outer space is wide enough to reach the toolbar, so the handle is well clear of the resize handle on the edge)
-    const under = (x: number, y: number) => !!m.tb && x < m.tb.r && x + along > m.tb.l && y < m.tb.b && y + across > m.tb.t;
-    const across3 = (y: number) => [0.75, 0.25, 0.5].map((f) => w * f - along / 2).find((x) => !under(x, y));
-    // …and where it covers all three (a finger's toolbar is wider than a narrow block) the handle goes out PAST the toolbar: a drag
+    const hitAt = (f: number, y?: number) => (s === "Top" ? { x: w * f - along / 2, y: y ?? -v - across, w: along, h: across } : s === "Bottom" ? { x: w * f - along / 2, y: y ?? h + v, w: along, h: across }
+      : s === "Left" ? { x: -v - across, y: h * f - along / 2, w: across, h: along } : { x: w + v, y: h * f - along / 2, w: across, h: along });
+    // E6-18: never under the block's toolbar (left or right, above or below)…
+    const clear = (r: Rect) => !m.tb || apart(r, { x: m.tb.l, y: m.tb.t, w: m.tb.r - m.tb.l, h: m.tb.b - m.tb.t }, 0);
+    const at = [0.75, 0.625, 0.875];
+    // …and where it covers every place (a finger's toolbar is wider than a narrow block) the handle goes out PAST the toolbar: a drag
     // reads how far the pointer moves, not where it started, so it changes the space just the same
-    const past = (y: number, out: -1 | 1) => (across3(y) !== undefined ? { x: across3(y)!, y } : { x: (w * 3) / 4 - along / 2, y: out < 0 ? Math.min(y, m.tb!.t - across - 2) : Math.max(y, m.tb!.b + 2) });
-    const hit = s === "Top" ? { ...past(-v - across, -1), w: along, h: across } : s === "Bottom" ? { ...past(h + v, 1), w: along, h: across }
-      : s === "Left" ? { x: -v - across, y: (h * 3) / 4 - along / 2, w: across, h: along } : { x: w + v, y: (h * 3) / 4 - along / 2, w: across, h: along };
+    const hit = place(at, hitAt, clear) ?? (vert && m.tb ? place(at, (f) => hitAt(f, s === "Top" ? Math.min(-v - across, m.tb!.t - across - 2) : Math.max(h + v, m.tb!.b + 2))) : null);
+    if (!hit) return;
     handles.push({ key: `margin${s}`, kind: "margin", side: s, css, dir: s === "Top" ? [0, -1] : s === "Bottom" ? [0, 1] : s === "Left" ? [-1, 0] : [1, 0],
       label: rem(css), name: `Outer space, ${SIDE_WORD[s]}`, band: [band], hit, across: vert });
   });
   const both = new Set(m.gaps.map((g) => g.axis)).size > 1;
   for (const axis of ["x", "y"] as const) {
     const gs = m.gaps.filter((g) => g.axis === axis); if (!gs.length) continue;
-    const g = gs[0], css = axis === "x" ? m.gapCss.x : m.gapCss.y, cx = (g.l + g.r) / 2, cy = (g.t + g.b) / 2;
+    const g = gs[0], css = axis === "x" ? m.gapCss.x : m.gapCss.y;
+    const hit = place([0.5, 0.25, 0.75], (f) => (axis === "x" ? { x: (g.l + g.r) / 2 - across / 2, y: g.t + (g.b - g.t) * f - along / 2, w: across, h: along } : { x: g.l + (g.r - g.l) * f - along / 2, y: (g.t + g.b) / 2 - across / 2, w: along, h: across }));
+    if (!hit) continue;
     handles.push({ key: `gap${axis}`, kind: "gap", axis, css, dir: axis === "x" ? [1, 0] : [0, 1], label: rem(css), name: axis === "x" ? "Space between columns" : "Space between rows",
-      band: gs.map((b) => ({ x: b.l, y: b.t, w: b.r - b.l, h: b.b - b.t })),
-      hit: axis === "x" ? { x: cx - across / 2, y: cy - along / 2, w: across, h: along } : { x: cx - along / 2, y: cy - across / 2, w: along, h: across }, across: axis === "y" });
+      band: gs.map((b) => ({ x: b.l, y: b.t, w: b.r - b.l, h: b.b - b.t })), hit, across: axis === "y" });
   }
+  /** LE15k-p: what a space is called, in plain words, beside its size (config/inspector.json `selection`). */
+  const said = (hd: SpaceHandle) => `${hd.kind === "padding" ? SEL.spaceInside : hd.kind === "margin" ? SEL.spaceOutside : hd.axis === "x" ? SEL.spaceColumns : SEL.spaceRows} · ${hd.label}`;
+  // where each space can be found by the pointer: its band, its handle — and, for an inner space thinner than a handle, a strip inside the edge
+  const strip = 12;
+  zonesRef.current = handles.map((hd) => ({ key: hd.key, rects: [hd.hit, ...hd.band.filter((b) => b.w >= 1 && b.h >= 1),
+    ...(hd.kind === "padding" && hd.css * zoom < strip ? [hd.side === "Top" ? { x: 0, y: 0, w, h: strip } : hd.side === "Bottom" ? { x: 0, y: h - strip, w, h: strip } : hd.side === "Left" ? { x: 0, y: 0, w: strip, h } : { x: w - strip, y: 0, w: strip, h }] : [])] }));
+  const shown = (hd: SpaceHandle) => showAll || zone === hd.key || live === hd.key;
+  /** Where a band's label goes: along the band at the first place clear of every handle by 4px, or nowhere (its handle shows the size while held). */
+  const labelAt = (hd: SpaceHandle, b: Rect): number | null => {
+    const lw = said(hd).length * 6.6 + 12, lh = 18;
+    // clear of what is DRAWN — the pills and the space handles; a size handle's grab area and a finger's are outside the block, the label inside
+    // its band (LE15k-ao: counted, they left no room for a label on a tablet)
+    const drawn = [...pills.filter((q) => q.w > 0 && q.h > 0), ...taken.slice(m.sizes.length)];
+    return [0.625, 0.75, 0.375, 0.25, 0.875, 0.5].find((f) => {
+      const cx = hd.across ? b.x + b.w * f : b.x + b.w / 2, cy = hd.across ? b.y + b.h / 2 : b.y + b.h * f;
+      const r = { x: cx - lw / 2, y: cy - lh / 2, w: lw, h: lh };
+      return r.x >= b.x && r.x + r.w <= b.x + b.w && r.y >= b.y && r.y + r.h <= b.y + b.h && drawn.every((t) => apart(r, t, 4));
+    }) ?? null;
+  };
 
   const patchFor = (hd: SpaceHandle, v: number, alt: boolean, shift: boolean): Partial<BoxNode> =>
     hd.kind === "gap" ? gapPatch(node, hd.axis!, v, both) : startsOwn(spacePatch(hd.kind, hd.side!, v, { alt: alt && !shift, all: alt && shift }));
@@ -654,16 +754,16 @@ function SpaceBands({ blockId, node, baseFont, colors, gapColor, pad, margin, ga
   const chip = (c: string): React.CSSProperties => ({ background: c, color: guideInk(c), font: "500 0.6875rem/1 ui-monospace, monospace", padding: "0.2rem 0.35rem", borderRadius: "0.1875rem", whiteSpace: "nowrap" });
   return (
     <>
-      {handles.map((hd) => hd.band.filter((b) => b.w >= 1 && b.h >= 1).map((b, i) => {
+      {handles.filter(shown).map((hd) => hd.band.filter((b) => b.w >= 1 && b.h >= 1).map((b, i) => {
         const c = tint(hd);
         const fill = hd.kind === "gap" ? `repeating-linear-gradient(45deg, color-mix(in oklch, ${c} 45%, transparent) 0 0.125rem, color-mix(in oklch, ${c} 15%, transparent) 0.125rem 0.375rem)` : `color-mix(in oklch, ${c} 22%, transparent)`;
-        // E6-16: the label sits ¼ along the band, clear of its handle (½) and the outer one (¾), and only where the band holds it
-        const fits = hd.across ? b.h >= 16 && b.w >= 60 : b.w >= 56 && b.h >= 24;
+        // E6-16 / LE15k-a: the label sits where the band holds it clear of every handle (`labelAt`)
+        const f = i === 0 ? labelAt(hd, b) : null;
         return (
           <div key={`${hd.key}-${i}`} aria-hidden="true" data-space-band={hd.key} onMouseDown={(e) => start(e, hd)} onPointerDown={onFingerDown((e) => start(e, hd))} onDoubleClick={() => toZero(hd)}
             className="touch-none" style={{ position: "absolute", left: b.x, top: b.y, width: b.w, height: b.h, background: fill,
               outline: `1px solid color-mix(in oklch, ${c} 70%, transparent)`, outlineOffset: "-1px", pointerEvents: "auto", cursor: hd.across ? "ns-resize" : "ew-resize" }}>
-            {fits && i === 0 && <span style={{ ...chip(c), position: "absolute", left: hd.across ? "25%" : "50%", top: hd.across ? "50%" : "25%", transform: "translate(-50%, -50%)" }}>{hd.label}</span>}
+            {f != null && <span style={{ ...chip(c), position: "absolute", left: hd.across ? `${f * 100}%` : "50%", top: hd.across ? "50%" : `${f * 100}%`, transform: "translate(-50%, -50%)" }}>{said(hd)}</span>}
           </div>
         );
       }))}
@@ -676,10 +776,11 @@ function SpaceBands({ blockId, node, baseFont, colors, gapColor, pad, margin, ga
             data-space-handle={hd.key} onMouseDown={(e) => start(e, hd)} onPointerDown={onFingerDown((e) => start(e, hd))} onDoubleClick={() => toZero(hd)}
             onKeyDown={(e) => onKey(e, hd)} onFocus={() => setLive(hd.key)} onBlur={() => setLive((k) => (k === hd.key ? null : k))}
             className="touch-none grid place-items-center rounded-sm focus-visible:outline-2 focus-visible:outline-offset-1"
-            style={{ position: "absolute", left: hd.hit.x, top: hd.hit.y, width: hd.hit.w, height: hd.hit.h, pointerEvents: "auto", outlineColor: c, cursor: hd.across ? "ns-resize" : "ew-resize", zIndex: CHROME_Z.spaceHandle }}>
+            // LE15k-p: drawn only where its space is shown — still in the Tab order, and shown while focused (WCAG 2.1.1)
+            style={{ position: "absolute", left: hd.hit.x, top: hd.hit.y, width: hd.hit.w, height: hd.hit.h, pointerEvents: shown(hd) ? "auto" : "none", opacity: shown(hd) ? 1 : 0, outlineColor: c, cursor: hd.across ? "ns-resize" : "ew-resize", zIndex: CHROME_Z.spaceHandle }}>
             {/* no pointer of their own (E6-21): every layer here is one more for a still tap to peel before it reaches the words */}
             <span aria-hidden="true" className="block rounded-full ring-1 ring-white shadow pointer-events-none" style={{ width: hd.across ? Math.min(20, hd.hit.w) : 5, height: hd.across ? 5 : Math.min(20, hd.hit.h), background: c }} />
-            {live === hd.key && <span aria-hidden="true" data-space-live style={{ ...chip(c), position: "absolute", left: "100%", top: "100%", pointerEvents: "none" }}>{hd.label}</span>}
+            {live === hd.key && <span aria-hidden="true" data-space-live style={{ ...chip(c), position: "absolute", left: "100%", top: "100%", pointerEvents: "none" }}>{said(hd)}</span>}
           </div>
         );
       })}
@@ -1038,6 +1139,11 @@ export default function BoxCanvas({
   const [resizing, setResizing] = useState(false);
   const [spoken, setSpoken] = useState(""); // what a screen reader hears after a keyboard span change ("5 of 12 columns")
   const [spanLive, setSpanLive] = useState<{ x: number; y: number; text: string } | null>(null); // "5 of 12 · phone 3 of 6" beside a snapping edge
+  /** LE15k-o (the user's Q3): after a card drag resized all of them — "Just this one instead" puts the size on the one card */
+  const [oneOrAll, setOneOrAll] = useState<{ x: number; y: number; n: number; one: () => void } | null>(null);
+  const [showSpacing, setShowSpacing] = useState(false);
+  const selKey = (selectedIds ?? [selectedId]).join(" "); // LE15k-u: the selection is a set
+  useEffect(() => { setOneOrAll(null); }, [selKey, currentPageId]); // the offer is about the drag just made — another block or page ends it // LE15k-p (the user's Q4): every space of the selected block at once — touch has no hover
   const [resizeCursor, setResizeCursor] = useState<string | null>(null); // cursor shown by the full-screen overlay while resizing (so it never disappears)
   const [dragId, setDragId] = useState<string | null>(null); // box being dragged (after the move threshold)
   const [dragGhost, setDragGhost] = useState<{ x: number; y: number; w: number; label: string; finger?: boolean } | null>(null); // floating preview that follows the cursor
@@ -1541,6 +1647,7 @@ export default function BoxCanvas({
       else if (mod && k === "d") { if (ids.length) { let next = root; for (const d of ids) next = duplicateBox(next, d); onChange(next); e.preventDefault(); } } // duplicate ALL selected
       else if (mod && k === "]" && id && floating) { onChange((e.shiftKey ? bringToFront : bringForward)(root, id)); e.preventDefault(); } // ]=forward, Shift+]=to front (floating only)
       else if (mod && k === "[" && id && floating) { onChange((e.shiftKey ? sendToBack : sendBackward)(root, id)); e.preventDefault(); }    // [=backward, Shift+[=to back (floating only)
+      else if (!mod && e.altKey && e.code === `Key${SEL.spacingKey.split("+").pop()}`) { setShowSpacing((v) => !v); e.preventDefault(); } // LE15k-p
       else if (mod && k === "l") { if (ids.length) { const anyUnlocked = ids.some((d) => d !== root.id && !findByIdLocal(root, d)?.locked); let next = root; for (const d of ids) if (d !== root.id) next = updateBox(next, d, { locked: anyUnlocked }); onChange(next); e.preventDefault(); } } // lock/unlock ALL selected
       else if (mod && k === "g" && !e.shiftKey) { if (ids.length >= 2) { groupSelected(); e.preventDefault(); } }      // group selected
       else if (mod && k === "g" && e.shiftKey) { const g = id ? findByIdLocal(root, id) : null; if (g?.group) { ungroupSelected(); e.preventDefault(); } } // ungroup
@@ -2590,11 +2697,82 @@ export default function BoxCanvas({
     followGesture(e, onMove, onUp); // a finger's gesture by pointer events, the mouse's as before (E-5b)
   };
 
+  /**
+   * LE15k (the user's Q2, 2026-10-20: "All cards resize together") · A CARD IN A GRID OF "AS MANY AS FIT" (GR-2) is sized with its grid,
+   * as Wix's repeaters size an item: its side edge sets how many go across — the cards stay even, the grid's "At most across" follows,
+   * and its least card width drops where more must fit — and its bottom edge sets every card's height, never under the tallest card's
+   * content (LE15k-g). Measured: a quick-link card's side and top edges did nothing at all. The size is shown beside the pointer.
+   * ponytail: a card's top edge keeps the grid cell's resize.
+   */
+  const startResizeFitCard = (e: React.MouseEvent, id: string, edge: "e" | "w" | "s" | "n", grid: BoxNode) => {
+    e.preventDefault(); e.stopPropagation();
+    const el = document.querySelector<HTMLElement>(`[data-box-id="${CSS.escape(id)}"]`), gEl = el?.parentElement;
+    if (!el || !gEl) return;
+    const gk = `gesture:${Date.now()}`, base = rootRef.current, Z = zoomOf(el), r0 = el.getBoundingClientRect(), rootPx = rootFontPx() * Z;
+    const cs = getComputedStyle(gEl), gap = (parseFloat(cs.columnGap) || 0) * Z;
+    const avail = gEl.getBoundingClientRect().width - ((parseFloat(cs.paddingLeft) || 0) + (parseFloat(cs.paddingRight) || 0)) * Z;
+    const cards = (grid.children ?? []).filter((c) => !isFloating(c) && !c.hidden);
+    const els = cards.map((c) => document.querySelector<HTMLElement>(`[data-box-id="${CSS.escape(c.id)}"]`)).filter((x): x is HTMLElement => !!x);
+    // a picture is cropped to the height it is dragged to (L-8): only words and blocks hold a card up (LE15k-g)
+    const pics = cards.every((c) => c.type === "image");
+    const minW = Math.max(8 * Z, ...els.map(minContentPx)), minH = pics ? 8 * Z : Math.max(8 * Z, ...els.map(naturalHeightOf));
+    const across0 = els.filter((x) => Math.abs(x.getBoundingClientRect().top - els[0].getBoundingClientRect().top) < 2).length;
+    let changed = false; // LE15k-t: the size DRAWN changed — only then is there anything to offer
+    const least = parseFloat(resolveResponsive(grid, breakpoint).minCard ?? "") * rootPx;
+    let pending: BoxNode | null = null, raf = 0, moved = false;
+    /** the size the drag ended at, for "Just this one instead" (LE15k-o) */
+    let last: Partial<BoxNode> = {};
+    const mt0 = (resolveResponsive(findByIdLocal(base, id) ?? grid, breakpoint).marginTop ?? 0), unit = measureBoxU(el, base.baseFont ?? 10) * Z;
+    setResizeCursor(cursorFor(edge)); setResizing(true);
+    followGesture(e, (ev) => {
+      // a press that does not move changes nothing — Android follows a finger's drag with the old mouse events at the point it
+      // started, and that "drag" of 0px wrote the cards' first height back over the finger's (LE15k-ae, measured on the phone)
+      if (!moved && Math.hypot(ev.clientX - e.clientX, ev.clientY - e.clientY) < 3) return;
+      if (!moved) setOneOrAll(null); // a new drag of the cards ends the last offer — only once it really moves
+      moved = true;
+      let tree = base, text: string;
+      if (edge === "s" || edge === "n") {
+        // the bottom grows down; the TOP moves down into a space above every card, and back up as far as that space goes (rule 5) — the
+        // other edge stays put either way (LE15k-n, rule 19)
+        const dy = ev.clientY - e.clientY, room = (mt0 * unit) / 10;
+        const h = edge === "s" ? Math.max(minH, r0.height + dy) : Math.max(minH, Math.min(r0.height + room, r0.height - dy));
+        const mt = edge === "n" ? Math.round(((room + r0.height - h) * 10) / unit) : undefined;
+        last = { ...(pics ? { height: remLen(h, rootPx), minHeight: undefined, ratio: undefined } : { minHeight: Math.round((h / Z) * 1000) / 1000, height: undefined }), ...(edge === "n" ? { marginTop: mt || undefined } : {}) };
+        changed = Math.abs(h - r0.height) > 0.5;
+        for (const c of cards) tree = writeBox(tree, c.id, last);
+        text = `${remLen(h, rootPx)} tall · every card${h <= minH + 0.5 ? " · as short as its content" : ""}`;
+      } else {
+        const w = Math.max(minW, Math.min(avail, r0.width + (edge === "e" ? 1 : -1) * (ev.clientX - e.clientX)));
+        const n = Math.max(1, Math.min(cards.length, Math.floor((avail + gap) / (w + gap))));
+        const track = (avail - (n - 1) * gap) / n;
+        tree = writeBox(tree, grid.id, { fitMost: n, ...(least > track ? { minCard: remLen(Math.floor(track), rootPx) } : {}) });
+        // just this one: as wide as dragged, inside its own cell, the edge not dragged staying where it is
+        // …a picture keeps its height, cropped, so only the dragged side moves (LE15k-x)
+        last = { width: remLen(Math.min(w, r0.width), rootPx), justifySelf: edge === "e" ? "start" : "end", ...(pics ? { height: remLen(r0.height, rootPx), ratio: undefined } : {}) };
+        changed = n !== across0;
+        text = `${n} across · every card${w <= minW + 0.5 ? " · as narrow as its content" : ""}`;
+      }
+      setSpanLive({ x: ev.clientX, y: ev.clientY, text });
+      pending = tree;
+      if (!raf) raf = requestAnimationFrame(() => { raf = 0; if (pending) onChange(pending, gk); });
+    }, (ev) => {
+      cancelAnimationFrame(raf);
+      if (moved && pending) {
+        onChange(pending, gk);
+        // LE15k-t: only when the cards changed — a drag stopped by their content changed nothing to choose about
+        if (cards.length > 1 && changed) setOneOrAll({ x: ev.clientX, y: ev.clientY, n: cards.length, one: () => onChange(writeBox(base, id, last), gk) });
+      }
+      setResizing(false); setResizeCursor(null); setSpanLive(null);
+    });
+  };
+
   const startResize = (e: React.MouseEvent, id: string, edge: Edge) => {
     const gk = `gesture:${Date.now()}`; // one undo step for the whole gesture, however many frames it paints
     if (!editable) return;
     const node = findByIdLocal(root, id);
     if (node && isFloating(node)) { startResizeAbsolute(e, id, edge); return; } // floating boxes resize freely (no flow walls)
+    const fit = findParent(root, id)?.parent;
+    if (fit?.layout === "grid" && fit.minCard && edge.length === 1) { startResizeFitCard(e, id, edge as "e" | "w" | "s" | "n", fit); return; } // LE15k (Q2, Q3): every side
     if (findParent(root, id)?.parent.layout === "grid") { startResizeGridCell(e, id, edge); return; } // a cell resizes in TRACKS
     e.preventDefault(); e.stopPropagation();
     const el = document.querySelector<HTMLElement>(`[data-box-id="${id}"]`);
@@ -2715,7 +2893,35 @@ export default function BoxCanvas({
       if ((hasE || hasW) && !parentRow) { anchor.alignSelf = "flex-start"; anchor.width = pct(W0); const ml = pxU(rect.left - contentLeftPx); if (ml !== 0 || (breakpoint !== "base" && node.marginLeft)) anchor.marginLeft = ml; } // width is CROSS (column) → pin horizontal
       if ((hasN || hasS) && parentRow) { anchor.alignSelf = "flex-start"; anchor.minHeight = lay(H0); const mt = pxU(rect.top - flowTopPx); if (mt !== 0 || (breakpoint !== "base" && node.marginTop)) anchor.marginTop = mt; } // height is CROSS (row) → un-stretch so the floor governs + pin vertical
     }
+    /**
+     * LE15k-f · A LINE THAT CENTRES ITS BLOCKS (the user's Q1, 2026-10-20: "Only that edge moves"). Every block of a ready-made section
+     * sits in a band of its own, centred (`centreBands`), and a centred block's width changes on BOTH sides, half each — measured: the
+     * hero title's right edge dragged in 60 moved its left edge 30. So a side drag first writes the line AS IT IS DRAWN: starting at the
+     * left, its first block carrying the space before it as a share of the line, the dragged block its drawn share (a capped `100%` is
+     * not what is drawn). Nothing moves on screen; the edge-anchored maths below then holds the opposite edge, and the space that opens
+     * is the person's to see and change. ponytail: a line that spreads its blocks (`between`, `around`) is left as it is.
+     */
+    if (parentRow && info && prRect && (hasE || hasW) && !pageRowBand && ["center", "end"].includes(resolveResponsive(info.parent, breakpoint).justify ?? "")) {
+      const first = info.parent.children?.find((c) => !isFloating(c) && !c.hidden);
+      const fEl = first ? document.querySelector<HTMLElement>(`[data-box-id="${CSS.escape(first.id)}"]`) : null;
+      if (first && fEl) {
+        base = writeBox(base, info.parent.id, { justify: "start" });
+        const before = Math.round(((fEl.getBoundingClientRect().left - HG - contentLeftPx) / maxW) * 10000) / 100;
+        const lead = { marginLeftPct: before > 0 ? before : undefined, marginLeft: undefined };
+        if (first.id === id) Object.assign(anchor, lead); else base = writeBox(base, first.id, lead);
+        if (start0.width?.trim().endsWith("%") && Math.abs(widthPct(start0.width) - (W0 / maxW) * 100) > 0.5) anchor.width = pct(W0);
+      }
+    }
+    /**
+     * LE15k-x · A PICTURE WITH A PROPORTION (4 : 3) dragged by ONE side takes the size it is dragged to, cropped — its proportion becomes
+     * Free (the Inspector's Proportion puts it back). Kept, the proportion moved the edge NOT dragged (measured: left in 60 → bottom −25)
+     * and its automatic least height held the height a top drag asked for (top in 60 → bottom +39). A corner keeps the proportion.
+     */
+    if (node.type === "image" && start0.ratio && edge.length === 1) Object.assign(anchor, { ratio: undefined, ...(hasE || hasW ? { height: remLen(H0, rootFontPx() * Z) } : {}) });
     if (Object.keys(anchor).length) base = writeBox(base, id, anchor);
+    /** LE15k-f · a measure cap (Max width) the drag takes the block past is raised to where it was let go — never a size it silently refuses. */
+    // measured, not parsed (a cap may be `min(48rem, 100%)`): lifted for one synchronous layout — wider without it means it is capped now
+    const capPx = (() => { const prev = el.style.maxWidth; el.style.maxWidth = "none"; const free = el.getBoundingClientRect().width; el.style.maxWidth = prev; return free > rect.width + 0.5 ? rect.width : NaN; })();
     // NOT COMMITTED HERE (E5a-8): every move builds on `base`, so the anchor lands with the first one. Committed at the press,
     // a click that never moved kept it — a handle tapped by mistake left the block a fixed height nobody chose (measured: a
     // still click on a grid's corner stored minHeight 128, and its empty cells could no longer be dragged smaller).
@@ -2759,7 +2965,7 @@ export default function BoxCanvas({
     // an inflated reference, which is what made the text shrink out of proportion and stopped the height ever
     // going back down to the content. So both are measured with the box unconstrained AND the scale neutralised.
     const selfSizing = node.type === "component" || node.type === "button";
-    let naturalH = 0, naturalW = 0;
+    let naturalH = 0, naturalW = 0, oneLineW = 0;
     if (selfSizing) {
       const inner = (el.querySelector(".eu-root > *:not(style)") as HTMLElement | null) ?? el;
       // Components declare `container-type: inline-size` for their container queries, which makes their inline
@@ -2773,7 +2979,9 @@ export default function BoxCanvas({
       const prevW = inner.style.width, prevFs = inner.style.fontSize;
       inner.style.fontSize = "1em";      // undo any contentScale so we measure the TRUE natural size
       el.style.height = "auto";          // …and let the box follow its content rather than the other way round
-      el.style.minHeight = "0";
+      // …but a BUTTON keeps its least height: the 44px a finger needs (WCAG 2.5.5) is part of it — measured without it, a button read 24px
+      // and a top drag squashed it to 1.5rem with its words at 60% (LE15k-w)
+      if (node.type !== "button") el.style.minHeight = "0";
       naturalH = Math.ceil(el.getBoundingClientRect().height);
       // Two width references, both with the scale neutralised: the content on ONE line (max-content) and the
       // narrowest it can legally get (min-content, its longest unbreakable word). The COMFORTABLE width sits
@@ -2781,6 +2989,7 @@ export default function BoxCanvas({
       // rewrapping into a one-word-per-line column.
       inner.style.width = "max-content";
       const maxContentW = Math.ceil(inner.getBoundingClientRect().width);
+      oneLineW = maxContentW;
       inner.style.width = "min-content";
       const minContentW = Math.ceil(inner.getBoundingClientRect().width);
       naturalW = comfortableWidth(maxContentW, minContentW);
@@ -2802,8 +3011,20 @@ export default function BoxCanvas({
     const rootPx = rootFontPx() * Z; // in screen px, so remLen(screenPx, rootPx) writes true rem and 14rem floors compare with rects
     // The 8px floor is a PAGE size, like the engine's (`Math.max(8, …)` in box-model): as screen px it became 36px of page
     // on a phone's 0.22 canvas, so how small a drag could make a box depended on the zoom it was made at (E4-6).
-    const minWpx = selfSizing ? Math.max(8 * Z, naturalW * MIN_CONTENT_SCALE) : Math.max(8 * Z, 0.03 * maxW);
-    const minHpx = selfSizing ? Math.max(8 * Z, naturalH * MIN_CONTENT_SCALE) : 8 * Z;
+    // LE15k-w (the user, 2026-10-20: never smaller than its content): a BUTTON stops at its words on one line — narrower, they wrapped and
+    // it grew taller, moving its top and bottom (measured −21 / +21 in the hero); a component still scales its words (RULE G/O)
+    const isBtn = node.type === "button";
+    const minWpx = selfSizing ? Math.max(8 * Z, isBtn ? oneLineW : naturalW * MIN_CONTENT_SCALE) : Math.max(8 * Z, 0.03 * maxW);
+    const minHpx = selfSizing ? Math.max(8 * Z, isBtn ? naturalH : naturalH * MIN_CONTENT_SCALE) : 8 * Z;
+    /**
+     * LE15k-g (the user, 2026-10-20: "you cannot reduce the size of a container more than the content inside"): its EDGE stops at what is
+     * inside it. The stored floor keeps its own rule (`minHpx`; a corner's round trip works from it, L4-l — LE15k-m); this is where the drag
+     * would otherwise MOVE something: the top edge's position, the space opening below it, the room handed to the block below. Measured:
+     * the hero title's top dragged in 60 moved the whole title down 37. A picture takes the height it is dragged to, cropped (L-8); an EMPTY
+     * box — or one holding only empty boxes, an empty grid's cells — holds only the editor's "Drop a block here", never content (LE15k-h).
+     */
+    const holdsNothing = (n: BoxNode): boolean => isEmptyBox(n) || (isContainer(n) && (n.children ?? []).every(holdsNothing));
+    const contentHpx = selfSizing || node.type === "image" || holdsNothing(node) ? minHpx : Math.max(minHpx, naturalHeightOf(el));
     /** The text scale a box of `px` needs so `natural` px of content still fits (1 until it must shrink). */
     const fitScale = (px: number, natural: number) => (natural > 0 ? clampContentScale(px / natural) : 1);
     /**
@@ -3099,7 +3320,7 @@ export default function BoxCanvas({
     })();
     const { sibId: aboveSibId, h0: aboveH0, slack: aboveSlack, isComp: aboveIsComp, gap0: aboveGap0 } = above;
     /** And what THIS block can give back — what bounds the same boundary dragged DOWNWARD. */
-    const selfSlack = Math.max(0, H0 - Math.max(naturalHeightOf(el), MIN_ROW_PX * Z));
+    const selfSlack = Math.max(0, H0 - Math.max(naturalHeightOf(el), MIN_ROW_PX * Z, selfSizing ? minHpx : 0)); // LE15k-w: a button's words are its content
     /**
      * L4-l · A CORNER WORKS FROM THE FLOOR THE BLOCK STORED, NOT FROM WORDS THAT HOLD IT TALLER. A corner moves both axes, so the
      * words reflow as it goes: a Heading's top corner dragged 30 in stored a 22.6px floor while its words, wrapped, held it 84px
@@ -3137,10 +3358,48 @@ export default function BoxCanvas({
     /** A block can only wrap inside a band that has a parent to grow into. */
     const canWrap = !!band && !!findParent(rootRef.current, band.id);
 
+    /**
+     * LE15k-f (the user's Q1, 2026-10-20) · A GROUP CENTRED TOP TO BOTTOM (a hero's words in a band of a set height) re-centres as a block
+     * in it grows, so its top went up half of what its bottom was dragged down — measured: bottom +60 → top −23. Measured here, once per
+     * drag, as the browser lays it out: how far the top moves as the block is made taller, sampled every `STEP` px — it is not a fixed
+     * half: a band of a set height re-centres only until its words fill it, then grows (measured: half, then nothing). Where the top
+     * moves, the bottom edge's growth is matched by space above the block (its outer space at the top, shown and changeable), solved
+     * against the samples so the top stays put.
+     */
+    // …as the drag will write it: a band with its own height (`cappingBand`) grows with the block, so a `fill` block above it is never what
+    // moves the top here (LE15k-j — measured: read as centring, it squeezed the user's fill block 58 → 0)
+    const STEP = 80, rise: number[] | null = (hasS || hasN) && !isFloating(node) ? (() => {
+      const capEl = cappingBand ? document.querySelector<HTMLElement>(`[data-box-id="${CSS.escape(cappingBand.id)}"]`) : null;
+      const prev = el.style.minHeight, prevCap = capEl?.style.minHeight ?? "", t0 = el.getBoundingClientRect().top, f: number[] = [];
+      for (let s = 0; s <= 12 * STEP; s += STEP) {
+        el.style.minHeight = `${(H0 + s) / Z}px`;
+        if (capEl && cappingBand) capEl.style.minHeight = `${cappingBand.h0 + s / Z}px`;
+        f.push(el.getBoundingClientRect().top - t0);
+      }
+      el.style.minHeight = prev; if (capEl) capEl.style.minHeight = prevCap;
+      return f[1] < -2 ? f : null;
+    })() : null;
+    /** The space above that keeps the top where it was when the block's group grows by `g` screen px (0 where nothing re-centres). */
+    const holdTop = (g: number): number => {
+      if (!rise || g <= 0) return 0;
+      const F = (x: number) => { const i = Math.min(rise.length - 2, Math.floor(x / STEP)); return rise[i] + ((rise[i + 1] - rise[i]) * (x - i * STEP)) / STEP; };
+      let m = 0;
+      for (let k = 0; k < 12; k++) m = Math.max(0, -F(g + m)); // converges: the top never moves more than half of what the group grows
+      return m;
+    };
+    /** LE15k-ad · the space before a block that moves it `d` px — more than `d` where its group re-centres (a margin grows the group as a height does). */
+    const moveBy = (d: number): number => {
+      if (!rise) return d;
+      const F = (x: number) => { const i = Math.min(rise.length - 2, Math.max(0, Math.floor(x / STEP))); return rise[i] + ((rise[i + 1] - rise[i]) * (x - i * STEP)) / STEP; };
+      let m = d;
+      for (let k = 0; k < 12; k++) m = Math.max(0, d - F(m));
+      return m;
+    };
     setResizeCursor(cursorFor(edge));
     setResizing(true);
     let raf = 0; let pending: BoxNode | null = null;
     let moved = false; // a press that never moved is not a resize: its release commits nothing either (E5b-3)
+    let done = false; // released: a size label queued by the last move is not shown after it (LE15k-e)
     /**
      * L5-5 · THE TREE THIS GESTURE LAST COMMITTED. `rootRef` only catches up on the next render, so the release — which flushes the
      * final frame and then writes on top of it — built on the tree from BEFORE that frame whenever the last move had not rendered yet,
@@ -3392,7 +3651,7 @@ export default function BoxCanvas({
       if (hasW) {
         // The mirror image: this block's left edge spends the block BEFORE it. With nothing before it on the
         // line there is no boundary to share, so it keeps the old behaviour and opens a gap with margin-left.
-        const wanted = Math.min(startRightPx - minWpx, startLeftPx + dx);
+        const wanted = Math.min(startRightPx - Math.max(minWpx, selfSizing ? 0 : ownMinPx), startLeftPx + dx); // LE15k-g: never narrower than its content, as the right edge
         const give = prevSibId ? Math.max(0, prevWidth0 - (prevFloorPx || neighbourMinPx)) : Math.max(0, startLeftPx - flowX);
         const left = Math.max(startLeftPx - give, wanted);
         const scW = selfSizing ? fitScale(startRightPx - left, naturalW) : 1;
@@ -3435,6 +3694,11 @@ export default function BoxCanvas({
           const pTok = remainderPct(ownStored + P(prevWidth0), ownW), pRest = floor2(P(prevRest || prevWidth0));
           tree = writeBox(tree, prevSibId, { width: pTok, restWidth: parseFloat(pTok) < pRest - 0.005 ? `${pRest.toFixed(2)}%` : undefined, restAt: parseFloat(pTok) < pRest - 0.005 ? (prevAt ?? dragStamp) : undefined, restBy: parseFloat(pTok) < pRest - 0.005 ? id : undefined });
         }
+      }
+      if ((hasE || hasW) && capPx > 0) {
+        const w = resolveResponsive(findByIdLocal(tree, id) ?? bn, breakpoint).width;
+        const px = w?.trim().endsWith("%") ? (widthPct(w) / 100) * maxW - 2 * HG : NaN;
+        if (px > capPx + 0.5) tree = writeBox(tree, id, { maxWidth: remLen(px, rootPx) });
       }
       // ── HEIGHT ── the height you drag sets a MIN-HEIGHT (a floor), not a fixed height. The section HUGS
       // its content, so growing a child grows the section; shrinking below the content does nothing (the
@@ -3505,7 +3769,7 @@ export default function BoxCanvas({
          * content — and only what it cannot supply grows the page. One rule for the boundary instead of two
          * opposite ones, and `slack` is what makes it safe: content is never squeezed, the edge simply stops.
          */
-        const released = H0 - h;
+        const released = H0 - Math.max(h, contentHpx); // LE15k-g: never more room than its content can give
         if (released > 0) {
           const bh = Math.max(MIN_ROW_PX * Z, below.h0 + released); // screen px throughout: the floor scaled, no whole-screen-px rounding (E2-13)
           tree = writeBox(tree, below.sibId, below.isComp
@@ -3519,6 +3783,8 @@ export default function BoxCanvas({
               ? { height: remLen(bh, rootPx), minHeight: undefined }
               : { minHeight: lay(bh), height: undefined });
           }
+          const hold = holdTop(-released - taken); // LE15k-f: in a centred group the top stays
+          if (hold > 0) tree = writeBox(tree, id, { marginTop: MT0 + pxU(hold) });
         }
       } else if (hasS) {
         // Nothing below it: the bottom edge faces open space, so it simply opens some. Top fixed, bottom moves.
@@ -3537,10 +3803,12 @@ export default function BoxCanvas({
         // bottom edge crosses the line, and the row already keeps that space at release (`onUp`); a margin here made a block's row
         // grow by its own round trip (L5-10, measured: out 60 and back left the row 60px taller).
         const aloneOnLine = !parentRow || (info?.parent.children?.length ?? 0) <= 1;
-        const mb0 = resolveResponsive(node, breakpoint).marginBottom ?? 0, mb = mb0 + pxU(H0 - h);
+        const mb0 = resolveResponsive(node, breakpoint).marginBottom ?? 0, mb = mb0 + pxU(H0 - Math.max(h, contentHpx)); // LE15k-g: no space opens past its content
         if (aloneOnLine) tree = writeBox(tree, id, { marginBottom: mb > 0 ? mb : undefined });
         const grew = h - H0 - (aloneOnLine ? Math.min(Math.max(0, h - H0), Math.max(0, (mb0 * boxU) / 10)) : 0); // screen px — only what the space below could not give; `h0` is stored — see E2-13 above
         if (cappingBand && grew > 0) tree = writeBox(tree, cappingBand.id, { minHeight: cappingBand.h0 + lay(grew) });
+        const hold = holdTop(grew); // LE15k-f: in a centred group the top stays
+        if (hold > 0) tree = writeBox(tree, id, { marginTop: MT0 + pxU(hold) });
       }
       if (hasN && aboveSibId) {
         /**
@@ -3568,13 +3836,19 @@ export default function BoxCanvas({
          * block above and leaves the gap exactly as it was. Where there is no gap, the arithmetic reduces
          * to what it was before, which is why the original guards still hold.
          */
-        const rise = Math.max(-selfSlack, Math.min(-dy, aboveGap0 + aboveSlack));
-        const fromGap = Math.min(Math.max(rise, 0), aboveGap0); // only GROWING eats the gap
+        // LE15k-ab · only the block's OWN outer space is its to spend: the rest of what lies between is its parent's gap. Spent as a margin it
+        // was written as one — a 24-unit top space on a button whose top did not move — and taken off its height (squashed to 1.5rem)
+        const ownGap = Math.min(aboveGap0, MT0px);
+        const rise = Math.max(-selfSlack, Math.min(-dy, ownGap + aboveSlack));
+        const fromGap = Math.min(Math.max(rise, 0), ownGap); // only GROWING eats the gap
         const fromPartner = rise - fromGap;                     // negative → the block above grows instead
-        const ah = Math.max(MIN_ROW_PX * Z, aboveH0 - fromPartner); // screen px: the floor scaled as `aboveSlack` was (E2-13)
+        // LE15k-ad (Q5) on a JOINED edge: past this block's content the block above keeps growing and this one MOVES down with it — the
+        // person sees it go, and no space ever opens between them (the agreed rule 1: a joined edge's neighbour absorbs, never a gap)
+        const past = edge === "n" ? Math.max(0, dy - selfSlack) : 0;
+        const ah = Math.max(MIN_ROW_PX * Z, aboveH0 - fromPartner + past); // screen px: the floor scaled as `aboveSlack` was (E2-13)
         // A drag that spent none of the gap KEEPS the stored margin: re-deriving it from the measured screen gap rounded a whole
         // SCREEN px, and on a shrunk canvas half of one is more than a page px — 40 came back as 41 at 0.47 (E2-4).
-        const mt = fromGap <= 0 && bn.marginTop != null ? bn.marginTop : pxU(Math.max(0, aboveGap0 - fromGap));
+        const mt = fromGap <= 0 && bn.marginTop != null ? bn.marginTop : pxU(Math.max(0, ownGap - fromGap));
         /**
          * THE HEIGHT IS DERIVED FROM THE MARGIN THAT WAS ACTUALLY STORED — rule 19, held by construction
          * rather than by arithmetic that happens to round nicely.
@@ -3597,7 +3871,7 @@ export default function BoxCanvas({
          * bottom lands up to a pixel out. The height is emitted through `remLen`, which keeps three decimals,
          * so it can carry the remainder exactly and the sum closes.
          */
-        const h = Math.max(MIN_ROW_PX * Z, Math.round((startBotPx - (flowY + (ah - aboveH0)) - mtPx) * 1000) / 1000);
+        const h = Math.max(MIN_ROW_PX * Z, Math.round((startBotPx + past - (flowY + (ah - aboveH0)) - mtPx) * 1000) / 1000);
         const scN = fitScale(h, naturalH);
         tree = writeBox(tree, id, pic ? { height: remLen(h, rootPx), minHeight: undefined, marginTop: mtKeep(mt) } : isComp
           ? { height: remLen(h, rootPx), minHeight: undefined, clip: undefined, marginTop: mtKeep(mt), contentScale: scN < 1 ? scN : undefined }
@@ -3616,7 +3890,7 @@ export default function BoxCanvas({
         // (An earlier note here described the opposite, added-to-the-bottom behaviour. `resizeTopEdge` has never
         // done that; the note outlived the code and is the reason a runaway height was misdiagnosed here.)
         // `resizeTopEdge` (box-model) owns the maths + the page clamp so the rule is unit-testable.
-        const { top } = resizeTopEdge(startTopPx, startBotPx, dy, minHpx, pageTopPx ?? flowY); // the height follows from the stored margin below
+        const { top } = resizeTopEdge(startTopPx, startBotPx, dy, contentHpx, pageTopPx ?? flowY); // LE15k-g: the top stops at its content // the height follows from the stored margin below
         const mt = pxU(top - flowY); // may be negative → the block grows upward past its flow origin
         // THE HEIGHT IS WHAT IS LEFT BELOW THE MARGIN AS STORED (#81). The margin is rounded to whole units; taking the height
         // from the UNrounded top rounded it a second time, and the two errors put the anchored bottom 1px off at some drag
@@ -3625,12 +3899,46 @@ export default function BoxCanvas({
         const scN = fitScale(hN, naturalH);
         tree = writeBox(tree, id, pic ? { height: remLen(hN, rootPx), minHeight: undefined, marginTop: mtKeep(mt) } : isComp ? { height: remLen(hN, rootPx), minHeight: undefined, clip: undefined, marginTop: mtKeep(mt), contentScale: scN < 1 ? scN : undefined } : { minHeight: Math.round((Math.max(minHpx, hN - heldAbove) / Z) * 1000) / 1000, height: undefined, marginTop: mtKeep(mt) });
       }
+      /**
+       * LE15k-ad (the user's Q5, 2026-10-20: "It moves the title down") · PAST ITS CONTENT AN EDGE MOVES THE BLOCK. The edge first shrinks it
+       * to what is inside; dragged further, the block goes that way — the space before it grows (top / left) or closes (bottom / right, never
+       * below none) — so the person SEES it move and can place it. Measured before: a title's top dragged down did nothing at all.
+       */
+      let moving = "";
+      if (edge.length === 1 && !isFloating(node)) {
+        const now = () => resolveResponsive(findByIdLocal(tree, id) ?? bn, breakpoint);
+        // a JOINED edge moves the block by its neighbour instead (the shared branches above; rule 1: never a gap between them)
+        if (hasN || hasS) {
+          if ((hasN && !aboveSibId) || (hasS && !below.sibId)) {
+            const over = hasN ? startTopPx + dy - (startBotPx - contentHpx) : startTopPx + contentHpx - (startBotPx + dy);
+            if (over > 0.5) {
+              const cur = now().marginTop ?? 0, curPx = (boxU * cur) / 10;
+              const m = hasN ? moveBy(over) : -Math.min(curPx, moveBy(over));
+              if (Math.abs(m) > 0.5) { const next = Math.max(0, cur + pxU(m)); tree = writeBox(tree, id, { marginTop: next || undefined }); moving = `${SEL.spaceAbove} · ${remLen((boxU * next) / 10, rootPx)}`; }
+            }
+          }
+        } else if (!(hasW && prevSibId) && !(hasE && nextSibId)) {
+          const floorW = Math.max(minWpx, selfSizing ? 0 : ownMinPx), shareOf = (px: number) => Math.round((px / maxW) * 10000) / 100;
+          const over = hasW ? startLeftPx + dx - (startRightPx - floorW) : floorW - (W0 + dx);
+          const gap0 = ((now().marginLeftPct ?? 0) / 100) * maxW;
+          if (over > 0.5) {
+            const gap = hasW ? Math.min(maxW - floorW - flowX, startRightPx - floorW - flowX + over) : Math.max(0, (startLeftPx - flowX) - over);
+            if (Math.abs(gap - gap0) > 0.5 || hasW) { tree = writeBox(tree, id, { width: pct(floorW), marginLeftPct: shareOf(gap) || undefined, marginLeft: undefined }); moving = `${SEL.spaceLeft} · ${remLen(gap, rootPx)}`; }
+          }
+        }
+      }
       if (snapCols && (hasE || hasW)) tree = freeEdge(tree, hasE ? "right" : "left", freeOff);
       if (guardSteps && (hasE || hasW) && stepsHere(tree)) return; // L5-14: the edge stops where the line would step
       pending = tree;
       if (!raf) raf = requestAnimationFrame(flush);
+      // LE15k-e: the size beside the pointer while it is dragged — and why it stops, where its content stops it (a snapping edge says its columns)
+      if (!snapCols || !(hasE || hasW)) {
+        const atContent = !selfSizing && ((hasS && startBotPx + dy < startTopPx + contentHpx) || (hasN && startTopPx + dy > startBotPx - contentHpx) || (hasE && W0 + dx < ownMinPx) || (hasW && W0 - dx < ownMinPx));
+        requestAnimationFrame(() => { if (done) return; const q = el.getBoundingClientRect(); setSpanLive({ x: ev.clientX, y: ev.clientY, text: moving || `${remLen(q.width, rootPx)} × ${remLen(q.height, rootPx)}${atContent ? " · as small as its content" : ""}` }); });
+      }
     };
     const onUp = () => {
+      done = true;
       if (raf) { cancelAnimationFrame(raf); flush(); }
       setResizing(false); setResizeCursor(null); setSpanLive(null);
       // A STILL PRESS LEAVES THE PAGE AS IT WAS (E5a-8 for the anchor; E5b-3 for this release): it used to run the release below,
@@ -3971,7 +4279,11 @@ export default function BoxCanvas({
           // darkens it under the finger, and is also what makes the browser count it as something a tap is for: without it, Chrome's
           // touch adjustment moved a press on the handle onto the editable words beside it (E5b-2 — measured: the target was the
           // heading's span, then `pointercancel`), so a top edge lying over a heading could not be held at all.
-          <div key={h.edge} onMouseDown={(e) => { caretFallthrough(e, node.id); startResize(e, node.id, h.edge); }} onPointerDown={onFingerDown((e) => { caretFallthrough(e, node.id); startResize(e, node.id, h.edge); })} aria-label={`Resize ${h.label}`} title={h.title} className={`absolute ${h.pos} ${h.cursor} touch-none bg-indigo-500 active:bg-indigo-700 border-2 border-white shadow`} style={{ zIndex: CHROME_Z.handle, pointerEvents: "auto" }} />
+          <div key={h.edge} onMouseDown={(e) => { caretFallthrough(e, node.id); startResize(e, node.id, h.edge); }} onPointerDown={onFingerDown((e) => { caretFallthrough(e, node.id); startResize(e, node.id, h.edge); })} aria-label={`Resize ${h.label}`} title={h.title}
+            // LE15k-p: an edge under the pointer says what it does, at once (a native title waits a second and says it in different words)
+            onPointerEnter={(e) => { if (!resizing) setSpanLive({ x: e.clientX, y: e.clientY, text: h.edge.length === 2 ? SEL.tipSize : "ns".includes(h.edge) ? SEL.tipHeight : SEL.tipWidth }); }}
+            onPointerLeave={() => { if (!resizing) setSpanLive(null); }}
+            className={`absolute ${h.pos} ${h.cursor} touch-none bg-indigo-500 active:bg-indigo-700 border-2 border-white shadow ${h.grab ? `before:absolute before:content-[''] before:touch-none ${h.grab}` : ""}`} style={{ zIndex: CHROME_Z.handle, pointerEvents: "auto" }} />
         ))}
         {/* A FINGER'S HIT AREA (D6, E5b-4): on touch, 44 × 44 beside each handle, reaching OUTWARD from the block — never over its own
             words or its "+" (E5b-14: centred, the areas covered a small block on a zoomed canvas whole) — its own element UNDER every
@@ -3985,7 +4297,7 @@ export default function BoxCanvas({
     ) : null;
     // E-6 (3): its space, drawn and dragged. A Button or a component keeps the inner space its design stores (the user, 2026-10-15).
     const spaceBands = isSolo && editable && !isRoot && !node.locked ? (
-      <SpaceBands blockId={node.id} node={node} baseFont={root.baseFont ?? 10} colors={spaceHues} gapColor={guideHue}
+      <SpaceBands showAll={showSpacing} blockId={node.id} node={node} baseFont={root.baseFont ?? 10} colors={spaceHues} gapColor={guideHue}
         // E6-20: an EMPTY box has nothing inside to space yet, and its centre is its + — on a phone a finger's handle covered it
         pad={!selfPaint && !(isContainer(node) && !(node.children ?? []).length)} margin={!floating} gap={isContainer(node)}
         spaceFrom={() => { const base = rootRef.current; return (p, k) => onChange(writeBox(base, node.id, p), k); }} sectionSpace={sectionSpaceOf(parent, rawNode, grand, breakpoint)} />
@@ -4367,6 +4679,13 @@ export default function BoxCanvas({
             className={TOOL_BTN}
           >{node.locked ? <LockOpen className={TOOL_ICON} /> : <Lock className={TOOL_ICON} />}</button>
         )}
+        {!isRoot && !node.locked && !window.matchMedia?.("(pointer: coarse)").matches && (
+          // LE15k-p (the user's Q4, 2026-10-20): the spaces show where the pointer is; this shows them all. On a touch screen the bar is
+          // full (E5b-8) — there it is in ⋯, which every screen has, and never a hidden button a finger cannot find
+          <button onClick={() => setShowSpacing((v) => !v)} aria-pressed={showSpacing} aria-label={showSpacing ? SEL.hideSpacing : SEL.showSpacing}
+            title={`${showSpacing ? SEL.hideSpacing : SEL.showSpacing} (${SEL.spacingKey})`} className={TOOL_BTN}
+          ><Ruler className={TOOL_ICON} /></button>
+        )}
         {/* THE ARROWS (E-5a, D4 — the user's decision): ↑ ↓ where the block moves up and down, ← → along a line — the
             route that needs no drag, so a finger, a keyboard and a screen reader can all move a block (WCAG 2.5.7). */}
         {!isRoot && !node.locked && !isFloating(node) && (() => {
@@ -4426,6 +4745,7 @@ export default function BoxCanvas({
                   <Item onClick={() => onChange(moveBlock(root, node.id, "last"))} Icon={ArrowDownToLine} label={across ? "Move to the end" : "Move to bottom"} disabled={!canMoveBlock(root, node.id, "last")} />
                 </>);
               })()}
+              {!node.locked && <Item onClick={() => setShowSpacing((v) => !v)} Icon={Ruler} label={showSpacing ? SEL.hideSpacing : SEL.showSpacing} hint={SEL.spacingKey} />}
               <Item onClick={() => onChange(duplicateBox(root, node.id))} Icon={Copy} label="Duplicate" hint="Ctrl+D" />
               <Item onClick={() => copyBox(node.id)} Icon={Copy} label="Copy" hint="Ctrl+C" />
               <Item onClick={() => cutBox(node.id)} Icon={Scissors} label="Cut" hint="Ctrl+X" />
@@ -4544,6 +4864,19 @@ export default function BoxCanvas({
       })()}
       {renderNode(root, null)}
       {editable && <div role="status" aria-live="polite" className="sr-only">{spoken}</div>}
+      {oneOrAll && createPortal(
+        // LE15k-o (the user's Q3, 2026-10-20): said in plain words, never in the way — one click puts the size on the card alone
+        <div role="status" data-one-or-all className="flex items-center gap-2 rounded-lg border border-gray-200 dark:border-gray-700 midnight:border-gray-700 purple:border-gray-700 bg-white dark:bg-gray-900 midnight:bg-gray-900 purple:bg-gray-900 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 midnight:text-gray-100 purple:text-gray-100 shadow-lg"
+          style={{ position: "fixed", left: Math.min(oneOrAll.x, window.innerWidth - 360), top: Math.min(oneOrAll.y + 16, window.innerHeight - 64), zIndex: CHROME_Z.snapGuide }}
+          // a portal still bubbles through React: without this, the canvas took the press as a click on its background and dropped the card (LE15k-r)
+          // …and a finger's press too: the canvas takes a touch by its pointer events (LE15k-ah, measured on the phone)
+          onMouseDown={(e) => e.stopPropagation()} onPointerDown={(e) => e.stopPropagation()} onKeyDown={(e) => { if (e.key === "Escape") setOneOrAll(null); }}>
+          <span>{SEL.allCards.replace("{n}", String(oneOrAll.n))}</span>
+          <Button size="sm" variant="outline" onClick={() => { oneOrAll.one(); setOneOrAll(null); }}>{SEL.justThisOne}</Button>
+          <Button size="sm" variant="ghost" onClick={() => setOneOrAll(null)}>{SEL.ok}</Button>
+        </div>,
+        document.body,
+      )}
       {spanLive && createPortal(
         <div role="status" data-span-live style={{ position: "fixed", left: spanLive.x + 14, top: spanLive.y - 28, zIndex: CHROME_Z.snapGuide, pointerEvents: "none", background: guideHue, color: guideInk(guideHue), font: "500 0.75rem/1 ui-monospace, monospace", padding: "0.3rem 0.45rem", borderRadius: "0.25rem", whiteSpace: "nowrap" }}>{spanLive.text}</div>,
         document.body,
@@ -5306,6 +5639,6 @@ function ElementView({ node, headingLevel, theme, editable, selected, onText, on
     default:
       // LE13-4 · THE <p> ITSELF is the words, as the export writes it — an inline-block span inside it was one box placed beside a
       // floated picture, so its lines never ran back under it: measured HEADED, the canvas's first line at +0, the Preview's at +528
-      return <EditableText as="p" style={{ color: node.color || typoRole.color("muted"), fontSize: node.fontSize != null ? textLen(node.fontSize) : typoRole.size(1), textAlign: align, width: "100%", ...typoStyle(node, "body", 400) }} value={node.text} editable={editable} onChange={onText} placeholder="Add text" />;
+      return <EditableText as="p" style={{ color: node.color || typoRole.color("muted"), fontSize: node.fontSize != null ? textLen(node.fontSize) : typoRole.size(1), textAlign: align, width: "100%", ...typoStyle(node, "body", 400), ...ownMeasure(node) }} value={node.text} editable={editable} onChange={onText} placeholder="Add text" />;
   }
 }

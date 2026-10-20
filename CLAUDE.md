@@ -29,6 +29,9 @@ Run through this checklist BEFORE writing any code:
 - [ ] **⛔ RULE BEST-PATH — SCOPE HELD** (the user, 2026-10-19) — the area's signed list is frozen: a new idea is PARKED in
   the tree (later batch / Nice / Great), not built; only a bug, a gap the signed plan needs, or the user's "add it now"
   enters, with its % before → after. Every area close weighs a page against Wix and Webflow.
+- [ ] **⛔ RULE ZERO-TO-HERO — EVERYONE, FROM KNOWING NOTHING TO KNOWING A LOT** (the user, 2026-10-20) — plan every control for a
+  person who only drags and drops AND one who wants an exact value; a change that touches other blocks SAYS SO in plain words
+  and lets them choose; nothing on screen without words saying what it is.
 - [ ] **Check existing shared components** — search `components/shared/` for `Button`, `FormDropdown`, `CustomDropdown`, `FormInput`, `Modal`, `EditorDialog`, `ColorPickerPopover`, `DataTable`, etc. NEVER duplicate what exists.
 - [ ] **IMPLEMENT for ALL platforms AND screen sizes** — web (desktop 1280px+, tablet 768px, mobile 375px) AND React Native mobile/tablet app (`apps/mobile/`). Every feature MUST be built for BOTH web responsive AND the native mobile/tablet app. Neither is optional.
 - [ ] **Plan for ALL themes** — check `lib/theme-config.ts` for available themes. Every UI element must work in ALL of them.
@@ -789,6 +792,20 @@ Run through this checklist BEFORE telling the user it's done:
     — and not built now. Only three things enter a frozen area: a BUG (always fixed; RULE V), a gap without which the area
     cannot do what its signed plan promises (said so, with the reason), or the user's explicit "add it now". Every entry
     shows its cost the moment it is made: the area's % left before → after (RULE PROGRESS).
+- **RULE ZERO-TO-HERO — EVERYONE, FROM KNOWING NOTHING TO KNOWING A LOT (MANDATORY — the user, 2026-10-20: "nobody's technical…
+  it's an Excel sheet… from the zero to hero… people that know absolutely nothing… people that know a lot… keep that in mind for
+  everything we're doing").** Applies to every feature of the builder, the app and everything after them.
+  - **Zero first:** whatever can be done is done by dragging, clicking or tapping what is seen, the way a spreadsheet is — no
+    term to learn first. Every handle, band and line on screen SAYS what it is in plain words when the pointer is on it (or a
+    finger asks for it); a mark nobody can name is a bug.
+  - **ASK BEFORE AFFECTING OTHERS, IN PLAIN WORDS:** a change that will also change other blocks, pages or people says so and
+    offers the choice — "All 6 cards resized · Just this one instead" — never silently, never in jargon; the offer never blocks
+    the work (it follows the gesture, one click to switch, Ctrl+Z undoes either).
+  - **Hero too:** the same thing can be set exactly — typed values, the Inspector, keys — for the person who wants control.
+  - **Clean by default:** show the least that does the job (the size first, a space where the pointer is); everything else
+    one press away ("Show spacing"). Measured in the HEADED UAT: what a first-time person sees, named and uncluttered.
+  - Words live in configuration (RULE CFG). Measured, 2026-10-20: a selected block showed a size pill, an inner-space pill
+    and an outer-space pill on each side with no words — the user could not tell which did what.
 - **STATUS, ALWAYS (the user, 2026-09-28).** Every reply ends with where the work is and what comes next — one line, a
   pointer the user can act on — so the user never has to ask "where are you?".
 - **RULE P — WEBSITE PERSONALITY AND TONE ARE FOLLOWED (MANDATORY — from 2026-09-27).** The Website Personalities

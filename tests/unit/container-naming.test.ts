@@ -43,6 +43,13 @@ describe("a container is named for its arrangement", () => {
     expect(containerLabel(createContainer("column", { layout: "grid", direction: "row" }))).toBe("Grid");
   });
 
+  it("calls a block that publishes as <section> a Section, whatever its arrangement (LE15k-d)", () => {
+    // the user's report 2026-10-20: a click on the hero said "Editing: Stack" — sections are named as sections (the user, LE-15b)
+    expect(containerLabel(createContainer("column", { tag: "section" }))).toBe("Section");
+    expect(containerLabel(createContainer("column", { tag: "section", direction: "row" }))).toBe("Section");
+    expect(containerLabel(createContainer("column", { tag: "div" })), "only the section tag").toBe("Stack");
+  });
+
   it("defaults to Stack when no direction is stored, rather than to nothing", () => {
     expect(containerLabel({ id: "x", type: "container" })).toBe("Stack");
   });

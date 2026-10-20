@@ -189,10 +189,31 @@ view toggle to show empty elements.
 | 8 Touch | **Not covered.** No tool documents it; Educo's own E-5 research applies | — |
 | 9 Accessibility | **Partly.** WCAG 2.5.7 is covered; no tool documents keyboard access to handles | — |
 | 10 Empty container | **Partly** | Framer and Wix Studio empty-stack visuals are undocumented |
+| 11 Size vs space handles | **Partly** (added 2026-10-20, BATCH LE-15k) | Framer undocumented; no tool documents touch |
+
+## Axis 11 — Size handles and space handles on the same edge (added 2026-10-20, BATCH LE-15k)
+
+The user's report (2026-10-20): on a selected block the size handle, the inner-space handle and the outer-space handle sit
+on top of each other, so a person grabs the wrong one.
+
+| Tool | How the two are kept apart | Source |
+|---|---|---|
+| Figma | Padding handles appear only when the pointer **hovers inside** the selected auto layout frame; even so, users report the pointer "picks padding handles instead of object bounds" when resizing, and ask for a switch to turn them off. The workaround is zooming in | [F1], [F4], [F5] |
+| Wix Studio | "Select the responsive container and **hover over the padding** to see this option"; double-click the handle to type a value. Height: hover the **bottom line** of a section or cell, the cursor turns to ↕ and the whole line drags | [X5], [X6] |
+| Framer | On-canvas spacing control for a stack's gap; padding in the panel, total or per side. Hover behaviour not documented | [FR5] |
+
+**Takeaway:** the leaders show the space handle only while the pointer is IN that space, and make the size grab the
+whole EDGE line, not a small pill. Even Figma, which does this, gets complaints, so the two must also never share a
+spot. Keyboard and the Inspector stay the path without dragging (axis 9).
 
 ---
 
 ## Sources
+
+- [F5] Figma Forum, "Accidentally changing the padding when I drag" — https://forum.figma.com/t/accidentally-changing-the-padding-when-i-drag/21554
+- [X5] Wix Help, "Studio Editor: Adjusting padding on the canvas" — https://support.wix.com/en/article/studio-editor-request-adjusting-padding-on-the-canvas
+- [X6] Wix Studio Forum, "How do I change the height of a cell in Wix Studio?" — https://forum.wixstudio.com/t/how-do-i-change-the-height-of-a-cell-in-wix-studio/53465
+- [FR5] Framer Learn, Stacks — https://www.framer.com/learn/stacks/
 
 - [F1] Figma Help, Explore auto layout properties — https://help.figma.com/hc/en-us/articles/360040451373
 - [F2] Steve Kinney, Figma course: Auto layout — https://stevekinney.com/courses/figma/auto-layout

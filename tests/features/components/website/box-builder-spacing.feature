@@ -2,7 +2,7 @@ Feature: Spacing — none unless I add it (since 2026-10-15); a saved page keeps
   As a teacher building a page
   I want every section, block and coloured box to arrive with sensible space around it
   So that my words never sit against an edge, and I only touch spacing when I want something different
-  Guards: tests/unit/space-by-default.test.ts · tests/unit/space-handles.test.ts · tests/unit/space-check.test.ts · tests/components/website/PageCheck.test.tsx · tests/e2e/page-grid-panel.spec.ts
+  Guards: tests/unit/space-by-default.test.ts · tests/unit/space-handles.test.ts · tests/unit/space-check.test.ts · tests/components/website/PageCheck.test.tsx · tests/e2e/page-grid-panel.spec.ts · tests/e2e/handles-apart.spec.ts · tests/unit/container-naming.test.ts · tests/unit/hand-width-measure.test.ts · tests/unit/fit-grid-rows.test.ts · scripts/uat/uat-le15k-headed.js · scripts/uat/uat-le15k-emulator.js
 
   # BUILT 2026-09-30 (batch S-1, docs/TASK_TREE.md). The user's values: side gutter 2rem (≈22px on a 360px phone, fluid) ·
   # section space 1rem above and below · header/footer bar 1rem · stack gap 1rem · column and grid gap 1rem · inner
@@ -99,6 +99,93 @@ Feature: Spacing — none unless I add it (since 2026-10-15); a saved page keeps
   Scenario: A button and a component keep the inner space their design stores
     When I select a Button, or a Card
     Then it shows its outer space handles but no inner space handles
+
+  # ── Size and space handles never share a spot (BATCH LE-15k, the user's report 2026-10-20; spacing-overlay.md axis 11) ──
+  # Guards: tests/e2e/handles-apart.spec.ts · tests/unit/container-naming.test.ts
+
+  Scenario Outline: On every side, the size, inner-space and outer-space handles are in three different places (<block>)
+    Given a page made from the "School home" template
+    When I select <block>
+    Then on each side the size handle is at the middle, the inner-space handle between the corner and the middle (a quarter along where the side has room) and the outer-space handle three quarters along
+    And no two handles touch: there are at least 8px between any two of them, and none lies under another
+    And each size handle can be grabbed over at least 24px across, half of it inside the block's edge
+    Examples:
+      | block                                        |
+      | the hero section                             |
+      | the hero's title, which has no inner space   |
+      | the hero's button                            |
+      | a quick-link card                            |
+      | a picture                                    |
+
+  Scenario: A side too short for three handles keeps the size handle, and the space goes to the Inspector
+    Given a one-line Text selected on a narrow column
+    Then where its inner-space handle would touch its size handle it is not drawn
+    And its inner space is still set in the Inspector, and by the keyboard on the other handles
+
+  Scenario: A space's label never covers a handle
+    Given a selected section with inner space on every side
+    Then each band's label sits where it overlaps no handle, or is not drawn and the handle says the size when I hold or focus it
+
+  Scenario: Dragging a size shows the size
+    Given a selected section
+    When I drag its bottom edge
+    Then a label beside the edge shows its width × height while I drag
+    And when the section can go no shorter than what is inside it, the label says so
+
+  Scenario: A selected block shows its size first, and a space only where the pointer is (the user's Q4)
+    Given a page made from the "School home" template
+    When I select the hero section and keep the pointer away from it
+    Then I see its outline and its size handles, and no space bands
+    When the pointer is over its top edge
+    Then a label beside it says "Drag to change the height"
+    When the pointer moves into the space inside its top
+    Then that space alone lights up, saying "Space inside" and its size, with its handle
+    And Tab still reaches every space handle, and a focused one shows itself
+
+  Scenario: "Show spacing" shows every space at once — the way on a touch screen
+    Given a selected block with space inside and between its blocks
+    When I press "Show spacing" on its toolbar, or Alt+P
+    Then every space is drawn with its words and size, and no label covers a handle
+    And pressing it again hides them
+
+  Scenario Outline: A card in a grid of cards is sized from its <edge> edge, every card together (the user's Q3)
+    Given a page made from the "School home" template
+    When I drag a quick-link card's <edge> edge
+    Then every card changes the same way and the edge I did not drag stays put
+    And a bar says "All 6 cards resized" with "Just this one instead"
+    When I press "Just this one instead"
+    Then only that card keeps the new size, and the other cards are as they were
+    And Ctrl+Z puts it back
+    Examples:
+      | edge   |
+      | top    |
+      | bottom |
+      | left   |
+      | right  |
+
+  Scenario: Words follow a width I set by hand (the user, 2026-10-20: "open day… on a straight line")
+    Given the hero's "Open day…" words, wrapped onto two lines by the readable measure
+    When I drag their right edge out until the line fits
+    Then the words use the width I gave them, on one line, on the canvas and in the Preview
+    And a paragraph I never sized keeps the readable measure, and the Page check still warns past 75 characters a line
+
+  Scenario Outline: Past what is inside it, an edge moves the block (the user's Q5)
+    Given the hero's title, whose words fill it
+    When I drag its <edge> edge <way> past its words
+    Then the title moves <way>, the space <where> it grows, and the label says how much
+    When I drag back
+    Then the space closes again
+    Examples:
+      | edge | way  | where  |
+      | top  | down | above  |
+      | left | right| before |
+
+  Scenario Outline: A <tag> is called a <name>
+    When I select a block that publishes as a <tag>
+    Then the Inspector says "Editing: <name>", and the trail of blocks round its content names it <name>
+    Examples:
+      | tag     | name    |
+      | section | Section |
 
   Scenario Outline: The bands and handles at <screen>, in every theme
     Given a selected Stack with space on every side

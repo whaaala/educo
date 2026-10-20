@@ -707,7 +707,15 @@ export function isContainer(node: BoxNode): boolean {
  *
  * These are the names a USER sees. The stored `layout` and `direction` are untouched.
  */
+/**
+ * LE15k-ac · A PARAGRAPH SIZED BY HAND KEEPS ITS WORDS IN THE WIDTH IT WAS GIVEN. Every paragraph is capped at the readable measure
+ * (`measureCss`); dragged wider by a person it still broke before its last word — the cap silently overrode their choice (the user,
+ * 2026-10-20). One rule for the canvas and the published page; the Page check still warns past 75 characters a line.
+ */
+export const ownMeasure = (node: BoxNode): { maxWidth?: string } => (node.widthByHand ? { maxWidth: "none" } : {});
+
 export function containerLabel(node: BoxNode): string {
+  if (node.tag === "section") return "Section"; // LE15k-d: a page section is named as one, whatever its arrangement (the user, 2026-10-20)
   if (node.layout === "grid") return "Grid";
   return (node.direction ?? "column") === "row" ? "Side by side" : "Stack";
 }
@@ -4263,12 +4271,23 @@ export function fitStepAt(band: BoxNode, id: string, widthRem: number, bp: Break
  * and null when any child is placed EXPLICITLY by `rowStart`/`rowSpan` — the row a cell lands in is the
  * user's choice there, not something this walk can work out, and guessing it would move their blocks.
  */
+/**
+ * LE15k-ai · AN AUTO-FIT GRID WITH A CARD SIZED BY HAND. Its rows cannot be named (`gridRowTracks`): how many cards share a row is the
+ * browser's count at each width, not the stored columns — on a phone one across, the names fell on the wrong rows and every other card
+ * stayed as tall as the one made taller alone (measured 2026-10-20). Once any card has a height of its own, its rows follow their
+ * content; untouched, the grid keeps its even rows.
+ */
+export function fitRowsSized(node: BoxNode, bp: Breakpoint = "base"): boolean {
+  return !!gridAutoFit(node) && (node.children ?? []).some((c) => { const r = resolveResponsive(c, bp); return r.minHeight != null || (r.height != null && r.height !== "auto"); });
+}
+
 export function gridRowTracks(node: BoxNode, bp: Breakpoint = "base"): string | null {
   const kids = node.children ?? [];
   if (!kids.length) return null;
   // MASONRY has no rows to name. The track is a fine measuring unit rather than a row, so an explicit list —
   // one entry per "row", each `auto` or an even share — would both mean nothing and fight the unit.
   if (isMasonry(node, bp)) return null;
+  if (gridAutoFit(node)) return null; // LE15k-ai: an auto-fit grid's rows are the browser's to count — see `fitRowsSized`
   if (kids.some((c) => c.rowStart != null || (c.rowSpan ?? 1) > 1)) return null;
   const track = gridColumnsAt(node, bp);
   const rows: BoxNode[][] = [];
@@ -6862,7 +6881,7 @@ function containerStyleOf(node: BoxNode, bp: Breakpoint = "base", section: Secti
       // fit makes its own tracks grow instead: an under-estimate costs a little evenness, an over-estimate
       // costs a little air, and neither can ever crop or overlap. When the span is right (a contained band,
       // where it is exact) the tracks stay at the unit and nothing about the stagger changes.
-      gridAutoRows: masonry ? `minmax(${MASONRY_ROW_REM}rem, auto)` : "minmax(min-content, 1fr)",
+      gridAutoRows: masonry ? `minmax(${MASONRY_ROW_REM}rem, auto)` : fitRowsSized(node, bp) ? "auto" : "minmax(min-content, 1fr)",
       // …and where a row HAS been given a height by hand, it keeps it while the others share what is left.
       // `grid-auto-rows` alone cannot express that: it is one value for every row, so a row dragged taller
       // was immediately levelled back down by the `1fr` its neighbours were also claiming. See `gridRowTracks`.
