@@ -179,7 +179,8 @@ test.describe("a block let go over the selected block's toolbar lands on the pag
     const from = { x: t.x + t.width / 2, y: t.y + t.height / 2 };
     await page.mouse.move(from.x, from.y); await page.mouse.down();
     for (let i = 1; i <= 16; i++) { await page.mouse.move(from.x + ((x - from.x) * i) / 16, from.y + ((y - from.y) * i) / 16); await page.waitForTimeout(20); }
-    await page.waitForTimeout(80); await page.mouse.up(); await page.waitForTimeout(900);
+    // back on the target before letting go: in a headed window the real pointer can send its own move during the wait
+    await page.waitForTimeout(80); await page.mouse.move(x, y); await page.mouse.up(); await page.waitForTimeout(900);
   }
 
   test("every control of the toolbar, one after another: the block is added each time", async ({ page }) => {

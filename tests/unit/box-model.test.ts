@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import { coerceSite } from "@/lib/box-site";
 import { BREAKPOINTS_EM } from "@/lib/educo-ui/base";
 import {
-  createContainer, createGrid, createElement, createComponent,
+  createContainer, createGrid, createElement, createComponent, newCellSpan,
   addItem, removeItem, moveItem, updateItem, addChildItem, updateChildItem, removeChildItem, moveChildItem, sanitizeCssDeclarations, expandScopedCss, ACCORDION_CSS_PARTS, itemOverrideCss, itemHasOverride, itemFloatReserveRem, richBody, plainBody, isEmptyBox,
   findBox, findParent, isAncestor, updateBox, insertBox, removeBox, deleteBox, stackWithBlock, moveBoxStep, moveBox,
   containerStyle, childStyle, paddingCSS, marginCSS, sizeToCSS, flexForWidth, fillMainAxis, u, newBoxId, dropIndexAmong, EMPTY_BOX_MIN, fitRowWidths,
@@ -536,6 +536,49 @@ describe("box-model — mutations are immutable and correct", () => {
       const ws = widthsOf(drop([col("a", "50%"), col("b", "50%"), col("c", "70%")], 1, col("n", "100%")));
       expect(ws[3]).toBe("70%");
       expect(sumOf(ws.slice(0, 3))).toBeLessThanOrEqual(100);
+    });
+
+    // LE15l-y (template-fully-editable.feature): a heading whose longest word needs 55.8 % of its narrow column, alone at 100 %.
+    const dropFloored = (kids: BoxNode[], at: number, fresh: BoxNode, floors: Record<string, number>) => {
+      const root = pageWith(kids);
+      const bandId = root.children![0].id;
+      return fitBand(insertBox(root, bandId, at, fresh), bandId, fresh.id, floors);
+    };
+    it("LE15l-y · no block gets less than its measured floor — the newcomer takes what is left", () => {
+      const ws = widthsOf(dropFloored([col("h", "100%")], 1, col("n", "100%"), { h: 55.8, n: 43 })).map(widthPct);
+      expect(ws[0]).toBeGreaterThanOrEqual(55.8);       // 50 / 50 squeezed the heading below its longest word and the band wrapped
+      expect(ws[1]).toBeGreaterThanOrEqual(43);
+      expect(ws[0] + ws[1]).toBeLessThanOrEqual(100);
+      expect(packRowLines(dropFloored([col("h", "100%")], 1, col("n", "100%"), { h: 55.8, n: 43 }).children![0].children!)).toEqual([0, 0]);
+    });
+    it("LE15l-y · a block shared exactly to its floor is never ROUNDED below it (55.76 % of a 55.7695 % floor wrapped by a hair)", () => {
+      const ws = widthsOf(dropFloored([col("h", "100%")], 1, col("n", "100%"), { h: 55.7695, n: 0 })).map(widthPct);
+      expect(ws[0]).toBeGreaterThanOrEqual(55.7695);
+      expect(ws[0] + ws[1]).toBeLessThanOrEqual(100);
+    });
+    it("LE15l-y · the blocks share what the GAPS leave (50 % + 50 % + a 16px gap wrapped \"A one-line notice\")", () => {
+      const root = pageWith([col("t", "100%")]);
+      const bandId = root.children![0].id;
+      const ws = fitBand(insertBox(root, bandId, 1, col("n", "100%")), bandId, "n", {}, 2).children![0].children!.map((c) => widthPct(c.width));
+      expect(ws[0] + ws[1] + 2).toBeLessThanOrEqual(100); // the two shares and the one gap between them fit the line
+      expect(ws[0]).toBeCloseTo(49, 0);
+    });
+    it("LE15l-y · a cell dropped beside another is one like THAT cell, not like the grid's last (a whole-row caption)", () => {
+      const grid = createContainer("column", { id: "g", layout: "grid", columns: 4, children: [col("p", "100%"), { ...col("c", "fill"), colSpan: 2 }, col("p2", "100%"), { ...col("cap", "fill"), colSpan: 4 }] } as Partial<BoxNode>);
+      expect(newCellSpan(grid, 1)).toBe(1);   // on the one-column photo's right
+      expect(newCellSpan(grid, 2)).toBe(2);   // after the two-column card
+      expect(newCellSpan(grid, 0)).toBe(1);   // first: like the photo it lands before
+      expect(newCellSpan(grid)).toBe(4);      // no place given: like the last, as before
+    });
+    it("LE15l-y · floors that leave room change nothing — the equal share still holds", () => {
+      const ws = widthsOf(dropFloored([col("a", "50%"), col("b", "50%")], 2, col("n", "100%"), { a: 20, b: 20, n: 20 })).map(widthPct);
+      ws.forEach((w) => expect(w).toBeCloseTo(33.33, 1));
+    });
+    it("LE15l-y · a floored block keeps its floor while the others share the rest in proportion", () => {
+      const ws = widthsOf(dropFloored([col("a", "50%"), col("b", "25%"), col("c", "25%")], 3, col("n", "100%"), { a: 45 })).map(widthPct);
+      expect(ws[0]).toBeGreaterThanOrEqual(45);
+      expect(ws[1]).toBeCloseTo(ws[2], 1);              // b and c keep their 1 : 1
+      expect(ws.reduce((s, w) => s + w, 0)).toBeLessThanOrEqual(100);
     });
   });
 

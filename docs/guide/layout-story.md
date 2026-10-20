@@ -176,6 +176,13 @@ under the row instead, choose **Where → After** in the panel first.
 
 [![Two "Side by side" blocks filled with "Add a block inside": two halves above, three thirds below, then two rows of two](img/story-side-by-side-shares.webp)](img/story-side-by-side-shares.webp)
 
+**The line you see is where it goes.** Drop a block beside a big title in a narrow column — "Why families choose
+Greenfield" beside its picture — and the line is shared so that neither gets less than its own words need: the title keeps
+the width of its longest word and the new block takes what is left. The space between blocks is counted too, and in a
+grid the new block is one cell like the one it lands beside, never a whole row. Where the line cannot hold one more at all,
+the drop line is drawn **under** the block instead of beside it, and that is where the block goes. Dropped while the page's
+fonts are still arriving (a slow connection), the line is shared again the moment they land — still one **Ctrl+Z**.
+
 *Not yet:* a **Button**'s corner still scales its words as it is dragged in, and does not come back exactly when dragged
 out again — that is settled when the Button is rebuilt as a component, after the layout.
 

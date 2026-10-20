@@ -9,7 +9,7 @@
  */
 
 import { measureCss, linkHoverCss } from "@/lib/educo-ui/base";
-import { columnFloorRem, dividerThickness, borderLen, videoSizing, gridLeftoverAt,HAND_FLOOR_REM, REFLOW_FLOOR_REM, isPageRow, rowNarrowsAt, LIST_ITEM_GAP, linesAt, pageRowSlot, restForDrag, setFreeInset, slideFreeAt, tabletPlaces }from "@/lib/box-model";
+import { columnFloorRem, takesReflowFloor, gridBandOwnsGutter, isSideBySide, newCellSpan, dividerThickness, borderLen, videoSizing, gridLeftoverAt,HAND_FLOOR_REM, REFLOW_FLOOR_REM, isPageRow, rowNarrowsAt, LIST_ITEM_GAP, linesAt, pageRowSlot, restForDrag, setFreeInset, slideFreeAt, tabletPlaces }from "@/lib/box-model";
 import { gapPatch, snapSpace, spacePatch, stepSpace, isEmptyBox, ownMeasure, type SpaceSide } from "@/lib/box-model";
 import { resolvePage, pageFillCss, footerPushCss } from "@/lib/semantics";
 import { createContext, Fragment, useCallback, useContext, useEffect, useLayoutEffect, useMemo, useReducer, useRef, useState, type CSSProperties, type ReactNode } from "react";
@@ -1753,6 +1753,27 @@ export default function BoxCanvas({
   // sections stack (we compare vertically, draw a horizontal line); side-by-side blocks share a row (we
   // compare horizontally, draw a vertical line). We find the child nearest the cursor, detect whether it
   // sits BESIDE a sibling (same row) or is stacked, then decide before/after on that local axis.
+  /**
+   * LE15l-y: THE NARROWEST EACH BLOCK OF A BAND CAN BE DRAWN, as a % of the band's line — its longest word or the reflow floor it is
+   * drawn at (`columnFloorRem`, as `childStyle` draws it), plus its half gaps. `tree` is the tree WITH the newcomer, so the floors
+   * are the ones the line will have; a block not on the page yet (the newcomer) has the rem floor alone.
+   */
+  const lineFloorsPct = (tree: BoxNode, bandId: string): { floors: Record<string, number>; gapPct: number } => {
+    const band = findByIdLocal(tree, bandId), bandEl = document.querySelector<HTMLElement>(`[data-box-id="${CSS.escape(bandId)}"]`);
+    const W = bandEl?.getBoundingClientRect().width ?? 0;
+    if (!(band?.rowBand || isSideBySide(band)) || !band || !bandEl || W <= 0) return { floors: {}, gapPct: 0 };
+    const Z = zoomOf(bandEl), cs = getComputedStyle(bandEl), HG = Math.max(0, -(parseFloat(cs.marginLeft) || 0)) * Z;
+    const floors: Record<string, number> = {};
+    for (const c of band.children ?? []) {
+      const el = Array.from(bandEl.children).find((e) => e.getAttribute("data-box-id") === c.id) as HTMLElement | undefined;
+      // only a band's sections get the reflow floor (`childStyle`); on a phone they take the whole line, off the page grid
+      const rem = !band.rowBand || !takesReflowFloor(c) ? 0 : breakpoint === "phone" && !gridBandOwnsGutter(band) ? Infinity : columnFloorRem(band, c, breakpoint);
+      const px = Math.ceil(Math.max(el ? minContentPx(el) : 0, rem * rootFontPx() * Z) + 2 * HG); // up to a whole px: a fraction short wraps
+      floors[c.id] = (Math.min(W, px) / W) * 100;
+    }
+    // a Side by side's own gap (a band's lives in its blocks' half-gap margins, inside the %)
+    return { floors, gapPct: ((parseFloat(cs.columnGap) || 0) * Z / W) * 100 };
+  };
   const slotFromKids = (parentEl: HTMLElement, kidEls: HTMLElement[], x: number, y: number): { index: number; rect: Drop["rect"]; moveWidth?: string; rowFlow?: boolean; wrapUnder?: Drop["wrapUnder"]; wrapBeside?: Drop["wrapBeside"] } => {
     const pr = parentEl.getBoundingClientRect();
     const T = 3;
@@ -1840,9 +1861,25 @@ export default function BoxCanvas({
       || rects.some((r, i) => rects.some((r2, j) => j > i && sameRow(r, r2)));
     const nearSide = parentPlacesSideBySide && onKrLine && (x < kr.left + edgeX || x > kr.right - edgeX);
     const nearTopBottom = withinX && !nearSide && (y < kr.top + edgeY || y > kr.bottom - edgeY);
-    const rowFlow = nearSide
+    let rowFlow = nearSide
       || (onKrLine && (x < kr.left || x > kr.right))          // in a gap on this line → beside
       || (!nearTopBottom && rects.some((r, i) => i !== k && sameRow(r, kr)));
+    // LE15l-y: THE LINE NEVER LIES. Beside is only drawn where the line can hold one more block with every block at its floor
+    // (`lineFloorsPct`); where it cannot, the band would wrap the newcomer under, so the line is drawn under — under that column
+    // when it has neighbours on its line, else on a line of its own below.
+    const bandId = parentEl.getAttribute("data-box-id") ?? "";
+    const bandCs = getComputedStyle(parentEl);
+    const lineParent = findByIdLocal(rootRef.current, bandId);
+    if (rowFlow && kidId && (lineParent?.rowBand || isSideBySide(lineParent)) && bandCs.flexDirection.startsWith("row") && bandCs.flexWrap === "wrap") {
+      const { floors: fl, gapPct } = lineFloorsPct(insertBox(rootRef.current, bandId, 0, createContainer("column", { id: "__drop" } as Partial<BoxNode>)), bandId);
+      const onLine = kidEls.filter((_, i) => sameRow(rects[i], kr));
+      const need = (fl.__drop ?? 0) + gapPct * onLine.length + onLine.reduce((s, el) => s + (fl[el.getAttribute("data-box-id") ?? ""] ?? 0), 0);
+      if (need > 100.001) {
+        if (rects.some((r, i) => i !== k && sameRow(r, kr)))
+          return { index: k, rect: { left: kr.left, top: kr.bottom - T / 2, width: kr.width, height: T, inside: false }, moveWidth: "100%", wrapUnder: { id: kidId, before: false } };
+        rowFlow = false;
+      }
+    }
     const before = rowFlow ? x < cx(kr) : y < cy(kr);
     const index = k + (before ? 0 : 1);
     const rect: Drop["rect"] = rowFlow
@@ -2241,7 +2278,27 @@ export default function BoxCanvas({
     // A block landing on a line that is already full has to come from somewhere, so the line is shared out
     // (`fitBand`). This runs on the ADD and nowhere else: a width the user dragged is theirs, and is left
     // free to push a neighbour onto the next line. Doing it on every commit is what made wrapping impossible.
-    onChange(fitBand(insertBox(rootRef.current, parentId, index, node), parentId, node.id));
+    const grid = findByIdLocal(rootRef.current, parentId);
+    if (grid?.layout === "grid" && node.colSpan == null) node.colSpan = newCellSpan(grid, index); // LE15l-y: one cell like the one beside it
+    const next = insertBox(rootRef.current, parentId, index, node);
+    const { floors, gapPct } = lineFloorsPct(next, parentId);
+    const fitted = fitBand(next, parentId, node.id, floors, gapPct); // LE15l-y: no block shared below its floor, nor into its gaps
+    const key = `gesture:drop:${node.id}`;
+    onChange(fitted, key);
+    // LE15l-y: a drop made while the page's fonts are still loading (seconds on Slow 3G — RULE AF) measured the fallback's narrower
+    // words, and the line wrapped once the real font arrived. Then the line is shared again from the real words — the same undo
+    // step, and only if nobody has touched that line since.
+    // ponytail: the drop LINE drawn before the fonts arrive is still measured with the fallback's words.
+    if (typeof document !== "undefined" && document.fonts?.status === "loading") {
+      const widthsOf = (t: BoxNode) => JSON.stringify(findByIdLocal(t, parentId)?.children?.map((k) => [k.id, k.width]));
+      const was = widthsOf(fitted);
+      void document.fonts.ready.then(() => {
+        const m = lineFloorsPct(next, parentId), refit = fitBand(next, parentId, node.id, m.floors, m.gapPct), band = findByIdLocal(rootRef.current, parentId);
+        if (!band || widthsOf(rootRef.current) !== was || widthsOf(refit) === was) return;
+        const again = new Map((findByIdLocal(refit, parentId)?.children ?? []).map((k) => [k.id, k.width]));
+        onChange(updateBox(rootRef.current, parentId, { children: (band.children ?? []).map((k) => (again.has(k.id) ? { ...k, width: again.get(k.id) } : k)) }), key);
+      });
+    }
   };
 
   /**

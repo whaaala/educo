@@ -64,6 +64,9 @@ const dropTile = async (page, tileText, x, y) => {
   // over it. No marker at the moment of release = the drag never reached the canvas (a missed pick-up) — a person
   // just drags again. A marker AND nothing added afterwards is a product bug, and `newestLeaf` says so.
   page.__dropOffered = await page.evaluate(() => Array.from(document.body.children).some((e) => e.getAttribute('aria-hidden') === 'true' && getComputedStyle(e).position === 'fixed' && /outline-dashed|shadow-\[0_0_10px/.test(e.className)));
+  // …and WHERE it was drawn (LE15l-y): a line taller than wide says "beside", wider than tall says "above / below" — the probe holds
+  // the drop to what the line promised
+  page.__dropLine = await page.evaluate(() => { const m = Array.from(document.body.children).find((e) => e.getAttribute('aria-hidden') === 'true' && getComputedStyle(e).position === 'fixed' && /shadow-\[0_0_10px/.test(e.className)); if (!m) return null; const q = m.getBoundingClientRect(); return { x: q.x, y: q.y, w: q.width, h: q.height }; });
   // WHAT IS UNDER THE POINTER AS IT LETS GO — kept for the report when a drop that was offered adds nothing (c-5).
   page.__dropAt = await page.evaluate(([x, y]) => { const e = document.elementFromPoint(x, y); if (!e) return `(${x},${y}) nothing`; const b = e.closest("[data-box-id]"); const chrome = e.closest("[data-chrome-mirror],[role=toolbar],[data-gridghost]"); return `(${x},${y}) on <${e.tagName.toLowerCase()}>${e.getAttribute("aria-label") ? " \"" + e.getAttribute("aria-label") + "\"" : ""}${chrome ? " — EDITOR CHROME: " + (chrome.getAttribute("aria-label") || chrome.getAttribute("data-chrome-mirror") || "offer") : ""}${b ? " in block " + b.getAttribute("data-box-id").slice(-4) : ""}`; }, [x, y]);
   // …and where the AIMED block is at that moment: aimed at, then moved by the time of release, is a different bug from aimed wrong (L1-13).

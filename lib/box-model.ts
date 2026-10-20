@@ -2308,8 +2308,12 @@ export function updateBox(root: BoxNode, id: string, patch: Partial<BoxNode>): B
  * means; an empty row gives it the whole width, because a lone block that fills its row is right far more
  * often than a lone block a twelfth wide.
  */
-export function newCellSpan(grid: BoxNode): number {
+export function newCellSpan(grid: BoxNode, at?: number): number {
   const kids = grid.children ?? [];
+  // LE15l-y: a cell dropped BESIDE another is one like THAT cell (the one it lands after, else before) — the last cell of a collage
+  // is often a whole-row caption, and a Stack dropped beside a one-column photo took its four columns and a row of its own
+  const near = at == null ? undefined : kids[at - 1] ?? kids[at];
+  if (near) return near.colSpan ?? 1;
   const last = [...kids].reverse().find((k) => k.colSpan != null);
   return last?.colSpan ?? gridColumns(grid);
 }
@@ -2797,7 +2801,14 @@ export function fitRowWidths(row: BoxNode): BoxNode {
 /** A "Side by side": a plain row the user added (not a band, a grid or a component's own row) — its blocks share one line (E2-22). */
 export const isSideBySide = (n: BoxNode | null | undefined): boolean => !!n && !n.rowBand && (n.direction ?? "column") === "row" && n.layout !== "grid" && !n.preset;
 
-export function fitBand(root: BoxNode, bandId: string, newId?: string): BoxNode {
+/**
+ * LE15l-y: `floors` — the narrowest each block can be DRAWN (its longest word, or the reflow floor), as a % of the line, measured
+ * by the canvas. An equal share squeezed a heading alone in a narrow column (longest word 290 of 520) to 260, the band wrapped the
+ * newcomer under it, and the drop line had stood beside. With floors no block is shared below its own; the newcomer takes the rest.
+ * `gapPct` — the share of the line ONE gap takes (a Side by side's own `gap`; a band's gap is its blocks' half-gap margins, inside
+ * the %): 50 % + 50 % + a 16px gap wrapped "A one-line notice". The blocks share what the gaps leave.
+ */
+export function fitBand(root: BoxNode, bandId: string, newId?: string, floors?: Record<string, number>, gapPct = 0): BoxNode {
   const band = findBox(root, bandId);
   if (!band?.rowBand && !isSideBySide(band)) return root; // E2-22: a block added to a Side by side shares its line as a band's does
   if (!band) return root;
@@ -2822,15 +2833,28 @@ export function fitBand(root: BoxNode, bandId: string, newId?: string): BoxNode 
   // nowhere to hug, so it wrapped below at its floor — measured: a Stat dropped beside two 50% stacks landed on
   // the next line at 224px. There it takes an equal share like anything else dropped onto a full line.
   if (!isPct(kids[at])) { if (used < 99.5) return root; }
-  else if (used + widthPct(kids[at].width) <= 100.001) return root;  // it fits as it is — as strictly as a browser measures (#69)
+  else if (used + widthPct(kids[at].width) + gapPct * members.length <= 100.001) return root;  // it fits as it is — as strictly as a browser measures (#69)
   const n = members.length + 1;
-  const newShare = 100 / n;
-  const factor = (100 - newShare) / Math.max(used, 1e-6);
+  const room100 = 100 - gapPct * (n - 1); // what the gaps leave for the blocks
+  const fl = (id: string) => floors?.[id] ?? 0;
+  // The newcomer gives way to the floors of the blocks already there, never below its own.
+  const newShare = Math.max(fl(newId), Math.min(room100 / n, room100 - members.reduce((s, k) => s + fl(k.id), 0)));
+  // The rest is shared in proportion; a block that would fall below its floor is held at it and the others share what remains.
+  const held = new Set<string>();
+  for (let again = true; again;) {
+    again = false;
+    const room = room100 - newShare - members.filter((k) => held.has(k.id)).reduce((s, k) => s + fl(k.id), 0);
+    const free = members.filter((k) => !held.has(k.id)), sum = free.reduce((s, k) => s + widthPct(k.width), 0);
+    for (const k of free) if ((widthPct(k.width) * room) / Math.max(sum, 1e-6) < fl(k.id)) { held.add(k.id); again = true; }
+  }
+  const room = room100 - newShare - members.filter((k) => held.has(k.id)).reduce((s, k) => s + fl(k.id), 0);
+  const factor = room / Math.max(members.filter((k) => !held.has(k.id)).reduce((s, k) => s + widthPct(k.width), 0), 1e-6);
   const floor2 = (v: number) => Math.floor(v * 100 + 1e-6) / 100;
   const widths = new Map<string, string>();
   let spent = 0;
-  for (const k of members) { const w = Math.max(3, floor2(widthPct(k.width) * factor)); widths.set(k.id, `${w}%`); spent += w; }
-  widths.set(newId, `${Math.max(3, floor2(100 - spent))}%`);
+  // a share is rounded DOWN to hundredths, but never below the block's floor, which is rounded UP (a hair under it wraps the line)
+  for (const k of members) { const w = Math.max(3, Math.ceil(fl(k.id) * 100 - 1e-6) / 100, held.has(k.id) ? 0 : floor2(widthPct(k.width) * factor)); widths.set(k.id, `${w}%`); spent += w; }
+  widths.set(newId, `${Math.max(3, floor2(room100 - spent))}%`);
   return updateBox(root, bandId, { children: (band.children ?? []).map((k) => (widths.has(k.id) ? { ...k, width: widths.get(k.id)! } : k)) });
 }
 
@@ -5540,6 +5564,10 @@ export function onManyColumnLine(parent: BoxNode, childId: string, bp: Breakpoin
   return at >= 0 && lines.filter((l) => l === lines[at]).length >= MANY_COLUMNS;
 }
 
+/** Does this block of a row band get the reflow floor (`childStyle`)? Only a section that holds something; elements, empty boxes and
+ *  components that hug by nature are as narrow as their content. Shared with the canvas's drop line (LE15l-y) so the two never differ. */
+export const takesReflowFloor = (child: BoxNode): boolean => !child.clip && !isEmptyBox(child) && isContainer(child) && !(child.preset && HUGS_BY_NATURE.has(child.preset));
+
 /** The floor a column in a row band is DRAWN at, in rem — shared by `childStyle` and the canvas resize maths. */
 export function columnFloorRem(parent: BoxNode, child: BoxNode, bp: Breakpoint = "base"): number {
   return onManyColumnLine(parent, child.id, bp) ? HAND_FLOOR_REM : floorRemOf(child);
@@ -7346,7 +7374,7 @@ export function childStyle(child: BoxNode, parent: BoxNode, bp: Breakpoint = "ba
    */
   // A component that HUGS BY NATURE is not a section even though it is built as a container (F1-e): the floor made a
   // Badge a 14rem pill round "New", and on a phone a pill across the whole line with a Rating's stars spread over it.
-  if (parent.rowBand && isRow && !child.clip && !isEmptyBox(child) && isContainer(child) && !(child.preset && HUGS_BY_NATURE.has(child.preset))) {
+  if (parent.rowBand && isRow && takesReflowFloor(child)) {
     const floor = columnFloorRem(parent, child, bp);
     // On a phone every column takes the line — except on the page grid, where the fit rule decides there too (G-1 #12)
     s.minWidth = bp === "phone" && !gridBandOwnsGutter(parent) ? "100%" : floor === HAND_FLOOR_REM ? "min-content" : `min(100%, ${floor}rem)`;

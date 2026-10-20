@@ -211,7 +211,48 @@ test("LE15l-q · a Stack dropped beside a centred name stays on its line, as the
   const r = await rectOf(page, name);
   const band = await page.evaluate((id) => document.querySelector(`[data-box-id="${CSS.escape(id)}"]`)!.parentElement!.closest("[data-box-id]")!.getAttribute("data-box-id")!, name);
   await dropKind(page, "container", r.x + r.w - 8, r.y + r.h / 2);
-  const kids = await page.evaluate((band) => Array.from(document.querySelector(`[data-box-id="${CSS.escape(band)}"]`)!.children).filter((c) => c.hasAttribute("data-box-id")).map((c) => { const q = c.getBoundingClientRect(); return { top: q.top, bottom: q.bottom }; }), band);
+  const kids = await page.evaluate((band) => Array.from(document.querySelector(`[data-box-id="${CSS.escape(band)}"]`)!.children).filter((c) => c.hasAttribute("data-box-id")).map((c) => { const q = c.getBoundingClientRect(); return { top: q.top, bottom: q.bottom, h: q.height }; }), band);
   expect(kids.length, "the Stack joined the name's line").toBe(2);
-  expect(Math.min(kids[0].bottom, kids[1].bottom) - Math.max(kids[0].top, kids[1].top), "the name and the Stack on ONE line").toBeGreaterThan(0);
+  // more than half the shorter one's height shared — a Stack that only touches the name (under it) shares 0 (LE15l-y)
+  expect(Math.min(kids[0].bottom, kids[1].bottom) - Math.max(kids[0].top, kids[1].top), "the name and the Stack on ONE line").toBeGreaterThan(Math.min(kids[0].h, kids[1].h) * 0.5);
 });
+
+/** LE15l-y: the hero "Words, three points and a picture" from the Sections tab, a Stack dropped on its heading's right side. */
+async function besideTheHeading(page: Page, slowFonts: boolean) {
+  test.skip((page.viewportSize()?.width ?? 0) < 1200, "the column sits beside the picture only on a wide screen; narrower, it stacks and the heading has the whole width");
+  test.setTimeout(120_000);
+  // the page's fonts held back, as on Slow 3G (RULE AF): the drop happens while the heading is still drawn in the fallback font
+  if (slowFonts) await page.route(/\.(woff2?|ttf)(\?|$)|fonts\.(googleapis|gstatic)/, async (rt) => { await new Promise((ok) => setTimeout(ok, 8000)); await rt.continue(); });
+  await schoolHome(page);
+  // the hero "Words, three points and a picture", added from the Sections tab as a person adds it
+  await page.getByRole("button", { name: "Open blocks panel" }).click();
+  await page.getByRole("tab", { name: T.tab, exact: true }).click();
+  await page.getByRole("tablist", { name: T.categories }).getByRole("tab", { name: /^Hero/ }).click();
+  await page.getByRole("button", { name: /^Add Words, three points and a picture,/ }).first().click();
+  const replace = page.getByRole("button", { name: T.replaceButton, exact: true }).first();
+  if (await replace.isVisible().catch(() => false)) await replace.click();
+  await page.getByRole("tab", { name: "All", exact: true }).first().click();
+  const head = await page.evaluate(() => { const e = Array.from(document.querySelectorAll("[data-box-id]")).filter((x) => (x.textContent || "").trim() === "Why families choose Greenfield" && !x.querySelector("[data-box-id]")).pop()!; e.scrollIntoView({ block: "center" }); return e.getAttribute("data-box-id")!; });
+  await page.waitForTimeout(400);
+  if (slowFonts) expect(await page.evaluate(() => document.fonts.status), "precondition: the fonts are still loading").toBe("loading");
+  const r = await rectOf(page, head);
+  const band = await page.evaluate((id) => document.querySelector(`[data-box-id="${CSS.escape(id)}"]`)!.parentElement!.closest("[data-box-id]")!.getAttribute("data-box-id")!, head);
+  await dropKind(page, "container", r.x + r.w - 8, r.y + r.h / 2);
+  if (slowFonts) { await page.evaluate(() => document.fonts.ready); await page.waitForTimeout(800); }
+  const seen = await page.evaluate(([band, head]) => {
+    const kids = Array.from(document.querySelector(`[data-box-id="${CSS.escape(band)}"]`)!.children).filter((c) => c.hasAttribute("data-box-id"));
+    const h = document.querySelector(`[data-box-id="${CSS.escape(head)}"]`) as HTMLElement;
+    const copy = h.cloneNode(true) as HTMLElement; Object.assign(copy.style, { position: "absolute", visibility: "hidden", width: "min-content", minWidth: "0", maxWidth: "none" }); h.parentElement!.appendChild(copy);
+    const min = copy.getBoundingClientRect().width; copy.remove();
+    const q = kids.map((c) => c.getBoundingClientRect());
+    // ONE line = they share more than half the shorter one's height — two boxes that only touch (one under the other) share 0
+    return { n: kids.length, oneLine: q.length === 2 && Math.min(q[0].bottom, q[1].bottom) - Math.max(q[0].top, q[1].top) > Math.min(q[0].height, q[1].height) * 0.5, at: q.map((x) => `${Math.round(x.left)},${Math.round(x.top)} ${Math.round(x.width)}×${Math.round(x.height)}`).join(" · "), headW: h.getBoundingClientRect().width, min };
+  }, [band, head] as const);
+  expect(seen.n, "the Stack joined the heading's line").toBe(2);
+  expect(seen.oneLine, `the heading and the Stack on ONE line, as the drop line showed (${seen.at})`).toBe(true);
+  expect(seen.headW, "the heading is no narrower than its longest word").toBeGreaterThanOrEqual(seen.min - 1);
+  await page.keyboard.press("Control+z"); await page.waitForTimeout(600);
+  expect(await page.evaluate((band) => Array.from(document.querySelector(`[data-box-id="${CSS.escape(band)}"]`)?.children ?? []).filter((c) => c.hasAttribute("data-box-id")).length, band), "one Ctrl+Z takes the Stack away").toBe(1);
+}
+test("LE15l-y · a Stack dropped beside a heading in a narrow column shares the line without squeezing the heading", ({ page }) => besideTheHeading(page, false));
+test("LE15l-y · …and when it is dropped while the page's fonts are still loading", ({ page }) => besideTheHeading(page, true));

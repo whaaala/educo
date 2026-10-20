@@ -190,7 +190,11 @@ const MOVES = {
     const me = await rect(page, b.id); const boxes = await Promise.all(nw.map((id) => rect(page, id)));
     const ov = (a) => Math.min(a.y + a.h, me.y + me.h) - Math.max(a.y, me.y) > Math.min(a.h, me.h) * 0.5;
     const hit = boxes.find((a) => a && ov(a) && (side === 'right' ? a.x >= me.x + me.w - 4 : a.x + a.w <= me.x + 4));
-    return { ok: !!hit, seen: `a Stack dropped on its ${side}: ${nw.length} new · ${hit ? `beside it (x ${Math.round(hit.x)}; the block ${Math.round(me.x)}–${Math.round(me.x + me.w)}, was ${Math.round(was.x)}–${Math.round(was.x + was.w)})` : nw.length ? 'not beside it' : 'nothing added'}` };
+    // LE15l-y: the line NEVER LIES — where a line cannot hold one more block it is drawn UNDER, and the Stack going under is right
+    const line = page.__dropLine, saidUnder = !!line && line.w > line.h;
+    const under = boxes.find((a) => a && a.y >= me.y + me.h - 4);
+    if (!hit && saidUnder && under) return { ok: true, seen: `a Stack dropped on its ${side}: the line said UNDER (the line cannot hold one more) and it went under (y ${Math.round(under.y)}; the block ends ${Math.round(me.y + me.h)})` };
+    return { ok: !!hit, seen: `a Stack dropped on its ${side}: ${nw.length} new · ${hit ? `beside it (x ${Math.round(hit.x)}; the block ${Math.round(me.x)}–${Math.round(me.x + me.w)}, was ${Math.round(was.x)}–${Math.round(was.x + was.w)})` : nw.length ? `not beside it — the line said ${!line ? 'nothing' : saidUnder ? 'under' : 'BESIDE'}` : 'nothing added'}` };
   },
   async inside(page, b) {
     const r0 = await root(page); const ids0 = new Set(); walk(r0, (n) => ids0.add(n.id));
@@ -283,8 +287,10 @@ if (TIER === 2) {
         const kind = `${c.id} · ${d.name}`;
         try {
           if (cat !== c.id) { await sectionsTab(page); await page.getByRole('tablist', { name: T.categories }).getByRole('tab', { name: new RegExp(`^${reEsc(c.label)}`) }).click(); await sleep(page, 2500); cat = c.id; }
-          const base = await sig(page); const before = await tops(page);
-          await page.getByRole('button', { name: new RegExp(`^Add ${reEsc(d.name)},`) }).first().click(); await sleep(page, 1500);
+          // LE15l-y (10): the page as SAVED once it stops changing — read while the last section's Ctrl+Z was still being saved, the
+          // count saw "2 new at the top level" on a different section each run
+          await settle(page); const base = await sig(page); const before = await tops(page);
+          await page.getByRole('button', { name: new RegExp(`^Add ${reEsc(d.name)},`) }).first().click(); await sleep(page, 1500); await settle(page);
           const ask = page.getByRole('button', { name: T.replaceButton, exact: true }).first(); // LE15l-m: a header / footer REPLACES the one there
           if (await ask.isVisible().catch(() => false)) { await ask.click(); await sleep(page, 1500); }
           const added = (await tops(page)).filter((id) => !before.includes(id));

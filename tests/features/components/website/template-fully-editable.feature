@@ -159,3 +159,19 @@ Feature: A template is only a start — anything on it can be moved, nested, shi
     When I drop a Stack on the icon's right side, where the drop line stands beside the icon
     Then the icon and the new Stack are side by side, the card's words stay under them, and nothing gets space it did not have
     And one Ctrl+Z puts the card back
+
+  Scenario: A Stack dropped beside a block in a narrow column shares the line so neither is squeezed below its words (LE15l-y)
+    Given the hero "Words, three points and a picture" added from the Sections tab: its big heading alone in a narrow column
+    When I drop a Stack on the heading's right side, where the drop line stands beside it
+    Then the heading and the new Stack are side by side on one line
+    And the heading is no narrower than its longest word, and the Stack takes what is left of the line
+    And one Ctrl+Z takes the Stack away
+
+  Scenario: Where a line cannot hold a block beside another, the drop line says under, and that is where it goes (LE15l-y)
+    Given a block whose words already need nearly all of its column, so nothing can stand beside it at its smallest
+    When I drag a Stack to that block's right side
+    Then the drop line is drawn UNDER the block, not beside it
+    And the Stack lands under the block, exactly where the line was drawn
+    And the same holds in a grid — a Stack dropped beside a photo of the collage "A title between two photos, words below" is one cell like that photo, beside it, never a whole row
+    And in a Side by side with a gap — a Stack dropped beside the words of "A one-line notice" shares what the gap leaves, so the line holds
+    And the probe reads the drop line as it lets go: a line that said under and a Stack that went under WORKS; a line that said beside and a Stack that went anywhere else is NOT
