@@ -50,6 +50,13 @@ const toRem = (px: number) => +(px / 16).toFixed(2);
 const fromRem = (rem: number) => Math.round(rem * 16);
 
 // Plain-language option lists (value = the real CSS token, label = what the user reads).
+/** LE15l-6 · what a Text, a Picture, a List and a Button can be — the choices in config/inspector.json `meaning`, the value each stores. */
+const LEAF_MEANING: Partial<Record<string, { options: { value: string; label: string }[]; value: (n: BoxNode) => string; patch: (v: string) => Partial<BoxNode> }>> = {
+  text: { options: INSPECTOR.meaning.text, value: (n) => n.textTag ?? "", patch: (v) => ({ textTag: (v || undefined) as BoxNode["textTag"] }) },
+  image: { options: INSPECTOR.meaning.image, value: (n) => (n.figure ? "figure" : ""), patch: (v) => ({ figure: v === "figure" || undefined }) },
+  list: { options: INSPECTOR.meaning.list, value: (n) => n.listStyle ?? "bullet", patch: (v) => ({ listStyle: v as BoxNode["listStyle"] }) },
+  button: { options: INSPECTOR.meaning.button, value: (n) => (n.asButton ? "button" : ""), patch: (v) => ({ asButton: v === "button" || undefined }) },
+};
 // BATCH LE-4: the words of every alignment choice live in config/inspector.json `align`, keyed by the stored value (RULE CFG).
 const ALIGN_WORDS = INSPECTOR.align;
 const FLOW_WORDS = INSPECTOR.flow; // BATCH LE-13 (RULE CFG)
@@ -884,8 +891,18 @@ export default function BoxInspector({ trail = [], onSelectBlock, section = fals
         <div>
           {/* MEANING — what this block IS, so the page publishes as correct HTML5 however it was built (semantics,
               lib/semantics.ts). Plain words; the element and what a screen reader announces are shown underneath. */}
-          {(isContainer(node) || node.type === "heading") && (
+          {(isContainer(node) || node.type === "heading" || LEAF_MEANING[node.type]) && (
             <Accordion title="Meaning" icon={Tags} defaultOpen={false}>
+              {/* LE15l-6 (the user 2026-10-20: "the useful few"): a Text, a Picture, a List, a Button — what each can be, from config */}
+              {LEAF_MEANING[node.type] && (() => {
+                const m = LEAF_MEANING[node.type]!;
+                return (<>
+                  <CompactSelect label="What is this block?" ariaLabel="What is this block" value={m.value(node)} onChange={(v) => onPatch(m.patch(v))}
+                    options={m.options.map((o) => ({ value: o.value, label: o.label }))} />
+                  {node.type === "image" && node.figure && (<CompactField label={INSPECTOR.meaning.caption} ariaLabel={INSPECTOR.meaning.caption} placeholder={INSPECTOR.meaning.captionPlaceholder}
+                    value={node.caption ?? ""} onChange={(v) => onPatch({ caption: v || undefined })} />)}
+                </>);
+              })()}
               {isContainer(node) && (() => {
                 const cur = CONTAINER_TAGS.find((t) => t.tag === (node.tag ?? "div")) ?? CONTAINER_TAGS[0];
                 const named = node.tag === "nav" || node.tag === "section" || node.tag === "aside" || node.tag === "article";

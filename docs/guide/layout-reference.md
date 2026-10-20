@@ -92,6 +92,9 @@ Appears just above (or below) the selected block.
 | **⠿ Drag to move** | Hold and drag the block to a new place; let go where the dashed marker shows. Works with a finger too; on a touch screen you can also hold the block itself still for half a second to lift it. | — |
 | **+ Add a block inside** | Nests a new block inside this one. | — |
 | **🔒 Lock position and size** | Freezes the block's place and size; click again to unlock. | — |
+| **📏 Show spacing** | Draws every space of the block at once, each with its words and size; click again to hide them. With a mouse it is on the toolbar; on a phone or tablet it is in **⋮** (a finger has no hover). | Alt + P |
+| **✏️ Edit text** | On a title, a text, a button or a link: puts the caret at the end of its words so you can type. Words also say **Click to type** under the pointer, and one click types. | Enter or F2 |
+| **🖼 Replace picture** | On a picture, and on any block whose background is a photo (the welcome at the top of the home page): choose a photo from this device to put in its place. One Ctrl+Z puts the old one back. An empty picture says **Add a picture**. | — |
 | **⋮ Block actions** | The menu below. | — |
 
 The **⋮ Block actions** menu:
@@ -99,6 +102,7 @@ The **⋮ Block actions** menu:
 | Item | What it does | Shortcut |
 |------|-------------|---------|
 | **Move up** / **Move down** | One place earlier / later in its container. | ↑ / ↓ |
+| **Show spacing** / **Hide spacing** | Every space of the block at once (see *Spacing on the canvas*). | Alt + P |
 | **Duplicate** | An identical copy directly after it. | Ctrl / Cmd D |
 | **Copy** · **Cut** · **Paste** | The usual clipboard, for blocks. | Ctrl / Cmd C · X · V |
 | **Delete** | Removes the block and everything inside it. | Delete / Backspace |
@@ -108,8 +112,8 @@ The **⋮ Block actions** menu:
 
 Click a block to select it; click again to go inside it; **Escape** steps back out one level.
 
-**The trail** — the top line of the Inspector, "Editing: Stack › Side by side › **Heading**", names the boxes around
-the selected block, outermost first, ending with the block itself. Each name before it is a button that selects
+**The trail** — the top line of the Inspector, "Editing: Section › Stack › **Heading**", names the boxes around
+the selected block, outermost first, ending with the block itself. A ready-made section is called a **Section**. Each name before it is a button that selects
 that box (click, tap, or **Tab** then **Enter**). It lists the same boxes **Escape** steps out through; a block
 straight on the page shows its name alone.
 
@@ -200,6 +204,12 @@ Each applies to the screen you are editing.
 | **Sidebar** | Wraps the block in `<aside>`. |
 | **Page footer** | Wraps the block in `<footer>`. |
 | **Heading level** | For Heading blocks — the h1 / h2 / h3 / h4 level in the published HTML. |
+| **What is this block?** on a Text | **Paragraph** (`<p>`), **Quote** (`<blockquote>`, quoted words) or **Small print** (`<small>`, fine print). |
+| **What is this block?** on a Picture | **Picture** (`<img>`) or **Figure with a caption** (`<figure>` with `<figcaption>`). The caption is typed under the picture on the page, or in **Caption** here; the page publishes it as a figure once the caption has words. |
+| **What is this block?** on a List | **Bulleted** (`<ul>`) or **Numbered** (`<ol>`). |
+| **What is this block?** on a Button | **Link — goes to a page** (`<a href>`) or **Button — does something here** (`<button>`). |
+
+An Icon, a Divider and a Link mean one thing each, so they have no Meaning to choose.
 
 ### Spacing
 
@@ -217,12 +227,18 @@ the default it was made with; its controls show "Default · …rem" and **Back t
 
 ### Spacing on the canvas
 
-When one block is selected, its space is drawn on it and dragged there. Nothing here is published.
+When one block is selected you see its outline and its **size handles** — nothing else. A space shows itself where the
+pointer is: move into the space inside the top of a block and that space alone lights up, saying **"Space inside · 2rem"**,
+with its handle. **Show spacing** (toolbar, **⋮**, or **Alt + P**) shows every space at once. Nothing here is published.
+
+On each side the three handles keep their own places, never touching: the **size** handle at the middle (just outside the
+edge), the **inner space** handle a quarter along, the **outer space** handle three quarters along. A space handle with no
+room clear of the others is not drawn — its side is still set in the Inspector.
 
 | On the canvas | What it does | Notes |
 |---------------|-------------|-------|
-| **Inner space** (a green band and handle inside each edge) | The padding on that side. Drag the handle — or the band — inward to add, outward to take away. The band shows its size in rem. | Not on a Button or a component, which keep their design's inner space; not on an empty box (its + is there) |
-| **Outer space** (an orange band and handle outside each edge) | The margin on that side. | Not on a floating block; a side shorter than about 4.5rem on screen has no handle (use the Inspector) |
+| **Inner space** (a green band and handle inside each edge, "Space inside") | The padding on that side. Drag the handle — or the band — inward to add, outward to take away. The band shows its words and size. | Not on a Button or a component, which keep their design's inner space; not on an empty box (its + is there) |
+| **Outer space** (an orange band and handle outside each edge, "Space outside") | The margin on that side. | Not on a floating block |
 | **Space between columns · Space between rows** (a pink hatch and handle between the blocks inside) | The space between them, across and down. | Writes "Space between blocks", or the across / down value once they differ |
 | **Steps** | Every drag lands on the spacing scale: 0 · 0.25 · 0.5 · 0.75 · 1 · 1.25 · 1.5 · 2 · 2.5 · 3 · 4 · 5 · 6 rem. | — |
 | **Shift** while dragging | Bigger steps (every other one of the scale). | — |
@@ -234,6 +250,17 @@ When one block is selected, its space is drawn on it and dragged there. Nothing 
 
 *A drag changes the screen the canvas is showing, as the Inspector does. A click on a handle that does not move goes to the
 words under it — so a handle lying over a block's first letters never stops you typing there.*
+
+### Size on the canvas
+
+| On the canvas | What it does |
+|---------------|-------------|
+| **Size handle** (a blue pill just outside the middle of each edge; a dot at each corner) | Point at it and it says **"Drag to change the height"** (or width, or size). It can be grabbed anywhere from the edge out to about 1.5rem beyond it. |
+| **Dragging an edge** | Only that edge moves — the opposite edge stays where it is, even for a centred block (the builder writes the space that holds it, which you see as its outer space). A label beside the pointer shows the size, **width × height**. |
+| **As small as its content** | No block becomes smaller than what is inside it — its words, a button's label on one line. The label says **"as small as its content"** when it gets there. A picture is the exception: it is cropped to the size you drag, and a picture with a set proportion turns **Free** (the Proportion control puts it back). |
+| Past its content: it moves | Keep dragging and the block **moves** that way: its top or left edge pushes it down or right, opening space before it ("Space above · 2rem"); its bottom or right edge brings it back, closing that space. Where its edge is shared with the block next to it, that block grows instead, so no gap ever opens. Dragged back in the same movement, it returns to where it was. |
+| Cards in a grid of cards | Every card resizes together, so they stay even: the bottom and top edges set every card's height; the side edges set how many go across. When you let go, a bar says **"All 6 cards resized"** — press **Just this one instead** to give the size to that card alone. Ctrl+Z undoes either. |
+| Words in a widened paragraph | A paragraph keeps lines short enough to read; once you drag its width yourself, its words use the width you gave it. The Page check still warns past 75 characters a line. |
 
 ### Background
 
@@ -289,6 +316,9 @@ words under it — so a handle lying over a block's first letters never stops yo
 ## Page grid panel
 
 Opened by the **Layout guides** button in the top bar (the grid icon), or right-click the canvas → **Page grid…**.
+
+The page grid's columns are also drawn, without the switch, while the **page** or a **grid** is selected — select something else
+and they go again. **Layout guides** (Shift+G) keeps them on whatever is selected.
 
 [![The Page grid panel: screen tabs, Columns on Desktop 12, Row lines in the guides, Rows on this page, Row height, Side space, Space between columns, Space between rows, This page uses its own grid, Reset to default](img/ref-page-grid-panel.webp)](img/ref-page-grid-panel.webp)
 

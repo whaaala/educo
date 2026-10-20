@@ -795,6 +795,9 @@ export default function BoxDemoPage() {
   if (!site || !activePage || !root) return <PageLoader isLoading loadingText="Box Builder" subText="Preparing your canvas…" />;
 
   const selected = selectedIds.length === 1 ? findBox(root, selectedIds[0]) : null;
+  // LE15l-5 (the user 2026-10-20: "Show it while a grid is selected"): the page or a grid selected draws the
+  // page grid too; the "Show layout guides" switch still draws it whatever is selected
+  const gridChosen = !!selected && (selected.id === root.id || selected.layout === "grid"); // not every block ON the page grid: nearly all are, which is "always on" — not the user's choice
   const whereFor = (selId: string | null): InsertWhere => (whereChoice && whereChoice.for === selId ? whereChoice.where : defaultWhere(root, selId));
   /** The panel's "Where" choices for what is selected: Inside only for something that can hold blocks. None with no selection. */
   const whereOptions: InsertWhere[] = selected ? ["before", "after", ...(isContainer(selected) ? ["inside" as const] : []), "start", "end"] : [];
@@ -1621,7 +1624,7 @@ export default function BoxDemoPage() {
               <div data-canvas-sizer className={`mx-auto shrink-0 h-fit ${frameW == null ? "w-full max-w-5xl" : ""}`} style={scaled ? { width: frameW * canvasZoom.z, height: frameH * canvasZoom.z } : { width: frameW ?? undefined }}>
                 <div ref={frameRef} data-canvas-scale={scaled ? canvasZoom.z : 1} className="shadow-sm rounded-xl ring-1 ring-black/10 dark:ring-white/10 midnight:ring-white/10 purple:ring-white/10 h-fit transition-[width] duration-300 motion-reduce:transition-none" style={{ width: frameW ?? "100%", transform: scaled ? `scale(${canvasZoom.z})` : undefined, transformOrigin: "0 0", background: renderTheme.background, color: renderTheme.text, fontFamily: renderTheme.bodyFont, containerType: "inline-size" }}>
                   <BoxCanvas root={root} theme={renderTheme} minHeight={PAGE_MIN_H} selectedIds={selectedIds} onSelectIds={selectByUser} onChange={commit} breakpoint={bp} showHidden={showHidden} marqueeRoom={roomEl} currentPageId={activePage.id} onDropSection={(s, at) => addReadySection(s, at)}
-                    pageGrid={gridHere} spaceShade={gridPanel ? spaceShade : null} guides={guides.on ? { cols: columnsAt(gridHere, bp), rowStepRem: gridHere.rowStepRem ?? 1.5, rows: guides.rows } : null} />
+                    pageGrid={gridHere} spaceShade={gridPanel ? spaceShade : null} guides={guides.on || gridChosen ? { cols: columnsAt(gridHere, bp), rowStepRem: gridHere.rowStepRem ?? 1.5, rows: guides.rows } : null} />
                 </div>
               </div>
             </div>

@@ -828,6 +828,36 @@ arrives, so Kofi knows to add the picture of the map himself for now.
 The whole of it, with every control by its name, is in [Ready-made sections, your own sections and page
 templates](./sections.md).
 
+## 15. Making a section exactly the size you want
+
+**"I can't tell what these handles do."** Ama selects the welcome section. She sees its outline and a small handle in the
+middle of each edge, and nothing else. When she points at the top handle it says **"Drag to change the height"**. When she
+moves into the dark space above the title, that space lights up and says **"Space inside · 6.6rem"**, with its own handle a
+quarter of the way along. Want to see every space at once? **Show spacing** on the block's toolbar (or **Alt + P**) draws
+them all, each with its words; on her tablet it is in the block's **⋮** menu.
+
+![The welcome section selected: only the space the pointer is in lights up, saying "Space inside · 6.6rem"](img/story-space-on-hover.webp)
+
+**"Only the edge I pull should move."** She drags the title's right edge in. Its left edge stays where it was, even though
+the title was centred: the builder keeps the other side in place by adding the space that holds it, which she can see and
+change. Pulling the bottom of the welcome section down makes the section taller; nothing above it moves.
+
+**"Move the title down a little."** She drags the title's top edge down. It cannot get shorter than its words, so it moves
+instead: the label beside her pointer says **"Space above · 2rem"**, and the title goes down with her hand. Dragged back in
+the same movement, it is exactly where it started.
+
+**"The open day line should fit on one line."** She drags the right edge of "Open day on Saturday…" outward until "us."
+joins the rest. Once she has set its width herself, the words use it.
+
+**"All the quick-link cards a bit taller."** She drags the bottom of one card. All six grow together so they stay even, and a
+bar says **"All 6 cards resized — Just this one instead"**. She leaves it.
+
+![A quick-link card's bottom edge dragged: every card grows, and a bar offers "Just this one instead"](img/story-cards-one-or-all.webp) Later she makes the "Fees" card alone narrower:
+same drag, then **Just this one instead**. Ctrl+Z undoes either.
+
+Every handle and what it does is in [Layout — reference](layout-reference), under *Spacing on the canvas* and *Size on the
+canvas*.
+
 ## What comes next
 
 The reference page ([Layout — reference](layout-reference)) lists every control in the Layout panels by its exact

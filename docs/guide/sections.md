@@ -166,6 +166,44 @@ drawn on the page with its size, and you can set it to anything on the scale, do
 A designed section also moves a little as a visitor scrolls to it, and its buttons answer the pointer and the keyboard. A
 visitor whose phone or computer asks for less motion sees it still, all at once.
 
+## "I want my own words and my own photo in it"
+
+Point at any words in a section and they say **Click to type**. Click once and type: the caret is already there. **Enter**
+or **Esc** finishes, and one **Ctrl+Z** takes the typing back.
+
+If you have selected a title or a button, its toolbar says **Edit text**. Press it, or press **Enter**, and the caret
+waits at the end of its words.
+
+For a photo, select it and press **Replace picture** on its toolbar, then choose a photo from your phone or computer.
+The welcome at the top of the home page has its photo *behind* the words, so select the whole welcome and the same
+**Replace picture** is on its toolbar. The new photo is made smaller for the web on the way in and keeps the dark tint
+that makes the words readable. One **Ctrl+Z** puts the old photo back.
+
+![The welcome selected: its toolbar says Replace picture, and the new photo is behind the words](./img/guide-replace-picture.webp)
+
+A block with no photo, such as a title, a card or a plain white section, has no **Replace picture**. Give it one under
+**Background** in the Inspector.
+
+## "I picked a template — can I change everything on it?"
+
+Yes. A page made from a template is ordinary blocks, and every one of them is yours: the sections, what is inside them, the
+pictures, the cards, the components and the parts inside those.
+
+**Move anything.** Select a block and drag it by the grip (⠿) on its toolbar, or press the arrows on the toolbar, or the arrow
+keys. It can go up, down, left and right, into another section or out of its own. Drag it to the top or bottom of the window and
+the page scrolls under it, so you can take it anywhere on the page. A section taller than the window keeps its toolbar on screen.
+
+**Build on it.** Drop a Stack, a picture or anything else beside a block and the two share the line — beside a picture, beside the
+words of a welcome, beside the icon of a card. Drop it inside a block, or a whole section inside the welcome at the top.
+
+**Shift it.** Drag a block's edge past what is inside it and the block itself moves that way; the words say how far ("Space on the
+left · 2rem"). Ctrl+Z puts it back.
+
+**Line it up.** Select the page or a grid and the page grid's columns are drawn across the page, so you can see where things sit.
+
+**Say what it is.** Under **Meaning**, a text can be a quote or small print, a picture a figure with a caption, a list bulleted
+or numbered, and a button a real button for something on this page instead of a link. Search engines and screen readers read it.
+
 ## "On a very wide screen, the welcome is taller than the window"
 
 A welcome with a picture beside its words grows with the screen. On a very wide one — a monitor five thousand pixels

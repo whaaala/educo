@@ -27,7 +27,7 @@ async function seedAndOpen(page: Page) {
           ] },
       ] },
   ]));
-  await page.waitForSelector('[data-box-id="grid"]', { timeout: 15000 });
+  await page.waitForSelector('[data-box-id="grid"]', { timeout: 60_000 }); // LE15k-ar: a cold first paint under the full suite (4 screens × 6 workers) passed 15s once; the seed helper allows 60s
   await page.waitForTimeout(300);
 }
 
@@ -102,7 +102,7 @@ async function seedImage(page: Page, opacity?: number, fadeContents?: boolean) {
           background: "#ffffff", minHeight: 60, children: [{ id: "cap", type: "text", text: "solid caption", width: "auto" }] },
       ] },
   ]));
-  await page.waitForSelector('[data-box-id="hero"]', { timeout: 15000 });
+  await page.waitForSelector('[data-box-id="hero"]', { timeout: 60_000 }); // LE15k-ar: a cold first paint under the full suite (4 screens × 6 workers) passed 15s once; the seed helper allows 60s
   await page.waitForTimeout(400);
 }
 

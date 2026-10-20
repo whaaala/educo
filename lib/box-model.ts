@@ -610,6 +610,11 @@ export interface BoxNode {
   html?: string;          // raw HTML/iframe (embed element)
   listItems?: string[];   // list element items
   listStyle?: "bullet" | "number"; // list element marker
+  // LE15l-6 · what a Text, a Picture and a Button can be (the user 2026-10-20: "the useful few"; config/inspector.json meaning)
+  textTag?: "blockquote" | "small"; // a Text as quoted words or fine print (unset = a paragraph)
+  figure?: boolean;                 // a Picture as a figure — published as <figure> only once its caption has words
+  caption?: string;                 // the figure's caption (<figcaption>)
+  asButton?: boolean;               // a Button that does something on this page (<button type="button">) rather than a link
   color?: string;
   fontSize?: number;
   bold?: boolean;
@@ -707,7 +712,15 @@ export function isContainer(node: BoxNode): boolean {
  *
  * These are the names a USER sees. The stored `layout` and `direction` are untouched.
  */
+/**
+ * LE15k-ac · A PARAGRAPH SIZED BY HAND KEEPS ITS WORDS IN THE WIDTH IT WAS GIVEN. Every paragraph is capped at the readable measure
+ * (`measureCss`); dragged wider by a person it still broke before its last word — the cap silently overrode their choice (the user,
+ * 2026-10-20). One rule for the canvas and the published page; the Page check still warns past 75 characters a line.
+ */
+export const ownMeasure = (node: BoxNode): { maxWidth?: string } => (node.widthByHand ? { maxWidth: "none" } : {});
+
 export function containerLabel(node: BoxNode): string {
+  if (node.tag === "section") return "Section"; // LE15k-d: a page section is named as one, whatever its arrangement (the user, 2026-10-20)
   if (node.layout === "grid") return "Grid";
   return (node.direction ?? "column") === "row" ? "Side by side" : "Stack";
 }
@@ -2600,6 +2613,18 @@ export function moveBlock(root: BoxNode, id: string, step: MoveStep): BoxNode {
  * The inner block goes to `width: 100%` because it now measures against the Stack rather than the band; the
  * Stack carries the width it used to have, so the line is unchanged.
  */
+/**
+ * LE15l-v · Put `node` BESIDE the block `id` when its parent lays blocks one under the other with no row bands of its own (a card:
+ * an icon over its words). The drop line stood beside the icon and the block landed under it — a column cannot hold two side by
+ * side — so the block's slot becomes a Side by side holding both, the mirror of `stackWithBlock`. It adds no space of its own.
+ */
+export function rowWithBlock(root: BoxNode, id: string, node: BoxNode, before = false): BoxNode {
+  const target = findBox(root, id);
+  const info = findParent(root, id);
+  if (!target || !info) return root;
+  const row: BoxNode = { ...createContainer("row", { width: "100%", padding: 0, gap: 0 }), children: before ? [node, target] : [target, node] };
+  return updateBox(root, info.parent.id, { children: (info.parent.children ?? []).map((k) => (k.id === id ? row : k)) });
+}
 export function stackWithBlock(root: BoxNode, id: string, node: BoxNode, before = false): BoxNode {
   const target = findBox(root, id);
   const info = findParent(root, id);
@@ -3495,6 +3520,11 @@ export const TYPO_VAR = {
 } as const;
 
 /** A role's inherited default, as a `var()` a block can put straight in its own style. */
+/** LE15l-6 · a figure's caption under its picture: the muted small words, a step of space above (the design of a captioned
+ *  figure, never added to a plain picture). One style for the canvas and the export. */
+export const figcaptionStyle = (): Record<string, string> => ({ display: "block", color: typoRole.color("muted"), fontSize: typoRole.size(0.875), paddingTop: "var(--eu-space-3)" });
+/** LE15l-6 · a Button published as <button>: the browser's own font, border and cursor taken off, so it draws as the link button does. */
+export const BUTTON_RESET: Record<string, string> = { fontFamily: "inherit", border: "0", cursor: "pointer", margin: "0" };
 export const typoRole = {
   color: (role: "text" | "muted") => `var(${role === "muted" ? TYPO_VAR.muted : TYPO_VAR.text})`,
   font: (role: "heading" | "body") => `var(${role === "heading" ? TYPO_VAR.headingFont : TYPO_VAR.bodyFont})`,
@@ -4263,12 +4293,23 @@ export function fitStepAt(band: BoxNode, id: string, widthRem: number, bp: Break
  * and null when any child is placed EXPLICITLY by `rowStart`/`rowSpan` — the row a cell lands in is the
  * user's choice there, not something this walk can work out, and guessing it would move their blocks.
  */
+/**
+ * LE15k-ai · AN AUTO-FIT GRID WITH A CARD SIZED BY HAND. Its rows cannot be named (`gridRowTracks`): how many cards share a row is the
+ * browser's count at each width, not the stored columns — on a phone one across, the names fell on the wrong rows and every other card
+ * stayed as tall as the one made taller alone (measured 2026-10-20). Once any card has a height of its own, its rows follow their
+ * content; untouched, the grid keeps its even rows.
+ */
+export function fitRowsSized(node: BoxNode, bp: Breakpoint = "base"): boolean {
+  return !!gridAutoFit(node) && (node.children ?? []).some((c) => { const r = resolveResponsive(c, bp); return r.minHeight != null || (r.height != null && r.height !== "auto"); });
+}
+
 export function gridRowTracks(node: BoxNode, bp: Breakpoint = "base"): string | null {
   const kids = node.children ?? [];
   if (!kids.length) return null;
   // MASONRY has no rows to name. The track is a fine measuring unit rather than a row, so an explicit list —
   // one entry per "row", each `auto` or an even share — would both mean nothing and fight the unit.
   if (isMasonry(node, bp)) return null;
+  if (gridAutoFit(node)) return null; // LE15k-ai: an auto-fit grid's rows are the browser's to count — see `fitRowsSized`
   if (kids.some((c) => c.rowStart != null || (c.rowSpan ?? 1) > 1)) return null;
   const track = gridColumnsAt(node, bp);
   const rows: BoxNode[][] = [];
@@ -4976,6 +5017,10 @@ export function tintOverWorstFrame(tint: string): string | null {
 }
 /** LE5-14 (the user 2026-10-18) · the tint that ARRIVES with a picture added to a block that has none — config media.tintStart. */
 export const tintFor = (node: BoxNode): Partial<BoxNode> => (node.bgOverlay ? {} : { bgOverlay: MEDIA.tintStart });
+/** LE15k-4 · what "Replace picture" changes: a picture block's photo, a block's background PHOTO (not a colour, gradient or
+ *  pattern), or nothing — the toolbar names it only where there is a photo to replace. */
+export const pictureTarget = (node: BoxNode): "src" | "bgImage" | null =>
+  node.type === "image" ? "src" : node.bgImage && !node.bgTile && !isCssBg(node.bgImage) && !/^url\(/i.test(node.bgImage.trim()) ? "bgImage" : null;
 /** The box that holds a background video: relative only at ZERO specificity (a pinned or free block keeps its own, LE5-4), isolated. */
 export const bgVideoBoxCss = (selector: string, node: BoxNode): string =>
   bgVideoSrc(node) ? `:where(${selector}){position:relative;min-block-size:calc(${MEDIA.videoDiscRem}rem + 2 * var(--eu-space-3))}${selector}{isolation:isolate}` : ""; // LE5-10: room for the disc
@@ -6862,7 +6907,7 @@ function containerStyleOf(node: BoxNode, bp: Breakpoint = "base", section: Secti
       // fit makes its own tracks grow instead: an under-estimate costs a little evenness, an over-estimate
       // costs a little air, and neither can ever crop or overlap. When the span is right (a contained band,
       // where it is exact) the tracks stay at the unit and nothing about the stagger changes.
-      gridAutoRows: masonry ? `minmax(${MASONRY_ROW_REM}rem, auto)` : "minmax(min-content, 1fr)",
+      gridAutoRows: masonry ? `minmax(${MASONRY_ROW_REM}rem, auto)` : fitRowsSized(node, bp) ? "auto" : "minmax(min-content, 1fr)",
       // …and where a row HAS been given a height by hand, it keeps it while the others share what is left.
       // `grid-auto-rows` alone cannot express that: it is one value for every row, so a row dragged taller
       // was immediately levelled back down by the `1fr` its neighbours were also claiming. See `gridRowTracks`.

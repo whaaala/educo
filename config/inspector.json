@@ -226,5 +226,27 @@
     "renameTemplateTitle": "Rename this template",
     "deleteTemplateTitle": "Delete the template “{name}”?",
     "deleteTemplateWarning": "Pages already made from it keep everything on them. Only the template goes."
+  },
+  "meaning": {
+    "$comment": "WHAT A TEXT, A PICTURE, A LIST AND A BUTTON CAN BE (BATCH LE-15l LE15l-6; the user 2026-10-20: \"the useful few\"). Each list is the \"What is this block?\" choice for that kind under Meaning; the value is what the block stores (\"\" = its plain meaning). html-semantics.md: blockquote = quoted words; small = fine print; figure only with its caption; button = does something on this page.",
+    "text": [{ "value": "", "label": "Paragraph" }, { "value": "blockquote", "label": "Quote" }, { "value": "small", "label": "Small print" }],
+    "image": [{ "value": "", "label": "Picture" }, { "value": "figure", "label": "Figure with a caption" }],
+    "list": [{ "value": "bullet", "label": "Bulleted" }, { "value": "number", "label": "Numbered" }],
+    "button": [{ "value": "", "label": "Link — goes to a page" }, { "value": "button", "label": "Button — does something here" }],
+    "caption": "Caption",
+    "captionPlaceholder": "Words under the picture"
+  },
+  "selection": {
+    "$comment": "THE SELECTED BLOCK'S CHROME, IN PLAIN WORDS (BATCH LE-15k, the user's Q4 2026-10-20: \"Size first, space on hover\"): what an edge under the pointer says, what a space says when the pointer is in it, the toolbar's switch that shows every space at once (touch has no hover), its key, and the bar that offers one card instead of all (Q3).",
+    "tipHeight": "Drag to change the height", "tipWidth": "Drag to change the width", "tipSize": "Drag to change the size",
+    "spaceInside": "Space inside", "spaceOutside": "Space outside", "spaceColumns": "Space between columns", "spaceRows": "Space between rows", "spaceAbove": "Space above", "spaceLeft": "Space on the left",
+    "showSpacing": "Show spacing", "hideSpacing": "Hide spacing", "spacingKey": "Alt+P",
+    "allCards": "All {n} cards resized", "justThisOne": "Just this one instead", "ok": "OK",
+    "editText": "Edit text",
+    "editTextTip": "Put the caret in the words to change them (Enter)",
+    "replacePicture": "Replace picture",
+    "addPicture": "Add a picture",
+    "replacePictureTip": "Choose a photo from this device to put in its place",
+    "typeHere": "Click to type"
   }
 }

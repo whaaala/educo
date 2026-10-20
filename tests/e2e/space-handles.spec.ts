@@ -30,6 +30,18 @@ async function seedStack(page: Page, extra: Record<string, unknown> = {}) {
     await page.waitForTimeout(250);
   }
   expect(await selected(page)).toBe("S");
+  await showSpacing(page);
+}
+/**
+ * LE15k-p (the user's Q4, 2026-10-20: "Size first, space on hover"): a selected block draws its spaces where the pointer is, or every
+ * one at once with "Show spacing" — on the toolbar with a mouse, in ⋮ on a touch screen. These checks are about the spaces themselves, so
+ * they turn it on, as a person does; what is drawn at rest is handles-apart.spec.ts.
+ */
+async function showSpacing(page: Page) {
+  const bar = page.getByRole("button", { name: "Show spacing", exact: true });
+  if (await bar.isVisible().catch(() => false)) await bar.click();
+  else { await page.getByRole("button", { name: "Block actions" }).first().click(); await page.getByRole("menuitem", { name: /^Show spacing/ }).click(); }
+  await page.mouse.move(2, 2); await page.waitForTimeout(250);
 }
 const selected = (page: Page) => page.evaluate(() => document.querySelector(".outline-indigo-500")?.getAttribute("data-box-id") ?? null);
 /** The Stack's stored spacing — with this screen's own values merged in, as the canvas reads them. */

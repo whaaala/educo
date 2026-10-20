@@ -14,6 +14,7 @@ import { flushSync } from "react-dom";
 const TYPING_PAUSE_MS = 400;
 import { ArrowRight } from "lucide-react";
 import type { SiteTheme, SectionCta } from "@/lib/site-storage";
+import INSPECTOR_WORDS from "@/config/inspector.json";
 
 /**
  * Inline-editable text. In the builder (editable=true) it renders a caret-safe contentEditable
@@ -73,7 +74,7 @@ export function EditableText({
       ref={ref}
       contentEditable
       suppressContentEditableWarning
-      title="Click to edit"
+      title={INSPECTOR_WORDS.selection.typeHere} // LE15k-4: in configuration (RULE CFG)
       data-placeholder={placeholder}
       onInput={(e: React.FormEvent<HTMLElement>) => {
         const text = e.currentTarget.textContent || "";
