@@ -13,13 +13,13 @@ import FINISH_CONFIG from "@/config/section-finishes.json";
 import COPY from "@/config/section-copy.json";
 import PHOTO_CONFIG from "@/config/section-photos.json";
 import LAYOUT from "@/config/layout.json";
-import { createContainer, createElement, createGrid, makeRowBand, regionSpan, findBox, normalizeRowBands, markPageGrid, type BoxNode } from "@/lib/box-model";
+import { createContainer, createElement, createComponent, newBoxId, createGrid, makeRowBand, regionSpan, findBox, normalizeRowBands, markPageGrid, type BoxNode } from "@/lib/box-model";
 
 /** A section dragged from the Sections tab carries its built blocks under this type (the canvas places it between bands). */
 export const SECTION_DRAG_TYPE = "application/x-box-section";
 
 export type Tone = "plain" | "soft" | "grey" | "strong" | "inverse" | "photo";
-export type Role = "eyebrow" | "title" | "heading" | "body" | "small" | "stat" | "logo" | "link" | "button" | "button2" | "image" | "icon" | "menu" | "divider" | "list" | "quote";
+export type Role = "eyebrow" | "title" | "heading" | "body" | "small" | "stat" | "logo" | "link" | "button" | "button2" | "image" | "icon" | "menu" | "divider" | "list" | "quote" | "faq";
 
 /** One node of a section's tree: a container (`k`) or a block with a role (`r`). */
 export interface SectionNode {
@@ -36,6 +36,8 @@ export interface SectionNode {
   alt?: string;
   /** A menu's or a list's items. */
   items?: string[];
+  /** Questions & answers (`r: "faq"`, LE-15d): each a question and its answer — the builder's Accordion (`<details>`, FAQ schema). */
+  qa?: [string, string][];
   /** Where a button or link goes. */
   to?: string;
   icon?: string;
@@ -130,7 +132,12 @@ function element(n: SectionNode, ctx: Ctx, path: string): BoxNode {
     case "small": return createElement("text", { text: words(ctx, n, "small"), width: "100%", color: c.muted, ...typeOf(f, "small"), ...align });
     case "stat": return createElement("text", { text: words(ctx, n, "stat"), width: "100%", color: c.text, ...typeOf(f, "stat"), ...align });
     case "logo": return createElement("text", { text: words(ctx, n, "logo"), color: c.text, ...typeOf(f, "logo") });
-    case "link": return createElement("link", { text: words(ctx, n, "link"), href: n.to ?? "#", underline: false, color: c.text, ...typeOf(f, "link") });
+    case "link": {
+      // LE15d-4: an email or web address keeps its own letters — in capitals and spaced out it ran 310px and broke on every screen
+      const text = words(ctx, n, "link"), address = /@|:\/\/|^www\./.test(text);
+      const { textTransform: _t, letterSpacing: _s, ...plainType } = typeOf(f, "link");
+      return createElement("link", { text, href: n.to ?? "#", underline: false, color: c.text, ...(address ? plainType : typeOf(f, "link")) });
+    }
     case "button": return createElement("button", { text: words(ctx, n, "button"), href: n.to ?? "#", background: c.btnBg, color: c.btnText, radius: f.button.radius, ...hover });
     case "button2": {
       const outline = f.button.secondary === "outline";
@@ -142,6 +149,12 @@ function element(n: SectionNode, ctx: Ctx, path: string): BoxNode {
     }
     case "icon": return createElement("icon", { icon: n.icon ?? "Star", color: c.accent });
     case "divider": return createElement("divider", { color: c.line });
+    // B19 · a question opens to its answer: the Accordion the builder already has (`<details>` / `<summary>`, its answers in
+    // the page, the FAQ schema for search) — its items are the person's to change in the Inspector. The first one open.
+    case "faq": return createComponent("accordion", {
+      items: (n.qa ?? []).map(([q, a], i) => ({ id: newBoxId(), title: ctx.wire ? COPY.heading : q, body: ctx.wire ? COPY.body : a, ...(i === 0 ? { open: true } : {}) })),
+      accFaqSchema: true, width: "100%", ...motion(true),
+    });
     case "list": return createElement("list", { listItems: ctx.wire ? (n.items ?? []).map(() => COPY.link) : n.items ?? [], color: c.muted, ...typeOf(f, "body") });
     case "menu": {
       // A real menu, the way the header research builds one: a Menu (nav) › a List (ul) of Links (html-semantics.md).
@@ -259,7 +272,8 @@ const byPart = (n: BoxNode, m = new Map<string, Record<string, unknown>>()) => {
   n.children?.forEach((c) => byPart(c, m));
   return m;
 };
-const same = (a: unknown, b: unknown) => JSON.stringify(a) === JSON.stringify(b);
+// an Accordion's questions are made with fresh ids each time, so the ids are not what the person changed (LE-15d)
+const same = (a: unknown, b: unknown) => { const plain = (k: string, v: unknown) => (k === "id" ? undefined : v); return JSON.stringify(a, plain) === JSON.stringify(b, plain); };
 
 /**
  * ANOTHER FINISH FOR A SECTION ALREADY ON THE PAGE (BATCH LE-15f, RF-1 — box-builder-sections.feature).

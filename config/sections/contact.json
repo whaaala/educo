@@ -1,0 +1,153 @@
+{
+  "$comment": "Contact details (B25 contact + map ROW(2: 50/50); C7 a contact page: B25 · GRID(3) office cards · FAQ). The 3 Wix Studio Business Info tiles, read 2026-10-19: address and hours beside a map 1 · a full-height map beside a table of opening hours, then location and contact 1 · a soft band of words and two columns over a wide map 1. Five more from B25 / C7 and the crawl of 485 award-site contact sections (a stack, or a row of 2 equal / 40-60 / 30-70; a photo behind, a card over it): words beside an enquiry form · Call, WhatsApp and Email cards · details in a card over a photo · three offices as cards · a centred big phone number. Phone and WhatsApp first, email after (RULE AF). A map and a form are placeholders (RULE C, `needs`): a map is a picture the person adds. Trees: lib/section-library.ts SectionNode.",
+  "sections": [
+    { "id": "contact-hours-beside-map", "name": "Address and hours beside a map", "pattern": "B25", "needs": ["map"],
+      "tree": { "k": "section", "set": { "paddingTop": 96, "paddingBottom": 96, "paddingLeft": 24, "paddingRight": 24, "gap": 40 },
+        "c": [ { "k": "row", "set": { "gap": 48, "align": "start" }, "c": [
+          { "k": "stack", "set": { "gap": 24, "width": "fill", "minWidth": "16rem" }, "c": [
+            { "r": "title", "t": "Visit Greenfield Academy" },
+            { "k": "stack", "set": { "gap": 8 }, "c": [
+              { "r": "heading", "t": "Location" },
+              { "r": "body", "t": "12 Park Road, Ikeja, Lagos" } ] },
+            { "k": "stack", "set": { "gap": 8 }, "c": [
+              { "r": "heading", "t": "Hours" },
+              { "r": "small", "t": "Monday to Friday: 7:30 am – 4:00 pm" },
+              { "r": "small", "t": "Saturday: by appointment" },
+              { "r": "small", "t": "Sunday and public holidays: closed" } ] },
+            { "r": "button2", "t": "Get directions", "to": "#directions" } ] },
+          { "r": "image", "photo": "map", "alt": "Map showing Greenfield Academy on Park Road, Ikeja", "set": { "width": "fill", "minWidth": "16rem", "ratio": "4 / 3" } }
+        ] } ] } },
+    { "id": "contact-map-hours-table", "name": "A map beside a table of opening hours", "pattern": "B25", "needs": ["map", "table"],
+      "tree": { "k": "section", "set": { "paddingTop": 64, "paddingBottom": 64, "paddingLeft": 24, "paddingRight": 24, "gap": 40 },
+        "c": [ { "k": "row", "set": { "gap": 48, "align": "stretch" }, "c": [
+          { "r": "image", "photo": "map", "alt": "Map showing Greenfield Academy on Park Road, Ikeja", "set": { "width": "fill", "minWidth": "16rem", "ratio": "3 / 4", "responsive": { "phone": { "order": 1, "ratio": "16 / 9" } } } },
+          { "k": "stack", "set": { "gap": 24, "width": "fill", "minWidth": "16rem" }, "c": [
+            { "r": "title", "t": "School office" },
+            { "k": "stack", "set": { "gap": 8 }, "c": [
+              { "r": "heading", "t": "Opening hours" },
+              { "r": "divider" },
+              { "k": "row", "set": { "gap": 16, "justify": "between" }, "c": [ { "r": "small", "t": "Monday to Thursday" }, { "r": "small", "t": "7:30 am – 4:00 pm" } ] },
+              { "r": "divider" },
+              { "k": "row", "set": { "gap": 16, "justify": "between" }, "c": [ { "r": "small", "t": "Friday" }, { "r": "small", "t": "7:30 am – 2:00 pm" } ] },
+              { "r": "divider" },
+              { "k": "row", "set": { "gap": 16, "justify": "between" }, "c": [ { "r": "small", "t": "Saturday" }, { "r": "small", "t": "By appointment" } ] },
+              { "r": "divider" },
+              { "k": "row", "set": { "gap": 16, "justify": "between" }, "c": [ { "r": "small", "t": "Sunday" }, { "r": "small", "t": "Closed" } ] },
+              { "r": "divider" } ] },
+            { "k": "row", "set": { "gap": 24, "align": "start" }, "c": [
+              { "k": "stack", "set": { "gap": 8, "width": "fill", "minWidth": "14rem" }, "c": [
+                { "r": "heading", "t": "Location" },
+                { "r": "small", "t": "12 Park Road, Ikeja, Lagos" } ] },
+              { "k": "stack", "set": { "gap": 8, "width": "fill", "minWidth": "14rem" }, "c": [
+                { "r": "heading", "t": "Contact" },
+                { "r": "link", "t": "+234 801 234 5678", "to": "tel:+2348012345678" },
+                { "r": "link", "t": "office@greenfield.sch.ng", "to": "mailto:office@greenfield.sch.ng" } ] }
+            ] }
+          ] }
+        ] } ] } },
+    { "id": "contact-band-over-wide-map", "name": "Words and two columns over a wide map", "pattern": "B25", "needs": ["map"],
+      "tree": { "k": "section", "tone": "soft", "set": { "paddingTop": 96, "paddingBottom": 96, "paddingLeft": 24, "paddingRight": 24, "gap": 40 },
+        "c": [
+          { "k": "row", "set": { "gap": 48, "align": "start" }, "c": [
+            { "k": "stack", "set": { "gap": 16, "width": "fill", "minWidth": "16rem" }, "c": [
+              { "r": "title", "t": "Find us" },
+              { "r": "body", "t": "We are a five-minute walk from the Ikeja bus stop. Parents are welcome at the office any school day." } ] },
+            { "k": "row", "set": { "gap": 24, "align": "start", "width": "fill", "minWidth": "16rem" }, "c": [
+              { "k": "stack", "set": { "gap": 8, "width": "fill", "minWidth": "14rem" }, "c": [
+                { "r": "heading", "t": "Location" },
+                { "r": "small", "t": "12 Park Road" },
+                { "r": "small", "t": "Ikeja, Lagos" } ] },
+              { "k": "stack", "set": { "gap": 8, "width": "fill", "minWidth": "14rem" }, "c": [
+                { "r": "heading", "t": "Hours" },
+                { "r": "small", "t": "Mon – Fri: 7:30 am – 4:00 pm" },
+                { "r": "small", "t": "Saturday: by appointment" } ] }
+            ] }
+          ] },
+          { "r": "image", "photo": "map", "alt": "Map showing Greenfield Academy on Park Road, Ikeja", "set": { "ratio": "21 / 9", "responsive": { "phone": { "ratio": "4 / 3" } } } }
+        ] } },
+    { "id": "contact-words-beside-form", "name": "Contact details beside an enquiry form", "pattern": "B25", "needs": ["form"],
+      "tree": { "k": "section", "set": { "paddingTop": 96, "paddingBottom": 96, "paddingLeft": 24, "paddingRight": 24, "gap": 40 },
+        "c": [ { "k": "row", "set": { "gap": 48, "align": "start" }, "c": [
+          { "k": "stack", "set": { "gap": 20, "width": "fill", "minWidth": "18rem" }, "c": [
+            { "r": "eyebrow", "t": "Get in touch" },
+            { "r": "title", "t": "Ask us anything" },
+            { "r": "body", "t": "Questions about admissions, fees or the school day? Send us a message and the office will reply within one school day." },
+            { "r": "link", "t": "Call +234 801 234 5678", "to": "tel:+2348012345678" },
+            { "r": "link", "t": "WhatsApp the office", "to": "https://wa.me/2348012345678" },
+            { "r": "link", "t": "office@greenfield.sch.ng", "to": "mailto:office@greenfield.sch.ng" } ] },
+          { "k": "card", "tone": "soft", "set": { "padding": 24, "gap": 14, "width": "fill", "minWidth": "18rem" }, "c": [
+            { "r": "heading", "t": "Send a message" },
+            { "r": "small", "t": "Your name" }, { "r": "small", "t": "Phone number" }, { "r": "small", "t": "Your message" },
+            { "r": "button", "t": "Send" }
+          ] }
+        ] } ] } },
+    { "id": "contact-call-whatsapp-email", "name": "Three ways to reach us: call, WhatsApp or email", "pattern": "C7",
+      "tree": { "k": "section", "tone": "soft", "set": { "paddingTop": 96, "paddingBottom": 96, "paddingLeft": 24, "paddingRight": 24, "gap": 40 },
+        "c": [
+          { "k": "stack", "center": true, "set": { "gap": 12 }, "c": [
+            { "r": "title", "t": "Talk to the school office" },
+            { "r": "body", "t": "Mon – Fri, 7:30 am – 4:00 pm. Messages after hours are answered the next school day.", "set": { "maxWidth": "36rem" } } ] },
+          { "k": "grid", "cols": 3, "min": "14rem", "set": { "gap": 24 }, "c": [
+            { "k": "card", "tone": "plain", "set": { "gap": 12, "padding": 24 }, "c": [
+              { "k": "row", "set": { "gap": 12, "align": "center" }, "c": [ { "r": "icon", "icon": "Phone", "set": { "width": "2rem" } }, { "k": "stack", "set": { "width": "fill", "minWidth": "8rem" }, "c": [ { "r": "heading", "t": "Call" } ] } ] },
+              { "r": "body", "t": "Speak to the office straight away." },
+              { "r": "link", "t": "+234 801 234 5678", "to": "tel:+2348012345678" } ] },
+            { "k": "card", "tone": "plain", "set": { "gap": 12, "padding": 24 }, "c": [
+              { "k": "row", "set": { "gap": 12, "align": "center" }, "c": [ { "r": "icon", "icon": "MessageCircle", "set": { "width": "2rem" } }, { "k": "stack", "set": { "width": "fill", "minWidth": "8rem" }, "c": [ { "r": "heading", "t": "WhatsApp" } ] } ] },
+              { "r": "body", "t": "Send a message any time, with photos of forms." },
+              { "r": "link", "t": "Chat on WhatsApp", "to": "https://wa.me/2348012345678" } ] },
+            { "k": "card", "tone": "plain", "set": { "gap": 12, "padding": 24 }, "c": [
+              { "k": "row", "set": { "gap": 12, "align": "center" }, "c": [ { "r": "icon", "icon": "Mail", "set": { "width": "2rem" } }, { "k": "stack", "set": { "width": "fill", "minWidth": "8rem" }, "c": [ { "r": "heading", "t": "Email" } ] } ] },
+              { "r": "body", "t": "For letters, documents and anything long." },
+              { "r": "link", "t": "office@greenfield.sch.ng", "to": "mailto:office@greenfield.sch.ng" } ] }
+          ] }
+        ] } },
+    { "id": "contact-card-over-photo", "name": "Contact details in a card over a photo", "pattern": "B25",
+      "tree": { "k": "section", "tone": "photo", "photo": "school-front", "set": { "minHeight": 520, "justify": "center", "paddingTop": 96, "paddingBottom": 96, "paddingLeft": 24, "paddingRight": 24 },
+        "c": [
+          { "k": "card", "tone": "plain", "set": { "gap": 16, "padding": 24, "maxWidth": "28rem" }, "c": [
+            { "r": "title", "t": "Come and see us" },
+            { "k": "row", "set": { "gap": 12, "align": "start" }, "c": [ { "r": "icon", "icon": "MapPin", "set": { "width": "2rem" } }, { "k": "stack", "set": { "width": "fill", "minWidth": "12rem" }, "c": [ { "r": "body", "t": "12 Park Road, Ikeja, Lagos" } ] } ] },
+            { "k": "row", "set": { "gap": 12, "align": "start" }, "c": [ { "r": "icon", "icon": "Phone", "set": { "width": "2rem" } }, { "k": "stack", "set": { "width": "fill", "minWidth": "12rem" }, "c": [ { "r": "link", "t": "+234 801 234 5678", "to": "tel:+2348012345678" } ] } ] },
+            { "k": "row", "set": { "gap": 12, "align": "start" }, "c": [ { "r": "icon", "icon": "Mail", "set": { "width": "2rem" } }, { "k": "stack", "set": { "width": "fill", "minWidth": "12rem" }, "c": [ { "r": "link", "t": "office@greenfield.sch.ng", "to": "mailto:office@greenfield.sch.ng" } ] } ] },
+            { "k": "row", "set": { "gap": 12, "align": "start" }, "c": [ { "r": "icon", "icon": "Clock", "set": { "width": "2rem" } }, { "k": "stack", "set": { "width": "fill", "minWidth": "12rem" }, "c": [ { "r": "body", "t": "Mon – Fri, 7:30 am – 4:00 pm" }, { "r": "small", "t": "Saturday by appointment" } ] } ] },
+            { "r": "button", "t": "WhatsApp the office", "to": "https://wa.me/2348012345678" }
+          ] }
+        ] } },
+    { "id": "contact-campus-cards", "name": "Our campuses and office as three cards", "pattern": "C7",
+      "tree": { "k": "section", "set": { "paddingTop": 96, "paddingBottom": 96, "paddingLeft": 24, "paddingRight": 24, "gap": 40 },
+        "c": [
+          { "r": "title", "t": "Where to find us" },
+          { "k": "grid", "cols": 3, "min": "14rem", "set": { "gap": 24 }, "c": [
+            { "k": "card", "tone": "grey", "set": { "gap": 8, "padding": 24 }, "c": [
+              { "r": "eyebrow", "t": "Ages 3 to 11" },
+              { "r": "heading", "t": "Primary campus" },
+              { "r": "body", "t": "12 Park Road, Ikeja, Lagos" },
+              { "r": "small", "t": "Mon – Fri, 7:30 am – 2:30 pm" },
+              { "r": "link", "t": "+234 801 234 5678", "to": "tel:+2348012345678" } ] },
+            { "k": "card", "tone": "grey", "set": { "gap": 8, "padding": 24 }, "c": [
+              { "r": "eyebrow", "t": "Ages 11 to 18" },
+              { "r": "heading", "t": "Secondary campus" },
+              { "r": "body", "t": "4 Liberation Road, Osu, Accra" },
+              { "r": "small", "t": "Mon – Fri, 7:30 am – 4:00 pm" },
+              { "r": "link", "t": "+233 30 123 4567", "to": "tel:+233301234567" } ] },
+            { "k": "card", "tone": "grey", "set": { "gap": 8, "padding": 24 }, "c": [
+              { "r": "eyebrow", "t": "New families" },
+              { "r": "heading", "t": "Admissions office" },
+              { "r": "body", "t": "12 Park Road, Ikeja, Lagos" },
+              { "r": "small", "t": "Mon – Fri, 8:00 am – 4:00 pm · Saturday by appointment" },
+              { "r": "link", "t": "WhatsApp admissions", "to": "https://wa.me/2348012345678" } ] }
+          ] }
+        ] } },
+    { "id": "contact-big-number", "name": "A big phone number to call or WhatsApp", "pattern": "B25",
+      "tree": { "k": "section", "tone": "strong", "center": true, "set": { "paddingTop": 96, "paddingBottom": 96, "paddingLeft": 24, "paddingRight": 24, "gap": 20 },
+        "c": [
+          { "r": "eyebrow", "t": "Questions? Call us" },
+          { "r": "stat", "t": "+234 801 234 5678" },
+          { "r": "body", "t": "The office answers Monday to Friday, 7:30 am – 4:00 pm. On WhatsApp we reply the same day.", "set": { "maxWidth": "36rem" } },
+          { "k": "row", "set": { "gap": 16, "justify": "center" }, "c": [
+            { "r": "button", "t": "Call now", "to": "tel:+2348012345678" },
+            { "r": "button2", "t": "WhatsApp us", "to": "https://wa.me/2348012345678" } ] }
+        ] } }
+  ]
+}

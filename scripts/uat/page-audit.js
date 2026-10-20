@@ -71,7 +71,9 @@ function auditDoc(opts) {
       // c-11c (decided B): a cell of one icon (an aria-hidden svg, no words) does not count — a table of ticks is not four columns
       const words = containers.filter((k) => k.innerText.trim() || k.querySelector('img,video,iframe,picture,canvas,input,button,textarea,select'));
       // …on a PHONE too (L6-8): an icon beside words is kept on a phone on purpose (G-3b (4)); counting its cell called it "squeezed"
-      if (MW < TP && words.length > 1 && Math.min(...words.map((k) => k.getBoundingClientRect().width)) < 150) err.push(`L5 phone: ${words.length} columns squeezed side by side in ${idOf(row).slice(-4)} (${words.map((k) => Math.round(k.getBoundingClientRect().width)).join('/')}px)`);
+      // …nor a LABEL (LE15d-3): a time or a date badge beside its item ("07:45", "Sep" over "08") is B23's pattern, not a column to read
+      const label = (k) => !k.querySelector('img,video,iframe,picture,canvas,input,button,textarea,select') && k.innerText.trim().split(/\n+/).every((l) => l.trim().length <= 8);
+      if (MW < TP && words.length > 1 && Math.min(...words.filter((k) => !label(k)).map((k) => k.getBoundingClientRect().width)) < 150) err.push(`L5 phone: ${words.length} columns squeezed side by side in ${idOf(row).slice(-4)} (${words.map((k) => Math.round(k.getBoundingClientRect().width)).join('/')}px)`);
       // …not on a PAGE-GRID page (L6-7): there every band of two or more columns owns the gutter and is held to the fit rule on every rung
       // instead (`gridBandOwnsGutter`, G-1 #13 — the user: #78's three-across made a staircase), nested rows too; drawn as flex all the same,
       // so the caller says which page it is. Its columns stay while their words fit; the word and overflow checks above still run

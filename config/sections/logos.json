@@ -1,0 +1,138 @@
+{
+  "$comment": "Logos / Clients (B13: a logo strip ROW(5–6), tablet 3×2, phone 2×3; the crawl's 177 award-site logo sections are mostly a stack over a row of many, or a row of 2–3; the 8 Wix Studio designed Clients tiles, read 2026-10-19: an eyebrow and big title over a 4×2 bordered grid 1 · a dark band, title left and two columns of names right 1 · a centred title over partner kinds, one a line 1 · a big two-line title on a strong band with a shape, a line, then four logos 1 · a small centred title and a sentence over five logos 1 · a big count and a sentence beside a 2×2 grid of logo cards 1 · a dark band, a statement over three round badges 1 · a title, three short words with stars, then five logo cards 1). A partner is its NAME in the finish's logo type until the logo strip component lands (RULE C). Greenfield Academy's exam boards, accreditations, sponsors and partners.",
+  "sections": [
+    { "id": "logos-bordered-grid", "name": "Partner names in a bordered grid", "pattern": "B13", "needs": ["logo strip"],
+      "tree": { "k": "section", "set": { "paddingTop": 96, "paddingBottom": 96, "paddingLeft": 24, "paddingRight": 24, "gap": 40 },
+        "c": [
+          { "k": "stack", "set": { "gap": 8 }, "c": [ { "r": "eyebrow", "t": "Our valued partners" }, { "r": "title", "t": "Working with the best in education" } ] },
+          { "k": "grid", "cols": 4, "min": "13rem", "set": { "gap": 0 }, "c": [
+            { "k": "card", "tone": "plain", "center": true, "set": { "padding": 16, "minHeight": "8rem", "justify": "center" }, "c": [ { "r": "logo", "t": "WAEC" } ] },
+            { "k": "card", "tone": "plain", "center": true, "set": { "padding": 16, "minHeight": "8rem", "justify": "center" }, "c": [ { "r": "logo", "t": "NECO" } ] },
+            { "k": "card", "tone": "plain", "center": true, "set": { "padding": 16, "minHeight": "8rem", "justify": "center" }, "c": [ { "r": "logo", "t": "Cambridge International" } ] },
+            { "k": "card", "tone": "plain", "center": true, "set": { "padding": 16, "minHeight": "8rem", "justify": "center" }, "c": [ { "r": "logo", "t": "British Council" } ] },
+            { "k": "card", "tone": "plain", "center": true, "set": { "padding": 16, "minHeight": "8rem", "justify": "center" }, "c": [ { "r": "logo", "t": "IB World School" } ] },
+            { "k": "card", "tone": "plain", "center": true, "set": { "padding": 16, "minHeight": "8rem", "justify": "center" }, "c": [ { "r": "logo", "t": "Ghana Education Service" } ] },
+            { "k": "card", "tone": "plain", "center": true, "set": { "padding": 16, "minHeight": "8rem", "justify": "center" }, "c": [ { "r": "logo", "t": "Zenith Bank" } ] },
+            { "k": "card", "tone": "plain", "center": true, "set": { "padding": 16, "minHeight": "8rem", "justify": "center" }, "c": [ { "r": "logo", "t": "Junior Achievement" } ] }
+          ] }
+        ] } },
+    { "id": "logos-names-columns", "name": "A title beside two columns of partner names", "pattern": "B13", "needs": ["logo strip"],
+      "tree": { "k": "section", "tone": "inverse", "set": { "paddingTop": 96, "paddingBottom": 96, "paddingLeft": 24, "paddingRight": 24, "gap": 40 },
+        "c": [
+          { "k": "row", "set": { "gap": 48, "align": "start" }, "c": [
+            { "k": "stack", "set": { "width": "fill", "minWidth": "16rem", "gap": 16 }, "c": [
+              { "r": "title", "t": "The friends who stand with Greenfield" },
+              { "r": "body", "t": "Exam boards, universities, hospitals and local businesses help us give every child more than a classroom." }
+            ] },
+            { "k": "stack", "set": { "width": "fill", "minWidth": "16rem", "gap": 0 }, "c": [
+              { "k": "grid", "cols": 2, "min": "13rem", "set": { "gap": 24 }, "c": [
+                { "r": "logo", "t": "WAEC" }, { "r": "logo", "t": "NECO" },
+                { "r": "logo", "t": "Cambridge International" }, { "r": "logo", "t": "British Council" },
+                { "r": "logo", "t": "University of Lagos" }, { "r": "logo", "t": "University of Ghana" },
+                { "r": "logo", "t": "Lagoon Hospital" }, { "r": "logo", "t": "Korle Bu Teaching Hospital" },
+                { "r": "logo", "t": "Zenith Bank" }, { "r": "logo", "t": "Junior Achievement" },
+                { "r": "logo", "t": "The PTA" }, { "r": "logo", "t": "Rotary Club of Ikeja" }
+              ] }
+            ] }
+          ] }
+        ] } },
+    { "id": "logos-by-kind", "name": "Partners listed by kind, one kind a line", "pattern": "B13", "needs": ["logo strip"],
+      "tree": { "k": "section", "tone": "soft", "set": { "paddingTop": 80, "paddingBottom": 80, "paddingLeft": 24, "paddingRight": 24, "gap": 32 },
+        "c": [
+          { "k": "stack", "center": true, "set": { "gap": 8 }, "c": [ { "r": "title", "t": "Our partners" } ] },
+          { "k": "stack", "set": { "gap": 16, "width": "100%" }, "c": [
+            { "r": "divider" },
+            { "k": "row", "set": { "gap": 24 }, "c": [
+              { "r": "heading", "t": "Exam boards", "set": { "width": "14rem" } },
+              { "k": "row", "set": { "gap": 24, "width": "fill", "minWidth": "16rem" }, "c": [ { "r": "logo", "t": "WAEC" }, { "r": "logo", "t": "NECO" }, { "r": "logo", "t": "Cambridge" } ] }
+            ] },
+            { "r": "divider" },
+            { "k": "row", "set": { "gap": 24 }, "c": [
+              { "r": "heading", "t": "Accreditation", "set": { "width": "14rem" } },
+              { "k": "row", "set": { "gap": 24, "width": "fill", "minWidth": "16rem" }, "c": [ { "r": "logo", "t": "Lagos State Ministry of Education" }, { "r": "logo", "t": "IB" } ] }
+            ] },
+            { "r": "divider" },
+            { "k": "row", "set": { "gap": 24 }, "c": [
+              { "r": "heading", "t": "Universities", "set": { "width": "14rem" } },
+              { "k": "row", "set": { "gap": 24, "width": "fill", "minWidth": "16rem" }, "c": [ { "r": "logo", "t": "University of Lagos" }, { "r": "logo", "t": "Ashesi" } ] }
+            ] },
+            { "r": "divider" },
+            { "k": "row", "set": { "gap": 24 }, "c": [
+              { "r": "heading", "t": "Sponsors", "set": { "width": "14rem" } },
+              { "k": "row", "set": { "gap": 24, "width": "fill", "minWidth": "16rem" }, "c": [ { "r": "logo", "t": "Zenith Bank" }, { "r": "logo", "t": "The PTA" } ] }
+            ] },
+            { "r": "divider" }
+          ] }
+        ] } },
+    { "id": "logos-big-title-strip", "name": "A big title, a line, then four partner names", "pattern": "B13", "needs": ["logo strip"],
+      "tree": { "k": "section", "tone": "strong", "set": { "paddingTop": 96, "paddingBottom": 64, "paddingLeft": 24, "paddingRight": 24, "gap": 40 },
+        "c": [
+          { "k": "row", "set": { "gap": 24, "justify": "between" }, "c": [
+            { "r": "title", "t": "Our partners in learning", "set": { "width": "fill", "minWidth": "16rem", "maxWidth": "36rem" } },
+            { "r": "icon", "icon": "Sun" }
+          ] },
+          { "r": "divider" },
+          { "k": "row", "set": { "gap": 32, "justify": "between" }, "c": [ { "r": "logo", "t": "WAEC" }, { "r": "logo", "t": "British Council" }, { "r": "logo", "t": "Cambridge" }, { "r": "logo", "t": "Zenith Bank" } ] }
+        ] } },
+    { "id": "logos-quiet-strip", "name": "A short title and a sentence over five partner names", "pattern": "B13", "needs": ["logo strip"],
+      "tree": { "k": "section", "center": true, "set": { "paddingTop": 64, "paddingBottom": 64, "paddingLeft": 24, "paddingRight": 24, "gap": 32 },
+        "c": [
+          { "k": "stack", "center": true, "set": { "gap": 8, "maxWidth": "40rem" }, "c": [
+            { "r": "heading", "t": "Trusted across West Africa" },
+            { "r": "body", "t": "Our pupils sit the exams and earn the certificates that universities at home and abroad recognise." }
+          ] },
+          { "k": "row", "set": { "gap": 48, "justify": "center" }, "c": [ { "r": "logo", "t": "WAEC" }, { "r": "logo", "t": "NECO" }, { "r": "logo", "t": "Cambridge" }, { "r": "logo", "t": "IB" }, { "r": "logo", "t": "British Council" } ] }
+        ] } },
+    { "id": "logos-count-grid", "name": "A big count beside four partner cards", "pattern": "B13", "needs": ["logo strip"],
+      "tree": { "k": "section", "tone": "soft", "set": { "paddingTop": 96, "paddingBottom": 96, "paddingLeft": 24, "paddingRight": 24, "gap": 40 },
+        "c": [
+          { "k": "row", "set": { "gap": 48 }, "c": [
+            { "k": "stack", "set": { "width": "fill", "minWidth": "16rem", "gap": 16 }, "c": [
+              { "r": "title", "t": "3,000 families trust Greenfield" },
+              { "r": "body", "t": "And so do the boards, universities and businesses who work with our teachers every term." }
+            ] },
+            { "k": "stack", "set": { "width": "fill", "minWidth": "16rem", "gap": 0 }, "c": [
+              { "k": "grid", "cols": 2, "min": "13rem", "set": { "gap": 16 }, "c": [
+                { "k": "card", "tone": "plain", "center": true, "set": { "padding": 16, "minHeight": "8rem", "justify": "center" }, "c": [ { "r": "logo", "t": "WAEC" } ] },
+                { "k": "card", "tone": "plain", "center": true, "set": { "padding": 16, "minHeight": "8rem", "justify": "center" }, "c": [ { "r": "logo", "t": "Cambridge" } ] },
+                { "k": "card", "tone": "plain", "center": true, "set": { "padding": 16, "minHeight": "8rem", "justify": "center" }, "c": [ { "r": "logo", "t": "University of Ghana" } ] },
+                { "k": "card", "tone": "plain", "center": true, "set": { "padding": 16, "minHeight": "8rem", "justify": "center" }, "c": [ { "r": "logo", "t": "Zenith Bank" } ] }
+              ] }
+            ] }
+          ] }
+        ] } },
+    { "id": "logos-accreditation-badges", "name": "A statement over three round accreditation badges", "pattern": "B13", "needs": ["logo strip"],
+      "tree": { "k": "section", "tone": "inverse", "center": true, "set": { "paddingTop": 96, "paddingBottom": 96, "paddingLeft": 24, "paddingRight": 24, "gap": 40 },
+        "c": [
+          { "k": "stack", "center": true, "set": { "gap": 16, "maxWidth": "48rem" }, "c": [
+            { "r": "eyebrow", "t": "Accredited and inspected" },
+            { "r": "heading", "t": "We are proud of the standards we keep: every year our teaching, our safety and our results are checked by the bodies below." }
+          ] },
+          { "k": "grid", "cols": 3, "min": "14rem", "set": { "gap": 32, "maxWidth": "56rem" }, "c": [
+            { "k": "card", "tone": "plain", "center": true, "set": { "padding": 24, "gap": 8, "ratio": "1 / 1", "radius": 999, "justify": "center" }, "c": [ { "r": "icon", "icon": "BadgeCheck" }, { "r": "logo", "t": "Cambridge" }, { "r": "small", "t": "Registered centre" } ] },
+            { "k": "card", "tone": "plain", "center": true, "set": { "padding": 24, "gap": 8, "ratio": "1 / 1", "radius": 999, "justify": "center" }, "c": [ { "r": "icon", "icon": "ShieldCheck" }, { "r": "logo", "t": "Lagos State" }, { "r": "small", "t": "Approved school" } ] },
+            { "k": "card", "tone": "plain", "center": true, "set": { "padding": 24, "gap": 8, "ratio": "1 / 1", "radius": 999, "justify": "center" }, "c": [ { "r": "icon", "icon": "Award" }, { "r": "logo", "t": "WAEC" }, { "r": "small", "t": "Exam centre" } ] }
+          ] }
+        ] } },
+    { "id": "logos-words-and-strip", "name": "Partners' words with stars, then five partner cards", "pattern": "B13", "needs": ["logo strip"],
+      "tree": { "k": "section", "tone": "soft", "set": { "paddingTop": 96, "paddingBottom": 96, "paddingLeft": 24, "paddingRight": 24, "gap": 40 },
+        "c": [
+          { "r": "title", "t": "What our partners say about us" },
+          { "k": "grid", "cols": 3, "min": "14rem", "set": { "gap": 32 }, "c": [
+            { "k": "stack", "set": { "gap": 12 }, "c": [ { "r": "body", "t": "Greenfield's science club sends us the most curious young visitors we have. Their questions keep our doctors on their toes." }, { "r": "small", "t": "Dr Femi Adewale, Lagoon Hospital" },
+              { "k": "row", "set": { "gap": 4 }, "c": [ { "r": "icon", "icon": "Star" }, { "r": "icon", "icon": "Star" }, { "r": "icon", "icon": "Star" }, { "r": "icon", "icon": "Star" }, { "r": "icon", "icon": "Star" } ] } ] },
+            { "k": "stack", "set": { "gap": 12 }, "c": [ { "r": "body", "t": "Every year their leavers arrive ready for university work, and many come back to mentor the next class." }, { "r": "small", "t": "Prof. Ama Boateng, University of Ghana" },
+              { "k": "row", "set": { "gap": 4 }, "c": [ { "r": "icon", "icon": "Star" }, { "r": "icon", "icon": "Star" }, { "r": "icon", "icon": "Star" }, { "r": "icon", "icon": "Star" }, { "r": "icon", "icon": "Star" } ] } ] },
+            { "k": "stack", "set": { "gap": 12 }, "c": [ { "r": "body", "t": "Sponsoring the reading week was an easy choice. The pupils wrote thank-you letters to every one of our staff." }, { "r": "small", "t": "Mrs Kemi Ojo, Zenith Bank" },
+              { "k": "row", "set": { "gap": 4 }, "c": [ { "r": "icon", "icon": "Star" }, { "r": "icon", "icon": "Star" }, { "r": "icon", "icon": "Star" }, { "r": "icon", "icon": "Star" }, { "r": "icon", "icon": "Star" } ] } ] }
+          ] },
+          { "k": "grid", "cols": 5, "min": "12rem", "set": { "gap": 16 }, "c": [
+            { "k": "card", "tone": "plain", "center": true, "set": { "padding": 16, "minHeight": "6rem", "justify": "center" }, "c": [ { "r": "logo", "t": "WAEC" } ] },
+            { "k": "card", "tone": "plain", "center": true, "set": { "padding": 16, "minHeight": "6rem", "justify": "center" }, "c": [ { "r": "logo", "t": "NECO" } ] },
+            { "k": "card", "tone": "plain", "center": true, "set": { "padding": 16, "minHeight": "6rem", "justify": "center" }, "c": [ { "r": "logo", "t": "Zenith Bank" } ] },
+            { "k": "card", "tone": "plain", "center": true, "set": { "padding": 16, "minHeight": "6rem", "justify": "center" }, "c": [ { "r": "logo", "t": "The PTA" } ] },
+            { "k": "card", "tone": "plain", "center": true, "set": { "padding": 16, "minHeight": "6rem", "justify": "center" }, "c": [ { "r": "logo", "t": "IB" } ] }
+          ] }
+        ] } }
+  ]
+}

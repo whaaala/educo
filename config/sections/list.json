@@ -1,0 +1,135 @@
+{
+  "$comment": "List (B27 text + image rows · B23 events list: ROW [date or time | details] divided by lines · B14 a two-column list with links). The 5 Wix Studio List tiles, read 2026-10-19: a centred title over rows, each a big picture LEFT beside a name, two paragraphs and Read more 1 · the same with the picture RIGHT 1 · Agenda: a picture beside a list of times, each with an item title and a sentence, divided by lines 1 · Agenda: dated rows, a small month over a big day beside a small day and time and a big title, divided by lines 1 · a centred title over a two-column list of names, each with Read more, divided by lines 1. A time or date column has a fixed small width so it stays beside its item on a 320px phone. Trees: lib/section-library.ts SectionNode.",
+  "sections": [
+    { "id": "list-programmes-picture-left", "name": "Our programmes: a picture left of each one", "pattern": "B27",
+      "tree": { "k": "section", "set": { "paddingTop": 96, "paddingBottom": 96, "paddingLeft": 24, "paddingRight": 24, "gap": 48 },
+        "c": [
+          { "k": "stack", "center": true, "set": { "gap": 16 }, "c": [
+            { "r": "title", "t": "Our programmes" },
+            { "r": "body", "t": "From the first day of nursery to the last WAEC paper, every stage of Greenfield has its own teachers, rooms and routines. Read about each one below.", "set": { "maxWidth": "40rem" } } ] },
+          { "k": "stack", "set": { "gap": 40 }, "c": [
+            { "k": "row", "set": { "gap": 40, "align": "start" }, "c": [
+              { "r": "image", "photo": "nursery", "alt": "Nursery pupils playing with building blocks", "set": { "width": "fill", "minWidth": "16rem", "ratio": "4 / 3" } },
+              { "k": "stack", "set": { "width": "fill", "minWidth": "16rem", "gap": 12 }, "c": [
+                { "r": "heading", "t": "Nursery and Reception" },
+                { "r": "body", "t": "Ages two to five learn through play, songs and stories, in small groups with two adults to every class." },
+                { "r": "body", "t": "Phonics and numbers begin gently, and every Friday a photo and a note go home to each family." },
+                { "r": "link", "t": "Read more", "to": "#nursery" } ] } ] },
+            { "k": "row", "set": { "gap": 40, "align": "start" }, "c": [
+              { "r": "image", "photo": "teacher-class", "alt": "A Primary 4 teacher with her class", "set": { "width": "fill", "minWidth": "16rem", "ratio": "4 / 3" } },
+              { "k": "stack", "set": { "width": "fill", "minWidth": "16rem", "gap": 12 }, "c": [
+                { "r": "heading", "t": "Primary school" },
+                { "r": "body", "t": "Primary 1 to 6 follow the national curriculum, with French, computing and music taught by specialists." },
+                { "r": "body", "t": "Class sizes stay under twenty-five, so every child reads aloud to a teacher every week." },
+                { "r": "link", "t": "Read more", "to": "#primary" } ] } ] },
+            { "k": "row", "set": { "gap": 40, "align": "start" }, "c": [
+              { "r": "image", "photo": "students-lab", "alt": "Secondary students at work in the science lab", "set": { "width": "fill", "minWidth": "16rem", "ratio": "4 / 3" } },
+              { "k": "stack", "set": { "width": "fill", "minWidth": "16rem", "gap": 12 }, "c": [
+                { "r": "heading", "t": "Secondary school" },
+                { "r": "body", "t": "JSS 1 to SS 3 prepare for the BECE and WAEC, with science, arts and commercial streams from SS 1." },
+                { "r": "body", "t": "Saturday catch-up classes and mock examinations each term keep every student on track." },
+                { "r": "link", "t": "Read more", "to": "#secondary" } ] } ] }
+          ] }
+        ] } },
+    { "id": "list-clubs-picture-right", "name": "Our clubs: a picture right of each one", "pattern": "B27",
+      "tree": { "k": "section", "tone": "soft", "set": { "paddingTop": 96, "paddingBottom": 96, "paddingLeft": 24, "paddingRight": 24, "gap": 48 },
+        "c": [
+          { "k": "stack", "center": true, "set": { "gap": 16 }, "c": [
+            { "r": "title", "t": "After-school clubs" },
+            { "r": "body", "t": "Every pupil joins at least one club a term. They run from 13:30 to 15:00, Monday to Thursday, and cost nothing extra.", "set": { "maxWidth": "40rem" } } ] },
+          { "k": "stack", "set": { "gap": 40 }, "c": [
+            { "k": "row", "set": { "gap": 40, "align": "start" }, "c": [
+              { "k": "stack", "set": { "width": "fill", "minWidth": "16rem", "gap": 12 }, "c": [
+                { "r": "heading", "t": "Music and choir" },
+                { "r": "body", "t": "Recorder, keyboard, talking drum and a choir that sings at every assembly and prize-giving." },
+                { "r": "body", "t": "Pupils sit graded music examinations from Primary 4, and the choir tours two schools a year." },
+                { "r": "link", "t": "Read more", "to": "#music" } ] },
+              { "r": "image", "photo": "music", "alt": "Pupils playing drums in the music club", "set": { "width": "fill", "minWidth": "16rem", "ratio": "4 / 3", "responsive": { "phone": { "order": -1 } } } } ] },
+            { "k": "row", "set": { "gap": 40, "align": "start" }, "c": [
+              { "k": "stack", "set": { "width": "fill", "minWidth": "16rem", "gap": 12 }, "c": [
+                { "r": "heading", "t": "Art and design" },
+                { "r": "body", "t": "Painting, batik, clay and tie-dye, taught by a working artist in the art room behind the library." },
+                { "r": "body", "t": "Every July the year's best work hangs in the school hall for the end-of-year exhibition." },
+                { "r": "link", "t": "Read more", "to": "#art" } ] },
+              { "r": "image", "photo": "art", "alt": "Pupils painting in the art room", "set": { "width": "fill", "minWidth": "16rem", "ratio": "4 / 3", "responsive": { "phone": { "order": -1 } } } } ] },
+            { "k": "row", "set": { "gap": 40, "align": "start" }, "c": [
+              { "k": "stack", "set": { "width": "fill", "minWidth": "16rem", "gap": 12 }, "c": [
+                { "r": "heading", "t": "Football and athletics" },
+                { "r": "body", "t": "Boys' and girls' teams train twice a week on the school field and play in the inter-schools league." },
+                { "r": "body", "t": "The athletics squad prepares all year for the inter-house sports day in March." },
+                { "r": "link", "t": "Read more", "to": "#sport" } ] },
+              { "r": "image", "photo": "sports", "alt": "Pupils racing on the school field", "set": { "width": "fill", "minWidth": "16rem", "ratio": "4 / 3", "responsive": { "phone": { "order": -1 } } } } ] }
+          ] }
+        ] } },
+    { "id": "list-school-day-times", "name": "The school day: a picture beside its times", "pattern": "B23",
+      "tree": { "k": "section", "set": { "paddingTop": 96, "paddingBottom": 96, "paddingLeft": 24, "paddingRight": 24, "gap": 40 },
+        "c": [
+          { "r": "title", "t": "A day at Greenfield" },
+          { "k": "row", "set": { "gap": 40, "align": "start" }, "c": [
+            { "r": "image", "photo": "pupils-outside", "alt": "Pupils walking to assembly in the morning", "set": { "width": "fill", "minWidth": "16rem", "ratio": "4 / 3" } },
+            { "k": "stack", "set": { "width": "fill", "minWidth": "16rem", "gap": 16 }, "c": [
+              { "k": "row", "set": { "gap": 16, "align": "start" }, "c": [
+                { "k": "stack", "set": { "width": "6.5rem", "gap": 0 }, "c": [ { "r": "heading", "t": "07:45", "set": { "fontSize": 28 } }, { "r": "small", "t": "Mon–Fri" } ] },
+                { "k": "stack", "set": { "width": "fill", "minWidth": "8rem", "gap": 4 }, "c": [ { "r": "heading", "t": "Assembly" }, { "r": "body", "t": "The whole school meets in the hall for news, a song and the week's notices." } ] } ] },
+              { "r": "divider" },
+              { "k": "row", "set": { "gap": 16, "align": "start" }, "c": [
+                { "k": "stack", "set": { "width": "6.5rem", "gap": 0 }, "c": [ { "r": "heading", "t": "08:00", "set": { "fontSize": 28 } }, { "r": "small", "t": "Mon–Fri" } ] },
+                { "k": "stack", "set": { "width": "fill", "minWidth": "8rem", "gap": 4 }, "c": [ { "r": "heading", "t": "Lessons" }, { "r": "body", "t": "Mathematics, English and science come first, while minds are fresh." } ] } ] },
+              { "r": "divider" },
+              { "k": "row", "set": { "gap": 16, "align": "start" }, "c": [
+                { "k": "stack", "set": { "width": "6.5rem", "gap": 0 }, "c": [ { "r": "heading", "t": "10:30", "set": { "fontSize": 28 } }, { "r": "small", "t": "Mon–Fri" } ] },
+                { "k": "stack", "set": { "width": "fill", "minWidth": "8rem", "gap": 4 }, "c": [ { "r": "heading", "t": "Break" }, { "r": "body", "t": "A hot snack from the school kitchen and time to play outside." } ] } ] },
+              { "r": "divider" },
+              { "k": "row", "set": { "gap": 16, "align": "start" }, "c": [
+                { "k": "stack", "set": { "width": "6.5rem", "gap": 0 }, "c": [ { "r": "heading", "t": "13:30", "set": { "fontSize": 28 } }, { "r": "small", "t": "Mon–Thu" } ] },
+                { "k": "stack", "set": { "width": "fill", "minWidth": "8rem", "gap": 4 }, "c": [ { "r": "heading", "t": "Clubs" }, { "r": "body", "t": "Music, art, coding, football and debate, until pick-up at 15:00." } ] } ] }
+            ] }
+          ] }
+        ] } },
+    { "id": "list-term-dates", "name": "Term dates: dated rows divided by lines", "pattern": "B23",
+      "tree": { "k": "section", "set": { "paddingTop": 96, "paddingBottom": 96, "paddingLeft": 24, "paddingRight": 24, "gap": 40 },
+        "c": [
+          { "r": "title", "t": "First term dates" },
+          { "k": "stack", "set": { "gap": 16 }, "c": [
+            { "r": "divider" },
+            { "k": "row", "set": { "gap": 16, "align": "center" }, "c": [
+              { "k": "stack", "center": true, "set": { "width": "4rem", "gap": 0 }, "c": [ { "r": "small", "t": "Sep" }, { "r": "heading", "t": "08", "set": { "fontSize": 40 } } ] },
+              { "k": "stack", "set": { "width": "fill", "minWidth": "8rem", "gap": 4 }, "c": [ { "r": "small", "t": "Mon · 07:45" }, { "r": "heading", "t": "Resumption: first day of term" } ] } ] },
+            { "r": "divider" },
+            { "k": "row", "set": { "gap": 16, "align": "center" }, "c": [
+              { "k": "stack", "center": true, "set": { "width": "4rem", "gap": 0 }, "c": [ { "r": "small", "t": "Oct" }, { "r": "heading", "t": "03", "set": { "fontSize": 40 } } ] },
+              { "k": "stack", "set": { "width": "fill", "minWidth": "8rem", "gap": 4 }, "c": [ { "r": "small", "t": "Fri · 09:00" }, { "r": "heading", "t": "Inter-house sports" } ] } ] },
+            { "r": "divider" },
+            { "k": "row", "set": { "gap": 16, "align": "center" }, "c": [
+              { "k": "stack", "center": true, "set": { "width": "4rem", "gap": 0 }, "c": [ { "r": "small", "t": "Oct" }, { "r": "heading", "t": "27", "set": { "fontSize": 40 } } ] },
+              { "k": "stack", "set": { "width": "fill", "minWidth": "8rem", "gap": 4 }, "c": [ { "r": "small", "t": "Mon–Fri" }, { "r": "heading", "t": "Mid-term break" } ] } ] },
+            { "r": "divider" },
+            { "k": "row", "set": { "gap": 16, "align": "center" }, "c": [
+              { "k": "stack", "center": true, "set": { "width": "4rem", "gap": 0 }, "c": [ { "r": "small", "t": "Dec" }, { "r": "heading", "t": "01", "set": { "fontSize": 40 } } ] },
+              { "k": "stack", "set": { "width": "fill", "minWidth": "8rem", "gap": 4 }, "c": [ { "r": "small", "t": "Mon · 08:00" }, { "r": "heading", "t": "Examinations begin" } ] } ] },
+            { "r": "divider" },
+            { "k": "row", "set": { "gap": 16, "align": "center" }, "c": [
+              { "k": "stack", "center": true, "set": { "width": "4rem", "gap": 0 }, "c": [ { "r": "small", "t": "Dec" }, { "r": "heading", "t": "12", "set": { "fontSize": 40 } } ] },
+              { "k": "stack", "set": { "width": "fill", "minWidth": "8rem", "gap": 4 }, "c": [ { "r": "small", "t": "Fri · 11:00" }, { "r": "heading", "t": "Carol service and end of term" } ] } ] },
+            { "r": "divider" }
+          ] }
+        ] } },
+    { "id": "list-subjects-two-columns", "name": "Our subjects: two columns of names with Read more", "pattern": "B14",
+      "tree": { "k": "section", "set": { "paddingTop": 96, "paddingBottom": 96, "paddingLeft": 24, "paddingRight": 24, "gap": 48 },
+        "c": [
+          { "k": "stack", "center": true, "set": { "gap": 16 }, "c": [
+            { "r": "title", "t": "Our subjects" },
+            { "r": "body", "t": "Every subject is taught by a specialist from JSS 1. Choose one to see what is covered in each year and how it is examined.", "set": { "maxWidth": "36rem" } } ] },
+          { "k": "grid", "cols": 2, "min": "16rem", "set": { "gap": 16 }, "c": [
+            { "k": "stack", "set": { "gap": 16 }, "c": [ { "r": "divider" }, { "k": "row", "set": { "gap": 16, "align": "center" }, "c": [ { "r": "heading", "t": "Mathematics", "set": { "width": "fill", "minWidth": "8rem" } }, { "r": "link", "t": "Read more", "to": "#mathematics" } ] } ] },
+            { "k": "stack", "set": { "gap": 16 }, "c": [ { "r": "divider" }, { "k": "row", "set": { "gap": 16, "align": "center" }, "c": [ { "r": "heading", "t": "English Language", "set": { "width": "fill", "minWidth": "8rem" } }, { "r": "link", "t": "Read more", "to": "#english" } ] } ] },
+            { "k": "stack", "set": { "gap": 16 }, "c": [ { "r": "divider" }, { "k": "row", "set": { "gap": 16, "align": "center" }, "c": [ { "r": "heading", "t": "Basic Science", "set": { "width": "fill", "minWidth": "8rem" } }, { "r": "link", "t": "Read more", "to": "#science" } ] } ] },
+            { "k": "stack", "set": { "gap": 16 }, "c": [ { "r": "divider" }, { "k": "row", "set": { "gap": 16, "align": "center" }, "c": [ { "r": "heading", "t": "Social Studies", "set": { "width": "fill", "minWidth": "8rem" } }, { "r": "link", "t": "Read more", "to": "#social-studies" } ] } ] },
+            { "k": "stack", "set": { "gap": 16 }, "c": [ { "r": "divider" }, { "k": "row", "set": { "gap": 16, "align": "center" }, "c": [ { "r": "heading", "t": "French", "set": { "width": "fill", "minWidth": "8rem" } }, { "r": "link", "t": "Read more", "to": "#french" } ] } ] },
+            { "k": "stack", "set": { "gap": 16 }, "c": [ { "r": "divider" }, { "k": "row", "set": { "gap": 16, "align": "center" }, "c": [ { "r": "heading", "t": "Computer Studies", "set": { "width": "fill", "minWidth": "8rem" } }, { "r": "link", "t": "Read more", "to": "#computing" } ] } ] },
+            { "k": "stack", "set": { "gap": 16 }, "c": [ { "r": "divider" }, { "k": "row", "set": { "gap": 16, "align": "center" }, "c": [ { "r": "heading", "t": "Creative Arts", "set": { "width": "fill", "minWidth": "8rem" } }, { "r": "link", "t": "Read more", "to": "#arts" } ] } ] },
+            { "k": "stack", "set": { "gap": 16 }, "c": [ { "r": "divider" }, { "k": "row", "set": { "gap": 16, "align": "center" }, "c": [ { "r": "heading", "t": "Physical Education", "set": { "width": "fill", "minWidth": "8rem" } }, { "r": "link", "t": "Read more", "to": "#pe" } ] } ] }
+          ] }
+        ] } }
+  ]
+}

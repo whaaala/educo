@@ -122,6 +122,39 @@ Again, nothing to set for phones:
 
 ![A gallery on a 375 px phone: the big photo first, then the four small ones](./img/guide-sections-gallery-phone.webp)
 
+## "Who we work with, our fees, the questions parents ask, and how to reach us"
+
+Mrs Owusu, the admissions officer, makes the Admissions page. Parents ask the same things every term, so she puts the answers
+where they can find them:
+
+- **Logos / Clients** (8): the exam boards, the ministry and the partners the school works with, as names in a bordered grid,
+  a centred row, round badges for accreditations, or quotes over a strip of partners. Each partner is its **name** until you
+  put its logo in; a logo you add asks for its words, so a screen reader still says who it is.
+- **List** (5): our clubs or subjects as rows of a picture and words, the school day as times beside what happens, the term's
+  dates as a list of days, or a two-column list with **Read more** on each.
+- **Contact details** (8): the address and opening hours beside a map, an hours table, Call · WhatsApp · Email cards, the
+  campuses as cards, or words beside an enquiry form. A phone number is a link a parent can tap to call; WhatsApp opens a chat.
+- **Questions & answers** (8): the questions parents ask, alone and centred, beside a **Call us** button, in two columns, in
+  groups (Admissions · Fees · The school day), or beside a photo.
+- **Fees table** (8): fee cards for each part of the school, one marked **Most chosen**, day and boarding side by side, the
+  fees by class in a table, the other charges (uniform, books, the bus), and the ways to pay.
+- **Latest news** (8): three stories in cards, one big story beside a list of others, headlines only (light on a slow
+  connection), or a letter from the head teacher.
+
+What happens without you setting anything:
+
+- **A question opens to its answer.** A visitor clicks or taps a question, or reaches it with **Tab** and presses **Enter**
+  or **Space**. The answers are written into the page, so a screen reader reads them and a search engine can show them as
+  questions and answers. Select the questions and change, add, move or delete them in the Inspector.
+- **Every fee says how often it is paid** ("per term", "a year", "once"), and the fee that stands out says so in words, not
+  only by its colour.
+- **A time or a date stays beside what it is for**, even on a phone; the map goes under the address on a phone; the title of
+  the questions goes above them.
+- **Partners and story cards never leave one alone on a line.** Eight partners are four and four on a computer and two by
+  two on a phone.
+
+![Questions and answers on a 375 px phone: two groups, the first answer of each open](./img/guide-sections-faq-phone.webp)
+
 ## "Now I want to change it"
 
 Once it is on the page, a ready-made section is ordinary blocks. Click any word to change it, pick another photograph,
@@ -247,7 +280,7 @@ A page made from a template is a copy. It takes your site's own header and foote
 | Add a section | Click or tap a tile; **Enter** on a focused tile; drag a tile onto the page | **Ctrl+Z** undoes |
 | Plain or finished | **Wireframe \| Designed** at the top of the tab | |
 | The look | **Finish**: Serious · Minimalist · Plain · Bold · Calm · Startup · Playful | |
-| The kinds of section | Headers · Hero / Welcome · Footers · Blank · Our story · Text · Features / Services · Spotlight / zig-zag · Stats · CTA / Banner · Cards · Programmes / Products · Gallery / Collage · Slideshow · Team · Testimonials | |
+| The kinds of section | Headers · Hero / Welcome · Footers · Blank · Our story · Text · Features / Services · Spotlight / zig-zag · Stats · CTA / Banner · Cards · Programmes / Products · Gallery / Collage · Slideshow · Team · Testimonials · Logos / Clients · List · Contact details · Questions & answers · Fees table · Latest news | |
 | On a phone | Pictures before their words in a zig-zag · cards one under another · numbers two by two · a button under its words · a gallery's big photo first · a slideshow one slide at a time | Nothing to set |
 | A big photo or card in a grid | Select it → Inspector → **Columns wide** (and rows tall) | **Ctrl+Z** undoes |
 | A slideshow | Select its slides' box → Inspector → **Show one at a time**: **Moving between them** (Dots · Arrows · Both · None) and **Move on its own every** (0 = only when a visitor moves it); a moving one has a Pause | Visitor: arrow keys, swipe |
@@ -263,7 +296,8 @@ A page made from a template is a copy. It takes your site's own header and foote
 | No longer global | Sections tab → **Global sections** → **Stop being global** | |
 | A new page | **+** beside the page tabs → **Add a page**, or **Add a page** at the top of the Sections tab | |
 | Keep a page as a template | **Page settings** → **Save page as template** | |
+| Questions and their answers | Select the questions → Inspector → each question's words and answer; add, move up or down, delete; **FAQ SEO markup** on | Visitor: **Tab**, **Enter** / **Space** opens |
 | Which page the visitor is on | The menu marks it with a heavier underline, and tells a screen reader | |
 
 Some sections stand in for a part the builder does not have yet: a form, a map, a strip of logos, a video. Their tiles say
-**placeholder: form** (or map, logo strip, video, counter, lightbox, cart), and they are built from ordinary blocks until that part arrives.
+**placeholder: form** (or map, table, logo strip, video, counter, lightbox, cart), and they are built from ordinary blocks until that part arrives.

@@ -21,3 +21,8 @@ Feature: The page check tells a broken word from a word that wraps at its hyphen
     Given a carousel whose second slide holds a picture, waiting to the right inside its own sideways strip
     Then the page check does not report that picture as running off the page
     And a picture that really runs past the edge of the page is still reported
+
+  Scenario: A time or a date beside its item on a phone is a label, not a squeezed column (LE15d-3)
+    Given a phone-width row of a date badge ("Sep" over "08") or a time ("07:45") beside the words of its item
+    Then the page check does not report two columns squeezed side by side
+    And a narrow cell of words ("Resumption day") beside another is still reported

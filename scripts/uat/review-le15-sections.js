@@ -17,7 +17,10 @@ const finishes = arg('finishes', ALL.join(',')).split(',');
 const onlyCats = arg('cats', '') ? arg('cats', '').split(',') : null;
 const OUT = path.join(__dirname, 'rx-le15');
 fs.mkdirSync(OUT, { recursive: true });
-const WIDTHS = [1280, 375];
+const WIDTHS = arg('widths', '1280,375').split(',').map(Number);
+// LE15d-13: each page is also measured — broken words (L8) and sideways scroll (L1) — in EVERY finish, not only the ones a HEADED pass adds
+const { auditDoc } = require('./page-audit.js');
+const found = [];
 const MAX_H = 900; // the top of a tall section is what a sheet needs to show
 
 const esc = (s) => s.replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
@@ -56,7 +59,7 @@ async function sheet(shots, file, cols) {
     }
     for (const [i, label] of cats.entries()) {
       const name = label.replace(/\d+$/, '').trim();
-      const catId = name.toLowerCase().split(/[ /]/)[0];
+      const catId = (require('../../config/sections.json').categories.find((c) => c.label === name) || {}).id || name.toLowerCase().split(/[ /]/)[0]; // LE15d-12: the id is the config's, not the label's first word
       if (onlyCats && !onlyCats.includes(catId)) continue;
       await editor.getByRole('tablist', { name: 'Section categories' }).getByRole('tab').nth(i).click();
       await editor.waitForTimeout(300);
@@ -71,7 +74,9 @@ async function sheet(shots, file, cols) {
           // framed on the section (a footer sits at the foot of a short page), like the tile
           const box = await shot.evaluate(() => { const el = document.querySelector('footer, header, section'); const r = el ? el.getBoundingClientRect() : { top: 0, height: document.documentElement.scrollHeight }; return { y: Math.round(r.top + scrollY), h: Math.round(r.height) }; });
           const overflow = await shot.evaluate(() => document.documentElement.scrollWidth > window.innerWidth + 1);
-          shots.push({ name: `${overflow ? 'OVERFLOW · ' : ''}${d.name}`, png: await shot.screenshot({ fullPage: true, clip: { x: 0, y: box.y, width: w, height: Math.max(40, Math.min(MAX_H, box.h)) } }) });
+          const bad = (await shot.evaluate(auditDoc, {})).err.filter((e) => /^L(1|8) /.test(e));
+          if (bad.length) found.push(`${finish} · ${name} · ${w} · ${d.name}: ${bad.join(' | ')}`);
+          shots.push({ name: `${overflow ? 'OVERFLOW · ' : ''}${bad.length ? 'BROKEN · ' : ''}${d.name}`, png: await shot.screenshot({ fullPage: true, clip: { x: 0, y: box.y, width: w, height: Math.max(40, Math.min(MAX_H, box.h)) } }) });
         }
         const file = path.join(OUT, `${finish}-${catId}-${w}.png`);
         await sheet(shots, file, w === 1280 ? 4 : 6);
@@ -80,4 +85,5 @@ async function sheet(shots, file, cols) {
     }
   }
   await browser.close();
+  console.log(found.length ? `FOUND ${found.length}\n${found.join('\n')}` : 'FOUND 0 broken words or sideways scroll');
 })().catch((e) => { console.error(e); process.exit(1); });

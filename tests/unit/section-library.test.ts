@@ -46,6 +46,84 @@ describe("the section library", () => {
     for (const [id, n] of Object.entries(want)) expect(sectionsOf(id).length, id).toBe(n);
   });
 
+  it("LE-15d · Logos 8 · List 5 · Contact 8 · FAQ 8 · Pricing 8 · News 8 — one layout per stored Wix tile, the rest from B13 / B18 / B19 / B22 / B25", () => {
+    const want = { logos: 8, list: 5, contact: 8, faq: 8, pricing: 8, news: 8 };
+    for (const [id, n] of Object.entries(want)) expect(sectionsOf(id).length, id).toBe(n);
+  });
+
+  it("LE-15d · a question opens to its answer: every Questions & answers section is an Accordion (details / summary) of three or more, its answers in the page with the FAQ schema", () => {
+    const faqs = sectionsOf("faq");
+    expect(faqs.length).toBeGreaterThan(0);
+    for (const def of faqs) for (const wireframe of [true, false]) {
+      const s = buildSection(def, { finish: "calm", wireframe });
+      const accs: BoxNode[] = []; walk(s, (n) => { if (n.component === "accordion") accs.push(n); });
+      expect(accs.length, `${def.id} has an accordion`).toBeGreaterThan(0);
+      const items = accs.flatMap((a) => a.items ?? []);
+      expect(items.length, `${def.id} questions`).toBeGreaterThanOrEqual(3);
+      expect(accs.every((a) => a.accFaqSchema), `${def.id} FAQ schema`).toBe(true);
+      const site = { pages: [{ id: "p", name: "P", path: "p", root: emptyPageRoot(s) }], homeId: "p" } as BoxSite;
+      const html = renderSitePage(site, DEFAULT_THEME, "p", { inlineShared: true });
+      expect((html.match(/<details/g) ?? []).length, `${def.id} details`).toBeGreaterThanOrEqual(items.length);
+      for (const it of items) expect(html, `${def.id}: ${it.title}`).toContain(it.title.replace(/&/g, "&amp;").replace(/'/g, "&#39;").slice(0, 12));
+    }
+  });
+
+  it("LE-15d · a partner is its name, or a logo with its words (alt) — never a picture that says nothing", () => {
+    const logos = sectionsOf("logos");
+    expect(logos.length).toBeGreaterThan(0);
+    for (const def of logos) {
+      const s = buildSection(def, { finish: "plain", wireframe: false });
+      let partners = 0;
+      walk(s, (n) => { if (n.type === "image") { expect(n.alt, `${def.id} an image's words`).toBeTruthy(); partners++; } });
+      const names: SectionNode[] = []; const find = (n: SectionNode) => { if (n.r === "logo") names.push(n); n.c?.forEach(find); }; find(def.tree);
+      expect(partners + names.length, `${def.id} partners`).toBeGreaterThanOrEqual(3);
+    }
+  });
+
+  it("LE-15d · every fee says how often it is paid, and a fee that stands out says so in words, never by colour alone (WCAG 1.4.1)", () => {
+    const cards: SectionNode[][] = [];
+    const prices: [string, SectionNode][] = [];
+    const find = (n: SectionNode, id: string) => {
+      if (n.c?.some((x) => x.r === "stat" && /[₦$€£]|GH₵|GHS|NGN/.test(x.t ?? ""))) prices.push([id, n]);
+      const kids = (n.c ?? []).filter((x) => x.k === "card");
+      if (kids.length >= 2) cards.push(kids);
+      n.c?.forEach((x) => find(x, id));
+    };
+    for (const d of sectionsOf("pricing")) find(d.tree, d.id);
+    expect(prices.length).toBeGreaterThan(0);
+    const said = (n: SectionNode): string => [n.t ?? "", ...(n.items ?? []), ...(n.c ?? []).map(said)].join(" ");
+    for (const [id, holder] of prices) expect(said(holder), `${id}: how often`).toMatch(/per |a term|a year|each term|once|a session|a month/i);
+    for (const row of cards) {
+      const tones = row.map((c) => c.tone ?? "plain");
+      const odd = row.filter((c) => tones.filter((t) => t === (c.tone ?? "plain")).length === 1 && new Set(tones).size > 1);
+      for (const c of odd) expect(c.c?.some((x) => x.r === "eyebrow"), `stands out in words: ${said(c).slice(0, 60)}`).toBe(true);
+    }
+  });
+
+  it("LE15d-4 · an email or web address keeps its own letters in every finish: never in capitals, never spaced out (seen broken at 320–5120)", () => {
+    const def: SectionDef = { id: "t", name: "t", tree: { k: "section", c: [{ r: "link", t: "office@greenfield.sch.ng", to: "mailto:office@greenfield.sch.ng" }, { r: "link", t: "Visit us" }] } };
+    for (const finish of FINISH_IDS) {
+      const links: BoxNode[] = []; walk(buildSection(def, { finish, wireframe: false }), (n) => { if (n.type === "link") links.push(n); });
+      expect([links[0].textTransform, links[0].letterSpacing], `${finish} email`).toEqual([undefined, undefined]);
+      if (finish === "serious") expect(links[1].textTransform, "a link of words keeps the finish's capitals").toBe("uppercase");
+    }
+  });
+
+  it("LE15d-5 · a fee's big number fits its card at the narrowest desktop: no fee grid puts four across", () => {
+    for (const d of sectionsOf("pricing")) {
+      const find = (n: SectionNode) => { if (n.k === "grid" && n.min !== "" && n.c?.some((c) => c.c?.some((x) => x.r === "stat"))) expect(n.cols ?? 3, `${d.id}`).toBeLessThanOrEqual(3); n.c?.forEach(find); };
+      find(d.tree);
+    }
+  });
+
+  it("LE-15d · a section that stands in for a form, a map or a table names it (RULE C), and names only components we track", () => {
+    const known = ["form", "map", "table", "logo strip", "lightbox", "cart", "counter", "video"];
+    for (const c of BUILT) for (const d of sectionsOf(c.id)) {
+      for (const w of ["form", "map", "table"]) if (new RegExp(`\\b${w}\\b`, "i").test(d.name)) expect(d.needs ?? [], `${d.id} names "${w}"`).toContain(w);
+      for (const n of d.needs ?? []) expect(known, `${d.id}: ${n}`).toContain(n);
+    }
+  });
+
   it("LE-15c · a FIXED grid (`min: \"\"`) keeps the spans it was given, and narrows by itself on a tablet and a phone (A7, B28)", () => {
     const def: SectionDef = { id: "t", name: "t", tree: { k: "section", c: [{ k: "grid", cols: 4, min: "", c: [{ r: "image", set: { colSpan: 2, rowSpan: 2 } }, { r: "image" }, { r: "image" }, { r: "image" }, { r: "image" }] }] } };
     let g: BoxNode | undefined; walk(buildSection(def, { finish: "plain", wireframe: false }), (n) => { if (n.layout === "grid") g = n; });
@@ -215,7 +293,8 @@ describe("the section library", () => {
     for (const c of BUILT) for (const def of sectionsOf(c.id)) for (const finish of FINISH_IDS) for (const wireframe of [true, false]) {
       const node = buildSection(def, { finish, wireframe });
       const ids: string[] = [];
-      walk(node, (n) => { ids.push(n.id); expect(["container", "heading", "text", "button", "link", "image", "icon", "list", "divider"]).toContain(n.type); });
+      // the one component a section uses is the Accordion of Questions & answers (LE-15d) — built and editable already
+      walk(node, (n) => { ids.push(n.id); expect(["container", "heading", "text", "button", "link", "image", "icon", "list", "divider", ...(n.component === "accordion" ? ["component"] : [])]).toContain(n.type); });
       expect(new Set(ids).size, `${def.id} ids`).toBe(ids.length);
       expect(node.type, `${def.id} is a block`).toBe("container");
       expect(["section", "header", "footer"], `${def.id} is a landmark`).toContain(node.tag);
@@ -379,10 +458,14 @@ describe("another finish for a section already on the page (BATCH LE-15f, RF-1)"
     }
   });
 
+  // LE15d-1: all 64 pairs × every layout grew to ~50 s (a timeout) — every layout now goes from each finish to the next (each
+  // finish a source and a target of every layout), and the first layout of each category takes all 64 pairs
   it("untouched, a section re-finished is exactly a fresh one in that finish — every layout, from every finish to every other", () => {
-    for (const def of ALL) for (const from of FINISH_CHOICES) for (const to of FINISH_CHOICES) {
-      expect(canon(restyleSection(made(from)(def), def, to)), `${def.id} ${from} → ${to}`).toBe(canon(made(to)(def)));
-    }
+    const firsts = new Set(BUILT.map((c) => sectionsOf(c.id)[0]?.id));
+    for (const def of ALL) FINISH_CHOICES.forEach((from, i) => {
+      const tos = firsts.has(def.id) ? FINISH_CHOICES : [FINISH_CHOICES[(i + 1) % FINISH_CHOICES.length]];
+      for (const to of tos) expect(canon(restyleSection(made(from)(def), def, to)), `${def.id} ${from} → ${to}`).toBe(canon(made(to)(def)));
+    });
   });
 
   it("what the person wrote stays: changed words, a replaced photo and a block of their own — and the look is the new finish's", () => {

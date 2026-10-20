@@ -12,7 +12,7 @@
   "restyle": {
     "$comment": "BATCH LE-15f RF-1: choosing another finish for a section already on the page. LOOK fields are the finish's: each takes the new finish's value (or is cleared, when another finish sets it and this one does not); one no finish ever sets on that block stays the person's own. CONTENT fields are the person's: a value they changed stays; one still as the old finish made it follows the new one (a wireframe's 'Title goes here' becomes the designed words). Guarded by tests/unit/section-library.test.ts: any field a finish changes must be listed here.",
     "look": ["color", "background", "fontSize", "fontWeight", "textTransform", "letterSpacing", "italic", "lineHeight", "radius", "borderWidth", "borderColor", "underline", "shadow", "hoverEffect", "revealEffect", "bgOverlay"],
-    "content": ["text", "listItems", "src", "imgW", "imgH", "alt", "href", "bgImage", "bgSize", "bgPosition"]
+    "content": ["text", "listItems", "items", "src", "imgW", "imgH", "alt", "href", "bgImage", "bgSize", "bgPosition"]
   },
   "$scrim":"The shade over a photo behind words, strongest where the words sit: white words on it read at 4.5 : 1 over a pure white photograph (the arithmetic is in lib/box-presets.ts HERO_SCRIM).",
   "scrim": "linear-gradient(180deg, oklch(0% 0 0 / 0.5) 0%, oklch(0% 0 0 / 0.58) 50%, oklch(0% 0 0 / 0.66) 100%)",
@@ -97,12 +97,12 @@
     "toneMap": { "soft": "strong" },
     "roles": {
       "eyebrow": { "size": 16, "weight": 800, "transform": "uppercase", "spacing": 1 },
-      "title": { "size": 56, "weight": 800, "transform": "uppercase", "lineHeight": 1, "spacing": -1 },
-      "heading": { "size": 28, "weight": 800, "transform": "uppercase", "lineHeight": 1.15 },
+      "title": { "size": 40, "weight": 800, "transform": "uppercase", "lineHeight": 1, "spacing": -1 },
+      "heading": { "size": 24, "weight": 800, "transform": "uppercase", "lineHeight": 1.15 },
       "body": { "size": 18, "weight": 500, "lineHeight": 1.55 },
       "small": { "size": 16, "weight": 500, "lineHeight": 1.5 },
-      "stat": { "size": 64, "weight": 800 },
-      "logo": { "size": 22, "weight": 900, "transform": "uppercase" },
+      "stat": { "size": 48, "weight": 800 },
+      "logo": { "size": 20, "weight": 900, "transform": "uppercase" },
       "link": { "size": 16, "weight": 700, "transform": "uppercase" }
     },
     "button": { "radius": 0, "secondary": "outline" },
@@ -154,11 +154,11 @@
     "toneMap": { "grey": "soft" },
     "roles": {
       "eyebrow": { "size": 16, "weight": 700 },
-      "title": { "size": 52, "weight": 800, "lineHeight": 1.1 },
+      "title": { "size": 48, "weight": 800, "lineHeight": 1.1 },
       "heading": { "size": 26, "weight": 800, "lineHeight": 1.2 },
       "body": { "size": 18, "weight": 500, "lineHeight": 1.6 },
       "small": { "size": 16, "weight": 500, "lineHeight": 1.5 },
-      "stat": { "size": 52, "weight": 800 },
+      "stat": { "size": 44, "weight": 800 },
       "logo": { "size": 22, "weight": 800 },
       "link": { "size": 16, "weight": 700 }
     },

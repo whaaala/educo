@@ -123,7 +123,7 @@
             { "r": "menu", "items": ["About", "Admissions", "News", "Contact"] },
             { "r": "small", "t": "© 2026", "set": { "width": "auto" } }
           ] },
-          { "r": "logo", "t": "Greenfield Academy", "set": { "fontSize": 72 } }
+          { "r": "logo", "t": "Greenfield Academy", "set": { "fontSize": 72, "responsive": { "phone": { "fontSize": 40 } } } }
         ] } },
     { "id": "footer-two-rows", "name": "Menu over a quiet bottom line", "pattern": "B30",
       "tree": { "k": "footer", "tone": "soft", "set": { "paddingTop": 40, "paddingBottom": 32, "paddingLeft": 24, "paddingRight": 24, "gap": 24 },
@@ -197,7 +197,7 @@
             { "k": "stack", "set": { "gap": 8, "width": "fill", "minWidth": "10rem" }, "c": [ { "r": "link", "t": "About" }, { "r": "link", "t": "Admissions" }, { "r": "link", "t": "News" } ] },
             { "k": "stack", "set": { "gap": 8, "width": "fill", "minWidth": "12rem" }, "c": [ { "r": "small", "t": "+234 801 234 5678" }, { "r": "small", "t": "12 Park Road, Ikeja, Lagos" } ] }
           ] },
-          { "r": "link", "t": "office@greenfield.sch.ng", "to": "mailto:office@greenfield.sch.ng", "set": { "fontSize": 44 } },
+          { "r": "link", "t": "office@greenfield.sch.ng", "to": "mailto:office@greenfield.sch.ng", "set": { "fontSize": 44, "responsive": { "phone": { "fontSize": 24 } } } },
           { "r": "small", "t": "© 2026 Greenfield Academy" }
         ] } },
     { "id": "footer-stacked", "name": "Name and copyright, stacked", "pattern": "B30",
@@ -209,7 +209,7 @@
     { "id": "footer-cards", "name": "Three contact cards", "pattern": "B30",
       "tree": { "k": "footer", "tone": "grey", "set": { "paddingTop": 56, "paddingBottom": 32, "paddingLeft": 24, "paddingRight": 24, "gap": 32 },
         "c": [
-          { "k": "grid", "cols": 3, "min": "10rem", "set": { "gap": 20 }, "c": [
+          { "k": "grid", "cols": 3, "min": "16rem", "set": { "gap": 20 }, "c": [
             { "k": "card", "set": { "padding": 24, "gap": 8 }, "c": [ { "r": "heading", "t": "Call us" }, { "r": "small", "t": "+234 801 234 5678" } ] },
             { "k": "card", "set": { "padding": 24, "gap": 8 }, "c": [ { "r": "heading", "t": "Write to us" }, { "r": "small", "t": "office@greenfield.sch.ng" } ] },
             { "k": "card", "set": { "padding": 24, "gap": 8 }, "c": [ { "r": "heading", "t": "Visit us" }, { "r": "small", "t": "12 Park Road, Ikeja, Lagos" } ] }

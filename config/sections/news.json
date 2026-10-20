@@ -1,0 +1,211 @@
+{
+  "$comment": "Latest news (B22 blog list: GRID(3) of story cards · ROW(2: 60/40) a featured story beside a list · ROW(2: 70/30); C4 blog index: a featured story over GRID(2 x n) cards; the crawl of 346 award-site blog sections, read 2026-10-19: mostly a stack, a row of 2 equal / 40-60 / 70-30, rounded looks, a photo behind, often animated. No Wix tiles: Wix's blog is an app, not a section).",
+  "sections": [
+    { "id": "news-three-cards", "name": "Three stories in cards", "pattern": "B22",
+      "tree": { "k": "section", "set": { "paddingTop": 96, "paddingBottom": 96, "paddingLeft": 24, "paddingRight": 24, "gap": 40 }, "c": [
+        { "k": "row", "set": { "gap": 16, "justify": "between", "align": "end" }, "c": [
+          { "r": "title", "t": "Latest news", "set": { "width": "fill", "minWidth": "12rem" } },
+          { "r": "link", "t": "All news", "to": "#" }
+        ] },
+        { "k": "grid", "cols": 3, "min": "15rem", "set": { "gap": 24, "responsive": { "tabletPortrait": { "fitMost": 1 } } }, "c": [
+          { "k": "card", "tone": "plain", "set": { "gap": 8 }, "c": [
+            { "r": "image", "photo": "event-sports-day", "alt": "Runners crossing the line at the inter-house sports day", "set": { "ratio": "3 / 2" } },
+            { "r": "small", "t": "12 Oct 2026 · Sports" },
+            { "r": "heading", "t": "Blue House wins the inter-house sports day" },
+            { "r": "body", "t": "A close finish in the relay gave Blue House the trophy for the second year running." },
+            { "r": "link", "t": "Read more", "to": "#" }
+          ] },
+          { "k": "card", "tone": "plain", "set": { "gap": 8 }, "c": [
+            { "r": "image", "photo": "graduation", "alt": "Students in gowns celebrating their results", "set": { "ratio": "3 / 2" } },
+            { "r": "small", "t": "8 Oct 2026 · Results" },
+            { "r": "heading", "t": "98% credit pass in WAEC" },
+            { "r": "body", "t": "Our SS3 class earned five credits or more, including English and Mathematics." },
+            { "r": "link", "t": "Read more", "to": "#" }
+          ] },
+          { "k": "card", "tone": "plain", "set": { "gap": 8 }, "c": [
+            { "r": "image", "photo": "students-lab", "alt": "Students at the benches of the new science lab", "set": { "ratio": "3 / 2" } },
+            { "r": "small", "t": "2 Oct 2026 · Campus" },
+            { "r": "heading", "t": "The new science lab opens" },
+            { "r": "body", "t": "Forty benches, gas taps and a prep room, ready for the new term." },
+            { "r": "link", "t": "Read more", "to": "#" }
+          ] }
+        ] }
+      ] } },
+
+    { "id": "news-featured-beside-list", "name": "A featured story beside a list of three", "pattern": "B22",
+      "tree": { "k": "section", "set": { "paddingTop": 96, "paddingBottom": 96, "paddingLeft": 24, "paddingRight": 24, "gap": 40 }, "c": [
+        { "r": "title", "t": "News from Greenfield" },
+        { "k": "row", "set": { "gap": 48 }, "c": [
+          { "k": "stack", "set": { "gap": 12, "width": "60%", "minWidth": "16rem", "responsive": { "phone": { "width": "100%" } } }, "c": [
+            { "r": "image", "photo": "news-1", "alt": "The debate team holding the state trophy", "set": { "ratio": "16 / 9" } },
+            { "r": "small", "t": "15 Oct 2026 · Debate" },
+            { "r": "heading", "t": "Our debate team wins the state final" },
+            { "r": "body", "t": "Three SS2 students argued their way past twenty schools to bring the trophy home." },
+            { "r": "link", "t": "Read more", "to": "#" }
+          ] },
+          { "k": "stack", "set": { "gap": 16, "width": "fill", "minWidth": "16rem" }, "c": [
+            { "k": "stack", "set": { "gap": 4 }, "c": [
+              { "r": "small", "t": "12 Oct 2026 · Sports" },
+              { "r": "heading", "t": "Inter-house sports day results" }
+            ] },
+            { "r": "divider" },
+            { "k": "stack", "set": { "gap": 4 }, "c": [
+              { "r": "small", "t": "10 Oct 2026 · Notice" },
+              { "r": "heading", "t": "PTA meeting on Saturday 24 October" }
+            ] },
+            { "r": "divider" },
+            { "k": "stack", "set": { "gap": 4 }, "c": [
+              { "r": "small", "t": "6 Oct 2026 · Reading" },
+              { "r": "heading", "t": "Reading week starts on Monday" }
+            ] },
+            { "r": "link", "t": "All news", "to": "#" }
+          ] }
+        ] }
+      ] } },
+
+    { "id": "news-four-cards", "name": "Four stories in two rows of cards", "pattern": "B22",
+      "tree": { "k": "section", "center": true, "set": { "paddingTop": 96, "paddingBottom": 96, "paddingLeft": 24, "paddingRight": 24, "gap": 40 }, "c": [
+        { "r": "eyebrow", "t": "This term" },
+        { "r": "title", "t": "Stories from our school" },
+        { "k": "grid", "cols": 2, "min": "16rem", "set": { "gap": 24 }, "c": [
+          { "k": "card", "tone": "soft", "set": { "gap": 8, "padding": 16 }, "c": [
+            { "r": "image", "photo": "event-cultural-day", "alt": "Pupils in traditional dress on cultural day", "set": { "ratio": "16 / 9" } },
+            { "r": "small", "t": "16 Oct 2026 · Events" },
+            { "r": "heading", "t": "Cultural day in pictures" },
+            { "r": "link", "t": "Read more", "to": "#" }
+          ] },
+          { "k": "card", "tone": "soft", "set": { "gap": 8, "padding": 16 }, "c": [
+            { "r": "image", "photo": "news-2", "alt": "The new yellow school bus at the gate", "set": { "ratio": "16 / 9" } },
+            { "r": "small", "t": "14 Oct 2026 · Transport" },
+            { "r": "heading", "t": "A new school bus route from Lekki" },
+            { "r": "link", "t": "Read more", "to": "#" }
+          ] },
+          { "k": "card", "tone": "soft", "set": { "gap": 8, "padding": 16 }, "c": [
+            { "r": "image", "photo": "pupils-reading", "alt": "Pupils reading books together", "set": { "ratio": "16 / 9" } },
+            { "r": "small", "t": "6 Oct 2026 · Reading" },
+            { "r": "heading", "t": "Reading week: a book a day" },
+            { "r": "link", "t": "Read more", "to": "#" }
+          ] },
+          { "k": "card", "tone": "soft", "set": { "gap": 8, "padding": 16 }, "c": [
+            { "r": "image", "photo": "family", "alt": "Parents and a pupil talking with a teacher", "set": { "ratio": "16 / 9" } },
+            { "r": "small", "t": "10 Oct 2026 · Notice" },
+            { "r": "heading", "t": "PTA meeting on 24 October" },
+            { "r": "link", "t": "Read more", "to": "#" }
+          ] }
+        ] }
+      ] } },
+
+    { "id": "news-list-small-photos", "name": "A list of stories with small photos", "pattern": "B22",
+      "tree": { "k": "section", "set": { "paddingTop": 80, "paddingBottom": 80, "paddingLeft": 24, "paddingRight": 24, "gap": 32 }, "c": [
+        { "r": "title", "t": "Latest news" },
+        { "k": "row", "set": { "gap": 24, "align": "center" }, "c": [
+          { "r": "image", "photo": "news-3", "alt": "Pupils cheering at the sports field", "set": { "width": "9rem", "ratio": "1 / 1" } },
+          { "k": "stack", "set": { "gap": 4, "width": "fill", "minWidth": "12rem" }, "c": [
+            { "r": "small", "t": "12 Oct 2026 · Sports" },
+            { "r": "heading", "t": "Inter-house sports day results" },
+            { "r": "body", "t": "Blue House first, Green House a close second, and three school records broken." }
+          ] }
+        ] },
+        { "r": "divider" },
+        { "k": "row", "set": { "gap": 24, "align": "center" }, "c": [
+          { "r": "image", "photo": "news-4", "alt": "Students opening their results envelopes", "set": { "width": "9rem", "ratio": "1 / 1" } },
+          { "k": "stack", "set": { "gap": 4, "width": "fill", "minWidth": "12rem" }, "c": [
+            { "r": "small", "t": "8 Oct 2026 · Results" },
+            { "r": "heading", "t": "98% credit pass in WAEC" },
+            { "r": "body", "t": "Our best results yet, with five credits or more for almost every student." }
+          ] }
+        ] },
+        { "r": "divider" },
+        { "k": "row", "set": { "gap": 24, "align": "center" }, "c": [
+          { "r": "image", "photo": "students-lab", "alt": "Students with test tubes in the new lab", "set": { "width": "9rem", "ratio": "1 / 1" } },
+          { "k": "stack", "set": { "gap": 4, "width": "fill", "minWidth": "12rem" }, "c": [
+            { "r": "small", "t": "2 Oct 2026 · Campus" },
+            { "r": "heading", "t": "The new science lab opens" },
+            { "r": "body", "t": "Chemistry, physics and biology now share a bright new building." }
+          ] }
+        ] }
+      ] } },
+
+    { "id": "news-photo-story-two-cards", "name": "A big story over a photo above two cards", "pattern": "B22",
+      "tree": { "k": "section", "set": { "paddingTop": 80, "paddingBottom": 80, "paddingLeft": 24, "paddingRight": 24, "gap": 24 }, "c": [
+        { "k": "stack", "tone": "photo", "photo": "news-1", "set": { "minHeight": 400, "justify": "end", "padding": 24, "gap": 8 }, "c": [
+          { "r": "small", "t": "15 Oct 2026 · Debate" },
+          { "r": "title", "t": "State champions in debate", "set": { "maxWidth": "40rem" } },
+          { "r": "body", "t": "Three SS2 students beat twenty schools in the state final.", "set": { "maxWidth": "36rem" } },
+          { "r": "button", "t": "Read the story", "to": "#" }
+        ] },
+        { "k": "grid", "cols": 2, "min": "16rem", "set": { "gap": 24 }, "c": [
+          { "k": "card", "tone": "grey", "set": { "gap": 8, "padding": 24 }, "c": [
+            { "r": "small", "t": "16 Oct 2026 · Events" },
+            { "r": "heading", "t": "Cultural day in pictures" },
+            { "r": "link", "t": "Read more", "to": "#" }
+          ] },
+          { "k": "card", "tone": "grey", "set": { "gap": 8, "padding": 24 }, "c": [
+            { "r": "small", "t": "14 Oct 2026 · Transport" },
+            { "r": "heading", "t": "A new school bus route" },
+            { "r": "link", "t": "Read more", "to": "#" }
+          ] }
+        ] }
+      ] } },
+
+    { "id": "news-headlines-only", "name": "Three headlines without pictures", "pattern": "B22",
+      "tree": { "k": "section", "center": true, "set": { "paddingTop": 80, "paddingBottom": 80, "paddingLeft": 24, "paddingRight": 24, "gap": 40 }, "c": [
+        { "r": "title", "t": "In the news" },
+        { "k": "grid", "cols": 3, "min": "15rem", "set": { "gap": 24, "responsive": { "tabletPortrait": { "fitMost": 1 } } }, "c": [
+          { "k": "card", "tone": "soft", "set": { "gap": 8, "padding": 24 }, "c": [
+            { "r": "small", "t": "15 Oct 2026 · Debate" },
+            { "r": "heading", "t": "Debate team wins the state final" },
+            { "r": "link", "t": "Read more", "to": "#" }
+          ] },
+          { "k": "card", "tone": "soft", "set": { "gap": 8, "padding": 24 }, "c": [
+            { "r": "small", "t": "10 Oct 2026 · Announcement" },
+            { "r": "heading", "t": "PTA meeting on Saturday 24 October" },
+            { "r": "link", "t": "Read more", "to": "#" }
+          ] },
+          { "k": "card", "tone": "soft", "set": { "gap": 8, "padding": 24 }, "c": [
+            { "r": "small", "t": "6 Oct 2026 · Reading" },
+            { "r": "heading", "t": "Reading week: a book a day" },
+            { "r": "link", "t": "Read more", "to": "#" }
+          ] }
+        ] }
+      ] } },
+
+    { "id": "news-head-teacher-letter", "name": "A letter from the head teacher beside a portrait", "pattern": "B22",
+      "tree": { "k": "section", "tone": "soft", "set": { "paddingTop": 96, "paddingBottom": 96, "paddingLeft": 24, "paddingRight": 24, "gap": 40 }, "c": [
+        { "k": "row", "set": { "gap": 48, "align": "center" }, "c": [
+          { "k": "stack", "set": { "gap": 16, "width": "fill", "minWidth": "16rem" }, "c": [
+            { "r": "eyebrow", "t": "From the head teacher" },
+            { "r": "title", "t": "A term to be proud of" },
+            { "r": "body", "t": "Dear parents, this half term our students won the state debate final, opened a new science lab and earned a 98% credit pass in WAEC. Thank you for all you do at home." },
+            { "r": "small", "t": "Mrs Adebayo, Head Teacher · 17 Oct 2026" },
+            { "r": "button", "t": "Read the letter", "to": "#" }
+          ] },
+          { "r": "image", "photo": "head-teacher", "alt": "The head teacher smiling in her office", "set": { "width": "fill", "minWidth": "16rem", "ratio": "4 / 5", "responsive": { "phone": { "order": -1 } } } }
+        ] }
+      ] } },
+
+    { "id": "news-bento-five", "name": "One big story among four small ones", "pattern": "B22",
+      "tree": { "k": "section", "set": { "paddingTop": 96, "paddingBottom": 96, "paddingLeft": 24, "paddingRight": 24, "gap": 40 }, "c": [
+        { "r": "title", "t": "What's happening" },
+        { "k": "grid", "cols": 4, "min": "", "set": { "gap": 16 }, "c": [
+          { "k": "stack", "tone": "photo", "photo": "news-1", "set": { "colSpan": 2, "rowSpan": 2, "minHeight": 456, "justify": "end", "padding": 24, "gap": 8 }, "c": [
+            { "r": "small", "t": "15 Oct 2026 · Debate" },
+            { "r": "heading", "t": "Our debate team wins the state final" },
+            { "r": "link", "t": "Read more", "to": "#" }
+          ] },
+          { "k": "stack", "tone": "photo", "photo": "event-sports-day", "set": { "minHeight": 220, "justify": "end", "padding": 16 }, "c": [
+            { "r": "small", "t": "Sports day results" }
+          ] },
+          { "k": "stack", "tone": "photo", "photo": "graduation", "set": { "minHeight": 220, "justify": "end", "padding": 16 }, "c": [
+            { "r": "small", "t": "98% in WAEC" }
+          ] },
+          { "k": "stack", "tone": "photo", "photo": "students-lab", "set": { "minHeight": 220, "justify": "end", "padding": 16 }, "c": [
+            { "r": "small", "t": "New science lab" }
+          ] },
+          { "k": "stack", "tone": "photo", "photo": "event-cultural-day", "set": { "minHeight": 220, "justify": "end", "padding": 16 }, "c": [
+            { "r": "small", "t": "Cultural day" }
+          ] }
+        ] }
+      ] } }
+  ]
+}
