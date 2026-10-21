@@ -19,7 +19,7 @@ const tx = (page: Page, id: string) => page.evaluate((id) => { const m = new DOM
 /** The welcome stack's blocks, in order, by their words. */
 const stackOrder = (page: Page, stack: string) => page.evaluate((s) => Array.from(document.querySelector(`[data-box-id="${CSS.escape(s)}"]`)!.querySelectorAll(":scope > [data-box-id]")).map((k) => (k.textContent || "").trim().slice(0, 12)), stack);
 
-async function lift(page: Page) {
+async function schoolHome(page: Page) {
   await clearSite(page, undefined, { phoneScreen: true });
   await pressHeader(page, "Add page");
   const d = page.getByRole("dialog", { name: T.addPageTitle });
@@ -27,6 +27,10 @@ async function lift(page: Page) {
   await d.getByRole("button", { name: /^Add School home,/ }).click();
   await page.getByText(/Open day on Saturday/).first().waitFor();
   await page.waitForTimeout(600);
+}
+
+async function lift(page: Page) {
+  await schoolHome(page);
   const ids = await page.evaluate(() => {
     // by their WORDS — the deepest box holding them (a block may sit in a band of its own); the stack is the box of four lines
     const leaf = (re: RegExp) => Array.from(document.querySelectorAll("[data-box-id]")).find((e) => re.test((e.textContent || "").trim()) && !e.querySelector("[data-box-id]"))!;
@@ -135,4 +139,55 @@ test("LE-15n (3) · with reduce motion nothing slides or glides — it is placed
   const during = await tx(page, quote);
   expect(transition, "no slide").toBe("none");
   expect(during, "no glide: in its place at once").toEqual({ x: 0, y: 0, a: 1 });
+});
+
+/**
+ * LE15n-d2 (the user, 2026-10-21: "Reorder; hold still = inside"). A SECTION carried over the body of the section below it moves it
+ * down the page — they slide apart — and only HOLDING STILL there (drag.intoHoldMs) puts it inside. Before: over a section's middle
+ * the carried one went inside it at once, and nothing slid (reproduced by hand on the user's 1536 × 864, le15n-d-05).
+ */
+async function carrySection(page: Page) {
+  await page.setViewportSize({ width: 1600, height: 2400 }); // both sections whole on screen — no auto-scroll in the way
+  await schoolHome(page);
+  // the page's lines are row bands (scaffolding); a section is the one block of its band
+  const s = await page.evaluate(() => {
+    const root = document.querySelector("[data-box-id]")!, bands = Array.from(root.querySelectorAll(":scope > [data-box-id]")) as HTMLElement[];
+    const body = bands.filter((k) => !k.querySelector("header, footer") && k.getBoundingClientRect().height > 200);
+    const sec = (band: Element) => band.querySelector(":scope > [data-box-id]")!.getAttribute("data-box-id")!;
+    body[1].scrollIntoView({ block: "start" });
+    return { root: root.getAttribute("data-box-id")!, a: sec(body[1]), b: sec(body[2]), bBand: body[2].getAttribute("data-box-id")! };
+  });
+  await page.waitForTimeout(400);
+  const A = await rectOf(page, s.a), B = await rectOf(page, s.b);
+  const from = { x: A.x + A.w / 2, y: A.y + A.h / 2 }, to = { x: from.x, y: B.y + B.h * 0.6 }; // down the middle (a side strip means beside), into the lower half of B: after it
+  await page.mouse.move(from.x, from.y); await page.mouse.down();
+  for (let k = 1; k <= 16; k++) { await page.mouse.move(from.x, from.y + ((to.y - from.y) * k) / 16); await page.waitForTimeout(25); }
+  await page.waitForTimeout(200);
+  return s;
+}
+/** Which of the page's lines holds each block (-1: none). */
+const lineOf = (page: Page, root: string, ids: string[]) => page.evaluate(({ root, ids }) => { const lines = Array.from(document.querySelector(`[data-box-id="${CSS.escape(root)}"]`)!.querySelectorAll(":scope > [data-box-id]")); return ids.map((id) => lines.findIndex((l) => l.getAttribute("data-box-id") === id || !!l.querySelector(`:scope > [data-box-id="${CSS.escape(id)}"]`))); }, { root, ids });
+
+test("LE15n-d2 · a section carried over the next section's middle: they slide apart, nothing goes inside, nothing outlined", async ({ page }) => {
+  const { bBand } = await carrySection(page);
+  const slid = await tx(page, bBand);
+  const outlined = await page.evaluate(() => Array.from(document.querySelectorAll("[data-box-id]:hover")).filter((e) => getComputedStyle(e).outlineStyle !== "none").length);
+  await page.keyboard.press("Escape"); await page.mouse.up(); await page.waitForTimeout(500);
+  expect(slid.y, "the section below rises to open the place after it").toBeLessThan(-20);
+  expect(outlined, "LE15n-d5 · no block under the pointer is outlined while one is carried").toBe(0);
+});
+
+test("LE15n-d2 · letting go there moves the section after it, on the page", async ({ page }) => {
+  const { root, a, b } = await carrySection(page);
+  await page.mouse.up(); await page.waitForTimeout(LAYOUT.drag.dropMs + 400);
+  const [la, lb] = await lineOf(page, root, [a, b]);
+  expect(la, "still a section of the page, on a line of its own").toBeGreaterThanOrEqual(0);
+  expect(la, "after the section it was carried over").toBe(lb + 1);
+});
+
+test("LE15n-d2 · held still over the section, it goes inside it", async ({ page }) => {
+  const { a, b } = await carrySection(page);
+  await page.waitForTimeout(LAYOUT.drag.intoHoldMs + 300);
+  await page.mouse.up(); await page.waitForTimeout(LAYOUT.drag.dropMs + 400);
+  expect(await page.evaluate(({ a, b }) => document.querySelector(`[data-box-id="${CSS.escape(b)}"]`)!.contains(document.querySelector(`[data-box-id="${CSS.escape(a)}"]`)), { a, b }), "inside the section it was held over").toBe(true);
 });

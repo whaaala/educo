@@ -66,3 +66,15 @@ Feature: Drag that feels like picking it up — smooth, instant, never mechanica
   Scenario: Every move is said to a screen reader (LE-15n, KEYBOARD AND SCREEN READERS)
     When a block is moved — by the arrow keys, the bar's arrows, its menu or a drop
     Then the page says where it now is, in plain words: "Moved · Below · Text: Mrs Ngozi…"
+  # ── LE15n-d2, decided by the user 2026-10-21 ("Reorder; hold still = inside") ──
+
+  Scenario: A section carried over another section moves it up or down the page (LE15n-d2)
+    Given a page of sections made through the UI
+    When I carry a section over the middle of the section below it
+    Then the sections slide apart — the one below rises to open the place after it — and nothing goes inside it
+    And letting go there puts the carried section after it, on the page itself, beside its sections
+
+  Scenario: Holding still over a section puts the carried one inside it (LE15n-d2)
+    When I carry a section over another section and hold still there for config/layout.json drag.intoHoldMs
+    Then the sections slide back and the place shown is inside that section
+    And letting go puts the carried section inside it, as before

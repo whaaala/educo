@@ -86,7 +86,7 @@ export const COLUMN_FLOORS_REM: Readonly<{ reflowFloorRem: number; handFloorRem:
 /** The editor's edge-drag thresholds (RULE CFG, L5-3) — see `resize.$comment` in config/layout.json. */
 export const RESIZE: Readonly<{ hugSnapPx: number; neighbourMinTracks: number; minRowPx: number; wrapPullPx: number }> = LAYOUT.resize;
 /** How a block drag feels (RULE CFG, LE-15n) — see `drag.$comment` in config/layout.json. */
-export const DRAG: Readonly<{ activatePx: number; fingerHoldMs: number; previewMaxPx: number; sourceOpacity: number; slideMs: number; dropMs: number; ease: string; holdPx: number; scrollMaxPx: number; scrollRampMs: number }> = LAYOUT.drag;
+export const DRAG: Readonly<{ activatePx: number; fingerHoldMs: number; previewMaxPx: number; sourceOpacity: number; slideMs: number; dropMs: number; ease: string; holdPx: number; intoHoldMs: number; scrollMaxPx: number; scrollRampMs: number }> = LAYOUT.drag;
 /** The Educo web app's breakpoints (Tailwind's xs / sm / md / lg / xl / 2xl), in px — the same numbers its classes use. */
 export const WEB_SCREEN_PX: Readonly<Record<keyof typeof LAYOUT.webApp.screens, number>> = LAYOUT.webApp.screens;
 /** How the Page check names each rung's screens. */

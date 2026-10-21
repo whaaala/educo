@@ -1165,6 +1165,7 @@ export default function BoxCanvas({
       requestAnimationFrame(() => (document.querySelector("[data-canvas-scroller]") ?? window).dispatchEvent(new Event("scroll")));
     }
     blockDragging = !!id; // the chrome's own listeners rest meanwhile — a variable, not an attribute on <body> (that re-styles the whole page)
+    document.querySelector(`[data-box-id="${CSS.escape(rootRef.current.id)}"]`)?.toggleAttribute("data-carrying", !!id); // LE15n-d5: the page's blocks only
     if (!id) document.removeEventListener("keydown", onDragEsc, true);
     const el = id ? document.querySelector<HTMLElement>(`[data-box-id="${CSS.escape(id)}"]`) : null;
     if (!el || !id) return;
@@ -1199,7 +1200,8 @@ export default function BoxCanvas({
     if (copy && arm) placeCopy(copy, arm.startX - carryRef.current.gx, arm.startY - carryRef.current.gy);
   };
   type Carry = { id: string; copy: HTMLElement | null; scale: number; home: DOMRect; gx: number; gy: number; parentId: string | null; kids: HTMLElement[]; axis: "x" | "y" | null;
-    from: number; zoom: number; starts: number[]; ends: number[]; sc: HTMLElement | null; sx0: number; sy0: number; slid: boolean; line: DOMRect | null; kidIds: string[] };
+    from: number; zoom: number; starts: number[]; ends: number[]; sc: HTMLElement | null; sx0: number; sy0: number; slid: boolean; line: DOMRect | null; kidIds: string[];
+    hold?: { k: number; x: number; y: number; at: number; timer: number } };
   const carryRef = useRef<Carry | null>(null);
   /** Its own line's blocks where they were at the lift, moved by however far the editor has scrolled since. */
   const carriedLine = (c: Carry) => { const d = c.axis === "x" ? (c.sc?.scrollLeft ?? 0) - c.sx0 : (c.sc?.scrollTop ?? 0) - c.sy0; return { starts: c.starts.map((s) => s - d), ends: c.ends.map((e) => e - d) }; };
@@ -2092,6 +2094,18 @@ export default function BoxCanvas({
     const ty = at ? at.top : prev ? prev.bottom : pg?.bottom ?? 0;
     return { target: t, rect: { left: (pg?.left ?? 0) + 4, top: ty - 1.5, width: Math.max(8, (pg?.width ?? 0) - 8), height: 3, inside: false }, moveWidth: "100%" };
   };
+  /** LE15n-d2 (the user, 2026-10-21: "Reorder; hold still = inside") · a section carried over another section's body moves it up or
+   *  down the page; only held still over it for `DRAG.intoHoldMs` does it go inside. Elsewhere the middle of a block that holds
+   *  others is inside at once, as before. No move comes while the pointer is still, so the page is asked again when the hold is up. */
+  const intoHeld = (c: Carry, k: number, x: number, y: number): boolean => {
+    if (c.parentId !== rootRef.current.id) return true;
+    const h = c.hold;
+    if (h && h.k === k && Math.hypot(x - h.x, y - h.y) <= DRAG.holdPx) return performance.now() - h.at >= DRAG.intoHoldMs;
+    if (h) clearTimeout(h.timer);
+    const timer = window.setTimeout(() => { const p = dragPtRef.current; if (carryRef.current === c && p) onDragMove({ clientX: p.x, clientY: p.y }); }, DRAG.intoHoldMs);
+    c.hold = { k, x, y, at: performance.now(), timer };
+    return false;
+  };
   const dropAt = (x: number, y: number, draggingId: string | null): Drop | null => {
     // NEAREST-SLOT while ARRANGING within the current parent: as long as the cursor is anywhere inside the
     // dragged block's own parent, snap to the nearest slot among its siblings (you don't have to aim at an
@@ -2116,7 +2130,7 @@ export default function BoxCanvas({
           const holds = isContainer(findByIdLocal(rootRef.current, c.kidIds[k]) ?? ({} as BoxNode));
           if (pos < starts[k] + strip) index = k;
           else if (pos > ends[k] - strip) index = k + 1;
-          else if (!holds) index = pos < (starts[k] + ends[k]) / 2 ? k : k + 1;
+          else if (!holds || !intoHeld(c, k, x, y)) index = pos < (starts[k] + ends[k]) / 2 ? k : k + 1;
         }
         if (index != null) return { target: { parentId: c.parentId, index }, rect: { left: 0, top: 0, width: 0, height: 0, inside: false } };
         if (c.slid) { slide(c.kids, c.kids.map(() => 0), c.axis, c.zoom, 0, DRAG.ease); c.slid = false; } // inside: back to the page as it is, at once
@@ -5220,7 +5234,9 @@ export default function BoxCanvas({
         // 337: `dragenter <button>`, `dragleave <div>`, `dragleave <button>`, and no `dragover` after) — the browser then had
         // no accepted target and cancelled the drop: the marker showed, nothing was added, 3 runs of 4. Where a drop lands
         // is worked out from the canvas coordinates (`computeDrop`), so the hints need not be hit at all while one is carried.
-        "body[data-box-drag-in] [data-ph] *,body[data-box-drag-in] [data-gridghost],body[data-box-drag-in] [data-gridghost] *{pointer-events:none !important}" }} />
+        "body[data-box-drag-in] [data-ph] *,body[data-box-drag-in] [data-gridghost],body[data-box-drag-in] [data-gridghost] *{pointer-events:none !important}" +
+        // LE15n-d5 · WHILE A BLOCK IS CARRIED, NOTHING UNDER THE POINTER IS OUTLINED — the chip and the line say where it goes
+        "[data-carrying] [data-box-id]:hover{outline:none !important}" }} />
       {/* Hover & focus (Interactions 1a). One stylesheet for the whole tree, scoped per block by its
           `data-box-id`, because a hover cannot be expressed as an inline style. The rules come from the SAME
           emitter the export uses, so what you hover in the builder is what a visitor gets. */}

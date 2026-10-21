@@ -736,7 +736,14 @@ lets go. The chip beside the pointer names the place in plain words: **Above · 
 
 **The page makes room.** Along its own stack or row, the blocks between where it was and where it will land slide aside
 to open its place, and the faded block moves into it, so she sees the page as it will be before she lets go. Over the
-middle of a box that holds other blocks, it goes inside that box instead, and a line shows where. At an edge that several
+middle of a box that holds other blocks, it goes inside that box instead, and a line shows where.
+
+**A section moves up and down the page.** When Maya carries a whole section over another section, the sections swap
+places as she goes. Over the top half of the other one, hers goes above it; over the bottom half, below it. She can
+carry it the whole way down the page without aiming at a thin edge. To put her section *inside* another one instead,
+she **holds still** over it for a moment (about half a second): the sections slide back, and the line shows the place
+inside. While she carries anything, the outline a block normally shows under the pointer is put away, so the only
+things telling her where it will land are the chip and the line. At an edge that several
 boxes share (a section's top is also its first row's top), it goes beside the outermost one. Nothing she drags can land
 above the page's header or below its footer: the line, or the gap, shows it just inside them.
 
