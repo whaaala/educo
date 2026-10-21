@@ -236,6 +236,10 @@
     "caption": "Caption",
     "captionPlaceholder": "Words under the picture"
   },
+  "drop": {
+    "$comment": "WHERE A DRAGGED BLOCK WILL GO, IN PLAIN WORDS, on the chip under the pointer (LE15l-ao, the user 2026-10-21: \"Outermost + say it\"): \"Above · Section: Hello, and welcome\".",
+    "above": "Above", "below": "Below", "before": "Before", "after": "After", "into": "Into", "page": "Page", "sep": " · ", "moved": "Moved"
+  },
   "selection": {
     "$comment": "THE SELECTED BLOCK'S CHROME, IN PLAIN WORDS (BATCH LE-15k, the user's Q4 2026-10-20: \"Size first, space on hover\"): what an edge under the pointer says, what a space says when the pointer is in it, the toolbar's switch that shows every space at once (touch has no hover), its key, and the bar that offers one card instead of all (Q3).",
     "tipHeight": "Drag to change the height", "tipWidth": "Drag to change the width", "tipSize": "Drag to change the size",

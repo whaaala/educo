@@ -23,7 +23,7 @@ import {
   floatBox, unfloatBox, bringToFront, bringForward, sendBackward, sendToBack,
   resolveResponsive, updateBoxResponsive, clearOverride, hasOverride,
   gridColumns, setColumnFraction, pinBlockedBy, fixedBlockedBy, blockedByLabel, pinScopeWords, isFloating,
-  isSectionContentIn, sectionSpaceOf, sectionPlaceIn, insertSlot, pageEnd, addAnnouncementBar, defaultWhere, addInsideParent, placeSharing, retrackGridAt, type InsertWhere, isContainer, outerSpaceDefaults, spanAt, setSpan, lineUpWithGrid, linesAt, setLinesAt, fullWidthAt, setFreeInset, fitStepAt, fillsRows, coversCell, fillHostOf,
+  isSectionContentIn, sectionSpaceOf, sectionPlaceIn, insertSlot, pageEnd, addAnnouncementBar, whereDefault, whereChoices, addInsideParent, placeSharing, retrackGridAt, type InsertWhere, outerSpaceDefaults, spanAt, setSpan, lineUpWithGrid, linesAt, setLinesAt, fullWidthAt, setFreeInset, fitStepAt, fillsRows, coversCell, fillHostOf,
   gridAutoFit, parentFlowOf, canWrapWords, canOverlapUp, regionSpan,
 } from "@/lib/box-model";
 import { blockForKind } from "@/lib/box-presets";
@@ -798,9 +798,9 @@ export default function BoxDemoPage() {
   // LE15l-5 (the user 2026-10-20: "Show it while a grid is selected"): the page or a grid selected draws the
   // page grid too; the "Show layout guides" switch still draws it whatever is selected
   const gridChosen = !!selected && (selected.id === root.id || selected.layout === "grid"); // not every block ON the page grid: nearly all are, which is "always on" — not the user's choice
-  const whereFor = (selId: string | null): InsertWhere => (whereChoice && whereChoice.for === selId ? whereChoice.where : defaultWhere(root, selId));
-  /** The panel's "Where" choices for what is selected: Inside only for something that can hold blocks. None with no selection. */
-  const whereOptions: InsertWhere[] = selected ? ["before", "after", ...(isContainer(selected) ? ["inside" as const] : []), "start", "end"] : [];
+  const whereFor = (selId: string | null): InsertWhere => (whereChoice && whereChoice.for === selId ? whereChoice.where : whereDefault(root, selId));
+  /** The panel's "Where" choices for what is selected: only what each does (LE15l-am), Inside only for something that can hold blocks. */
+  const whereOptions: InsertWhere[] = selected ? whereChoices(root, selected.id) : [];
   const bulk = selectedIds.length > 1;
   // Each preview width edits its OWN layer. This line used to read
   //   device === "mobile" ? "mobile" : device === "tablet" ? "tablet" : "base"

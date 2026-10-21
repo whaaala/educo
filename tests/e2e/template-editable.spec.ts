@@ -254,5 +254,73 @@ async function besideTheHeading(page: Page, slowFonts: boolean) {
   await page.keyboard.press("Control+z"); await page.waitForTimeout(600);
   expect(await page.evaluate((band) => Array.from(document.querySelector(`[data-box-id="${CSS.escape(band)}"]`)?.children ?? []).filter((c) => c.hasAttribute("data-box-id")).length, band), "one Ctrl+Z takes the Stack away").toBe(1);
 }
+/** The page's top-level blocks (each band's one block), and where an id sits: on the page, or inside the header / footer. */
+const topBlocks = (page: Page) => page.evaluate(() => { const s = JSON.parse(localStorage.getItem("educo_box_site_v1")!); const r = s.pages[s.pages.length - 1].root; return (r.children as { id: string; children?: { id: string }[] }[]).map((b) => (b.children?.length === 1 ? b.children[0].id : b.id)); });
+const inside = (page: Page, outer: string, id: string) => page.evaluate(([o, i]) => !!document.querySelector(`[data-box-id="${CSS.escape(o)}"] [data-box-id="${CSS.escape(i)}"]`), [outer, id]);
+
+test("LE15l-ao · a section dragged to the top edge of the header lands under it, as its line and chip say", async ({ page }) => {
+  test.skip(await coarse(page), "a finger's bar is docked with no grip (E5b-8); the probe's long press covers it");
+  test.setTimeout(90_000);
+  await schoolHome(page);
+  const [hdr, , second] = await topBlocks(page);
+  await page.evaluate(() => (document.querySelector("[data-canvas-scroller]") ?? document.scrollingElement)!.scrollTo(0, 0));
+  await selectById(page, second);
+  await page.evaluate(() => (document.querySelector("[data-canvas-scroller]") ?? document.scrollingElement)!.scrollTo(0, 0)); await page.waitForTimeout(300);
+  const g = (await page.getByRole("toolbar", { name: "Block toolbar" }).getByLabel("Drag to move").boundingBox())!;
+  const h = await rectOf(page, hdr); const tx = h.x + h.w / 2, ty = h.y + 6;
+  await page.mouse.move(g.x + g.width / 2, g.y + g.height / 2); await page.mouse.down();
+  for (let i = 1; i <= 14; i++) { await page.mouse.move(g.x + ((tx - g.x) * i) / 14, g.y + ((ty - g.y) * i) / 14); await page.waitForTimeout(25); }
+  await page.waitForTimeout(300); await page.mouse.move(tx, ty);
+  // where it is SHOWN while held: a line, or (LE-15n (3), along the page's line of sections) its faded self slid into the place
+  await page.waitForTimeout(300);
+  const shown = await page.evaluate((id) => { const m = Array.from(document.body.children).find((e) => e.getAttribute("aria-hidden") === "true" && getComputedStyle(e).position === "fixed" && /shadow-\[0_0_10px/.test(e.className)); const q = m?.getBoundingClientRect(); return q && q.width > 0 ? q.y + q.height / 2 : document.querySelector(`[data-box-id="${CSS.escape(id)}"]`)!.getBoundingClientRect().top; }, second);
+  const words = await page.evaluate(() => document.querySelector("[data-drop-words]")?.textContent ?? null);
+  const h1 = await rectOf(page, hdr);
+  await page.mouse.move(tx, ty); await page.mouse.up(); await page.waitForTimeout(600);
+  expect(await inside(page, hdr, second), "never inside the shared header").toBe(false);
+  expect((await topBlocks(page)).slice(0, 2), "just under the header").toEqual([hdr, second]);
+  expect(Math.abs(shown - (h1.y + h1.h)), `shown just under the header (at ${shown}, the header ends ${h1.y + h1.h})`).toBeLessThan(4);
+  expect(words ?? "", "the chip says where, in plain words").toMatch(/^Above · /);
+});
+
+test("LE15l-ao · a block from the Blocks panel dropped on the top edge of the header goes under it", async ({ page }) => {
+  test.setTimeout(90_000);
+  await schoolHome(page);
+  const [hdr] = await topBlocks(page);
+  await page.evaluate(() => (document.querySelector("[data-canvas-scroller]") ?? document.scrollingElement)!.scrollTo(0, 0)); await page.waitForTimeout(300);
+  const before = await topBlocks(page); const h = await rectOf(page, hdr);
+  await dropKind(page, "container", h.x + h.w * 0.6, h.y + 4);
+  const after = await topBlocks(page);
+  const added = after.filter((id) => !before.includes(id));
+  expect(added.length, `one new block on the page, not inside the header (${after.length} vs ${before.length})`).toBe(1);
+  expect(after.indexOf(added[0]), "just under the header").toBe(1);
+});
+
+test("LE15l-ap · a link dragged along its own full menu row moves, and its line stands beside", async ({ page }) => {
+  test.skip(await coarse(page), "a finger's bar is docked with no grip (E5b-8); the probe's long press covers it");
+  test.setTimeout(90_000);
+  await clearSite(page, undefined, { phoneScreen: true });
+  await pressHeader(page, "Add page");
+  const d = page.getByRole("dialog", { name: T.addPageTitle });
+  await d.getByRole("textbox").fill("Landing 2");
+  await d.getByRole("button", { name: /^Add Landing page,/ }).click();
+  const menu = page.locator("header nav").first(); await menu.waitFor(); await page.waitForTimeout(600);
+  const names = () => menu.evaluate((n) => Array.from(n.querySelectorAll("[data-box-id]:not(:has([data-box-id]))")).map((e) => (e.textContent || "").trim()).filter(Boolean));
+  const ids = await menu.evaluate((n) => Object.fromEntries(Array.from(n.querySelectorAll("[data-box-id]:not(:has([data-box-id]))")).map((e) => [(e.textContent || "").trim(), e.getAttribute("data-box-id")!])));
+  expect(await names(), "precondition: the menu as the template makes it").toEqual(["Home", "About", "Admissions", "News", "Contact"]);
+  await selectById(page, ids.About);
+  const g = (await page.getByRole("toolbar", { name: "Block toolbar" }).getByLabel("Drag to move").boundingBox())!;
+  const s = await rectOf(page, ids.Admissions); const tx = s.x + s.w - 6, ty = s.y + s.h / 2;
+  await page.mouse.move(g.x + g.width / 2, g.y + g.height / 2); await page.mouse.down();
+  for (let i = 1; i <= 14; i++) { await page.mouse.move(g.x + ((tx - g.x) * i) / 14, g.y + ((ty - g.y) * i) / 14); await page.waitForTimeout(25); }
+  await page.waitForTimeout(300); await page.mouse.move(tx, ty);
+  // LE-15n (3), signed 2026-10-21: along its own line the neighbours slide apart to show the place — Admissions makes room
+  await page.waitForTimeout(300);
+  const shifted = await page.evaluate((id) => new DOMMatrix(getComputedStyle(document.querySelector(`[data-box-id="${CSS.escape(id)}"]`)!).transform).m41, ids.Admissions);
+  await page.mouse.move(tx, ty); await page.mouse.up(); await page.waitForTimeout(600);
+  expect(shifted, "Admissions slid aside to open About's new place").toBeLessThan(-20);
+  expect(await names(), "About moved past Admissions").toEqual(["Home", "Admissions", "About", "News", "Contact"]);
+});
+
 test("LE15l-y · a Stack dropped beside a heading in a narrow column shares the line without squeezing the heading", ({ page }) => besideTheHeading(page, false));
 test("LE15l-y · …and when it is dropped while the page's fonts are still loading", ({ page }) => besideTheHeading(page, true));

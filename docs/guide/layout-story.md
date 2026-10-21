@@ -714,12 +714,42 @@ alone on its line moves the whole line one step down the page. A block sharing a
 to go, and Undo puts a move back. The same moves work from a keyboard: the arrow keys. The arrows are always there, so
 nothing on the page ever needs a drag.
 
-**…or she picks it up with her finger.** Maya holds her finger still on the results table for half a second. Her phone
-gives a small tick, and the block lifts: a chip with its name rides just above her finger, where she can see it, and a
-line on the page shows where it will land. She slides it up under the heading and lets go; it lands on the line. Near
-the top or the bottom of the screen the page scrolls by itself, faster the nearer the edge, so a block can travel the
-whole page. A quick tap still only selects, and a quick swipe still scrolls the page. Nothing is picked up by accident.
-The **grip** at the start of the toolbar does the same without the wait: drag it and the block comes with it.
+**…or she picks it up with her finger.** Maya holds her finger still on the results table for a quarter of a second. Her
+phone gives a small tick, and the block lifts: a copy of it, in its own shape, follows her finger, and a chip just above
+her finger says what it is and where it will go ("Above · Heading: Sports day"). The table she lifted stays in place,
+faded, and as she slides it up the blocks in between move aside to open its place. She lets go and it glides in. Near the
+top or the bottom of the screen the page scrolls by itself, gently at first and faster the nearer the edge, so a block can
+travel the whole page. A quick tap still only selects, and a quick swipe still scrolls the page. Nothing is picked up by
+accident. The **grip** at the start of the toolbar does the same without the wait: drag it and the block comes with it.
+
+### Picking a block up and putting it down
+
+On a laptop, Maya moves things the way she moves a file on her desktop: she **presses on the block and drags it**. There
+is no handle to find first. Five pixels of movement and the block lifts; a click that does not move still only selects it,
+and puts the caret in its words, so she can start typing straight away.
+
+[![The head's quote carried below her name: the name has moved up to make room, the quote's place shows faded, a copy of it follows the pointer, and the chip says "Above · Button: Read the full welcome"](img/story-drag-lift.webp)](img/story-drag-lift.webp)
+
+**The block comes with her.** A copy of it follows the pointer in its own shape, raised with a shadow, never larger
+than 280 pixels across, so it never hides where she is aiming. The block itself stays where it was, faded, until she
+lets go. The chip beside the pointer names the place in plain words: **Above · Button: Read the full welcome**.
+
+**The page makes room.** Along its own stack or row, the blocks between where it was and where it will land slide aside
+to open its place, and the faded block moves into it, so she sees the page as it will be before she lets go. Over the
+middle of a box that holds other blocks, it goes inside that box instead, and a line shows where. At an edge that several
+boxes share (a section's top is also its first row's top), it goes beside the outermost one. Nothing she drags can land
+above the page's header or below its footer: the line, or the gap, shows it just inside them.
+
+**Letting go is soft.** The block glides from where she let go into its place, and the others into theirs, in about a
+fifth of a second. **Escape** puts it back where it was and changes nothing. With "reduce motion" set on her computer,
+nothing slides or glides: everything is placed at once.
+
+**Selecting words is still a drag, once she asks for it.** A double-click in the words (or **Edit text**, **Enter**, **F2**)
+means she is editing them: from then, pressing and dragging in those words selects words. **Escape** or choosing another
+block ends that.
+
+**It is said, too.** Every move, by a drag, the toolbar's arrows, the ⋮ menu or the arrow keys, is announced to a screen
+reader in the same words: "Moved · Below · Text: Mrs Ngozi Okafor".
 
 [![On a 393px phone, a Divider lifted by a long press: its chip rides above the finger and a line shows where it will land](img/story-phone-lift.webp)](img/story-phone-lift.webp)
 

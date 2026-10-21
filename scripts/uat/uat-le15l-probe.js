@@ -17,6 +17,9 @@ const ONLY = (process.argv.find((a) => a.startsWith('--only=')) || '').slice(7).
 const LEAF = { text: 'blockquote', image: 'figure', list: 'ol', button: 'button' };
 const MEANING = require('../../config/inspector.json').meaning;
 const WIDTH = +((process.argv.find((a) => a.startsWith('--w=')) || '').slice(4) || 1600); // LE15l-e: at 1280 the open panel covers left sides
+// LE15l-aj: under the editor's dock line a person is a FINGER — the Blocks panel is a sheet over the page (select, "Where the
+// block goes", tap the tile), the Inspector is a tab ("Expand inspector"), and a docked bar has no grip (a long press lifts)
+const FINGER = WIDTH < require('../../config/layout.json').editor.dockFrom;
 const ONLY_G = (process.argv.find((a) => a.startsWith('--g=')) || '').slice(4); // re-measure only what a fix touched: one gesture by name
 const TIER = +((process.argv.find((a) => a.startsWith('--tier=')) || '').slice(7) || 1); // 1 the templates · 2 every section · 3 every component
 const results = [];
@@ -68,7 +71,12 @@ async function kinds(page) {
   return cand;
 }
 
-const esc = async (page) => { await page.keyboard.press('Escape'); await page.keyboard.press('Escape'); await page.keyboard.press('Escape'); await sleep(page, 200); };
+const esc = async (page) => {
+  await page.keyboard.press('Escape'); await page.keyboard.press('Escape'); await page.keyboard.press('Escape'); await sleep(page, 200);
+  const shut = page.getByRole('button', { name: 'Collapse inspector', exact: true }); // LE15l-aj: a tab over the page, put away to reach the next block
+  if (FINGER && (await shut.isVisible().catch(() => false))) { await shut.click(); await sleep(page, 300); }
+};
+const openInspector = async (page) => { const x = page.getByRole('button', { name: 'Expand inspector', exact: true }); if (await x.isVisible().catch(() => false)) { await x.click(); await sleep(page, 400); } };
 /** Back to the page as it was: Ctrl+Z until it is, at most 4 presses; how many it took. */
 async function undoTo(page, base) {
   await esc(page); if ((await sig(page)) === base) return 0;
@@ -88,12 +96,51 @@ async function pick(page, id) {
 const bar = (page) => page.getByRole('toolbar', { name: 'Block toolbar' });
 /** The Blocks panel open on "All" — it reopens on the tab it was left on (Sections, in tier 2): LE15l-n. */
 async function blocksPanel(page) { await H.panel(page, true); const all = page.getByRole('tab', { name: 'All', exact: true }).first(); if (await all.isVisible().catch(() => false)) { await all.click(); await sleep(page, 300); } }
-async function carry(page, from, x, y) {
-  await page.mouse.move(from.x + from.width / 2, from.y + from.height / 2); await page.mouse.down();
-  const sx = from.x + from.width / 2, sy = from.y + from.height / 2;
-  for (let i = 1; i <= 18; i++) { await page.mouse.move(sx + ((x - sx) * i) / 18, sy + ((y - sy) * i) / 18); await sleep(page, 25); }
-  await page.mouse.move(x, y); await sleep(page, 250); await page.mouse.move(x, y); await page.mouse.up(); await sleep(page, 300); await settle(page);
+const mouseHand = (page, at) => ({ at, down: async () => { await page.mouse.move(at.x, at.y); await page.mouse.down(); }, move: (x, y) => page.mouse.move(x, y), up: () => page.mouse.up() });
+/** A finger held 650 ms (the editor lifts at 500), then moved — real touch events, as tests/e2e/phone-editing.spec.ts sends. */
+function fingerHand(page, at) {
+  let cdp = null; // opened on the press, so a gesture that never presses leaves nothing open
+  const t = (type, p) => cdp.send('Input.dispatchTouchEvent', { type, touchPoints: p ? [{ x: Math.round(p.x), y: Math.round(p.y), id: 1 }] : [] });
+  return { at, down: async () => { cdp = await page.context().newCDPSession(page); await t('touchStart', at); await sleep(page, 650); }, move: (x, y) => t('touchMove', { x, y }), up: async () => { await t('touchEnd'); await cdp.detach().catch(() => {}); } };
 }
+/** What a person holds to move the selected block: its bar's grip, or — a docked bar has none (E5b-8) — a long press inside it. */
+async function hand(page) {
+  const g = bar(page).getByLabel('Drag to move');
+  if (await g.isVisible().catch(() => false)) { const r = await g.boundingBox(); return mouseHand(page, { x: r.x + r.width / 2, y: r.y + r.height / 2 }); }
+  const id = FINGER && (await selectedId(page)); if (!id) return null;
+  const at = await page.evaluate((id) => { // a point of the block on screen, clear of the docked bar, its handles and its "+"
+    const me = document.querySelector(`[data-box-id="${CSS.escape(id)}"]`); if (!me) return null;
+    const r = me.getBoundingClientRect(), tb = document.querySelector('[role="toolbar"][aria-label="Block toolbar"]')?.getBoundingClientRect();
+    const top = Math.max(r.top, 64) + 4, bottom = Math.min(r.bottom, tb && tb.top > innerHeight / 2 ? tb.top : innerHeight) - 4;
+    if (bottom <= top) return null;
+    for (const fy of [0.5, 0.3, 0.7, 0.15, 0.85]) for (const fx of [0.5, 0.3, 0.7, 0.15, 0.85]) {
+      const x = r.left + r.width * fx, y = top + (bottom - top) * fy, e = document.elementFromPoint(x, y);
+      if (e && me.contains(e) && !e.closest('[data-handle-hit], [aria-label^="Resize"], [role="toolbar"], button[aria-label^="Add"]')) return { x, y };
+    }
+    return null;
+  }, id);
+  return at && fingerHand(page, at);
+}
+/** Carried by a hand, or by a mouse from the middle of a box (a resize handle). */
+async function carry(page, from, x, y) {
+  const h = from.down ? from : mouseHand(page, { x: from.x + from.width / 2, y: from.y + from.height / 2 });
+  await h.down(); const { x: sx, y: sy } = h.at;
+  for (let i = 1; i <= 18; i++) { await h.move(sx + ((x - sx) * i) / 18, sy + ((y - sy) * i) / 18); await sleep(page, 25); }
+  await h.move(x, y); await sleep(page, 250); await h.move(x, y); await h.up(); await sleep(page, 300); await settle(page);
+}
+/** LE15l-aj · the sheet's way to add: the block selected, "Where the block goes" set, the tile tapped. Null when it was added. */
+async function addWhere(page, b, where) {
+  await pick(page, b.id); await blocksPanel(page);
+  const opt = page.getByRole('group', { name: 'Where the block goes' }).getByRole('button', { name: where, exact: true });
+  if (!(await opt.isVisible().catch(() => false))) { await esc(page); return `no "${where}" under "Where the block goes"`; }
+  await opt.click(); await sleep(page, 200);
+  await page.getByRole('button', { name: 'Add Stack', exact: true }).click(); await sleep(page, 500);
+  const def = page.getByRole('menuitem', { name: 'Default', exact: true }).first(); if (await def.isVisible().catch(() => false)) { await def.click(); await sleep(page, 400); }
+  if (await page.getByRole('dialog', { name: 'Blocks' }).isVisible().catch(() => false)) await page.keyboard.press('Escape');
+  await settle(page); return null;
+}
+/** The page's blocks in reading order, its bands skipped. */
+const order = (r) => { const out = []; walk(r, (n) => { if (!n.rowBand) out.push(n.id); }); return out; };
 
 /** One gesture on one block: do it, judge it, undo it. */
 async function gesture(page, J, kind, b, name, act) {
@@ -108,6 +155,14 @@ async function gesture(page, J, kind, b, name, act) {
   return undo !== -1;
 }
 
+/** LE15l-an · moved past its neighbour? Judged on the block's unit worked out AGAIN after the move (a band may be made anew) and on
+ *  the neighbour it passed — never `null`, which the probe read as n/a: 36 moves at 1280 were hidden that way. */
+function passed(r0, r1, id, w0, dir) {
+  let sib = null; walk(r0, (n) => { if (n.id === w0.parent) sib = (n.children || [])[w0.index + dir]; });
+  const w1 = at(r1, id), ws = sib && where(r1, sib.id);
+  const ok = !!w1 && !!ws && w1.parent === w0.parent && ws.parent === w0.parent && w1.index === ws.index + dir;
+  return { ok, seen: `${w0.index + 1} → ${w1 ? w1.index + 1 : 'GONE'} of ${w0.siblings}, ${!w1 ? 'the block not on the page' : w1.parent === w0.parent ? 'the parent the same' : 'the parent CHANGED'}${ws ? `, its neighbour now ${ws.index + 1}` : ''}` };
+}
 const MOVES = {
   async bar(page, b, dir) {
     await pick(page, b.id); const r0 = await root(page); const u = unit(r0, b.id); const w0 = where(r0, u);
@@ -117,8 +172,8 @@ const MOVES = {
       const btn = bar(page).getByRole('button', { name: n, exact: true });
       if (!(await btn.count())) continue;
       if (!(await btn.isEnabled())) return { ok: false, seen: `"${n}" is there but off (${w0.index + 1} of ${w0.siblings})` };
-      await btn.click({ timeout: 8000 }); await settle(page); const w1 = where(await root(page), u);
-      return { ok: w1 && w1.parent === w0.parent && w1.index === w0.index + dir, seen: `"${n}": index ${w0.index} → ${w1 && w1.index} of ${w0.siblings}` };
+      await btn.click({ timeout: 8000 }); await settle(page); const p = passed(r0, await root(page), b.id, w0, dir);
+      return { ok: p.ok, seen: `"${n}": ${p.seen}` };
     }
     return { ok: false, seen: 'no move arrow on its bar' };
   },
@@ -129,25 +184,31 @@ const MOVES = {
     if (typing) { await page.keyboard.press('Escape'); await sleep(page, 200); }
     const across = (await bar(page).getByRole('button', { name: /Move (left|right)/ }).count()) > 0;
     await page.keyboard.press(across ? (dir > 0 ? 'ArrowRight' : 'ArrowLeft') : (dir > 0 ? 'ArrowDown' : 'ArrowUp')); await settle(page);
-    const w1 = where(await root(page), u);
-    return { ok: w1 && w1.parent === w0.parent && w1.index === w0.index + dir, seen: `${across ? '←→' : '↑↓'}: ${w0.index + 1} → ${w1 && w1.index + 1} of ${w0.siblings}${typing ? ' (the click put the caret in its words; Esc first)' : ''}` };
+    const p = passed(r0, await root(page), b.id, w0, dir);
+    return { ok: p.ok, seen: `${across ? '←→' : '↑↓'}: ${p.seen}${typing ? ' (the click put the caret in its words; Esc first)' : ''}` };
   },
   async grip(page, b, dir) {
     const r0 = await root(page); const u = unit(r0, b.id); const w0 = where(r0, u); let sib = null;
     walk(r0, (n) => { if (n.id === w0.parent) sib = (n.children || [])[w0.index + dir]; });
     if (!sib) return { ok: null, seen: `nothing ${dir > 0 ? 'after' : 'before'} it (${w0.index + 1} of ${w0.siblings})` };
-    await pick(page, b.id); const g = await bar(page).getByLabel('Drag to move').boundingBox(); if (!g) return { ok: false, seen: 'no grip on its bar' };
+    await pick(page, b.id); const g = await hand(page);
+    if (!g && (await rect(page, b.id)).h < 12) return { ok: null, seen: 'a line a few px tall on a docked bar: no grip, too thin to long-press — checked by hand (LE15l-l)' };
+    if (!g) return { ok: false, seen: 'no grip on its bar, and no point of it to long-press' };
     const s = await rect(page, sib.id); const across = Math.abs(s.y - (await rect(page, u)).y) < 4;
     const x = across ? (dir > 0 ? s.x + s.w - 6 : s.x + 6) : s.x + s.w / 2, y = across ? s.y + s.h / 2 : (dir > 0 ? s.y + s.h - 6 : s.y + 6);
     const vh = await page.evaluate(() => innerHeight);
-    if (!across && (y > vh - 8 || y < 60)) { // LE15l-u: past a neighbour taller than the window — held at the edge until its end shows (LE15l-i)
-      const edge = y > vh - 8 ? vh - 6 : 64; await page.mouse.move(g.x + g.width / 2, g.y + g.height / 2); await page.mouse.down();
-      for (let i = 1; i <= 10; i++) { await page.mouse.move(x, g.y + ((edge - g.y) * i) / 10); await sleep(page, 30); }
-      for (let i = 0; i < 160; i++) { const r = await rect(page, sib.id); const end = dir > 0 ? r.y + r.h : r.y; if (end > 80 && end < vh - 40) break; await page.mouse.move(x, edge + (i % 2)); await sleep(page, 50); }
-      const r = await rect(page, sib.id); const ty = dir > 0 ? r.y + r.h - 6 : r.y + 6; for (let i = 1; i <= 6; i++) { await page.mouse.move(x, edge + ((ty - edge) * i) / 6); await sleep(page, 40); }
-      await sleep(page, 250); await page.mouse.up(); await sleep(page, 300); await settle(page);
-    } else await carry(page, g, x, y); const w1 = where(await root(page), u);
-    return { ok: w1 && w1.parent === w0.parent && w1.index === w0.index + dir, seen: `grip past its ${dir > 0 ? 'next' : 'previous'} neighbour: ${w0.index + 1} → ${w1 && w1.index + 1} of ${w0.siblings}, parent ${w1 && w1.parent === w0.parent ? 'the same' : 'CHANGED'}` };
+    // LE15l-an: a target inside the 4rem strip at the canvas's top or bottom scrolls the page under a held pointer (LE15l-i), so the
+    // aim drifted onto another block (reproduced by hand: a footer aimed above a section landed in the stat cell the page scrolled to)
+    if (!across && (y > vh - 90 || y < 140)) { // LE15l-u: past a neighbour taller than the window — held at the edge until its end is clear of the strip
+      const edge = y > vh - 90 ? vh - 6 : 64; await g.down();
+      for (let i = 1; i <= 10; i++) { await g.move(x, g.at.y + ((edge - g.at.y) * i) / 10); await sleep(page, 30); }
+      for (let i = 0; i < 160; i++) { const r = await rect(page, sib.id); const end = dir > 0 ? r.y + r.h : r.y; if (end > 140 && end < vh - 90) break; await g.move(x, edge + (i % 2)); await sleep(page, 50); }
+      const aim = async () => { const r = await rect(page, sib.id); return dir > 0 ? r.y + r.h - 6 : r.y + 6; };
+      let ty = await aim(); for (let i = 1; i <= 6; i++) { await g.move(x, edge + ((ty - edge) * i) / 6); await sleep(page, 40); }
+      for (let k = 0; k < 5; k++) { await sleep(page, 250); const t2 = await aim(); if (Math.abs(t2 - ty) < 2) break; ty = t2; await g.move(x, ty); } // re-aimed once the page is still
+      await g.move(x, ty); await g.up(); await sleep(page, 300); await settle(page);
+    } else await carry(page, g, x, y); const p = passed(r0, await root(page), b.id, w0, dir);
+    return { ok: p.ok, seen: `grip past its ${dir > 0 ? 'next' : 'previous'} neighbour: ${p.seen}` };
   },
   async into(page, b) {
     // into the NEXT section, the way a person drags: both on screen, the block dropped inside a block of that section
@@ -157,9 +218,9 @@ const MOVES = {
     if (!sec) return { ok: null, seen: 'no section after it' };
     await pick(page, b.id);
     await page.evaluate((id) => { const e = document.querySelector(`[data-box-id="${CSS.escape(id)}"]`); const r = e.getBoundingClientRect(); (document.querySelector('[data-canvas-scroller]') || window).scrollBy(0, r.top - 140); }, b.id); await sleep(page, 500);
-    const g = await bar(page).getByLabel('Drag to move').boundingBox(); if (!g) return { ok: false, seen: 'no grip on its bar' };
-    const pt = await page.evaluate((sid) => { const s = document.querySelector(`[data-box-id="${CSS.escape(sid)}"]`); const r = s.getBoundingClientRect(); const y = Math.min(Math.max(r.top + 40, 0), innerHeight - 20); const x = r.left + r.width / 2;
-      const hit = document.elementFromPoint(x, y)?.closest('[data-box-id]'); return { x, y, on: hit && s.contains(hit) ? hit.getAttribute('data-box-id') : null, seen: r.top < innerHeight - 30 }; }, sec);
+    const g = await hand(page); if (!g) return { ok: false, seen: 'no grip on its bar, and no point of it to long-press' };
+    const pt = await page.evaluate(([sid, deep]) => { const s = document.querySelector(`[data-box-id="${CSS.escape(sid)}"]`); const r = s.getBoundingClientRect(); const y = Math.min(Math.max(r.top + deep, 0), innerHeight - 20); const x = r.left + r.width / 2;
+      const hit = document.elementFromPoint(x, y)?.closest('[data-box-id]'); return { x, y, on: hit && s.contains(hit) ? hit.getAttribute('data-box-id') : null, seen: r.top < innerHeight - 30 }; }, [sec, FINGER ? 90 : 40]); // a finger's top strip is 44px: 40 in reads "above it" (E5b)
     if (!pt.seen) return { ok: null, seen: 'the next section is not on screen with it (a drag to the window edge scrolls — not probed)' };
     await carry(page, g, pt.x, pt.y);
     const r1 = await root(page); let inside = false; walk(r1, (n) => { if (n.id === sec) walk(n, (m) => { if (m.id === b.id) inside = true; }); });
@@ -168,7 +229,7 @@ const MOVES = {
   async out(page, b) {
     const sec = await page.evaluate((id) => { const s = document.querySelector(`[data-box-id="${CSS.escape(id)}"]`)?.parentElement?.closest('section'); return s && s.getAttribute('data-box-id'); }, b.id);
     if (!sec) return { ok: null, seen: 'not inside a section' };
-    await pick(page, b.id); const g = await bar(page).getByLabel('Drag to move').boundingBox(); if (!g) return { ok: false, seen: 'no grip on its bar' };
+    await pick(page, b.id); const g = await hand(page); if (!g) return { ok: false, seen: 'no grip on its bar, and no point of it to long-press' };
     const s = await rect(page, sec); const vh = await page.evaluate(() => innerHeight);
     if (s.y + s.h + 3 > vh - 4) return { ok: null, seen: 'the gap under its section is below the window — a drag cannot scroll there (LE15l-i)' };
     await carry(page, g, s.x + s.w / 2, s.y + s.h + 3);
@@ -177,9 +238,19 @@ const MOVES = {
   },
   async beside(page, b, side) {
     const pw = await page.evaluate((id) => { const e = document.querySelector(`[data-box-id="${CSS.escape(id)}"]`); const pg = e.closest('[data-box-id]') && document.querySelector('[data-box-id]'); return [e.getBoundingClientRect().width, e.getBoundingClientRect().height, pg.getBoundingClientRect().width]; }, b.id);
-    if (pw[0] >= pw[2] - 2) return { ok: null, seen: 'it spans the whole page — a Stack goes above or below it, never beside (LE15l-k)' };
+    if (!FINGER && pw[0] >= pw[2] - 2) return { ok: null, seen: 'it spans the whole page — a Stack goes above or below it, never beside (LE15l-k)' };
     if (pw[1] < 12) return { ok: null, seen: `a ${Math.round(pw[1])}px line: selecting it zooms the canvas in (LE15l-l) — checked by hand` };
     const r0 = await root(page); const ids0 = new Set(); walk(r0, (n) => ids0.add(n.id)); const was = await rect(page, b.id);
+    if (FINGER) { // LE15l-aj: the sheet covers the page — Before (left) / After (right), judged by the page's order, and where it is drawn
+      const where = side === 'right' ? 'After' : 'Before'; const no = await addWhere(page, b, where);
+      if (no && was.tag === (where === 'Before' ? 'HEADER' : 'FOOTER')) return { ok: null, seen: `${no}: nothing goes ${where === 'Before' ? 'above the header' : 'below the footer'} (LE11-1), so it is not offered (LE15l-am)` };
+      if (no) return { ok: false, seen: no };
+      const r1 = await root(page), ord = order(r1); const mine = new Set(); walk(r1, (n) => { if (n.id === b.id) walk(n, (m) => mine.add(m.id)); });
+      const i = side === 'right' ? ord.findLastIndex((id) => mine.has(id)) + 1 : ord.indexOf(b.id) - 1; const nb = ord[i];
+      const next = !!nb && !ids0.has(nb); const me = await rect(page, b.id), n = next && (await rect(page, nb));
+      const drawn = !n ? '' : n.y >= me.y + me.h - 4 ? ', drawn under it' : n.y + n.h <= me.y + 4 ? ', drawn above it' : ', drawn beside it';
+      return { ok: next, seen: `Where: ${where} → the Stack ${next ? `is ${where.toLowerCase()} it in the page's order${drawn}` : `is not next to it: the block ${ord.indexOf(b.id) + 1}, the new ${ord.filter((id) => !ids0.has(id)).map((id) => ord.indexOf(id) + 1).join(', ')} of ${ord.length} in the page's order`}` };
+    }
     await blocksPanel(page);
     // LE15l-w: beside a SMALL block (an icon) a person aims in the space beside it — 8px inside a 25px icon is its middle, which
     // honestly reads "above it" (repro 7: the line drawn above, the block landed above)
@@ -198,7 +269,8 @@ const MOVES = {
   },
   async inside(page, b) {
     const r0 = await root(page); const ids0 = new Set(); walk(r0, (n) => ids0.add(n.id));
-    await blocksPanel(page); await H.dropInto(page, 'Stack', b.id); await H.panel(page, false); await sleep(page, 600);
+    if (FINGER) { const no = await addWhere(page, b, 'Inside'); if (no) return { ok: false, seen: no }; } // LE15l-aj
+    else { await blocksPanel(page); await H.dropInto(page, 'Stack', b.id); await H.panel(page, false); await sleep(page, 600); }
     const r1 = await root(page); let within = 0, all = 0; walk(r1, (n) => { if (!ids0.has(n.id)) all++; if (n.id === b.id) walk(n, (m) => { if (!ids0.has(m.id)) within++; }); });
     return { ok: within > 0, seen: `a Stack dropped inside: ${all} new, ${within} inside it${all > within ? ' (some outside it)' : ''}` };
   },
@@ -206,13 +278,15 @@ const MOVES = {
     if ((await rect(page, b.id)).h < 12) return { ok: null, seen: 'a line a few px tall: selecting it zooms the canvas in (LE15l-l) — checked by hand' };
     if (b.cell) return { ok: null, seen: 'a grid cell\'s edges set its columns (rule 19) — moving it along the grid is the page-grid gesture' };
     await pick(page, b.id); const r0 = await rect(page, b.id);
-    const h = await page.locator('[aria-label="Resize left edge"]').first().boundingBox(); if (!h) return { ok: false, seen: 'no left edge to drag' };
+    const h = await page.locator('[aria-label="Resize left edge"]').first().boundingBox({ timeout: 3000 }).catch(() => null);
+    if (!h && FINGER && r0.x < 32 + 22) return { ok: null, seen: `its left edge (x ${Math.round(r0.x)}) is in the screen edge's Back strip — not drawn for a finger (E5d-3, the user's decision E5d-10)` };
+    if (!h) return { ok: false, seen: 'no left edge to drag' };
     await carry(page, h, h.x + h.width / 2 + 120, h.y + h.height / 2); const r1 = await rect(page, b.id);
     const chip = await page.locator('[data-span-live]').innerText().catch(() => '');
     return { ok: r1 && r1.x - r0.x > 40, seen: `left edge dragged 120 right: left ${Math.round(r0.x)} → ${r1 && Math.round(r1.x)}, width ${Math.round(r0.w)} → ${r1 && Math.round(r1.w)}${chip ? ` · "${chip}"` : ''}` };
   },
   async meaning(page, b) {
-    await pick(page, b.id);
+    await pick(page, b.id); await openInspector(page); // LE15l-aj: under 1024 it is a tab, opened first
     const acc = page.getByRole('button', { name: /^Meaning/ }).first();
     if (b.leaf) {
       if (!(await acc.isVisible().catch(() => false))) return { ok: false, seen: `no Meaning for a ${b.leaf}` };
@@ -351,7 +425,7 @@ if (TIER === 3) {
   const worker = async (s) => {
     const pos = [(s % 3) * 620, Math.floor(s / 3) * 480];
     while (queue.length) {
-      const J = queue.shift(); const { browser, page, errs } = await H.open({ headed: true, w: WIDTH, h: 900, pos });
+      const J = queue.shift(); const { browser, page, errs } = await H.open({ headed: true, w: WIDTH, h: 900, pos, touch: FINGER });
       try { await JOBS[J](page, J); } catch (e) { rec(J, 'the job', 'ran to the end', false, e.message.split('\n')[0]); await shot(page, `ERR-${J}`.replace(/[^\w-]+/g, '_')); }
       rec(J, 'the editor', 'no console errors', !errs.length, errs.join(' | ') || 'none');
       await browser.close();

@@ -2,7 +2,7 @@
  * BATCH LE-11 · the header, best-grade. Scenarios: tests/features/components/website/box-builder-header.feature.
  */
 import { describe, it, expect } from "vitest";
-import { createContainer, createElement, makeRowBand, findBox, updateBox, pinCSS, headerMarkers, headerScriptNeeded, awayGone, addAnnouncementBar, insertSlot, underOverHeaderPad, hasAnnouncement, type BoxNode } from "@/lib/box-model";
+import { createContainer, createElement, makeRowBand, findBox, updateBox, pinCSS, headerMarkers, headerScriptNeeded, awayGone, addAnnouncementBar, insertSlot, whereChoices, whereDefault, keepRegions, underOverHeaderPad, hasAnnouncement, type BoxNode } from "@/lib/box-model";
 import { heldTooMuch } from "@/lib/space-check";
 import { setPageRoot, addPage, emptyPageRoot, siteFromRoot, setRegionShown, type BoxSite } from "@/lib/box-site";
 import PAGE_CHECK from "@/config/page-check.json";
@@ -103,6 +103,29 @@ describe("LE11-1 · nothing is put above the header or below the footer by Befor
     expect(insertSlot(r, "ftr", "after")).toEqual({ parentId: r.id, index: 3 });
     expect(insertSlot(r, "b2", "before")).toEqual({ parentId: r.id, index: 2 });
     expect(insertSlot(r, "b2", "after")).toEqual({ parentId: r.id, index: 3 });
+  });
+  it("LE15l-am · the sheet offers no Before on the header and no After on the footer — each did the other's job", () => {
+    const ftr = createContainer("column", { id: "ftr", tag: "footer", children: [link("f1")] });
+    const r = page(makeRowBand([hdr()]), createContainer("column", { id: "b1" }), createContainer("column", { id: "b2" }), makeRowBand([ftr]));
+    expect(whereChoices(r, "hdr")).toEqual(["after", "inside", "start", "end"]);
+    expect(whereChoices(r, "ftr")).toEqual(["before", "inside", "start", "end"]);
+    expect(whereChoices(r, "b2")).toEqual(["before", "after", "inside", "start", "end"]);
+    expect(whereChoices(r, "f1")).toEqual(["before", "after", "start", "end"]); // inside the footer: its own Before / After are honest
+    for (const id of ["hdr", "ftr", "b2", "f1"]) expect(whereChoices(r, id), `${id}: the plain tap's choice is one shown`).toContain(whereDefault(r, id));
+    expect(whereDefault(r, "ftr"), "a plain tap on the footer never says After").not.toBe("after");
+  });
+  it("LE15l-ao · a DRAG keeps the header and footer at the page's ends (the user, 2026-10-21: \"Same rule for drags\")", () => {
+    const ftr = createContainer("column", { id: "ftr", tag: "footer", children: [link("f1"), link("f2")] });
+    const r = page(makeRowBand([hdr()]), createContainer("column", { id: "b1" }), createContainer("column", { id: "b2" }), makeRowBand([ftr]));
+    expect(keepRegions(r, { parentId: r.id, index: 0 }, "b2"), "above the header → just under it").toEqual({ parentId: r.id, index: 1 });
+    expect(keepRegions(r, { parentId: r.id, index: 4 }, "b1"), "below the footer → just above it").toEqual({ parentId: r.id, index: 3 });
+    expect(keepRegions(r, { parentId: "hdr", index: 0 }, "b2"), "into the header from outside → under it").toEqual({ parentId: r.id, index: 1 });
+    expect(keepRegions(r, { parentId: "ftr", index: 0 }, "b1"), "into the footer from outside → above it").toEqual({ parentId: r.id, index: 3 });
+    expect(keepRegions(r, { parentId: r.id, index: 0 }, null), "a new block from the panel too").toEqual({ parentId: r.id, index: 1 });
+    expect(keepRegions(r, { parentId: "ftr", index: 1 }, null), "…but a new block may go INTO the footer, as the sheet's Inside offers (LE15l-q)").toEqual({ parentId: "ftr", index: 1 });
+    expect(keepRegions(r, { parentId: "ftr", index: 2 }, "f1"), "a block of the footer moves within it").toEqual({ parentId: "ftr", index: 2 });
+    expect(keepRegions(r, { parentId: r.id, index: 2 }, "ftr"), "the footer itself still moves").toEqual({ parentId: r.id, index: 2 });
+    expect(keepRegions(r, { parentId: r.id, index: 2 }, "b1"), "between them nothing changes").toEqual({ parentId: r.id, index: 2 });
   });
 });
 

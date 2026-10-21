@@ -19,7 +19,7 @@ import type { SiteTheme } from "@/lib/site-storage";
 import {
   type BoxNode, type BoxType, frameCss, spanAt, setSpan,
   containerStyle, childStyle, marginCSS, leafPaddingCSS, ownSidePadVars, outerSpaceCSS, pageBandInset, pagePinCover, sectionContent, sizeToCSS, u, baseUnit, floatingReserve, floatStacksOnMobile, createContainer, createElement, createComponent,
-  updateBox, deleteBox, insertBox, pageEnd, moveBlock, canMoveBlock, moveAxis, duplicateBox, moveBox, cloneBox, findParent, isAncestor, isContainer, containerLabel, widthPct, stackWithBlock, rowWithBlock, fitBand, PILL, blockTypography,
+  updateBox, deleteBox, insertBox, pageEnd, keepRegions, moveBlock, canMoveBlock, moveAxis, duplicateBox, moveBox, cloneBox, findParent, isAncestor, isContainer, containerLabel, widthPct, stackWithBlock, rowWithBlock, fitBand, PILL, blockTypography,
   isFloating, floatBox, unfloatBox, groupBoxes, ungroupBoxes, groupAround, moveBlocks, copyStyle, pasteStyle, bringToFront, sendToBack, bringForward, sendBackward, packRowLines, allocateLine, type LineFollower,
   shouldTakeMirrorBox, mirrorFlushSides, edgeSwipeSides, hostSizedFor, type MirrorBox, type MirrorChase, fadedPaint, boxOpacity, backgroundCss, treePaintLayerCss, treeBgVideoCss, radiusCSS, isClipped, SHADOW_CSS, videoEmbedSrc, sanitizeCssDeclarations, expandScopedCss, ACCORDION_CSS_PARTS, itemOverrideCss, itemHasOverride, itemNumberVars, richBody, componentTextCss, componentBoxCss, bgShowThroughCss, resizeTopEdge, blockContainmentCss, alertToastCss, treeHasToast, treeHasFixedHold, accordionClasses, bandClasses, hasSiteMeasure, advancedCssStyle, applyBoxSize, sectionSpacePad, sectionSpaceOf, alertActionsHTML, hugsContent, itemFloatContextCss, COMPONENT_ITEM_SEL, clampContentScale, MIN_CONTENT_SCALE, isMultiItemComponent, comfortableWidth, remLen, rootFontPx, isDefiniteLen, addItemAfter, duplicateItem, duplicateChildItem, removeItem, removeChildItem, moveItem, moveChildItem, updateItem, updateChildItem, ALERT_SEVERITY_ICON, alertPartInline, alertIconInline, collectAlertItemStyles,
   type Breakpoint, resolveResponsive, updateBoxResponsive, treePinArrivalCss, floatHoldCSS, canvasFixedStyle, capturesFixed, imageSizing, fillsRowsAnywhere, coversCellAnywhere, fillHostOf, importPhoto, traceOutline, followsOutline, pictureTarget, tintFor, figcaptionStyle, BUTTON_RESET, treeItemEffectsCss, itemNeedsClass, floatZIndex, gridPlacementAt, masonryMeasureAttr, masonryMeasurePass, mirrorMeasuresNow, baseUnitParts, pinStackMarker, pinStackGroupMarker, pinStackPass, pinArrivalMarker, pinArrivalPass, headerMarkers, headerPass, underOverHeaderPad, isPager, pagerStripCss, pagerNavHTML, selectionChain, textLen, typoRole, typoRootVars, typoCascadeCss, bandEdgeCSS, LINK_COLOR_CSS, treeGridQueryCss, TYPE_UNIT_PROPERTY_CSS, stripsAnywhere,
@@ -38,7 +38,8 @@ import { colorToCSS } from "@/components/shared/ColorPalettePicker";
 import Button from "@/components/shared/Button";
 import { COMPONENT_CSS, bgVideoCss } from "@/lib/educo-ui/components";
 import { CanvasBgVideo } from "@/components/website/box/BackgroundVideo";
-import { CURRENT_LINK_CSS, EDITOR_DOCK_PX, layoutCss, mediaBelow, RESIZE, RUNG_MEASURE, RUNG_PX } from "@/lib/educo-ui/layout";
+import { CURRENT_LINK_CSS, DRAG, EDITOR_DOCK_PX, layoutCss, mediaBelow, RESIZE, RUNG_MEASURE, RUNG_PX } from "@/lib/educo-ui/layout";
+import { flyHome, glide, makeLiftedCopy, placeCopy, previewScale, slide, slideOffsets, unslide } from "./drag-feel";
 import { pageIdFromHref } from "@/lib/box-site";
 import { SECTION_DRAG_TYPE } from "@/lib/section-library";
 
@@ -571,6 +572,8 @@ const SIDE_WORD: Record<SpaceSide, string> = { Top: "top", Right: "right", Botto
  * Each handle is a keyboard slider (arrows step, Shift bigger, Home → 0); the Inspector is the path without dragging.
  * ponytail: a handle whose side is too short to hold it beside the resize handles (a one-line text's top) is left to the Inspector.
  */
+/** LE-15n · true while a block is being dragged: the selected block's space bands are put away and stop re-measuring meanwhile. */
+let blockDragging = false;
 function SpaceBands({ showAll = false, blockId, node, baseFont, colors, gapColor, pad, margin, gap, spaceFrom, sectionSpace = {} }: {
   showAll?: boolean; // LE15k-p: every space at once (the toolbar's "Show spacing", Alt+P) — otherwise only the one the pointer is in
   sectionSpace?: { top?: number; bottom?: number }; // LE15i-5 / 8: a page section's space set by the site or shared (`sectionSpaceOf`) — none on any other block
@@ -607,7 +610,7 @@ function SpaceBands({ showAll = false, blockId, node, baseFont, colors, gapColor
   useEffect(() => {
     // a resize or a drag paints straight onto the page with no render here: follow the pointer while a button is down
     let raf = 0; const soon = () => { cancelAnimationFrame(raf); raf = requestAnimationFrame(measure); };
-    const onMove = (e: PointerEvent) => { if (e.buttons) soon(); };
+    const onMove = (e: PointerEvent) => { if (e.buttons && !blockDragging) soon(); }; // LE-15n: not while a block is dragged (put away)
     window.addEventListener("pointermove", onMove, true); window.addEventListener("pointerup", soon, true); window.addEventListener("transitionend", soon, true);
     return () => { cancelAnimationFrame(raf); window.removeEventListener("pointermove", onMove, true); window.removeEventListener("pointerup", soon, true); window.removeEventListener("transitionend", soon, true); };
   }, [measure]);
@@ -874,8 +877,8 @@ function GuideLines({ color, rows }: { color: string; rows: boolean }) {
     // …and a change of the GRID itself (E6-11, the user 2026-10-15: "it doesn't show me straight away"): more columns or another row
     // height leave the guides' box the same size, so nothing re-measured and the lines stayed as they were until the page scrolled
     const mo = new MutationObserver(soon); if (g) mo.observe(g, { attributes: true, childList: true });
-    window.addEventListener("scroll", soon, true); window.addEventListener("resize", soon); window.addEventListener("transitionend", soon, true);
-    return () => { cancelAnimationFrame(raf); ro.disconnect(); mo.disconnect(); window.removeEventListener("scroll", soon, true); window.removeEventListener("resize", soon); window.removeEventListener("transitionend", soon, true); };
+    const onScroll = () => { if (!blockDragging) soon(); }; // LE-15n: at rest while a block is dragged; measured once when it lands
+    return () => { cancelAnimationFrame(raf); ro.disconnect(); mo.disconnect(); window.removeEventListener("scroll", onScroll, true); window.removeEventListener("resize", soon); window.removeEventListener("transitionend", soon, true); };
   }, []); // once: a ResizeObserver, scroll, resize and the transition re-measure it (measuring every render would loop on its own state)
   if (!m) return null;
   const { clip } = m, from = Math.max(m.top, clip.top), to = Math.min(m.bottom, clip.bottom);
@@ -976,7 +979,8 @@ function ChromeMirror({ blockId, children }: { blockId: string; children: ReactN
     window.addEventListener("transitionrun", onTransitionRun, true);
     window.addEventListener("transitionend", onTransitionDone, true);
     window.addEventListener("transitioncancel", onTransitionDone, true);
-    window.addEventListener("scroll", onMove, true);
+    const onScroll = () => { if (!blockDragging) onMove(); }; // LE-15n: at rest while a block is dragged
+    window.addEventListener("scroll", onScroll, true);
     window.addEventListener("resize", onMove);
     window.addEventListener("pointerdown", onDown, true);
     window.addEventListener("pointermove", onDrag, true);
@@ -987,7 +991,7 @@ function ChromeMirror({ blockId, children }: { blockId: string; children: ReactN
       window.removeEventListener("transitionrun", onTransitionRun, true);
       window.removeEventListener("transitionend", onTransitionDone, true);
       window.removeEventListener("transitioncancel", onTransitionDone, true);
-      window.removeEventListener("scroll", onMove, true);
+      window.removeEventListener("scroll", onScroll, true);
       window.removeEventListener("resize", onMove);
       window.removeEventListener("pointerdown", onDown, true);
       window.removeEventListener("pointermove", onDrag, true);
@@ -1149,9 +1153,106 @@ export default function BoxCanvas({
   const selKey = (selectedIds ?? [selectedId]).join(" "); // LE15k-u: the selection is a set
   useEffect(() => { setOneOrAll(null); }, [selKey, currentPageId]); // the offer is about the drag just made — another block or page ends it // LE15k-p (the user's Q4): every space of the selected block at once — touch has no hover
   const [resizeCursor, setResizeCursor] = useState<string | null>(null); // cursor shown by the full-screen overlay while resizing (so it never disappears)
-  const [dragId, setDragId] = useState<string | null>(null); // box being dragged (after the move threshold)
-  const [dragGhost, setDragGhost] = useState<{ x: number; y: number; w: number; label: string; finger?: boolean } | null>(null); // floating preview that follows the cursor
-  const [dropRect, setDropRect] = useState<{ left: number; top: number; width: number; height: number; inside: boolean } | null>(null); // insertion line / drop-inside highlight (viewport coords)
+  /** The block being dragged (after the move threshold): faded where it was, the selected block's space put away — WRITTEN to their
+   *  elements and put back on release, so lifting a block renders nothing (LE-15n: one render of the canvas took 1.2 s on a slow
+   *  phone, and the block took that long to lift). */
+  const liftedRef = useRef<{ el: HTMLElement; opacity: string; hidden: HTMLElement[] } | null>(null);
+  const setDragId = (id: string | null) => {
+    const was = liftedRef.current;
+    if (was) {
+      was.el.style.opacity = was.opacity; was.hidden.forEach((h) => { h.style.visibility = ""; }); liftedRef.current = null;
+      // the chrome rested while it was dragged: one scroll, once it has landed, and every part of it measures again
+      requestAnimationFrame(() => (document.querySelector("[data-canvas-scroller]") ?? window).dispatchEvent(new Event("scroll")));
+    }
+    blockDragging = !!id; // the chrome's own listeners rest meanwhile — a variable, not an attribute on <body> (that re-styles the whole page)
+    if (!id) document.removeEventListener("keydown", onDragEsc, true);
+    const el = id ? document.querySelector<HTMLElement>(`[data-box-id="${CSS.escape(id)}"]`) : null;
+    if (!el || !id) return;
+    // the selected block's chrome — its bar, handles and outline — and its space bands: put away while it is carried
+    const hidden = Array.from(document.querySelectorAll<HTMLElement>("[data-chrome-mirror], [role='toolbar'][aria-label='Block toolbar'], [data-space-band], [data-space-handle], [data-space-live], [data-space-shade]"));
+    hidden.forEach((h) => { h.style.visibility = "hidden"; });
+    liftedRef.current = { el, opacity: el.style.opacity, hidden };
+    el.style.opacity = String(DRAG.sourceOpacity);
+    document.addEventListener("keydown", onDragEsc, true);
+    // LE-15n (2) · THE BLOCK ITSELF FOLLOWS: a copy of it in its own shape (no larger than `previewMaxPx`), held where it was grabbed
+    const r = el.getBoundingClientRect(), arm = dragArm.current, scale = previewScale(r.width, r.height, DRAG.previewMaxPx);
+    const host = document.querySelector<HTMLElement>(`[data-box-id="${CSS.escape(rootRef.current.id)}"]`);
+    const copy = host ? makeLiftedCopy(el, host, scale, CHROME_Z.dragGhost - 1) : null;
+    // LE-15n (3) · ITS OWN LINE, measured ONCE: a stack's column or a row on one line slides apart to show its new place
+    // a block alone in its band moves AS the band: its line is the one the band sits in (a section among the page's sections)
+    let unitId = id, par = findParent(rootRef.current, id);
+    while (par && par.parent.rowBand && (par.parent.children?.length ?? 0) === 1 && par.parent.id !== rootRef.current.id) { unitId = par.parent.id; par = findParent(rootRef.current, unitId); }
+    const pEl = par ? document.querySelector<HTMLElement>(`[data-box-id="${CSS.escape(par.parent.id)}"]`) : null;
+    const unitEl = document.querySelector<HTMLElement>(`[data-box-id="${CSS.escape(unitId)}"]`) ?? el;
+    const kids = pEl ? directKids(pEl) : [], rects = kids.map((k) => k.getBoundingClientRect());
+    const inRow = rects.length > 1 && rects.every((q, i) => !i || (q.top < rects[i - 1].bottom && rects[i - 1].top < q.bottom && q.left >= rects[i - 1].right - 1));
+    const inColumn = rects.length > 1 && rects.every((q, i) => !i || q.top >= rects[i - 1].bottom - 1);
+    const axis: "x" | "y" | null = inRow ? "x" : inColumn ? "y" : null; // from what is drawn: the page grid's sections stand one per row (a column); a grid of cells is neither
+    const sc = document.querySelector<HTMLElement>("[data-canvas-scroller]");
+    carryRef.current = {
+      id, copy, scale, home: r, gx: ((arm?.startX ?? r.left) - r.left) * scale, gy: ((arm?.startY ?? r.top) - r.top) * scale,
+      parentId: par?.parent.id ?? null, kids, axis, from: kids.indexOf(unitEl), zoom: el.offsetWidth ? r.width / el.offsetWidth : 1,
+      line: pEl?.getBoundingClientRect() ?? null, kidIds: kids.map((k) => k.getAttribute("data-box-id") ?? ""),
+      starts: rects.map((q) => (axis === "x" ? q.left : q.top)), ends: rects.map((q) => (axis === "x" ? q.right : q.bottom)),
+      sc, sx0: sc?.scrollLeft ?? 0, sy0: sc?.scrollTop ?? 0, slid: false,
+    };
+    if (copy && arm) placeCopy(copy, arm.startX - carryRef.current.gx, arm.startY - carryRef.current.gy);
+  };
+  type Carry = { id: string; copy: HTMLElement | null; scale: number; home: DOMRect; gx: number; gy: number; parentId: string | null; kids: HTMLElement[]; axis: "x" | "y" | null;
+    from: number; zoom: number; starts: number[]; ends: number[]; sc: HTMLElement | null; sx0: number; sy0: number; slid: boolean; line: DOMRect | null; kidIds: string[] };
+  const carryRef = useRef<Carry | null>(null);
+  /** Its own line's blocks where they were at the lift, moved by however far the editor has scrolled since. */
+  const carriedLine = (c: Carry) => { const d = c.axis === "x" ? (c.sc?.scrollLeft ?? 0) - c.sx0 : (c.sc?.scrollTop ?? 0) - c.sy0; return { starts: c.starts.map((s) => s - d), ends: c.ends.map((e) => e - d) }; };
+  /** Esc puts it down where it was (LE-15n, the signed checklist: "Esc or a cancel glides it home"). */
+  const onDragEsc = (e: KeyboardEvent) => { if (e.key !== "Escape" || !dragIdRef.current) return; e.preventDefault(); e.stopPropagation(); gestureStopRef.current?.(); dragIdRef.current = null; onDragUp(); };
+  const gestureStopRef = useRef<(() => void) | null>(null);
+  const glideRef = useRef<{ seen: Map<string, DOMRect>; carried: { id: string; scale: number }; at: number; kids: HTMLElement[]; copy: HTMLElement | null } | null>(null);
+  // THE GLIDE runs once the rewritten page is drawn (before it is painted): the slides and the copy go, and each block glides from
+  // where it was seen to where it now is (LE-15n (3))
+  useLayoutEffect(() => {
+    const g = glideRef.current; if (!g) return; glideRef.current = null;
+    unslide(g.kids); g.copy?.remove();
+    if (performance.now() - g.at < 1000) glide(g.seen, DRAG.dropMs, DRAG.ease, g.carried);
+  });
+  /**
+   * LE-15n · NOTHING RENDERS PER FRAME WHILE DRAGGING (the user, 2026-10-21: "it seems very lagging… it needs to be smooth… instant").
+   * Measured: 120 moves of a section took 14.7 s (a person's 2 s) — each frame set React state to move the chip and the line, the
+   * whole canvas rendered, and the selected block's space bands re-measured after it, forcing a layout of the page (4.5 of 9.7 s
+   * in the profile). The chip and the line are now WRITTEN to their elements; React renders only when one appears or goes.
+   */
+  type Ghost = { x: number; y: number; w: number; label: string; finger?: boolean; to?: string };
+  type DropBox = { left: number; top: number; width: number; height: number; inside: boolean };
+  const ghostRef = useRef<Ghost | null>(null), ghostElRef = useRef<HTMLDivElement | null>(null), ghostLabelRef = useRef<HTMLSpanElement | null>(null);
+  const dropBoxRef = useRef<DropBox | null>(null), dropElRef = useRef<HTMLDivElement | null>(null);
+  const [portalReady, setPortalReady] = useState(false); // the chip and the line live in <body>, which a server render has not got
+  useEffect(() => { setPortalReady(true); }, []);
+  const paintGhost = (el: HTMLDivElement, g: Ghost) => {
+    // A finger's chip rides 32px ABOVE it (E-5b, WordPress) — under the finger it could not be seen at all.
+    const x = g.finger ? Math.max(8, Math.min(g.x - g.w / 2, innerWidth - g.w - 8)) : g.x + 14, y = g.finger ? g.y - 32 : g.y + 14;
+    el.style.transform = `translate3d(${x}px, ${y}px, 0)${g.finger ? " translateY(-100%)" : ""}`;
+    const words = el.querySelector<HTMLElement>("[data-drop-words]");
+    if (words && words.textContent !== (g.to ?? "")) { words.textContent = g.to ?? ""; words.hidden = !g.to; }
+  };
+  const paintDrop = (el: HTMLDivElement, r: DropBox) => {
+    Object.assign(el.style, { left: `${r.left}px`, top: `${r.top}px`, width: `${r.width}px`, height: `${r.height}px` });
+    el.className = r.inside ? "rounded-lg outline outline-2 outline-dashed outline-indigo-500 bg-indigo-500/10" : "rounded-full bg-indigo-500 shadow-[0_0_10px_rgba(99,102,241,0.9)]";
+  };
+  const setDragGhost = (g: Ghost | null) => {
+    ghostRef.current = g;
+    const el = ghostElRef.current, label = ghostLabelRef.current;
+    if (!el) return;
+    if (!g) { el.style.display = "none"; if (label) label.textContent = ""; return; }
+    el.style.display = "flex"; el.style.width = `${g.w}px`;
+    if (label && label.textContent !== g.label) label.textContent = g.label;
+    paintGhost(el, g);
+  };
+  const setDropRect = (r: DropBox | null) => {
+    dropBoxRef.current = r;
+    const el = dropElRef.current;
+    if (!el) return;
+    if (!r) { el.style.display = "none"; el.className = ""; return; }
+    el.style.display = "block"; paintDrop(el, r);
+  };
   const [snapLines, setSnapLines] = useState<{ left: number; top: number; width: number; height: number }[]>([]); // alignment guides shown while free-dragging a floating box (viewport coords)
   const dragArm = useRef<{ id: string; startX: number; startY: number; w: number; h: number; label: string; finger?: boolean } | null>(null); // armed on grip mousedown (or a finger's grip / long-press, E-5b); upgrades to a real drag past the threshold
   const dragIdRef = useRef<string | null>(null);       // mirror of dragId for the document listeners
@@ -1297,13 +1398,14 @@ export default function BoxCanvas({
       setToolbarDocked((prev) => { const next = !!window.matchMedia?.(`${mediaBelow(RUNG_PX.tabletPortrait)}, ${mediaBelow(EDITOR_DOCK_PX)} and (pointer: coarse)`).matches; return next === prev ? prev : next; });
     };
     measure();
-    window.addEventListener("scroll", measure, true);
+    const onScroll = () => { if (!blockDragging) measure(); }; // LE-15n: at rest while a block is dragged (it rendered the canvas each frame)
+    window.addEventListener("scroll", onScroll, true);
     window.addEventListener("resize", measure);
     // …AND WHEN THE PAGE ITSELF CHANGES SIZE (c-20). Docking the blocks panel refits the page (to 77% in a 1520px window)
     // and choosing a screen size changes its width — both by a transition, neither a scroll nor a resize. The block moved
     // up under the 36px line and the bar stayed above it, over the top edge of the page, until the block was re-selected.
     window.addEventListener("transitionend", measure, true);
-    return () => { window.removeEventListener("scroll", measure, true); window.removeEventListener("resize", measure); window.removeEventListener("transitionend", measure, true); };
+    return () => { window.removeEventListener("scroll", onScroll, true); window.removeEventListener("resize", measure); window.removeEventListener("transitionend", measure, true); };
   }, [soloId]);
 
   // Style/geometry writes (resize, drag, nudge) go to the active breakpoint's override when not on base,
@@ -1469,7 +1571,7 @@ export default function BoxCanvas({
     };
     // One write per frame at most: a scroll fires far faster than the screen refreshes, and this only moves
     // an inline variable — there is nothing to be gained by doing it twice between paints.
-    const onScroll = () => { if (!raf) raf = requestAnimationFrame(write); };
+    const onScroll = () => { if (!raf && !blockDragging) raf = requestAnimationFrame(write); }; // LE-15n: at rest while a block is dragged
     write();
     const src: HTMLElement | Window = scroller ?? window;
     src.addEventListener("scroll", onScroll, { passive: true });
@@ -1697,10 +1799,10 @@ export default function BoxCanvas({
         const k2 = along.indexOf(e.key);
         if (k2 >= 0) { const next = moveBlocks(root, ids, k2 ? 1 : -1); if (next !== root) onChange(next); e.preventDefault(); }
       }
-      else if (e.key === "ArrowUp" && !e.altKey && id && !rn.locked && (floating || moveAxis(root, id) === "vertical")) { if (held) nudgeHeld(0, -stepPx); else if (floating) { if (!pastPage(0, -stepPx)) onChange(writeBox(root, id, { top: round1((rn.top ?? 0) - stepPct("y")) })); } else onChange(moveBlock(root, id, -1)); e.preventDefault(); }
-      else if (e.key === "ArrowDown" && !e.altKey && id && !rn.locked && (floating || moveAxis(root, id) === "vertical")) { if (held) nudgeHeld(0, stepPx); else if (floating) onChange(writeBox(root, id, { top: round1((rn.top ?? 0) + stepPct("y")) })); else onChange(moveBlock(root, id, 1)); e.preventDefault(); }
-      else if (e.key === "ArrowLeft" && !e.altKey && id && !rn.locked && (floating || moveAxis(root, id) === "horizontal")) { if (held) nudgeHeld(-stepPx, 0); else if (floating) { if (!pastPage(-stepPx, 0)) onChange(writeBox(root, id, { left: round1((rn.left ?? 0) - stepPct("x")) })); } else onChange(moveBlock(root, id, -1)); e.preventDefault(); }
-      else if (e.key === "ArrowRight" && !e.altKey && id && !rn.locked && (floating || moveAxis(root, id) === "horizontal")) { if (held) nudgeHeld(stepPx, 0); else if (floating) { if (!pastPage(stepPx, 0)) onChange(writeBox(root, id, { left: round1((rn.left ?? 0) + stepPct("x")) })); } else onChange(moveBlock(root, id, 1)); e.preventDefault(); }
+      else if (e.key === "ArrowUp" && !e.altKey && id && !rn.locked && (floating || moveAxis(root, id) === "vertical")) { if (held) nudgeHeld(0, -stepPx); else if (floating) { if (!pastPage(0, -stepPx)) onChange(writeBox(root, id, { top: round1((rn.top ?? 0) - stepPct("y")) })); } else moved(moveBlock(root, id, -1), id); e.preventDefault(); }
+      else if (e.key === "ArrowDown" && !e.altKey && id && !rn.locked && (floating || moveAxis(root, id) === "vertical")) { if (held) nudgeHeld(0, stepPx); else if (floating) onChange(writeBox(root, id, { top: round1((rn.top ?? 0) + stepPct("y")) })); else moved(moveBlock(root, id, 1), id); e.preventDefault(); }
+      else if (e.key === "ArrowLeft" && !e.altKey && id && !rn.locked && (floating || moveAxis(root, id) === "horizontal")) { if (held) nudgeHeld(-stepPx, 0); else if (floating) { if (!pastPage(-stepPx, 0)) onChange(writeBox(root, id, { left: round1((rn.left ?? 0) - stepPct("x")) })); } else moved(moveBlock(root, id, -1), id); e.preventDefault(); }
+      else if (e.key === "ArrowRight" && !e.altKey && id && !rn.locked && (floating || moveAxis(root, id) === "horizontal")) { if (held) nudgeHeld(stepPx, 0); else if (floating) { if (!pastPage(stepPx, 0)) onChange(writeBox(root, id, { left: round1((rn.left ?? 0) + stepPct("x")) })); } else moved(moveBlock(root, id, 1), id); e.preventDefault(); }
       // ── ENTER / F2 BEGINS EDITING — the way IN that Escape's way OUT always implied ──
       // Every other operation on this canvas had a shortcut, but editing the WORDS — the commonest act in a
       // website builder — was mouse-only, so a keyboard user could select a heading and never type into it.
@@ -1710,11 +1812,12 @@ export default function BoxCanvas({
       // while an editable holds the focus.
       else if ((e.key === "Enter" || e.key === "F2") && id && !rn.locked) {
         const host = ownEditable(id);
-        if (host) { host.focus(); caretToEnd(host); e.preventDefault(); }
+        if (host) { wordsRef.current = id; host.focus(); caretToEnd(host); e.preventDefault(); } // LE-15n: its words now take a press-and-drag
       }
       // Escape steps OUT one level — the other half of "click goes inside". From the outermost block (or from
       // nothing in particular) it clears the selection, so Escape still always ends somewhere predictable.
       else if (e.key === "Escape") {
+        wordsRef.current = null; // LE-15n: out of words-mode
         const chain = id ? selectionChain(root, id) : [];
         const at = chain.indexOf(id ?? "");
         select(at > 0 ? chain[at - 1] : null);
@@ -1745,6 +1848,37 @@ export default function BoxCanvas({
     if (n.type === "embed") return "Embed";
     return t ? `Text: ${t.slice(0, 18)}` : "Text";
   };
+  /** LE15l-ao · where a drop goes, in plain words for the chip ("Above · Section: Hello, and welcome"; config/inspector.json `drop`). */
+  /** A block in plain words: its kind, and for a box the heading it holds ("Section: Hello, and welcome"). */
+  const blockName = (n: BoxNode): string => {
+    const one = n.rowBand && n.children?.length === 1 ? n.children[0] : n;
+    let h = ""; const walk = (m: BoxNode) => { if (!h && m.type === "heading" && m.text?.trim()) h = m.text.trim(); (m.children ?? []).forEach(walk); };
+    if (isContainer(one)) walk(one);
+    return h ? `${dragLabel(one)}: ${h.slice(0, 22)}` : dragLabel(one);
+  };
+  /** Where a block now IS in `tree`, in the same words (LE-15n: every move said to a screen reader — "Moved · Below · Text: …"). */
+  const placeWords = (tree: BoxNode, id: string): string => {
+    const W = INSPECTOR_WORDS.drop;
+    let unit = id, p = findParent(tree, id);
+    while (p && p.parent.rowBand && (p.parent.children?.length ?? 0) === 1 && p.parent.id !== tree.id) { unit = p.parent.id; p = findParent(tree, unit); }
+    if (!p) return "";
+    const kids = p.parent.children ?? [], i = kids.findIndex((k) => k.id === unit), across = p.parent.direction === "row";
+    if (i > 0) return `${across ? W.after : W.below}${W.sep}${blockName(kids[i - 1])}`;
+    if (i + 1 < kids.length) return `${across ? W.before : W.above}${W.sep}${blockName(kids[i + 1])}`;
+    return `${W.into}${W.sep}${p.parent.id === tree.id ? W.page : blockName(p.parent)}`;
+  };
+  /** A move made — by the keys, the bar, the menu or a drop — saved, and said. */
+  const moved = (next: BoxNode, id: string) => { onChange(next); setSpoken(`${INSPECTOR_WORDS.drop.moved}${INSPECTOR_WORDS.drop.sep}${placeWords(next, id)}`); };
+  const dropWords = (t: { parentId: string; index: number }, movingId: string | null): string => {
+    const W = INSPECTOR_WORDS.drop, parent = findByIdLocal(rootRef.current, t.parentId);
+    if (!parent) return "";
+    const name = blockName;
+    const kids = (parent.children ?? []).filter((k) => k.id !== movingId), at = (parent.children ?? []).slice(0, t.index).filter((k) => k.id !== movingId).length;
+    const pEl = document.querySelector<HTMLElement>(`[data-box-id="${CSS.escape(t.parentId)}"]`), across = !!pEl && getComputedStyle(pEl).flexDirection.startsWith("row");
+    if (at < kids.length) return `${across ? W.before : W.above}${W.sep}${name(kids[at])}`;
+    if (kids.length) return `${across ? W.after : W.below}${W.sep}${name(kids[kids.length - 1])}`;
+    return `${W.into}${W.sep}${parent.id === rootRef.current.id ? W.page : name(parent)}`;
+  };
   const directKids = (el: HTMLElement) => Array.from(el.querySelectorAll<HTMLElement>(":scope > [data-box-id]"));
   type Drop = { target: { parentId: string; index: number }; rect: { left: number; top: number; width: number; height: number; inside: boolean }; moveWidth?: string; wrapUnder?: { id: string; before: boolean }; wrapBeside?: { id: string; before: boolean } };
 
@@ -1758,6 +1892,7 @@ export default function BoxCanvas({
    * drawn at (`columnFloorRem`, as `childStyle` draws it), plus its half gaps. `tree` is the tree WITH the newcomer, so the floors
    * are the ones the line will have; a block not on the page yet (the newcomer) has the rem floor alone.
    */
+  const floorsMemo = useRef<{ root: BoxNode | null; fonts?: string; m: Map<string, { floors: Record<string, number>; gapPct: number }> }>({ root: null, m: new Map() });
   const lineFloorsPct = (tree: BoxNode, bandId: string): { floors: Record<string, number>; gapPct: number } => {
     const band = findByIdLocal(tree, bandId), bandEl = document.querySelector<HTMLElement>(`[data-box-id="${CSS.escape(bandId)}"]`);
     const W = bandEl?.getBoundingClientRect().width ?? 0;
@@ -1870,9 +2005,17 @@ export default function BoxCanvas({
     const bandId = parentEl.getAttribute("data-box-id") ?? "";
     const bandCs = getComputedStyle(parentEl);
     const lineParent = findByIdLocal(rootRef.current, bandId);
-    if (rowFlow && kidId && (lineParent?.rowBand || isSideBySide(lineParent)) && bandCs.flexDirection.startsWith("row") && bandCs.flexWrap === "wrap") {
-      const { floors: fl, gapPct } = lineFloorsPct(insertBox(rootRef.current, bandId, 0, createContainer("column", { id: "__drop" } as Partial<BoxNode>)), bandId);
-      const onLine = kidEls.filter((_, i) => sameRow(rects[i], kr));
+    // LE15l-ap: a block dragged ALONG its own line adds nothing to it — counted as one more, a full menu read "under" and never moved
+    const onLine = kidEls.filter((_, i) => sameRow(rects[i], kr));
+    const alreadyOnLine = !!dragIdRef.current && onLine.some((el) => el.getAttribute("data-box-id") === dragIdRef.current);
+    if (rowFlow && kidId && !alreadyOnLine && (lineParent?.rowBand || isSideBySide(lineParent)) && bandCs.flexDirection.startsWith("row") && bandCs.flexWrap === "wrap") {
+      // LE-15n: a line's floors cannot change while the page does not — measured once per page state, not on every frame (each
+      // measure lays out a copy of every block on the line: 503 ms of a slow phone's drag)
+      const fontsNow = typeof document !== "undefined" ? document.fonts?.status : undefined; // LE15l-ad: measured again once the fonts land
+      if (floorsMemo.current.root !== rootRef.current || floorsMemo.current.fonts !== fontsNow) floorsMemo.current = { root: rootRef.current, fonts: fontsNow, m: new Map() };
+      const memo = floorsMemo.current.m;
+      if (!memo.has(bandId)) memo.set(bandId, lineFloorsPct(insertBox(rootRef.current, bandId, 0, createContainer("column", { id: "__drop" } as Partial<BoxNode>)), bandId));
+      const { floors: fl, gapPct } = memo.get(bandId)!;
       const need = (fl.__drop ?? 0) + gapPct * onLine.length + onLine.reduce((s, el) => s + (fl[el.getAttribute("data-box-id") ?? ""] ?? 0), 0);
       if (need > 100.001) {
         if (rects.some((r, i) => i !== k && sameRow(r, kr)))
@@ -1937,12 +2080,48 @@ export default function BoxCanvas({
   };
   // Hit-test the deepest box under the cursor that ISN'T the dragged block (or inside it). If it's a
   // container, drop INSIDE it (among its children); if it's a leaf, drop BESIDE it (among its parent's).
+  /** LE15l-ao · every drop — a block's or the panel's — kept between the page's header and footer (`keepRegions`), its line drawn
+   *  across the page where it really lands (the user, 2026-10-21: "Same rule for drags"). */
   const computeDrop = (x: number, y: number, draggingId: string | null): Drop | null => {
+    const d = dropAt(x, y, draggingId);
+    if (!d) return d;
+    const root = rootRef.current, t = keepRegions(root, d.target, draggingId);
+    if (t.parentId === d.target.parentId && t.index === d.target.index) return d;
+    const el = (id?: string) => (id ? document.querySelector<HTMLElement>(`[data-box-id="${CSS.escape(id)}"]`)?.getBoundingClientRect() : undefined);
+    const pg = el(root.id), at = el(root.children?.[t.index]?.id), prev = el(root.children?.[t.index - 1]?.id);
+    const ty = at ? at.top : prev ? prev.bottom : pg?.bottom ?? 0;
+    return { target: t, rect: { left: (pg?.left ?? 0) + 4, top: ty - 1.5, width: Math.max(8, (pg?.width ?? 0) - 8), height: 3, inside: false }, moveWidth: "100%" };
+  };
+  const dropAt = (x: number, y: number, draggingId: string | null): Drop | null => {
     // NEAREST-SLOT while ARRANGING within the current parent: as long as the cursor is anywhere inside the
     // dragged block's own parent, snap to the nearest slot among its siblings (you don't have to aim at an
     // edge). The block floats with the cursor and lands packed next to its siblings — moving it OUT of the
     // parent (below) reparents it. This is what makes moving blocks around inside a section feel smooth.
     // (draggingId is null when INSERTING a NEW block from the palette — no self to exclude.)
+    // LE-15n (3) · ALONG ITS OWN LINE, read from where its blocks were at the LIFT — they slide to show the answer, so their drawn
+    // places would answer the question they are showing the answer to. In a gap or on a block's edge strip it reorders (the
+    // neighbours slide); over the MIDDLE of a block that holds others it goes inside (the rule as before, below).
+    const c = draggingId ? carryRef.current : null;
+    if (c?.axis && c.line && c.parentId) {
+      const d = c.axis === "x" ? (c.sc?.scrollLeft ?? 0) - c.sx0 : (c.sc?.scrollTop ?? 0) - c.sy0, L = c.line;
+      const inLine = c.axis === "x" ? x >= L.left - d && x <= L.right - d && y >= L.top && y <= L.bottom : y >= L.top - d && y <= L.bottom - d && x >= L.left && x <= L.right;
+      if (inLine) {
+        const { starts, ends } = carriedLine(c), pos = c.axis === "x" ? x : y, n = starts.length;
+        let index: number | null = null;
+        const k = starts.findIndex((st, i) => pos < ends[i]);
+        if (k < 0) index = n;                                            // past the last
+        else if (pos < starts[k] || k === c.from) index = k === c.from ? c.from : k; // in the gap before it, or on itself
+        else {
+          const size = ends[k] - starts[k], strip = fingerStrip(size, Math.min(size * 0.22, 22), !!dragArm.current?.finger);
+          const holds = isContainer(findByIdLocal(rootRef.current, c.kidIds[k]) ?? ({} as BoxNode));
+          if (pos < starts[k] + strip) index = k;
+          else if (pos > ends[k] - strip) index = k + 1;
+          else if (!holds) index = pos < (starts[k] + ends[k]) / 2 ? k : k + 1;
+        }
+        if (index != null) return { target: { parentId: c.parentId, index }, rect: { left: 0, top: 0, width: 0, height: 0, inside: false } };
+        if (c.slid) { slide(c.kids, c.kids.map(() => 0), c.axis, c.zoom, 0, DRAG.ease); c.slid = false; } // inside: back to the page as it is, at once
+      }
+    }
     const dragInfo = draggingId ? findParent(rootRef.current, draggingId) : null;
     if (dragInfo) {
       const pEl = document.querySelector<HTMLElement>(`[data-box-id="${dragInfo.parent.id}"]`);
@@ -1966,6 +2145,33 @@ export default function BoxCanvas({
       hitEl = boxEl; hitId = id; break;
     }
     if (!hitEl || !hitId) return null;
+    const finger = !!dragArm.current?.finger;
+    const strips = (q: DOMRect) => [fingerStrip(q.width, Math.min(q.width * 0.22, 22), finger), fingerStrip(q.height, Math.min(q.height * 0.22, 22), finger)];
+    /**
+     * LE15l-ao · AT AN EDGE SEVERAL BOXES SHARE, THE OUTERMOST (the user, 2026-10-21: "Outermost + say it"). With no space by
+     * default a section's top is also its row's top and its first block's top, and the DEEPEST box under the pointer won: a section
+     * dragged to the top of the page went INSIDE the header, under a line that read "above the header". Climbing while the parent's
+     * edge is the same edge, the drop goes beside the outermost box — inside is still the middle of a block. A side edge climbs only
+     * to a box that sits beside others (in a column, beside is not a place).
+     */
+    {
+      const q = hitEl.getBoundingClientRect(), hitNode = findByIdLocal(rootRef.current, hitId);
+      const [sx, sy] = strips(q);
+      const side = y < q.top + sy ? "top" : y > q.bottom - sy ? "bottom" : !hitNode?.rowBand && x < q.left + sx ? "left" : !hitNode?.rowBand && x > q.right - sx ? "right" : null;
+      for (let e = q; side; ) {
+        const up = findParent(rootRef.current, hitId);
+        if (!up || up.parent.id === rootRef.current.id) break;
+        const upEl = document.querySelector<HTMLElement>(`[data-box-id="${CSS.escape(up.parent.id)}"]`);
+        if (!upEl) break;
+        const ur = upEl.getBoundingClientRect();
+        if (Math.abs(ur[side] - e[side]) > 1) break;
+        if (side === "left" || side === "right") {
+          const gp = upEl.parentElement?.closest<HTMLElement>("[data-box-id]"), gs = gp ? getComputedStyle(gp) : null;
+          if (up.parent.rowBand || !gs || !(gs.display.includes("grid") || gs.flexDirection.startsWith("row"))) break;
+        }
+        hitEl = upEl; hitId = up.parent.id; e = ur;
+      }
+    }
     const node = findByIdLocal(rootRef.current, hitId);
     if (!node) return null;
     const info = findParent(rootRef.current, hitId);
@@ -1978,8 +2184,7 @@ export default function BoxCanvas({
     // where the main axis is horizontal — the top and bottom strips of a block were not edges at all, so a
     // drop there fell through to "inside this container" and the block ended up nested. The strips are the
     // same on both axes because the rule is the same on both: edges place around, the middle places inside.
-    const finger = !!dragArm.current?.finger;
-    const bx = fingerStrip(r.width, Math.min(r.width * 0.22, 22), finger), by = fingerStrip(r.height, Math.min(r.height * 0.22, 22), finger);
+    const [bx, by] = strips(r);
     // …except a ROW's SIDES, which belong to its columns: on the page grid a row keeps the page's side space itself, and a
     // drop there — just past its last column — made a NEW ROW under it instead of a column beside (G-1 #10, measured by
     // probe-g1-drop.js). Only a row's top and bottom place around it.
@@ -2001,7 +2206,7 @@ export default function BoxCanvas({
     if (!arm) return;
     if (dragIdRef.current == null) { // upgrade "armed" → real drag only past a small threshold (click vs drag)
       if (Math.hypot(ev.clientX - arm.startX, ev.clientY - arm.startY) < 4) return;
-      dragIdRef.current = arm.id; setDragId(arm.id); document.body.style.userSelect = "none";
+      dragIdRef.current = arm.id; setDragId(arm.id); if (arm.finger) document.body.style.userSelect = "none"; // LE-15n: a mouse's press already keeps words from selecting; on <body> it re-styles the whole page
     }
     // rAF-batch so the floating ghost + insertion indicator track the cursor at frame rate (smooth), and
     // heavy hit-testing runs at most once per frame no matter how many mousemove events fire.
@@ -2011,10 +2216,20 @@ export default function BoxCanvas({
       dragRaf.current = 0;
       const p = dragPtRef.current, id = dragIdRef.current;
       if (!p || !id) return;
-      setDragGhost({ x: p.x, y: p.y, w: Math.min(arm.w, 260), label: arm.label, finger: arm.finger });
       const hit = computeDrop(p.x, p.y, id);
+      setDragGhost({ x: p.x, y: p.y, w: Math.min(Math.max(arm.w, 200), 260), label: arm.label, finger: arm.finger, to: hit ? dropWords(hit.target, id) : "" });
       dropRef.current = hit?.target ?? null;
       dropWidthRef.current = hit?.moveWidth ?? null;
+      // LE-15n (2)(3): the copy follows; along its own line the neighbours slide apart instead of a line being drawn
+      const c = carryRef.current;
+      if (c?.copy) placeCopy(c.copy, p.x - c.gx, p.y - c.gy);
+      if (c?.axis && hit && hit.target.parentId === c.parentId) {
+        const { starts, ends } = carriedLine(c);
+        slide(c.kids, slideOffsets(starts, ends, c.from, hit.target.index), c.axis, c.zoom, DRAG.slideMs, DRAG.ease); c.slid = true;
+        setDropRect(null);
+        return;
+      }
+      if (c?.axis && c.slid) { slide(c.kids, c.kids.map(() => 0), c.axis, c.zoom, DRAG.slideMs, DRAG.ease); c.slid = false; }
       setDropRect(hit?.rect ?? null);
     });
   };
@@ -2025,14 +2240,29 @@ export default function BoxCanvas({
     // Resolve the FINAL drop from the latest cursor position (a pending rAF may not have run yet).
     let target = dropRef.current, w = dropWidthRef.current;
     if (id && p) { const hit = computeDrop(p.x, p.y, id); target = hit?.target ?? target; w = hit ? (hit.moveWidth ?? null) : w; }
+    const c = carryRef.current; carryRef.current = null;
     if (id && target) {
       let next = moveBox(rootRef.current, id, target.parentId, target.index);
       // Only a block with a DEFINITE width (Full / Custom) fills the line's leftover space when reparented. A
       // HUGGING block (Fit / width auto) keeps hugging when moved — moving it must never blow it up to full width.
-      const moved = findByIdLocal(rootRef.current, id);
-      const hugs = !moved?.width || moved.width === "auto";
+      const carried = findByIdLocal(rootRef.current, id);
+      const hugs = !carried?.width || carried.width === "auto";
       if (w && !hugs) next = updateBox(next, id, { width: w });
-      onChange(next);
+      // LE-15n (3) · THE GLIDE: where every block of the two lines was SEEN at the release (slides and all), and the carried one
+      // where its copy was; the page is rewritten, and once it is drawn each glides from there to its new place
+      if (c) {
+        const seen = new Map<string, DOMRect>(), byId = (pid: string | null) => (pid ? document.querySelector<HTMLElement>(`[data-box-id="${CSS.escape(pid)}"]`) : null);
+        const own = byId(c.parentId), into = byId(target.parentId);
+        const lines = own && into && (own.contains(into) || into.contains(own)) && own !== into ? [into] : [own, into]; // nested: the outer line only, or a block would move twice
+        for (const line of lines) if (line) for (const k of directKids(line)) seen.set(k.getAttribute("data-box-id")!, k.getBoundingClientRect());
+        if (c.copy) seen.set(id, c.copy.getBoundingClientRect());
+        glideRef.current = { seen, carried: { id, scale: c.scale }, at: performance.now(), kids: c.kids, copy: c.copy };
+        setTimeout(() => { const g = glideRef.current; if (g && g.copy === c.copy) { glideRef.current = null; unslide(g.kids); g.copy?.remove(); } }, 400); // nothing re-drew: tidy up
+      }
+      moved(next, id); // saved, and said where it went
+    } else if (c) { // put down where it was: the line closes, the copy flies home
+      if (c.axis) slide(c.kids, c.kids.map(() => 0), c.axis, c.zoom, DRAG.slideMs, DRAG.ease);
+      if (c.copy) flyHome(c.copy, c.home, DRAG.dropMs, DRAG.ease);
     }
     dragArm.current = null; dragIdRef.current = null; dropRef.current = null; dropWidthRef.current = null; dragPtRef.current = null;
     setDragId(null); setDragGhost(null); setDropRect(null);
@@ -2135,7 +2365,33 @@ export default function BoxCanvas({
     dragArm.current = { id: node.id, startX: e.clientX, startY: e.clientY, w: r?.width ?? 160, h: r?.height ?? 40, label: dragLabel(node), finger: isFinger(e) };
     autoScrollRaf.current = requestAnimationFrame(scrollNearEdges); // LE15l-i: a mouse's drag too — it never reached a block off screen
     // The browser taking a finger back (`pointercancel`) puts the block down where it was: nothing moves (E-5b).
-    followGesture(e, onDragMove, onDragUp, { onCancel: () => { dragIdRef.current = null; onDragUp(); } });
+    gestureStopRef.current = followGesture(e, onDragMove, onDragUp, { onCancel: () => { dragIdRef.current = null; onDragUp(); } });
+  };
+
+  /**
+   * LE-15n · PRESS AND DRAG (the user, 2026-10-21: "just click, drag and drop, like how you drag and drop a file"; "Press anywhere
+   * and drag"). A press on a block selects it as always; if the mouse then moves `DRAG.activatePx`, that block lifts — no grip
+   * to find first. The press is NOT cancelled, so a still click still places a caret. Words being typed in keep their own drag
+   * (selecting words), and so do form fields.
+   */
+  const wordsRef = useRef<string | null>(null); // the block whose words are being edited (words-mode), if any
+  const armPressDrag = (e: React.MouseEvent, id: string) => {
+    // words-mode (a double-click, "Edit text", Enter or F2 on this block): a press-and-drag in its words selects words. Otherwise it
+    // moves the block — a first click already puts the caret in the words, so focus alone cannot mean "typing" (measured 2026-10-21)
+    const t = e.target as HTMLElement, words = wordsRef.current ? ownEditable(wordsRef.current) : undefined;
+    if (t.closest("input, textarea, select") || words?.contains(t)) return;
+    const x0 = e.clientX, y0 = e.clientY, native = e.nativeEvent;
+    const stop = () => { document.removeEventListener("mousemove", onMove); document.removeEventListener("mouseup", stop); };
+    const onMove = (ev: MouseEvent) => {
+      if (Math.hypot(ev.clientX - x0, ev.clientY - y0) < DRAG.activatePx) return;
+      stop();
+      const node = findByIdLocal(rootRef.current, id);
+      if (!node || id === rootRef.current.id) return;
+      window.getSelection()?.removeAllRanges(); document.body.style.userSelect = "none"; // the press was not cancelled, so words would highlight as it moves
+      startDrag({ clientX: x0, clientY: y0, altKey: ev.altKey, preventDefault() {}, stopPropagation() {}, nativeEvent: native } as unknown as React.MouseEvent, node);
+      onDragMove(ev); // straight to where the pointer already is
+    };
+    document.addEventListener("mousemove", onMove); document.addEventListener("mouseup", stop);
   };
 
   /**
@@ -2146,16 +2402,30 @@ export default function BoxCanvas({
    * scrolls, it scrolls — faster the nearer the edge — every frame, so a finger held still keeps it going; the drop is worked out
    * again at each step, because the page moved under a finger that did not.
    */
+  const edgeScrollRef = useRef<{ sc: HTMLElement | null; edge: number } | null>(null);
+  const edgeSinceRef = useRef(0); // when the pointer reached the edge — the scroll eases in from there
   const scrollNearEdges = () => {
     const p = dragPtRef.current;
-    let sc: HTMLElement | null = canvasRef.current;
-    while (sc && !(/(auto|scroll)/.test(getComputedStyle(sc).overflowY) && sc.scrollHeight > sc.clientHeight)) sc = sc.parentElement;
+    if (!dragIdRef.current) { edgeScrollRef.current = null; autoScrollRaf.current = requestAnimationFrame(scrollNearEdges); return; } // LE-15n: nothing until it lifts; then found once per drag
+    if (!edgeScrollRef.current) {
+      let s: HTMLElement | null = canvasRef.current;
+      while (s && !(/(auto|scroll)/.test(getComputedStyle(s).overflowY) && s.scrollHeight > s.clientHeight)) s = s.parentElement;
+      if (dragIdRef.current) edgeScrollRef.current = { sc: s, edge: 4 * rootFontPx() };
+    }
+    const sc = edgeScrollRef.current?.sc ?? null;
     const scroller = sc ?? (document.scrollingElement as HTMLElement | null);
     if (p && dragIdRef.current && scroller) {
       const r = sc ? sc.getBoundingClientRect() : { top: 0, bottom: innerHeight };
-      const top = Math.max(r.top, 0), bottom = Math.min(r.bottom, innerHeight), edge = 4 * rootFontPx();
+      const top = Math.max(r.top, 0), bottom = Math.min(r.bottom, innerHeight), edge = edgeScrollRef.current?.edge ?? 4 * rootFontPx();
       const pull = p.y < top + edge ? -(top + edge - p.y) / edge : p.y > bottom - edge ? (p.y - bottom + edge) / edge : 0;
-      if (pull) { scroller.scrollBy(0, Math.round(Math.max(-1, Math.min(1, pull)) * 18)); onDragMove({ clientX: p.x, clientY: p.y }); }
+      // LE-15n: faster the nearer the edge (depth², research: hello-pangea), eased in over `scrollRampMs` so the page never jerks
+      const now = performance.now();
+      if (pull) {
+        if (!edgeSinceRef.current) edgeSinceRef.current = now;
+        const depth = Math.min(1, Math.abs(pull)), ramp = Math.min(1, (now - edgeSinceRef.current) / DRAG.scrollRampMs);
+        scroller.scrollBy(0, Math.sign(pull) * Math.max(1, Math.round(depth * depth * DRAG.scrollMaxPx * ramp)));
+        onDragMove({ clientX: p.x, clientY: p.y });
+      } else edgeSinceRef.current = 0;
     }
     autoScrollRaf.current = requestAnimationFrame(scrollNearEdges);
   };
@@ -2197,8 +2467,8 @@ export default function BoxCanvas({
       dragIdRef.current = id; setDragId(id); document.body.style.userSelect = "none";
       onDragMove({ clientX: x0, clientY: y0 });
       autoScrollRaf.current = requestAnimationFrame(scrollNearEdges);
-      followGesture(e, onDragMove, () => { unlock(); onDragUp(); }, { onCancel: () => { unlock(); dragIdRef.current = null; onDragUp(); } });
-    }, 500);
+      gestureStopRef.current = followGesture(e, onDragMove, () => { unlock(); onDragUp(); }, { onCancel: () => { unlock(); dragIdRef.current = null; onDragUp(); } });
+    }, DRAG.fingerHoldMs); // LE-15n: 250 ms, the user's choice 2026-10-21 (was 500) — config/layout.json `drag`
     document.addEventListener("contextmenu", noMenu, true);
     document.addEventListener("pointermove", moved, true); document.addEventListener("pointerup", ended, true); document.addEventListener("pointercancel", ended, true);
   };
@@ -4382,8 +4652,8 @@ export default function BoxCanvas({
           // heading's span, then `pointercancel`), so a top edge lying over a heading could not be held at all.
           <div key={h.edge} onMouseDown={(e) => { caretFallthrough(e, node.id); startResize(e, node.id, h.edge); }} onPointerDown={onFingerDown((e) => { caretFallthrough(e, node.id); startResize(e, node.id, h.edge); })} aria-label={`Resize ${h.label}`} title={h.title}
             // LE15k-p: an edge under the pointer says what it does, at once (a native title waits a second and says it in different words)
-            onPointerEnter={(e) => { if (!resizing) setSpanLive({ x: e.clientX, y: e.clientY, text: h.edge.length === 2 ? SEL.tipSize : "ns".includes(h.edge) ? SEL.tipHeight : SEL.tipWidth }); }}
-            onPointerLeave={() => { if (!resizing) setSpanLive(null); }}
+            onPointerEnter={(e) => { if (!resizing && !dragIdRef.current) setSpanLive({ x: e.clientX, y: e.clientY, text: h.edge.length === 2 ? SEL.tipSize : "ns".includes(h.edge) ? SEL.tipHeight : SEL.tipWidth }); }}
+            onPointerLeave={() => { if (!resizing && !dragIdRef.current) setSpanLive(null); }}
             className={`absolute ${h.pos} ${h.cursor} touch-none bg-indigo-500 active:bg-indigo-700 border-2 border-white shadow ${h.grab ? `before:absolute before:content-[''] before:touch-none ${h.grab}` : ""}`} style={{ zIndex: CHROME_Z.handle, pointerEvents: "auto" }} />
         ))}
         {/* A FINGER'S HIT AREA (D6, E5b-4): on touch, 44 × 44 beside each handle, reaching OUTWARD from the block — never over its own
@@ -4459,10 +4729,11 @@ export default function BoxCanvas({
         ? (chain[0] ?? deepest)                          // nothing of this chain selected → the outermost
         : chain[Math.min(at + 1, chain.length - 1)];     // one deeper, and no further than the innermost
       select(next);
-      closeMenu(); startMarqueeArm(e);
+      if (next !== wordsRef.current) wordsRef.current = null; // another block: out of words-mode
+      // LE-15n: a press on a block and a move lifts it; on the page itself (nothing to lift) it rubber-bands, as before (LE15n-a)
+      closeMenu(); if (next === rootRef.current.id) startMarqueeArm(e); else armPressDrag(e, next);
     };
 
-    const isDragging = dragId === node.id;
 
     // ── container ──
     if (isContainer(node)) {
@@ -4519,7 +4790,6 @@ export default function BoxCanvas({
               && node.minHeight == null && node.height == null && !node.screenHeight
               ? { minHeight: "8rem" }
               : {}),
-            ...(isDragging ? { opacity: 0.4 } : {}),
           }}
           // Structural boxes (a row BAND, the page ROOT) are invisible scaffolding — never selectable — so they must
           // NOT show a hover outline: an indigo box around a full-width band/page reads as an empty "container wrapper".
@@ -4696,7 +4966,7 @@ export default function BoxCanvas({
           // Content position → the wrapper flexes so the content re-positions as the block grows. A BUTTON fills its
           // box itself and positions its own label, so it opts out here (otherwise the two would fight).
           ...((node.contentX || node.contentY) && node.type !== "button" ? { display: "flex", flexDirection: "column", justifyContent: flexPos(node.contentY), alignItems: flexPos(node.contentX) } : {}),
-          ...(isDragging ? { opacity: 0.4 } : {}) }}
+          }}
         className={`${isSel ? "outline outline-2 outline-indigo-500 outline-offset-[-2px]" : editable ? "hover:outline hover:outline-1 hover:outline-indigo-300/70 hover:outline-offset-[-1px]" : ""}`}
       >
         <ElementView node={node} headingLevel={semR?.level} theme={theme} editable={editable} selected={isSel} breakpoint={breakpoint} fill={fillsRowsAnywhere(fillHostOf(parent, grand)) || coversCellAnywhere(node, parent)} onText={(v) => onChange(updateBox(root, node.id, { text: v }))} onSrc={(v) => onChange(updateBox(root, node.id, { src: v }))} onPatchNode={(patch) => onChange(updateBox(root, node.id, patch))} itemSel={itemSel} setItemSel={setItemSel} />
@@ -4791,7 +5061,7 @@ export default function BoxCanvas({
             block, the way Wix ("Edit Text") and Webflow ("Replace Image") name them — spacing-overlay.md axis 12. A section whose photo
             is its BACKGROUND (the School home's hero) had no route on the canvas at all, only Background → upload in the Inspector. */}
         {!node.locked && WORD_BLOCKS.has(node.type) && (
-          <button onClick={() => { const host = ownEditable(node.id); if (host) { host.focus(); caretToEnd(host); } }}
+          <button onClick={() => { const host = ownEditable(node.id); if (host) { wordsRef.current = node.id; host.focus(); caretToEnd(host); } }}
             aria-label={SEL.editText} title={SEL.editTextTip} className={`${TOOL_BTN} gap-1 px-1.5 text-xs font-medium whitespace-nowrap`}
           ><Type className={TOOL_ICON} aria-hidden="true" />{SEL.editText}</button>
         )}
@@ -4805,7 +5075,7 @@ export default function BoxCanvas({
         {!isRoot && !node.locked && !isFloating(node) && (() => {
           const across = moveAxis(root, node.id) === "horizontal";
           return ([[-1, across ? ArrowLeft : ArrowUp, across ? "Move left" : "Move up"], [1, across ? ArrowRight : ArrowDown, across ? "Move right" : "Move down"]] as const).map(([step, Icon, label]) => (
-            <button key={label} onClick={() => onChange(moveBlock(rootRef.current, node.id, step))} disabled={!canMoveBlock(root, node.id, step)}
+            <button key={label} onClick={() => moved(moveBlock(rootRef.current, node.id, step), node.id)} disabled={!canMoveBlock(root, node.id, step)}
               aria-label={label} title={`${label} (${across ? (step < 0 ? "←" : "→") : (step < 0 ? "↑" : "↓")})`} className={TOOL_BTN}
             ><Icon className={TOOL_ICON} /></button>
           ));
@@ -4853,10 +5123,10 @@ export default function BoxCanvas({
               {!isFloating(node) && (() => {
                 const across = moveAxis(root, node.id) === "horizontal";
                 return (<>
-                  <Item onClick={() => onChange(moveBlock(root, node.id, -1))} Icon={across ? ArrowLeft : ChevronUp} label={across ? "Move left" : "Move up"} disabled={!canMoveBlock(root, node.id, -1)} hint={across ? "←" : "↑"} />
-                  <Item onClick={() => onChange(moveBlock(root, node.id, 1))} Icon={across ? ArrowRight : ChevronDown} label={across ? "Move right" : "Move down"} disabled={!canMoveBlock(root, node.id, 1)} hint={across ? "→" : "↓"} />
-                  <Item onClick={() => onChange(moveBlock(root, node.id, "first"))} Icon={ArrowUpToLine} label={across ? "Move to the start" : "Move to top"} disabled={!canMoveBlock(root, node.id, "first")} />
-                  <Item onClick={() => onChange(moveBlock(root, node.id, "last"))} Icon={ArrowDownToLine} label={across ? "Move to the end" : "Move to bottom"} disabled={!canMoveBlock(root, node.id, "last")} />
+                  <Item onClick={() => moved(moveBlock(root, node.id, -1), node.id)} Icon={across ? ArrowLeft : ChevronUp} label={across ? "Move left" : "Move up"} disabled={!canMoveBlock(root, node.id, -1)} hint={across ? "←" : "↑"} />
+                  <Item onClick={() => moved(moveBlock(root, node.id, 1), node.id)} Icon={across ? ArrowRight : ChevronDown} label={across ? "Move right" : "Move down"} disabled={!canMoveBlock(root, node.id, 1)} hint={across ? "→" : "↓"} />
+                  <Item onClick={() => moved(moveBlock(root, node.id, "first"), node.id)} Icon={ArrowUpToLine} label={across ? "Move to the start" : "Move to top"} disabled={!canMoveBlock(root, node.id, "first")} />
+                  <Item onClick={() => moved(moveBlock(root, node.id, "last"), node.id)} Icon={ArrowDownToLine} label={across ? "Move to the end" : "Move to bottom"} disabled={!canMoveBlock(root, node.id, "last")} />
                 </>);
               })()}
               {!node.locked && <Item onClick={() => setShowSpacing((v) => !v)} Icon={Ruler} label={showSpacing ? SEL.hideSpacing : SEL.showSpacing} hint={SEL.spacingKey} />}
@@ -4877,7 +5147,7 @@ export default function BoxCanvas({
 
   return (
     <CurrentPage.Provider value={currentPageId}>
-    <div ref={canvasRef} onMouseDown={(e) => { if (editable) { select(null); startMarqueeArm(e); } }} onDragOver={onCanvasDragOver} onDrop={onCanvasDrop} onDragLeave={(e) => { if (!e.currentTarget.contains(e.relatedTarget as Node)) setDropRect(null); }} className="w-full eu-tokens"
+    <div ref={canvasRef} onMouseDown={(e) => { if (editable) { select(null); startMarqueeArm(e); } }} onDoubleClick={(e) => { const own = (e.target as HTMLElement).closest('[contenteditable="true"]')?.closest("[data-box-id]"); if (own) wordsRef.current = own.getAttribute("data-box-id"); /* LE-15n: a double-click in words is words-mode */ }} onDragOver={onCanvasDragOver} onDrop={onCanvasDrop} onDragLeave={(e) => { if (!e.currentTarget.contains(e.relatedTarget as Node)) setDropRect(null); }} className="w-full eu-tokens"
       // THE PAGE MEASURE COMES FROM THE DEVICE CHIP, NOT FROM THE EDITOR'S WINDOW.
       //
       // `layoutCss` publishes `--eu-measure` per rung through MEDIA queries, and a media query reads the
@@ -5050,12 +5320,8 @@ export default function BoxCanvas({
           ))}
         </PortalMenu>
       )}
-      {dropRect && createPortal(
-        <div
-          aria-hidden="true"
-          style={{ position: "fixed", left: dropRect.left, top: dropRect.top, width: dropRect.width, height: dropRect.height, pointerEvents: "none", zIndex: CHROME_Z.dropZone }}
-          className={dropRect.inside ? "rounded-lg outline outline-2 outline-dashed outline-indigo-500 bg-indigo-500/10" : "rounded-full bg-indigo-500 shadow-[0_0_10px_rgba(99,102,241,0.9)]"}
-        />,
+      {portalReady && createPortal(
+        <div aria-hidden="true" ref={dropElRef} style={{ position: "fixed", display: "none", pointerEvents: "none", zIndex: CHROME_Z.dropZone }} />,
         document.body,
       )}
       {/* The photo setup, opened where a Photo gallery / Slider / Hero tile was DROPPED — the same
@@ -5092,13 +5358,13 @@ export default function BoxCanvas({
         document.body,
       )}
       {/* Floating preview that follows the cursor while dragging. */}
-      {dragGhost && createPortal(
+      {portalReady && createPortal(
         <div
-          aria-hidden="true"
-          // A finger's chip rides 32px ABOVE it (E-5b, WordPress) — under the finger it could not be seen at all.
-          style={{ position: "fixed", ...(dragGhost.finger ? { left: Math.max(8, Math.min(dragGhost.x - dragGhost.w / 2, innerWidth - dragGhost.w - 8)), top: dragGhost.y - 32, transform: "translateY(-100%)" } : { left: dragGhost.x + 14, top: dragGhost.y + 14 }), width: dragGhost.w, pointerEvents: "none", zIndex: CHROME_Z.dragGhost }}
-          className="flex items-center gap-1.5 rounded-lg bg-indigo-600 px-2.5 py-1.5 text-xs font-medium text-white opacity-90 shadow-2xl ring-1 ring-white/30"
-        ><GripVertical className="w-3 h-3 shrink-0 opacity-80" /><span className="truncate">{dragGhost.label}</span></div>,
+          aria-hidden="true" ref={ghostElRef}
+          style={{ position: "fixed", left: 0, top: 0, display: "none", pointerEvents: "none", zIndex: CHROME_Z.dragGhost, willChange: "transform" }}
+          className="items-center gap-1.5 rounded-lg bg-indigo-600 px-2.5 py-1.5 text-xs font-medium text-white opacity-90 shadow-2xl ring-1 ring-white/30"
+        ><GripVertical className="w-3 h-3 shrink-0 opacity-80" /><span className="min-w-0 flex flex-col"><span ref={ghostLabelRef} className="truncate" />
+          <span data-drop-words hidden className="truncate font-normal opacity-90" /></span></div>,
         document.body,
       )}
     </div>

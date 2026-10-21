@@ -2408,6 +2408,44 @@ export function defaultWhere(root: BoxNode, selectedId: string | null): InsertWh
   if (!selectedId || !findBox(root, selectedId)) return "end";
   return paletteClickSlot(root, selectedId).parentId === selectedId ? "inside" : "after";
 }
+/**
+ * LE15l-am · THE CHOICES "WHERE THE BLOCK GOES" OFFERS — only what each does. LE11-1 keeps the page's content between its header
+ * and its footer, so Before the header landed under it and After the footer above it: the button said one side and did the other.
+ * Where Before and After land in the same place, the one that is not true is not offered.
+ */
+export function whereChoices(root: BoxNode, selectedId: string): InsertWhere[] {
+  const sel = findBox(root, selectedId);
+  if (!sel) return [];
+  const b = insertSlot(root, selectedId, "before"), a = insertSlot(root, selectedId, "after");
+  const same = b.parentId === a.parentId && b.index === a.index;
+  const top = (root.children ?? []).findIndex((c) => !!findBox(c, selectedId));
+  const inHeader = top >= 0 && top < regionSpan(root, "header")[1];
+  return [...(same && inHeader ? [] : ["before" as const]), ...(same && !inHeader ? [] : ["after" as const]), ...(isContainer(sel) ? ["inside" as const] : []), "start", "end"];
+}
+/**
+ * LE15l-ao · A DRAG KEEPS THE PAGE'S HEADER AND FOOTER AT ITS ENDS (the user, 2026-10-21: "Same rule for drags") — LE11-1's rule for
+ * Before / After, for a drop: nothing lands above the header or below the footer, nor is a block of the page MOVED into the shared
+ * header or footer (a section dragged to the top of the page went inside the header). A new block from the panel may go in — the
+ * sheet's "Inside" offers the same (LE15l-q: a Stack beside the footer's name); a block of the header moves within it, and the
+ * header and footer themselves still move. `movingId` is null for a new block from the panel.
+ */
+export function keepRegions(root: BoxNode, target: { parentId: string; index: number }, movingId: string | null): { parentId: string; index: number } {
+  const top = root.children ?? [];
+  const hEnd = regionSpan(root, "header")[1], fStart = pageEnd(root);
+  const topOf = (id: string) => top.findIndex((c) => !!findBox(c, id));
+  const inRegion = (i: number) => i >= 0 && (i < hEnd || i >= fStart);
+  const m = movingId ? topOf(movingId) : -1;
+  if (inRegion(m) && (movingId === top[m].id || regionBlock(top[m])?.id === movingId)) return target; // the header or footer itself
+  if (target.parentId === root.id) return { parentId: root.id, index: Math.min(fStart, Math.max(hEnd, target.index)) };
+  const t = topOf(target.parentId);
+  if (movingId && inRegion(t) && t !== m) return { parentId: root.id, index: t < hEnd ? hEnd : fStart };
+  return target;
+}
+/** The choice a plain tap makes (`defaultWhere`), under the word that is true for it: After the footer is Before it (LE15l-am). */
+export function whereDefault(root: BoxNode, selectedId: string | null): InsertWhere {
+  const d = defaultWhere(root, selectedId);
+  return selectedId && !whereChoices(root, selectedId).includes(d) ? "before" : d;
+}
 
 /**
  * WHERE "+ Add a block inside" PUTS THE NEXT BLOCK (LE-1, E2-20). The block it adds is selected so you see it — and it is a

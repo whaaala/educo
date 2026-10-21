@@ -6,7 +6,7 @@ Feature: A template is only a start — anything on it can be moved, nested, shi
   Every page is MADE THROUGH THE UI (Add page → a template, or a section from the Sections tab). The lists are ENUMERATED
   from config/page-templates.json, config/sections/*.json and the component catalogue, never typed by hand, so a template,
   a section or a component added later is driven the day it appears.
-  Guards: scripts/uat/uat-le15l-probe.js · scripts/uat/uat-le15l-emulator.js · tests/e2e/template-editable.spec.ts · tests/unit/leaf-meanings.test.ts · tests/unit/row-with-block.test.ts
+  Guards: scripts/uat/uat-le15l-probe.js · scripts/uat/uat-le15l-emulator.js · tests/e2e/template-editable.spec.ts · tests/unit/leaf-meanings.test.ts · tests/unit/row-with-block.test.ts · tests/unit/header-best.test.ts
 
   Background:
     Given a page made from a template, or a section added from the Sections tab, through the UI
@@ -96,6 +96,41 @@ Feature: A template is only a start — anything on it can be moved, nested, shi
       | every width of scripts/uat/screens.js                     |
       | the app on a phone (a finger)                             |
       | the app on a tablet (a finger)                            |
+
+  Scenario: Under 1024 the probe takes the path a person there takes (LE15l-aj)
+    Given a window narrower than the editor's dock line (config/layout.json `editor.dockFrom`), a phone's or a tablet's
+    When the probe drives a template page there
+    Then it is a finger, as the person is: the Blocks panel is the sheet over the page, so a block is selected, "Where the block goes" is set to Before, After or Inside, and the tile is tapped
+    And the Inspector is opened with "Expand inspector" before its Meaning is looked for
+    And a block whose bar is docked (it has no grip) is moved by a long press inside it, the way a finger lifts it
+    And a Stack added Before or After a block is judged by where it lands: next to that block in the page's order
+
+  Scenario: At an edge several boxes share, a dragged block goes beside the outermost, and the chip says where (LE15l-ao, decided by the user 2026-10-21: "Outermost + say it")
+    Given a section whose last block ends where the section ends (no space by default)
+    When I drag a block by its grip onto that shared bottom edge
+    Then the line is drawn the width of the section, and the block lands below the SECTION, not inside it
+    And while I hold it, the chip under the pointer names where it goes in plain words ("Below · Section: …")
+    And aiming at the middle of a block still puts it inside
+
+  Scenario: A drag keeps the page's header and footer at its ends (LE15l-ao, decided by the user 2026-10-21: "Same rule for drags")
+    Given a page with the shared header and footer
+    When I drag a section above the header or into it, or drop a block from the Blocks panel on the header's top edge
+    Then the line is drawn under the header and that is where it lands — never inside the header, never above it
+    And the same below the footer, or a block of the page moved into it: it lands above the footer
+    And a NEW block from the panel may still go inside the header or footer, as the sheet's "Inside" offers (LE15l-q)
+    And a block already inside the header or footer still moves within it, and the header and footer themselves still move
+
+  Scenario: A block dragged along its own full row moves, and its line stands beside (LE15l-ap)
+    Given the Landing page's header menu: Home · About · Admissions · News · Contact on one full line
+    When I drag About by its grip onto the right side of Admissions
+    Then its place is shown beside Admissions — the row already holds About, so moving it needs no more room — by Admissions sliding aside to open it (LE-15n (3), signed 2026-10-21: along its own line the neighbours make room)
+    And the menu reads Home · Admissions · About · News · Contact
+
+  Scenario: "Where the block goes" offers only what it does (LE15l-am)
+    Given the page's header, or its footer, is selected and the Blocks sheet is open
+    Then the header offers no "Before" and the footer no "After" — nothing goes above the header or below the footer (LE11-1)
+    And the footer's plain tap adds the block above it, under the choice that says so: "Before"
+    And every other block still offers Before and After, and a container Inside
 
   Scenario: Every gesture the probe cannot make is a ledger line
     When the probe has run
