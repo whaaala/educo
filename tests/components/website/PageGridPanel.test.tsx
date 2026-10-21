@@ -225,11 +225,11 @@ describe("G-3 (3) · Alt ← / → on a column of a page row", () => {
     fireEvent.keyDown(document, { key: "ArrowRight", altKey: true });
     expect((onChange.mock.calls[0]?.[0] as BoxNode | undefined)?.children![0].children![0].width).toBe("58.33%");
   });
-  it("without the page grid nothing happens", () => {
+  it("without a page grid of its own it works on the default twelve columns (LE-15o (5), the user 2026-10-21: \"on any page\")", () => {
     const root = page(); const a = root.children![0].children![0]; const onChange = vi.fn();
     render(<BoxCanvas root={root} theme={DEFAULT_THEME} selectedIds={[a.id]} onSelectIds={() => {}} onChange={onChange} />);
     fireEvent.keyDown(document, { key: "ArrowRight", altKey: true });
-    expect(onChange).not.toHaveBeenCalled();
+    expect(onChange).toHaveBeenCalled();
   });
 });
 

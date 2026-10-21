@@ -60,7 +60,7 @@ import { isRegistryComponent, renderComponent } from "@/lib/educo-ui/registry";
 import { EditableText, ImageBox } from "@/components/website/sections/SectionKit";
 import ItemCrudLayer, { type SelectedItem } from "@/components/website/box/ItemCrudLayer";
 import { zoomOf } from "@/lib/canvas-zoom";
-import { gridTemplate, guideColor, guideInk, spaceColors, spanOfRect, columnsAt, spanLabel, snapEdgePx, spanText, type PageGridSettings } from "@/lib/page-grid";
+import { gridTemplate, guideColor, guideInk, spaceColors, spanOfRect, columnsAt, spanLabel, snapEdgePx, spanText, PAGE_GRID_DEFAULT, type PageGridSettings } from "@/lib/page-grid";
 
 /** Layered background CSS: base fill (colour/gradient) → image → overlay; content renders above. */
 function backgroundStyle(node: BoxNode): React.CSSProperties {
@@ -1223,7 +1223,7 @@ export default function BoxCanvas({
    * in the profile). The chip and the line are now WRITTEN to their elements; React renders only when one appears or goes.
    */
   type Ghost = { x: number; y: number; w: number; label: string; finger?: boolean; to?: string };
-  type DropBox = { left: number; top: number; width: number; height: number; inside: boolean };
+  type DropBox = { left: number; top: number; width: number; height: number; inside: boolean; band?: boolean };
   const ghostRef = useRef<Ghost | null>(null), ghostElRef = useRef<HTMLDivElement | null>(null), ghostLabelRef = useRef<HTMLSpanElement | null>(null);
   const dropBoxRef = useRef<DropBox | null>(null), dropElRef = useRef<HTMLDivElement | null>(null);
   const [portalReady, setPortalReady] = useState(false); // the chip and the line live in <body>, which a server render has not got
@@ -1237,7 +1237,8 @@ export default function BoxCanvas({
   };
   const paintDrop = (el: HTMLDivElement, r: DropBox) => {
     Object.assign(el.style, { left: `${r.left}px`, top: `${r.top}px`, width: `${r.width}px`, height: `${r.height}px` });
-    el.className = r.inside ? "rounded-lg outline outline-2 outline-dashed outline-indigo-500 bg-indigo-500/10" : "rounded-full bg-indigo-500 shadow-[0_0_10px_rgba(99,102,241,0.9)]";
+    el.className = r.band ? "rounded-md outline outline-2 outline-indigo-500 bg-indigo-500/15" // LE-15o (3): the columns it will take
+      : r.inside ? "rounded-lg outline outline-2 outline-dashed outline-indigo-500 bg-indigo-500/10" : "rounded-full bg-indigo-500 shadow-[0_0_10px_rgba(99,102,241,0.9)]";
   };
   const setDragGhost = (g: Ghost | null) => {
     ghostRef.current = g;
@@ -1248,8 +1249,39 @@ export default function BoxCanvas({
     if (label && label.textContent !== g.label) label.textContent = g.label;
     paintGhost(el, g);
   };
+  /**
+   * LE-15o (1) · THE COLUMNS OF THE BOX UNDER THE POINTER, while a block is carried (signed by the user 2026-10-21: "while dragging
+   * only"). A line's columns are its stack's; a Grid draws its own tracks; anything else the page's columns on this screen
+   * (`stackCols`). Written to one element through refs — nothing renders — and faded by CSS (none with "reduce motion").
+   */
+  const gridElRef = useRef<HTMLDivElement | null>(null), gridOnRef = useRef("");
+  const setGridOver = (pid: string | null) => {
+    const el = gridElRef.current;
+    if (!el) return;
+    const n = pid ? findByIdLocal(rootRef.current, pid) : null;
+    const id = n?.rowBand ? findParent(rootRef.current, n.id)?.parent.id ?? pid : pid;
+    const box = id ? document.querySelector<HTMLElement>(`[data-box-id="${CSS.escape(id)}"]`) : null;
+    if (!box) { el.style.opacity = "0"; gridOnRef.current = ""; return; }
+    const r = box.getBoundingClientRect(), cs = getComputedStyle(box), z = box.offsetWidth ? r.width / box.offsetWidth : 1;
+    const pl = (parseFloat(cs.paddingLeft) || 0) * z, pr = (parseFloat(cs.paddingRight) || 0) * z, w = r.width - pl - pr;
+    Object.assign(el.style, { left: `${r.left + pl}px`, top: `${r.top}px`, width: `${w}px`, height: `${r.height}px`, opacity: "1" });
+    const key = `${id}|${Math.round(w)}|${breakpoint}`;
+    if (gridOnRef.current === key) return;
+    gridOnRef.current = key;
+    const tracks = cs.display.includes("grid") ? cs.gridTemplateColumns.split(" ").map(parseFloat).filter((v) => v > 0) : [];
+    if (tracks.length > 1) { // a Grid: its own tracks, its own gaps
+      const gap = (parseFloat(cs.columnGap) || 0) * z, stops: string[] = [];
+      let x = 0;
+      for (const t of tracks) { stops.push(`transparent ${x}px`, `currentColor ${x}px`, `currentColor ${x + t * z}px`, `transparent ${x + t * z}px`); x += t * z + gap; }
+      el.style.background = `linear-gradient(to right, ${stops.join(", ")})`;
+    } else {
+      const C = stackCols();
+      el.style.background = `repeating-linear-gradient(to right, currentColor 0 calc(100% / ${C} - 1px), transparent calc(100% / ${C} - 1px) calc(100% / ${C}))`;
+    }
+  };
   const setDropRect = (r: DropBox | null) => {
     dropBoxRef.current = r;
+    if (!r && !dragIdRef.current) setGridOver(null);
     const el = dropElRef.current;
     if (!el) return;
     if (!r) { el.style.display = "none"; el.className = ""; return; }
@@ -1784,8 +1816,8 @@ export default function BoxCanvas({
       else if (mod && k === "g" && e.shiftKey) { const g = id ? findByIdLocal(root, id) : null; if (g?.group) { ungroupSelected(); e.preventDefault(); } } // ungroup
       else if (e.altKey && k === "f" && id && !rn.locked) { toggleFloat(id); e.preventDefault(); }           // float ⇄ flow (blocked while locked)
       // Alt ← / → (Shift: half): a column of a page row takes one column more / fewer of the page grid (G-3 (3)), said aloud
-      else if (e.altKey && !mod && (e.key === "ArrowLeft" || e.key === "ArrowRight") && id && !floating && !rn.locked && pageGrid) {
-        const cols = columnsAt(pageGrid, breakpoint), now = spanAt(root, id, cols, breakpoint);
+      else if (e.altKey && !mod && (e.key === "ArrowLeft" || e.key === "ArrowRight") && id && !floating && !rn.locked) { // LE-15o (5): any line, any page
+        const cols = stackCols(), now = spanAt(root, id, cols, breakpoint);
         if (now !== null) {
           const next = setSpan(root, id, now + (e.key === "ArrowRight" ? 1 : -1) * (e.shiftKey ? 0.5 : 1), cols, breakpoint);
           if (next !== root) onChange(next, `span:${id}`);
@@ -2180,6 +2212,9 @@ export default function BoxCanvas({
         const ur = upEl.getBoundingClientRect();
         if (Math.abs(ur[side] - e[side]) > 1) break;
         if (side === "left" || side === "right") {
+          // LE15o-c (the user, 2026-10-21: "End of the line wins"): a block sharing its line with others keeps a side edge — the line's end
+          const mine = hitEl.getBoundingClientRect();
+          if (directKids(upEl).some((k) => { if (k === hitEl) return false; const q = k.getBoundingClientRect(); return q.top < mine.bottom && mine.top < q.bottom; })) break;
           const gp = upEl.parentElement?.closest<HTMLElement>("[data-box-id]"), gs = gp ? getComputedStyle(gp) : null;
           if (up.parent.rowBand || !gs || !(gs.display.includes("grid") || gs.flexDirection.startsWith("row"))) break;
         }
@@ -2231,7 +2266,9 @@ export default function BoxCanvas({
       const p = dragPtRef.current, id = dragIdRef.current;
       if (!p || !id) return;
       const hit = computeDrop(p.x, p.y, id);
-      setDragGhost({ x: p.x, y: p.y, w: Math.min(Math.max(arm.w, 200), 260), label: arm.label, finger: arm.finger, to: hit ? dropWords(hit.target, id) : "" });
+      setGridOver(hit?.target.parentId ?? null);
+      const c0 = carryRef.current, band = hit && !(c0?.axis && hit.target.parentId === c0.parentId) ? columnBand(hit, id) : null; // LE-15o (3): along its own line it slides instead
+      setDragGhost({ x: p.x, y: p.y, w: Math.min(Math.max(arm.w, 200), 260), label: arm.label, finger: arm.finger, to: hit ? dropWords(hit.target, id) + (band ? INSPECTOR_WORDS.drop.sep + band.words : "") : "" });
       dropRef.current = hit?.target ?? null;
       dropWidthRef.current = hit?.moveWidth ?? null;
       // LE-15n (2)(3): the copy follows; along its own line the neighbours slide apart instead of a line being drawn
@@ -2244,7 +2281,7 @@ export default function BoxCanvas({
         return;
       }
       if (c?.axis && c.slid) { slide(c.kids, c.kids.map(() => 0), c.axis, c.zoom, DRAG.slideMs, DRAG.ease); c.slid = false; }
-      setDropRect(hit?.rect ?? null);
+      setDropRect(band?.rect ?? hit?.rect ?? null);
     });
   };
   const onDragUp = () => {
@@ -2262,6 +2299,11 @@ export default function BoxCanvas({
       const carried = findByIdLocal(rootRef.current, id);
       const hugs = !carried?.width || carried.width === "auto";
       if (w && !hugs) next = updateBox(next, id, { width: w });
+      // LE-15o (3) · JOINING A LINE: it is shared out as an added block's is — the others narrow, nothing overlaps — in whole columns
+      if (findParent(rootRef.current, id)?.parent.id !== target.parentId) {
+        const { floors, gapPct } = lineFloorsPct(next, target.parentId);
+        next = fitBand(next, target.parentId, id, floors, gapPct, stackCols());
+      }
       // LE-15n (3) · THE GLIDE: where every block of the two lines was SEEN at the release (slides and all), and the carried one
       // where its copy was; the page is rewritten, and once it is drawn each glides from there to its new place
       if (c) {
@@ -2279,7 +2321,7 @@ export default function BoxCanvas({
       if (c.copy) flyHome(c.copy, c.home, DRAG.dropMs, DRAG.ease);
     }
     dragArm.current = null; dragIdRef.current = null; dropRef.current = null; dropWidthRef.current = null; dragPtRef.current = null;
-    setDragId(null); setDragGhost(null); setDropRect(null);
+    setDragId(null); setDragGhost(null); setDropRect(null); setGridOver(null);
     cancelAnimationFrame(autoScrollRaf.current); autoScrollRaf.current = 0;
   };
   // ── Free-drag a FLOATING box (or Alt-drag a flow box to LIFT it into one) ──────────────────────────
@@ -2342,6 +2384,41 @@ export default function BoxCanvas({
    * at the first other width. Its columns become the nearest lines around it and the rest a margin inside them (`slideFreeAt`);
    * the blocks beside it never move. False when the block is not on a page row (the caller floats it, as before).
    */
+  /** LE-15o (2) · the columns every stack has: the page's (the default 12 on a page that never set a grid — "on any page"). Shares are
+   *  this screen's: 12, 6 on a phone — a sixth is two twelfths, so a share snapped on a phone is on whole columns everywhere. */
+  const stackCols = () => columnsAt(pageGrid ?? PAGE_GRID_DEFAULT, breakpoint);
+  /**
+   * LE-15o (3) · WHERE A DROP BESIDE OTHERS WILL LAND, IN WHOLE COLUMNS: the line it joins worked out by the same pure steps the drop
+   * takes (moved or added · `fitBand` · `snapBandToColumns`), drawn as the band of columns it will take with its size in words
+   * ("4 of 12"). Worked out once per target, never per frame. Null for any other drop (a line, inside, under a column).
+   * ponytail: the floors are not measured here (each measure lays the line out) — where a word's floor binds, the drop's line is
+   * a column off the band's.
+   */
+  const bandMemo = useRef<{ key: string; root: BoxNode | null; v: { rect: DropBox; words: string } | null }>({ key: "", root: null, v: null });
+  const columnBand = (hit: Drop, id: string | null): { rect: DropBox; words: string } | null => {
+    const t = hit.target, key = `${id}|${t.parentId}|${t.index}|${hit.moveWidth}`;
+    if (bandMemo.current.key === key && bandMemo.current.root === rootRef.current) return bandMemo.current.v;
+    const v = (() => {
+      const band = findByIdLocal(rootRef.current, t.parentId);
+      if (!band || (!band.rowBand && !isSideBySide(band)) || hit.wrapUnder || hit.wrapBeside || hit.rect.inside || hit.rect.width > hit.rect.height) return null;
+      const w = hit.moveWidth && /%$/.test(hit.moveWidth) ? hit.moveWidth : null, nid = id ?? "__drop";
+      let tree = id ? moveBox(rootRef.current, id, t.parentId, t.index) : insertBox(rootRef.current, t.parentId, t.index, createContainer("column", { id: nid, width: w ?? "100%" } as Partial<BoxNode>));
+      const moved = findByIdLocal(tree, nid);
+      if (id && w && moved?.width && moved.width !== "auto") tree = updateBox(tree, nid, { width: w });
+      const C = stackCols();
+      tree = fitBand(tree, t.parentId, nid, undefined, 0, C);
+      const kids = (findByIdLocal(tree, t.parentId)?.children ?? []).filter((k) => !isFloating(k) && !k.hidden), lines = packRowLines(kids), at = kids.findIndex((k) => k.id === nid);
+      const me = kids[at];
+      if (at < 0 || !me || !/%$/.test(String(me.width))) return null;
+      const before = kids.slice(0, at).filter((_, i) => lines[i] === lines[at]).reduce((s, k) => s + widthPct(k.width), 0), share = widthPct(me.width);
+      const r = document.querySelector<HTMLElement>(`[data-box-id="${CSS.escape(t.parentId)}"]`)?.getBoundingClientRect();
+      if (!r) return null;
+      const n = Math.max(1, Math.round((share / 100) * C));
+      return { rect: { left: r.left + (before / 100) * r.width, top: hit.rect.top, width: (share / 100) * r.width, height: hit.rect.height, inside: false, band: true }, words: INSPECTOR_WORDS.drop.columns.replace("{n}", String(n)).replace("{cols}", String(C)) };
+    })();
+    bandMemo.current = { key, root: rootRef.current, v };
+    return v;
+  };
   const startSlideFree = (e: React.MouseEvent, node: BoxNode): boolean => {
     const cols = pageGrid ? columnsAt(pageGrid, breakpoint) : 0;
     const p = cols && rootRef.current.pageGrid ? findParent(rootRef.current, node.id) : null;
@@ -2544,7 +2621,8 @@ export default function BoxCanvas({
     if (!wanted) return;
     e.preventDefault(); e.dataTransfer.dropEffect = "copy";
     const hit = computeDrop(e.clientX, e.clientY, null);
-    setDropRect(hit?.rect ?? null);
+    setGridOver(hit?.target.parentId ?? null);
+    setDropRect((hit && columnBand(hit, null)?.rect) ?? hit?.rect ?? null);
   };
   /** Where a dropped Columns block will go, held while the user picks its shape. */
   const [pendingGrid, setPendingGrid] = useState<{ anchor: MenuAnchor; parentId: string; index: number; moveWidth: string | null; selectAfter?: boolean } | null>(null);
@@ -2566,7 +2644,8 @@ export default function BoxCanvas({
     if (grid?.layout === "grid" && node.colSpan == null) node.colSpan = newCellSpan(grid, index); // LE15l-y: one cell like the one beside it
     const next = insertBox(rootRef.current, parentId, index, node);
     const { floors, gapPct } = lineFloorsPct(next, parentId);
-    const fitted = fitBand(next, parentId, node.id, floors, gapPct); // LE15l-y: no block shared below its floor, nor into its gaps
+    // LE15l-y: no block shared below its floor, nor into its gaps · LE-15o (2): …and in whole columns of the stack
+    const fitted = fitBand(next, parentId, node.id, floors, gapPct, stackCols());
     const key = `gesture:drop:${node.id}`;
     onChange(fitted, key);
     // LE15l-y: a drop made while the page's fonts are still loading (seconds on Slow 3G — RULE AF) measured the fallback's narrower
@@ -2577,7 +2656,7 @@ export default function BoxCanvas({
       const widthsOf = (t: BoxNode) => JSON.stringify(findByIdLocal(t, parentId)?.children?.map((k) => [k.id, k.width]));
       const was = widthsOf(fitted);
       void document.fonts.ready.then(() => {
-        const m = lineFloorsPct(next, parentId), refit = fitBand(next, parentId, node.id, m.floors, m.gapPct), band = findByIdLocal(rootRef.current, parentId);
+        const m = lineFloorsPct(next, parentId), refit = fitBand(next, parentId, node.id, m.floors, m.gapPct, stackCols()), band = findByIdLocal(rootRef.current, parentId);
         if (!band || widthsOf(rootRef.current) !== was || widthsOf(refit) === was) return;
         const again = new Map((findByIdLocal(refit, parentId)?.children ?? []).map((k) => [k.id, k.width]));
         onChange(updateBox(rootRef.current, parentId, { children: (band.children ?? []).map((k) => (again.has(k.id) ? { ...k, width: again.get(k.id) } : k)) }), key);
@@ -4502,7 +4581,7 @@ export default function BoxCanvas({
      * the parent's + again, which is a fair price for never wondering whether the last one happened.
      */
     const index = parent?.children?.length ?? 0;
-    onChange(fitBand(insertBox(root, parentId, index, node), parentId, node.id)); // E2-22: in a Side by side it shares the line
+    onChange(fitBand(insertBox(root, parentId, index, node), parentId, node.id, undefined, 0, stackCols())); // E2-22: in a Side by side it shares the line
     select(node.id);
     closeMenu();
   };
@@ -5337,7 +5416,11 @@ export default function BoxCanvas({
         </PortalMenu>
       )}
       {portalReady && createPortal(
-        <div aria-hidden="true" ref={dropElRef} style={{ position: "fixed", display: "none", pointerEvents: "none", zIndex: CHROME_Z.dropZone }} />,
+        <>
+          {/* LE-15o (1): the columns of the box under a carried block — faded in while it is carried, never otherwise */}
+          <div aria-hidden="true" ref={gridElRef} data-drag-columns="" className="text-indigo-500/[0.14] transition-opacity duration-150 motion-reduce:transition-none" style={{ position: "fixed", left: 0, top: 0, width: 0, height: 0, opacity: 0, pointerEvents: "none", zIndex: CHROME_Z.dropZone - 1 }} />
+          <div aria-hidden="true" ref={dropElRef} style={{ position: "fixed", display: "none", pointerEvents: "none", zIndex: CHROME_Z.dropZone }} />
+        </>,
         document.body,
       )}
       {/* The photo setup, opened where a Photo gallery / Slider / Hero tile was DROPPED — the same

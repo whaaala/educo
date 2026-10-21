@@ -708,7 +708,7 @@ export default function BoxInspector({ trail = [], onSelectBlock, section = fals
   inFitGrid?: boolean;
   /** A column of a page row on the page grid (G-3 (3)): how many of the page's columns it covers on this screen, and its setter. */
   pageSpan?: { value: number; cols: number }; onSetSpan?: (span: number) => void;
-  pageLines?: { from: number; to: number; first: boolean; last: boolean; cols: number; drawnAcross?: number }; onSetLines?: (want: { from?: number; to?: number } | "full") => void;
+  pageLines?: { from: number; to: number; first: boolean; last: boolean; cols: number; page?: boolean; drawnAcross?: number }; onSetLines?: (want: { from?: number; to?: number } | "full") => void;
   /** G-3b (3): the block's free margin inside its columns, per side ("both" with undefined puts it back on its lines) */
   onSetFreeInset?: (side: "left" | "right" | "both", pct: number | undefined) => void;
   /** The page grid's row step (rem) on a page-grid page — "Rows: N" sets the block at least N rows tall (G-3 (4)). */
@@ -1580,11 +1580,15 @@ export default function BoxInspector({ trail = [], onSelectBlock, section = fals
                   <ToolBtn onClick={() => onSetLines("full")} active={pageLines.from === 1 && pageLines.to === pageLines.cols + 1 && pageLines.first && pageLines.last}>Whole line</ToolBtn>
                   <ToolBtn onClick={() => onSetLines({ to: pageLines.cols + 1 })} disabled={pageLines.to === pageLines.cols + 1}>To the last line</ToolBtn>
                 </div>
-                <CompactField label="Rows tall" ariaLabel="Rows tall" type="number" min={1} max={6} step={1} value={node.rowSpan ?? 1}
-                  onChange={(v) => { const n = Math.round(Number(v)); if (Number.isFinite(n) && n >= 1) onPatch({ rowSpan: n > 1 ? n : undefined }); }} />
-                <span className={label}>Bleed to the page edge</span>
-                <Segmented full ariaLabel="Bleed to the page edge" value={node.bleed ?? "off"} onChange={(v) => onPatch({ bleed: v === "off" ? undefined : (v as "left" | "right" | "both") })}
-                  options={[{ value: "off", label: "Off" }, { value: "left", label: "Left" }, { value: "right", label: "Right" }, { value: "both", label: "Both" }]} />
+                {pageLines.page !== false && ( // LE-15o (5): rows and the page edge belong to a row of the page; a stack's line has its lines only
+                  <>
+                    <CompactField label="Rows tall" ariaLabel="Rows tall" type="number" min={1} max={6} step={1} value={node.rowSpan ?? 1}
+                      onChange={(v) => { const n = Math.round(Number(v)); if (Number.isFinite(n) && n >= 1) onPatch({ rowSpan: n > 1 ? n : undefined }); }} />
+                    <span className={label}>Bleed to the page edge</span>
+                    <Segmented full ariaLabel="Bleed to the page edge" value={node.bleed ?? "off"} onChange={(v) => onPatch({ bleed: v === "off" ? undefined : (v as "left" | "right" | "both") })}
+                      options={[{ value: "off", label: "Off" }, { value: "left", label: "Left" }, { value: "right", label: "Right" }, { value: "both", label: "Both" }]} />
+                  </>
+                )}
                 {onSetFreeInset && (
                   <>
                     <span className={label}>Free inside its columns (% of them)</span>

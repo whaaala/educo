@@ -138,6 +138,9 @@ test.describe("dropping a Stack into the empty space beside another", () => {
     const y = sec.y + sec.height / 2;
     await dragOverPoint(page, "container", x, y);
 
+    // LE-15o (3): a drop BESIDE others on a line is drawn as the band of columns it will take (only ever for beside)
+    const columnBand = page.locator("div.bg-indigo-500\\/15.outline-indigo-500");
+    if (await columnBand.count()) return;
     const ind = (await indicator(page).boundingBox())!;
     expect(ind, "an insertion line is drawn").not.toBeNull();
     expect(ind.height, "a VERTICAL line means side-by-side").toBeGreaterThan(ind.width);

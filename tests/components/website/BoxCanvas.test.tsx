@@ -74,7 +74,9 @@ describe("BoxCanvas (box-model editor)", () => {
     await user.click(screen.getByRole("menuitem", { name: "Text" }));
     const sec = findBox(onChange.mock.calls.at(-1)![0], "sec")!;
     const added = sec.children![sec.children!.length - 1];
-    expect(added.width).toBe("40%"); // fills the row's leftover (100 − 60) → sits beside c1
+    // fills the row's leftover (100 − 60) → sits beside c1 — and the line lands on whole columns (LE-15o (2)): 7 + 5 of 12
+    expect(added.width).toBe("41.66%");
+    expect(sec.children![0].width).toBe("58.33%");
   });
 
   it("adding a block HANDS IT THE SELECTION, so you can see that it landed", async () => {
@@ -430,7 +432,9 @@ describe("BoxCanvas (box-model editor)", () => {
     fireEvent.mouseMove(document, { clientX: 78, clientY: 25 }); // over b's right edge in rb1 (a DIFFERENT row → reparent)
     fireEvent.mouseUp(document, { clientX: 78, clientY: 25 });
     const last = onChange.mock.calls.at(-1)![0];
-    expect(findBox(last, "d")?.width).toBe("20%");                               // filled rb1's leftover 100−40−40
+    // filled rb1's leftover 100−40−40 — and the line it joined lands on whole columns (LE-15o (3)): 5 + 5 + 2 of 12
+    expect(findBox(last, "d")?.width).toBe("16.66%");
+    expect(findBox(last, "a")?.width).toBe("41.66%");
     expect(findBox(last, rb1.id)?.children?.some((c) => c.id === "d")).toBe(true); // moved into rb1
   });
 

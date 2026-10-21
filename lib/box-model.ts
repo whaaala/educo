@@ -20,7 +20,7 @@ import { PAGE_Z, clampPageZ } from "@/lib/educo-ui/stacking";
 import { remLen, SHADOW_SCALE, SPACE_STEPS, DURATION, EASING } from "@/lib/educo-ui/tokens";
 import { contrastRatio, hexToRgb, oklchToRgb, rgbToHex, rgbToOklch } from "@/lib/educo-ui/color";
 import { colorToCSS } from "@/components/shared/ColorPalettePicker";
-import { PAGE_GRID_DEFAULT, columnsAt, gridTemplate, rowTrackCount } from "@/lib/page-grid";
+import { PAGE_GRID_DEFAULT, columnsAt, gridTemplate, rowTrackCount, wholeColumns } from "@/lib/page-grid";
 import INSPECTOR_WORDS from "@/config/inspector.json";
 /** ED-3b: what Copy style takes (RULE CFG). */
 const INSPECTOR_STYLE = INSPECTOR_WORDS.style;
@@ -2498,9 +2498,9 @@ export function releaseStaleAlignSelf(root: BoxNode): BoxNode {
  * Text is "auto") used to stop the sharing: `fitBand` leaves a line with a Fit block alone, so Text, Image, Button clicked in
  * turn left the Button wrapped below. Anywhere else the block is inserted as it is.
  */
-export function placeSharing(root: BoxNode, parentId: string, index: number, node: BoxNode): BoxNode {
+export function placeSharing(root: BoxNode, parentId: string, index: number, node: BoxNode, cols?: number): BoxNode {
   const into = isSideBySide(findBox(root, parentId));
-  return fitBand(insertBox(root, parentId, index, into ? { ...node, width: "100%" } : node), parentId, node.id);
+  return fitBand(insertBox(root, parentId, index, into ? { ...node, width: "100%" } : node), parentId, node.id, undefined, 0, cols);
 }
 
 /** Insert `node` into `parentId` at `index` (clamped). No-op if the parent is missing. */
@@ -2846,7 +2846,11 @@ export const isSideBySide = (n: BoxNode | null | undefined): boolean => !!n && !
  * `gapPct` — the share of the line ONE gap takes (a Side by side's own `gap`; a band's gap is its blocks' half-gap margins, inside
  * the %): 50 % + 50 % + a 16px gap wrapped "A one-line notice". The blocks share what the gaps leave.
  */
-export function fitBand(root: BoxNode, bandId: string, newId?: string, floors?: Record<string, number>, gapPct = 0): BoxNode {
+export function fitBand(root: BoxNode, bandId: string, newId?: string, floors?: Record<string, number>, gapPct = 0, cols?: number): BoxNode {
+  const out = shareLine(root, bandId, newId, floors, gapPct);
+  return cols && newId ? snapBandToColumns(out, bandId, newId, cols, floors, gapPct) : out; // LE-15o (2): …in whole columns of the stack
+}
+function shareLine(root: BoxNode, bandId: string, newId?: string, floors?: Record<string, number>, gapPct = 0): BoxNode {
   const band = findBox(root, bandId);
   if (!band?.rowBand && !isSideBySide(band)) return root; // E2-22: a block added to a Side by side shares its line as a band's does
   if (!band) return root;
@@ -2894,6 +2898,57 @@ export function fitBand(root: BoxNode, bandId: string, newId?: string, floors?: 
   for (const k of members) { const w = Math.max(3, Math.ceil(fl(k.id) * 100 - 1e-6) / 100, held.has(k.id) ? 0 : floor2(widthPct(k.width) * factor)); widths.set(k.id, `${w}%`); spent += w; }
   widths.set(newId, `${Math.max(3, floor2(room100 - spent))}%`);
   return updateBox(root, bandId, { children: (band.children ?? []).map((k) => (widths.has(k.id) ? { ...k, width: widths.get(k.id)! } : k)) });
+}
+
+/**
+ * LE-15o (2)(3) · EVERY STACK HAS THE PAGE'S COLUMNS (signed by the user 2026-10-21). The line block `id` is on — in a band or a Side
+ * by side — shared out in whole columns of `cols` (`wholeColumns`), never below a block's `floors` (% of the line), the gaps taken
+ * first as in `fitBand`. A line holding a block that is not a share (Fit, Full, fill) sizes itself and is left alone; so is any
+ * other line. Called where a block JOINS a line — a width the user dragged afterwards is theirs. Returns the SAME tree when nothing changes.
+ */
+export function snapBandToColumns(root: BoxNode, bandId: string, id: string, cols: number, floors?: Record<string, number>, gapPct = 0): BoxNode {
+  const band = findBox(root, bandId);
+  if (!band || (!band.rowBand && !isSideBySide(band))) return root;
+  const kids = (band.children ?? []).filter((k) => !isFloating(k) && !k.hidden);
+  const at = kids.findIndex((k) => k.id === id);
+  if (at < 0) return root;
+  const lines = packRowLines(kids), members = kids.filter((_, i) => lines[i] === lines[at]);
+  if (!members.every((k) => typeof k.width === "string" && k.width.trim().endsWith("%"))) return root;
+  const room100 = 100 - gapPct * (members.length - 1), col = room100 / cols;
+  // a line with room left keeps it: the empty room is one more share (half a column or more), dropped once shared out
+  const shares = members.map((k) => widthPct(k.width)), empty = room100 - shares.reduce((s, n) => s + n, 0);
+  // LE15o-a · EQUAL CARDS STAY EQUAL (the user, G3b-3: "equal cards" over "exactly on the lines"): five on twelve columns are 20 % each
+  if (empty < col / 2 && cols % members.length !== 0 && Math.max(...shares) - Math.min(...shares) < 0.5) return root;
+  const c = wholeColumns(empty >= col / 2 ? [...shares, empty] : shares, cols, members.map((k) => Math.ceil((floors?.[k.id] ?? 0) / col - 1e-6)));
+  if (!c) return root;
+  const widths = new Map(members.map((k, i) => [k.id, `${Math.floor(c[i] * col * 100 + 1e-6) / 100}%`]));
+  if (members.every((k) => widths.get(k.id) === k.width)) return root;
+  return updateBox(root, bandId, { children: (band.children ?? []).map((k) => (widths.has(k.id) ? { ...k, width: widths.get(k.id)! } : k)) });
+}
+
+/**
+ * LE-15o (4) · SHIFT = AN EXACT SPOT (Webflow's Shift-drag; signed by the user 2026-10-21). Block `id` (from another line) takes
+ * columns `col` … `col + span` (0-based, of `cols`) on the line of band `bandId` that `anchorId` is on: the empty columns before it are
+ * kept (`marginLeftPct`), the block after it keeps its place (its own gap shrinks by what was taken), nothing else moves. Null when
+ * those columns are not all empty, or run past the line's end — the drop is then the ordinary one.
+ */
+export function placeOnColumns(root: BoxNode, bandId: string, id: string, col: number, span: number, cols: number, anchorId: string): BoxNode | null {
+  const band = findBox(root, bandId);
+  if (!band || (!band.rowBand && !isSideBySide(band)) || col < 0 || span < 1 || col + span > cols + 1e-6 || (band.children ?? []).some((k) => k.id === id)) return null;
+  const line = rowLinesAt(band, "base").find((l) => l.some((c) => c.id === anchorId && !c.cont));
+  if (!line) return null;
+  const C = (pct: number) => (pct / 100) * cols, e = 0.01;
+  const items = line.filter((c) => !c.cont).map((c) => ({ id: c.id, start: C(c.x + c.gapPct), end: C(c.x + c.gapPct + c.sharePct) }));
+  if (items.some((c) => c.start < col + span - e && c.end > col + e)) return null;
+  const before = items.filter((c) => c.end <= col + e), after = items.find((c) => c.start >= col + span - e);
+  const prevEnd = before.length ? before[before.length - 1].end : 0;
+  const kidsIds = (band.children ?? []).map((k) => k.id);
+  const index = before.length ? kidsIds.indexOf(before[before.length - 1].id) + 1 : after ? kidsIds.indexOf(after.id) : kidsIds.length;
+  const pct = (c: number) => `${Math.floor((c / cols) * 10000 + 1e-6) / 100}%`, gap = (c: number) => (c > e ? Math.floor((c / cols) * 10000 + 1e-6) / 100 : undefined);
+  let next = moveBox(root, id, bandId, index);
+  next = updateBox(next, id, { width: pct(span), marginLeftPct: gap(col - prevEnd) });
+  if (after) next = updateBox(next, after.id, { marginLeftPct: gap(after.start - col - span) });
+  return next;
 }
 
 /** Canonicalize a container tree RECURSIVELY: every CONTENT container (the page root, a section, a block)
@@ -6566,9 +6621,12 @@ const bleeds = (bleed: BoxNode["bleed"], side: "left" | "right", at: number, of:
  * G-3b (2) — WHERE A BLOCK SITS ON THE PAGE'S LINES on `bp` (map A1–A3): line `from` to line `to` (1 = the page's left edge, `cols` + 1
  * its right; halves on half-lines), read from its share and the gap before it — or null when it is not a column of a row of the page.
  */
-export function linesAt(root: BoxNode, id: string, cols: number, bp: Breakpoint = "base"): { from: number; to: number; first: boolean; last: boolean } | null {
+export function linesAt(root: BoxNode, id: string, cols: number, bp: Breakpoint = "base", anyLine = false): { from: number; to: number; first: boolean; last: boolean } | null {
   const p = findParent(root, id);
-  if (!root.pageGrid || !p || !isPageRow(p.parent) || !(root.children ?? []).some((c) => c.id === p.parent.id)) return null;
+  if (!p) return null;
+  // LE-15o (5): `anyLine` — a block on any line (a stack's band, a Side by side) has its lines on the stack's columns too; without
+  // it only a row of the page (whose bleed, free placement and rows are the page's)
+  if (anyLine ? !(p.parent.rowBand || isSideBySide(p.parent)) : !root.pageGrid || !isPageRow(p.parent) || !(root.children ?? []).some((c) => c.id === p.parent.id)) return null;
   const half = (pct: number) => Math.round((pct / 100) * cols * 2) / 2;
   for (const line of rowLinesAt(p.parent, bp)) {
     const i = line.findIndex((c) => c.id === id && !c.cont); if (i < 0) continue;
@@ -6585,7 +6643,7 @@ export function linesAt(root: BoxNode, id: string, cols: number, bp: Breakpoint 
  * nothing can change. "To the last line" is `to: cols + 1`: a share, so it still reaches the end after a column-count change.
  */
 export function setLinesAt(root: BoxNode, id: string, want: { from?: number; to?: number }, cols: number, bp: Breakpoint = "base"): BoxNode {
-  const now = linesAt(root, id, cols, bp); const p = findParent(root, id);
+  const now = linesAt(root, id, cols, bp, true); const p = findParent(root, id);
   if (!now || !p) return root;
   const line = rowLinesAt(p.parent, bp).find((l) => l.some((c) => c.id === id && !c.cont))!; const i = line.findIndex((c) => c.id === id && !c.cont);
   const colsOf = (pct: number) => (pct / 100) * cols, pct = (c: number) => `${((c / cols) * 100).toFixed(2)}%`, gapPct = (c: number) => (c > 0.001 ? +((c / cols) * 100).toFixed(2) : undefined);
@@ -6673,7 +6731,8 @@ export const fullWidthAt = (root: BoxNode, id: string, bp: Breakpoint = "base"):
  */
 export function spanAt(root: BoxNode, id: string, cols: number, bp: Breakpoint = "base"): number | null {
   const p = findParent(root, id);
-  if (!root.pageGrid || !p || !p.parent.rowBand || !(root.children ?? []).some((c) => c.id === p.parent.id) || (p.parent.children?.length ?? 0) < 2) return null;
+  // LE-15o (5): every stack has the page's columns — a block sharing ANY line (a band, a Side by side), on any page, has its span
+  if (!p || !(p.parent.rowBand || isSideBySide(p.parent)) || (p.parent.children?.length ?? 0) < 2) return null;
   const w = resolveResponsive(p.parent.children![p.index], bp).width;
   return w?.trim().endsWith("%") ? Math.min(cols, Math.max(0.5, Math.round((widthPct(w) / 100) * cols * 2) / 2)) : null;
 }

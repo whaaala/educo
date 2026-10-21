@@ -61,6 +61,25 @@ export function snapShare(share: number, cols: number, half = false): number {
   return spanOf(share, cols, half) / cols;
 }
 
+/**
+ * LE-15o (2) · A LINE SHARED OUT IN WHOLE COLUMNS. Each share (any unit — only their proportions count) becomes a whole number of
+ * `cols`, together exactly `cols`, each at least one and at least its `least`; the columns left after rounding down go to the
+ * largest remainders, and any over are taken from the widest that can give. Null when the floors alone need more than `cols`.
+ */
+export function wholeColumns(shares: number[], cols: number, least: number[] = []): number[] | null {
+  const min = shares.map((_, i) => Math.max(1, least[i] ?? 0));
+  if (min.reduce((s, n) => s + n, 0) > cols) return null;
+  const sum = shares.reduce((s, n) => s + n, 0) || 1, want = shares.map((s) => (s / sum) * cols);
+  const out = want.map((w, i) => Math.max(min[i], Math.floor(w)));
+  const byRemainder = want.map((w, i) => i).sort((a, b) => (want[b] - Math.floor(want[b])) - (want[a] - Math.floor(want[a])));
+  for (let left = cols - out.reduce((s, n) => s + n, 0), j = 0; left > 0; j++, left--) out[byRemainder[j % out.length]]++;
+  for (let over = out.reduce((s, n) => s + n, 0) - cols; over > 0; over--) {
+    const i = out.reduce((b, n, k) => (n - min[k] > out[b] - min[b] ? k : b), 0);
+    out[i]--;
+  }
+  return out;
+}
+
 /** A span written for people: 4.5 → "4½". */
 export function spanText(span: number): string {
   const whole = Math.floor(span);
